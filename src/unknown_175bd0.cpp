@@ -3079,6 +3079,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // bytes, 0x176f60 25), with spawn at function scope 109 (0x176f60 25). With the mode per call the effect
 // index is computed in EAX and moved to EBP (retail computes it in EBP from the stack slot), so LTCG passes
 // it in a register, and the definition takes EBX where retail spills it. 0x175a80 gets retail's registers.
+// Round 126 (lane 5, fast; 0x176f60 matches unless given): spawn cursor re-measured 90 (only the cached
+// mode push, one instruction short per call, and the system/next/colour/type registers left); spawn with an
+// early `return next_index;` on the definition test 94; the mode per call with that early return 111
+// (0x176f60 25), with the spawn cursor too 112 (0x176f60 25); spawn with the particle system looked up
+// before the effect 113; spawn with both colours declared inside the type-query block and the next index
+// read after the definition call 95.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

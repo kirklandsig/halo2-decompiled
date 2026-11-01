@@ -2297,6 +2297,13 @@ static __forceinline long player_round_ticks(real value)
 // Round 244: complete native action/button lvalues and readonly unit receiver,
 // seven subsets all 701; complete graph with candidate addresses at each call
 // 708. Original reference carriers, candidate, receiver and complete body restored.
+// Round 50 (lane 1, fast): noinline on this file's declarations of 0x151b80/0xccd20 701 (ignored under
+// LTCG; BLOCKED-BY 0x151b80 and 0xccd20 expansion). Retail tests seat bit 11 and definition bits 12 and 3
+// as `shr reg,n; test reg8,1` and builds both activity bools branch-free (`|` of bits 28,0 and
+// 26,17,16,5,4,0 gives its exact shr/or chains); scored (difflib aligned, base 708): bit 11 707 (705),
+// bit 12 704 (707), bit 3 707 (684), all three 720 (686), activity bools with `|` 719 (596), all 739
+// (575). Positional scoring rejects them while the early expansion shifts the listing; retail's
+// branch-free `ticks < 0 ? 0 : ticks` (sets/dec/and) and `cmovne` are further leads.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2750,6 +2757,14 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // carriers 193/193/193/193/193/193/198/190 (fast control 193, 592 bytes);
 // paired long saves only three and is dropped. Existing-sibling control remains
 // 193; full baseline 103. Original predicate domains and body restored.
+// Round 50 (lane 1, plain checks): with the final store aimed at another global (diagnostic) 88: the
+// prologue then matches; left are loop 1's datum/unit in ESI/EDI swapped and NONE not kept in EDX after
+// the 0x16bc00 call (retail `or edx,-1; cmp eax,edx`, reused for the NONE store, the last-unit test and
+// loop 2's set-up). Loop 1 on the record-pool iterator (current + cursor, data_iterator_next_calling) with
+// loop 2's own datum iterator 155; the header's data_datum_iterator_next_called 103; loop 2 in 0x14d3a0's
+// word-flags/continue form 103; position copied before the last unit is stored 101; loop 1's body nested
+// under `unit != NONE` 103. On that 101 form: loop 2 in 0x14d3a0's form 101, `if (!failed)` final store 101,
+// busy store through `globals` 101, `if (last_unit == NONE) return;` before loop 2 101.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
