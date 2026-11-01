@@ -649,6 +649,12 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
 // volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
 // memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
+// Round 69 (lane 12, fast, 0x24590 listed): the velocity pointer (`vector3f *velocity = &state->velocity`) declared
+// at the very top 128 (gain 4, not kept); retail-order jitter (on/off, signs, `*=` scales) on a plain long 233 (1020
+// bytes), with the top or post-enable velocity pointer 233/233; on that plain-long base, limits, the jitter offset or
+// both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
+// limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
+// volatile long is what keeps them apart here, and no tried form keeps them apart without it.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

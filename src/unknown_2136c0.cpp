@@ -163,6 +163,10 @@ void function_213970(void);
 // With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
 // the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
 // Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
+// Round 69 (lane 12, fast): the progress record cleared by copying a zeroed local record 135 (232 bytes); the language
+// test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
+// stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block
+// definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

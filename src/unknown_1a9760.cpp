@@ -9,7 +9,7 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 85 (was 96): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// score 85 (was 85): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
@@ -100,6 +100,15 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // swapped); that with the negated j named first 176 (989 bytes, aligned 80), plus the side projection
 // accumulated z, y, x 176 (aligned 93); the k, j, i projection with the j, k, i final test 98. Retail does not
 // hoist the -1.0 load (else branch and memory operand), so it copies the projection into xmm6.
+// Round 69 (lane 12; env positional, 66 for this body): the else arm's constant first, local_6's negation as an
+// assignment or constant first, the sign test's operands swapped, the else arm as copies then `*=` [66 each, same
+// code]; the arms swapped (`if (!(local_5 > 0.0f))`) [66]. Diagnostic: without local_6's negation the -1.0 is loaded
+// in the else arm as retail [59], so the hoist pairs those two uses. local_6 as the dot of a named offset vector
+// (position - unknown370, any component order, declared at the top or in the block) gives retail's shape there (all
+// three differences before the products, -1.0 loaded in the else arm, memory-operand negation) but copies local_3.i/j
+// to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
+// [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
+// alone [66].
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
