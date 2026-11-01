@@ -308,10 +308,12 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 }
 
 #define sound_effect_delete function_21dcf1
-// score 204 (was 204): this round: no new in-file form moves it; the request has to reach 0x189fe0
+// score 204 (was 204): frame eight versus four, state/tag residence and opposite
+// start/delete expansion remain; the protected caller cycle is unchanged.
+// this round: no new in-file form moves it; the request has to reach 0x189fe0
 // in EAX or eight matched callers lose their match, and that body is in src/unknown_189010.cpp:
 // BLOCKED-BY 0x189fe0.
-// score 204 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
+// BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
 // (0x189fe0 then expands the first class lookup and keeps the request in EDX; retail calls both
@@ -419,6 +421,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 // same blocker as the 0x125f70 route); the rate-limit test negated with no NONE arm 204; the platform
 // handle computed after the definition/effect declarations 221 (0x189fe0 132); sound_index declared
 // at the top 204; the allocation folded into the definition test 204. Still BLOCKED-BY 0x189fe0.
+// Round 283: shared start with a multiply-used effect-admission fact, bool/byte/short/long,
+// nested lifecycle 223/223/205/207; combined success/failure lifecycle 223/223/205/207.
+// All eight sensitive callers preserved; original body and expansion policy restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

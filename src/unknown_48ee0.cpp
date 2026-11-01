@@ -146,6 +146,9 @@ extern real g_4c9798[36];
 // Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
 // each with coordinated pixel-size/mode names 230; coordinated names alone and
 // diameter lexical rank 230. Original declarations, names and body restored.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
