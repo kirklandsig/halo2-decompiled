@@ -781,6 +781,18 @@ real g_55e618;
 // computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
 // collision word stored before the start stores plus the impact before the position 100 (two-point gain,
 // not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
+// Round 65 (lane 16, fast): velocity pointer with the position through the existing real_point3d_set (the three
+// sums held until the stores, as retail) 189 (1536 bytes, frame 0x118; velocity read twice through `lea esi` as
+// retail); final stores direct to the particle 188 (j/k stores then [ebp+0x2c]/[ebp+0x30] as retail); on that
+// dot3f 188, impact first 188, tangent declared first 188, perpendicular through vector3f_scale 188; the
+// perpendicular/tangent pairs interleaved per component 179 (1537 bytes; tangent.i/j spill to retail's +0x38/+0x3c
+// and the sweep sits at retail's +0x44, but ours spills tangent.k where retail spills perp.k, so the perpendicular
+// gets no home); on that dot3f/impact first/dot declared first/normal-first products 179 each, twelve dot term
+// orders 179 each (identical code), pair orders ikj/jik/jki/kij/kji 181/183/191/183/189; the normal through a
+// named header field 179 (identical), read as a direct field 651 (1749 bytes). Retail multiplies the perpendicular
+// with the dot as destination (dot * n), ours copies the normal (n * dot). Retail's six-statement order (perp.i,
+// tangent.i, perp.j, perp.k, tangent.j, tangent.k) on that pointer form 185 (1547 bytes; frame 0x124 and the
+// collision at +0xb0 as retail, but perp.j spills to +0x3c, tangent.j to +0xa8 and perp.k to +0x40).
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

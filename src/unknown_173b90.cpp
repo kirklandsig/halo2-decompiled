@@ -1035,6 +1035,14 @@ public:
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
 // the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
 // returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
+// Round 65 (lane 16, fast): about 110 of the count is two one-instruction shifts: retail's default case jumps into
+// the fallback's cross tail one instruction earlier (`subss xmm0, xmm2` shared: the fallback holds forward.j in
+// XMM2 from a load hoisted above the normalization branch, ours reloads it per path into XMM3), and retail reads
+// the parent colour before the child definition call (spilled at +0x28). Switch on the name table entry directly
+// 248 (identical); unused locals (diagnostic) 248; normalize_inline in the fallback 248 (x87 sum k, i, j: VC emits
+// the flattened squares in reverse spelling order, retail's j, i, k would need a k, i, j spelling no helper has);
+// scale nested in the normalize call in the fallback/default case/both 248 each; the colour in a local before the
+// matrix scale/after the position copy 262/261 (1363 bytes), with a tinted local too 278 (frame 0x5c).
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

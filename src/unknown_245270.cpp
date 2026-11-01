@@ -488,6 +488,13 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 65 (lane 16, fast): 0x244de0 now takes the point in ECX and the vector in EAX as retail (its first
+// difference is at +0x141), so the call setup is not the cause. The side bools named once more as
+// `bool same_side = local_10 == local_11;` before the plane test 209 (identical); as one named comparison of
+// the shifted codes 225 (767 bytes, frame 0x28: the matrix is no longer held in EBP from entry and EBP takes the
+// second code, but the sides still fold into the branch); that with the second material read first 225; that
+// with the plane table read after the edge vector 227 (and 0x245aa0 113: the source then arrives in EDX); the
+// facing dot through dot3f 237 (755 bytes).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
