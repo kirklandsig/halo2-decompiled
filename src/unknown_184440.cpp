@@ -183,6 +183,7 @@ __forceinline bool function_184448(long arg_0)
 
 #pragma inline_depth(1)
 // score 965 (was 965): Frame 0x11d4 versus 0x11cc and scene/surface geometry homes remain.
+// Earlier (965, was 977): the same frame and homes.
 // Round 419: scene field observations 983; effect record reference 977; scene field observations/effect
 // record reference 983; surface record reference 977; scene field observations/surface record reference
 // 983; effect record reference/surface record reference 977; scene field observations/effect record
@@ -215,6 +216,9 @@ __forceinline bool function_184448(long arg_0)
 // per-face 3D/2D/both polygon arrays 977/977/977; each with late projected bounds 965;
 // all with world bounds declared at initialization 965. Keep only the later projected
 // bounds initialization. Frame 0x11d4 versus 0x11cc and initial geometry homes remain.
+// Round 50 (lane 1, fast): arg_0 test as `!= NONE` with the record arm first 986; NULL record set
+// before the surface pointer 965; worklist entry stored before its count 965; both 965; the record
+// and worklist-count locals renamed to sort first/last 965 each with every stack home unchanged.
 // Round 144 (lane 4, fast): retail keeps the transform pointer only in its stack home (+0x98) and the surface
 // list in ECX, loads the block count into a register before the index compare (as the compile-only build
 // does) and initializes the projected bounds at the top of each face iteration. Defaults then `if (arg_0 !=
@@ -234,6 +238,10 @@ __forceinline bool function_184448(long arg_0)
 // native projected box2f 965; box2f/matrix pointer 974; box2f/count 1021; all three 1035; all three with
 // native world box3f initialized at its first store 1053. All eight forms restored; frame 0x11d4 versus
 // 0x11cc and initial surface/transform homes remain.
+// Round 49 (lane 10, fast): the surface lookup as one `&&` test with the table pointer declared before it 962
+// (three-point gain, not kept); on it: the per-face bounds initialized at the top of the face loop 974; the plane
+// transform reading the normal into scalars (i, j, k) 975 (4557 bytes, frame 0x11cc as retail), captured k, j, i
+// 996 (4541), j, k, i 975 (4557); scalars plus face-top bounds 1021 (4538). Body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

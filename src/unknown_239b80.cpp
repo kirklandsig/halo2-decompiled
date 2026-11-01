@@ -345,6 +345,11 @@ short function_239e50(short count, point2f const *points, short *indices);
 // neighbours): the index declared and zeroed before the loop 42; declared uninitialized with the state and
 // zeroed in the loop head 42; `state <= 1` 43; case 1's test as `k_real_epsilon <= fabs(...)` 68 (302 bytes);
 // case 1's difference as `line.d - dot` 43.
+// Round 188 (fast; a compile-only screen reproduces the integer roles): dot_product2d taking (point,
+// normal) at its definition and both calls 42; case 1 through fabsf 42; the index declared beside the
+// state 42; both of the first two 42; case 1 returning 2 directly 70 (the index takes EDX as in retail,
+// but the extra exit path moves the layout). Compile-only: all 24 declaration orders of first, line,
+// state and the index, each with both dot parameter orders, keep EDX/ESI for state/index.
 // Round 46 (lane 1, fast): a braced case 0 with `vector2f *normal = &line.n` for the dot only, and for the
 // normalize too, 42/42 (same code); j stored through it, with the normalize by name or through it, 44/44 (304
 // bytes); the loop test `state != 2` 43; the loop on `i < count` alone with case 1 returning 2 88 (301 bytes).
@@ -363,6 +368,16 @@ short function_239e50(short count, point2f const *points, short *indices);
 // by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
 // (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
 // state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
+// Round 64 (lane 9, fast; a compile-only build reproduces the integer colouring exactly): case 0's j store
+// and dot helper through `vector2f *normal = &line.n` 44 (304 bytes), with the normalize through it too 44;
+// case 1's `state = 2` or case 0's `state = 1` as `state++` 50 each (index EDX as retail, state ESI); round
+// 54's 23 form plus case 1's `state++` 31. Compile-only, no colouring change (state EDX, index ESI, point
+// ECX): the index declared at the top or first, state first, a case-0 point pointer, the NONE case last,
+// `state <= 1`, a while loop, a loop-top point pointer, case 1 as `state = ... < eps ? 1 : 2`, as `if (<
+// eps) break; state = 2;`, with `line.d - dot`; the dot helper through `normal` in either term order keeps
+// `mulss xmm1, [p.x]` unfused (92 instructions); stores of the index, the state or the point pointer to a
+// global (diagnostic) at the loop top or in any case leave the index in ESI. In case NONE ours uses three
+// temporaries (scaled index, x, y) beside the live index; retail's y reuses the scaled index's register.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {

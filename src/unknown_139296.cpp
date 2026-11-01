@@ -335,6 +335,8 @@ void function_13ad48(long user_index, byte const *selectors, real *values, byte 
 
 bool function_22acb4(long player_index);
 
+/* the item a status record selects by type and four masks of its state bits (modes, flags, item
+   counts and the game's multiplayer state) */
 // This round (score 165, was 165): retail's first mask folds the 0x36 == NONE
 // condition into its base value and then tests 0x36 == 0 before 0x36 == 1, while
 // ours folds the 0x36 == 1 condition and tests it first; putting retail's order
@@ -367,7 +369,6 @@ bool function_22acb4(long player_index);
 // shifted source flags 281; fourth enum selection 284; one-case bit first 190;
 // one total enum-bit update 291. Final stores and query argument preserved.
 // second-mask spill/constant-one retention remain.
-// extra second-mask slot and retained constant registers differ;
 // Earlier 232 (was 232): extra second-mask slot/constant registers remain;
 // Earlier 196 (was 232): extra second-mask slot and constant homes remain; second enum group kept.
 // Earlier 190 (was 196): second-mask spill and constant homes remain.
@@ -377,14 +378,12 @@ bool function_22acb4(long player_index);
 // second-mask slot and constant homes remain; second-mask bit orders
 // 16/2/4/8, 2/16/4/8, 2/4/16/8, 8/4/2/16 all 190;
 // 2/8/4/16, 16/8/4/2, 8/16/2/4, 4/8/16/2 all 190 at 884 bytes.
-// second-mask spill and constant homes remain.
 // First enum order one/zero/NONE 189 (below gate), zero/NONE/one 195, zero/one/NONE 195,
 // NONE/one/zero 197; native fourth on current enums 299; signed third/fourth/both 271/299/285.
 // second-mask spill and persistent constant homes remain.
 // Earlier 190 (was 190): second-mask spill and constant homes remain.
 // Fourth-mask code/side/flag-a/flag-b/flag-c observations once: 190/260/209/209/209;
 // all five/code plus flag-a/flag-b plus flag-c: 271/209/287. Second-mask spill remains.
-// second-mask spill and persistent constant homes remain.
 // Earlier 190 (was 190): second-mask spill and persistent constant homes remain.
 // Individual redundant clears removed: first16 284; second16 281; both16 290;
 // first2/4/8 286/286/290; first2+16 301; initial third128 249. All restored.
@@ -518,17 +517,15 @@ void function_13a050(byte const *status, long user_index, long type, s_13ad48_it
 	}
 	word first = 1;
 #define SET_CONDITION(bits, mask, condition) if (condition) { bits |= mask; } else { bits &= ~mask; }
-	SET_CONDITION(first, 8, *(short const *)(status + 0x36) == 1);
 	SET_CONDITION(first, 2, *(short const *)(status + 0x36) == NONE);
 	SET_CONDITION(first, 4, *(short const *)(status + 0x36) == 0);
+	SET_CONDITION(first, 8, *(short const *)(status + 0x36) == 1);
 	SET_CONDITION(first, 0x10, status[0x30]);
 	SET_CONDITION(first, 0x20, status[0x31]);
-	if (*(short const *)(status + 0x3c) == NONE)
-		first |= 0x40;
-	else if (*(short const *)(status + 0x3c) == 0)
-		first |= 0x80;
-	else if (*(short const *)(status + 0x3c) == 1)
-		first |= 0x100;
+	SET_CONDITION(first, 0x40, *(short const *)(status + 0x3c) == NONE);
+	SET_CONDITION(first, 0x80, *(short const *)(status + 0x3c) == 0);
+	SET_CONDITION(first, 0x100, *(short const *)(status + 0x3c) == 1);
+	/* retail tests this mode against 1 a second time for the same bit */
 	SET_CONDITION(first, 0x100, *(short const *)(status + 0x3c) == 1);
 	SET_CONDITION(first, 0x200, status[0x32]);
 	SET_CONDITION(first, 0x400, status[0x3e]);
@@ -536,15 +533,16 @@ void function_13a050(byte const *status, long user_index, long type, s_13ad48_it
 	SET_CONDITION(first, 0x1000, status[0x40]);
 	SET_CONDITION(first, 0x2000, function_22acb4(user_index));
 	dword flags = *(dword const *)(status + 0x4c);
-	word second = (char)flags & 1;
+	word second = 0;
+	SET_CONDITION(second, 1, (char)flags & 1);
 	SET_CONDITION(second, 2, flags & 8);
 	SET_CONDITION(second, 4, flags & 0x10);
 	SET_CONDITION(second, 8, flags & 4);
 	SET_CONDITION(second, 0x10, flags & 2);
 	word third = 0;
+	SET_CONDITION(third, 1, type == 1);
 	SET_CONDITION(third, 2, type == 2);
 	SET_CONDITION(third, 4, type == 3);
-	SET_CONDITION(third, 1, type == 1);
 	SET_CONDITION(third, 0x40, item ? item->flag20 : false);
 	third &= ~0x80;
 	if (item)

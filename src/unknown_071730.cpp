@@ -3,6 +3,7 @@
 #include "unknown_058dd0.h"
 #include "unknown_0662e0.h"
 #include "globals.h"
+#include "unknown_08b110.h"
 #include <xtl.h>
 #include <string.h>
 
@@ -180,6 +181,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 478: complete strict solver predicate with short/bool/byte/long result
 // 455/458/458/457; both strict and fallback predicates 458/458/458/458.
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 53 (m3 lane 1; kept: the three clock reads through the existing header time_now() and the
+// variant index through the existing get_value_49c8(), byte-identical 439, in place of their bodies
+// written out): the property value cleared before the player-count test 457 (1577 bytes); the first
+// start time read into a local before the clock 439 (aligned diff 155 from 162: retail's load order;
+// one-use, not kept); the reset flag as bool 469 (frame 0x3e4). Retail's 0x5b080 call is why ours
+// keeps the session state in ESI after the getter call (the inlined body re-tests it).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -203,12 +210,10 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			local_3 = true;
 			goto finished;
 		}
-		long local_7 = NONE;
-		if (local_2->state > 2 && local_2->state <= 8)
-			local_7 = local_2->value49c8;
+		long local_7 = local_2->get_value_49c8();
 		s_surface_description *local_8 = function_192e60(local_7);
 		byte *local_9 = local_2->get_data_4a00();
-		long local_10 = (long)(g_510548 ? g_51054c : GetTickCount()) - arg_0->unknowna68;
+		long local_10 = time_now() - arg_0->unknowna68;
 		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
 		long local_12 = false;
 		bool wait_for_transition = true;
@@ -217,9 +222,9 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
 		{
 			*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
-			*(long *)((byte *)arg_0 + 0xa70) = g_510548 ? g_51054c : GetTickCount();
+			*(long *)((byte *)arg_0 + 0xa70) = time_now();
 		}
-		long local_17 = (long)(g_510548 ? g_51054c : GetTickCount()) - *(long *)((byte *)arg_0 + 0xa70);
+		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
 		s_session_property_value local_14 = {0};
 		if (!local_8 || !local_9)
 		{

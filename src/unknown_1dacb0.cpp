@@ -1166,6 +1166,17 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
 // candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
 // All reach 2825 bytes but regress; original complete producer, iterator and body restored.
+// Round 53 (m3 lane 1): 736 of the 810 differing lines are one inserted instruction per resource
+// request: retail holds a zero in EBP from the fifth type request (all keys 0x30000d9) through the
+// inheritance loop's index/offset stores (`cmp eax, ebp`, `mov [home], ebp`), ours tests with
+// `test eax, eax` and stores immediates, so all later lines shift. In the first 100 lines retail gives
+// the dead found-mode argument home to the loop candidate (then the request pointer; index and offset
+// take the found-class/found-type homes); ours gives it to the iterator mode output. Candidate renamed
+// 828 (same code); `while ((entry = iterate()) != NULL) {...; if (found) break;}` 998 (rotated,
+// 2839 bytes); `while (true)` with both breaks 998; the three outputs as one record (grouping
+// diagnostic) 823 (candidate, request pointer, index and offset homes then retail's; result sits below
+// the record); candidate declared beside the outputs and reset each pass 932 (frame 0x30); result as
+// `named ? named->animation_id : c_type_709360()` 978.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1299,6 +1310,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 489: chained candidate/result assignment in the named branch, native iterator, late constant
 // candidate and missing name branch first, combinations 978/976/984/982/991/989/984/982.
 // All reach 2825 bytes but regress; original complete producer, iterator and body restored.
+// Round 53 (m3 lane 1; zero-carrier/argument-home analysis in the note above 0x1db170): `for (;;)`
+// with both breaks 998; early `return c_type_709360();` with result scoped in the block 988 (2825
+// bytes); the sibling 0x1dc8c0's iterator store order (graph, step, entries, keys) 828 (stores
+// reorder only); the body inside `if (weapon_class != NONE)` 1040; the iterator declared after its
+// outputs 828 (same code).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
