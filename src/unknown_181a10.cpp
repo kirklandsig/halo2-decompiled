@@ -618,6 +618,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // without/with all four named distance products: 419/419/448/448; shared row-rotation
 // producer 321/321/352/353. Grouping changes were exact-only; all helpers, includes,
 // normal/plane expressions and complete body restored. Frame 0x48 versus 0x44 remains.
+// Round 74 (m3 lane 12, fast): the material read back through 0x1ee410's returned pointer (retail's
+// `mov ax, word ptr [eax]`) 319; the root entity as `root->type == 1 ? root->entity : NULL` then tested 321 (retail
+// loads the type into ECX first; ours still compares memory); both 319; distance computed before the origin
+// reads 322; index/other_index declared before valid 321.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

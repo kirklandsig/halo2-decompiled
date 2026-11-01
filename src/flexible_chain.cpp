@@ -374,6 +374,10 @@ void __stdcall function_1160c0(real dt)
 // and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
 // &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
 // axis 177. Body restored.
+// Round 74 (m3 lane 12, fast; 0x73360 kept its match in each): `previous = position` right after the i == 0
+// if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
+// the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
+// publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
