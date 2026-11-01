@@ -856,6 +856,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // `inline` 2 or unsigned 2; the reader storing rdtsc's halves into its local 129; the
 // existing header reader function_80e13 2 (kept); the counter declared in the loop block 2;
 // the size and page tests nested as in function_80e14 2.
+// Round 101 (lane 7), `--fast`: `_ReadWriteBarrier();` before the reader, as matched 0x8c790 does, 2 (the stores then
+// follow `push edi` as retail, but `xor esi, esi` sinks below it too); that with result declared before the barrier
+// 111 (306 bytes, four callers lost); start declared first with the zero-initialized locals ahead of the barrier 113;
+// the barrier right after the reader 6; the barrier with the counter declared in the loop's block 2.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {
@@ -963,6 +967,24 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// score 3 (was 3): the plain (full) check agrees with the fast one; the whole difference is the
+// masked level address loaded into EDX where retail reuses the base register, which is dead after
+// that load.
+// This round: the mask literal with eight digits, the whole expression cast, the address cast, the
+// index as an unsigned long and as an unsigned int, the address in an unsigned int local, the array
+// through a pointer local, the mask in a named constant and the level in a local at the top of the
+// function all give 3, byte-identical to the baseline.
+// score 3 (was 3): this round: the level address read through a byte pointer to the array, the
+// masked value carried through a pointer-typed local, and the array typed as pointers all give
+// byte-identical code to the baseline (3). Still the masked level address is loaded into EDX where
+// retail reuses the base register, which is dead after that load.
+// This round (score 3, was 3): the mask spelled as a complement, a dword cast, a zero-padded literal,
+// the array through a pointer local, a store-then-mask pair, a named local for the unmasked address
+// and a local copy of the level all compile identically; the masked level address is still loaded
+// into EDX where retail reuses the dead base register. Also this round: the mask as an unsigned
+// literal, a long cast around the whole expression, a dword local masked and then stored, the mask
+// operands the other way round, an unsigned long local and the element reached by pointer
+// arithmetic all give the same three instructions.
 // score 3 (was 3): the masked level address is loaded into EDX, retail reuses the base register,
 // which is dead after that load.
 // Entry data declaration 3; level-index local 3; reversed subscript 3; 28-bit field view 3;

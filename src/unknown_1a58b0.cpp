@@ -6,6 +6,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "unknown_1a58b0.h"
+#include "unknown_1cec30.h"
 #include "object_markers.h"
 #include "vector_products.h"
 #include "squads.h"
@@ -646,6 +647,8 @@ void function_1a6d80(void)
 // Round 88: call result local with the count stored first 6 (retail's ECX/EDX pointer registers,
 // but the count store comes first); count stored before the call 12; handler index read in the
 // call 26; output pointer locals 6; forceinline output setter 6.
+// Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
+// handler index 7; handler index read after the table reads 20; count read before the node list 6.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
@@ -796,8 +799,12 @@ void function_25aba0(long actor_index);
 
 
 
-// score 29 (was 58): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
+// score 29 (was 29): the kind-2 failure pop is `dec [mem]` where retail loads, decrements and stores
 // around the stamp, and the choice-failure pop is split where retail uses `dec [mem]` (aligned 8).
+// Round 96: kind-2 dispatch first 147; the kind test reversed 126; the current-slot ternary inverted
+// 29 (identical); current-slot assigned in an if 242; the default type assigned in an if 166; the
+// next-type test inverted 36; positive next-handler validation 29 and positive enabled dispatch 29
+// (both identical). Original dispatch and failure arms restored.
 // The choice arm's pop before its stamp is not retail's order there: it is kept only because its 5
 // extra bytes balance the kind-2 pop's 5 missing ones, so put the stamp first again once the kind-2
 // pop splits. Before this round only the state-one pop and the `= {0}` workspace remained (aligned 7); earlier: actor/result ESI/EDI (0x1a7b30's result arrives in ESI,
@@ -898,6 +905,23 @@ void function_25aba0(long actor_index);
 // when it became the host (the host is chosen first, its `level--` then fuses). State-one / kind-2 / choice as
 // an if/else chain on memset 119 (state-one split as retail, kind-2 hosts and fuses); the enabled arm in the
 // chain too 119 (identical).
+// Lane 16 r48 (fast; aligned difflib counts in brackets): the full grid of pop/stamp orders on the
+// kept chain body (state-one 2 x kind-2 failure 6 x choice 2 x next-handler 2, 48 forms) 29-137, none
+// below the kept 29 [8]: the kind-2 pop splits as retail only with `level--` before its stores, and then
+// the state-one pop fuses (best 43 [10], kind-2 store order then stamp/level/state for retail's
+// stamp/state/level); one shared `level--` after the state-one/kind-2 chain 29 (same code);
+// `level = level - 1` and `level = (short)(level - 1)` in the kind-2 arm 29/29.
+// Round 52 (harness exact once 0x1a7ad0 has several callers): the kind-2 failure `level--` fuses in all six
+// statement orders with either choice-failure order (aligned 3-10); real: stamp, state, pop with retail's
+// stamp-first choice arm 119 (only the kind-2 pop differs, 2 bytes short); pop, stamp, state 46; the
+// kind-2 test inverted with the failure statements inside it 29 (identical); success leaving by `break`
+// 29 (identical); the check result in a `started` bool 29 (identical). `level = level - 1` there and a
+// `continue` after the failure statements: identical / 42 positional.
+// Lane 16 r50 (fast): source permuter, 66 tries in 600 s, best 29; the choice==g_46fbe4 arm as an if/else
+// without `continue` (the rest of the handler code in its else), stamp first 119 (the choice pop fuses as
+// retail, but the enabled failures cross-jump into a fused state-one pop again), pop first 29 (same code);
+// on the stamp-first form the kind-2 failure orders stamp/pop/state 134, state/stamp/pop 119,
+// state/pop/stamp 133, pop/stamp/state 134, pop/state/stamp 133.
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {
@@ -1233,15 +1257,7 @@ struct s_surface_support_view
 	long component_index;
 };
 
-struct s_surface_component_view
-{
-	byte unknown00[0x74];
-	long body_count;
-	byte unknown78[0xa0 - 0x78];
-};
-
 struct s_object;
-struct s_havok_component;
 s_object *function_badc0(long object_index, dword type_mask);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
@@ -1281,6 +1297,10 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // `mov ecx, esi` follows; its file is held this round). Statement point query with the
 // address 18; point pointer local 18; body re-read at the call 2; statement query plus body
 // re-read 18; velocity pointer local 2.
+// Round 103: the existing component getter and rigid-body count in place of the hand-written lookup 2 (kept,
+// same code); the clamp compare operands swapped 3; the object handle read through its own address for the
+// point query 2; the clamp as matched 0x182020's if/else 2; a named component index 2. Still BLOCKED-BY
+// 0x1d0a20 (its definition file and the held src/impacts.cpp calls).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {
@@ -1299,12 +1319,12 @@ void function_1a68a0(long object_index, vector3f *velocity)
 				s_surface_support_view *support = (s_surface_support_view *)function_badc0(unit->support_index, NONE);
 				if (support && support->component_index != NONE)
 				{
-					s_surface_component_view *component = &((s_surface_component_view *)g_51e9b8->data)[support->component_index & 0xffff];
+					s_havok_component *component = havok_component_get(support->component_index);
 					long body_index = unit->body_index;
-					long clamped = body_index < 0 ? 0 : body_index > component->body_count - 1 ? component->body_count - 1 : body_index;
+					long clamped = body_index < 0 ? 0 : body_index > component->rigid_bodies.size - 1 ? component->rigid_bodies.size - 1 : body_index;
 					if (clamped == body_index)
 					{
-						havok_component_rigid_body_point_velocity_get(body_index, (s_havok_component *)component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
+						havok_component_rigid_body_point_velocity_get(body_index, component, function_b9dd0(object_index, &local_3.field_c), &local_3.field_18);
 					}
 				}
 			}

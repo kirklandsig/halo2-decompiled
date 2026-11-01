@@ -265,6 +265,87 @@
 // again 33, sqrt21 declared with the other roots 6, zz5 defined before result[11] 188 (700 bytes),
 // zz5 after xx_3yy 6, sqrt5 initialised at its declaration 6. The 6 form still writes sqrt(2.0),
 // `zz5 - 1.0f` and the band3_21 product at each use, so it is only keepable as a full match.
+// Round 14 (lane 2): that 6 form spliced into the current file is still 6 (fast, 0x146020
+// matched); left the sqrt15 load retail puts between `fld z` and `fmul z`, and zz5/band3_21 trading
+// stack slots (retail stores zz5 over zz). On it: zz5 renamed a_zz5/zz_5/z5 6/6/6, zz renamed 6;
+// permuter (anneal, 600 s) 50 tries, best 6. Original body restored.
+// Lane 16 r46: that 6 form rebuilt (fast 6, 0x146020 matched); on it: zz5 renamed azz5/zzz5 6/6; a named
+// band3_21 (three names, zz5 renamed too) 8 each, declared before zz5 8, computed before zz5 51; zz*5 at
+// each use 188 (700 B), with a named band3_21 12; result[6] `(zz * 3 - 1) * sqrt5` / `3 * zz` 6/6;
+// result[4] band2 first, result[8] sqrt15 first, result[5] z first, band2 isp-first 6 each; `5.0f * zz`,
+// result[12] zz5 term first, sqrt7 initialised 6 each; zz declared before sqrt15 and assigned after band2
+// or after xx_yy 6/6. Names and declaration order never move zz5's slot, and none of these statement or
+// operand orders moved the quadratic sqrt15 load ahead of the x87 z*z.
+// Round 135 (lane 4, fast with 0x146020 unless noted): the 6-point form (named sqrt3/sqrt35/sqrt21 roots,
+// `sqrt(2.0)` in both cubic products, `zz5 - 1.0f` and the sqrt21 product at each use, result[13] staged)
+// rebuilt 6. A compile-only harness shows the new stack homes follow statement order: with the sqrt21 product
+// named right after sqrt21 (before result[9]) and result[11]/result[13] written after result[12] (order 9, 10,
+// 12, 11, 13, 14, 15, xx_3yy after result[12]), zz5 takes zz's home and band3_21 the new one as in retail: 4
+// (plain 4; left the quadratic sqrt15-load/`fmul z` swap and the result[13] store after result[9]'s `fmul y`);
+// zz5_1 named on it 31; with a named float `real sqrt2 = (real)sqrt(2.0);` in both products 2 (only the
+// quadratic swap left; it still writes `zz5 - 1.0f` at each use, so it is keepable only as a match); that with
+// zz5_1 named 31 (rests on one-use sqrt3/sqrt35/sqrt21 locals); with those three roots inline again 66 (662
+// bytes); the 9, 10, 12, 11, 13 order on this body 59. Harness on the 2 form: 196 quadratic-block orders and
+// spellings (sqrt5 with its value, band2/result[6]/xz operand orders, zz staged) and 77 first-block orders keep
+// the sqrt15 load after `fmul z`; without the cubic block the swap stays, so it is not a cubic-block effect.
+// Round 33 (m3 lane 11): lane 14 r19's 6-point form rebuilt (fast 6, 0x146020 matched). A compile-only
+// /FAs build of this file reproduces both residual differences. Screened there: band3_21 or zz5
+// renamed (8 names) and band3_21 declared at five earlier places: no change; 80 single statement
+// moves and 150 random order/operand mixes in the quadratic block, 120 in the first block, and the
+// xz/x/difference stagings undone: the sqrt15 load never moves ahead of the x87 z*z. zz5 takes zz's
+// home (as retail) only when it is defined after the sqrt(21) product: with a named
+// `real band3_21 = (real)(sqrt21 * sqrt(2.0));` after sqrt105 and zz5 after it, fast 12 (band3_21's
+// home then lands below xx, yy and xy where retail has it above them, and the result[13] store slips
+// one place); 360 orders of the later statements keep that store slip.
+// Round 55 (lane 12; a one-file LTCG harness reproduces this function and 0x146020 exactly; 0x146020 matched in
+// every trial): legal forms only. The named sqrt3 root with band3_35 defined right after sqrt2 (before zz5) 55
+// (band3_35 then takes sqrt(15)'s slot as retail; a gain of 4, not kept); that with sqrt(35) named 77, with
+// sqrt(21) named 71; band3_35 first with both roots named 80; the sqrt3/band3_35 form with band3_21 defined before
+// sqrt105 73. Harness, on the sqrt3/band3_35 form: `sqrt2 * sqrt(35.0)` / `sqrt2 * sqrt(21.0)` operand orders
+// (same code), sqrt105 defined right after sqrt2 (much worse), result[15] at each earlier position (worse), and
+// every single-statement move of the nine cubic statements (none better).
+// Round 9 (m3 lane 18; fast, 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it band2 staged
+// (`band2 = sqrt15; band2 *= inverse_sqrt_pi;`) 2, band2 declared at the top but assigned after zz 92 (663 bytes),
+// zz staged (`zz = z; zz *= z;`) 2, a double sqrt5 3, result[7] as one product (no quadratic_xz) 133 (669 bytes).
+// Compile-only screens on the 2-point form (the harness reproduces the swap): 450 random quadratic-block and
+// first-block orders with operand/staging spellings, zz written at each use, double sqrt15/sqrt5 (with and
+// without casts), zz through a double product, sqrt5 written inline or first, zz first, the zz read from
+// direction->k, `zz + zz + zz`, band2 as a double product, and /G7: the sqrt15 load never moves ahead of
+// `fmul z` (result[8] through band2 moves it, but then band2 goes to x87 and sqrt15 disappears).
+// Round 18 (m3 lane 2, fast; 0x146020 matched in every trial): the named sqrt3 root with band3_35 right after sqrt2
+// rebuilt 55 (retail keeps sqrt(2) dead on the x87 stack to the end and computes result[15] first, between
+// fsqrt(105) and band3_21); on it: sqrt2/band3_35/sqrt105 as `real const` 55; result[13] before result[11] 55;
+// constant-first `3.0f * xx`/`3.0f * yy` 55; result[15] right before band3_21 146 (647 bytes); xx_3yy defined just
+// before result[15] 55. Original body restored.
+// Round 102 (m3 lane 8, fast; 0x146020 matched in each): band1 from a float root `(real)sqrt(3.0) * inverse_sqrt_pi`
+// 56 (fixes +0x50); with the cubic statements in the 9, 10, 12, 11, 13 order 56, plus xx_3yy after result[12] 56;
+// result[11] staged as `zz5_1 * band3_21`, `*= inverse_sqrt_pi`, `*= y` 69 at retail's 660 bytes; both cubic X/Y
+// accumulators from inverse_sqrt_pi first 139 (653 bytes).
+// Round 105 (m3 lane 8, fast; 0x146020 matched in each): the direction components declared in retail's
+// load order y, z, x 124 at retail's 660 bytes (xmm colouring follows the declarations: y xmm6, z xmm1,
+// x xmm3), reversed z, y, x 124 (660 bytes); with the named float sqrt(3) root on y, z, x 122 (660
+// bytes); `real const sqrt15` 59 (same code); result[13] with x first 59 (same code, the product
+// still shared with result[11]).
+// Round 22 (m3 lane 2, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; permuter on it (anneal,
+// 600 s, 52 tries) best 2. Compile-only on the 2-point form, the quadratic sqrt15 load stays after `fmul z` for:
+// the five other input load orders, const inputs, one input declaration, the 23 other first-block store orders,
+// inverse_sqrt_pi with a double numerator, a float root or declared first, zz right after sqrt15 or at the block
+// top, result[5] `band2 * y * z`, sqrt5 first, result[6] first or inverse_sqrt_pi first, result[7] unstaged.
+// Real builds on this body: const inputs 59; result[5] `band2 * y * z` 59; sqrt5 set first 59; result[6] with
+// inverse_sqrt_pi first 59.
+// Round 122 (lane 5, fast, 0x146020 matched in each): zz named after the sqrt(5) root 59; band1 as
+// `(real)(inverse_sqrt_pi * sqrt(3.0))` 59; the inputs read in retail's load order y, z, x 124 (660
+// bytes); `xy = x * y` 59; result[12] as `(zz5 - 3.0f) * sqrt7 * ...` 59.
+// Round 46 (m3 lane 10, fast; 0x146020 matched in each): lane 4's 2-point form rebuilt 2; on it the direction
+// copied into a vector3f local first 160 (651 bytes); x, y and z declared together then assigned 2; zz defined
+// right after sqrt5 2; result[6] as `(zz * 3.0f - 1.0f) * sqrt5 * ...` 2; sqrt5 initialised at its declaration
+// 2. Diagnostics (not kept): result[6] shortened to `sqrt5 * zz` keeps `fld z; fmul z` together (so the zz
+// chain's length is not what orders them); matched 0xfbd40 shows the compiler does split such a pair for an
+// independent SSE load.
+// Round 59 (lane 16, fast; 0x146020 matched in each): lane 4's 2-point form still 2. On lane 12's named-sqrt3
+// / band3_35-first form (55 again): result[11] staged 72 (662 bytes); result[13] before result[11] 55
+// (identical); result[13] staged 64 (662 bytes); both staged 70 (662 bytes); result[15] first, right after
+// xx_3yy 147 (647 bytes).
 // @retail 0x143360
 void spherical_harmonics_evaluate_direction(vector3f const *direction, dword order, real *result)
 {

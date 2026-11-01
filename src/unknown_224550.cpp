@@ -12,13 +12,15 @@ struct s_particle_property
 	short modifier_index;
 	s_tag_data function;
 };
-struct s_draw_value_cache
+struct s_particle_value_cache
 {
 	real values[17];
-	dword field_44;
+	dword mask;
 	void *field_48;
 	void *field_4c;
 	void const *field_50;
+
+	void function_173c10(dword mask);
 };
 struct s_draw_sprite_definition
 {
@@ -69,7 +71,6 @@ union s_draw_sprite_uv { box2f bounds; real values[4]; };
 typedef char check_draw_sprite_mask[offsetof(s_draw_sprite_definition, field_98)==0x98?1:-1];
 typedef char check_draw_sprite_frame[sizeof(s_draw_sprite_frame)==0x20?1:-1];
 
-void __stdcall function_173ba0(dword, void *, void *, void const *, real *);
 real function_246cd0(s_particle_property const *, real const *);
 void function_246d80(s_particle_property const *, real const *, color3f *);
 color3f *unpack_color3f(dword, color3f *);
@@ -100,7 +101,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
-	s_draw_value_cache *arg_1, color4f const *arg_2, s_draw_sprite_definition const *arg_3)
+	s_particle_value_cache *arg_1, color4f const *arg_2, s_draw_sprite_definition const *arg_3)
 {
 	color4f tint;
 	function_246d80(&arg_3->color,arg_1->values,(color3f *)&tint.red);
@@ -109,9 +110,9 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 	{
 		color3f seed_color;
 		unpack_color3f(arg_0->color,&seed_color);
-		tint.red=tint.red*seed_color.red*2.0f;
-		tint.green=tint.green*seed_color.green*2.0f;
-		tint.blue=tint.blue*seed_color.blue*2.0f;
+		tint.red=seed_color.red*tint.red*2.0f;
+		tint.green=seed_color.green*tint.green*2.0f;
+		tint.blue=seed_color.blue*tint.blue*2.0f;
 	}
 	tint.red=arg_2->red*tint.red;
 	tint.green=arg_2->green*tint.green;
@@ -124,8 +125,15 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 }
 
 
-// score 391 (was 391): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
-// slot), cache EBP/EBX and scalar homes remain.
+// score 381 (was 381): Frame 0x50 versus 0x60 (the tint lives in a one-caller helper's scope, so uv_b reuses its
+// slot); the angle is stored in a dead argument slot instead of a frame slot and the second UV set has no
+// frame home of its own; the cache is kept in EBP where retail reloads it into EBX; scalar homes remain.
+// Inlining the tint into the body or passing it out by pointer gives retail's 0x60 frame but scores 520,
+// so the helper stays. (Earlier notes: 391 before round 56.)
+// Frame 0x50 versus retail 0x60; helper tint and second UV
+// overlap, angle uses an argument home, cache EBP replaces EBX, and scalar homes differ.
+// Earlier tint code in the body or caller tint output recovered frame 0x60 at 520.
+// Earlier 391 forms and their scores follow.
 // Frame pointer 597; size optimization 990; tint input-array parameter 435;
 // direct packed-tint return 435; byte flip selector 538.
 // UV result by value 553; bounds input by value 687; short sequence count 441; unsigned flip mask 435; paired UV defaults 439.
@@ -226,15 +234,33 @@ PRIVATE __forceinline dword function_224551(s_draw_sprite_seed const *arg_0,
 // effect); the tint written in the body (helper removed) with both 460 (frame 0x60, tint and UV slots
 // swapped), the tint renamed either way 460. Retail re-reads the cache parameter from its stack slot
 // into EBX where ours keeps it in EBP. Restored.
+// Round 56 (lane 12, fast; plain 381 confirmed): the interval count computed before the `count > 0`
+// test as `intervals = count; if (flags & 8) intervals--;` 387 (1937 bytes, retail's length and test
+// order; as a ternary there 393); with the seed products written seed_color * tint * 2 381 (kept,
+// 1937 bytes). On 381: the sequence pointer in a local 496; frames read before the count re-read
+// 490; the in-place loop clamp 429 (1961 bytes; tint code then retail's but the colour parameter
+// in ESI for EBP); the definition's geometry as an s_draw_sprite_uv copied whole 478 (1914 bytes,
+// retail's dword moves); both 480 (1938 bytes, aligned 245 -> 214: one byte long); the tint owned by
+// the caller 532 (1994 bytes, frame 0x60); the flip as `flip = 0; if (...) flip = 1;` 454.
+// Round 30 (lane 14, fast; kept: the cache update through the existing 0x173c10 method of the cache's real
+// type, inlined to the same code, 381): the cache's value array in a named local 381 (copy-propagated); the
+// geometry copied before the bounds 381; the definition declared before blend 381; geometry declared after
+// the UV sets 381. Diagnostic (reverted at once): the cache read through a volatile cast at its last use 490
+// (1949 bytes) puts the cache in EBX from entry and the angle in a frame slot as in retail, so the
+// remaining root is our cache being allocated to EBP for the whole function.
+// Round 457: complete four-channel modulation then/fused with clamps, input-first/tint-first
+// products, original/looped seed RGB: 426/430/426/430/426/428/426/428.
+// Frame remains 0x50; original complete tint producer and all UV captures restored.
+// Round 262: Library copies of definition/selected-frame bounds/both 381/381/381;
+// geometry-array copy alone/with definition/with selected/with both/with encoded UV copy 478 each.
+// The original arrays and all input-before-store UV captures are restored; frame/cache homes remain.
 // @retail 0x224550
-void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache *values,
+void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
 {
 	real blend=0.0f;
 	s_draw_sprite_definition const *definition=context->definition;
-	dword mask=definition->field_98&0xf80f;
-	function_173ba0(~values->field_44&mask,values->field_48,values->field_4c,values->field_50,values->values);
-	values->field_44|=mask;
+	values->function_173c10(definition->field_98&0xf80f);
 	real angle=function_246cd0(&definition->angle,values->values)*6.2831854820251465f;
 	dword packed=function_224551(seed,values,color,definition);
 	real geometry[4];
@@ -266,9 +292,11 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_draw_value_cache
 			if(context->sequence)
 			{
 				long count=context->sequence->count;
+				long intervals=count;
+				if(definition->flags&8)
+					intervals--;
 				if(count>0)
 				{
-					long intervals=(definition->flags&8)?count-1:count;
 					real frame=function_246cd0(&definition->frame,values->values)*(real)intervals;
 					long index=function_016ae0(frame);
 					s_draw_sprite_frame const *frames=context->sequence->frames;

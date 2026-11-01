@@ -1590,7 +1590,8 @@ bool function_1fb360(long unit_index, short recording_index, long flags);
 void function_b7360(long object_index);
 
 #pragma inline_depth(2)
-// score 471 (was 471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
+// score 471 (was 471): (MiniMax E run 26) retail keeps the object index in EBP and the scaled actor base in EBX and reads the case word through EBX, ours keeps the index in ESI and the base in EDI, so the whole dispatch prologue and the case bodies are four bytes out; the forty-byte length deficit and the pool/actor/output ownership remain.
+// Earlier (471): No allocated frame; actor/pool/output acquisition, dispatch layout and forty missing bytes remain.
 // the body is 40 bytes short; retail loads the actor and cs-datum
 // table globals before the actor index and keeps the actor base in EBX, ours loads the
 // index first and keeps the actor base in ESI.
@@ -1697,6 +1698,17 @@ void function_b7360(long object_index);
 // Empty-success leaf group before outer cases 0/4/7/8/10/5/9/13: 471 each, 1808/1848 bytes.
 // All eight have the original masked instruction prefix through the first table; full original case order, return graph and callback restored.
 // Round 322: Coupled movement-query publication with positive/negative success-or-fallback admission, bool/byte/short/long: 539/531/533/534 each. Original stores, returns, dispatch and body restored; entry actor/output carriers and length deficit remain.
+// Typed-array actor/command/both acquisitions, original/early actor-object observation, then both acquisition
+// orders: 471/471/471/470/470/470/477/478. Original complete executable source restored.
+// Round 260: Bounded notification bitset with entry/admitted short/long selector: mask shifts
+// 543/559/539/552, bit shifts 542/555/542/549. Original membership, selector observations, cases and
+// full body restored.
+// Round 145: retail reads the actor object field at each use (actor base EBX, arg_0 EBP, datum EDI, output
+// ESI), lays the 17/15/16 group out before 3/2/1/19 and repeats the wait call's head on the 1/19 path, and
+// tests the wait result with branches. Actor object read at each use 525 (1812 bytes: actor EBX, datum EDI
+// as retail, arg_0 ESI); `if (local_4) return 0; return 2;` 527 (1800); `if (!local_4) return 2; return 0;`
+// 527; both 541 (1796); the wait block as a forceinline helper called from the 1/19 and 15/16 paths in
+// place of the goto 513 (1872: the call is repeated as retail, but each copy keeps its own tail).
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2096,6 +2108,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
 // before its use and reuses EBX for the state pointer. The body is 2400 bytes against
 // retail's 2396.
+// Earlier: retail keeps the object index in EBX and pushes EBP and ESI before EDI, ours keeps the index in EDI and pushes EBP, ESI and EDI in the other order, so the prologue, the jump table and every case body differ; the actor/output acquisition and the length deficit remain.
 // Earlier 478 (was 478): Frame 0x1c agrees; actor/state registers and first point home still differ; eight scope trials restored.
 // Earlier: frame 28 agrees; actor/state registers and first point home still differ.
 // Short completion 531; iterator name 505; first point name 505; short countdown snapshots 505;
@@ -2161,6 +2174,14 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 238: complementary dispatch-ready/same-unit/facing-incomplete decisions, seven
 // subsets 491/491/491/493/493/493/493; all as long 583 (fast control 491; full 478).
 // Original internal decisions, byte completion, iterator and every vector/call restored.
+// Complete actor-object/motion/position observations, seven subsets and case-owned position with both other
+// values: 629/624/645/617/637/667/674/653. Original complete executable source restored.
+// Round 469: Facing before pure displacement/all three planar aggregates/iterator object
+// field uniformly at uses in seven subsets, then all with facing aggregate: 492/620/621/491/492/620/621/513.
+// Isolated turning/animation/motion constructors and pairs, then turning/all with facing
+// aggregate: 591/506/506/612/600/514/512/513. Turning construction restores actor/state ownership and point +0x10
+// but regresses; constant-first distance/common result exit on turning/all graphs: 591/629/620/616.
+// Original complete body restored; actor/state ownership and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

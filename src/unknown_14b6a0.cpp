@@ -3,6 +3,7 @@
 #include "data_array.h"
 #include "data_iterator.h"
 #include "unknown_067e10.h"
+#include "vehicle_ray.h"
 #include <string.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -38,7 +39,6 @@ point3f *function_b9dd0(long object_index, point3f *point);
 struct s_location;
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool update);
-struct s_vehicle_ray { point3f point; vector3f vector; real t; };
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore, long ignore2);
 void __stdcall function_df5f0(long object_index, point3f *center, real *height, real *radius);
 void function_1c7e70(long player_index, short value);
@@ -288,6 +288,14 @@ void function_14bac0()
 // step 228/229/228/229, reaching frame 0x40 with shared probes. Complete selected-unit
 // field observations on those four graphs 264/264/263/263 (1032 bytes). Original
 // returned-output/selected-unit graph, point buffers and both traversals restored.
+// Round 465: existing in-place sum on returned relocation output, shared difference/ancestry helper/
+// native recipient masks 0..7: 222/222/301/300/228/228/315/315. All frame 0x50; original full body restored.
+// Round 253: Complete returned relocation-point value, native/library copy, dead getter input shared with
+// bounds and native recipient combinations; scores 277/274/277/274/277/274/277/274.
+// Original executable source restored; no qualifying gain.
+// Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
+// 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
+// output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

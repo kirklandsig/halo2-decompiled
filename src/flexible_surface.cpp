@@ -263,7 +263,13 @@ void function_117510(long index)
 		if (normalize3d(&record->vertices[i].normal) == 0.0f) record->vertices[i].normal = *g_4687a8;
 }
 
-// score 139 (was 139): frame 0x1c agrees; link-base/endpoint carriers, pinned-word test and correction staging differ.
+// score 139 (was 139): the 139 differing lines are all real ones (no unmatched callees here):
+// retail loads the tag table into EDX before saving the registers and keeps the tag data
+// base in EBX where ours keeps it in EDI, and with it the record and the iteration count:
+// retail's record is in EDI and its count in EBX, ours the other way round. The endpoint
+// and SSE carriers, the split pinned-word test and the correction staging differ as well;
+// the frame 0x1c and the entry agree.
+// Earlier: frame 0x1c agrees; link-base/endpoint carriers, pinned-word test and correction staging differ.
 // Round 28: the existing particle_distance_estimate_2b for the root (an LTCG cross-file inline) 139, per-use 154;
 // per-use with the root through a long pointer or a union 154/154 (same code); the existing bit_vector_test for the
 // pin tests 139 (same code, kept: it replaces the file-local copy), per-use 154; per-use with the rest length read
@@ -308,6 +314,19 @@ void function_117510(long index)
 // code), with per-use fields 154, with dot3f for the square 164/178; root through a bits local, a union,
 // a long pointer or in place 154/154/154/158; constant-first clamp 139 (same code), per-use 154;
 // `!(length >= c)` 155; rest square from link->length at its use 175.
+// Round 35 (lane 10, fast): per-use link fields again 154 (742; first difference +0x8a: link materialized after one
+// folded read, link->a kept in EBX across the root's stack stores, a/link in EAX/EDX); with the rest length read
+// first 154, link as `definition->links + i` 154, vertex-record endpoints 154, a separate correction local 161.
+// Round 254: Complete endpoint correction helpers for first/second/both, plain component loops for
+// first/second/both, then both with shared difference 139/139/139/191/186/203/139/203. All restored.
+// Round 37 (lane 13, one-file LTCG harness equal to the full build, harness counts): per-use link fields 151
+// (aligned 91, 742 bytes); on it the link as `definition->links + i`, the square as i,j,k / length_sq3f / dot3f,
+// the correction or the normalize through vector3f_scale, the delta through vector3d_from_points3d and a const
+// link 151 each, `!(length >= c)` 152, b's pointer first 151, the rest length at its use 169; endpoint locals
+// for the pointers with link fields in the pin tests 151, the pointers through a file-local inline 151 (ours
+// still reuses the top link->a read where retail reads it again); fast root in place on length 155 (base 148),
+// in place on squared 151 (base 138). Base forms: link + i 138, rest at use 172, i,j,k / helper squares 138,
+// `!(>=)` clamp 138, vector3f_scale correction 138, b first / a,b locals swapped 172/172. All restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -408,12 +427,6 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
-static inline dword surface_random()
-{
-	g_4e7408->seed = 1664525 * g_4e7408->seed + 1013904223;
-	return g_4e7408->seed >> 16;
-}
-
 // score 139 (was 139): frame 0x28 versus 0x20; seed/time, rotation and tail scheduling remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
@@ -479,6 +492,33 @@ static inline dword surface_random()
 // Original body restored.
 // DL210: native tail producer/clamp result/component output, masks 1-7, then all with existing vector setter; component-output frame with staged cross/projection-first/both/both and readonly inputs;
 // scores 139/139/139/169/169/169/169/143/169/165/165/165. Original source forms restored.
+// Round 96 (one-link harness of this file with 0x30bf0's, exact at 139; the full build already passes wind in
+// EBX with a plain ret as retail): cross3f(&axis, &old, &cross) with `+ cross*sine` rows 166, with the
+// projection first 167 (864 bytes); rows as sine*cross / projection*axis / cosine*old 139 each (same code);
+// cross3f on the global with the projection first and rows in place 181 (852 bytes). Diagnostics (scalar
+// cross terms, kept only with a match): 0x177d10's in-place order on the global 181 (850 bytes; retail loads
+// the global's j/k before the axis draw), the same on an `old` copy 163.
+// Round 35 (lane 10, fast): matched 0x177d10's rotation (projection, cross j, k, i) as a shared forceinline helper
+// (direction pointer, axis by value; 0x177d10 stays matched with it, with an axis pointer it scores 17): on the
+// global 189 (845 bytes, frame 0x18: the global's fields are re-read at each use, as retail 0x177d10 does through
+// its pointer but retail 0x117dd0 does not), with random_index 193, with a split float tail 177; on a local copy
+// written back 174 (895), with the tail 191. Retail 0x117dd0 holds the old vector in registers, so it is not the
+// same inline sequence as 0x177d10. Helper removed.
+// Round 136 (lane 4, one-link harness exact at 139 and 104): tail with the cosines swapped, sinf, cosf last, a `wave`
+// split before or after `* 0.01f` (48 forms) 139 at best (sinf 160, split inside the cast 154-165); `old` copy or direct
+// global reads x dot3f / `(k + j) + i` projection x cross3f / scalar cross j,k,i or i,j,k x row order (48) 139 at best,
+// direct global reads with scalar cross terms 152; round 28's global-in-place scalar cross + random_index + sinf/cosf
+// tail split at `wave` 104 (--fast 104; scalar cross terms kept only with a match), with the cosines swapped, the fraction
+// first 189-191, a seed pointer local, sinf/cosf for the angle 105, separate sine/cosine 104; on the cross3f body:
+// sinf/cosf tail 160, split tail 165. At 104: frame 0x1c (retail spills cross j, keeps axis i in memory, global j/k in
+// xmm5/xmm4), seed update before the time product, tail cosine order.
+// Round 37 (lane 13, one-file LTCG harness equal to the full build, harness counts, base 119): random_index for both
+// table draws in place of the file-local generator copy 119 (same code, kept); the unit-axis rotation helper of
+// unknown_2551c0.cpp/unknown_050650.cpp (projection first, scalar cross i, j, k) as a file-local inline on the
+// global 150 (849 bytes, frame 0x18), with dot3f 136 (866), forceinline 150, with random_index 153; the tail's
+// float factors in their own `wave` statement 118; sinf/cosf in the tail in three spellings, with or without the
+// split, 156 (883 bytes: the cos operands reorder, the sinf argument is not stored, 0.01f * 0.3f fold); cross3f
+// on the global without the `old` copy 152 (854 bytes, frame stays 0x28), with the split tail 147.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -489,13 +529,13 @@ void function_117dd0(long index, vector3f *wind)
 	real angle = fraction * oscillation * oscillation * 0.15f;
 	if (!g_55e714)
 	{
-		g_55ecd4 = g_4417f0[(short)((surface_random() * 1026) >> 16)];
+		g_55ecd4 = g_4417f0[random_index(&g_4e7408->seed, 1026)];
 		if (!(fabs(function_30bf0(&g_55ecd4)) < 0.0001f)) g_55e714 = true;
 	}
 	if ((long)g_4ba034 > g_55e710)
 	{
 		real sine = (real)sin(angle), cosine = (real)cos(angle);
-		vector3f axis = g_4417f0[(short)((surface_random() * 1026) >> 16)];
+		vector3f axis = g_4417f0[random_index(&g_4e7408->seed, 1026)];
 		vector3f old = g_55ecd4;
 		vector3f cross;
 		cross3f(&old, &axis, &cross);
@@ -513,6 +553,19 @@ void function_117dd0(long index, vector3f *wind)
 	double strength = (fabs(g_55ecd0) + 0.0075f) * definition->wind_scale * 0.08000000566244125f;
 	wind->i = (real)(g_55ecd4.i * strength); wind->j = (real)(g_55ecd4.j * strength); wind->k = (real)(g_55ecd4.k * strength);
 }
+// score 72 (was 80): frame 0x48 and normal.k cursor agree; weight publication, the Verlet x register (retail keeps it
+// in xmm6 to the final add, ours stores it), vector scheduling and the history-loop base remain.
+// Earlier: frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
+// Not kept (MiniMax A, 11-01): the two weights in one two-element local (weight[1] the current, weight[0]
+// the previous) sit in retail's slots: 71, but an array grouping locals to move their stack homes is not
+// kept. Named weights declared before the gravity step, the position scaled before the previous is read
+// and the previous stored after the force step: 73 (fast; a gain of 7, under the keep bar). Left: the loop
+// still reloads the current weight first, the dot-product tree and the vector scheduling differ, and the
+// else loop keeps its own base (previous instead of position).
+// Round 36 (MiniMax A, on the array form): the acceleration as the first addend 112; the else loop through a
+// vertex pointer 108; the Verlet difference and the acceleration split into separate statements 172 (776
+// bytes); the position scale written z, x, y 72; the difference written x, z, y 71 (the same code); the dot
+// written (i + k) + j 103; the permuter run killed with no output. All restored.
 // score 80 (was 80): frame 0x48 and normal.k cursor agree; weight publication, vector scheduling and history-loop base remain.
 // Earlier: 744 bytes and the normal.k cursor agree; retail adds the acceleration as the first operand and
 // keeps position.x in a register through the force step, evaluates the dot as (i + k) + j (ours i, j, k), and its
@@ -566,6 +619,33 @@ void function_117dd0(long index, vector3f *wind)
 // all with history-branch cursor 112. Seven-point gains rejected; original body restored.
 // DL210: native point setters for weighted/accelerated/final point phases, masks 1-7, then all with CRT history copy on the shared dot/projection graph;
 // scores 80/80/80/79/79/79/79/114. Original source forms restored.
+// Round 35 (lane 10, fast): slot/store order of the preheader spills follows where the previous weight is defined
+// relative to the k update (names change nothing: history_weight/position_weight 80, also with weights first 80):
+// weights before the acceleration 80 (retail's store order, slots swapped), previous weight first 84 (slots right),
+// current weight first and previous after the k update 78 (slots right, k stored between: 2 points, not kept),
+// seven other orders 80 each; history copy before the force subtraction 80, before the drag scale 125 (734);
+// final add through vector3f_add(&force, position, position) 81, with weights first 80; dot grouped
+// n.j*f.j + (n.i*f.i + n.k*f.k) 112 (gives retail's dot loads k, i, j and force registers, rest shifts), with
+// acceleration-first Verlet 106 (736), with the 78 order 112; dot k, i, j 105 (736); Verlet through
+// vector3d_from_points3d + vector3f_add 170 (776); else-loop vertex pointer with the 78 order 113.
+// Round 136 (lane 4, one-link harness exact at 80): retail keeps the Verlet x in xmm6 until the final add and reloads
+// all three normal components for the projection (ours writes x home and reloads normal i early into xmm6). Separate
+// `-=`/`+=` Verlet statements + `i + (k + j)` written dot + `tangent.i *= field` 148 (--fast; definition takes ESI, record
+// spilled); accel-first / `a + acc - b` / `acc + a - b` Verlet x dot3f either order / `(i + k) + j` / `j + (i + k)` x
+// written projection x drag field at each use / named drag / `force -= tangent * drag` x final add order (256 forms)
+// 80 best (same code), parenthesised dots 104-105 (736); previous copied first 96, previous scaled first 104, force block
+// before or inside the Verlet 168-200, previous copy before the Verlet 128; force/position/vertex declared outside the
+// loop, projected/tangent declared early or assigned, acceleration assigned 80 each.
+// Round 37 (lane 13, one-file LTCG harness equal to the full build; harness counts read 4 below the check): the history
+// copy after the final add 76 -> 70, the final add through the existing vector3f_add 77 alone, both 68 (check 72, kept).
+// On 68: else loop through a vertex pointer 110 (aligned 73 -> 55: retail's else loop exactly, the main loop reschedules;
+// on it a 3-pass search over orders and forms reaches 91), weights first 70, position scale orders 68/70/94/70/94,
+// previous scale orders 70/69/71/70/70, Verlet orders 68/68/138/89/147, acceleration-first Verlet 114, split -=/+= 137,
+// Verlet through vector3d_from_points3d + vector3f_add 139, force copied inside the pin test 164, vertex pointer
+// before the test 68, previous copied first 84, scales through vector3f_scale 68, dot3f(&force, ..) 68, written dot
+// i,k,j / k,i,j / i,j,k 82/82/81 (736 bytes), j + (i + k) / (i + k) + j 105/105 (aligned 55: retail's dot), k + (i + j)
+// 109, force-first products 82/105, written projection 113, tangent statements 68, written drag 179, force-update
+// orders 68, history copy before the drag / after the Verlet / after the force update 113/116/77.
 // @retail 0x118140
 void function_118140(long index)
 {
@@ -599,8 +679,8 @@ void function_118140(long index)
 				vector3f tangent = { force.i - projected.i, force.j - projected.j, force.k - projected.k };
 				vector3f_scale(&tangent, definition->tangent_drag, &tangent);
 				force.i -= tangent.i; force.j -= tangent.j; force.k -= tangent.k;
+				vector3f_add((vector3f *)&position, &force, (vector3f *)&position);
 				vertex->previous = vertex->position;
-				position.x += force.i; position.y += force.j; position.z += force.k;
 				vertex->position = position;
 			}
 		}
@@ -697,6 +777,18 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // 1452/1361 bytes. Original APIs, both orientation passes, fields and arithmetic preserved.
 // DL210: independent normal/tangent/texture API inputs, masks 1,2,4,5,6,7; texture with native oriented scales, masks 5,7;
 // scores 432/424/422/432/424/436/422/422. Original source forms restored.
+// Round 244: retained binormal/position readonly values, complete aggregate
+// initializers and lexical role names, seven subsets 422/453/453/422/422/453/453;
+// entry uninitialized value workspaces 422. Original carriers and body restored.
+// Round 254: Own-result scan ordinals on retained complete API inputs, cached/live count,
+// compound/break search and original/entry declarations 549/480/549/480/549/480/549/480. All restored.
+// Round 37 (lane 13, one-file LTCG harness with the D3D members, equal to the full build; harness counts): retail
+// inlines 0x1ccb0(59) and 0x1cd90 here (and in 0x19f680), but they sit in the /Ob1 src/unknown_01cf50.cpp, so ours
+// calls them and LTCG inlines the two outer SetVertexData4f calls instead (retail calls 0x3fb2d0): BLOCKED-BY 0x1ccb0.
+// Lighting pointer NULL first and set under the test 320 (base 324); each scan with its own NONE default and the
+// types read per scan 322 (aligned 258 -> 225, 1467 bytes: retail's pointer-walking scans), also with the count read
+// per scan 322; a counted side loop with `side == 0 ? 1 : -1` signs, two spellings 331 (1465); lighting and loop
+// 327; all three 320 (1481). All restored.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

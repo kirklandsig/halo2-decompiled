@@ -371,49 +371,8 @@ void __stdcall function_115220(long machine_index)
 	}
 }
 
-// score 52 (was 273): frame 0xc8 and retail length agree; first difference +0x461 (was +0x5f): the
-// marker dot (retail i, k, j with xmm0 reused) and the parent walk's flag load remain.
-// frame 0xc8 and early flag acquisition agree through +0x5f; the initial
-// clamp spill and later float/portal/movement scheduling remain.
-// Earlier: its flag tests and the type-mask test read as field bits (TEST_FIELD_BIT) give retail's load-and-shift; the rest still differs.
-// Frame 0xc8 agrees; early flag carriers, the extra clamp spill, floating schedule and portal/movement homes remain.
-// Round 269: motion workspace 368; position snapshot 455; both 455; shared ordinal 368;
-// motion/ordinal 368; position/ordinal 455; all 455; all with the twice-used position predicate 344.
-// Position predicate alone/motion/position/ordinal/motion-position/motion-ordinal/position-ordinal
-// 286/286/344/286/344/286/344. Only the predicate alone retained after ordinary whole-image validation.
-// Round 271: full-width unsigned/signed flag storage composed with bool/byte/short/long
-// position predicates: 465/465/345/465/465/465/345/465, all 1899 bytes.
-// All restored; early flag carriers and the initial clamp spill remain.
-// Round 426: shared completion exit, direct portal result, entry-first result and all
-// seven subsets 305/298/321/286/305/298/321; all with byte portal result 321.
-// Original result graph, initial clamp, two-use predicate and complete body restored.
-// Round 216: conditional mutable clamp 286; separate minimum and final selection 396;
-// lower-bound-first selection, zero-update minimum, both-outcome minimum and both-outcome result 396 each;
-// pure component lookup after selection 297; complete at-use flag observations with selection 396.
-// Actual position mask in word/dword storage 463/453, with separate minimum 462/452.
-// Original predicate, clamp, flag observations, every operand and complete body restored.
-// Round 426: shared completion exit, direct portal result, entry-first result and all
-// seven subsets 305/298/321/286/305/298/321; all with byte portal result 321.
-// Original result graph, initial clamp, two-use predicate and complete body restored.
-// Round 221: native word flags with short/word/long/dword/byte/char position predicates
-// 438/438/334/334/286/286; signed-halfword flags with short/word predicates 438/438.
-// Original predicate and complete body restored; eager flag carrier and initial clamp spill remain.
-// Round 314: Native field/animation lifetime forms 286/368/399/389/286/368/399/389; guarded
-// bool/byte/short/long predicate 273/273/435/321. Keep only the guarded bool, ordinary full 273,
-// 1899/1887, first +0x5f; all baseline matches preserved. Both predicate uses stay inside the enable
-// block; the word snapshot, every call, field read and floating group are unchanged.
-// Round 21 (lane 13), kept (52, 1887 bytes): the gear velocity blends by position (+0x134), not
-// power, as retail does 271; the flags word read at each bit test 368 (aligned better); the clamp
-// as a ternary on a minimum local 281; `(1 << type) & 2` and the +0x10a flags as a word 188; the
-// door flag assigned whole 188; the lower bound named 142; one `return changed` 145; the parent
-// walk tested `!moved && parent_index != NONE` 118 (1887 bytes); `long portal_index` 52.
-// Still differs: the marker dot (retail i, k, j with xmm0 reused) and the parent walk's flag load.
-// MATCH (not kept): `s_machine *parent = header->machine;` read before the flag test (14 with the
-// first) plus `real dot = fwd.i * dir.i; dot += fwd.k * dir.k; dot += fwd.j * dir.j;` (a `+=`
-// split). A compile-only screen of 216 one-expression dot forms (term order, grouping, operand
-// order, assignment order) and a named `dot` local found no exact form.
-// Round 236: guarded word/short/dword/long masks, then each with later animation-state constants 450/450/440/440/345/345/347/347.
-// Original executable body restored.
+/* a machine's per-tick update: gear power, automatic door opening, portal
+   obstruction and rigid-body keyframing; returns whether anything changed */
 // @retail 0x1152e0
 bool __stdcall function_1152e0(long machine_index)
 {
@@ -516,11 +475,9 @@ bool __stdcall function_1152e0(long machine_index)
 							marker.matrix.position = machine->center;
 							function_b9fc0(machine_index, &marker.matrix.forward, NULL);
 						}
-						direction.i = unit->center.x - marker.matrix.position.x;
-						direction.j = unit->center.y - marker.matrix.position.y;
-						direction.k = unit->center.z - marker.matrix.position.z;
-						if (marker.matrix.forward.i * direction.i + marker.matrix.forward.k * direction.k +
-							marker.matrix.forward.j * direction.j > 0.0f)
+						vector3d_from_points3d(&marker.matrix.position, &unit->center, &direction);
+						if (direction.j * marker.matrix.forward.j + direction.k * marker.matrix.forward.k +
+							direction.i * marker.matrix.forward.i > 0.0f)
 						{
 							continue;
 						}
@@ -587,10 +544,11 @@ bool __stdcall function_1152e0(long machine_index)
 	for (long parent_index = machine->parent_object_index; !moved && parent_index != NONE; )
 	{
 		s_machine_header *header = MACHINE_HEADER_GET(parent_index);
+		s_machine *parent = header->machine;
 
 		if (header->flags & 4)
 			moved = true;
-		parent_index = header->machine->parent_object_index;
+		parent_index = parent->parent_object_index;
 	}
 	if (moved)
 	{

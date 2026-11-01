@@ -52,7 +52,7 @@ bool function_23ea80(long tag, transform4x3f const *matrix, long variant, long s
 void __stdcall function_173ba0(dword, void *, void *, void const *, real *);
 void function_175610(s_particle_value_cache *, s_particle_system_datum *, s_particle_location_datum *,
 	particle_callback_175610, void *);
-void __stdcall function_224550(s_draw_sprite_seed const *, s_draw_value_cache *,
+void __stdcall function_224550(s_draw_sprite_seed const *, s_particle_value_cache *,
 	point3f *, point3f *, real, color4f const *, s_draw_sprite_context *);
 
 // @retail 0x2243c0
@@ -284,6 +284,42 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // accessor retained; fallback EDX masking and stage/pass/unfused-load homes remain.
 // Round 321: Actual search ordinal as found/exhausted result with twice-used stage/pass values and entry/producer declaration subsets: all eight 141 at 544/544 bytes.
 // Round 321: Original separate candidate result, parameter uses, lookup and mask lifetimes, helpers and body restored; fallback/register homes remain. Stacked notes merged.
+// Round 100 (lane 8, fast): the second and third element pointers bound to `void const *const &` locals 127 (the second
+// element is then unfused as retail), the third alone 128, the second alone 128, the second plus the third's field through
+// a `long const &` 127, the third's field through a `long const &` alone 135.
+// Round 115: retail's chain lookup is `lea eax,[eax+edx*2]; movzx eax,word [eax]` and the pass element's
+// address is computed and left unused; the matched 0x17420 gets that load from a packed-range struct pointer
+// read through its inline index()/count(). Chain/entry through that struct's index() 117 (same code); flags
+// read after the search loop 132; the three pointer fields zeroed in one chained assignment 117; the head in
+// 0x16b90's direct-indexing shape 117; search result written straight into the context 136. Reference
+// locals for the lookups compile identically (compile-only, not counted).
+// Round 10 (lane 17): an unused read of the pass element's first dword (diagnostic for the dead `lea`) 117 (the
+// read is dropped before allocation, no `lea`); the four zero stores grouped with the fallback masked `& 0xffff`
+// 149; the group test through the existing TAG_GROUP macro and the fallback through TAG_GET 135 (retail's in-place
+// `and edx, 0xffff` and EDI table, but the group read folds into `[eax+edi]` where retail adds then loads), the
+// TAG_GROUP test with the original word fallback 165; the index sums written parameter first 117 (same code);
+// the source-table pointer chosen by one ternary 117 (same code); the first cache zero store before the pass
+// element read 139.
+// Round 116 (lane 6, fast): the 0x1c620 call's argument setup agrees with retail. Stage/pass sums written
+// `arg_3 + local_7` / `arg_4 + local_8` 117 (same code); that with the first cache zero moved down 120; the
+// two sums named where computed 117 (same code); the stage offset folded into the first ordinal 117, and the
+// pass offset into the second as well 117. Retail loads arg_3/arg_4 into ESI/EBP before the chain and
+// leaves a dead `lea eax, [eax + edx*2]` after the pass element read; ours loads them late into EBP/EDX.
+// Round 61 (fast): the three blocks read through the existing s_tag_data (size, address) view 117 (same
+// code); the stage/pass parameters as named const copies at the top 117; the first ordinal as `word`
+// 117; the pass element's field as `[1]` of a long pointer 117; the group test through
+// `g_4e3b44[(short)local_tag]` with no instance local 165.
+// Round 26 (m3 lane 2, fast): the head is the body of the existing inline material_parameters (unknown_0167a0.cpp,
+// whose matched 0x16b90 walks the same chain): that form 135 (in-place fallback mask, folded group read), with the
+// grouped cache zeros 163; the original head with a `& 0xffff` fallback and grouped zeros 149; the second +0x100
+// read named for the 0x1c590 call 117 (same code); the geometry test as an early return 117. The grouped zeros
+// alone re-measure 120: the chain is then two instructions short (retail's unfused ordinal load and dead `lea`).
+// Round 57 (lane 16, fast): the group tag read once into a named dword tested twice 165 (first difference +0xe);
+// the first ordinal read straight from block 0's address 117; the geometry test as an early return 117; the
+// cached pointers compared field first 119; no byte alias of the definition (casts of arg_0) 117 (same code).
+// Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
+// `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
+// 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

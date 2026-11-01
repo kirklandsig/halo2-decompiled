@@ -367,11 +367,11 @@ struct s_1f8a70_actor
 	byte unknown00[0x4ac];
 	s_1f8a70_frame frame;
 };
-// Round 27: the route switch's real default and the failure block's own false reach retail's frame
-// 0x80 but score 415; dropping the result initializer matches retail's prologue order and its frame
-// yet loses retail's `xor bl,bl` before the 0x1f86a0 call (416); retail's mode 3 also sets route_mode
-// = 1 and our case 3 does not (423 alone, 405 with the actor pointer hoisted); the original is kept.
-// score 228 (was 228): frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
+// MiniMax S (10-31): no new form, no lower score. Deferring the result's initializer reproduces retail's
+// 0x80 frame and prologue exactly (the first difference moves from +0x0 to +0x33), but the aligned body
+// then differs in ~417 instructions, so the 228 body is kept.
+// score 228 (was 228): Frame 0x84 versus 0x80; pool/data entry order and unit-output/route/result homes differ.
+// Earlier: frame 0x84 versus retail 0x80; pool/data entry schedule and unit-output/route/result homes differ.
 // Round 46 leads (aligned diff 59 at 228): retail's failure block stores result = false itself and the
 // route switch has a real default storing false (`default: result = false; break;` and `failed:
 // result = false;` give frame 0x80, aligned 50, positional 415). VALUE BUG: retail's case 3 jumps into
@@ -424,9 +424,50 @@ struct s_1f8a70_actor
 // each; all with unit phase scope 228; signed long 411, returned mode output 412; three-choice enum
 // 411/412, scoped enum 411/412. Round 215: route short/word/signed-byte/byte 420/366/416/336; each with
 // returned unit-output consumption 416/371/422/350.
+// Lane 18 round 6: route_mode looks like a spilled short (dword stores, movsx word reads) with EDI holding NONE.
+// On the frame-0x80 graph (case 3 also setting route_mode = 1 after the destination and node, in case 5's
+// order, so the two tails merge as retail; `default: result = false;` and `failed: result = false;`) 270,
+// aligned 44: positions slip by one from the first exit (no `xor bl, bl` / `mov al, bl`) and by up to 13 in the
+// mode switch, where retail places the route dispatch after case 5's tail and cases 6-7 after it. Value fix and
+// false stores without the case 3 reorder 423; with short route_mode 431 (route takes EDI, NONE does not);
+// first-exit `result = false;` in its branch without an initializer 270 (still folded); unit mode tested through
+// the returned pointer 333; on that graph case 5 moved last in the mode switch 451, and the failure-label
+// store dropped (default store kept) 380 (frame 0x84 again). Original body restored.
 // Round 208: Scratch path receiver reuse with unit-output/source-settings/default-lifetime masks
 // 0..7: 228/232/228/232/258/262/258/262. Original receiver, scopes and defaults restored; frame 0x84
 // and result/output homes remain.
+// Round 27: the route switch's real default and the failure block's own false reach retail's frame
+// 0x80 but score 415; dropping the result initializer matches retail's prologue order and its frame
+// yet loses retail's `xor bl,bl` before the 0x1f86a0 call (416); retail's mode 3 also sets route_mode
+// = 1 and our case 3 does not (423 alone, 405 with the actor pointer hoisted); the original is kept.
+// Round 109 (lane 6, fast; the reduced image scores the original 228 too): case 3 fixed to retail's
+// order (point, node NONE, radius 0, route_mode = 1) 423 (1616 bytes; route_mode then takes EDI and
+// NONE EBX); that with `default: result = false; break;` and `failed: result = false;` reached by the
+// `!result` exit as well 270 (1636 bytes; frame 0x80 and the prologue are retail's, the first
+// difference is the missing `xor bl, bl` before 0x1f86a0, which shifts every later row), with the
+// `!result` exit jumping past that store 398; on the 270 form: short route_mode 431, the returned
+// unit-mode test 333, both 432, `result = false;` inside the first exit with no initializer 270 (same
+// code), `return false;` there 270; the fix with the real default only 380; t2 with the returned test
+// 436. Retail's first exit keeps the constant in BL; every form here folds it to `xor al, al`.
+// Round 53 (value bug confirmed from retail's jump table: case 3 jumps into case 5's tail, which also sets
+// route_mode = 1): the early exits as one if/else-if chain to a shared `return result;` with `result = true`
+// in the true paths 430, with the fix 440; that chain with no initializer and `result = false;` in the first
+// branch 401, with the fix 406 (the first exit becomes retail's `xor bl, bl` / `mov al, bl` exactly, but the
+// true paths then return through BL); only the first branch sharing the failure return 429/437 (folded), the
+// success return 426/432 (EDI pushed before the first test); the fix alone 270.
+// Round 246: early active/arrival/mode test-result subsets on the dword-selector
+// graph 430/308/434/442/449/442/449; all with explicit failed false 435. The mode
+// result recovers frame 0x80 and pool/data entry order at 442, first +0x33, but the
+// first false still lacks BL and length grows to 1672. Original body restored.
+// Round 120 (lane 6, fast), on the value-fixed graph (case 3 as case 5's tail with route_mode = 1, a
+// real route default storing false, `failed: result = false;`: 270, aligned 70 against the original's
+// 82): unit mode tested through e70b0's returned pointer with the first exit's `result = false;` in
+// its branch and no initializer 333 (route_mode then takes EDI and the properties pointer spills,
+// frame 0x84), that with a short route_mode 432; the whole body after the first exit in an `else`
+// with one final `return result;` 437, without the initializer 437 (the first false still folds and
+// EDI is pushed before the first test); unit_mode renamed a_mode/z_mode 270 each (same code: the slot
+// stays at +0, so retail's +2 is not name order). Retail's route_mode is a dword slot read as a word
+// (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

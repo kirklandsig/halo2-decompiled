@@ -391,6 +391,92 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Round 439: complete native 12-byte header value, native/library copies at lookup/entry
 // storage, 104 each; actual post-attachment Boolean success with those four copies, 82 each.
 // Both result graphs grow a frame; original pointer observations and virtual calls restored.
+// Round 110 (fast): bool result as a success flag set in the unflagged arm, the attach in a following
+// `if (result)` 72 (threaded early, address shared, result in a stack byte); the flagged arm first 52;
+// `result = true` in the attach arm of a long false result 67; the long result cleared with the field
+// in one `result && flagged` test, then `if (result)` 52; a validity bool cleared with the field, then
+// `if (valid)` 73; guard return on the field after the clear 60. Long result false, the field cleared
+// in an `index != NONE && flagged` test, then `if (entity->object_index != NONE)` 45 (180 bytes: retail's
+// whole header region, EBP pushed around the test and the data reloaded for the object, because the
+// object read then has a predecessor without the header address; but the memory re-test is not threaded
+// and the result is long in EBX); the same clearing the local then publishing it 45 (179 bytes); with a
+// bool result first 53. Not kept: a field cleared in a test and re-tested.
+// Round 30 (lane 11, fast; none kept): early bool with the deleted arm first and the object, attach
+// and update through the entity's stored index 82 (157 bytes: the stored index is forwarded, header
+// still shared); result decided at the header test, object block under `if (result)` 72 (threaded
+// early, header shared, result spills); clear-in-test then memory retest on the bool result 53 (177
+// bytes: retail's data reload and recomputed index, with EBX for the data, but the retest stays and
+// EBP caches the last argument); object read as a raw byte offset from the pool data 77 (folded back
+// into the shared header address); the in/out mask parameter's own address instead of the local copy
+// 87 (152 bytes; the copy is retail's).
+// Round 17 (m3 lane 2, fast): the entity store moved into the arms (index in the unflagged arm,
+// NONE in the flagged arm and on the NONE path) with a bool/long result 78/96 (188/203 bytes);
+// bool result with one `index != NONE && !flagged` test and the clear in its else 77; a header
+// pointer local after the store, flagged arm first 75; bool result with the clear-in-test then
+// memory retest 53 (177 bytes); a validity bool cleared in the flagged arm and retested 73.
+// Compile-only screens: word/short/dword index casts, pointer arithmetic or byte offsets for the
+// test or the object read all keep one data load; only the memory retest splits it (and then also
+// reloads the table global, which retail keeps in EDX).
+// Round 25 (fast): the field store and attach as a call of the existing 0xbb780 (inlined) 49 (same
+// code); with an early bool result 77, flagged arm first 75; bool result with the clear-in-test and
+// memory retest, 0xbb780 on the stored/local index 67/53. Data and index still shared. Restored.
+// Round 35 (lane 10, fast): early bool result set after the attach 77 (160 bytes, header address shared, EBP
+// caches the last argument), with the flagged arm first 75; on the long result, `result = false` before the
+// index clear 50, the object read through a one-use header pointer 49, the header test indexed by a (word)
+// cast 54 (182 bytes).
+// Round 58 (lane 12, fast; none kept): early bool with `__assume(object_index != NONE)` at the top of
+// the unflagged arm 77; the header test indexed through an unsigned `(dword)` index 77 (same code); f or
+// e read once through its own address in the second virtual call 77/77 (propagated, EBP still caches f);
+// diagnostic, not keepable: a repeated `entity->object_index = object_index;` before the object read,
+// also with the object read through the entity's index, 42/42 (g stays in EDX and the data reloads as
+// retail, but idx*12 is still shared by `shl ecx, 2`; retail shares neither, so a store kill alone is
+// not retail's cause). Repeats confirming listed scores: flagged-arm clear then field retest 55,
+// clear-in-test then memory retest 53.
+// Round 52 (lane 16, fast), all on the early bool result: `entity->object_index = object_index;` repeated at the
+// top of the unflagged arm 42 (retail's prologue, no EBP cache of the last argument, retail's EBP window and data
+// reload; the index arithmetic stays shared as `shl ecx, 2` and the extra store remains), with the object read
+// through the entity's stored index 42 (same code: the stored value is forwarded); the flagged index cleared, then
+// published and retested 68 (retail's object read, join unthreaded); the creation result stored in the entity
+// and read back 77; one header pointer for the test and the object 77; `result = true` first in the arm 72
+// (176 bytes, result spilled); an unsigned object index 77. Retail's object read needs both the data reload and
+// a recomputed index, as a join present at CSE time and threaded later would give.
+// Round 21 (m3 lane 2, fast): bool result first with the flagged arm first and the object through a
+// header-pointer local 75 (160 bytes); bool result with the second virtual call after the block under
+// `result && value` 77; bool result declared after the creation call 80 (158); a header-pointer local
+// for the test on the long result 49 (same code); the flagged arm first on the long result 52. The EBP
+// cache of the last argument follows the shared header address (fewer live registers at the test).
+// Round 42 (lane 11, fast), all with the early bool result set after the attach: a header pointer from
+// `index != NONE ? header : NULL` tested for NULL, then for the flag 72 (the NULL test stays); the same
+// set in an if 72; the flag test indexed through `(word)index` 72; the flagged index cleared in an
+// `index != NONE && flag` test indexed through `(word)index`, then `if (entity->object_index != NONE)`
+// 48 at 176 bytes (the object read is then retail's exactly: data reloaded from the kept global, index
+// recomputed; left: the memory retest, EBP caching the last argument, the false exit as `xor al, al`
+// and the movzx index); the object read through a second header pointer on `(word)index` 71.
+// Round 12 (lane 17, fast): `entity->object_index = object_index = v29(...)` (one chained value) on the long
+// result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
+// 49/77 (same code); the chained form with the early bool and the store and attach through the existing
+// 0xbb780 77 (still one shared header address under the link's inline).
+// Round 60 (m3 lane 9): the store and attach as the existing 0xbb780 with the early bool result, first
+// built plain (earlier only fast) 77 (160 bytes: the full link inlines it and still shares the header
+// address); the object pointer read before the flag test on the long/early bool result 49/77; the header
+// flags in a named byte with the early bool 77; the early bool with an `== 0` flag test built 77.
+// Round 65 (lane 12, fast), all on the early bool result: the NONE and flag tests as one multi-return
+// inline predicate, the clear under `else if (object_index != NONE)` 77 (the predicate's exit join is
+// threaded before CSE; header address still shared), with the store and attach through the existing
+// 0xbb780 77; a `word` absolute index named once for the test and the object read 84 (155 bytes); the
+// header data pointer named once for both lookups 78; the test through the existing object_header_get
+// (slot_handler.h) with the store and attach through 0xbb780 77.
+// Round 58 (lane 16, fast): early bool with the flag test through an if/return-true inline helper (a join at
+// its exit) 75 (160 bytes, threaded early, header shared); the object read's table data loaded through a
+// dword view (diagnostic) 75 (still shared: not a load-type split); early bool, unflagged arm first, the
+// update call through the existing v23 (qualified, inlined) 70 (176 bytes, retail's layout, but v23's NONE
+// test stays and EBP caches the last argument); `result = true` after the update call 79 (158 bytes); the
+// NONE test read from the stored field 77 (160 bytes); early bool, unflagged arm first, the field store and
+// attach through the existing 0xbb780 (inlined) 77 (160 bytes).
+// Round 17 (lane 17, fast), all on the early bool result: the header flag test as an inline predicate
+// with an if-built result 77, with early returns 77 (the join is threaded before CSE: the header address
+// stays shared and EBP caches the last argument); the second virtual call on the local index 81;
+// `entity->object_index = object_index = NONE` in the flagged arm 77; the object index declared first 77.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -707,6 +793,11 @@ bool c_projectile_type::v8(long a, long b)
 // (word)index breaks. Also tried with the mask: bit tests as (flags >> 10) & 1
 // (12), result declared first (12), the compares' operands swapped (17), a
 // group_index local (12); the base class v27 call without the copy (52).
+// Round 34 (LTCG harness, base 1 = 5): with the mask, the volatile copy, object and flags in the five
+// other declaration orders 12/51/12/51/51; a plain long or dword index 12/12; the index field read at
+// each use 12 (also with b direct 12); the group value through an inline value getter, read twice,
+// 14 (b direct 14); a `real const &` for the two power reads 12 (b direct 12); permuter (600 s, 53
+// tries) none better.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

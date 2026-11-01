@@ -68,7 +68,7 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
-// score 86 (was 125): the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
@@ -126,6 +126,68 @@ bool function_25d9b0(long prop_index);
 // fallback last jumping in past the priority test), but priority is spilled and the state kept in
 // ESI (retail the other way) and the zero exit sits at the loop bottom; that without the top-level
 // init plus `if (!entry) return entry` after the loop 186 (entry spilled, frame 0x10).
+// Round 13 (fast): `short result = 0;` at the top with `if (ok) result = priority;` in the gate 117 (551 bytes:
+// actor EBX and node EBP as retail, but result gets its own slot, frame 0x10, and priority is spilled to the
+// argument slot), result declared before the invitation test 169, with `else result = 0;` 141; a separate
+// pointer for the node the evaluation uses (node copied into it in the loop, the loop's and the fallback's
+// lookups assigned to it) 110 (retail's head, actor EBX/node EBP, but that pointer spilled, frame 0x10),
+// declared first 110. Any extra value live from entry, or a split node, gives retail's actor/node registers;
+// retail gets them without a stack slot.
+// Round 26 (lane 14, fast, file and callees in the image, control 86): the 0x26f060 call now agrees. One
+// extra actor read inside the loop (diagnostic: `|| actor->unknown07c == 99` in the decline test) gives
+// retail's actor EBX/node EBP at 551 bytes (116); an extra actor read in the evaluation or one node read
+// fewer there keeps ours. The evaluation as early `return 0`s with `return priority` last 128 (570
+// bytes); the near distance read once into a local 90; an invitation element pointer for the joint and
+// participant reads, with or without the index local, 148/148 (aligned 78: the pointer is kept in EDI
+// where retail recomputes the index); the loop's new prop stored in prop_index 86 (same code); the gate
+// as `return priority` / `return 0` 105 (priority spilled, state in ESI, `xor ax, ax`).
+// Round 451: Native iterator aggregate/entry scope/entry-result role-name subsets
+// 1/2/1+2/4/1+4/2+4/all, then late entry aggregate: 88/86/155/86/88/86/155/151, with faithful
+// callback/callee controls. Original descriptor and body restored.
+// Round 53 (lane 9, fast): retail's `xor eax, eax` zero epilogue is a tail-duplicated `priority = 0; return
+// priority;` (compile-only screens: `return 0` gives `xor ax, ax`). `if (ok) return priority; } return 0;` 105
+// (priority spilled, `xor ax, ax`); `if (ok) goto done; } priority = 0; done: return priority;` 91 (554 bytes:
+// retail's exact zero epilogue, but priority is spilled to the argument slot and the state kept in ESI, the
+// other way from retail), with priority initialized at its declaration 91, also without the fallback's own
+// zero store 91, with a long priority 91, with the state declared at the top 91.
+// Round 119 (plain; a --fast image of the file's three loop functions is unfaithful here, 145 on this source):
+// on this body a long priority 84 (priority moves to EDI, the view to ESI; not retail's shape); `return 0` at the
+// loop's end 119 (551 bytes, the loop exit gets its own zero epilogue); both 125; the gate's arms as `return
+// priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
+// Round 465: default-first/branch-complete property acquisition result, short/long priority,
+// existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
+// Round 143 (lane 4, fast with the file and its callees, faithful 86): the gate as `if (ok) goto done; }
+// priority = 0; done: return priority;` 91 again (retail's whole layout and zero epilogue; left: actor/node
+// EBP/EBX and priority spilled to the argument slot with the state in ESI), with `return priority` in the
+// gate and `priority = 0; return priority;` after it 105 (560 bytes), with the state fetched after the
+// velocity declaration 91; on the kept form the gate inverted (`if (priority <= 0) priority = 0; else`) 86
+// (same code) and the participant index named in the found path 86 (same code).
+// Round 122 (lane 6, fast, file and callees in the image, control 86): `short result = 0` at the label with
+// `result = priority` on success and a long priority 117 (554 bytes); the `goto done` zero-epilogue form with node
+// declared first 91 (554), with the fallback through actor->prop_index 91 (in both the priority is spilled to the
+// argument slot and the state kept in ESI); the loop's object compare written node-field first 87; the node's
+// near distance read once into a local for both range tests 90 (541). The recorded goto form with an initialised
+// priority and with a long priority re-measured 91 each.
+// Round 57 (lane 16, fast with the file's loop functions): the fallback as an if/else choosing the priority (a
+// `>= 2 ? 3 : 0` select) 110 (552 bytes); the iterator entry declared in the `while` condition with `return 0`
+// after the loop 119 (551 bytes, actor/node still EBP/EBX); velocity declared before the state and view lookups
+// 86, the decline test through a NONE-preset `new_prop` 86, a short participant-index local 86 (same code each).
+// Round 107 (lane 7, plain, with the file and its callees in the image), kept 86 -> 76 -> 65: in the loop the
+// already-held prop tested first (`if (node && target == node->object_index) priority = ...; else { acquisition,
+// decline, new node, its own priority read }` before the existing `goto evaluate`; at review the lane's second
+// `goto evaluate` in the first arm was folded into this if/else, same 49 plain) (retail's scratch registers
+// in the acquisition and participant reads: both tails are cross-jumped into one); then the evaluation as
+// `if (ok) return priority; } return 0;` (now 557 bytes: retail's zero exit is shared by every failure). Tried:
+// the acquisition test inverted with one priority read 86, as `< 4 && != NONE` with the decline last 76, the
+// acquisition result preset to NONE 86, float sqrt 86 (all on the old evaluation); on the found-first loop the
+// round-53 `goto done` tail 76, `priority = 0; return priority;` 65, the negated test returning 0 65 (same code),
+// `return 0` for the loop's exit 142 (it gets its own epilogue), no prop_index local 65, the compare operands
+// swapped 66, `return false` 65. Then kept 65 -> 49: the busy-prop test (0x25d9b0) as its own
+// `if (...) return 0; return priority;` inside the other tests' block: actor EBX/node EBP as retail through the whole
+// body, but the two returns become a select (`neg al; sbb eax, eax; not eax; and eax, esi`) where retail tests
+// (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
+// block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
+// test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -146,7 +208,11 @@ short __stdcall function_1b7e40(long actor_index)
 		{
 			short invitation_index = iterator.reference.unknown0;
 			s_502424_element *joint = element_502424_get(((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].joint_index);
-			if (!node || joint->target.unknown0 != node->object_index)
+			if (node && joint->target.unknown0 == node->object_index)
+			{
+				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
+			}
+			else
 			{
 				long new_prop;
 				if (actor->unknown086 >= 4 || (new_prop = function_25d810(joint->target.unknown0, actor_index, false)) == NONE)
@@ -155,8 +221,8 @@ short __stdcall function_1b7e40(long actor_index)
 					continue;
 				}
 				node = prop_node_get(new_prop);
+				priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			}
-			priority = *(short *)((byte *)joint + ((s_slot_owner_entry *)actor)->joint_invitations[invitation_index].participant_index * 12 + 0xa);
 			goto evaluate;
 		}
 		return (short)(long)local_1;
@@ -175,16 +241,22 @@ evaluate:
 		s_prop_view_fields *view = prop_node_view(node);
 		vector3f velocity;
 		function_ba1d0(node->object_index, &velocity, NULL);
-		if (!(node->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
-			view->unknown54 < 0.31 && node->unknown28 <= 15.0f &&
-			!state->unknown64 && !function_25d9b0(actor->prop_index)))
-			priority = 0;
+		if (node->unknown28 > 1.6f && (real)sqrt((double)(velocity.i * velocity.i + velocity.j * velocity.j + velocity.k * velocity.k)) < 1.0f &&
+			view->unknown54 < 0.31 && node->unknown28 <= 15.0f && !state->unknown64)
+		{
+			if (function_25d9b0(actor->prop_index))
+				return 0;
+			return priority;
+		}
 	}
-	else
-		priority = 0;
-	return priority;
+	return 0;
 }
 
+// score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
+// build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
+// index into a local before the actor lookup, the reversed compare, a named actor local and the
+// separate-exit forms compile byte-identically (73) or worse (85-87 at 272-277 bytes); holding
+// the call out of line needs a noinline declaration in src/unknown_25d690.cpp.
 // score 73 (was 73): retail calls function_25d740 out of line (ECX node) and sinks the
 // ESI/EDI saves past each early exit; our build inlines it through the prop_node_view
 // wrapper, so the blocks are laid out differently. A single exit (`result = 0x10;` in the
@@ -301,6 +373,21 @@ evaluate:
 // lookup 88, with the view tested in its own nested if 88; diagnostics (not kept): the file built /Ob1 changes
 // nothing (109, 0x1b7e40 unchanged), a second velocity query 108 and the view call before the near test 93 stay
 // inlined. So neither the caller file's /Ob1, the call's position nor the caller's size moves LTCG's decision here.
+// Round 110 (fast): 0x25d740 through the existing tracking_get with &tracking->view 73 (its code unchanged, still
+// inlined here); `node->unknown28 < 0.8f` 73; `!(node->unknown28 >= 0.8f)` 73; `!(state->unknown20 <= 0)` 73.
+// One-file LTCG harness (this file and src/unknown_25d690.cpp, reproduces the inlining): the site is on the edge of
+// the inliner's frequency test: one more dominating test (an `if (!active) return` diagnostic) keeps the call out of
+// line, while single exit, guard returns, the call in the 0.8 test's then-arm, `&&`-joined tests, slot field read
+// first, `>= 1`, `<`, `!(>=)`, an inverted prop compare and deeper inline lookups all stay inlined, and so do the
+// direct call and caller-size padding. In 0x25d740 a named index, tracking_get, a tracking_get early exit and an
+// `&&` lookup keep it inlined; an early return, a ternary result, if/else results and an else that clears the
+// result keep it out of line but change 0x25d740's own code (no leading xor, or a second NULL path), so retail's
+// extra coldness comes from the call site, not from the callee.
+// Round 13 (fast): the slot's data block typed through `slot->unknownc` (the slot-data-block form) 73 (same
+// code: retail reads both fields off the slot pointer); 0x25d740's body through the existing prop_ref_view 73
+// (still inlined here, its other callers unchanged), with the single-exit form 88; the single-exit form 88
+// (278 bytes); the two outer tests joined with `&&` and the call in the else arm 88. BLOCKED-BY 0x25d740
+// (LTCG inlines it at this call site only). The slot cast at each use, as 0x1b82d0 reads it, 73.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

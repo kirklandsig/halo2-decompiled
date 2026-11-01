@@ -70,7 +70,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; early EBX/BL success, hit-byte and basis/rotation homes remain.
+// score 629 (was 629): Frame 0x108 agrees; success is retained in BL and saves EBX
+// early instead of using retail's stack byte. Hit/basis/ray/root/rotation homes follow.
+// Early constant minimum with long success 635, with early point copy 651; final products differ.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
 // Frame 0x108 agrees; early success BL/EBX and hit/basis/ray/root/rotation homes remain.
@@ -194,6 +196,12 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Existing staged cross in basis/rotation/projection subsets, then all with point setter
 // 651/629/651/626/645/626/645/659; three-point best rejected;
 // original producers and in-place snapshots restored.
+// Round 457: native second-rotation result/two distinct rotation results, original/early
+// minimum, original/staged rotation cross: 628/642/634/648/628/642/634/648.
+// One-point best rejected; original complete body and all in-place snapshots restored.
+// Round 259: all six cross-product parts named before subtraction, paired axis schedules
+// ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
+// helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

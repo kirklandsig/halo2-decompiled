@@ -5,6 +5,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+real magnitude3d(vector3f const *vector);
 struct s_247fd0;
 struct s_object_2470e0;
 struct s_unknown_13bf00;
@@ -51,7 +52,31 @@ public:
 		s_247fd0 *arg_3, transform4x3f const *arg_4, dword arg_5);
 };
 
-// score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
+// score 54 (was 95): the prologue, the position copy and the whole viewer loop agree since the
+// distance goes through the existing vector3d_from_points3d + magnitude3d (retail's x87 pops right
+// after the square root). Left: the child loop: retail keeps the pool in EBX and NONE in EDI (ours
+// the reverse), tests the allocation twice, builds the handle from the element's own salt and the
+// pointer difference (0x2483f0's body) where data_datum_index reads the pool's size, and loads the
+// head and zeroes the offset after the zero-trip test.
+// At 102 (was 198): the three coordinate differences stayed in the x87 stack until the end of
+// the loop body, so the squared sum was followed by the radius multiply and the three pops at the
+// Frame 0x14 and entry agree; delayed coordinate cleanup and child allocation/link homes remain.
+// Earlier score 102 (was 198): the three coordinate differences stay in the x87 stack until the end of
+// the loop body, so the squared sum is followed by the radius multiply and the three pops at the
+// end; retail frees the differences right after the square root (fstp st(3) and two fstp st(0)),
+// and neither a nested block nor writing each difference out at every use freed them that early
+// (106); the child loop still takes the pool pointer in edi where retail takes ebx.
+// At 102 (was 198): the position copy writes the location member, the activation branch
+// lays the viewer arm first and the viewer's influence starts at zero, so the prologue, the
+// copy and the viewer loop agree; the x87 cleanup and the child loop's registers still differ.
+// At 172 (was 198): the head snapshot and the loop's head are separate locals, so the
+// frame is 0x14 and the prologue agrees; the settings store and the position's z store are
+// swapped, the activation branch lays the active arm first, the viewer's maximum and x87
+// cleanup differ, and the child loop's offset and counter homes are swapped.
+// At 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
+// Earlier score 102 (was 198): the position copy writes the location member, the activation branch
+// Earlier score 172 (was 198): the head snapshot and the loop's head are separate locals, so the
+// Earlier score 198 (was 198): activation AL and stacked location agree; frame 0x0c/0x14,
 // retained head/position homes and x87 cleanup differ.
 // Earlier metadata/head/count homes differed.
 // Earlier convention mismatch: activation was stacked with six words, while
@@ -221,6 +246,35 @@ public:
 // allocation result with live/early count 282/283. All restored; frame and x87 homes remain.
 // Round 321: Whole-scan maximum on the retained child byte-offset graph; short viewer/closed coordinate phase/child-count snapshot subsets: 251/250/251/250/241/246/241/246.
 // Round 321: Frames stay 0x0c or 0x10 versus 0x14; original influence publication, live count, distance tree and body restored.
+// Round 30 (lane 13, fast, on the 95 form): the allocation in its own local assigned to the head
+// after the init 118 (location becomes a register argument); local_0 as the loop head (no copy)
+// 248 (same); offset and head declared in the for-init 94 (only the two zero stores reorder); the
+// handle as 0x2483f0's salt-and-difference form in a forceinline helper 268, written in place 267
+// (both move the location into EBX and the flag to the stack: 0x175270 100); the break test right
+// after the allocation (init unconditional) 95 and before the init's own test 95 (the test still
+// threads); the init stores through DATUM at each use 136 (749 bytes, location in a register).
+// Round 455: On the recovered head/count/frame graph, separate allocation result 124; shared initialization/link receiver 171; plain remaining count 118; both 157; readonly metadata counterparts 124/171/118/157. Original body restored.
+// Round 119 (fast, with caller 0x175270): retail's child link is 0x2483f0's body inlined with the loop's pool local
+// (salt from the element, ordinal from the pointer difference), and its allocation test and break test stay two
+// tests (ours threads them). The link written that way in place 267 (location becomes an EBX register argument,
+// the flag goes to the stack; 0x175270 100); with the allocation in its own local assigned to the head after the
+// initialization 248 (retail's unthreaded `cmp eax, edi; mov esi, eax; je` and link shape, same convention
+// change); the separate allocation local alone 118 (frame 0x10); the link through the parameter itself instead of
+// the cast copy 248/118 (identical: the copy is propagated); the location read once through its address with the
+// in-place link, with/without the separate allocation 220/254 (the location still lives in EBX; 0x175270 21).
+// Round 465: native pool/allocation/link pointer role-name subsets 1..7, then all four child
+// pointer roles, 95 each; original identities and full body restored. Child pool/NONE ranks still exchange.
+// Round 13 (lane 17): the allocation in its own `child_index` local, tested for the initialization and for the
+// break, then made the head 54 (kept; 0x175270 still matches, location stacked and flag in AL): the allocation and
+// its initialization now agree with retail. Left: the zero-trip test before the head/offset set-up (retail loads
+// the count into ECX and sets head and offset after the test), the pool/NONE register exchange (retail pool EBX,
+// NONE EDI then EBP), retail's unthreaded second test (`cmp eax, edi; mov esi, eax; je`), and the handle built from
+// the element's salt and the pointer difference (0x2483f0 inlined) where data_datum_index reads the pool's size.
+// Before it: 0x2483f0 called with `inline` on its definition 300 (its inner forceinline link stays a call under
+// that file's inline_depth(1), and &field_4 is hoisted; 0x248cc0/0x2483f0 still match); the child offset declared
+// with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
+// 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
+// 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
@@ -228,12 +282,11 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 	s_248970 *local_20 = (s_248970 *)arg_0;
 	long local_0 = local_20->field_4;
 	s_248971 *local_1 = (s_248971 *)arg_2->function_1751d0();
+	long child_count = local_1->field_30;
+	local_20->field_10 = arg_4->position;
 	point3f *position = &local_20->field_10;
-	*position = arg_4->position;
 	local_20->field_2 = arg_5;
-	if (arg_5)
-		local_20->field_1c = 1.f;
-	else
+	if (!arg_5)
 	{
 		local_20->field_1c = 0.f;
 		for (long local_3 = 0; local_3 < *(short *)((byte *)g_4e8c20 + 8); ++local_3)
@@ -241,17 +294,13 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 			s_player_state const *local_6 = 0;
 			if (local_3 != NONE && g_4686c4 != NONE)
 				local_6 = (s_player_state const *)((byte const *)(g_4e9bd4 + local_3) + 0xb8);
-			double local_7 = (double)position->x - local_6->position.x;
-			double local_8 = (double)position->y - local_6->position.y;
-			double local_9 = (double)position->z - local_6->position.z;
-			double local_4 = sqrt(local_9 * local_9 + local_8 * local_8 + local_7 * local_7);
-			real local_10 = (real)(local_4 * local_6->radius);
-			real local_11;
+			vector3f offset;
+			vector3d_from_points3d(&local_6->position, position, &offset);
+			real local_10 = magnitude3d(&offset) * local_6->radius;
+			real local_11 = 0.f;
 			if (g_510c50 && ((byte *)g_510c50)[5])
 				local_11 = 1.f;
-			else if (!(local_10 > local_1->field_18 && local_1->field_24 > local_10))
-				local_11 = 0.f;
-			else
+			else if (local_10 > local_1->field_18 && local_1->field_24 > local_10)
 			{
 				if (local_1->field_1c + local_1->field_18 > local_10)
 					local_11 = (local_10 - local_1->field_18) * local_1->field_20;
@@ -263,25 +312,29 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 			local_20->field_1c = MAX(local_20->field_1c, MAX(local_11, TEST_FIELD_BIT(arg_2->flag10) ? 1.f : 0.f));
 		}
 	}
+	else
+		local_20->field_1c = 1.f;
 	*(real *)((byte *)arg_3 + 0x1c) = local_20->field_1c;
 	long child_offset = 0;
-	for (long local_14 = 0; local_14 < local_1->field_30; ++local_14)
+	long head = local_0;
+	for (long local_14 = 0; local_14 < child_count; ++local_14)
 	{
 		s_record_pool *local_15 = g_51ec88;
-		if (local_0 == NONE)
+		if (head == NONE)
 		{
-			local_0 = record_pool_allocate(local_15);
-			if (local_0 != NONE)
+			long child_index = record_pool_allocate(local_15);
+			if (child_index != NONE)
 			{
-				c_247470 *local_16 = DATUM(local_15, c_247470, local_0);
+				c_247470 *local_16 = DATUM(local_15, c_247470, child_index);
 				local_16->field_8 = NONE;
 				local_16->field_2 = 0;
 				local_16->field_4 = NONE;
 				local_16->field_c = 0.f;
 			}
-			if (local_0 == NONE)
+			if (child_index == NONE)
 				break;
-			c_247470 *local_17 = DATUM(local_15, c_247470, local_0);
+			head = child_index;
+			c_247470 *local_17 = DATUM(local_15, c_247470, head);
 			long local_18 = data_datum_index(local_15, local_17 - (c_247470 *)local_15->data);
 			local_17->field_8 = NONE;
 			if (local_20->field_4 == NONE)
@@ -290,9 +343,9 @@ void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s
 				DATUM(local_15, c_247470, local_20->field_8)->field_8 = local_18;
 			local_20->field_8 = local_18;
 		}
-		c_247470 *local_19 = DATUM(local_15, c_247470, local_0);
+		c_247470 *local_19 = DATUM(local_15, c_247470, head);
 		local_19->function_247470(arg_1, arg_2, (s_object_2470e0 *)(local_1->field_34 + child_offset), (s_247fd0 *)arg_3, arg_4, arg_2->color);
 		child_offset += 0xb8;
-		local_0 = local_19->field_8;
+		head = local_19->field_8;
 	}
 }

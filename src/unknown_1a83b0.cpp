@@ -486,6 +486,18 @@ s_1a8a10 g_4453c0[] =
 // through a pointer 91.
 // The actor index comes before the point: retail's 0x1a8c30 loads the point (eax) before the index (ebx), and
 // callers set up register arguments last to first.
+// Round 119: the facing copy as an aggregate initializer 17; a perpendicular vector (initializer from the
+// actor) for the first sum, with or without the copy, 38/38 (retail's addss order for the first sum, but the
+// copy registers move and the j re-read is still folded); the copy's j assigned after the first sum 17 (the
+// j re-read appears, the addss order stays ours); the first sum read straight from the actor, copy after it
+// 87. Compile-only screen (float block, base 21): perpendicular by name from the actor or the copy, left
+// first, no copy, a scalar left i, crossed with term orders, sum order and store order (80 forms) 21-39; the
+// negated j read through a cast, a vector pointer, a real pointer or a fresh lookup 21/21/21/35 (the
+// lookup re-reads j but keeps our addss order); point components as scalars, a named negated j 21.
+// Round 65: the existing actor accessor 150; the copy/actor j reads exchanged 40; the first sum as
+// subtraction 86; the shared dot/cross helpers 114; an 8-byte library facing copy 118; the exchanged
+// reads with the leading dot term 40; a j reference for every read 29, with the copy's j live 17;
+// the rotated point as vector2f 17; a partial vector3f facing copy 17.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

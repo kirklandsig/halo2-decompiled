@@ -379,6 +379,14 @@ void function_125a90(long value);
 // `type == 0x26 ? !a : false` 88; the type test negated with the kind arm first and the special
 // arm in the else 46 (same code as the long test); the kind arm as `remove = false` under one
 // `kind && byte == 1` test 88; a two-case switch on the short type 86 (compares in ECX).
+// Round 108 (lane 6): the type byte is the sound definition's class (the existing
+// sound_definition_get(...)->promotion_index): read as a short 87 (`movsx ax`, retail widens to
+// 32 bits), as a long through the getter 36 (same code as the direct read). Retail re-tests
+// `cmp eax, 0x26` after `cmp ax, 0x26`, so its inner test is on the full-width value and is not
+// threaded away (matched 0x18d360 tests the same pair on a short); that inner long test alone
+// 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
+// assigned on every path with no initializer 36 and the negated test with the kind arm first 36
+// both compile to the same code (VC normalises the arm order).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

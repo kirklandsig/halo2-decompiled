@@ -459,8 +459,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 	vector->k = axis->k * along + k * cosine - (axis->j * i - axis->i * j) * sine;
 }
 
-// score 90 (was 90): frame 0xd8 agrees; the ring conversion (fild where retail converts in SSE) and the
-// rotation schedule (one spilled component, register homes) differ; 1085 bytes against 1089.
+// score 90 (was 90): Frame 0xd8 agrees; retail converts the ring in SSE then reloads
+// it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
+// rotation's component spill, cross scheduling and register allocation remain.
+// The body is 1085 bytes versus retail 1089.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
 // as retail, but the point stores still come first); named ring phase 143 (ring conversion as
 // retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
@@ -571,6 +573,26 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // there only the direction components' registers, the radius copy and the sector load differ):
 // plain radius 222 (repeats the listed form on this base); radius as a reference into the object 264;
 // components read before the dot from locals 96; dot3f(vector, axis) 96; components before the dot 96.
+// Round 457: shared vector scales and sum with ordinary/staged cross, projection/cosine
+// scale order, original/named ring phase: 244/244/243/243/258/258/257/257.
+// All inputs precede stores; original complete rotation and body restored.
+// Round 104 (lane 8, fast): the named ring phase renamed angle_offset/phase/twist 143/143/143 (names
+// move no slot); the dead pathfinding store dropped 204 (1056 bytes; retail has the store, sharing
+// the sine's slot); the sector index read at the trace call 265; the rotation helper __forceinline
+// 90 (identical); the pathfinding pointer as a ternary 217.
+// Round 26 (m3 lane 2, fast), on the 96 form (0x29c860's rotation in place, ring phase named before the distance;
+// its residuals: the sector index read after `add ebp, ecx` and the radius copied through integer registers, the
+// phase store before the spoke init): the radius read from the object at each use 262; the phase at function scope
+// 96; the radius reference before the sector index 96; the sector index after the ring counters 97; the radius copy
+// and reference after the ring counters 263.
+// Lane 18 r14 (one-link LTCG env, exact for this function: env count 70 = check 90): rotation helper with the j/k
+// cross terms first and the i term in its row, in place as a vector 75, as scalars 75, on component copies as a
+// vector 75, as scalars 70 (same code as now); each with the ring phase named before the distance 78/78/78/125;
+// the current helper with the named phase 125. On the vector form with the phase (rotation core and SSE ring
+// conversion as retail, radius copied through integer registers): plain radius 213, sector index first with a
+// plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
+// helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
+// below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -161,7 +161,10 @@ void function_44720(void)
         ++index;
     }
 }
-// score 107 (was 107): frame 0x44 versus retail 0x40; entry-offset construction
+// score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
+// through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
+// the flags word; this round's variants all scored worse, so the body is unchanged.
+// Earlier: frame 0x44 versus retail 0x40; entry-offset construction
 // and the geometry flag reloads differ.
 // Round 125 (one-link LTCG harness with the callers' and callees' files, exact for this function):
 // level != 31 at the call gives retail's frame (harness aligned 70 -> 50) but 135; on it the
@@ -200,6 +203,24 @@ void function_44720(void)
 // Round 44: lookup given `&g_4ba138[index]` (long index) 177, with level at the call 169; first test read through
 // `g_4ba138[(short)index]` with the entry pointer after it and level at the call 139 (508 bytes), plus the indexed
 // lookup 150; indexed lookup with the weight read at the call and level at the call 140 (503 bytes). Original kept.
+// Round 453: Ordinary inline query/submission/both contracts 107/107/107;
+// with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
+// Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// Round 45 (lane 10; one-link harness exact for this function, fast agreeing): 1..32 unused locals before the
+// loop leave the current form and the level-at-call form unchanged (no numbering ties). On the level-at-call form
+// (135): transform index before the weight 136, after the geometry lookup 150; weight after the material 161;
+// transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
+// re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
+// the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
+// reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
+// the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
+// 136 (global hoisted out of the loop into EBX); plus the global read in each lookup branch 136 (still
+// hoisted; 0x45560 246); level test at the call with the transform after the lookup 150; `use_level` once
+// before the outer loop 158.
+// Round 467: Accepted entry level named at its original read in long/short/word/byte,
+// used by admission and cached submission predicate 155/151/151/152; predicate at its
+// submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
@@ -352,6 +373,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 446: Native center reference/own inline declaration/both 190/190/190;
 // each with the full table/dispatch ordinal 191/191/191; explicit stdcall with
 // original/reference center 190/190. Original definition, declaration and sole caller restored.
+// Round 453: Library entry/query/both center copies 190/202/202; bound position alone,
+// with entry/query/both 190/190/202/202; complete point-producer memmove 246 (caller 37).
+// All original native and component copies restored; entry/index and point homes remain.
+// Round 467: Displacement/combined-radius declaration orders ZYXR/ZYRX/ZRYX/RZYX,
+// YZXR/YZRX/YRZX/RYZX, all 190 at 874 bytes. All expression trees, original declaration
+// order, query/position storage and the complete body restored; entry spill remains.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

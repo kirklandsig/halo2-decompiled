@@ -68,11 +68,17 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	else *(dword *)out &= ~2;
 }
 
+// MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
+// trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
+// stack slot; 1176 bytes against retail's 1164.
 // Round 16: retail takes its first argument in EAX and copies it to EBX at once, and reads the
 // third argument from [ebp+0xc]; ours takes the same three arguments in the same registers, but
 // keeps the output pointer in EDI and the input pointer in EBX where retail keeps them the other
 // way round.
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// BLOCKED-BY 0x1ec690 (round 30): retail passes the case-3 callee's input in EDI with two stack arguments; our
+// stub (src/stubs/bipeds.cpp) takes ECX/EDX and one stack argument, which is what moves input/output to
+// EBX/EDI here.
 // Earlier: retail's aligned frame (and esp, -16; 0x94) and prologue. Left: the move and
 // input pointers trade EBX and EDI (retail move EBX, input EDI, physics read from its stack slot at
 // each use; ours keeps physics in ESI), and the inlined 0xb77d0 lacks retail's velocity null test
@@ -150,6 +156,14 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // retail's block layout, the non-compound and capsule arms after the return, but the input then reloads
 // from its slot and the velocity pointer takes EBX); with case 6 before 4/5 388; with a velocity
 // pointer 388; both 388. Original body restored.
+// Round 30 (lane 11, plain): the disabled 0x1ec690 draft (src/unknown_1eb8a0.cpp) activated with the stub
+// removed 349: LTCG then passes that input in EDI and moves the output pointer to EBX as retail, but the
+// draft is far off (601) and matched 0x2901e0 and 0x1ed340 stop matching (29/45); reverted.
+// Also (fast): the velocity reference as a pointer local with `velocity &&` kept 319 (same code; VC folds
+// the null test, where retail tests the pointer reloaded from its slot: 0xb77d0's inlined body, which
+// LTCG cannot inline from its /Ob1 file).
+// Also (fast): the rate on the right of each position product 319; the activity bit in shift form 319;
+// the object lookup and activity read before the position computation 324 (1180 bytes). All restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

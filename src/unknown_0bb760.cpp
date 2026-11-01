@@ -456,11 +456,22 @@ hsv3f *function_1318d0(color3f const *rgb, hsv3f *hsv);
 color3f *function_131a00(hsv3f const *hsv, color3f *rgb);
 void function_3dd10(long object_index, bool force);
 
+// Round 30 (lane D): the permuter found no better form (82 tries, best 84, the baseline). On this body
+// the variant byte read before the blend value scores 171 and before the selection seed 190; with
+// retail's found path (the inverse inside the found branch) it is 123, and the plain inverse form 132:
+// retail's not-found exit reloads 1.0 into xmm5 while ours rejoins the block's load, so the tail sits
+// 8 bytes short and every later branch target shifts. Original body kept.
 // score 84 (was 84): the first scan's `!=` exits (retail's signed `<` loop unrolls by 4 in every
 // for/while/field/shared-counter form, 637-647; short counter 252; a compile-only probe shows the
 // unroll comes from the float weight sum and survives every counter, bound and accumulator
 // spelling), blend's stack slot, the inverse subtraction (retail's is in the blend block, with 1.0
 // reloaded at the not-found exit) and the 1.0/0.0 load order.
+// Round 102 (lane 7): a one-file LTCG harness (this file plus the HSV and 0x3dd10 files) reproduces 84
+// exactly. First scan as `for (j = 0; j < choice_count; ++j)` 637 (1310 bytes, unrolled); bound read as
+// entry->count 646; through a scan helper writing last/weight/mask through pointers, plain inline 354
+// (called, 952 bytes), __forceinline 637, with entry->count 646; one `j` shared by both loops 637, with
+// the `!=` scan 84; a walking choice pointer 563 (1245 bytes); the mask set through a SET_FLAG macro 637.
+// Real --fast agrees for the `<` scan, shared j, walking pointer, forceinline helper and SET_FLAG forms.
 // Round 54: moving the inverse into the found branch gives retail's 1.0/0.0 load order and the
 // found-path subtraction (132f), but our not-found exit then rejoins the block's 1.0 load instead
 // of reloading it, so the tail sits 8 bytes short of retail's and every later branch target
@@ -691,10 +702,33 @@ struct s_colour_function_ab
 };
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 
+// Round 31 (lane D): score 91 (was 91): unchanged; retail keeps the destination pointer in EBX and
+// the source pointer in its stack slot, while ours keeps the source in EBX and the destination in
+// EDI (which also feeds the 0x131c20 result register), and retail counts the colours with a signed
+// 32-bit division by 24 (magic 0xAAAAAAAB) where our (long) cast gives the cheaper 16-bit-range
+// sequence. Measured this round: the multiply block written green, red, blue with the value first
+// 90 (one point better, not kept), the same block with green and blue exchanged 105 each, the
+// block with the value written after the component 91 each, the destination formed after the count
+// test 99, the source in a separate variable 179, a byte-pointer destination 179, a temporary copy
+// of the colour 91, the destination pointer advanced at the end of the body 93, an indexed
+// destination 148 and a constant source 91; every one restored.
+// score 91 (was 91): unchanged. Retail keeps the destination pointer in EBX and the source pointer
+// only in its stack slot, while ours keeps the source pointer in EBX and the destination in EDI;
+// retail also counts the colours with a signed 32-bit division by 24 (magic 0xAAAAAAAB), while our
+// (long) cast lets MSVC use the cheaper 16-bit-range sequence, so the value agrees but the
+// instruction sequence does not.
 // score 91 (was 91): retail tests the count against zero before it computes
 // the output pointer, ours computes the pointer first, and retail keeps the
 // running offset in another register, so the test, the two leas and the
 // loop's bookkeeping differ.
+// Round 15 (m3 lane 2, LTCG env harness = file + depth-4 closure; positional/aligned, base 84/55 = full 91):
+// plain `for (i = 0; i < count; i++)` with `current = &base[count + i]` and `result = true` at the body's
+// top/end/after the copy 129/55 each (563 bytes: source kept in its stack slot as retail, but the false
+// result takes BL, EBX is pushed at entry, the two false exits merge and the destination takes EDI);
+// on it `&base[i + count]`, `base + count + i`, a source pointer, current declared first, the copy first,
+// `colors` name, count declared before the array, a flags local 129/129/129/129/143/129/113/129; early
+// `return false` 170; result declared in the block 95; `result = count > 0` after the loop 168; result set
+// before the loop 91 (aligned 75); pointer increments in a plain for 97, inside the count test 108.
 // Direct size/24 count 161; const base, entry and function views 91;
 // unsigned count 171; component clamp loop 91; scale loop and both loops 90
 // (one-count gain rejected).
@@ -740,6 +774,13 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 // Round 86: scalar component copy 139; blend-only count 169; scale-only count 170;
 // blend-only function array 173; scale-only function array 139; shared inner counter 105;
 // shared function pointer 91; advancing outer entry pointer 203. Original body restored.
+// Round 52: both value reads through the existing 0xbe8b0 91 (identical code, kept: it replaces that
+// helper's body written out twice); color scale and clamp as inline helpers 91 (identical); the
+// destination assigned first from the object 172 (575 bytes); one colour-array local split into
+// destination and source 182 (586 bytes); a plain `for (i = 0; i < count; i++)` with a per-iteration
+// destination pointer 186 (556 bytes). Screened: the destination declared before the source but
+// assigned after it identical; the source derived from the destination 164; indexed `current[i]`
+// accesses 135. The destination keeps EDI (the 0x131c20 result register) in every form.
 // @retail 0xbe8e0
 bool __stdcall function_be8e0(long object_index)
 {
@@ -763,9 +804,7 @@ bool __stdcall function_be8e0(long object_index)
                     s_colour_function_ab *function = &entry->functions[j];
                     if (function->blend_name)
                     {
-                        real value;
-                        if (!function_bab40(object_index, function->blend_name, &value)) value = 0.0f;
-                        function_131c20(&function->lower, &function->upper, function->flags, value, &*current);
+                        function_131c20(&function->lower, &function->upper, function->flags, function_be8b0(object_index, function->blend_name), &*current);
                     }
                 }
                 for (long j = 0; j < entry->function_count; ++j)
@@ -773,8 +812,7 @@ bool __stdcall function_be8e0(long object_index)
                     s_colour_function_ab *function = &entry->functions[j];
                     if (function->scale_name)
                     {
-                        real value;
-                        if (!function_bab40(object_index, function->scale_name, &value)) value = 0.0f;
+                        real value = function_be8b0(object_index, function->scale_name);
                         current->red = value * current->red;
                         current->green *= value;
                         current->blue *= value;

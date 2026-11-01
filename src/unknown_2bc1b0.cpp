@@ -156,6 +156,9 @@ struct s_placement_2bc1
 // its short cast 5; position pointer local for the marker query 5; creation pointer local 5. Diagnostics:
 // without the team call 38 (the copy then uses EDX), without the event 142, without the final
 // call 39: the copy's register follows the allocation of the whole tail.
+// Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
+// test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
+// local 5; event declared at the top of the marker block, filled in place 32.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {
@@ -248,6 +251,10 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// MiniMax G run (not kept, m3 review): 33 with the countdown computed before the timer's test, the tally
+// counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
+// retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
+// A byte cast that only steers the compare is kept only with a byte match.
 // score 62 (was 97): retail spills the item pointer to the stack before it
 // reads the rate, so the rate and its forty-times multiply land in different
 // registers than ours; the countdown is also still decremented in al, while

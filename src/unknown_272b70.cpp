@@ -722,7 +722,7 @@ void function_273670(long ai_index, bool flag)
 	}
 }
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 void function_204010(long squad_index, long other_squad_index);
 
 /* for every squad an ai index names (or the squad of a starting location),
@@ -1395,6 +1395,21 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // real decision polarity/lifetime does not recover the request registers or seat loads.
 // Round 234: Actual request outcome byte/short/long/dword 41/70/68/68; complementary failure carriers
 // 73/73/72/72. Original outcome and body restored; iterator scaling and request/seat scheduling remain.
+// Round 450: scalar candidate transfer/final-publication increment/both 41/41/41;
+// direct priority result alone/with transfer/with increment/both 42/42/42/42;
+// shared seat-definition input 48. Scalar address copies exact-only; all original code restored.
+// Round 454: Collection entry/mid-publication record receivers 153/153, each 153 with
+// sorted candidate fields at every use; persistent collection cursor with derived short count
+// 231/231, with original bounded short count 213/213. Comparator survives; original body restored.
+// Round 252: Positive load decision byte/short/word/long at admission and selection 41/56/56/52/41/56/56/52.
+// Original complete executable source restored; Iterator/candidate scaling, leave-request registers and seat
+// loads across clearing remain.
+// Round 267: Seeded while/for, condition-declared actor, for-declared actor: 41/274/41/274;
+// the same four with collection-only iterator scope 41/274/41/274. Original traversal and iterator
+// lifetime restored; handle/candidate scaling and late request/seat scheduling remain.
+// Round 269: Actual winning-seat pointer, early/late initialization, score/receiver update order and
+// nested/continue admission: eight forms 144 each, frame 0x6b0 versus 0x6ac. Original short
+// winner ordinal, requests and complete body restored; iterator/candidate and seat-load schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2577,6 +2592,15 @@ struct s_scenario_scripting_view
 // Round 234: Actual scripting/point-set/scenario record-reference subsets 1..7, then all with typed
 // point member: 96/80/96/80/96/80/96/96. Data references begin after signed admission; original search
 // restored; actor/counter homes and delayed data observation remain.
+// Round 454: Per-use candidate point/decoded selector/both 91/94/92; their loop-owned
+// short-counter forms 87/86/90; native point reference alone/with per-use selector 80/94.
+// Selector re-decode loses wrapper 0x2a71e0 at 14; original search and wrapper restored.
+// Round 252: Native candidate/actor/displacement library-copy boundaries, seven memcpy subsets then complete
+// memmove 102/100/130/157/189/186/216/191. Original complete executable source restored; Actor/set/counter
+// homes and delayed scripting-data observation remain.
+// Round 266: native-array differences at direct/resolved/both branches, each with original/loop
+// short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
+// Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

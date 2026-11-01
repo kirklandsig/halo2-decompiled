@@ -186,6 +186,58 @@ struct s_free_state_23d260
 // 355/343/339/370. All native direction producers and consumer changes restored; zero/side normalization remains.
 // Round 321: Complete native up-vector ownership with staged shared cross/forward snapshot/entry declaration subsets: 359/338/380/373/359/338/380/373.
 // Round 321: All lengthen the body; original publication, normalizer, projection, row accumulation and include set restored. Stacked notes merged.
+// Round 8 (lane 18, fast, aligned counts in brackets, base 102 [59]): fallback as `side.i = 1.f; side.k = 0.f;
+// side.j = 0.f;` 102 [59]; as `side.k = side.j = 0.f; side.i = 1.f;` 118 [52] (1328 bytes); the normalized
+// length in a named local 103 [59]; side declared at the top 102 [59]; `if (!normalize_inline(&side))` 121
+// [59] (1328 bytes); normalize3d with the yaw cosine/sine locals re-measured 276 [66] (x87 length exact,
+// the rotation's products then change operand order). The zero carrier stays XMM3 in every form.
+// Round 214: inverse movement setter 256; transformed position setter 102; world position setter
+// 102; inverse/transformed setters 277; inverse/world setters 277; both position setters 258; all
+// three setters 277; native world position update 195.
+// Round 21 (m3 lane 2, fast): side as an aggregate initializer 102 (same code); a pitch sine local computed
+// with the pitch cosine 106 (1328 bytes, first difference +0x94: zero XMM1, clamp and side i/j registers as
+// retail, but the x87 order changes and side.k stays in XMM0); that local after forward.j 103 (zero XMM3 again);
+// the local also for both forward.k reads of the up cross product 260; yaw cosine/sine locals at the forward
+// vector 324 (1351 bytes), before the movement 291.
+// Round 58 (lane 12, fast = plain here; none kept): side, movement, position and pitch-cosine declared
+// at the function's top, each and all together, 102 (same code); the normalize test as `!` 121 (1328
+// bytes) and as `0.f ==` 102 (same code); the roll update with the zero arm first 107. The zero stays
+// in XMM3 and the clamp constants in XMM1 in every form.
+// Round 23 (m3 lane 2, fast): on lane 16's normalize3d + yaw cosine/sine form (276 here too: retail's x87 length,
+// but the side.i copy is scheduled right after the forward.j store, before forward.k, which shifts everything after
+// by one instruction; zero still XMM3 and the divide after the lahf) the up stores written k, i, j 274; j, k, i 257;
+// i, k, j 286; j, i, k 283; i, j, k 285; side.j assigned before side.i 257 (the copy stays early and side.i is then
+// squared first), with side.k last as well 257; side.j before side.i on the original body 102 (same code).
+// Round 120 (m3 lane 5): `side` declared with `side.k = 0.f` at the function's top 102; the movement's
+// yaw cosine/sine as named locals on this graph 291 (movement x87 then retail's apart from the k load,
+// but the side/up block recolours and ours runs four instructions short ahead of it); the roll
+// rotation's cosine products as `v->x * cosine` 102 and cross_i's second product as `axis->j * v->k`
+// 102 (same code both: VC picks these operand orders itself); side filled i, j, then k last 102.
+// Original body restored.
+// Round 25 (m3 lane 2, fast): a 605 s permuter run, 24 tries, none below 102 (its reduced image scores 320, so it
+// cannot steer this function); the side vector through the existing vector3f_assign with normalize3d 291 (1309
+// bytes), with the yaw cosine/sine locals 276 (same as plain assignments); the forward vector through the existing
+// direction_from_angles (by-value angles) 282. The forward vector written through a pointer helper (this file's
+// orbit_direction_23d790, reading the angles through its state pointer) moves the side.i copy after `fld
+// forward.i` as in retail: called with the state cast to the orbit state 89 (1327 bytes; not keepable, a cast
+// between unrelated structs), with normalize3d 261, with normalize3d and the yaw locals 279 (1312 bytes); written
+// properly (a yaw/pitch pair type in both states, the helper taking it, 0x23d790 still matching) 279 (1326 bytes:
+// the same x87 fix, but the side/up SSE colouring follows the type path and is worse). Zero stays in XMM3 in all.
+// Round 34 (m3 lane 14, fast; aligned counts in brackets, base 102 [89]): normalize3d with yaw cosine/sine
+// locals re-measured 276 [88]; on it the up components written k,i,j / j,k,i / j,i,k / i,k,j / i,j,k 274/257
+// [86]/283/286/285, up as cross3f 279 [86], as cross3f_staged 289; the forward vector built in a local and
+// copied out, the side read from it, 367 (1367 bytes); forward.k computed after the side vector 288 [109].
+// Round 60 (lane 16, fast; aligned counts in brackets, base 102 [89]): the existing cross3f_staged for up
+// 256 [48] (first difference +0xa6: zero XMM1, clamp and side registers as retail); with a file-local
+// normalize (normalize_inline's shape, length as `i*i + (j*j + k*k)`) as well 236 [48]: the x87 squared
+// length, zero XMM1 and the side scale are then retail's exactly, and only the up cross block (retail
+// stores k, j, i as it goes, reloads forward.k/j) and the roll rotation's operand orders remain. Every
+// other cross form loses the zero register again: the cross written out k, j, i 269 [89], cross3f 273 [82], staged locals stored k, j, i 268 [84]; normalize3d
+// or a dot-ordered helper with the staged cross 289 [92]. On that lead: side j, i, k 256 [45]; yaw
+// cosine/sine locals 237 [51]; rotated_k computed before the cross terms 230 [75] (1327 bytes); pitch
+// sum operands swapped 236. On the round-42 form (276 [88]): up written i,j,k / j,k,i / j,i,k / i,k,j /
+// k,i,j 285/257/283/286/274; cross3f 279; cross3f_staged 289. A 900 s permuter run on the lead reached
+// 128 only through a `volatile` axis pointer (not usable). No helper or include kept.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

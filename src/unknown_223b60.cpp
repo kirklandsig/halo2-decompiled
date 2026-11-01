@@ -35,17 +35,12 @@ __int64 timing_counter_resume(timing_counter *c)
 
 // score 4 (was 4): identical body and length; our prologue stores the first delta
 // zero before pushing esi, while retail pushes esi first and then stores both
-// zero dwords. The permuter found no better variant. The tick local zeroed by
-// memset 50 (stores dropped); a volatile double 10; a volatile LARGE_INTEGER
-// `= { 0 }` 50; total and stopped declared volatile in the struct 34 (push esi
-// first, then a push edi); stopped alone 4; total alone 34.
-// identical body and length; our prologue stores the first
-// delta zero before pushing esi, while retail pushes esi first and then stores
-// both zero dwords. Every spelling of the reader and of the caller ties at 4,
-// and the permuter found no better variant; only a barrier or a volatile
-// anchor gives retail's order, and both are barred.
-// score 4: identical body and length; our prologue stores the first delta
-// zero dwords. The permuter found no better variant.
+// zero dwords. Every spelling of the reader and of the caller ties at 4, and the
+// permuter found no better variant; only a barrier or a volatile anchor gives
+// retail's order, and both are barred. The tick local zeroed by memset 50 (stores
+// dropped); a volatile double 10; a volatile LARGE_INTEGER `= { 0 }` 50; total and
+// stopped declared volatile in the struct 34 (push esi first, then a push edi);
+// stopped alone 4; total alone 34.
 // Round 41: reversed total addition 4; branch-duplicated totals 26; branch-duplicated
 // total/stopped stores 24; explicit false guard 4; const pointer formal 4; entry total
 // with reversed addition 29; delta-only rename 4; reversed clamp comparison 4.
@@ -54,10 +49,12 @@ __int64 timing_counter_resume(timing_counter *c)
 // default/cdecl/stdcall reader 77/77/77 (resume loses its match). Original restored.
 // Scoped stop stdcall/cdecl 4/4; unsigned result with default/stdcall/cdecl 4/4/4;
 // only the queued signature and its existing caller declaration changed, then restored.
-// zero dwords. The permuter found no better variant. The tick local zeroed by
-// memset 50 (stores dropped); a volatile double 10; a volatile LARGE_INTEGER
-// `= { 0 }` 50; total and stopped declared volatile in the struct 34 (push esi
-// first, then a push edi); stopped alone 4; total alone 34.
+// Round 16: a non-volatile tick local 50 (stores dropped in all four); an inline clamped
+// elapsed-ticks helper shared with peek 4; a forceinline reader 4; an early return when
+// already stopped 4; the reader with external linkage 4.
+// Round 61: timestamp then subtract 29; negated start then timestamp 43; LARGE_INTEGER delta 4;
+// standalone clamp ternary 4; delta named t 4; stopped snapshot 4; inner delta/total scope 4;
+// zero-initialized delta 4. Original body restored.
 // @retail 0x223b60
 __int64 timing_counter_stop(timing_counter *c)
 {
@@ -93,41 +90,23 @@ __int64 timing_counter_peek(timing_counter *c)
 	return total;
 }
 
-// score 28 (was 28): the conversion is correct, but our compiler keeps the union local
-// in registers (`movzx eax`; `shr ax`) while retail keeps it in memory
-// (`xor ecx, ecx`; `mov cx, [eax]`; `shr word ptr [esp + 4], 5`) and puts the
-// blue channel in dl. No source shape or annealed permuter run reproduced it.
-// A plain word local shifted in place with a separate colour gives retail's load,
-// in-memory shift and shared slot (29), but blue is then computed in the word's own
-// register after the slot store; retail computes it in a copy (dl) first. Blue stored
-// into the colour straight after its OR 26 (blue first, colour gets its own slot);
-// blue from a byte copy in one expression 26 (89 bytes); long blue 28 (90 bytes);
-// channels written into the colour fields 28; colour object through address casts 29;
-// word copy for the shifts 42 (73 bytes); 20 statement orders and channel spellings 29.
 // @retail 0x223e70
 void function_223e70(const word *rgb, S3TC_COLOR *out)
 {
-	union
-	{
-		dword d;
-		word w;
-		byte bytes[4];
-	} u;
+	S3TC_COLOR color;
 	word w = *rgb;
-	dword c = w;
-	byte b = (byte)(c << 3);
-	b |= b >> 5;
-	u.d = c;
-	u.w >>= 5;
-	byte g = (byte)(u.bytes[0] << 2);
-	g |= g >> 6;
-	byte r = (byte)(u.d >> 6);
-	r <<= 3;
-	r |= r >> 5;
-	u.bytes[0] = b;
-	u.bytes[1] = g;
-	u.bytes[2] = r;
-	*(dword *)out = u.d;
+	color.b = (byte)w;
+	w >>= 5;
+	color.g = (byte)w;
+	w >>= 6;
+	color.r = (byte)w;
+	color.b <<= 3;
+	color.g <<= 2;
+	color.r <<= 3;
+	color.b |= color.b >> 5;
+	color.g |= color.g >> 6;
+	color.r |= color.r >> 5;
+	*out = color;
 }
 
 PRIVATE inline s_fixup_element *fixup_entry_target(s_fixup_entry *entry, byte *base8)

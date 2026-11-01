@@ -308,6 +308,9 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 }
 
 #define sound_effect_delete function_21dcf1
+// score 204 (was 204): this round: no new in-file form moves it; the request has to reach 0x189fe0
+// in EAX or eight matched callers lose their match, and that body is in src/unknown_189010.cpp:
+// BLOCKED-BY 0x189fe0.
 // score 204 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Round 102: the Round 72 form again 52 (429 B), 0x189fe0 110 -> 135 and its eight callers lost
@@ -411,6 +414,11 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 // 213/213. All eight sensitive callers preserved; original accessor restored.
 // Round 206: Native C contracts on private starter/allocator/record accessor, seven subsets
 // [204, 204, 204, 204, 204, 204, 204]; all three standard callee-cleanup 204. Original contracts restored.
+// Round 179: the private starter forced inline with the real out-of-line delete 52 (429 B; 0x189fe0
+// 110 -> 135, its request moves from EAX to EDX and all eight matched callers lose their match: the
+// same blocker as the 0x125f70 route); the rate-limit test negated with no NONE arm 204; the platform
+// handle computed after the definition/effect declarations 221 (0x189fe0 132); sound_index declared
+// at the top 204; the allocation folded into the definition test 204. Still BLOCKED-BY 0x189fe0.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {
@@ -778,7 +786,6 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 48 (Kimi 2): repeat_state and loop_alternate held in one named 8-byte record matched byte for byte
 // (0 at 823); not kept, a struct that only groups locals to move their stack homes.
 // Earlier note (30, was 60): every remaining difference is a stack offset. Retail keeps the loop bool
-// score 30 (was 30): every remaining difference is a stack offset. Retail keeps the loop bool
 // in a dword-aligned unit (its low byte) between repeat_state and the listener; ours is a
 // one-byte home in the lowest unit, which shifts the lighter dwords by four and reorders the
 // heavier ones. Retail's order: sound flags, effect, entry offset, controller, state, index,
@@ -895,6 +902,16 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // pair in one aggregate. Real trials (fast): the looping test named and used twice 210 (830 bytes); the
 // definition read before the looping block 201; a function-scope looping pointer 58; one if/else choosing
 // state and alternate 67.
+// Round 60 (fast baseline 58, plain 30): a two-member dword/bool union for loop_alternate 40 fast,
+// 12 plain (not kept: a single-local wrapper without a match); union and repeat_state reversed 40;
+// definition declared before the snapshot 40; tag_index at function scope 40; direct repeat state 145;
+// direct loop flag 191; both fields direct 199 (0x15c frame); signed-short repeat_state 189.
+// Original executable body restored.
+// Round 124 (plain checks): the loop index declared at the top 30; the entry pointer, the tag index,
+// and the 'snd!' case's listener and rate stage each declared at function scope 30; a dword
+// repeat_state 30 (identical code each time). One-file LTCG harness (reproduces our frame): scope,
+// declaration order and names never move a slot; a long flag (832 bytes) lands beside repeat_state
+// (flag below it), so only the flag's one-byte size sends it to the lowest unit.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

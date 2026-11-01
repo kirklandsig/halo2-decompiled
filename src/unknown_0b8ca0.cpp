@@ -226,6 +226,13 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // The view's own physics bits 4; the tail written out in both arms 106; disable tested first 4;
 // both index reads through the havok object getter 51; a word index 14; in a one-file LTCG
 // build the data stays in eax for every lookup spelling, even with the update tail deleted.
+// Round 55: no noinline 4; inline target 4; inline activation/update/list-update declarations 4/4/4;
+// component reference 4; const object and type 4; explicitly masked getter index 4.
+// Round 31: the pool data read into a component-array local before indexing 4; `if (disable) goto
+// update;` ahead of the activation 4; the address written index-first, `index * size + data` (diagnostic,
+// identical code, so the evaluation order of the lookup is not the cause) 4; the type read from the
+// header at each of its three uses 61; the component index re-read through OBJECT_GET 55. Matched
+// 0x11bce0 makes the same lookup with the data loaded after the index scaling, as ours does here.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -632,9 +639,15 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 231 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
-// bool result byte) while ours keeps EBP for the global base and a dword result; retail's
-// x87 block computes atan2(radius, magnitude) (swapping ours scores 230).
+// score 230 (was 231): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// bool result byte) while ours keeps EBP for the global base and a dword result.
+// Earlier round: the root-walk loop and the table read are the only places
+// left that could give retail's frame shape, so each was tried alone and together: the table
+// read moved inside the root loop 216 fast (237 plain), a bool result instead of the dword
+// 264, and both together 220; every one is worse than the 231 we keep, so the body stands.
+// The remaining difference is the frame (retail self-aligns to 0xb4, ours is 0xac with
+// EBP-based globals) and the result width; nothing in the reachable code moves it.
+// Earlier: retail's x87 block computes atan2(radius, magnitude) (swapping ours scores 230).
 // Round 89: the reduced image self-aligns like retail, so trials were measured there (baseline 247)
 // and confirmed plain: the existing function_baf80 for the root walk 280 (stays out of line; retail
 // calls it out of line from 48 other functions, so this loop is its own); the table read inside the
@@ -701,6 +714,24 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // Round 205: Existing marker-position provider with long/Boolean/word/byte results, inherited/direct radius:
 // 230/251, 280/295, 238/255, 260/272. One-point 230 rejected; all original forms restored.
 // Caller-dependent self-alignment, full-handle spills and scalar/angle homes remain.
+// Round 7 (lane 17): the angle now computes retail's value: retail loads the magnitude, then the radius,
+// then `fxch; fpatan`, which is atan2(radius, magnitude), and adds pi/4 as a float (`fadd dword` of the
+// float constant at 0x45e01c); ours computed atan2(magnitude, radius). The swap alone 232 plain (radius
+// loaded first, no fxch); with the angle sum in real (`(real)atan2(radius, (double)magnitude) + pi/4`)
+// retail's exact x87 sequence, 230 plain (kept). With the callers in the reduced image it no longer
+// self-aligns (fast now agrees with plain); without them it does (246): either caller alone gives LTCG
+// the alignment guarantee retail's lacked, so the frame is a call-chain property, not this body's.
+// On 230 (fast, callers included): the radius as a plain double (no alias) 235 (the field is re-read,
+// no double home); a bool result 273 (861 bytes), on the next form too 273; the header table read
+// inside the root walk 236; the range's zero as the model-NONE else arm 228 (retail's memory-zero
+// compare and else-arm xorps; below the keep bar, lead); on that, a single-result iterator step 273
+// (927 bytes), both offsets through vector3d_from_points3d 228, the typed visible_clusters field 228,
+// the step's ternary as `index != NONE ? ... : 0` 227 (below the bar, lead), and on that the outer
+// scope block removed 227, the link iterator at function scope 227, the squared radius before the
+// model index 227, the marker at loop-body scope 227, the near test as `radius_squared >
+// distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
+// pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
+// parameter (contributor, left alone).
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -781,7 +812,7 @@ bool function_bba80(long object_index)
                     double const &radius = radius_value;
                     real magnitude = function_30bf0(&offset);
                     if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)magnitude, radius) + 0.7853981852531433f))
+                        cos((real)atan2(radius, (double)magnitude) + 0.7853981852531433f))
                     {
                         result = true;
                         goto done;
@@ -1499,6 +1530,12 @@ done:
 // Round 14 (0xa73b0's lookup forms): definition read at each use with a datum local 33 (236 bytes);
 // definition local with a datum local 33; long stride with the placements pointer 27 (236 bytes, the
 // product then extends the index into eax); the product's operands either way round, no effect (17/27).
+// Round 101 (lane 7), `--fast`: palette address at the call 37 (240 bytes); a screen of palette offset short/long x
+// palette local/at the call x size short/long x placement offset short/long 17/17/27/27/37/37/26/26 (short palette
+// offset) and 17/17/27/27/25/25/32/32 (long); short type 115 (267 bytes); a named datum local 33 (236 bytes: size
+// sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
+// definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
+// palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1665,13 +1702,14 @@ void function_bba20(long index);
 
 transform4x3f *function_b8bd0(long object_index, short node_index);
 
-// Round 27: the parent lookup written through pool->data, the activity bit carried in a byte, the
-// shift-form bit-7 test and the type-below-eight test each regress (298/285/292/292 against 285);
-// the original body is restored.
-// score 285 (was 285): the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
+// score 285 (was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Earlier: the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
 // +0x76 (pool in EBX, -1 in EAX). Retail inlines the node matrix lookup (0xb8bd0's body, here called
 // out of line because its file is /Ob1) and re-derives pool->data into EBX after the ancestry loop
 // for both the parent and the header, where ours takes the header from the entry's pool->data.
+// Round 27: the parent lookup written through pool->data, the activity bit carried in a byte, the
+// shift-form bit-7 test and the type-below-eight test each regress (298/285/292/292 against 285);
+// the original body is restored.
 // Round 89: the node matrix through function_b8bd0 at its use, the link through the early parent
 // pointer (retail's two parent lookups) kept, 305 -> 285 (a local for the matrix 285 too); on it the
 // same fresh lookup written in place as 0xbdef0 does 350; the header from g_4e0300->data 298; index
@@ -1738,6 +1776,13 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // Round 205: Shared rotation/axis providers 332/332; shared point provider alone/rotation/axis 542/431/447;
 // rotation/axis with the native activity member 315/330; rotation with the earlier inverse phase 334.
 // All restored; frame, accepted table transport and node-query expansion remain.
+// Round 30 (lane 11, fast = full here): after the ancestry loop retail derives the header from the
+// fresh data load it uses for the parent (EBX, data spilled at +0x14), tests bits 7 and 8 of the object
+// flags in shift form and computes the header bit in 8-bit arithmetic. A compile-only harness gives
+// each piece: the header as `g_4e0300->data + offset`, `(header->flags & 4) != 0` (`shr al, 2; and
+// al, 1`), and `>> 7`/`>> 8` shift tests. In the build: the header from g_4e0300->data 298 (pool moves
+// to EDI at entry), with both shift tests 304, plus the byte bit 300; the byte bit alone 281 (4, under
+// the gate), with both shift tests 290 (aligned 190 -> 174). All restored.
 // Round 4 (lane 18, fast): the header's active bit as a byte bitfield of the header view 281 (retail's
 // byte shr/and; four-point gain, not kept); on it the bit-7 flag test by shift 285, the header from
 // OBJECT_HEADER_GET(index) 302, the type test as `!((1 << type) & 0x80)` 290, the active flag not
@@ -1746,6 +1791,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // Round 205: Shared rotation/axis providers 332/332; shared point provider alone/rotation/axis 542/431/447;
 // rotation/axis with the native activity member 315/330; rotation with the earlier inverse phase 334.
 // All restored; frame, accepted table transport and node-query expansion remain.
+// Round 247: both real header stores through native byte members, with saved activity,
+// complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
+// Four-point lead is below the gate; original header type, byte stores, activity
+// observation, root fields, node query, shared transforms and full body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

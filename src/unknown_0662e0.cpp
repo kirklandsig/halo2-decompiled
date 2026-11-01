@@ -509,127 +509,27 @@ __forceinline void network_configuration_levels_initialize(s_network_configurati
 	}
 }
 
-// score 265 (was 363): retail holds the constant five in edx from the value28 store to the
-// value1b0 store and walks esi over the first table's value84 row with value40 at [esi - 0x44];
-// ours rematerialises the five, indexes the first table with esi and fills the flags differently.
-// Earlier: frame 0x20 agrees; constant five, first-table induction and flag
-// initialization differ. Register allocation differs from the first loop on. Retail keeps i in
-// ebp and walks a pointer in esi over value84 (value40 at [esi - 0x44]), comparing it with
-// &value84[1] and &value84[4]; the inlined levels loops walk pointers the same way. Ours keeps i
-// in esi with scaled addressing and holds 0 (ebp) and 1 (edx) in registers, where retail holds only
-// 5 (edx, from the value28 store to the value1b0 store) and later 2000 (ebp) and 5000 (esi) for the
-// value774 adds. Retail forwards the stored value28 and value2c into the value1b0/value368 and
-// value18c/value358 copies across every table loop (5 in edx, then immediates); ours reloads both
-// after any loop that stores into the global's arrays (with every table loop removed, as a
-// diagnostic, ours forwards value28 into value1b0 too; removing the rounding asm does not), so
-// the copies stay as copies: written as literals they hoist 65536 into a register instead.
-// Retail's forms, which score higher here only through that allocation: flags as memset then
-// flags[1], [6], [7] = true (dword, dword, byte, then three byte stores; 449); the value774 loop
-// as i <= 39 (jle against [39]; 449); value1b0 and value368 as literal 5 (388), with 65536 for the
-// value2c copies too (420); all of these 419 (417 in round 68).
-// Tried: i < 2 (454), its own loop variable for the first loop (363); initial real stores first
-// 363; outer word index 469 signed or unsigned; column word index 464; both signed-word indices
-// 512; first-table result names 363; loop-scope steps 363; initialized steps 363; first regular
-// table tail loop 531; second tail loop 530; zero inline depth 610; depth one 363; frame pointer
-// 487; global optimization off 1180; size preference 538; integer stores reversed 363; result
-// calculation reversed 362; table stores reversed 363; shared multiplier 363; first interpolation
-// local 363; second interpolation local 363; explicit low cases 448; shared rounding 460;
-// zero-prefix split 461; column traversal 446; triangular pairs 497; default-first matrix score
-// 646; redundant first-table clear removed 454; branch-local table publication 478; signed-byte
-// flags 363; first-table short counter 445; single grid publication 639; short matrix score 457;
-// unsigned table outputs 363; unsigned steps 363; byte outer ordinal 478; shared five-derived
-// observation 460; shared capacity observation 461; byte matrix row 475; byte column 464; both
-// byte ordinals 498; native-word flag array 432; native-long flag array 455; index name 363;
-// column name 363; both names 363; index declaration order 363; step names 363; common first-table
-// factor 363; shared-level parameter/cached base 444/444; ordinary inline with field/parameter/
-// cached base 573 each; low table first with field/parameter/cached base 478/362/362; value84
-// stored before value40 363 (same code); flags zero-initialised then three true stores 453;
-// table values zero-initialised with one `i > 1` arm 364.
-// constant-five lifetime and first-table induction differ;
-// initial real stores first 363; outer word index 469 signed or unsigned;
-// column word index 464; both signed-word indices 512. Original kept.
-// first-table result names 363; loop-scope steps 363; initialized steps 363;
-// first regular table tail loop 531; second tail loop 530.
-// Zero inline depth 610; depth one 363; frame pointer 487;
-// global optimization off 1180; size preference 538. Original kept.
-// register allocation differs from the first loop on. Retail keeps i
-// in ebp and walks a pointer in esi over value84 (value40 at [esi - 0x44]), comparing it
-// with &value84[1] and &value84[4]; the inlined levels loops walk pointers the same way.
-// Ours keeps i in esi with scaled addressing and holds 0 (ebp) and 1 (edx) in registers,
-// where retail holds only 5 (edx, from the value28 store to the value1b0 store) and later
-// 2000 (ebp) and 5000 (esi) for the value774 adds. Retail's forms, which score higher
-// here only through that allocation: flags as memset then flags[1], [6], [7] = true
-// (dword, dword, byte, then three byte stores; 449); the value774 loop as i <= 39
-// (jle against [39]; 449); value1b0 and value368 as literal 5 (388), with 65536 for the
-// value2c copies too (420); all of these 419. Tried: i < 2 (454), its own loop variable
-// for the first loop (363); initial real stores first 363; outer word index 469 signed
-// or unsigned; column word index 464; both signed-word indices 512. Original kept.
-// Earlier: frame 0x20 agrees; constant five, first-table induction and flag initialization differ.
-// frame 0x20 agrees; constant five, first-table induction and flag initialization differ.
-// Reduced trials: integer stores reversed 363; result calculation reversed 362; table stores reversed 363;
-// shared multiplier 363; first interpolation local 363; second interpolation local 363; explicit low cases
-// 448; shared rounding 460.
-// Lanes also tried: first-table result names 363; loop-scope steps 363; initialized steps 363;
-// first regular table tail loop 531; second tail loop 530; zero inline depth 610; depth one 363;
-// frame pointer 487; global optimization off 1180; size preference 538.
-// Zero-prefix split 461; column traversal 446; triangular pairs 497;
-// default-first matrix score 646; redundant first-table clear removed 454.
-// Earlier: round 312: constant-five/induction/flag gaps remain; branch-local table publication 478; signed-byte flags 363; first-table short counter 445; single grid publication 639; short matrix score 457.
-// first-table induction and default/flag scheduling remain.
-// Unsigned table outputs 363; unsigned steps 363; byte outer ordinal 478;
-// shared five-derived observation 460; shared capacity observation 461 (fast).
-// Earlier: constant-five lifetime and first-table induction remain;
-// byte matrix row 475; byte column 464; both byte ordinals 498;
-// native-word flag array 432; native-long flag array 455 (fast).
-// Round 358: Four regular short-table fill cursors with original/first-table/level/both shared
-// rounding 363/460/442/480; pointer-end termination gives 363/460/442/480. Original helpers, loops,
-// library calls and body restored.
-// round 312: constant-five/induction/flag gaps remain; branch-local table publication 478; signed-byte flags 363; first-table short counter 445; single grid publication 639; short matrix score 457.
-// constant-five lifetime and first-table induction remain;
-// Index name 363; column name 363; both names 363; index declaration order 363;
-// step names 363; common first-table factor 363 (fast).
-// Round 23: shared-level parameter/cached base 444/444; ordinary inline with field/parameter/
-// cached base 573 each; low table first with field/parameter/cached base 478/362/362.
-// One-point gains rejected; original level producer and initialization order restored.
-// Round 239: direct descending first-table/levels/both indices 452/476/476;
-// matrix rows 490, with first-table/levels/both 493/490/505; all with descending
-// columns 470. Constant forwarding and native ascending induction remain; original
-// indexed walks, existing level producer, tables and body restored.
-// This round: the first table's pointer walk (retail keeps the element address in esi and the
-// index in ebp, with value40 at [esi-0x44]) is not reachable from the source - a pointer over
-// value84 beside the index 421, two pointers 457, the index taken from the pointer 477/441, the
-// element address compared with the array's own addresses 476, the pointer compared with the
-// array's own addresses 468, a pointer with an offset 363 and a loop-local index 363; MSVC
-// either folds the index into the pointer or normalises the pointer back into an index.
-// This round: loop bounds as `i < 17` - the levels helper 424, the first table 363, both 478,
-// helper and table together 454; every spelling regresses, the original bounds stay.
-// Round 205: high first-table interval first / diagonal-first matrix / both 486/628/643;
-// independent unsigned matrix ordinals alone/with high/with diagonal/with both 475/488/657/664;
-// equal-flag partition 694. Original decision graph, tables and counters restored.
-// Round 311: initial five/induction/flag gaps remain; cumulative curve producer
-// kept at 265 plain, 2678/2676 bytes. Chained initial five/capacity/both
-// 438/438/388; curve alone 265, with five/capacity/both 425/425/386;
-// all with native flag clear 481. Original default observations and flags retained.
 // @retail 0x66330
 void network_configuration_set_defaults()
 {
+	s_network_configuration *configuration = &g_network_configuration;
 	long i;
 	long j;
 
-	memset(&g_network_configuration, 0, sizeof(g_network_configuration));
+	memset(configuration, 0, sizeof(*configuration));
 
-	g_network_configuration.real10 = 0.25f;
-	g_network_configuration.value14 = 2;
-	g_network_configuration.value18 = 20480;
-	g_network_configuration.value1c = 51200;
-	g_network_configuration.value20 = 300000;
-	g_network_configuration.real24 = 0.5f;
-	g_network_configuration.value28 = 5;
-	g_network_configuration.value2c = 65536;
-	g_network_configuration.value30 = 32768;
-	g_network_configuration.real34 = 1.0172526e-05f;
-	g_network_configuration.real38 = 0.0125f;
-	g_network_configuration.real3c = 2.0f;
+	configuration->real10 = 0.25f;
+	configuration->value14 = 2;
+	configuration->value18 = 20480;
+	configuration->value1c = 51200;
+	configuration->value20 = 300000;
+	configuration->real24 = 0.5f;
+	configuration->value28 = 5;
+	configuration->value2c = 65536;
+	configuration->value30 = 32768;
+	configuration->real34 = 1.0172526e-05f;
+	configuration->real38 = 0.0125f;
+	configuration->real3c = 2.0f;
 
 	for (i = 0; i <= 16; i++)
 	{
@@ -660,60 +560,64 @@ void network_configuration_set_defaults()
 			value40 = (i - 1) * step40 + 15360;
 			value84 = (i - 1) * step84 + 61440;
 		}
-		g_network_configuration.value40[i] = value40;
-		g_network_configuration.value84[i] = value84;
+		configuration->value40[i] = value40;
+		configuration->value84[i] = value84;
 	}
-	g_network_configuration.valuec8 = 8;
-	g_network_configuration.valuecc = 131072;
-	g_network_configuration.valued0 = 131072;
-	g_network_configuration.valued4 = 10240;
-	g_network_configuration.valued8 = 262144;
-	g_network_configuration.valuedc = 262144;
-	g_network_configuration.valuee0 = 131072;
-	g_network_configuration.valuee4 = 131072;
+	configuration->valuec8 = 8;
+	configuration->valuecc = 131072;
+	configuration->valued0 = 131072;
+	configuration->valued4 = 10240;
+	configuration->valued8 = 262144;
+	configuration->valuedc = 262144;
+	configuration->valuee0 = 131072;
+	configuration->valuee4 = 131072;
 
-	network_configuration_levels_initialize(&g_network_configuration.levels[1], 35840);
-	network_configuration_levels_initialize(&g_network_configuration.levels[0], 25600);
+	network_configuration_levels_initialize(&configuration->levels[1], 35840);
+	network_configuration_levels_initialize(&configuration->levels[0], 25600);
 
-	g_network_configuration.value178 = 10000;
-	g_network_configuration.value17c = 10000;
-	g_network_configuration.value180 = 3000;
-	g_network_configuration.value184 = 100;
-	g_network_configuration.value188 = 100;
-	g_network_configuration.value18c = g_network_configuration.value2c;
-	g_network_configuration.value190 = 10000;
-	g_network_configuration.value194 = 60000;
-	g_network_configuration.value198 = 240000;
-	g_network_configuration.value19c = 60000;
-	g_network_configuration.value1a0 = 6;
-	g_network_configuration.value1a4 = 8;
-	g_network_configuration.value1a8 = 10000;
-	g_network_configuration.flag1ac = false;
-	g_network_configuration.value1b0 = g_network_configuration.value28;
-	g_network_configuration.value1b8 = 150;
-	g_network_configuration.value1bc = 3;
-	g_network_configuration.value1c0[2] = 50;
-	g_network_configuration.value1c0[5] = -200;
-	g_network_configuration.value1c0[6] = -200;
-	g_network_configuration.value1c0[7] = -200;
-	g_network_configuration.value1c0[8] = -200;
-	g_network_configuration.value1c0[9] = -200;
-	g_network_configuration.value1e8 = 200;
-	g_network_configuration.value1ec = 100;
-	g_network_configuration.value1f0 = 4;
-	g_network_configuration.value1f4 = 100;
-	g_network_configuration.value1f8 = 25;
-	g_network_configuration.value340 = 50;
-	g_network_configuration.value344 = 180;
-	g_network_configuration.value348 = 2.0;
-	g_network_configuration.value350 = 100;
-	g_network_configuration.value1c0[0] = 100;
-	g_network_configuration.value1c0[1] = 80;
-	g_network_configuration.value1c0[3] = 0;
-	g_network_configuration.value1c0[4] = -100;
+	configuration->value178 = 10000;
+	configuration->value17c = 10000;
+	configuration->value180 = 3000;
+	configuration->value184 = 100;
+	configuration->value188 = 100;
+	configuration->value18c = 65536;
+	configuration->value190 = 10000;
+	configuration->value194 = 60000;
+	configuration->value198 = 240000;
+	configuration->value19c = 60000;
+	configuration->value1a0 = 6;
+	configuration->value1a4 = 8;
+	configuration->value1a8 = 10000;
+	configuration->flag1ac = false;
+	configuration->value1b0 = 5;
+	configuration->value1b8 = 150;
+	configuration->value1bc = 3;
+	configuration->value1e8 = 200;
+	configuration->value1ec = 100;
+	configuration->value1f0 = 4;
+	configuration->value1f4 = 100;
+	configuration->value1f8 = 25;
+	configuration->value340 = 50;
+	configuration->value344 = 180;
+	configuration->value348 = 2.0;
+	configuration->value350 = 100;
+	configuration->value1c0[0] = 100;
+	configuration->value1c0[1] = 80;
+	configuration->value1c0[2] = 50;
+	configuration->value1c0[3] = 0;
+	configuration->value1c0[4] = -100;
+	configuration->value1c0[5] = -200;
+	configuration->value1c0[6] = -200;
+	configuration->value1c0[7] = -200;
+	configuration->value1c0[8] = -200;
+	configuration->value1c0[9] = -200;
 
-	bool flags[9] = { false, true, false, false, false, false, true, true, false };
-	memset(g_network_configuration.value1fc, 0, sizeof(g_network_configuration.value1fc));
+	bool flags[9];
+	memset(flags, 0, sizeof(flags));
+	flags[1] = true;
+	flags[6] = true;
+	flags[7] = true;
+	memset(configuration->value1fc, 0, sizeof(configuration->value1fc));
 	for (i = 0; i < 9; i++)
 	{
 		for (j = 0; j < 9; j++)
@@ -722,9 +626,9 @@ void network_configuration_set_defaults()
 
 			if (flags[i])
 			{
-				value = i == j ? 100 : -100;
+				value = j == i ? 100 : -100;
 			}
-			else if (i == j)
+			else if (j == i)
 			{
 				value = 0;
 			}
@@ -732,230 +636,230 @@ void network_configuration_set_defaults()
 			{
 				value = flags[j] ? -100 : -50;
 			}
-			g_network_configuration.value1fc[i][j] = value;
-			g_network_configuration.value1fc[j][i] = value;
+			configuration->value1fc[i][j] = value;
+			configuration->value1fc[j][i] = value;
 		}
 	}
 
-	g_network_configuration.value354 = 5000;
-	g_network_configuration.value358 = g_network_configuration.value2c;
-	g_network_configuration.value35c = 20000;
-	g_network_configuration.value360 = 10000;
-	g_network_configuration.value364 = 100;
-	g_network_configuration.value368 = g_network_configuration.value28;
-	g_network_configuration.value36c = 100;
-	g_network_configuration.value370 = 50;
-	g_network_configuration.value374 = 300;
+	configuration->value354 = 5000;
+	configuration->value358 = 65536;
+	configuration->value35c = 20000;
+	configuration->value360 = 10000;
+	configuration->value364 = 100;
+	configuration->value368 = 5;
+	configuration->value36c = 100;
+	configuration->value370 = 50;
+	configuration->value374 = 300;
 
-	memset(g_network_configuration.value378, 0, sizeof(g_network_configuration.value378));
+	memset(configuration->value378, 0, sizeof(configuration->value378));
 	for (i = 0; i < 120; i++)
 	{
-		g_network_configuration.value378[i] = 180;
+		configuration->value378[i] = 180;
 	}
-	g_network_configuration.value378[120] = 170;
-	g_network_configuration.value378[121] = 160;
-	g_network_configuration.value378[122] = 150;
-	g_network_configuration.value378[123] = 140;
-	g_network_configuration.value378[124] = 130;
-	g_network_configuration.value378[125] = 120;
-	g_network_configuration.value378[126] = 110;
-	g_network_configuration.value378[127] = 100;
-	g_network_configuration.value378[128] = 90;
-	g_network_configuration.value378[129] = 80;
-	g_network_configuration.value378[130] = 70;
-	g_network_configuration.value378[131] = 60;
-	g_network_configuration.value378[132] = 50;
-	g_network_configuration.value378[133] = 40;
-	g_network_configuration.value378[134] = 30;
+	configuration->value378[120] = 170;
+	configuration->value378[121] = 160;
+	configuration->value378[122] = 150;
+	configuration->value378[123] = 140;
+	configuration->value378[124] = 130;
+	configuration->value378[125] = 120;
+	configuration->value378[126] = 110;
+	configuration->value378[127] = 100;
+	configuration->value378[128] = 90;
+	configuration->value378[129] = 80;
+	configuration->value378[130] = 70;
+	configuration->value378[131] = 60;
+	configuration->value378[132] = 50;
+	configuration->value378[133] = 40;
+	configuration->value378[134] = 30;
 	for (i = 135; i < 255; i++)
 	{
-		g_network_configuration.value378[i] = 20;
+		configuration->value378[i] = 20;
 	}
 	for (i = 0; i < 120; i++)
 	{
-		g_network_configuration.value576[i] = -20;
+		configuration->value576[i] = -20;
 	}
-	g_network_configuration.value576[120] = -30;
-	g_network_configuration.value576[121] = -40;
-	g_network_configuration.value576[122] = -50;
-	g_network_configuration.value576[123] = -60;
-	g_network_configuration.value576[124] = -70;
-	g_network_configuration.value576[125] = -80;
-	g_network_configuration.value576[126] = -90;
-	g_network_configuration.value576[127] = -100;
-	g_network_configuration.value576[128] = -110;
-	g_network_configuration.value576[129] = -120;
-	g_network_configuration.value576[130] = -130;
-	g_network_configuration.value576[131] = -140;
-	g_network_configuration.value576[132] = -150;
-	g_network_configuration.value576[133] = -160;
-	g_network_configuration.value576[134] = -170;
+	configuration->value576[120] = -30;
+	configuration->value576[121] = -40;
+	configuration->value576[122] = -50;
+	configuration->value576[123] = -60;
+	configuration->value576[124] = -70;
+	configuration->value576[125] = -80;
+	configuration->value576[126] = -90;
+	configuration->value576[127] = -100;
+	configuration->value576[128] = -110;
+	configuration->value576[129] = -120;
+	configuration->value576[130] = -130;
+	configuration->value576[131] = -140;
+	configuration->value576[132] = -150;
+	configuration->value576[133] = -160;
+	configuration->value576[134] = -170;
 	for (i = 135; i < 255; i++)
 	{
-		g_network_configuration.value576[i] = -180;
+		configuration->value576[i] = -180;
 	}
 
-	g_network_configuration.value774[0] = 0;
-	g_network_configuration.value774[1] = 100;
-	g_network_configuration.value774[2] = 200;
-	g_network_configuration.value774[3] = 400;
-	g_network_configuration.value774[4] = 600;
-	g_network_configuration.value774[5] = 900;
-	g_network_configuration.value774[6] = 1200;
-	g_network_configuration.value774[7] = 1600;
+	configuration->value774[0] = 0;
+	configuration->value774[1] = 100;
+	configuration->value774[2] = 200;
+	configuration->value774[3] = 400;
+	configuration->value774[4] = 600;
+	configuration->value774[5] = 900;
+	configuration->value774[6] = 1200;
+	configuration->value774[7] = 1600;
 	{
 		long value = 2000;
-		for (i = 8; i < 40; i++)
+		for (i = 8; i <= 39; i++)
 		{
-			g_network_configuration.value774[i] = value;
+			configuration->value774[i] = value;
 			value += 500;
 		}
 	}
 	{
-		long curve_value = g_network_configuration.value774[39];
+		long curve_value = configuration->value774[39];
 		curve_value += 600;
-		g_network_configuration.value774[40] = curve_value;
+		configuration->value774[40] = curve_value;
 		curve_value += 800;
-		g_network_configuration.value774[41] = curve_value;
+		configuration->value774[41] = curve_value;
 		curve_value += 1100;
-		g_network_configuration.value774[42] = curve_value;
+		configuration->value774[42] = curve_value;
 		curve_value += 1500;
-		g_network_configuration.value774[43] = curve_value;
+		configuration->value774[43] = curve_value;
 		curve_value += 2000;
-		g_network_configuration.value774[44] = curve_value;
+		configuration->value774[44] = curve_value;
 		curve_value += 2600;
-		g_network_configuration.value774[45] = curve_value;
+		configuration->value774[45] = curve_value;
 		curve_value += 3300;
-		g_network_configuration.value774[46] = curve_value;
+		configuration->value774[46] = curve_value;
 		curve_value += 4100;
-		g_network_configuration.value774[47] = curve_value;
+		configuration->value774[47] = curve_value;
 		curve_value += 5000;
-		g_network_configuration.value774[48] = curve_value;
+		configuration->value774[48] = curve_value;
 		curve_value += 6000;
-		g_network_configuration.value774[49] = curve_value;
+		configuration->value774[49] = curve_value;
 	}
 	for (i = 50; i < 128; i++)
 	{
-		g_network_configuration.value774[i] = 0x3fffffff;
+		configuration->value774[i] = 0x3fffffff;
 	}
 
-	g_network_configuration.value974[0] = 0;
-	g_network_configuration.value974[1] = 5;
-	g_network_configuration.value974[2] = 10;
-	g_network_configuration.value974[3] = 20;
-	g_network_configuration.value974[4] = 35;
-	g_network_configuration.value974[5] = 45;
-	g_network_configuration.value974[6] = 55;
-	g_network_configuration.value974[7] = 60;
-	g_network_configuration.value974[8] = 65;
-	g_network_configuration.value974[9] = 70;
-	g_network_configuration.value974[10] = 75;
-	g_network_configuration.value974[11] = 80;
-	g_network_configuration.value974[12] = 85;
-	g_network_configuration.value974[13] = 90;
-	g_network_configuration.value974[14] = 95;
-	memset(&g_network_configuration.value974[15], 100, 113);
-	memset(&g_network_configuration.value9f4[0], 100, 41);
-	g_network_configuration.value9f4[41] = 95;
-	g_network_configuration.value9f4[42] = 90;
-	g_network_configuration.value9f4[43] = 85;
-	g_network_configuration.value9f4[44] = 80;
-	g_network_configuration.value9f4[45] = 70;
-	g_network_configuration.value9f4[46] = 65;
-	g_network_configuration.value9f4[47] = 60;
-	g_network_configuration.value9f4[48] = 55;
-	g_network_configuration.value9f4[49] = 50;
-	g_network_configuration.value9f4[50] = 50;
-	memset(&g_network_configuration.value9f4[51], 0, 77);
+	configuration->value974[0] = 0;
+	configuration->value974[1] = 5;
+	configuration->value974[2] = 10;
+	configuration->value974[3] = 20;
+	configuration->value974[4] = 35;
+	configuration->value974[5] = 45;
+	configuration->value974[6] = 55;
+	configuration->value974[7] = 60;
+	configuration->value974[8] = 65;
+	configuration->value974[9] = 70;
+	configuration->value974[10] = 75;
+	configuration->value974[11] = 80;
+	configuration->value974[12] = 85;
+	configuration->value974[13] = 90;
+	configuration->value974[14] = 95;
+	memset(&configuration->value974[15], 100, 113);
+	memset(&configuration->value9f4[0], 100, 41);
+	configuration->value9f4[41] = 95;
+	configuration->value9f4[42] = 90;
+	configuration->value9f4[43] = 85;
+	configuration->value9f4[44] = 80;
+	configuration->value9f4[45] = 70;
+	configuration->value9f4[46] = 65;
+	configuration->value9f4[47] = 60;
+	configuration->value9f4[48] = 55;
+	configuration->value9f4[49] = 50;
+	configuration->value9f4[50] = 50;
+	memset(&configuration->value9f4[51], 0, 77);
 
-	memset(g_network_configuration.valueb74, 0, sizeof(g_network_configuration.valueb74));
-	memset(g_network_configuration.valuea74, 0, sizeof(g_network_configuration.valuea74));
+	memset(configuration->valueb74, 0, sizeof(configuration->valueb74));
+	memset(configuration->valuea74, 0, sizeof(configuration->valuea74));
 
-	g_network_configuration.valuec74 = 5000;
-	g_network_configuration.valuec78 = 200;
-	g_network_configuration.valuec7c = -200;
-	g_network_configuration.valuec80 = 2000;
-	g_network_configuration.valuec84 = 2000;
-	g_network_configuration.valuec88 = 2000;
-	g_network_configuration.valuec8c = 2000;
-	g_network_configuration.valuec90 = 10000;
-	g_network_configuration.valuec94 = 15000;
-	g_network_configuration.valuec98 = 100;
-	g_network_configuration.valuec9c = 32768;
-	g_network_configuration.valueca0 = 32768;
-	g_network_configuration.valueca4 = 16384;
+	configuration->valuec74 = 5000;
+	configuration->valuec78 = 200;
+	configuration->valuec7c = -200;
+	configuration->valuec80 = 2000;
+	configuration->valuec84 = 2000;
+	configuration->valuec88 = 2000;
+	configuration->valuec8c = 2000;
+	configuration->valuec90 = 10000;
+	configuration->valuec94 = 15000;
+	configuration->valuec98 = 100;
+	configuration->valuec9c = 32768;
+	configuration->valueca0 = 32768;
+	configuration->valueca4 = 16384;
 
 	network_configuration_set_simulation_defaults();
 
-	g_network_configuration.value1434 = 20000;
-	g_network_configuration.real1438 = 0.5f;
-	g_network_configuration.value143c = 1000;
-	g_network_configuration.real1440 = 0.84f;
-	g_network_configuration.real1444 = 0.62f;
-	g_network_configuration.real1448 = 0.25f;
-	g_network_configuration.real144c = 0.32f;
-	g_network_configuration.real1450 = 0.3f;
+	configuration->value1434 = 20000;
+	configuration->real1438 = 0.5f;
+	configuration->value143c = 1000;
+	configuration->real1440 = 0.84f;
+	configuration->real1444 = 0.62f;
+	configuration->real1448 = 0.25f;
+	configuration->real144c = 0.32f;
+	configuration->real1450 = 0.3f;
 
 	function_67a40();
 
-	g_network_configuration.value1454 = 1000;
-	g_network_configuration.value1458 = 8000;
-	g_network_configuration.value145c = 8000;
-	g_network_configuration.value1460 = 200;
-	g_network_configuration.value1464 = 1000;
-	g_network_configuration.value1468 = 6000;
-	g_network_configuration.value146c = 1500;
-	g_network_configuration.value1470 = 500;
-	g_network_configuration.value1474 = 3000;
-	g_network_configuration.value1478 = 10000;
-	g_network_configuration.value147c = 10000;
-	g_network_configuration.value1480 = 12000;
-	g_network_configuration.value1484 = 5000;
-	g_network_configuration.value1488 = 45000;
-	g_network_configuration.value148c = 4000;
-	g_network_configuration.value1490 = 6000;
-	g_network_configuration.value1494 = 1000;
-	g_network_configuration.value1498 = 120000;
-	g_network_configuration.value149c = 5000;
-	g_network_configuration.value1694 = 500;
-	g_network_configuration.value1698 = 3;
-	g_network_configuration.value169c = 2000;
-	g_network_configuration.value16a0 = 6000;
-	g_network_configuration.value16a4 = 5000;
-	g_network_configuration.value16a8 = 20;
-	g_network_configuration.value16ac = 64;
-	g_network_configuration.value16b0 = 3;
-	g_network_configuration.value16b4 = 5000;
-	g_network_configuration.value16b8 = 3;
-	g_network_configuration.value16bc = 2;
-	g_network_configuration.value16c0 = 4;
-	g_network_configuration.value16c4 = 80;
-	g_network_configuration.value16c8 = 150;
-	g_network_configuration.value16cc = 9999;
-	g_network_configuration.value16d0 = 150;
-	g_network_configuration.value16d4 = 1000;
-	g_network_configuration.value16d8 = 200;
-	g_network_configuration.value16dc = 100;
-	g_network_configuration.value16e0 = 700;
-	g_network_configuration.value16e4 = 200;
-	g_network_configuration.real16e8 = 3.0f;
-	g_network_configuration.value16ec = 400;
-	g_network_configuration.value16f0 = 10000;
-	g_network_configuration.real16f4 = 0.75f;
-	g_network_configuration.real16f8 = 10.0f;
-	g_network_configuration.flag16fc = false;
-	g_network_configuration.value1700 = 350;
-	g_network_configuration.value1704 = 600000;
-	g_network_configuration.flag1708 = false;
-	g_network_configuration.value170c = 600000;
-	g_network_configuration.value1710 = 3600000;
-	g_network_configuration.real1714 = 2.9999f;
-	g_network_configuration.value1718 = 2;
-	g_network_configuration.real171c = 0.5f;
-	g_network_configuration.value1720 = 1048576;
-	g_network_configuration.value1724 = g_network_configuration.value2c;
-	g_network_configuration.value1728 = 600;
-	g_network_configuration.value172c = 600;
+	configuration->value1454 = 1000;
+	configuration->value1458 = 8000;
+	configuration->value145c = 8000;
+	configuration->value1460 = 200;
+	configuration->value1464 = 1000;
+	configuration->value1468 = 6000;
+	configuration->value146c = 1500;
+	configuration->value1470 = 500;
+	configuration->value1474 = 3000;
+	configuration->value1478 = 10000;
+	configuration->value147c = 10000;
+	configuration->value1480 = 12000;
+	configuration->value1484 = 5000;
+	configuration->value1488 = 45000;
+	configuration->value148c = 4000;
+	configuration->value1490 = 6000;
+	configuration->value1494 = 1000;
+	configuration->value1498 = 120000;
+	configuration->value149c = 5000;
+	configuration->value1694 = 500;
+	configuration->value1698 = 3;
+	configuration->value169c = 2000;
+	configuration->value16a0 = 6000;
+	configuration->value16a4 = 5000;
+	configuration->value16a8 = 20;
+	configuration->value16ac = 64;
+	configuration->value16b0 = 3;
+	configuration->value16b4 = 5000;
+	configuration->value16b8 = 3;
+	configuration->value16bc = 2;
+	configuration->value16c0 = 4;
+	configuration->value16c4 = 80;
+	configuration->value16c8 = 150;
+	configuration->value16cc = 9999;
+	configuration->value16d0 = 150;
+	configuration->value16d4 = 1000;
+	configuration->value16d8 = 200;
+	configuration->value16dc = 100;
+	configuration->value16e0 = 700;
+	configuration->value16e4 = 200;
+	configuration->real16e8 = 3.0f;
+	configuration->value16ec = 400;
+	configuration->value16f0 = 10000;
+	configuration->real16f4 = 0.75f;
+	configuration->real16f8 = 10.0f;
+	configuration->flag16fc = false;
+	configuration->value1700 = 350;
+	configuration->value1704 = 600000;
+	configuration->flag1708 = false;
+	configuration->value170c = 600000;
+	configuration->value1710 = 3600000;
+	configuration->real1714 = 2.9999f;
+	configuration->value1718 = 2;
+	configuration->real171c = 0.5f;
+	configuration->value1720 = 1048576;
+	configuration->value1724 = 65536;
+	configuration->value1728 = 600;
+	configuration->value172c = 600;
 }
 
 // @retail 0x662e0

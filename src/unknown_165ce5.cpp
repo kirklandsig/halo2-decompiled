@@ -1379,7 +1379,26 @@ point2f *g_4687c4;
    sway springs, the weapons' animations, zoom overlays and idles */
 static __forceinline real function_x82e52f(dword *seed, char const *file, long line);
 
-// score 218 (was 218): frame 0x28 versus 0x2c, unit/mode homes and shared look reciprocal remain.
+// score 218 (was 218): frame 0x28 versus 0x2c; unit/mode homes and independent look divisions/homes remain.
+// Earlier at 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// Round 25 (lane I, fast): the two locals whose homes are swapped (`unit` and `mode`, ours
+// -0x18/-0x1c against retail's -0x1c/-0x18) declared in the other order, with the two
+// initialising calls kept in their original order, compile to byte-identical code (197 at
+// 2197 bytes): MSVC does not order the two homes by the declaration order.
+// Round 31 (lane I, fast): the pitch's rate read through a copy of the settings pointer
+// (`s_game_time_globals *frame_settings = g_510c54;` before the clamp) stops the shared reciprocal,
+// so MSVC keeps retail's two separate divisions, the second reloading `[0x510c54]->rate`; the two
+// clamped look outputs as one s_view_angles local give retail's grouping of them. Fast score
+// 218 -> 200; 2193 -> 2197 bytes (retail 2199). The frame (0x28 versus 0x2c), the look-output homes
+// (ours -0xc/-8, retail -0x2c/-0x28), the swapped unit/mode slots, the ESI/EDI save region and the
+// clamp's register roles still differ. A rate read through a local (a value or a pointer copy)
+// either keeps the shared reciprocal or lands in a stack slot instead of retail's `[eax + 4]`.
+// MiniMax I (10-31) review: round 31's 200 came from the `frame_settings` pointer copy, a one-use
+// local (kept only with a match); without it the s_view_angles local alone 216 against 220, under the
+// 8-point bar, so the body stays as it was.
+// Earlier score 218 (was 218; round 30's set below reached 122 but is not kept, see the review line): frame
+// 0x28 versus 0x2c (look homes), the shared look reciprocal, ESI/EDI saved before the unit test (retail
+// after it, restored at the loop exit) and the channelb8 pointer in ECX remain.
 // Earlier 241 from 241: frame 0x30 vs 0x2c; esi/edi saved before the unit test (retail after it,
 // frame 0x28 vs 0x2c; esi/edi saved before the unit test (retail after it,
 // frame 0x28 vs 0x2c; esi/edi saved before the unit test (retail after it,
@@ -1530,6 +1549,49 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 317: Existing shared scalar clamp for both look outputs, with zoom clamp,
 // inline declaration and confined spring/look-phase subsets, 220 each (fast control 220,
 // full 218). Original macro expressions, declarations and complete body restored.
+// Round 30 (lane 11): retail's movzx form found with a compile-only harness of this file: the two flag
+// bits tested on a `long` copy of the channel byte under the update test (every byte, word, dword,
+// shift, bitfield, bool, volatile and helper spelling of the direct test folds to `test byte`; a
+// two-definition dword local also gives movzx but keeps an unthreaded join). Kept with the round 93
+// set (aligned counts, fast): movzx 116 -> 114, active preset 110, callback `== 0 ? right : left` 109,
+// positive zoomed/scoped in retail's order with the clear test lacking `zoomed &&` and the overlay
+// play per arm 48, the set read once 47 (plain 218 -> 122, 2196 bytes). Not kept (fast, control 125 /
+// aligned 47): set test as a ternary with field reads 323/53; if/else look clamps 128/50 (reciprocal
+// still shared); early return for a missing unit 125 (same code); weapon object looked up after the
+// orientations and callback 134/76; look rates as one point2f 121/33 (retail's -0x2c/-0x28 homes,
+// frame 0x30, reciprocal still shared; a grouping). Harness only: no clamp or rate spelling (pointer or
+// reference clamp helper, array, statement order, named rates, explicit reciprocal) stops the shared
+// reciprocal; ESI/EDI are shrink-wrapped as in retail without LTCG but not with it, also with the
+// post-loop code removed. Lead: 0xb6760 (src/unknown_0b66c0.cpp, not ours to change) may be a callee
+// retail's callers treat as clobbering ECX (channelb8 kept in ESI).
+// Review of round 30 (m3): not kept: the 48/122 set needs `else if (zoomed)` after `if (scoped)`, a test
+// that is always true inside `if ((zoomed || scoped) && ...)`; with a plain `else` it is 306 (fast). Code
+// back to the original; the movzx, active-preset and callback findings above still stand alone.
+// Round 98 (lane 8): BLOCKED-BY the build's stand-in caller (tools/build.py): an LTCG env link of the
+// generated translation unit equals the full listing only while the entry calls the stand-in that
+// calls this function; with only 0x165dc1's stand-in (retail's one caller) the same source saves
+// ESI/EDI after the unit test and restores them at the loop exit, as retail (no other object
+// matters: all 1772 others linked still shrink-wrap). Env rows with the stand-in, base 157/116: each
+// look angle divided then clamped in its own statement 160/119; the mode lookup after the spring
+// defaults 173/129; `first_weapon = user->weapons` 157/116 (identical); spring defaults declared
+// d, c, b, a 161/127; user flags read and set directly without the flags local 157/116 (identical).
+// Round 24 (lane 14, fast; aligned counts by sequence alignment, base 116): the movzx flag test (a named
+// `long` copy of the channel byte, two bit tests), the active preset and the `== 0 ? right : left` callback
+// together 358 (2199 bytes, aligned 109); with the overlay set read once (negative flags) 372; those three
+// with positive zoomed/scoped bools in retail's order, the clear test without the extra `zoomed &&` and a
+// plain `else` for the play arms 328 (aligned 70); that with the play and save in each arm and the set read
+// once 306 (2190 bytes, aligned 53: two instructions short, retail's `cmp zoomed; je` in the else arm); the
+// positive bools alone on the original body 401. Unit/mode slots (ours -0x18/-0x1c), the look homes and
+// shared reciprocal and the ESI/EDI save region are unchanged by all of them.
+// Round 8 (lane 18, fast, aligned counts in brackets, fast control 220 [79], full 218): a `#pragma optimize("p", on)`
+// diagnostic (reverted) gives retail's two look divisions with the rate reloaded between them, but
+// copies the look-history pair through x87 and grows the body to 2212 bytes, 343 [77]; look rates as
+// one s_view_angles 216 [72] (frame 0x30); that declared first 216 [72]; with unit and mode declared
+// before their assignments 216 [72]; with the pitch as `x * (-1.0f / rate)` 219 [79]; the two look
+// locals' addresses taken as a no-op (diagnostic) 220 [79]; the loop index declared in the for 220 [79].
+// N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
+// All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
+// J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

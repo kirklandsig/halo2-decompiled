@@ -244,6 +244,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // read-only flags, both 3/3/3. Original complete body restored.
 // Round 42: unit/seat/object/paired field-address locals 3/3/3/3; const actor pointer 3;
 // read-only full definition 3; separate occupied flag 62; read-only count 3. Restored.
+// Round 56 (lane 9, fast): the definition pointer itself kept and its flags read at the test 3; the
+// 0xc8200 test nested under `!function_1b8d80(...)` 3; `result |= function_c8200(...)` there 31; the
+// c8200 arguments read through `(&seats[i])->` 3; a block-scoped seat pointer for the c8200 arguments 73
+// (380 bytes). A one-file LTCG harness is not exact here (349-361 bytes).
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -355,6 +359,19 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
+// score 8 (was 8): the seat loop's preamble still differs in the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index register) and in the home of
+// the loop's zero (a constant in EAX where retail stores the index register's own zero); this
+// round's further forms (the index declared before the loop, the comparison written the other way
+// round, the seat pointer after the count, an explicit positive-count guard around the scan) score
+// 8, 9, 108 and 135, so the body is unchanged
+// score 11 (was 8), coordinator review: the one-use `seat_count - 1` local is kept only with a match; the loop is
+// back to its earlier form
+// score 8 (was 11): the seat count minus one goes into a local, which puts the count in ESI and
+// the index in EBP as retail does; what is left is the guard's shape (a sign test on the
+// decremented count where retail compares the count against the index) and the loop's zero
 // score 11 (was 6), coordinator review: the `tag->seat_count > 0` guard repeats the loop's own first test, so it is
 // kept only with a match (6 with it); the loop is back to its earlier form
 // score 6 (was 11): the seat scan is now guarded by an explicit
@@ -599,6 +616,11 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 23: the slot read once through its address before or after the
 // actor lookup 6/6, the same without the barrier 44/44; the barrier before
 // the actor lookup 44, at the head of the NONE block 43, first 44.
+// Round 56 (lane 9, one-file LTCG harness, exact here): actor, barrier, then the state 6; no state local
+// (the slot cast at each use) 6, without the barrier 41; the point copied through a pointer to it 6;
+// the state declared `register` (as 0x1b8070's) 6, without the barrier 41, actor first without it 41.
+// Without the barrier the only causes are the slot load (retail: entry block) and, from it, our register
+// compare of +0x26c where retail compares memory (ECX is busy there).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1264,6 +1286,10 @@ struct s_seat_selection
     short seat_index;
     byte flags;
     byte unknown7;
+    short unknown8;
+    byte unknowna[2];
+    real near_radius;
+    real far_radius;
 };
 
 bool function_2676d0(long actor_index);
@@ -1314,13 +1340,11 @@ bool __stdcall function_f5d10(long vehicle_index, long bit, bool set);
 void function_26ee40(s_joint_behavior_state *behavior);
 void function_1f86a0(long actor_index);
 
-struct s_1ba091
-{
-    s_slot_memory_entry *field_0;
-    s_slot_entry_iterator field_4;
-};
-
-// score 198 (was 198): the frame 0x14 agrees; retail takes the object-header data before scaling
+// score 134 (was 198): 861 bytes as retail; frame 0x10 (retail 0x14): retail spills the 0x20 mask byte to
+// F+3 and keeps the loop entry in EBX (home F+4, reloaded after the root calls), ours keeps the mask in BL
+// and the entry in memory (one more reload before the joint index shifts the tail); retail also takes the
+// object-header data in the prologue and reads the flags once above the slot-flag test.
+// Before round 62: the frame 0x14 agrees; retail takes the object-header data before scaling
 // the actor (actor index in EDX, ours ECX), keeps the loop entry in EBX (spilled at F+4), spills the
 // 0x20 mask byte to F+3 and re-reads the flags for the 0x40 test; ours keeps the entry in memory
 // (iterator struct member) and the flags or the mask in BL. Earlier headers, merged: the frame 0x14
@@ -1384,6 +1408,39 @@ struct s_1ba091
 // the element 242, an assigned-if `same` 245, the negative decline test 230; element or iterator
 // declared earlier 240/240; the original loop with the new tail 244. The al-56 form (all of the
 // above but the byte local) leaves the loop's entry in memory and the prologue order.
+// Round 37 (lane 1, fast; "al" = difflib-aligned count, 121 for the original on this metric): the
+// selection grown to 0x14 with the radii at +0xc/+0x10, plain iterator and entry locals and the 0x20
+// test at both uses 237 (861 bytes, al 109); plus positive admission 241 (al 95); plus 0x1bead0's
+// fallback local assigned after its test 238 (al 80, retail's double NONE test); plus the default arm's
+// stores in retail's order (radius, seat, radius, flags) 239 (al 74); plus the default object index
+// stored through the slot state 237 (al 68); plus one 0x1fb7e0 call per seat type 240 (865 bytes, al
+// 61); plus a byte mask local 230 (frame 0x10, mask in BL, al 85), with a named element index 230; the
+// sibling's `for` loop 240 (al 61); the 0x40 test as `(flags >> 6) & 1` 240. Open: retail keeps the
+// loop entry in EBX (home F+4) and re-reads the flags for the 0x40 test; ours keeps the flags (or the
+// byte mask) in BL and the entry in memory, entering the loop by a jump past a reload, which shifts
+// every later instruction by two.
+// Round 109 (lane 6, fast): the matched 0x1bead0's loop (a plain slot-entry iterator and a for loop over
+// the returned entry) 202; the joint index declared first 198 (same); the slot/selection pointers before
+// the actor 201; the radii through the selection 239 (861 bytes, frame 0x10), with that loop 239, plus
+// `byte specified = flags & 0x20` (retail's masked byte, spilled to F+3) 238.
+// Round 45 (lane 10, fast): 1..16 unused locals at the top 198 each (no numbering ties); the unit test through
+// `unit->parent_index` 198 (same code), with object_get written in the test and no unit local 198 (same code);
+// the slot/selection pointers after the early return 261 (877 bytes), with the inline test 261; the slot/selection
+// pointers before the actor with the inline test 201. Retail re-reads g_4e0300 at the later lookups, so a named
+// header-table local for all three lookups would differ there; the FORMS-slot-data-block form is the
+// "typed slot payload 198" above (no change).
+// Round 217: Mirrored read-only root equality with member/original payload and bool/byte/word/long
+// comparison-result domains: 198/198/198/198/202/202/201/201. Original equality, payload and carriers restored.
+// Round 62 (fast, confirmed plain): plain iterator and entry locals, a byte mask, 0x1bead0's fallback
+// element local assigned after its test and the radii through the selection (s_seat_selection grown to
+// +0x14, as 0x1ba5c0 also reads them) 156 (kept); one 0x1fb7e0 call per seat type 135 (kept, retail's
+// branchy constants into one call, no sbb); the radii stored in the default arm before/after the flags
+// 135/134 (original order kept). On that: positive admission 135 (aligned 93); default stores in retail's
+// order 133; default object index through the slot state 229; both of the first two 133; no mask local
+// 245 (868 bytes), with positive admission 241 (864 bytes, frame 0x14 but the flags byte in BL); `same`
+// as if/else 141/223; the mask or entry declared at the top, entry declared in the while 135 each;
+// `!same && specified` 228; a char mask 135; mask before the element 238; for loop 135. Diagnostic: the
+// root calls to an unresolved stand-in leave the mask in BL (135), so 0xbaf40's summary is not the cause.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
@@ -1393,32 +1450,34 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
     s_seat_selection *selection = (s_seat_selection *)&state->unknown1c;
     if (*(long *)((byte *)unit + 0x14) != NONE)
         return NONE;
-    s_1ba091 local_0;
-    local_0.field_4.actor_index = actor_index;
-    local_0.field_4.reference.unknown2 = 0x4c;
-    local_0.field_4.reference.unknown0 = NONE;
+    s_slot_entry_iterator iterator;
+    iterator.actor_index = actor_index;
+    iterator.reference.unknown2 = 0x4c;
+    iterator.reference.unknown0 = NONE;
     long joint_index = NONE;
-    while ((local_0.field_0 = function_26f0c0(&local_0.field_4)) != NULL)
+    s_slot_memory_entry *entry;
+    while ((entry = function_26f0c0(&iterator)) != NULL)
     {
-        s_4c_element *element = (s_4c_element *)element_502424_get(local_0.field_0->unknown4);
-        bool specified = (selection->flags & 0x20) != 0;
+        s_4c_element *element = (s_4c_element *)element_502424_get(entry->unknown4);
+        byte specified = selection->flags & 0x20;
         bool same = specified && function_baf40(element->object_index) == function_baf40(selection->object_index);
         if ((element->unknown86 ? !(selection->flags & 0x40) || !same : specified && !same))
-            joint_decline(actor_index, local_0.field_4.reference.unknown0);
-        else if (function_26ecc0(actor_index, local_0.field_4.reference.unknown0, (s_joint_behavior_state *)slot))
+            joint_decline(actor_index, iterator.reference.unknown0);
+        else if (function_26ecc0(actor_index, iterator.reference.unknown0, (s_joint_behavior_state *)slot))
         {
-            joint_index = local_0.field_0->unknown4;
+            joint_index = entry->unknown4;
             break;
         }
     }
     if (joint_index == NONE)
     {
-        joint_index = function_26e940(actor_index);
-        if (joint_index != NONE)
+        long element_index = function_26e940(actor_index);
+        if (element_index != NONE)
         {
             *((bool *)slot + 0xc) = true;
-            state->element_index = joint_index;
+            state->element_index = element_index;
         }
+        joint_index = element_index;
     }
     if (joint_index != NONE)
     {
@@ -1438,11 +1497,11 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             selection->object_index = element->object_index;
             selection->seat_index = NONE;
             selection->flags |= 0x29;
-            state->unknown28 = 11.0f;
-            state->unknown2c = 14.0f;
+            selection->near_radius = 11.0f;
+            selection->far_radius = 14.0f;
         }
         if (!(selection->flags & 0x20) || selection->object_index == NONE || element->object_index == NONE ||
-            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, state->unknown28, state->unknown2c, false))
+            !function_1ba990(actor_index, selection->object_index, ((selection->flags >> 6) & 1) != 0, selection->near_radius, selection->far_radius, false))
             goto failed;
         if (function_2676d0(actor_index) && function_1e2030(actor_index))
         {
@@ -1457,11 +1516,9 @@ long __stdcall function_1ba090(long actor_index, s_slot *slot)
             s_vehicle_seat_definition *seat = &definition->seats[selection->seat_index];
             if (actor->unknown26c == NONE)
             {
-                short type;
-                if (TEST_FIELD_BIT(seat->flags.bit2)) type = 0x65;
-                else if (TEST_FIELD_BIT(seat->flags.bit3)) type = 0x67;
-                else type = 0x68;
-                function_1fb7e0(type, actor_index, 0, selection->object_index, NONE);
+                if (TEST_FIELD_BIT(seat->flags.bit2)) function_1fb7e0(0x65, actor_index, 0, selection->object_index, NONE);
+                else if (TEST_FIELD_BIT(seat->flags.bit3)) function_1fb7e0(0x67, actor_index, 0, selection->object_index, NONE);
+                else function_1fb7e0(0x68, actor_index, 0, selection->object_index, NONE);
                 function_f5d10(selection->object_index, selection->seat_index, true);
             }
         }

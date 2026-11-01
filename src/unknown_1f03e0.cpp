@@ -358,6 +358,7 @@ bool function_1f1ee0(s_shape_carrier_contact const *contact, s_shape_state *stat
 }
 
 real function_30bf0(vector3f *v);
+real function_1201a0(vector3f *v, vector3f const *fallback);
 
 PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const *arg_1, vector3f *arg_2);
 
@@ -368,10 +369,18 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
     out->k = a->i * b->j - a->j * b->i;
 }
 
-// score 122 (was 122): the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
+// score 122 (was 122): frame 0x14 and scan prefix agree; first +0xd5 is a displaced case span; cross coloring and selected-tail sharing remain.
+// Earlier: the loop now agrees (0x1f2e60's base parameter before its stepping flag, so the
 // request dies at the base argument as in retail); left: `lowest` is stored after `selected` (retail first),
 // the first cross keeps i/j/k in XMM0/1/2 (retail XMM1/2/0) so the two selected arms are not tail-merged
-// (28 bytes), and the averaging path's copies, sum order and dot order.
+// (28 bytes), and the averaging path's copies, sum order and dot order (round 112: dot_average and the
+// compare are now retail's; left there are average.i's operands, dot_a's i, k, j term order and the copies).
+// Round 112: the two dots through the existing dot3f 124 (aligned 113 -> 106: dot_average's terms come out
+// i, k, j as retail); plus the average summed i, j, k and `dot_a < dot_average` 124 (aligned 95: dot_a then
+// first and dot_average/compare exactly retail's; dot_a's terms stay j, i, k); plus the normalize tail as the
+// existing function_1201a0 call 124 (same code as the written-out tail); plus `lowest` declared before
+// `selected` 122 (kept: aligned 93, first difference at +0xd5); dot_a as dot3f(desired, a) 122 (same code;
+// kept, so both dots take desired first).
 // Round 106: 0x1f2e60's (base, stepping) order at its definition and all four calls 122 (kept); on it,
 // `lowest` declared before `selected` 120 (prefix exact through +0xd5; two points, not kept); `*out = *a` /
 // `*out = average` in the two arms with no `support` join 197 (both copies then exactly retail's; 1005 bytes),
@@ -455,6 +464,12 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // cross3f_staged arms gives the same counts (154/176/327/246/251/359/196/169). Declarations
 // lowest/selected/component 120 (two points, not kept); component first 122; component, lowest,
 // selected 120; `support` before `a`/`b` 122; with the 0x1201a0 tail lowest first 122, component first 124.
+// Round 94: the arms' missing tail merge (28 bytes) shifts every later line, so later fixes do not show
+// in the count: the average summed i, j, k with `if (dot_a < dot_average)` gives retail's average stores
+// and dot_average and computes dot_a first (122, same count; dot_a's terms stay j, i, k whatever their
+// written order, and the i row's operands swap); plus `*out = *a` / `*out = average` copies 199 (1005
+// bytes; that path is then byte-identical to retail); plus contact_cross arms 177 (999 bytes); plus
+// lowest before selected 120; 0x1f087b storing k, j, i 153 (retail's first-cross registers, arms reordered).
 // Round 48 (lane 9): in a compile-only screen all 64 operand orders of the first cross's six products give the
 // same XMM0/1/2 colouring; retail's XMM1/2/0 appears only when the selected arms write a stack vector (`support`,
 // then `*out = support`) or the normal is copied by value. Built: one `entries` base for a/b/normal 212; averaging
@@ -462,12 +477,33 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // normal after the cross with swapped contact_cross arms 170; contact_cross as a function-like macro 124; 0x1f087b
 // as a macro 124. Built with the selected arms writing `support` (contact_cross, 0x1f087b or cross3f_staged):
 // `*out = support` in the arm 177/177/177, one `*out = support` after both arms 155/155/155 (aligned 111 -> 100).
+// Round 102 (m3 lane 8; one-link LTCG harness, exact once 0x1201a0's object is linked): 23 forms of 0x1f087b's product
+// order (i/j/k, k/j/i, k/i/j, j/k/i) x store order (i/j/k, k/j/i, i/k/j) x arm order never give retail's first-cross
+// XMM1/XMM2/XMM0. Fast: `selected != 0` arm first 164 (975 bytes); helper computing k, i, j and storing i, k, j 164 (975
+// bytes); storing k, j, i 122 (same count); computing and storing k, j, i 165 (975 bytes); both arms into `support` with
+// one `*out = support` 190 (1000 bytes), with the averaging arm's direct copies too 1031 bytes (harness).
+// Round 28 (lane 14), `--fast`: average.i as `a->i + b->i` 122 (same code); the averaging arm's two
+// direct copies 199 (1007 bytes, aligned 93 -> 75: that arm then exactly retail's), with average.i
+// swapped 199; the first cross written in both selected arms 316 (1026 bytes), with the two copies 337;
+// axis declared before the normal pointer 122 (same code); cross3f_staged in the selected arms 165 (975
+// bytes), with the two copies 178 (aligned 75), with the first cross staged too 178; the average through
+// vector3f_add(b, a) 170 (972 bytes: shared arm products hoisted above the branch), with the two copies 177
+// (aligned 70); the selected arms writing a `support` local copied to out once inside the selected
+// branch 190 (1000 bytes), with the two copies 251 (also with `support` local to that branch or through
+// cross3f_staged, 251 each).
+// Round 120 (m3 lane 5): our two selected arms already store j/k from the same registers; what stops
+// the tail merge is where the g_4687b0 reload lands (ours right after the normal pointer's last use,
+// retail after the out->i store). `b` declared before `a` 228 (1002 bytes); 0x1f087b as plain
+// `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
+// (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
+// (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
+// J218: Existing staged-cross output setter/three-contact output-pointer scaled-add/native scratch values, seven subsets, then scratch value assignment: 122/122/122/199/199/199/199/199. Pointer-result staged cross, forced/ordinary inline, exact-only: 122/122. Original complete body restored.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
 {
-    long selected = NONE;
     real lowest = 0.0f;
+    long selected = NONE;
     long component_index = *(long *)(request + 0x40) & 0xffff;
     byte *component = g_51e9b8->data + component_index * 0xa0;
     for (long i = 0; i < count; i++)
@@ -506,13 +542,13 @@ void function_1f2a80(byte const *request, bool moving,
             else
             {
                 vector3f average;
+                average.i = b->i + a->i;
                 average.j = b->j + a->j;
                 average.k = b->k + a->k;
-                average.i = b->i + a->i;
                 function_30bf0(&average);
-                real dot_a = a->i * desired->i + desired->k * a->k + a->j * desired->j;
-                real dot_average = desired->i * average.i + desired->k * average.k + desired->j * average.j;
-                if (dot_average > dot_a)
+                real dot_a = dot3f(desired, a);
+                real dot_average = dot3f(desired, &average);
+                if (dot_a < dot_average)
                     support = *a;
                 else
                     support = average;
@@ -533,16 +569,7 @@ void function_1f2a80(byte const *request, bool moving,
             *out = *g_4687b0;
         break;
     }
-    real length = (real)sqrt(out->i * out->i + out->j * out->j + out->k * out->k);
-    if (!(fabs(length) < 0.0001f))
-    {
-        real inverse = 1.0f / length;
-        out->i *= inverse;
-        out->j = inverse * out->j;
-        out->k *= inverse;
-    }
-    else
-        *out = *g_4687b0;
+    function_1201a0(out, g_4687b0);
 }
 
 PRIVATE __forceinline byte function_1f1462(dword arg_0)
@@ -551,6 +578,7 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 }
 
 // score 182 (was 182): Frame 0x28 and retained EDI/EBX convention agree; initial dot displacement bytes and rotation SIMD scheduling remain.
+// Earlier: retail keeps the state in EDI and the two result pointers in EBP and EBX and never saves EBX, ours keeps the state in EBX and the results in EDI and EBP, so the prologue and every stack-relative access differ; a named pointer to the state+0x100 vector reproduces the length (1229) and the retail addressing but moves the state to EBX (196) and was dropped.
 // frame 0x28 and state/output registers agree; the initial state-dot
 // displacement bytes (retail reads the old up through the ESI address it keeps, ours folds
 // [EDI+0x108]/[EDI+0x104]: the six extra bytes) and the rotation SSE schedule remain.
@@ -668,6 +696,10 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 // Round 48 (lane 9): contact_cross as a function-like macro 342; the state dot through dot3f, either argument
 // order, 262/262 (ESI loads and up in XMM5/6/7 as retail, but state moves from EDI to EBX and caller 0x1e5af0
 // drops to 20); the state dot accumulated j, k, i 185; as k + (j + i) 184.
+// Round 462: One complete original-up value for all active consumers, native/library copies
+// after/before ground normal, original/removed one-use aliases: 314/314/325/325/314/314/325/325.
+// Frames 0x38 or 0x34 versus 0x28; original observations, aliases, helper graph and full body
+// restored.
 // @retail 0x1f1460
 void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
@@ -871,6 +903,9 @@ struct s_flags_1f0870
 // Round 48 (lane 9): flying through the mode-bit helper 0x1f1462 590; no `mode` local 592; flags dword and damping
 // declared first 594; the enabled test through the flag view 591; one by-value flag-bits copy for all four tests
 // 625; contact_cross as a function-like macro 621; 0x1f087b or shape_dot as macros 590/590.
+// Round 248: complete native input/result-history/tuning-record field views, seven subsets
+// and all with a twice-used history timestamp, 590 each. All types and executable body restored.
+// J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1063,115 +1098,16 @@ PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const 
         copy = *input;
         input = &copy;
     }
-    out->i = (input->j * matrix->left.i + input->k * matrix->up.i) + input->i * matrix->forward.i;
-    out->j = (input->j * matrix->left.j + input->k * matrix->up.j) + input->i * matrix->forward.j;
-    out->k = (input->j * matrix->left.k + input->k * matrix->up.k) + input->i * matrix->forward.k;
+    vector3f const *left = &matrix->left;
+    out->i = (input->j * left->i + input->k * matrix->up.i) + input->i * matrix->forward.i;
+    out->j = (input->j * left->j + input->k * matrix->up.j) + input->i * matrix->forward.j;
+    real k = input->j * left->k;
+    k += input->k * matrix->up.k;
+    k += input->i * matrix->forward.k;
+    out->k = k;
 }
 
-// score 9 (was 50): frame 0x58 and length 1043 agree; first +0x38b is the second rotation's
-// i/j up-before-left product schedule. The entire prefix and first rotation now agree.
-// Each row still sums (L + U) + F, as retail. Round 24 (lane 10) kept: carrier delta and first rotation through
-// the existing vector3f_add/vector3f_rotate_into_axes 32; both position adds through vector3f_add, the file rotate
-// helper as one expression per row and the count clamp as a ternary 17; the support add as velocity + position 15;
-// the file helper's rows as (left + up) + forward, parenthesised 9 (coordinator: the lane's accumulated rows
-// i F,L,U; j/k L,U,F scored 13 but summed the i row as (F + L) + U, away from retail's order, so not kept; without
-// the parentheses the compiler regroups the terms, 15; (up + left) + forward and forward + (left + up) also 9;
-// temporaries summed L + U + F 73; accumulated L,U,F 79). Tried on those: override add alone 86, override
-// subtraction from the source 269, support add alone 88, both adds alone 38; helper rows i L,F,U 12, F,U,L 16,
-// L,U,F 70 (harness; 1016 bytes); `support = false` at its declaration 218; carrier delta through vector3f_add
-// 88; override add as velocity + position 19. Unparenthesised term order inside a row is canonicalised (216 orders
-// alike in a compile-only harness). Round 106: the order is the function's float-sum ranking, which
-// rotates with the tuple count: the count clamp as an `if` 84 (all rows and the override add flip);
-// the clamp as `count < 0xfe ? count : 0xfe` 10; a named pointer for the second rotation's vector 89,
-// for both rotations 103; a `short` count 31. Earlier notes follow.
-// Earlier: Frame 0x58 agrees; final override load order and rotation coefficient residency remain.
-// Earlier: Frame 0x58 agrees; final override loads and rotation coefficient residency remain.
-// Earlier: Frame 0x58 agrees; final override loads and rotation coefficient residency remain.
-// final override load order and rotation input/coefficient schedule differ.
-// Rotation pointer/reference results 101/101; matrix reference 101; remaining helper orders 101/101/101.
-// Deferred rotation stores 102; left-coefficient snapshots 102; original alias copy and arithmetic restored.
-// Earlier partial input-component snapshots 76-82 were not selected; the complete alias-safe
-// per-use input form below remains at 87.
-// Final override load order and rotation input/coefficient allocation still differ.
-// Final point setter 104; completed translation 189; translation record 102;
-// rotation result 175; direction snapshot 187; orientation snapshot 193;
-// point/rotation results 177; translation/orientation snapshots 301.
-// the rotation reads each input component at its use, as retail
-// frame 0x58 agrees; final override loads and rotation coefficient/input scheduling remain.
-// Frame 0x58 agrees; override load order and rotation coefficient residency remain.
-// Earlier: final override load order and rotation input/coefficient schedule differ.
-// Partial component reads 76-82; the alias copy protects both in-place inputs.
-// All current input reads use the protected copy when input and output alias.
-// Components accumulated by statements in retail's term order 86; matrix-first
-// products 86; the 0x2477b1 helper's form 88; typed position/velocity pointers 86;
-// swapped operands 86; through shape_add 164 (position first, as retail, plus a copy);
-// typed pointers with explicit sums 86.
-// Initialized alias copy 118; memcpy copy 87; shared copy setter 84 (three-count gain rejected);
-// alias-copy name 87; value input 110; reference input with copy 110; value matrix 201;
-// unconditional input copy 109. All eight helper/call forms restored.
-// Earlier: the rotation reads each input component at its use, as retail
-// does (re-reading after every store); that is correct in place, since the alias copy
-// points the input at the copy when it is the output. Override additions still load
-// the velocity before the position, and the rotations' term order and operand roles
-// differ. Components accumulated by statements in retail's term order 86; matrix-first
-// products 86; the 0x2477b1 helper's form 88; typed position/velocity pointers 86;
-// swapped operands 86; through shape_add 164 (position first, as retail, plus a copy);
-// typed pointers with explicit sums 86.
-// Rotation result setter 95; overlap-safe alias copy 107; final/initial/both support admissions 82/82/82
-// (all 1031 versus 1043 bytes, rejected); native override byte 87; short/word saturation 87/87.
-// Axis-record values forward/left/up/all outline the helper, 418 each; output/matrix-output references and
-// trailing-component loops 87 each; force-inline axis values 141/148/146/246; force-inline loop/reference
-// loop 87/87.
-// Partial sums i/j/k 93 each, ij/ik/jk/all 87 each; first lateral product named in the i row only 59 (1040/1043 bytes; not kept: one of three parallel rows). Original grouping and alias copy retained.
-// left products in every row 86 fast;
-// forward products in every row 90 fast;
-// up products in every row 87 fast;
-// left/forward products in every row 86 fast;
-// left/up products in every row 86 fast;
-// forward/up products in every row 87 fast;
-// all three products in every row 54 fast;
-// first syntactic product in every row 90 fast;
-// Round 159: Complete named-product declaration orders forward/left/up 50; forward/up/left 54;
-// left/up/forward 54; up/forward/left 53; up/left/forward 53; matrix-first named products 54; immutable
-// named products 54; named products with all partial sums 59. Forward/left/up kept at 1040/1043 bytes;
-// plain confirmed.
-// Round 163: Complete-product row scopes/entry carriers/axis-first names 50/50/50;
-// deferred publication 93; row accumulators 59; forced expansion 50; existing final add
-// 163; existing result setter 93. All on the retained nine-product graph; original
-// helper, alias copy and every operation restored.
-// Round 166: Complete vector-return ownership, matrix/input pointer-pointer, reference-pointer,
-// value-pointer, pointer-reference, reference-reference, value-reference, pointer-value,
-// reference-value 127/127/223/127/127/223/161/161. Original two-use output helper restored.
-// Round 342: Row-shared forward/left/up product carriers 86/86/86; paired forward-left/forward-up/left-up 53/53/53;
-// all three 52; all three with complete protected input scalars 102. Original nine-product helper restored.
-// Lane 5 r77: VC canonicalises the rotation (any sum order, product operand order or product
-// declaration order gives identical code; a compile-only screen shows it), and `dst += src`
-// with two indirect operands always loads the source first. Override adds through named
-// offset/position pointers 54; row i grouped (forward + left) + up 50 at 1043/1043; retail's
-// own row groupings (left + up, forward + left, forward + left) 59; one named output-velocity
-// pointer for both override blocks 265 (frame); a 600 s permuter run, none below 50.
-// Round 112: the convention already agrees (ret 0xc). Override add as `dst = dst + src` 50 (same code);
-// the rotation helper in 0x143070's accumulated form 87; helper parameter orders input/matrix/out 48,
-// input/out/matrix 48, matrix/out/input 54, out/input/matrix 50, out/matrix/input 52; input/matrix/out
-// with row i grouped (forward + left) + up 50 at 1043/1043; override add as a three-component loop 59.
-// Round 177: Independent matrix-axis pointer/reference boundaries, all eight forms 71;
-// shared in-place final override/support/both additions 83/88/83. Override loads recover
-// but coefficient allocation worsens; original helper, alias copy and body restored.
-// Round 21 (lane 10): override add through the existing vector3f_add 83 (the add then loads the
-// position first, as retail, but the rotation sums rotate: VC reassociates by function context);
-// with vector3f_rotate_into_axes for both rotations 80 (first rotation's term order exact, second's
-// j/k rows still forward-first); its products matrix-first 80 (same code); plus the support add
-// through vector3f_add 70 (1039 bytes, in-place products, F.j/U.j residency swapped); both adds
-// through vector3f_add with the original helper 83. Original body restored.
-// Round 32 (lane 16): override add as `dst = src + dst` 50; through typed output-struct fields, both
-// operand orders 50/50; row i written forward + left + up 50 (same code); single grouped expressions
-// per row, (j-left + k-up) + i-forward then forward + left + up, 87. Diagnostics (not kept): without
-// the 0x1f0870 call the override add and second rotation take retail's order; with the call but
-// `current` not passed, the movaps copies go; an opaque or hollowed 0x1f0870 changes neither.
-// N226: Current/matrix/carrier native-size copy subsets 9 each; all plus output
-// orientation copies 37. On the dual-helper graph, symmetric left/up/forward
-// products, transverse sums, all products L-U-F/F-L-U/U-L-F and accumulators
-// 79/73/22/22/73/73/73/79. Entire original helper, body and copies restored.
+/* one step of the shape against its contact, in the frame of a moving carrier or support when it has one */
 // @retail 0x1f0450
 void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrier_contact const *contact)
 {
@@ -1252,7 +1188,10 @@ PRIVATE inline real contact_normalize(vector3f *vector)
     return length;
 }
 
-// score 418 (was 421): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// score 418 (was 418): Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
+// Retail keeps zero in XMM6 and count at the frame bottom, component in the dead request slot;
+// count initialization between the NONE stores 417, unqualified count 530; homes remain swapped.
+// Contact-dot order and material-call expansion still differ.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero and count/component homes remain.
 // Frame 0x64 agrees; persistent zero, count/component homes and direction residency remain.
@@ -1336,6 +1275,9 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // minus 418 (same code: `xorps`/`subss` either way); the flag test as `((flags >> 1) & 1) != 0` 418; a named
 // `height - 0.001f` 419; the flag named before the loop in shift form 426; contact_cross as a macro 508; shape_dot
 // as a macro 418.
+// Round 248: coherent complete-state first parameter with initial-point helper views, repeated
+// normal observation and native request/tuning fields 418/418/460/460/418/418/460/460.
+// Caller stays 230; all seven matched file controls survive. Original contract and body restored.
 // @retail 0x1f2250
 bool function_1f2250(vector3f const *velocity, byte const *request, vector3f const *input,
     bool moving, vector3f *out, long *surface, real *speed, long *object_index)
@@ -1492,7 +1434,9 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 230 (was 230): Frame 0x28 agrees; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// score 221 (was 230): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
+// forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
 // expansion remain. Our build inlines 0x1f1df0 at the second call (after 0x1f2250) where retail
 // calls it at both sites; retail also lays the not-supported arms of the contact loop out after the
@@ -1543,6 +1487,25 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // the flag/no-flag skip tests as one ternary, nested in one `else`, or the no-flag arm as two tests 230/230/230
 // (same code); the no-flag arm first 252; 0x1f2250's input parameter declared last 230 (same code: ours already
 // passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
+// Round 248: complete native request/result/tuning-field identities, four double-magnitude
+// forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
+// Round 62 (lane 12, fast): the velocity pointer declared after the four reset stores 221 (kept, plain
+// 221, retail's length; the second 0x1f1df0 call is still inlined). Airborne as `(flags & 8) || (flags & 0x10)`
+// (a compile-only screen gives retail's `xor al, al / mov al, 1` for it) 312 on the old body, 311 with the
+// `real` length, 308 on the real-length velocity form (the component pointer moves from EBX to ESI); the
+// selected contact's normal through `byte *contact = contacts + (short)selected * 0x48` 241 on the real-length
+// body (retail's separate `add eax, 0x28` appears); on the kept form: the `real` length 224 (the loop's k/j
+// products then match, the i term flips), `selected`/`highest` declared first in the block 220, the same with
+// the `real` length 223, the contact list read at each use 222, the not-supported arms written first 250,
+// the velocity after `flying` 221, and (with the `real` length) the motion pointer read before the reset 294.
+// Round 120 (m3 lane 5): a per-arm `better` result tested once after the arms 240 (same layout: the
+// flag/no-flag arms stay inline and still share one height test); unknown58/selected/highest as one
+// chained NONE store 284; the airborne test as `(flags & 8) || (flags & 0x10)` 312 (that block is then
+// retail's branchy sequence exactly, but the component moves from EBX to ESI), with the movement as
+// `real` 311, with the contact list read at each use 232 (1072 bytes, component back in EBX; the NONE
+// locals still store after the count test); the flying test's planar dot i-first or with each
+// product's operands swapped 230/230 (same code: the speed dot still computes j before k).
+// Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
@@ -1554,11 +1517,11 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
     {
-        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         history->normal = *g_4687b0;
         history->material = g_47d8e0;
         history->unknown58 = NONE;
         history->unknown70 = 0.0f;
+        vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         bool flying = ((**(dword **)request >> 3) & 1) != 0;
         long selected = NONE;
         long highest = NONE;

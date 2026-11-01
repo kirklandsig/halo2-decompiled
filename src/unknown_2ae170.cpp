@@ -574,7 +574,7 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 	settings->mixbins.dwMixBinCount++;
 }
 
-// score 328 (was 328): The 0x130 versus 0x94 frame and repeated conversion coalescing remain; restore the full opening body.
+// score 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Earlier: frame 0x130 versus 0x94; our LTCG CSEs and hoists the identical 0x12aff0(-64, 0, -64)
 // conversions (6 calls versus retail's 15; BLOCKED-BY 0x12aff0: retail's callers treat it as opaque).
 // Round 75: SetMixBins (retail calls 0x37c5e4) for SetMixBinVolumes 449 (kept); the existing 0x2216f0 with a
@@ -686,12 +686,17 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // Lead: retail calls 0x12aff0 with the plain /Gr fastcall convention (flag in CL, three floats
 // pushed), which a non-LTCG object would also give; that would explain why retail never merges or
 // hoists its 15 identical (-64, 0, -64) calls, which ours hoist out of the loops (BLOCKED-BY 0x12aff0).
+// Round 248: initialized descriptor role-name permutations and two routing-table name positions
+// 320 each (fast control 320, full 328); original complete body restored.
+// Round 217: Complete descriptor value initialization at declaration and by assignment, first/second/
+// third/all for each: 307/314/314/299/307/314/314/299. Unselected value-production forms restored.
+// Selected native descriptor value production: 2aeb20-t04; original scopes and game-call inputs retained.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
 	long const muted_mixbins[4] = {6, 8, 7, 9};
-	s_mixbin_settings mixbins = {0};
-	s_mixbin_settings second = {0};
+	s_mixbin_settings mixbins = s_mixbin_settings();
+	s_mixbin_settings second = s_mixbin_settings();
 
 	m_buffers = buffers;
 	memmove(&m_settings, settings, sizeof(m_settings));
@@ -718,7 +723,7 @@ void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effe
 	IDirectSoundBuffer_SetVolume(m_buffers->buffer1c, -6400);
 
 	{
-		s_mixbin_settings third = {0};
+		s_mixbin_settings third = s_mixbin_settings();
 		sound_mixbins_initialize(&third);
 		for (word mixbin_index = 0; mixbin_index < 4; ++mixbin_index)
 			c_sound_effects::add_send(muted_mixbins[mixbin_index], 0, -64.0f, &third);
@@ -737,6 +742,7 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 	return effects->m_settings.level2c;
 }
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 370 (was 370): Frame 0xc agrees; selected-level/right-destination homes and SSE staging remain.
 // Earlier: retail copies the input level into a dead argument slot through a
 // frame 0xc agrees; retail copies the input level into a dead argument slot through a
@@ -850,6 +856,15 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // every sum stored to a slot and pushed through a GPR, and no (send + level) shared between appends
 // are /Op code generation; the sibling 0x2afb80 matches in a /O2 /Op /arch:SSE /Gr file (flags are
 // the user's decision).
+// Round 7 (lane 17, fast with 0x2af7b0/0x2af450/0x2aeb20): the else branch wholly through decibels_add
+// (the input level once as long bits, every sum and mode tail as bits, gains and front/rear levels read at
+// each use, as retail reads them) 463 at 1263 bytes and the dispatcher lost (parameters then stays on the
+// stack and this comes in ECX); the same with the front/rear snapshots kept 470 at 1276 (dispatcher exact,
+// so the flip follows the this/parameters balance; decibels_add's long operands load each gain as an
+// integer and stage it, where retail loads the gains as floats and stages only register-held bits); the
+// input level copied once into a real local for the else branch's sums 411 (dispatcher lost); the
+// first branch's two selected levels as long bits 377 (aligned 161 -> 152, but level then sits in EBX and
+// the right bin is spilled); the first level as a real/long union 370 (same code).
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -921,6 +936,7 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 	}
 }
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 224 (was 224): Frame 0x20 versus 0x18, mode/input-level homes and the second x87 tail sum remain.
 // Retail loads level, offset and the send level with integer moves (/arch:SSE has no movd, so level
 // in EBP is bounced through a temp before each add) and never shares send + level between appends.
@@ -1037,6 +1053,7 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 // level declared first 227; whole-file float-consistency pragma diagnostic 224 (all fast). Lead:
 // retail's level in EBP bounced through a stack temp before each addss, the offset and send level
 // copied as integers into homes, and the store-reload pushes are /Op code generation (see 0x2aefe0).
+// Round 216: Direct normalized route bit in word/short/byte/dword carriers 236/236/242/241; raw bit mask carriers 237/237/253/248. All restored; frame, mode/input-level homes and x87 tail remain.
 // @retail 0x2af450
 void c_sound_effects::add_effect_sends_split(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -1150,32 +1167,41 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 	}
 }
 
+// MATCH (was 117): the remaining count, the zero gain and the four endpoint values are computed in
+// retail's order, the front endpoints are full-width longs kept in ebp/ebx, and the run-time -6.0206
+// attenuation sits in a bits/value union reached through a reference to its float member, so the
+// compiler reloads it from the stack slot before each send as retail does.
+// The zero passed as *(real *)&attenuation, the bits/value union and the store in case 0 (remaining
+// is not read after the switch) are retail's code shape and are kept only with this byte match.
+// score 117 (was 137): speaker-mode switch with explicit pair calls, a statement in the mode-0 case for
+// retail's four-entry jump table, the zero gain passed as *(real *)&attenuation and the run-time
+// -6.0206 attenuation through a local bits/value union; the length now matches retail's 396 bytes.
 // score 137 (was 137): Frame eight agrees; source/bin homes, runtime zero attenuation and dispatch remain
 // (on the decibel-struct interface, retail's four-entry jump table needs a statement in case 0).
 // Earlier: frame eight agrees; source/bin ownership, runtime zero attenuation and mode dispatch remain.
-// Earlier score 213 (was 213): frame 4 versus retail's 8; retail computes the
+// Earlier at 213 (from 213): frame 4 versus retail's 8; retail computes the
 // attenuation at run time and dispatches the speaker modes through a jump
 // table. Two-pass channel loops that pick the bin with a ternary 145 (not
 // kept: they only lengthen the code toward retail's size); loops over
 // left + channel 245; word mode 208.
-// Earlier score 166 (was 213): frame four versus eight; zero gain folds and mode dispatch differs.
+// Earlier at 166 (from 213): frame four versus eight; zero gain folds and mode dispatch differs.
 // Direct bin loops: mode one 172, mode two 174, attenuation 200, fixed pair 214, all 166;
 // dynamic pairs only 166, modes one/two 171, mode one/attenuation 169.
-// Earlier score 156 (was 166): frame eight agrees; zero gain folding and mode dispatch remain;
+// Earlier at 156 (from 166): frame eight agrees; zero gain folding and mode dispatch remain;
 // frame pointer 166; word counters 157; common counter 166; exclusive end bins 165;
 // pair/quad capacity predicates 156.
-// Earlier score 137 (was 156): Frame eight agrees; runtime zero attenuation and mode dispatch remain. Shared modes 168; adjacent endpoints 193; all byte endpoints 142; byte capacity 156; unsigned counters 156; combined shared modes 161; rear bytes 170; front bytes 137 (plain, exact length).
-// Earlier score 137 (was 137): source/bin allocation, runtime attenuation and dispatch remain.
+// Earlier at 137 (from 156): Frame eight agrees; runtime zero attenuation and mode dispatch remain. Shared modes 168; adjacent endpoints 193; all byte endpoints 142; byte capacity 156; unsigned counters 156; combined shared modes 161; rear bytes 170; front bytes 137 (plain, exact length).
+// Earlier at 137 (from 137): source/bin allocation, runtime attenuation and dispatch remain.
 // Word/long mode capture 137/148; direct capacity with word/long mode 163/165/168;
 // range order/short front endpoints/flags at use 151/164/138.
 // entry receivers, runtime zero attenuation and mode dispatch remain.
 // All/front/rear byte bin counters; native source/destination/both records;
 // mode field binding and promoted mode on the retained front-byte endpoints
 // Fast scores 152/149/147/137/137/137/137/137; original body retained.
-// Earlier score 137 (was 137): source/bin allocation, runtime attenuation and mode dispatch remain.
+// Earlier at 137 (from 137): source/bin allocation, runtime attenuation and mode dispatch remain.
 // Selected mode-two range with speaker cases 123: long/captured 159, long/direct 184,
 // byte/captured 162, byte/direct 177; cases 321 give 159/184/162/177. Original loops retained.
-// Earlier score 137 (was 137): the zero gain (retail keeps it in EDI and pushes EDI) and the run-time
+// Earlier at 137 (from 137): the zero gain (retail keeps it in EDI and pushes EDI) and the run-time
 // attenuation remain. Built with /Op (pragma diagnostic, or a /O2 /Op /arch:SSE /Gr file of its
 // own) the attenuation becomes retail's run-time subss through the rear slot, 146 at 408 bytes;
 // there the switch with explicit calls is 203 at 306 bytes (32-bit bin selections as retail). An
@@ -1190,7 +1216,7 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // Round 421: signed-byte routing/pair/quad truth carriers, all seven nonempty subsets
 // 137 each; all three as signed short 144/404. Original Boolean carriers, real-bin
 // loops, gains and body restored. Source/bin homes and runtime zero remain.
-// Earlier score 137 (was 137): retail is a four-entry jump-table switch on the speaker mode with explicit call
+// Earlier at 137 (from 137): retail is a four-entry jump-table switch on the speaker mode with explicit call
 // Round 92: speaker-mode switch with explicit per-bin sends and a long zero gain passed as
 // `*(real *)&gain` 181 (326 B; attenuation x87, dec chain); with the attenuation through a bits/value union
 // recomputed per bin 101 (365 B, prologue and send tail exact; not kept: value written at each use and a
@@ -1202,6 +1228,7 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // `long gain = 0` passed as *(real *)&gain and a speaker-mode switch whose mode-0 case holds a dead
 // `remaining = 0;` (needed for retail's four-entry jump table; an empty case 0 drops the table, `gain = 0` 91).
 // Held: the dead store is not kept even with a match, and a new /Op file is a build-flag decision.
+// Earlier at 137: retail is a four-entry jump-table switch on the speaker mode with explicit call
 // Also at 137: retail is a four-entry jump-table switch on the speaker mode with explicit call
 // pairs (no loops), the zero gain held in EDI and pushed, and each -6.0206 attenuation computed at run
 // time (`mov [slot], 0; movss; subss; movss [slot]; mov ecx, [slot]; push ecx`). Round 17 found the
@@ -1237,72 +1264,96 @@ __forceinline void c_sound_effects::add_send(long mixbin, long mode, real gain, 
 // `long gain = 0` passed as *(real *)&gain and a speaker-mode switch whose mode-0 case holds a dead
 // `remaining = 0;` (needed for retail's four-entry jump table; an empty case 0 drops the table, `gain = 0` 91).
 // Held: the dead store is not kept even with a match, and a new /Op file is a build-flag decision.
+// Round 94 (in place, long gain passed as *(real *)&gain, explicit pair calls, no case-0 statement): the
+// union attenuation per bin 101 (365 bytes, dec chain instead of the table); one named `level` from
+// `*(real *)&gain - 6.0206f` 181 (326 bytes, folded); real gain with that level 236 (278 bytes); the
+// attenuation written at each call 181; the per-bin union with byte front bins 146. Lead: retail needs
+// /Op code generation for the attenuation push and a mode-0 case statement for its four-entry table.
 // Lane 17 round 5: quad as four explicit calls 139 (405 bytes); center pair as a 2..3 loop 138; named
 // attenuation on the loops 137; right endpoints as left + 1 148 (374 bytes); remaining before the flag 137.
 // The decibel-struct interface above is blocked only by the case-0 statement.
+// Lane 14 r22: the switch with explicit pairs and long endpoints 233 (276 B; retail's setne/sbb/lea
+// endpoints exactly, but a dec chain, the gain folded to `push 0` and a constant attenuation); with an
+// empty case 0 233 (still a dec chain); with the quad arm as a loop 231; with byte front endpoints 223;
+// the capacity bools renamed to flip their name order 137.
+// Lane 16 r50 (fast): capacity bools declared after the endpoints 151 (376 B); the one-use quad bool
+// dropped for `remaining >= 4` 138; mode 2's front loop first (`if (!rear)`) 139; the constant gain
+// written as 0.0f at each use 137 (same code); mode 3's quad arm first 135; both front-first swaps 137.
+// BLOCKED by the build-flag lead (/Op) and the case-0 statement above.
+// Round 115 (lane 6, fast): the flag as `(flags & 8) != 0` 137 (same code); mode 3 as `rear && pair` /
+// `!rear && quad` arms 137; the pair bool dropped for `remaining >= 2` at its three tests 138; modes 1 and 2's
+// front loop merged under `mode == 1 || (mode == 2 && !rear)` 157 (364 bytes); the bools as `> 1` / `> 3` 137.
 // @retail 0x2afb80
 void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rear, long mode, s_mixbin_settings *mixbins)
 {
-	bool alternate = ((source->flags >> 3) & 1) != 0;
 	long remaining = 8 - mixbins->mixbins.dwMixBinCount;
-	bool pair_available = remaining >= 2;
-	bool quad_available = remaining >= 4;
-	real gain = 0.0f;
-	unsigned char left = alternate ? 0 : 6;
-	unsigned char right = alternate ? 1 : 7;
+	long attenuation = 0;
+	bool alternate = ((source->flags >> 3) & 1) != 0;
+	long left = alternate ? 0 : 6;
+	long right = alternate ? 1 : 7;
 	long rear_left = alternate ? 4 : 8;
 	long rear_right = alternate ? 5 : 9;
 
-	if (source->speaker_mode == 1)
+	switch (source->speaker_mode)
 	{
-		if (pair_available)
+	case 0:
+		remaining = 0;
+		break;
+	case 1:
+		if (remaining >= 2)
 		{
-			for (long mixbin = left; mixbin <= right; ++mixbin)
-				sound_mixbins_add(mixbins, mixbin, gain);
+			sound_mixbins_add(mixbins, left, *(real *)&attenuation);
+			sound_mixbins_add(mixbins, right, *(real *)&attenuation);
 		}
-	}
-	else if (source->speaker_mode == 2)
-	{
-		if (pair_available)
+		break;
+	case 2:
+		if (remaining >= 2)
 		{
 			if (rear)
 			{
-				for (long mixbin = rear_left; mixbin <= rear_right; ++mixbin)
-					sound_mixbins_add(mixbins, mixbin, gain);
+				sound_mixbins_add(mixbins, rear_left, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, rear_right, *(real *)&attenuation);
 			}
 			else
 			{
-				for (long mixbin = left; mixbin <= right; ++mixbin)
-					sound_mixbins_add(mixbins, mixbin, gain);
+				sound_mixbins_add(mixbins, left, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, right, *(real *)&attenuation);
 			}
 		}
-	}
-	else if (source->speaker_mode == 3)
-	{
+		break;
+	case 3:
 		if (rear)
 		{
-			if (pair_available)
+			if (remaining >= 2)
 			{
-				sound_mixbins_add(mixbins, 2, gain);
-				sound_mixbins_add(mixbins, 3, gain);
+				sound_mixbins_add(mixbins, 2, *(real *)&attenuation);
+				sound_mixbins_add(mixbins, 3, *(real *)&attenuation);
 			}
 		}
-		else if (quad_available)
+		else if (remaining >= 4)
 		{
-			for (long mixbin = left; mixbin <= right; ++mixbin)
-			{
-				sound_mixbins_add(mixbins, mixbin, gain - 6.0206f);
-				sound_mixbins_add(mixbins, mixbin, g_44f710);
-			}
+			union s_decibel { real value; long bits; } level;
+			level.bits = attenuation;
+			real &attenuated = level.value;
+			attenuated -= 6.0206f;
+			sound_mixbins_add(mixbins, left, attenuated);
+			sound_mixbins_add(mixbins, left, g_44f710);
+			level.bits = attenuation;
+			attenuated -= 6.0206f;
+			sound_mixbins_add(mixbins, right, attenuated);
+			sound_mixbins_add(mixbins, right, g_44f710);
 		}
+		break;
 	}
 
 	if (source->mixbin != NONE)
 	{
-		add_send(source->mixbin, mode, gain, mixbins);
+		add_send(source->mixbin, mode, *(real *)&attenuation, mixbins);
 	}
 }
 
+// MiniMax R (10-31): no lower score kept - a settings-gain local in add_send makes the mode-one sends SSE
+// (177 at retail's 606 bytes) but raises 0x2af800 (55 -> 79), so the original body stands.
 // score 200 (was 200): Frame 0x10 versus consumed incoming homes; inherited send x87 sums remain.
 // Tried (MiniMax R run 12): add_send's settings gain read into a named local per send 177 (retail's
 // 606-byte length; not kept, one-use copies); the frame 0x10 versus consumed incoming homes and the tail sums remain.
@@ -1388,6 +1439,11 @@ void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rea
 // used twice 177 at 606 bytes (0x2af800 79); whole-file float-consistency pragma diagnostic 205 (all
 // fast). Lead: retail's entry sum (level copied through EAX into the dead parameters slot, then addss)
 // and its SSE mode-one sends are /Op code generation (see 0x2aefe0).
+// Round 115 (lane 6, fast): the flag as `(flags & 8) != 0` 200 (same code), with the rear gains read at use
+// 208 (573 bytes); the four bins named first as long locals 200; the send sum written `base_level +
+// level_offset` 200; named bins with every gain and the sum read at use 231 (545 bytes). Retail's entry sum
+// (level copied through EAX into the dead parameters slot, then addss from it) is also the shape a 4-byte
+// decibel struct or long-bits copy gives (as 0x2afb80's attenuation), not only /Op.
 // @retail 0x2af920
 void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins)
 {

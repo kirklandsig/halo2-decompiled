@@ -648,6 +648,14 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Parameter names in either sort order 2; polygon test nested 9 fast; loop index
 // declared at the top 9 fast; count stored as one expression and halved from the
 // field 9 fast; while loop 9 fast (the restore pair unchanged in each).
+// Round 117 (fast, the restore pair read in each): loop bound `i != half` 9; step products as
+// `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
+// test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
+// not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
+// Round 98: an unsigned index parameter 9 fast; a zero-initialized divisor 9 fast;
+// an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
+// 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
+// the function placed before its callee 9 fast. Full baseline 2; all restored.
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -1507,6 +1515,15 @@ struct s_territory_tag
 // a ternary 41; placement declared first 24; tag index at function scope 48; placement at
 // function scope 24; the test without the short cast 51; player declared at the block top
 // 24; the created object in its own local 24; an early NONE return 62.
+// Round 56: inline definition 24; copy helper with masked player index 43, with
+// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
+// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
+// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
+// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
+// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
+// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
+// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
+// marker index read once into a short local for the test and the copy 84 (281 bytes).
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

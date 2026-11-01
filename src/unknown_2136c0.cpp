@@ -97,6 +97,68 @@ void function_213970(void);
 // src/unknown_213d20.cpp, with an extern in src/unknown_214c30.cpp; block B: g_55bd04/g_55bd08 in
 // src/unknown_12be90.cpp). Scalar zero stores before the clears 131, without the size pragma 158;
 // enabled flag before the NONE stores 131; NONE stores before the zero stores 131, without the pragma 161.
+// Round 37 (lane 1, fast): still BLOCKED-BY the global layout. Block A's NONE store between its two
+// arrays 131; the enable flag before the NONE stores 131; NONE stores and flag first 131; retail's
+// NONE/flag order right after the clears 131; the zero stores before the clears 131.
+// Round 210: Actual preference-difference decisions reused for refresh and dirty publication:
+// Boolean language/version/both 193/193/226; native language/version/both 185/185/221; byte/short
+// pair 226/225. All regress with every match preserved. Original conditional publications,
+// comparisons, calls, resets and whole body restored. Two complete storage blocks still require
+// coordinated changes to protected definitions outside this queue.
+// Round 53 (lane 9, fast): progress handle cleared by memset 146 (242 bytes); the language read at each use
+// (`get_current_language()` in the test and the store; the size pragma keeps its out-of-line copy) 129 (232 bytes,
+// two-point gain dropped); with the block-A clears after the block-B ones 129; with the NONE/flag stores first 129;
+// with the language call on the left of the comparison 129. Still BLOCKED-BY the separate global definitions.
+// Round 26 (lane 14, fast): retail also inlines the cached language getter 0x11cae0 (ours calls it under
+// the size pragma). The existing function_11cae0 called directly 131 (same code); the language query
+// between the zero stores and the NONE stores 131; the dirty flag set before the language store 131;
+// the string clear after the enable byte 142; the two session words cleared last 131.
+// Round 30 (lane 14, fast; still BLOCKED-BY the separate global definitions): the language local declared at
+// the top 131; the last block word (g_55c02c) cleared first 131; the string and request clears after the
+// scalar zero stores 131; the adjacent bool cleared just before the string clear 145 (242 bytes); block A's
+// NONE store between block A's clears and block B's first clear 131.
+// Round 116 (lane 6, fast): size pragma dropped with the existing getter 0x11cae0 called 158; that with
+// the query first 170; the getter first under the pragma 128 (three-point gain dropped, same as the
+// earlier query-first form); no pragma with the NONE/flag stores ahead of the scalar zeros 161; no pragma
+// with the scalar zeros before the clears 158. Ours lays the five arrays apart (0x4bac30, 0x4bdd58,
+// 0x4be9e8, 0x4be8d0, 0x4be598) where retail clears two contiguous blocks; still BLOCKED-BY the
+// definitions in src/unknown_213760.cpp, src/unknown_213d20.cpp, src/unknown_2141f0.cpp,
+// src/unknown_2148b0.cpp and src/unknown_12be90.cpp (machine 1).
+// Round 33 (lane 14, fast; still BLOCKED-BY the separate global definitions): progress record / file handle
+// reset by value-initialized assignment 171/165; constant-first version test 131 (same code); every scalar
+// reset before the five clears 131 (aligned 44 against 35); progress record and handle both by memset 145.
+// Diagnostic, size pragma removed 158: the preference tail is then retail's (version loaded to EAX, NONE
+// stores after the clears), but the language load is hoisted into ESI above the clears and ESI/EDI are
+// pushed at entry, where retail pushes EDI around its two block clears only and ESI after the language join.
+// Round 40 (lane 11, fast): without the size pragma (diagnostic) 158: the shape after the clears is retail's
+// (`or eax, -1`, the NONE stores among the language test, inlined getter calls) but the language read is
+// hoisted above the clears into ESI, where retail reads it into EAX after them and copies it to ESI only
+// after the first comparison (ESI pushed late). On that base: the existing wrapper 0x11cae0 / the header
+// getter declared at the top 170/170; the wrapper in place 158; the wrapper between block A's and block B's
+// clears 171. With the pragma: the NONE and enable stores after the preference updates 131 (same code).
+// Round 64 (lane 12; one-link LTCG env with the build's stand-in caller, equal to the full listing at 229
+// bytes): with the two blocks as struct globals (diagnostic only), no size pragma, a language getter that
+// returns the global re-read after its fill (`if (g == NONE) g = ...; return g;`) and the two preference
+// updates as inline compare-and-set helpers taking the new value, the env listing equals retail byte for
+// byte (155 bytes, retail's late ESI push and early EDI pop included); so does one compare-and-set helper
+// taking the field's address and the value, called for both fields. On the blocks: no pragma alone 156
+// bytes (language load hoisted into ESI above the clears); the existing wrapper 0x11cae0, the comparison
+// reversed, the local declared first: the same; NONE stores after the query worse; the helpers with the
+// current getter: hoisted; the getter used at each use: load after the clears but the getter reruns after
+// the call; the re-read getter alone: load after the clears in EAX, copied to ESI before the compare. On the
+// separate globals (--fast): no pragma + re-read getter 153; with the helpers 153; helpers under the size
+// pragma stay out of line. Still BLOCKED-BY the block definitions above.
+// Round 36 (lane 13, fast): the language query and both preference updates in their own block 131 (same
+// code), without the size pragma 158; one dirty store after both tests behind a changed flag 173 (259 bytes);
+// block B's scalar zero stores ahead of its header clear 131; the version compared as a dword 131; the
+// existing wrapper 0x11cae0 called in both the language test and the store 129 (232 bytes, two points). Still
+// BLOCKED-BY the separate global definitions (block A in src/unknown_213760.cpp and src/unknown_213d20.cpp).
+// Round 60 (lane 16, fast): without the size pragma (diagnostic base 158): the language local declared at the top
+// and assigned after the NONE stores 158; block B's clears before block A's 158; block A's NONE store right after
+// block A's clears 161; the handle record value-initialised (`= s_file_handle()`) 158; with the pragma 165.
+// With the pragma: the progress record value-initialised 171; the request clear before the string clear 131;
+// the last block word cleared right after the requests 131; the NONE stores g_55bd00, g_55bd10, g_55aca8 then the flag 131.
+// Still BLOCKED-BY the separate global definitions (five arrays, two retail-wide clears).
 // @retail 0x2136c0
 void function_2136c0(void)
 {

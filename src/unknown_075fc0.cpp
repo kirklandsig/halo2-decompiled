@@ -70,7 +70,8 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
     return local_0;
 }
 
-// score 408 (was 408): the 388 form below (four call-result and state locals as word, exact
+// score 408 (was 408): frame 0x3c versus 0x34; observer/channel/result and counter homes remain.
+// Earlier: the 388 form below (four call-result and state locals as word, exact
 // 1369-byte length) was not kept: retail keeps these in 32-bit homes with no 16-bit operations,
 // so the word type is score-picked. Frame 0x3c versus retail 0x34; homes differ.
 // Earlier at 408: retail's frame is 0x34 and it holds `this` in edi, forming the channel
@@ -122,6 +123,12 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // seven nonempty subsets [426, 411, 405, 408, 388, 395, 389]; signed short call results 397.
 // The paired call results and callback/secondary-output states as words gave
 // 388 plain (not kept, see above); channel-active remained Boolean.
+// Round 247: single remaining-budget admission with maximum/available block-quotient
+// rounding subsets 427/428/430/429; separate raw/aligned capacity counterparts
+// 427/428/430/429. Original tail, counters, result graph and entire body restored.
+// Round 260: Shared threshold/payload/both rounders 428/428/437; separate raw/capped allowance 408, with
+// shared rounders 437; query-phase zero packet result 407, with shared rounders 438, all 438. All
+// restored.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

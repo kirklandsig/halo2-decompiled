@@ -7,6 +7,7 @@
 #include "unknown_0259d0.h"
 #include "slot_handler.h"
 #include "props.h"
+#include "vector_products.h"
 
 /* the prop view (unknown_25d690.cpp) starts with its state */
 struct s_type_f95cd3;
@@ -317,85 +318,6 @@ bool function_1fef40(s_type_c3b527 const *target, long actor_index)
 real function_30bf0(vector3f *v);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 
-// score 43 (was 43): only the final rotation differs, and only in register colours: retail loads
-// axis k/j into xmm1/xmm2 and d.j/d.i into xmm3/xmm4 (ours xmm3/xmm4 and xmm1/xmm2) and scales axis
-// j/k by the parallel part in place, where ours copies the part for j (three bytes longer). The rows
-// as accumulated sums (round 35) give retail's i row and tail. Tried: products swapped (axis *
-// parallel) 57; the four scalars declared before or after the axis or at the top 57, in all 24
-// orders (one compile-only screen, again on the accumulated rows: none closer); the rotation as
-// 0x11d3b0 writes it, or through an inline (axis, sine, cosine) helper 57; valid flag declared first
-// 57; valid as an expression 86; member-wise forward copy 88; negated cosine test 100; the shared
-// cross3f for the rotation's cross terms 69, for the axis and the rotation 70, for the axis only 64,
-// the same with the cross k term first 60; parallel scale written into each row 78; local_3 before
-// local_2 59; rows i, k, j 59; an inline rotate helper with named parallel/cross scalars 57;
-// perpendicular/forward query inline and noinline declarations 57; fallback normalization via the
-// returned output pointer 71. Screened compile-only (no closer form): the axis statements in all six
-// orders or through cross3f, a cross3f/struct cross, named const sine/cosine, the parallel part
-// accumulated or through a named dot, an inline (vector, axis, sine, cosine) helper in either
-// parameter order (93/97). Round 35: the other seven accumulated term orders (the cosine term first
-// in the i row, or the parallel term first in the j/k rows) 43-50 aligned in the harness (current
-// 34 aligned), every row computed into locals before the stores 45, the dot accumulated 34, the
-// first two terms of a row as one expression 34 (all three rows 35), the sine term second 41, a
-// named cross vector 48, a by-value axis helper 42, an axis-pointer helper 35. Round 80 (LTCG harness
-// of the file, which reproduces this block exactly): all 128 accumulated or single-expression row
-// orders, 24 declaration orders and 6 dot orders on the best; the j/k rows as cosine, sine, parallel
-// (one instruction longer; aligned 30 against 33, positional 56); the other files' rotation helper
-// forms (projection or cross first, cross struct or scalars, copied components) 57 and up; named
-// parallel components, the axis or a copy scaled through vector3f_scale 34-49 aligned (no closer).
-// named cross vector 48, a by-value axis helper 42, an axis-pointer helper 35.
-// Round 418 on accumulated rows: staged axis/turn/both crosses 67/69/51; complete
-// direction scalars 74, with staged axis 81; complete direction value with staged
-// turn/both 196/219; both vector inputs as complete scalars 74. All restored;
-// final axis/direction carriers and the copied parallel product remain.
-// Round 100: the existing cross-file forced-inline rotation helper (vector, axis, 0.5, 0.866) 69;
-// identical code at 43: axis-first products in the j/k rows, axis declared before forward, the
-// parallel part through dot3f, the i-row cross term computed last (the matched 0x11d3b0 colours
-// its axis the way ours does).
-// Round 119: retail multiplies axis j/k by the parallel part in their own registers (axis operand
-// first), so it frees a register, loads direction j/k before the i store and keeps the cosine in a
-// register; every source spelling of the product gives the parallel part first. Parallel term first
-// in the j/k rows 57; the rows as single expressions in 0x11d3b0's order 57; axis j/k scaled in
-// place after the i row 70; the rotation as a three-pass component loop (unrolled) 70; the i row
-// computed before the j/k cross terms 57. Harness only: the axis through a pointer, dot3f, a
-// cross3f vector, an inline rotate helper by pointer or by value, the parallel part scaled into a
-// vector, operand text orders (identical code).
-// Round 34: j/k rows as axis * parallel with the cosine term second 57; each row as one expression,
-// parallel product first 57; axis scaled in place before the rows 80; valid at the state block's
-// scope with the rotation after the dot block 43; the fallback normalizing 0x11d000's returned
-// pointer 57 (axis/forward slots swap).
-// Round 302: Actual axis at state/entry scope, forward at state/entry scope,
-// each with original/role vector names: all eight 43. Original declarations,
-// homes and body restored; axis/direction register colors and parallel copy remain.
-// Round 13 (lane 13): retail = projection times axis j/k in place in the axis registers (cos then
-// in a register), times axis i into a copy of the projection; ours copies it for i and j. Forms
-// that do give the in-place products all add a block copy of the axis (harness: a local copy,
-// a by-value inline helper; all three rows in place then); without one: grouped (d cos -
-// cross sin) in the j/k rows 56, 0x11d3b0's form with named const sine/cosine 57, projection as
-// (dot * c) per row 43, the i projection before the cross terms 43, parallel first in j/k 57;
-// harness only: scalar axis locals in any order, all six dot orders as one expression (43) or
-// accumulated (ds_kji 43, the others worse), product operands swapped per row (no change).
-// Lane 18 r1: the first cross term written in the i row (retail computes it last) 43 (same code); the
-// cross terms computed 2, 3, 1 as retail schedules them 43 (same code); the rotation reading the forward
-// copy instead of the direction 86; the cross terms named with their 0.5 scale 75; the rows accumulated
-// in place in the direction (i as one expression) 57.
-// Lane 13 round 18: the matched 0x11d3b0 (same turn-limiting algorithm, out of line) compiles its
-// rotation with exactly our colours (axis k/j in xmm3/xmm4, the projection copied for j), so
-// retail's 0x1fddd0 comes from another shape. An inline rotation helper (vector, axis,
-// projection, sine, cosine) called with the projection 43 (same code); one computing the
-// projection itself 43; either with single-expression rows 57 (38/11 aligned against 46/17: the
-// cosine is then held in a register as in retail, colours still ours); with the projection term
-// first in every row 57.
-// Round 45 (lane 9): scalar axis copies read after the parallel factor 43 (same code); the parallel factor computed
-// from forward before the direction copy 73; from forward after it 69; cross terms before the parallel factor 53; the
-// parallel part through vector3f_scale into a vector 88.
-// Round 107 (fast): i, j, k declared before the parallel factor 43; the rows into a rotated vector stored
-// once 100 (796 bytes); axis-first parallel products in all rows 43; a named cosine local 43; scalar axis
-// copies declared before the parallel factor 43 (all the same code but the copy).
-// Lane 14 r19 (fast `0x1fddd0 0x1fe120 0x30bf0 0x11d000` reproduces 43; no other retail code uses
-// the 0.1339746 constant, and the matched 0.866 users are not rotations): named j/k projection
-// products before the i row 57; the projection defined after the cross terms 53; axis j/k read into
-// scalars after the projection, axis first 43 (same code); axis-first j/k products with the i and j
-// stores together 59 (776 bytes); projection term first in every row with `axis.i * local_0` 57.
 // @retail 0x1fddd0
 bool function_1fddd0(long actor_index, point3f const *origin, vector3f *direction,
     long *out_index, real *arg_c9241c, long *out_object)
@@ -438,9 +360,7 @@ bool function_1fddd0(long actor_index, point3f const *origin, vector3f *directio
         {
             vector3f axis;
             bool valid = true;
-            axis.i = direction->k * forward.j - direction->j * forward.k;
-            axis.j = direction->i * forward.k - direction->k * forward.i;
-            axis.k = direction->j * forward.i - direction->i * forward.j;
+            cross3f(&forward, direction, &axis);
             if (function_30bf0(&axis) == 0.0f)
             {
                 function_11d000(&forward, &axis);
@@ -450,22 +370,14 @@ bool function_1fddd0(long actor_index, point3f const *origin, vector3f *directio
             *direction = forward;
             if (valid)
             {
-                real local_0 = (direction->k * axis.k + direction->j * axis.j + direction->i * axis.i) * 0.1339746117591858f;
+                real axis_i = axis.i;
+                real local_0 = (direction->k * axis.k + direction->j * axis.j + direction->i * axis_i) * 0.1339746117591858f;
                 real local_1 = direction->j * axis.k - direction->k * axis.j;
-                real local_2 = direction->k * axis.i - direction->i * axis.k;
-                real local_3 = direction->i * axis.j - direction->j * axis.i;
-                real i = local_0 * axis.i;
-                i += direction->i * 0.8660253882408142f;
-                i -= local_1 * 0.5f;
-                direction->i = i;
-                real j = direction->j * 0.8660253882408142f;
-                j += local_0 * axis.j;
-                j -= local_2 * 0.5f;
-                direction->j = j;
-                real k = direction->k * 0.8660253882408142f;
-                k += local_0 * axis.k;
-                k -= local_3 * 0.5f;
-                direction->k = k;
+                real local_2 = direction->k * axis_i - direction->i * axis.k;
+                real local_3 = direction->i * axis.j - direction->j * axis_i;
+                direction->i = local_0 * axis_i + direction->i * 0.8660253882408142f - local_1 * 0.5f;
+                direction->j = direction->j * 0.8660253882408142f + local_0 * axis.j - local_2 * 0.5f;
+                direction->k = direction->k * 0.8660253882408142f + local_0 * axis.k - local_3 * 0.5f;
             }
         }
         *arg_c9241c = *(real *)(actor + 0x7bc);

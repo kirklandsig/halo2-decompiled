@@ -458,6 +458,52 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // Round 235: complete/conditional native pair-admission bool/byte, shift/shared mask
 // tests 37/42/37/42/37/42/37/42. The mask still splits the update; original admission
 // and complete executable body restored.
+// Round 115 (all with the mask test, 545 bytes; the set after 0x1d90e0 then computes the mask before the word
+// address and splits into load/OR/store): signed visited words 42; target declared before marker 42; model
+// as a `long const *` read as model[1] 42; hand mask test with the mask on the left 42, on the right 42.
+// Round 25 (fast): bit_vector_test re-measured 42 (aligned 24); with a long node index local used by
+// the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
+// local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
+// The set still reuses the test's value numbers across 0x1d90e0. Body restored.
+// Round 42 (lane 1): retail's fused set after a mask test needs the visited words to be clobberable
+// by the calls between the test and the set: with the mask test, the clear through the existing
+// bit_vector_fill gives retail's index-first `or [eax], edx` set, but our LTCG keeps that call out of
+// line 213 (466 bytes; also with a forceinline declaration 213); with the entry written as
+// `state->node_count() != 0` the fill inlines and the set is load/OR/store again 42 (shift test 37,
+// identical code); the visited words and both markers as one local aggregate also give the fused set
+// but realign the frame 190 (with the inlined fill 190); 0x1d90e0's marker matrix non-const 42.
+// Diagnostics: a volatile node-index read in the set 42, an opaque no-argument call before it 47.
+// Round 8 (lane 18, fast): with the mask test, a fresh node index read at the set (volatile diagnostic,
+// reverted) still gives the mask-first load/OR/store set, so it is not the index's value number;
+// mask test with `mask & word` operands 42; mask test with the set as `mask | word` 42, both swapped
+// 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
+// the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
+// unmatched: a lead if retail's set needs a call that may write the vector.
+// Round 44 (lane 1, fast): 0x120220 is at 2 (not the blocker); bit_vector_test re-measured 42; on the shift
+// test: the model as `long const *` read as model[1] 37; the entry tests as guard-clause returns 37; the
+// render-model argument named before the call 37; `if (graph && graph->node_count != 0)` for the ternary
+// 121 (520 bytes); each arm breaking on its own call result (no `found`) 37.
+// Round 118 (lane 5, fast with 0x113ba0/0x113c60): the visited words grouped with both markers in one
+// local struct (so the markers' escape covers the vector) with the mask test 190 (frame realigned to 8;
+// the set is still mask-first load/OR/store, so the vector's escape does not give retail's fused set and
+// 0x120220, which can only reach the markers, is a weak lead); a `break` on each arm's iterator call 37
+// (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
+// unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
+// iterator setup shared ahead of an if/else call 167.
+// Round 44 (lane 10, fast): bit_vector_test with `found` declared before the loop 42; the unvisited
+// test repeated after the second lookup (diagnostic) 74; the memset size as `sizeof(dword) * (...)`
+// 37, with bit_vector_test 42; visited declared before the markers with bit_vector_test 42.
+// Round 140 (lane 4): with the mask test the set repeats the test's own mask-first sequence before its
+// load/OR/store, and the 0x1d90e0 setup forms the model value early (retail last, after the pushes).
+// Tried: mask test with the set through pointer arithmetic 42; written-out mask test with a direct `|=`
+// set 42 (round 32's form again); visited declared before the markers with bit_vector_test 42; the target
+// marker declared first 37 (same code); `if (found) { one combined test } else break;` 37 (same code);
+// the iterator's weapon class stored before its mode in both arms 44.
+// Lane 18 round 15 (fast with the matched callees and 0x113ba0/0x113c60): the visited words as a 256-bit
+// record cleared by its own member (memset inside), with the mask test 42, with the shift test 37; the set
+// through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
+// mask-first load/OR/store again); visited and both markers as one record cleared by its own member
+// (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1279,14 +1325,15 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
 // the unit through that offset for both depletion queries, and it writes the first depletion with setle;
 // the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.
-// score 164 (was 164): this round found no gain - retail keeps the pool pointer in EAX and the data in
+// this round found no gain - retail keeps the pool pointer in EAX and the data in
 // EBP, materialises index*12 and rematerialises the unit pointer for the first query, while ours keeps
 // the unit in EAX, folds index*3 with a scale of 4 and builds the result with a branch instead of setle;
 // the byte-offset header, a pool local, re-read queries and retail-shaped flag joins all score the same or worse.
-// score 164 (was 164): frame eight agrees; entry pool/state registers, signed-count joins and result
+// frame eight agrees; entry pool/state registers, signed-count joins and result
 // Round 141: retail returns the result byte unnormalised (a bool) and keeps the depletion in BL with the
 // interruptibility in memory; round 75's first-sets/second-clears depletion 330, with a bool result
 // 361 (1243 bytes, aligned 132 -> 102: retail's setle and second test, but depleted in memory and
@@ -1344,6 +1391,14 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 85: `unit_index = *unit_reference;` at entry (0x1130f0's form) with a plain 0xc70b0 argument
 // 271; an object-headers local with if-form depletion and bool/byte result 336/325, with a byte depletion
 // 336; the headers local with the `&&` depletion, bool result and byte depletion 334.
+// Round 210: Boolean success with depletion/interruptibility bool-short, bool-long, short-bool,
+// short-short, short-long, long-bool, long-short and long-long 315/187/209/314/208/189/315/188.
+// Native pairs reserve frame twelve and 1269 bytes; entry pool/state allocation and count joins
+// remain. Original byte success, canonical statuses, signed counts, queries and argument handling
+// restored.
+// Round 243: Complete success/depletion/interruptibility status enums, subsets
+// 1..7 381/173/386/172/403/174/384; all with entry success constant 384. Original byte
+// result, Boolean statuses, queries, parameter observation and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1465,14 +1520,15 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
 // slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
 // index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
-// score 450 (was 450): this round found no gain - retail keeps the pool pointer live in ECX and the data in
+// Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
 // ESI, rematerialises the unit pointer for the query, reloads the data from the pool and writes the
 // depletion with setle into the flag slot, while ours keeps the unit in a register and initialises the
 // result byte differently; the retail-shaped query joins score 330 or worse.
-// score 450 (was 450): Frame eight versus twelve, requested/state ownership and result joins remain.
+// Earlier: Frame eight versus twelve, requested/state ownership and result joins remain.
 // Earlier 453 (was 478): frame 8 versus 12 and requested/state registers still differ.
 // Predicate names 478; byte result 538; byte depleted/overlay 453; global optimization off 1195;
 // merged interruptible cases 473; byte depleted alone 458; byte overlay alone 477; merged cases with bytes 456.
@@ -1547,6 +1603,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 451/451/471/473; with the early overlay observation 506/495/512/504. Short/long overlay forms
 // recover frame twelve but regress to 1833/1825 bytes. Overlay moves were exact-match-only.
 // Original observations, paired queries, results, dispatch and complete body restored.
+// Round 243: Reused long/word/dword header ordinal and long byte offset,
+// at entry 491/469/491/489 and within controlled admission 495/461/495/476.
+// Original pool observations and body restored; frame/state/request/result homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1878,6 +1937,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // curve values alone/main/pair/all 790 each; all with immutable animation IDs 790. Complete
 // comparison listings unchanged. Original constructors, helpers, inputs and float grouping
 // restored; frame 0xcc versus 0xd4 and first-angle/overlay expansion remain.
+// Round 243: Complete two-use center predicate byte/short/long/dword storage
+// 790/848/786/786; complementary bool/byte/short/long 844/844/836/831. Long/dword gain
+// only four at 3392 bytes and are dropped. Original predicate, helper and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2123,6 +2185,9 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 32: the definition index as its own local (priority then a register argument, frame
 // 0x38) 46; entry_index reassigned in place of the index local 16; request priority as long 16;
 // request priority declared before the index 16; NONE-first comparisons 16.
+// Round 15: `priority = NONE;` before the fallback test 23; entry_index reassigned with the request
+// priority declared first 16; the index from a ternary with one NONE test 16; the request record
+// declared at function scope 16; the fallback test un-nested (a second plain NONE test) 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2480,6 +2545,7 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
+// MiniMax R (10-31): no new form, no lower score.
 // score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
 // pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
 // (663) costs both callers in other lanes' files.

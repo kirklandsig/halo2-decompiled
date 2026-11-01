@@ -485,11 +485,10 @@ bool sound_driver_voice_create_buffer(
 	return result;
 }
 
-// score 79 (was 157): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
+// score 71 (was 71): Frame 0x80, 618-byte length, the prologue (only ESI saved before the count test)
 // and the failure exit agree. Still differs: the 3D bool sits in a stack byte and the play bool in BL where
 // retail keeps the 3D bool in BL and the play bool in the stack byte; with that, the EAX/ECX roles for the
-// voice offset, the descriptor zero and the input mixbin are swapped, and the failure exit loads the globals
-// into EAX before its pops (retail ECX after them).
+// voice offset, the descriptor zero and the input mixbin are swapped (the failure exit now agrees).
 // Earlier: Frame 0x80 and 618-byte length agree; early register saves and descriptor/count/flag scheduling remain.
 // Earlier: the second buffer's flags are now retail's play ? DSBCAPS_FXIN2 : DSBCAPS_FXIN
 // (0x100010 when play is set; the old body set 0x180010, a behaviour difference, fixed at review in lane 15
@@ -539,6 +538,82 @@ bool sound_driver_voice_create_buffer(
 // creation 127. LTCG harness screens: result on both success arms / `return voice_index` / long result move
 // flags to EAX (100/156/154); the 3D test on `flags & 1` 166 (EAX); bools at function scope 162/163;
 // the 3D test negated 127; bool spellings, byte types, names and count-store position no change.
+// Round 96 (one-link harness of this file with 0x191420's, 88 there for 79): `play` copied into a block-local
+// for the 3D buffer 79 (propagated away); play declared after the descriptor clear and three_d just before
+// the first creation 78; both after the voice reference 78; three_d declared first at either position
+// 181-182 (both bools in stack bytes, frame 0x7c); play declared just before the 3D test 173-174 (605 bytes);
+// the count stored before the clear no change. No form gives three_d BL (retail's `mov bl, cl`).
+// Round 52: on the 3D failure `result = NONE;` before the count decrement 72 (retail's exit: globals in
+// ECX after the pops; a gain of 7, not kept), with the count stored before the descriptor clear 72, with
+// a voice pointer 72; three_d defined just before the first creation 73; play defined after the first
+// creation 176 (606 bytes). Screened: whenever three_d is assigned before play, voice_index takes EBP
+// and both bools spill (205-218); a copy of play in the 3D branch or `(void)&play` change nothing;
+// play/three_d as dword 155/75; tests on `flags & 1`/`flags & 2` 202-203; play stays in BL in every form.
+// Round 35 (lane 10, fast): failure arm with result before the decrement 72 (kept with the next), plus the voice
+// reference declared before the bools 71 (kept); with the 3D flag as dword/long/byte 137/137/72, dword alone 134;
+// the 3D flag defined before the first creation 73, just before its test 182 (602), after the descriptor clear 80;
+// count stored before the clear 72 (71 with the voice reference first); 3D flag declared before play 180 (599).
+// On 71: the 3D flag spelled `(flags & 1) != 0` 71 (same code); the decrement through the `globals` local
+// 146 (619). Play keeps BL in every placement of either definition.
+// Round 41: `byte flags` 70 (the caller 0x191420 then differs, 1); `word flags` 162; const bools 71; a copy of
+// play for the 3D buffer 71 (propagated away); the 3D buffer as a force-inline helper taking play 125
+// (diagnostic: play still BL, frame grows); three_d defined first 180 (retail's `mov al, cl; shr ecx, 1;
+// and cl, 1` shape, but voice_index takes EBP, the zero EBX and both bools spill); three_d first ahead of
+// the voice reference 181. Retail computes play destructively in ECX, so flags' last use is play.
+// Round 37 (lane 10): retail computes the 3D flag first (byte copy `mov bl, cl`, play in place in ECX),
+// so the 3D flag is defined first in the source; then the voice index (with the result coalesced into
+// it) outranks it for the last callee-saved register. 3D flag defined first 180 (599 bytes: the voice
+// index takes EBP, the zero EBX, both bools spill), with the count stored before the clear 180; that with
+// no result (two returns) 164 (flags arrive in EAX, caller 0x191420 loses); that with a long result
+// 161 (618: the 3D flag takes BL and play the stack byte as retail, but the result becomes a separate
+// sign-extended copy spilled after the range test); flags as a byte parameter 70 (caller loses: xor cl, cl).
+// Compile-only screens (about 60 forms, 3D flag first): voice index or result read/assigned anywhere,
+// globals local dropped, voice pointer, natural stack locals, bool/flags spellings and widths, a second
+// test of the 3D flag: the voice index or input mixbin always outranks the 3D flag unless the result is
+// a separate long. Play first keeps BL whatever else changes.
+// Round 118 (lane 5, fast with 0x191420, plain check): the anonymous storage struct (with its union and
+// reference aliases) replaced by plain locals: the six pairs and the mix bins at the block top, the
+// first descriptor in its own block and the 3D pairs before the 3D descriptor 71 (retail's 0x80 frame
+// and every slot offset; kept). Plain locals with both descriptors at block level 132 (frame 0x70); the
+// first descriptor at block level after the pairs and mix bins 110 (frame 0x98); the count stored before
+// the descriptor block 71 (scheduling only); the 3D buffer as a force-inline helper taking play, with its
+// own pairs, mix bins and descriptor 104 (frame 0x88, play still BL).
+// Round 101 (lane 8; exact LTCG harness with 0x191420's object, harness scale 65 = 71): retail reloads
+// play into BL right after the 3D test (play's range split once the 3D bool dies). play built by
+// `= false; if (flags & 2) play = true;` 156 (both bools memory-homed); the 3D bool built that way 142;
+// both 163; the select as `play ? FXIN2 | CTRL3D : FXIN | CTRL3D` 141, as CTRL3D then `|=` 65 (same
+// code), as a default then `if (play)` 142, with if-built play 152; `(flags >> 1) & 1` 65; both `!= 0` 65.
+// Round 60 (m3 lane 9, fast with 0x191420): the 3D flag defined first with the count stored before the
+// descriptor clear 181 (599 bytes); both bools in one declaration, play first 71 (same code), the 3D flag
+// first 182 (599); the result declared after the voice index 71 (same code), with the 3D flag first 182;
+// the 3D flag before the voice reference and play after it 183 (599).
+// Round 42 (lane 11, fast): the 3D flag defined first 182 (599 bytes: the voice index takes EBP, the zero
+// EBX, both bools spill), with a long result 158 (618: bools as retail, the result a sign-extended copy
+// stored after the range test), plus the count stored before the clear 158; the bools before the voice
+// reference with the count stored before the clear 72; the 3D flag first with the voice index returned
+// in the block (NONE outside, NONE stored on the 3D failure) 154 (628 bytes; 0x191420 1). Compile-only
+// (mixbin passed on the stack as here): 288 orders of the voice reference, bools, mix-bin locals, top
+// declarations, count store and failure-arm order (floor 64 against 66, all play first); result as
+// short/long/word/dword/char, placed at the start/middle/end, with both bool spellings (3D first): the
+// voice index, the input mixbin or play always outranks the 3D flag for EBX; renaming the bools and the
+// voice index changes nothing.
+// Round 65 (lane 12, fast with 0x191420): round 37's 3D-first long-result form rebuilt 158 (618 bytes:
+// retail's BL/stack-byte bool homes, but the result is a separate sign-extended copy where retail stores
+// the voice index's own zero-extended register); that with the result taken as `(word)voice_index` 155
+// (the voice index then takes EBP); with the short result: `voice_count++` for the count 182 (599
+// bytes), the result declared after the voice index 182, play as `(flags >> 1) & 1` 182, both flags
+// defined before the voice reference 183 (599): the voice index takes EBP and both flags spill.
+// Round 58 (lane 16, fast): three_d declared first with the result declared after the voice index 182 (599
+// bytes: the voice index takes EBP, both bools spill); the voice index as a long 161; the globals local
+// dropped (the global at each use) with three_d first 182 (599), with play first 71 (same code); three_d
+// first with the 3D test negated (NULL arm first) 182 (599).
+// Round 17 (lane 17, fast with 0x191420): the 3D flag defined first with a long result 158 (618 bytes: the
+// bools take retail's BL/stack byte and the tail is retail's one instruction late; the prologue differs: the
+// result is a sign-extended copy stored after the range test where retail spills the zero-extended voice
+// index before it, and the count store comes after the zeroing); with a long voice index 184 (597); the
+// short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
+// at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
+// block top with `result = NONE` after the decrement 155.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -550,50 +625,46 @@ short sound_driver_voice_new(
 
 	if (voice_index < 0x40)
 	{
+		s_sound_driver_voice &voice = globals->voices[voice_index];
 		bool play = (flags & 2) != 0;
 		bool three_d = flags & 1;
-		s_sound_driver_voice &voice = globals->voices[voice_index];
-		struct
-		{
-			DSMIXBINS mixbins;
-			union { DSBUFFERDESC first; DSMIXBINVOLUMEPAIR pairs_second[5]; };
-			DSBUFFERDESC second;
-			DSMIXBINVOLUMEPAIR pairs_first[6];
-		} storage;
-		DSBUFFERDESC &description = storage.first;
-		memset(&description, 0, sizeof(description));
+		DSMIXBINVOLUMEPAIR pairs[6];
+		DSMIXBINS mixbins;
 
-		globals->voice_count = voice_index + 1;
-		description.dwSize = sizeof(description);
-		description.dwFlags = DSBCAPS_FXIN2;
-		description.dwInputMixBin = input_mixbin;
-		if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
 		{
-			DSMIXBINVOLUMEPAIR (&pairs)[6] = storage.pairs_first;
-			DSMIXBINS &mixbins = storage.mixbins;
+			DSBUFFERDESC description;
+			memset(&description, 0, sizeof(description));
 
-			IDirectSoundBuffer_SetVolume(voice.submix, 0);
-			pairs[0].dwMixBin = 0;
-			pairs[0].lVolume = 0;
-			pairs[1].dwMixBin = 1;
-			pairs[1].lVolume = 0;
-			pairs[2].dwMixBin = 2;
-			pairs[2].lVolume = 0;
-			pairs[3].dwMixBin = 3;
-			pairs[3].lVolume = 0;
-			pairs[4].dwMixBin = 4;
-			pairs[4].lVolume = 0;
-			pairs[5].dwMixBin = 5;
-			pairs[5].lVolume = 0;
-			mixbins.lpMixBinVolumePairs = pairs;
-			mixbins.dwMixBinCount = 6;
-			IDirectSoundBuffer_SetMixBins(voice.submix, &mixbins);
-			IDirectSoundBuffer_Play(voice.submix, 0, 0, 0);
+			globals->voice_count = voice_index + 1;
+			description.dwSize = sizeof(description);
+			description.dwFlags = DSBCAPS_FXIN2;
+			description.dwInputMixBin = input_mixbin;
+			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(globals->direct_sound, &description, &voice.submix, NULL)))
+			{
+				IDirectSoundBuffer_SetVolume(voice.submix, 0);
+				pairs[0].dwMixBin = 0;
+				pairs[0].lVolume = 0;
+				pairs[1].dwMixBin = 1;
+				pairs[1].lVolume = 0;
+				pairs[2].dwMixBin = 2;
+				pairs[2].lVolume = 0;
+				pairs[3].dwMixBin = 3;
+				pairs[3].lVolume = 0;
+				pairs[4].dwMixBin = 4;
+				pairs[4].lVolume = 0;
+				pairs[5].dwMixBin = 5;
+				pairs[5].lVolume = 0;
+				mixbins.lpMixBinVolumePairs = pairs;
+				mixbins.dwMixBinCount = 6;
+				IDirectSoundBuffer_SetMixBins(voice.submix, &mixbins);
+				IDirectSoundBuffer_Play(voice.submix, 0, 0, 0);
+			}
 		}
 		result = voice_index;
 		if (three_d)
 		{
-			DSBUFFERDESC &buffer_description = storage.second;
+			DSMIXBINVOLUMEPAIR buffer_pairs[5];
+			DSBUFFERDESC buffer_description;
 			memset(&buffer_description, 0, sizeof(buffer_description));
 
 			buffer_description.dwSize = sizeof(buffer_description);
@@ -601,20 +672,17 @@ short sound_driver_voice_new(
 			buffer_description.dwInputMixBin = input_mixbin;
 			if (SUCCEEDED(IDirectSound_CreateSoundBuffer(SOUND_DRIVER_GLOBALS->direct_sound, &buffer_description, &voice.buffer, NULL)))
 			{
-				DSMIXBINVOLUMEPAIR (&pairs)[5] = storage.pairs_second;
-				DSMIXBINS &mixbins = storage.mixbins;
-
-				pairs[0].dwMixBin = 6;
-				pairs[0].lVolume = 0;
-				pairs[1].dwMixBin = 8;
-				pairs[1].lVolume = 0;
-				pairs[2].dwMixBin = 7;
-				pairs[2].lVolume = 0;
-				pairs[3].dwMixBin = 9;
-				pairs[3].lVolume = 0;
-				pairs[4].dwMixBin = 10;
-				pairs[4].lVolume = 0;
-				mixbins.lpMixBinVolumePairs = pairs;
+				buffer_pairs[0].dwMixBin = 6;
+				buffer_pairs[0].lVolume = 0;
+				buffer_pairs[1].dwMixBin = 8;
+				buffer_pairs[1].lVolume = 0;
+				buffer_pairs[2].dwMixBin = 7;
+				buffer_pairs[2].lVolume = 0;
+				buffer_pairs[3].dwMixBin = 9;
+				buffer_pairs[3].lVolume = 0;
+				buffer_pairs[4].dwMixBin = 10;
+				buffer_pairs[4].lVolume = 0;
+				mixbins.lpMixBinVolumePairs = buffer_pairs;
 				mixbins.dwMixBinCount = 5;
 				IDirectSoundBuffer_SetMixBins(voice.buffer, &mixbins);
 				voice.unknown00 = input_mixbin;
@@ -625,8 +693,8 @@ short sound_driver_voice_new(
 			}
 			else
 			{
-				SOUND_DRIVER_GLOBALS->voice_count--;
 				result = NONE;
+				SOUND_DRIVER_GLOBALS->voice_count--;
 			}
 		}
 		else
@@ -675,6 +743,16 @@ extern "C" void _ReadWriteBarrier(void);
 // branches); attenuation initialised at its declaration 21; the first barrier after the
 // three float stores 27; lDirectHF after the barrier and first zero 143; the buffer in a
 // local for both calls 42.
+// Round 12 (fast): the scratch registers are VC's EAX -> ECX -> EDX round-robin for temporaries
+// (diagnostic: one extra integer temporary before the call moves decibels to EDX, 131), so retail
+// has one temporary fewer (or two more) than ours between the memset's zero and the decibels load.
+// The first barrier removed 27 (the lDirectHF store sinks, decibels still ECX); `= { 0 }` in
+// place of the memset 175 (the first zero store goes, 672 bytes); the 0x12aff0 call inside the
+// room expression 65 (667 bytes); the voice fields through globals->voices[voice_index] 191; room
+// declared at the top 21 (same code).
+// local for both calls 42. The existing decibel-volume helper 65 (667 bytes); direct global reads 21;
+// direct indexed voice accesses 191 (686); an independent RoomHF PIN 112 (691); a real loss local 57;
+// chained filter zeros 23; the filter at first use 21; a room-base local 99. Body restored.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

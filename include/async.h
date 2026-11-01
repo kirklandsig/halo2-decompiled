@@ -21,16 +21,20 @@ struct s_async_globals
 	long tasks_added;
 };
 
-/* the shared read buffer of the worker thread */
+/* the worker thread's scratch buffer: its own storage, the task that last
+   claimed it, the buffer in use (the storage unless one was supplied), its
+   size, and whether it is a supplied buffer */
 struct s_thread_stack
 {
-	dword unknown00;
-	dword unknown04;
-	dword unknown08;
+	byte storage[0x8000];
+	s_async_task *owner;
+	byte *buffer;
+	dword size;
+	bool external;
 };
 
 extern s_async_globals async_globals;
-extern s_thread_stack g_5020c8;
+extern s_thread_stack g_4fa0c8;
 
 /* where the last queued file read was, so reads are ordered by position */
 struct s_async_insert_state

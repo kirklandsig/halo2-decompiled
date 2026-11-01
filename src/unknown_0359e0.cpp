@@ -103,6 +103,35 @@ PRIVATE inline long swizzle_log2(dword value)
 // 87; `mask < 64` 82 (same code); y looked up before x in both arms 83. Diagnostic only: in a /O2 /Gr
 // object (no /arch:SSE) the minimum becomes retail's branch, yet the coordinate promotion and the
 // tail's register roles still differ; x and y used directly put y on the stack (ret 0xc).
+// Lane 10 round 34 (fast, with 0x136140): x and y used directly with the existing log2_floor 119 (y then arrives on
+// the stack: LTCG passes only width and x in registers), with swizzle_log2 130; short entry copies with log2_floor
+// 119, with swizzle_log2 130 (the compiler drops them); long copies with log2_floor 87; long copies moved between
+// the logarithms and the minimum 102, between the two logarithms 97 (both cost 0x136140). Retail's 16-bit `mov si, cx`
+// is a register move out of ECX (the loop count needs CL), so retail's source likely used x and y directly; what
+// keeps y a register argument there is still unknown.
+// Round 461: shared doubled shift count long/short 88/100; both remaining coordinate parts
+// long, direct/long/short count 82/88/100; native short parts 87/94/91. Original
+// arithmetic, coordinate captures and full body restored; count homes and promotions remain.
+// Round 62 (lane 12, fast, with 0x136140): a compile-only screen of this body under /O2 /arch:SSE /Gr turns
+// every minimum form (`a > b ? b : a`, `a < b ? a : b`, `c = a; if (a > b) c = b;`, if/else, `c = b;
+// if (a <= b) c = a;`, a long result) into cmov, so retail's jle/mov branch still points at a non-SSE object.
+// A `MINIMUM` macro beside the file's `MAXIMUM` 82 (same code); that with the existing log2_floor for both
+// logarithms 87 (the height count then takes the height argument's slot, where retail spills the common
+// count); on that, both long copies after the mask 100 (0x136140 125), y copied at entry and x after the mask
+// 93 (0x136140 6), x at entry and y after the mask 93 (0x136140 28).
+// Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
+// twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
+// branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
+// Round 16 (m3 lane 17, fast; 0x136140 kept): common_bits declared before the height logarithm 82 (same
+// code); tail tests as `common_bits < width_bits` / `< height_bits` 91; the minimum as `height_bits <
+// width_bits ? height_bits : width_bits` 82 (same code), as `width_bits < height_bits ? width_bits :
+// height_bits` 82 (same code); the output words declared with the coordinate copies 82 (same code).
+// Round 468: Second-axis count long/word/byte/signed-byte, each with short/word
+// common count, 91/129, 99/91, 95/118, 95/94. All controls remain matched; original
+// height/common counts and complete body restored; coordinate promotions and count homes remain.
+// Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
+// 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
+// coordinate promotion, height/common homes and minimum selection remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

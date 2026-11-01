@@ -512,6 +512,13 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // compare-then-pass); every promoted/short/int team local folds the add and sinks the EDI save 31; short
 // const & / pointer to the field 25; clump_get named 3, in the argument 31; team or side getter by index 31,
 // by clump pointer 3; prop between clump and side 26, before both 45.
+// Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
+// declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
+// Original body and declarations restored.
+// Round 137 (lane 4): the walk reusing `clump` (no other_clump) with a long team local 31, the team passed
+// directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
+// only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
+// not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -1801,29 +1808,33 @@ void function_269580(long destination_index, long source_index)
 	short count = 0;
 	iterator.next = ((s_clump_activity_view *)(g_502420->data + (source_index & 0xffff) * sizeof(s_clump_activity_view)))->first_prop;
 	while (clump_next_prop(&iterator)) indices[count++] = iterator.index;
-	long *cursor = indices;
-	for (short remaining = count; remaining > 0; --remaining)
+	short remaining = count;
+	if (remaining > 0)
 	{
-		long index = *cursor;
-		if (index != NONE && (index & 0xffff) < g_50241c->high_water_index)
+		long *cursor = indices;
+		for (; remaining > 0; --remaining)
 		{
-			s_prop_copy_view *copy = (s_prop_copy_view *)(g_50241c->data + g_50241c->size * (index & 0xffff));
-			if (copy->salt && copy->salt == (index >> 16))
+			long index = *cursor;
+			if (index != NONE && (index & 0xffff) < g_50241c->high_water_index)
 			{
-				long object_index = copy->object_index;
-				if (function_badc0(object_index, (dword)NONE))
+				s_prop_copy_view *copy = (s_prop_copy_view *)(g_50241c->data + g_50241c->size * (index & 0xffff));
+				if (copy->salt && copy->salt == (index >> 16))
 				{
-					long object_slot = object_index & 0xffff;
-					if (g_4de300[object_slot] != g_4de2fc)
+					long object_index = copy->object_index;
+					if (function_badc0(object_index, (dword)NONE))
 					{
-						g_4de300[object_slot] = g_4de2fc;
-						long added = function_26a860(destination, copy);
-						if (added != NONE) function_26a960((s_clump *)destination, added);
+						long object_slot = object_index & 0xffff;
+						if (g_4de300[object_slot] != g_4de2fc)
+						{
+							g_4de300[object_slot] = g_4de2fc;
+							long added = function_26a860(destination, copy);
+							if (added != NONE) function_26a960((s_clump *)destination, added);
+						}
 					}
 				}
 			}
+			++cursor;
 		}
-		++cursor;
 	}
 	g_4de2f8 = false;
 	if (*(real *)((byte *)source + 0x2c) > *(real *)((byte *)destination + 0x2c))
@@ -1919,6 +1930,20 @@ void function_269250(long clump_index, long actor_index);
 // team-arm form: selection locals before the walk 129; activity read in the walk call 126; team
 // compare reversed 126; the datum step reading the pool field at each use (data_iterator.h) 126,
 // identical. Zero-default score with the common compare 90.
+// Round 29 (plain checks): the in-arm compare 126 (480 B; plain agrees with fast), with the selection
+// from the iterator's datum index 128, with the selection stored first 126; the walk as 0x26bc60's
+// s_clump_pool_iterator (current cleared and set each step, selection from pool.datum_index) with the
+// in-arm compare 144, with the common compare 138; the created clump through the existing clump_get
+// 87 (same code), with the in-arm compare 126. A record-pool walk without the datum field is ruled out:
+// retail's 0x268510 passes this walk's iterator to the out-of-line 0x6b380.
+// Round 250: Native actor/group output ownership, then native selected-handle combinations:
+// 104/146/147/147/146/147; both complete-output forms with team-local scoring 129/129.
+// Pool/selection and x87/SSE allocation remain; all matched controls survive.
+// Round 31 (lane 15, fast): in-arm compare with the selection stored first, with `continue` on a team mismatch,
+// with `best < score`: 126 each (480 B); `(void)&selected;` on either form identical (87/126). Diagnostics:
+// the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
+// into a register and leave the selection in memory as retail: the selection wins the callee-saved register
+// only through the call in the walk plus its post-loop uses.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2126,6 +2151,27 @@ void function_269250(long clump_index, long actor_index)
 // are no longer hoisted); target-clear arm through prop_get at each use 220; the existing prop walk
 // struct 3; node iterator declared beside the prop iterator 3. On the opening body the deletion arm as
 // `if (unit) continue; break;` 89 (identical code).
+// Lane 16 r48 (fast): the 3 form under s_prop_pool_storage leaves only the pool registers (ours node pool
+// EDI / prop pool EBP; retail the other way). Under separate pool globals the 3 form matches but
+// 0x25d770 2 and 0x25d810 91 (335 B; result/actor registers permute): 0x25d770's walk as a for loop 114
+// (208 B, the step is duplicated); the prop pool defined in this file instead of globals.cpp 2/91; prop
+// declared before datum in 0x25d770 2/91; both pools as one two-element array 252 (709 B: the pools are
+// no longer hoisted; 0x26aaf0 0 -> 70). Ours gives the pool the loop references first the first
+// callee-saved register (reverse order with the struct); retail gives the prop pool it in all three.
+// Lane 14 r22: unit flag renamed to sort before the group flag 89 (slots unchanged); the completion
+// test as the prop loop's condition (`(!changed || unit) && next`, the removal arm `continue`) 111
+// (741 B, but the entry is not threaded past the test); the removed flag rechecked 3 (both flag slots
+// then agree; only the prop/node pool roles in EDI/EBP differ, set by s_prop_pool_storage, which
+// matched 0x25d770 needs); with the removed test last 190; set before the removal call 3.
+// Round 29 (fast, 3 form with separate pools, which matches here): a probe reading the prop pool first
+// at the top of unknown_25d690.cpp 2/91 (0x25d770/0x25d810); separate pools named to sort prop first or
+// last 2/91 each (names do not rank promoted globals); 0x25d770's prop lookup at each of its three uses
+// 55 (the prop pool then takes EDI and loads first as retail, but the lookup sinks under the tests: the
+// promoted pools rank by reference count, ties by first reference); the final actor compare through a
+// second prop_get in both 49/115; both actor reads through it in 0x25d770 55/91.
+// Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
+// order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
+// deletion/pool scheduling remain; all matched controls survive.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2246,9 +2292,26 @@ void function_26a210(long clump_index)
 }
 
 int __cdecl function_269da0(void const *a, void const *b);
+void bitset_or(dword const *a, dword const *b, dword *destination, long bit_count);
 void *actor_get_character_situation_entry(long actor_index);
 
-// score 283 (was 283): Frame 0x6a4 agrees; retail hoists the reset word into SI and NONE into EDI for
+// score 71 (was 283): the cluster loop (hoisted reset word in SI, NONE in EDI), the marking loop and the
+// second selection loop now equal retail; left: the prop-loop head (ours loads the count before the prop
+// pool and keeps the pool in EDI where retail has EDX) and the first selection loop's `add ebx, 0x10`,
+// where retail re-derives the candidate from the cursor (doing that here drops the reset hoist, 301).
+// Plain checks only: --fast drops the reset hoist that the plain build keeps.
+// Round 29: the existing bitset_or for the hand-written OR loop 252 (aligned 139 -> 90); with the marking
+// slots as 0x269580/0x269250 write them 178; the first loop as `while (selected < 50 && cursor < count)`
+// with the second loop's candidate re-derived from the cursor 71 (kept). On 178: that condition with the
+// candidate re-derived after `++cursor` in both loops 301, in the first only 308, the condition alone 316
+// (1310 B); the second loop's re-derivation alone 173; the condition with the candidates taken at the tops
+// of both loops 297; re-derivation in both with the first loop's break kept 180 (1334 B). On 71:
+// s_clump_prop_walk for the prop loop 71 (same code); the first loop's step as `candidate = candidates
+// + cursor` 301 (the reset hoist drops as with `&candidates[cursor]`); the second loop indexing
+// `candidates[cursor].prop_index` with no pointer 81. Fast diagnostics (reverted): an early reset local
+// as long stored as (short) 26 on the both-loop form (aligned 17), as short/word 275; the structure
+// global at the compare only 302; a local s_location copied in the arm 336.
+// Earlier: Frame 0x6a4 agrees; retail hoists the reset word into SI and NONE into EDI for
 // the cluster loop and reads the cluster count twice (ours keeps one read live), recomputes each
 // candidate from the short cursor (`movsx ebx, di; shl ebx, 4; lea ebx, [esp+ebx+0x74]`) and leaves the
 // first selection loop unrotated; visibility/marking registers follow.
@@ -2332,6 +2395,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // DL round 206: candidate evaluator/collector inline modes 1/0, 0/1, 1/1, 2/0,
 // 0/2, 2/1, 1/2, 2/2 (ordinary, inline, forced) 283/283/283/1749/459/1749/459/3173.
 // Forced evaluator expansion also loses matched neighbours; all declarations and body restored.
+// Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
+// with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
+// allocation remain; all matched controls survive.
 // @retail 0x269870
 void function_269870(long clump_index)
 {
@@ -2357,10 +2423,8 @@ void function_269870(long clump_index)
         short cluster = *(short *)((byte *)actor + 0x254);
         if (cluster >= 0 && cluster < *(long *)(structure + 0x9c))
         {
-            long word_count = (*(long *)(structure + 0x9c) + 31) >> 5;
-            dword *visible = *(dword **)(structure + 0x58) + word_count * cluster;
-            for (long word = word_count - 1; word >= 0; --word)
-                clusters[word] |= visible[word];
+            bitset_or(clusters, *(dword **)(structure + 0x58) + ((*(long *)(structure + 0x9c) + 31) >> 5) * cluster,
+                clusters, *(long *)(structure + 0x9c));
         }
         else
         {
@@ -2380,15 +2444,16 @@ void function_269870(long clump_index)
             members.next_index = perception_get(*(long *)((byte *)actor + 0x1c))->object_index;
             while (swarm_creature_iterator_next(&members) != NULL)
             {
-                if (g_4de300[members.index & 0xffff] != g_4de2fc)
-                    g_4de300[members.index & 0xffff] = g_4de2fc;
+                long member_slot = members.index & 0xffff;
+                if (g_4de300[member_slot] != g_4de2fc)
+                    g_4de300[member_slot] = g_4de2fc;
             }
         }
         else
         {
-            long object_index = actor->unknown018;
-            if (g_4de300[object_index & 0xffff] != g_4de2fc)
-                g_4de300[object_index & 0xffff] = g_4de2fc;
+            long object_slot = actor->unknown018 & 0xffff;
+            if (g_4de300[object_slot] != g_4de2fc)
+                g_4de300[object_slot] = g_4de2fc;
         }
     }
     s_prop_candidate_view candidates[100];
@@ -2418,7 +2483,7 @@ void function_269870(long clump_index)
     g_4de2f8 = false;
     qsort(candidates, count, sizeof(*candidates), function_269da0);
     s_prop_candidate_view *candidate = candidates;
-    while (cursor < count)
+    while (selected < 50 && cursor < count)
     {
         if (candidate->priority < 3 && selected >= 20)
             break;
@@ -2475,8 +2540,6 @@ void function_269870(long clump_index)
         }
         ++cursor;
         ++candidate;
-        if (selected >= 50)
-            break;
     }
     while (cursor < count)
     {
@@ -2484,7 +2547,7 @@ void function_269870(long clump_index)
         if (index != NONE && datum_get_inlined(g_50241c, index))
             function_26aaf0((s_clump *)clump, index);
         ++cursor;
-        ++candidate;
+        candidate = &candidates[cursor];
     }
 }
 

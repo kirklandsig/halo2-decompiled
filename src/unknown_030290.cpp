@@ -317,6 +317,22 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 446: Existing vector scale/rotation stage with direct/native point publication 222/295;
 // with translation copy 264/690; aggregate vector input gives the same four scores.
 // Original point helper restored; simplest frame 0x1c, combined value form outlines.
+// Round 451: Signed depth intervals at reversed/origin/displaced test subsets 1/2/1+2/3/1+3/2+3/all,
+// then all upper-first: 227/216/248/250/242/244/245/214. Original absolute tests and helper
+// restored.
+// Round 256: Guarded coordinate acquisition xzy/yxz/yzx/zxy/zyx gives 287/293/293/287/293;
+// coherent scale with xyz/yzx/zyx gives 301/301/301. Original shared guard, alias-safe snapshots
+// and body restored; frame 0x30 remains.
+// Round 468: Displaced reciprocal first, with factor admission/publication/perspective-zero
+// scope subsets 0..7: 239/215/227/197/264/283/267/283. Original inverse evaluation, defaults, factors
+// and complete body restored; frame 0x30 and displaced-transform spill remain.
+// Round 471: Separate raw/scaled coordinate families, default-copy/explicit-branch/conditional/
+// native-point conditional, field/shared scale: 225/199/265/269/316/306/690/230. Original
+// alias-safe helper, frame defaults, inverse graph and complete body restored.
+// Round 475: Component-owned compound scale updates with input snapshot orders
+// xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
+// with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
+// frame 0x30 versus 0x2c and the second transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
@@ -514,49 +530,15 @@ void function_30e30(long key, long value, bool add, real x)
 
 real function_30bf0(vector3f *v);
 
-// score 42 (was 42): the first product's x87 operand order and the SSE
-// registers of the normalization and second product differ. Shared cross3f and
-// normalize3d 42; a local copy of axis gives retail's x87 order (35) but is
-// not kept; normalize_inline 53 (harness); result declared first, length kept,
-// direct stores or a struct copy of the result: no gain.
-// Earlier: first input by value 138; second 173; both 240; vector return 209;
-// scalar input groups 112; coordinate pairs 112; scalar first stage 94;
-// scalar second stage 78. Original squared-length result and loop restored.
-// Retail's x87 products follow this source's operand order; ours reverses five
-// of the six whatever the source order (swapped operands 47, n[] indexing 47).
-// Second product written into vector directly 46 (stores interleaved, retail
-// stores all three at the end); second product's components computed k, j, i
-// into locals 74, into the result 74.
-// Round 181: outer input order 35 (230 bytes); output/axis/both reference inputs 42/42/42; reordered
-// references 35/35/35; outer inline 42. Seven-point order gain rejected; original binding and SSE
-// carriers retained. Round 40: staged second product straight into vector 42; struct copy of the
-// result 74; whole axis copied into a local 103; reference locals bound axis-first 43, with the staged
-// second product 41. The reversed parameter order (35) needs the caller in src/unknown_0350e0.cpp.
-// Round 43: retail's second product is cross3f_staged's k, j, i order. Axis pointer local 35 (x87
-// part matches, 230 bytes); the staged product into vector 42, into a local 42 (35 with the axis
-// pointer), copied as a struct 68; axis or vector pointer with the staged product 36/36; both
-// pointer locals with the staged product 36 (224 bytes, retail's product grouping, xmm homes and
-// three x87 operand pairs differ); a 27-form screen of pointer locals x declaration order x second
-// product form no better than 35.
-// carriers retained.
-// Round 295: shared staged cross first/second/both 42/42/42; second product in
-// the normalized workspace with ordinary/staged first 68/68; direct staged output
-// with ordinary/staged first 42/42; native axis value with direct staged output 103.
-// Original distinct workspaces restored; x87 input order and SSE carriers remain.
-// Round 446: Scale consumer with scalar/native output staging 42/88; complete input snapshot
-// alone/with scalar/native staging 88/88/88; separate normalization output
-// alone/with input snapshot/scalar staging 88/88/88. Original shared helpers restored.
+/* makes vector perpendicular to axis in the plane of both: axis x (vector x axis), normalized by
+   0x30bf0, whose length result it returns */
 // @retail 0x31b40
-real function_31b40(vector3f *vector, vector3f const *axis)
+real function_31b40(vector3f const *axis, vector3f *vector)
 {
 	vector3f cross;
 	cross3f(vector, axis, &cross);
 	normalize3d(&cross);
-	vector3f result;
-	cross3f(axis, &cross, &result);
-	vector->i = result.i;
-	vector->j = result.j;
-	vector->k = result.k;
+	cross3f_staged(axis, &cross, vector);
 	return function_30bf0(vector);
 }
 

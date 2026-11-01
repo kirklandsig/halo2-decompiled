@@ -64,7 +64,15 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 439 (was 439): retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// score 439 (was 439): retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// Round 30 (lane D): the permuter found no better form, so the body is unchanged. What still differs:
+// retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
+// where this body calls them, retail's frame is 0x3e4 against our 0x3e8, and the result byte and the
+// getter/readiness handling are still the ones the rows below describe.
+// Earlier at 439: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Retail stores the tested session state to a dead stack slot before each early exit (the idiom
 // 0x706f0 and 0x5c490 reproduce only with volatile locals), so every later row is shifted in the
 // lockstep compare. Round 152, nested rewrite without gotos (existing value getter, live-state
@@ -158,6 +166,17 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // combined tail then per-phase publication: 449/455/484/480/441/461/476/471. Original conditional true
 // stores, result carrier and complete executable body restored.
 // Round 441: Deadline expiry owns guard/reset result; bool expiry with long/bool/short/byte reset 469/450/469/450; long expiry 463/447/463/447. Long expiry plus byte/bool reset recovers frame 0x3e4 but regresses; all original computations and body restored.
+// Round 449: primary/secondary/both entry states read at each equality
+// use 439 each; with secondary receiver declared after first guard 457
+// each; primary/both live states with conditional index producer 467 each.
+// Original snapshots, receiver lifetime and index producer restored; frame,
+// dead state stores and getter boundary remain.
+// Round 247: distinct strict/fallback imbalance outputs with phase/entry cost and
+// readiness storage, 439/439/439/439; the same four with identifier storage at entry
+// 442/442/442/442. Original shared output, declarations and entire body restored.
+// Round 259: persistent settings across all four solver uses: team count, capacity, party
+// flag, minimum, maximum, capacity pair, party triple and all five,
+// 467/474/451/455/455/499/472/455. Original queries, receivers and full body restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

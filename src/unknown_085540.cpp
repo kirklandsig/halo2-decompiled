@@ -118,7 +118,7 @@ bool c_simulation_view::channel_ready(void)
 {
 	bool result;
 	if (channel_index != NONE)
-		result = network_observer_channel_ready(observer, channel_index, 0x2b);
+		result = network_observer_channel_ready(observer, 3, channel_index, 0x2b);
 	else
 		result = true;
 	return result;
@@ -521,7 +521,7 @@ void simulation_view_baseline_update(s_simulation_view_baseline *baseline)
 			}
 			else if (view->channel_index != NONE)
 			{
-				network_observer_mark_message(view->observer, view->channel_index, 0x2b);
+				network_observer_mark_message(view->observer, 3, view->channel_index, 0x2b);
 			}
 		}
 	}
@@ -865,6 +865,11 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // the first partial memset 112; explicit field stores 118; aggregate `= { 0 }` 9; named-type value
 // initialization 17; early data address with two partial memsets 18; header outside the loop 18;
 // named positive-count test 18; terminal size memset 18. All restored because none matched.
+// Round 137 (lane 4), each with the named data pointer (2): `header.offset = offset;` before the size in both arms
+// 56 (the offset stores merge into the head); the offset stored once in the head before the kind 126 (414 bytes;
+// stores keep program order); two partial memsets 18 again (head store order is retail's, but the zero is a shared
+// constant: `cmp eax, ecx` and the terminal `mov word [esp+0x16], cx`), with `remaining >= 1` 21, `0 < remaining`
+// 18; `= { 0 }` in place of the memset 9 (409 bytes); permuter 2.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
@@ -938,6 +943,11 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // before start 32 (and 0x6a8a0, 0x80e10, 0x18f260 worse). With the barrier: the header memset
 // before `unknownac = 0` 19; `long size` before the count increment 19. A compile-only build
 // gives the +0xc/+8 ring stores and the hoisted header store for every statement order.
+// Round 140 (lane 4): the ring pointer declared first in the block 25; `unknownac = 0` ahead of the
+// ring stores 200 (644 bytes); `header.value` assigned before kind and size 25; the count increment
+// after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
+// wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
+// the reader's local non-volatile 250 (its zero stores vanish).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -991,6 +1001,8 @@ bool function_685f0(void *block, long *size, byte *destination, long capacity);
 // callee's choice, and function_685f0 in src/unknown_067e10.cpp is three instructions
 // off retail. BLOCKED-BY 0x685f0 (round 14: it takes the destination in eax, retail's
 // in edx; its body is contributor code).
+// Round 59: unchanged; the callee still reads the destination from eax (`mov edi, eax`, retail
+// `mov edi, edx`) and this is its only caller, so no caller form was retried.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
@@ -1018,7 +1030,16 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): retail treats the read header as reachable through the ring buffer: it reloads
+// score 72 (was 72): this round: the case-0 copy of the header value, block- and function-scoped,
+// scores 137 both times: the header then sits at retail's esp+0xc and the copy at esp+0x14, but the
+// ring cursor stays in esi across the first read and the used count is updated through a register,
+// so the read's offset is still forwarded in edx instead of reloaded and the header size still
+// lands in si. Retail's dx load of the size kills the remainder left in edx by the idiv, which is
+// what forces its reload; ours keeps the remainder for the second read. The permuter ran without
+// finding a better form. The header home, the size register, the forwarded cursor and the grouped
+// case-1 stores remain.
+// Retail treats the read header as reachable through the ring buffer: it reloads
+// Earlier (72): retail treats the read header as reachable through the ring buffer: it reloads
 // the start after each read call and reloads the header size after the start/used stores. The
 // header's value sent directly (its address escapes) gives that; retail still sends a copy at
 // esp+0x14 (header at esp+0xc, ours at esp+0x10), interleaves the message's zero and value stores
@@ -1039,6 +1060,7 @@ bool function_68670(byte *source, long size, void *block);
 // Round 222: connection-ready bool/byte/short/long on original entry, each 97; each with named
 // occupied span 135. Original body restored; reader visibility, cursor reloads and count updates
 // remain.
+// Earlier note (score 97): retail behaves as if the read call could write any memory: it reloads the
 // Earlier: retail behaves as if the read call could write any memory: it reloads the
 // buffer start after each read, updates the used count in memory (`add [ebx+0xc], -8`) and loads
 // the header size only after the start/used stores; ours keeps the start in ESI across the first
@@ -1067,9 +1089,60 @@ bool function_68670(byte *source, long size, void *block);
 // On the 72 form: short size local 72 (identical); size declared at function scope 72 (identical);
 // header and payload declared in the loop 118; without the view address line 168; message size
 // assigned before its offset 73.
+// Round 33 (lane 10), on the 72 form: the payload read using header.size at each use (no size
+// local) 116 (554 bytes); case 1's offset and size each cleared by its own memset just before its
+// value store 97; the header declared inside the loop 118 at retail's 553 bytes (the header size
+// then takes DX as in retail, but view/size swap ESI/EDI, used is updated through a register and
+// the start is forwarded); that with case 0 sending a block-local copy of the value 137; payload
+// declared before the header 72 (identical). Retail's frame is exactly header 0xc, value copy 0x14,
+// payload, block, message (0x14454 bytes), so case 0 sends a copy; what escapes its header is open.
 // DL209: Case/function-scope sequence copies by memcpy/memmove 137/137/153/153; complete
 // native/memcpy/memmove/field header copies 147/147/155/142. Separate-copy home returns but reload
 // knowledge is lost; all copies restored.
+// Round 114 (lane 6, fast): case 0 sending a block-local copy of the value 137 (561 bytes; the header
+// then sits at retail's esp+0xc, but the start stays in ESI across the read and `used` is updated
+// through a register); the copy declared at function scope 137; header and payload read by an inline
+// helper taking the header by pointer (header->size read inside it) 72 (identical code: VC resolves
+// the pointer), with the case 0 copy 137; the copy with `used` updated before `start` 137. Retail's
+// 0x1a19a0 copies with inline rep movs, so it is no more opaque to LTCG there than here.
+// Round 23 (72): case 1's offset and size each cleared by its own memset 97; case 0 sending a
+// `long message` copy (header then at esp+0xc as retail, but the start stays in ESI across the
+// first read and the used count is not updated in memory) 137; payload declared before the header
+// 72; the header alone declared in the loop 118 (553 bytes, the size in DX as retail but the view in
+// ESI); the payload alone declared in the loop 118 (553 bytes: case 1's interleaved zero/value
+// stores exactly as retail; the view/size ESI/EDI swap, the header at +0x10 and the first update's
+// register form remain); that with case 0's `long message` copy 146. On the loop-scoped payload
+// form: the buffer pointer declared first in the loop 95 (543 bytes); the occupied span written in
+// the window test 146; the header also in the loop after the payload 118; the view address line
+// after the header declaration 118.
+// Round 49 (lane 16, fast): case 0 sending a memset one-field message 137 (retail's header home
+// +0xc and copy +0x14, but the start stays in ESI across the first read and the header size is
+// hoisted); the payload count declared before its test and tested as a long 106 (553 bytes, header
+// size in DX as in retail, but a 32-bit test and the start forwarded through EAX); that with the
+// case-0 message 129; the count declared before the short test 155; case 2's failure through the
+// existing fail helper 72 (identical code, kept). Diagnostics: the case-0 message with the header's
+// address forced to escape restores retail's reloads and late header load (retail behaves as if the
+// read call were opaque) but keeps the size in SI (167); per-field memsets still hoist both zero
+// stores 97. Retail's case-1 store interleave follows its registers (value and size share ECX).
+// Round 108 (lane 8; a one-file LTCG harness, this file + 0x1a19a0/0x68670/0x75e80 files, gives the build's 72
+// exactly): a compile without whole-program optimization does not give retail's code (retail passes the read and
+// send arguments in registers, so retail's object is LTCG). Real (fast): the payload test written `>= 1` 63 (553
+// bytes, but `cmp si, 1; jl` where retail has `test dx, dx; jle`: alignment only, not kept); the buffer start read
+// into a local for the first read and update 78 (543 bytes); payload declared before the header 72 (identical);
+// the kind read into a short local for the switch 72 (identical); case 0 sending a copy of the value made before
+// the switch 142 (558 bytes). Harness: case 0's block-local copy 137 (header at retail's +0xc, but the start then
+// stays in ESI across the read and `used` is updated through a register), without the view address line 154.
+// Round 59 (fast), all with case 0 sending a block-local copy (frame and case 0 then retail's, 137):
+// case 1's offset/size each cleared by its own memset 135 (560 bytes); header and payload declared in
+// the loop 146; payload alone in the loop 146; the payload size at function scope 137; header and
+// payload in the loop with per-field memsets 144. Retail treats the header as escaped (start reloaded
+// after the first read, used updated in memory) although its copy keeps &header from the send.
+// Round 44 (lane 10, fast): `long size = header.size;` ahead of the short test, used by the payload
+// read 155 (506 bytes); case 0 sending a function-scope `long value` copy 137 (561 bytes); the switch
+// on `(long)header.kind` 72 (identical); the payload block's used update before the start update 103
+// (553 bytes); the buffer pointer declared before the window test 82. Retail's DX is the short size
+// live from the test into the cases (reloaded after the payload read); ours coalesces it with the
+// long size in ESI.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
@@ -1116,11 +1189,7 @@ void __stdcall function_865d0(c_simulation_view *view)
     memset(&block, 0, sizeof(block));
     if (!function_68670(payload, header.size, &block))
     {
-     if (!view->failure_reason)
-     {
-      view->set_state(0, NONE);
-      view->failure_reason = 5;
-     }
+     view->fail(5);
      return;
     }
     view_send_message(view, 0x27, sizeof(block), &block);
