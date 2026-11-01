@@ -364,8 +364,8 @@ static inline bool teams_enabled_19e1c0()
 // `!=`, `<=`, a while, the body in the if and a single score compare 421/403/390/390/390; the
 // result local plain, without its initialiser, and with the text buffer first 701/665/433; the
 // volatile result without its initialiser 449; every form restored.
-// Round 272: entry declarations for cause/effect/both teams and both with opponent
-// score, inherited/ordinary result 390/691/390/691/390/691/390/691. Original lifetimes restored.
+// Round 272: entry declarations for cause/effect/both teams and both with opponent score,
+// inherited/ordinary result 390/691/390/691/390/691/390/691. Original lifetimes restored.
 // Round 393: Length/copy/comparison/format noinline declarations with inherited result 390/390/390/390;
 // ordinary result 691/691/691/691. All declarations and original case bodies restored.
 // Round 395: consumed name capacity with result after/before copy, result-fed capacity, and direct capacity exits
@@ -400,6 +400,16 @@ static inline bool teams_enabled_19e1c0()
 // the same four with ordinary result storage 691 each, frame 0x204 but merged copy tails.
 // Original formals, result storage, dispatch and copy/format paths restored;
 // frame 0x208 versus 0x204 and independent name-copy/result/capacity homes remain.
+// Lane 18 round 15 (fast): retail re-reads `token` from the stack at every compare, and that extra scratch temp
+// per case shifts the EAX/ECX/EDX rotation, so the four name/team tails differ and only the copy call is shared;
+// ours keeps `token` in a register and the plain result's tails merge. Plain result 691; with one read of
+// `token` through its own address 691 (folded); plain result with the event's teams read at each use 661 (1202
+// bytes); with the clamp as `remaining <= result` 691 (a listed form, now 691 not 652), both 661; volatile result
+// with the teams at each use 394 (listed, re-measured); on the plain result with the teams at each use: the switch-
+// side-time case setting `result = remaining` like the others 701 (1161 bytes), the clamps as the caller 0x19e0f0's
+// `result <= remaining ? result : remaining` 661.
+// Diagnostic (a volatile token read at every compare, reverted): 468, with retail's token_length EDI and per-test
+// token reloads, but a hoisted zero then takes EBX (event to EBP) and `remaining` still stays on the stack.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -568,6 +568,15 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // address computation then leads); the offset advanced before the next index 42 (same code); the
 // offset declared first 42 (same code); the offset as `dword` 42; the transform test read once into a
 // bool for both tests 326 (1156 bytes).
+// Round 46 (m3 lane 10, fast): the emitter's next index read right after the emitter lookup 318 (1150
+// bytes), with scale first 318; the 0xf80f particle mask computed right after the emitter mask read 263
+// (1117 bytes), with scale first 261; the emitter mask read from the definition at both uses 239 (1136 bytes).
+// Round 59 (lane 16, fast with callees and 0x2243c0): one flags local for the six flag tests 292 (1157 bytes);
+// the emitter mask declared just before its first use 236, at the emitter loop's scope 220; indexed
+// definitions with the flags local 297 (1159 bytes); the particle mask inline at its call 42 (identical). A
+// compile-only screen of 190 combinations (indexed, flags local, mask at each use, scale/colour/result pointers
+// first, mask scope, `+=` translation) shows five whole-function rotation states; the mask read at each use is
+// the only one with retail's rows i and j in both rotations (row k then left/forward/up), none is retail's.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

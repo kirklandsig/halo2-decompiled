@@ -528,6 +528,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // Round 256: Case priorities beginning with 1 10423/14023/14203/14230/13042/13402/13420/14320 give
 // 422/422/425/419/449/452/457/445; one-point form rejected. Original cases and body restored;
 // frame and actor homes remain.
+// Round 144 (lane 4, fast with 0x1e34e0): retail inlines 0x2641c0 here (actor flag test, then 0x28fa60 or the
+// 0x38-byte copy), which our build calls out of line (pinned for 0x264210). Diagnostic only, a local forceinline
+// copy of that body 486 (1700 bytes; the update flag still takes EBX and the actor stays a stack argument, so the
+// inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
+// as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
+// clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

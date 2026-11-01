@@ -156,6 +156,22 @@ bool function_25d9b0(long prop_index);
 // priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
 // Round 465: default-first/branch-complete property acquisition result, short/long priority,
 // existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
+// Round 143 (lane 4, fast with the file and its callees, faithful 86): the gate as `if (ok) goto done; }
+// priority = 0; done: return priority;` 91 again (retail's whole layout and zero epilogue; left: actor/node
+// EBP/EBX and priority spilled to the argument slot with the state in ESI), with `return priority` in the
+// gate and `priority = 0; return priority;` after it 105 (560 bytes), with the state fetched after the
+// velocity declaration 91; on the kept form the gate inverted (`if (priority <= 0) priority = 0; else`) 86
+// (same code) and the participant index named in the found path 86 (same code).
+// Round 122 (lane 6, fast, file and callees in the image, control 86): `short result = 0` at the label with
+// `result = priority` on success and a long priority 117 (554 bytes); the `goto done` zero-epilogue form with node
+// declared first 91 (554), with the fallback through actor->prop_index 91 (in both the priority is spilled to the
+// argument slot and the state kept in ESI); the loop's object compare written node-field first 87; the node's
+// near distance read once into a local for both range tests 90 (541). The recorded goto form with an initialised
+// priority and with a long priority re-measured 91 each.
+// Round 57 (lane 16, fast with the file's loop functions): the fallback as an if/else choosing the priority (a
+// `>= 2 ? 3 : 0` select) 110 (552 bytes); the iterator entry declared in the `while` condition with `return 0`
+// after the loop 119 (551 bytes, actor/node still EBP/EBX); velocity declared before the state and view lookups
+// 86, the decline test through a NONE-preset `new_prop` 86, a short participant-index local 86 (same code each).
 // Round 107 (lane 7, plain, with the file and its callees in the image), kept 86 -> 76 -> 65: in the loop the
 // already-held prop tested first (`if (node && target == node->object_index) priority = ...; else { acquisition,
 // decline, new node, its own priority read }` before the existing `goto evaluate`; at review the lane's second

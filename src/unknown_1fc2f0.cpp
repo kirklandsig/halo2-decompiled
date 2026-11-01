@@ -200,7 +200,7 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 32 (was 43): the limit test is written the other way round, so the comparison matches
+// score 32 (was 32): the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -373,6 +373,26 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // chains (ticks read at the top) 73 (369 bytes); the conversion read straight from the global 32 (identical); the
 // rate products and adds j, i, k, then the conversion, the subtractions, the tick products and the deltas as
 // i, j, k / i, j, k / j, i, k 93 (378 bytes) and k, j, i / i, j, k / i, j, k 76 (369 bytes).
+// Round 46 (m3 lane 10, fast): the prediction through the existing vector3f_add_scaled into a predicted
+// point, then the existing scaled_difference3f(p2c, predicted, (real)ticks, velocity) 32 (the tick conversion
+// then reuses the rate's XMM3 and scales in place as retail, first difference +0x65; the velocity stores and
+// deltas still run j, i where retail runs i, j); on it the deltas assigned i, j, k 79 (the stores, deltas and
+// the (k + j) + i sum are then retail's; only the rate chains and tick products run i, j where retail runs
+// j, i), i, k, j 55, k, i, j 30, j, k, i 52, k, j, i 72; the delta through scaled_difference3f with 1.0f 83;
+// vector3d_from_points3d then vector3f_scale for the tick stage 73 (369 bytes). On the k, i, j form: a 600 s
+// permuter run (77 tries) none below 30; predicted declared at the top 30; the limit before the squared
+// length 38; the delta through vector3d_from_points3d 80; the correction through vector3f_scale +
+// vector3f_add 58 (369 bytes), through local_scale3d + vector3f_add 70, through vector3f_add_scaled 87 (348
+// bytes); a vector3f predicted 30; the tick count passed without the (real) cast 30. The squared length sums
+// (c + b) + a for deltas assigned a, b, c, so retail's (k + j) + i needs i, j, k, which moves the rate chains
+// off retail's j, i, k.
+// Round 59 (lane 16, fast): deltas assigned k, i, j 34; the delta as an aggregate initialiser 79; point
+// pointer locals for the two state points 35; `real tick_scale = g_510c54->field_2_3;` 32 (identical); a
+// predicted point (copied first, `*= rate`, `+= p38`) then the existing scaled_difference3f(p2c, predicted,
+// ticks, velocity) 57 (369 bytes: the tick conversion then takes XMM3 and the j/i tick products scale in
+// place as retail, first difference +0x65, but the i/j stores, the k product and the correction differ);
+// that with the delta through scaled_difference3f(state velocity, velocity, 1.0f, delta) 59 (366 bytes; the
+// correction then forms all three products before the load-first adds as retail), with `(real)ticks` 56.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
