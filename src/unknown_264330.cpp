@@ -534,6 +534,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // inline alone does not move the convention); sample/update declared at function scope 420; the maximum test
 // as `(short)maximum < field` 421; the 0x25d610 test nested under `sample && update` 420; the sampler result
 // clearing the flag with the 0x264b50 call in its else arm 458 (1656 bytes).
+// Round 45 (lane 13, fast with 0x1e34e0): iterator walk 443 (1616 bytes, frame 0x9c; index copy in EBX,
+// actor copy in EDI, retail the reverse); iterator.index at each use 443 (same code); with maximum a plain
+// word 442; with sample/update at function scope 442; with sampled_one declared first 442. The actor's
+// stack passing may come from the build's stand-in caller (a second call site passing a buffered argument).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

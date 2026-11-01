@@ -592,6 +592,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 45 (lane 13, fast): retail loads the shape data three times in the exclusion test and ends it
+// with setne/test. data as a dword/byte-pointer union with the byte test through the pointer 321 (one
+// shared load); pointer check and byte test as one && bool helper 319; the condition as a named bool 321
+// (same code); a bool helper with early returns 331 (retail's setne/test, loads still shared); that as a
+// single-exit result 331. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
