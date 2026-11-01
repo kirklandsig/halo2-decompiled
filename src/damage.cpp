@@ -3646,15 +3646,12 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 /* whether the structure blocks damage from the damage's origin to a point
    on an object; around units, four rays offset sideways by the
    definition's spread must all be blocked */
-// MiniMax C (11-01): no new form, no lower score; the permuter reached 59, two below, with the prologue's push esi against push edi.
-// score 61 (was 101): the second root walk is hoisted into a local computed before the point difference;
-// Left: retail keeps the definition pointer in edi and the point in esi (ours the other way round), retail's
-// cross product loads side.k and offset.k first, and retail's case 2 scales as `scale * up.i`.
-// score 101 (was 153): the collision result record is 0x5c bytes (the provider's view; the frame is now
-// retail's 0xa0) and every ray case scales through a local spread; Left: retail's cross product loads
-// side.k and offset.k first, its case 2 scales as `scale * up.i`, and retail computes `remaining` after the
-// second root walk (ours before).
-// MiniMax C (11-01): the record extent 0x4c -> 0x5c and the local spread in each ray case.
+// score 151 (was 153): the collision result record is 0x5c bytes, the buffer the provider fills (frame 0xa0 as retail).
+// MiniMax C (11-01): not kept (one-use locals without a match): the spread read into a local in each ray case 101,
+// plus the second root walk in a local before the point difference 61 (the caller 0xd74e0 then 297 -> 308); the
+// spread in one local at the function's top 164, before the switch 215. At 61, left: retail keeps the definition
+// pointer in edi and the point in esi, its cross product loads side.k and offset.k first, and its case 2 scales as
+// `scale * up.i`; the permuter reached 59 (push esi against push edi).
 // score 153 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
 // 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
 // inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
@@ -3693,28 +3690,16 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 			switch (i)
 			{
 			case 0:
-			{
-				real spread = *(real *)((byte *)definition + 0x18);
-				scale3f(&side, spread, &offset);
-			}
+				scale3f(&side, *(real *)((byte *)definition + 0x18), &offset);
 				break;
 			case 1:
-			{
-				real spread = -*(real *)((byte *)definition + 0x18);
-				scale3f(&side, spread, &offset);
-			}
+				scale3f(&side, -*(real *)((byte *)definition + 0x18), &offset);
 				break;
 			case 2:
-			{
-				real spread = *(real *)((byte *)definition + 0x18);
-				scale3f(&up, spread, &offset);
-			}
+				scale3f(&up, *(real *)((byte *)definition + 0x18), &offset);
 				break;
 			case 3:
-			{
-				real spread = -*(real *)((byte *)definition + 0x18);
-				scale3f(&up, spread, &offset);
-			}
+				scale3f(&up, -*(real *)((byte *)definition + 0x18), &offset);
 				break;
 			}
 
@@ -3722,11 +3707,11 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 				&collision);
 
 			point3f start = collision.point;
-			long root = damage_object_root(object_index);
 			vector3f remaining;
 
 			vector3d_from_points3d(&start, point, &remaining);
-			result = function_1697c0(0x14a08c2d, &start, &remaining, root, data->unknown18, &collision);
+			result = function_1697c0(0x14a08c2d, &start, &remaining, damage_object_root(object_index),
+				data->unknown18, &collision);
 			if (!result)
 				break;
 		}
