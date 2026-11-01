@@ -1556,11 +1556,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
+// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
 // the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
 // not retail's form. Original body kept.
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
 // ours bases it at the point count) and counts the accepted shapes in 32-bit counters (test/jle,
 // cvtsi2ss). Round 152: separate face/edge sum points 594; long counters 572 (2890 bytes); plane
@@ -1618,6 +1618,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Ray-result-owned positive/negative endpoints and shared ray, seven subsets, then original endpoints with one
 // query result: 613/600/638/571/634/619/661/581. Original complete executable source restored.
 // J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
+// Round 66 (lane 9, fast): retail's four 4-byte count/radius homes sit together as count, radius, count, radius
+// (frame 0x88-0x94) and the prism cursor is based at plane.j. Tried: the prism fields read as
+// `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through
+// the existing plane_distance_to_point 620 (frame 0xb958); long counters declared count/radius by kind 571 (2890
+// bytes); word counters declared that way 551 (one point); the loop without the `counts[2] > 0` guard 555.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

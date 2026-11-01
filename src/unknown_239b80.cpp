@@ -368,6 +368,16 @@ short function_239e50(short count, point2f const *points, short *indices);
 // by component 42; case 0's normalizer result in a named length (braced case) 56. Diagnostics
 // (harness): case 1 removed gives retail's state ECX / index EDX; case 1 setting anything but the
 // state keeps the rotation (state ESI), so case 1's state write is what rotates the homes.
+// Round 64 (lane 9, fast; a compile-only build reproduces the integer colouring exactly): case 0's j store
+// and dot helper through `vector2f *normal = &line.n` 44 (304 bytes), with the normalize through it too 44;
+// case 1's `state = 2` or case 0's `state = 1` as `state++` 50 each (index EDX as retail, state ESI); round
+// 54's 23 form plus case 1's `state++` 31. Compile-only, no colouring change (state EDX, index ESI, point
+// ECX): the index declared at the top or first, state first, a case-0 point pointer, the NONE case last,
+// `state <= 1`, a while loop, a loop-top point pointer, case 1 as `state = ... < eps ? 1 : 2`, as `if (<
+// eps) break; state = 2;`, with `line.d - dot`; the dot helper through `normal` in either term order keeps
+// `mulss xmm1, [p.x]` unfused (92 instructions); stores of the index, the state or the point pointer to a
+// global (diagnostic) at the loop top or in any case leave the index in ESI. In case NONE ours uses three
+// temporaries (scaled index, x, y) beside the live index; retail's y reuses the scaled index's register.
 // @retail 0x239b80
 short function_239b80(short count, point2f const *points)
 {
