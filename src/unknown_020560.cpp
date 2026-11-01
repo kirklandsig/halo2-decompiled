@@ -853,7 +853,7 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 547 (was 570): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// score 547 (was 547): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
@@ -906,6 +906,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Direct actual selected-record state, no alias, 547; keep this ninth form, plain at exact 2122 bytes with
 // all 11610 matches preserved. Original opposite ordinal, traversal, scalar trees and copy/blend paths
 // retained. Frame/input, scan and fraction homes remain.
+// Round 301: Direct opposite ordinal on nearest-pointer result, counter/pointer-end bounds 815/700; nearest
+// indexed 782/685; complete query value 654/614, with indexed nearest 623/602. Original visits, float
+// trees and body restored; frame 0x18/0x2c, position transport and scan expansion remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
