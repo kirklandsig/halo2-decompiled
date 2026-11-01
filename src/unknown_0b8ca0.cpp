@@ -1823,6 +1823,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
 // Four-point lead is below the gate; original header type, byte stores, activity
 // observation, root fields, node query, shared transforms and full body restored.
+// Round 231: complete point-result/rotation staging 284/284; per-row/all partial pairs
+// 293/293; all row products 283; conditional scaling alone 285, with complete
+// point-result/rotation staging 284/284. Every row-staging form loses the matched
+// sibling; original two-caller helper and complete body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

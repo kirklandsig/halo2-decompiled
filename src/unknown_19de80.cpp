@@ -414,6 +414,10 @@ static inline bool teams_enabled_19e1c0()
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 231: case-owned copy/formatter/replacement results and their paired families
+// 573/416/461/516/631/588; complete case results with original/remaining-first
+// native copy clamps 540/540. Formatter-only gives retail length at 416; original
+// result ownership, all cases, text buffer, loop and full body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

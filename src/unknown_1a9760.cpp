@@ -109,6 +109,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
