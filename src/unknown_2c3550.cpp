@@ -225,6 +225,11 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // function and assigned after the normalize 92 (same code); the cross factors named 92 (same code); direction
 // from vector2d_from_points2d with the locals x first 92. Compile-only (reproduces ours): no direction locals,
 // locals declared at the block top, dot operands swapped, a named dot: none preloads y.
+// Round 129 (m3 lane 6, fast): the normalizer's body written in place (no helper), tiny case first 156 (634
+// bytes), the long case first 156, without the direction locals 156; scalar direction locals stored into
+// the point afterwards 165; on round 122's helper form (106, re-measured: the preload is there, but y and
+// the inverse take XMM1/XMM0 where retail has XMM0/XMM1) y scaled before x 145, the tiny case tested
+// first 114. (--fast builds 0x2c39f0 at 175 for every form, the unchanged file too: a reduced-image caveat.)
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
