@@ -836,6 +836,11 @@ byte g_55e708;
 // and marker-name reads 128; the object_index local also as the loop's 0x3e9c0 argument 148 (587 bytes); the
 // fallback count as a ternary 128; the first-person test as nested ifs 128; the cursor advanced before the
 // index 128. Still BLOCKED-BY 0x2dba0's parameter order.
+// Round 52 (lane 10, fast with 0x31520 and 0x3e9c0 listed): the 0x3e9c0 result as a named bool in the loop
+// 111 (607 bytes: frame 0xf0 as retail, but the bool is stored to the frame and the loop still walks the
+// forward pointer; a one-use call result, not kept); a do-while under `count > 0` 128; the flags tested as the
+// word field 128; the definition looked up inside the outer test 150; the clamp before the flag test 139 (592
+// bytes); the first-person test as a named bool 128.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {

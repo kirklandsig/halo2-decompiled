@@ -593,6 +593,14 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 52 (lane 10, fast): retail's store of the pathfinding data to a slot it never reads before the 0x26d100
+// call is the argument LTCG drops from 0x26d100's unused last parameter (0x26d0e0 passes its third argument,
+// 0x1fa7f0's result, the same way); passing 0x1fa7f0's result there replaces the volatile local at the same 90
+// (same code; fast only: the plain check hit a Wine hang, body restored). Passing it at every call is BLOCKED-BY
+// 0x270400 (contributor call lines); a defaulted parameter needs a ruling. On that form: the getter at the trace
+// call as well 92, as a named local there 92 (only the rotation's XMM numbering moves); a plain radius 211 (the
+// score still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
+// radius times ring 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
