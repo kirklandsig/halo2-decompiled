@@ -1050,6 +1050,22 @@ done:
 	return result;
 }
 
+// score 9 (was 9): this round: the full build scores 9 as well (the permuter's full-image baseline),
+// so the reduced image does not distort this one; the lookup's spelling does not change the code
+// (see below), and the prologue's register choice is not steerable from the source.
+// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX (`mov eax, ecx`,
+// `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`; ours builds the offset in
+// ESI and adds the base. This round: the `&((s_actor_looking_view *)g_4f55f0->data)[index & 0xffff]`
+// subscript and an unsigned slot local with a byte-offset product compile to the same code (9), so
+// MSVC canonicalises every spelling of the lookup; the body was restored.
+// score 9 (was 9): only the prologue differs: retail builds the actor offset in EAX (`mov eax, ecx`,
+// `and`, `imul 0x888`) and forms the actor with `lea esi, [eax + edx]`; ours builds the offset in
+// ESI and adds the base. This round: every lookup form tried (byte offset local, the same with a
+// base local, the masked slot first, the offset inline, typed and byte arithmetic, an unsigned or
+// size_t slot, a subscript, a long-multiply getter, an unsigned getter parameter) compiles to the
+// same code and scores 9, so the register choice is not steerable from the source; the reduced
+// image leaves one global unresolved and flags the call target, so two of the nine are artifacts,
+// and ours ends a byte short with a trailing int3.
 // score 9 (was 9): this round: eight more forms of the shared getter (a data base and a masked
 // slot local in either order, the base added with `+=`, a byte-pointer product with sizeof, a
 // pool local, the slot masked in its own local) all compile to the same code (9); an

@@ -234,6 +234,9 @@ void c_button_widget_45d5d0::v8()
 // header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
 // retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
 // schedules the test ahead of the copy inside one block.
+// Round 66: full for-loop 2; split widget declaration 2; scoped for with the step in its body 2;
+// step computed before eligibility 40 (100 bytes); function-scope step result 2; direct previous/last-sibling
+// branches through a field snapshot 37 (98); explicit this at entry 2; qualified step call 2. Body restored.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

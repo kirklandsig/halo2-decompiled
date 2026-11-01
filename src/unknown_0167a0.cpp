@@ -1466,6 +1466,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // spelling tried (~60: all six store orders, chains, `out` and `out + 1` pointer copies, dependency chains, the
 // width store in each of the four positions, the zeros before the width) floors at 2; the pointer copy keeps
 // 0x1b2c0 exact but leaves 0x19ca0 at 130, so the direct form is not kept (it raises another function's score here).
+// Round 279: Existing native four-vector persistent sample output, indexed/field consumers
+// with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
+// exact-only storage forms restored, including the temporary include; sampler and writers
+// unchanged. The mapped rescale word load remains.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
