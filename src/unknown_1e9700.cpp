@@ -188,7 +188,7 @@ struct s_object_damage_view
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
 // 421; early self result 453 (frame 0x50).
-// Earlier 421 (was 421): frame 0x48 versus 0x50; victim/result homes and rounding calls differ.
+// Earlier (421): frame 0x48 versus 0x50; victim/result homes and rounding calls differ.
 // Assist cursor 464; damage snapshot 466; early hostility 463; hostile arm first 421; size optimization 713.
 // j91: frame 0x48 versus 0x50 and victim/selection/count homes remain; isolated early killer recovers 0x50 at 454 but regresses.
 // early killer result 454; early assist threshold 440; early attribution results 463; shared tick frequency
@@ -276,6 +276,21 @@ struct s_object_damage_view
 // with the record's player index named 491 (1617); the selection amount read once before the time test 454 (the
 // loop base stays +0x2f4); a `history` array pointer local for every lookup 353 (same code: retail saves
 // object+0x2f0 at [esp+0x34] for both loops, ours object+0x2f4).
+// Lane 12 r72 (fast = plain, the same chain rebuilt on its own base before round 49 landed): the shared header's real_to_long made __forceinline (every other user
+// already redeclares it so; retail has its fld/fistp inline at every call) 444 (1561 bytes) alone; with
+// round 120's form (victim through unit_get_player_index, the game time through function_146650, the
+// NONE/code defaults and the counts declared early, short selected/reported_slot, both assist arrays [5],
+// the killer read from the record at each use, `if (killer == NONE) ... else if (killer ==
+// reported_player)`, the four records typed as unit_object_type.cpp's damage-source struct) 353; with
+// friendly kept as written (not through function_15eaf0) 349, kept. Round 120's form without the header
+// change 483. On 349: other_assists[4] 368; the game time read directly 394; long selected/reported_slot
+// 424; the selected block through a record pointer with a player-index local 498, the local alone 380,
+// the pointer alone 435; killer declared before victim_team 350, damage_code first 378, killer first
+// 366. Compile-only (reproduces the +4 cursor): the cursor follows the most-read field (the player read
+// at each use: +0xc); the amount named once, the time test after the amount test, `best` read through
+// `selected`: still +4.
+// Lane 12 r72 result not kept: friendly written out (not through function_15eaf0) gave 349 (retail's 1544
+// bytes) on its own form, 4 under the keep bar against round 49's 353.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

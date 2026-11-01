@@ -28,6 +28,7 @@
 #include "unknown_0494b0.h"
 #include "normalize3d.h"
 #include "vector_products.h"
+#include "unknown_033a0b.h"
 #include "bit_vector.h"
 
 
@@ -1149,13 +1150,13 @@ void function_4b3d0(s_vector_perturbation *state)
 	state->step = state->step_scale * g_509418;
 }
 
-struct s_33a0b_view;
-extern s_33a0b_view *g_485a58;
 extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
 
+// a scalar for a selector: constants, frame values and their products, the clamped luminance of the
+// view's two summed colours, an object value, a fade fraction or a per-player value
 // score 88 (was 89, 153): the first colour is copied and the second added to it, green first (the other five
 // orders of the three `+=` score 88 to 167, the six orders of the copies 89 to 166).
 // What still differs: retail adds each second component straight from memory
@@ -1177,64 +1178,66 @@ real g_4c19b0, g_4c19b4;
 // @retail 0x336f0
 real function_336f0(long selector)
 {
+    real result;
     switch (selector)
     {
-    case 0: return 0.0f;
-    case 2: return 0.0f;
-    case 13: return 0.0f;
-    case 38: return 0.0f;
-    case 16: return 1.0f > g_485a30 ? g_485a30 : 1.0f;
+    case 0: result = 0.0f; break;
+    case 2: result = 0.0f; break;
+    case 13: result = 0.0f; break;
+    case 38: result = 0.0f; break;
+    case 16: result = 1.0f > g_485a30 ? g_485a30 : 1.0f; break;
     case 23:
         if (g_485a58)
         {
-            real const *values = (real const *)g_485a58;
-            color3f summed;
-            summed.red = values[4];
-            summed.green = values[5];
-            summed.blue = values[6];
-            summed.green += values[13];
-            summed.red += values[12];
-            summed.blue += values[14];
-            real value = summed.blue * 0.114f + summed.green * 0.587f + summed.red * 0.299f;
-            return 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
+            vector3f summed;
+            vector3f_add(&g_485a58->vector10, &g_485a58->vector30, &summed);
+            real value = summed.i * 0.299f + summed.j * 0.587f + summed.k * 0.114f;
+            result = 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
         }
-        return 1.0f;
-    case 12: return 1.0f;
-    case 22: return 1.0f;
-    case 17: return g_485a30;
-    case 10: return g_485774;
-    case 24: return g_485774;
-    case 3: return g_4857f8;
-    case 33: return g_4857f8;
-    case 4: return g_485864;
-    case 25: return g_485864;
-    case 18: return g_485864 * g_485774;
-    case 27: return g_485864 * g_485774;
-    case 19: return g_485858 * g_4857f8;
-    case 36: return g_485858 * g_4857f8;
-    case 20: return (1.0f - g_485858) * g_4857f8;
-    case 35: return (1.0f - g_485858) * g_4857f8;
-    case 21: return g_485a6c;
-    case 26: return (1.0f - g_485864) * g_4857f8;
-    case 28: return g_48578c;
-    case 29: return g_485868;
-    case 30: return (1.0f - g_485868) * g_48578c;
-    case 31: return g_485868 * g_485774;
-    case 32: return g_4857a4;
-    case 34: return g_485858;
-    case 37: return function_33670(*(long *)g_485a58);
+        else
+            result = 1.0f;
+        break;
+    case 12: result = 1.0f; break;
+    case 22: result = 1.0f; break;
+    case 17: result = g_485a30; break;
+    case 10: result = g_485774; break;
+    case 24: result = g_485774; break;
+    case 3: result = g_4857f8; break;
+    case 33: result = g_4857f8; break;
+    case 4: result = g_485864; break;
+    case 25: result = g_485864; break;
+    case 18: result = g_485864 * g_485774; break;
+    case 27: result = g_485864 * g_485774; break;
+    case 19: result = g_485858 * g_4857f8; break;
+    case 36: result = g_485858 * g_4857f8; break;
+    case 20: result = (1.0f - g_485858) * g_4857f8; break;
+    case 35: result = (1.0f - g_485858) * g_4857f8; break;
+    case 21: result = g_485a6c; break;
+    case 26: result = (1.0f - g_485864) * g_4857f8; break;
+    case 28: result = g_48578c; break;
+    case 29: result = g_485868; break;
+    case 30: result = (1.0f - g_485868) * g_48578c; break;
+    case 31: result = g_485868 * g_485774; break;
+    case 32: result = g_4857a4; break;
+    case 34: result = g_485858; break;
+    case 37: result = function_33670(*(long *)g_485a58); break;
     case 39:
         if (g_4b9f5c != NONE && g_4b9f84 > g_4b9f80)
-            return 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
-        return 0.0f;
+            result = 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
+        else
+            result = 0.0f;
+        break;
     case 40:
         if (g_4b9ed8 >= 0 && g_4b9ed8 < 4)
-            return g_4e69c0[g_4b9ed8];
-        return 1.0f;
-    case 41: return g_4c19b0;
-    case 42: return g_4c19b4;
+            result = g_4e69c0[g_4b9ed8];
+        else
+            result = 1.0f;
+        break;
+    case 41: result = g_4c19b0; break;
+    case 42: result = g_4c19b4; break;
     default: __assume(0);
     }
+    return result;
 }
 
 struct s_slot_key
@@ -3039,6 +3042,10 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
 // Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
 // with the table and assigned after the early return; declared before the table; both as `byte const *`.
+// Round 73 (--fast now also 4): the `handle` union declared first 4 (plain 4); `view` declared at function scope 4;
+// the callback arrays declared after table/definitions 30; `draw` declared before `fill` 17; both pointers `byte *const`
+// 4. Compile-only /FAs: the two homes follow which pointer is assigned first (reading the scenario first flips them,
+// but moves its load above the early return); names never move them.
 // @retail 0x41640
 void function_41640(void)
 {

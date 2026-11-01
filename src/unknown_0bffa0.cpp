@@ -827,6 +827,15 @@ byte g_55e708;
 // 99 -> 96); short count and index 145 (582 bytes). Compile-only (it reproduces the forward-pointer IV): a matrix
 // pointer, both address locals and a marker pointer in the for loop all keep it; a walked position pointer
 // gives two pointer IVs, not retail's one.
+// Lane 12 r72 (plain; --fast builds this function differently, 189): the opacity as the file's PIN macro
+// on the product (the macro moved above this function) 128 (retail's clamp stores, no count change);
+// `g_55e708 = true` same code. Compile-only (reproduces the forward-pointer IV): a forward pointer
+// local, an indexed loop with it, a position pointer local: same code. BLOCKED-BY 0x2dba0 (parameter
+// order): compile-only, with 0x2dba0 declared with the direction after the position (the call passing it
+// last) the loop's pointer IV becomes the position and the forward is derived (`lea reg, [iv - 0x24]`) as
+// in retail, as matched 0xc6fb0 does for 0xc9040 (position before forward); not built: 0x2dba0's
+// definition sits in src/unknown_0350e0.cpp (left alone), and whether LTCG keeps the direction in EDI
+// after that reorder is unverified.
 // Round 47 (lane 10; fast with 0x31520 and 0x3e9c0 listed agrees with the plain check): the opacity through the
 // PIN macro 128 (plain; aligned 99 -> 96); the clamp as if/else-if 128; an indexed for loop 128; object_index for
 // every object read in the marker arm 152; the first-person count as a ternary initialiser 128. Compile-only: a

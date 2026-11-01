@@ -157,6 +157,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
 // 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
 // entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
+// Round 73 (fast, with 0x1a303b/0x2b393c, both still matched): round 34's null-identity form
+// `!(xuid == 0 && (xuid_flags & 3) == 0)` re-measured 67 as the base, then: on the byte flags 67, with the guest test on the dword too 67, as
+// `xuid != 0 || (xuid_flags & 3) != 0` 67, with `(xuid_flags & 3) == 0` for the guest test 67, with the guest test
+// moved ahead of the machine-local test 66 (all 140 bytes: the mask is hoisted into AL and false made again at the
+// exits as in retail, but the inner guest test stays even right next to the outer one; VC does not thread it).
 // Round 37 (lane 15, fast): the result assigned from the test chain on every pass (`result = tests;
 // if (result) { copy; break; }`) hoists the mask exactly as retail (`push ebx; mov al, 3` after the guard,
 // false remade at the loop exit) 59, but index and successor still share one register (entry copied into

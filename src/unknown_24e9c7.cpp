@@ -210,6 +210,13 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 71 (lane 12): a compile-only /FAs screen names each home: a spilled 8-byte point always homes below
+// bitmap_index, a spilled scalar above result (so retail's -0xc/-8 are two scalar homes, -0xc never used, as if
+// two spilled scalars were later merged into one slot), and none of 48 across/side/up/back point-or-scalar shapes
+// with unary minus or `0.0f -` gives two such homes (at most one: frame 0x44). Real (fast): across as a point with
+// separate side scalars, `0.0f -` 143 (742 bytes, frame 0x44, side y at -8), with unary minus 148 (746); across
+// and side as separate points with `0.0f -` 139 (742); that with up as scalars 139 (742); across built in side
+// scalars scaled in place with scalar up and a back point, `0.0f -` 138 (739).
 // Round 35 (lane 15, fast): ours spills back's y (pair at -0x18/-0x14), retail side's y (pair at -0xc/-8, above
 // result). back renamed reverse_side / away, side renamed width_offset, up renamed upward 125 each (names do not
 // order the struct homes either); corners as full sums `x + up.x + back.x` 229 (664 bytes); scale read before size

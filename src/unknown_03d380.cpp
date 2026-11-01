@@ -401,6 +401,13 @@ void function_125a90(long value);
 // `remove = false` 51: both arm bodies are then retail's, but the kind arm stays the class test's
 // fall-through and VC moves the special arm and the removal into the gap after the next-index
 // ternary's `jmp`, where retail puts the kind arm in the gap after the removal's `jmp`.
+// Round 71 (lane 12, fast): the special arm as `if (type == 0x26) remove = !a; else remove = false;` with the kind
+// arm as `if (byte == 1) remove = false;` 51 (retail's arm bodies; the kind arm falls into keep and the special arm
+// with the removal moves after the loop step); the condition named `bool special` with those arms 144 (467 bytes:
+// retail's block order, special arm with `sete`, removal, kind arm, keep, but LTCG inlines 0x221810), with
+// `remove = type == 0x26 && !a` and `!= 1` 157 (471), with the kind arm as one `&&` test 144 (467); the element
+// pointer formed from `datum & 0xffff` before index 51. Still BLOCKED-BY 0x221810 (inlined whenever the layout is
+// retail's).
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

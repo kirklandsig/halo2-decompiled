@@ -1515,6 +1515,9 @@ struct s_rating_summary
 // both uses with no named local 92 (no slot moves: the level/compare-cursor order is not the identity
 // local's name); with the key stored first as well 88; the team count switched once before a plain
 // counted team loop 157 (1192 bytes); the team skill as a sign-extended long 102.
+// Lane 12 r72 (fast): on the key stored before the session copy (88, 4 points, not kept): lower declared
+// in each loop 88; the team statistics pointer formed before the change call 88; both 88; level declared
+// in each loop 105 (every slot reshuffles).
 // Round 49 (m3 lane 1): the team loop's lower as `lower = 0; if (value >= 0) lower = ...;` 61 (kept; the
 // team loop then gives EBX to the collection and level as retail, and the player-loop slots fall into
 // place); the same as if/else 92, reversed ternary/if-else 96/96, the zero before the level call 118
