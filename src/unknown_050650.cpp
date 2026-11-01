@@ -543,6 +543,8 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 }
 
 // score 333 (was 333): the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
+// An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
+// random/trig and vector schedules still differ.
 // Tried: direct collision Boolean 355; initial best vector before normalization 356; result declared first 354;
 // long sample counter 355; axis/sample/range names 355; shared normalizer 330 (sum order changed, restored);
 // shared random-range helper 360; one result return 377; paired span names 355; names plus one return 377;
@@ -592,6 +594,20 @@ static inline void actor_looking_rotate(vector3f *vector, vector3f const *axis, 
 // collision result: function_1697c0 fills 0x5c bytes (items.cpp, projectiles.cpp; four matched users pad the
 // 0x4c header type to 0x5c); the header type at 0x5c gives retail's 0xa8 frame, 331, with long clear first 322,
 // but not kept (0x247950 356 -> 358, five padded users need their wrappers removed).
+// Round 126 (m3 lane 6, fast with 0x297660, which stays matched): a long attempt counter 332; that with `clear = true`
+// first in each pass 326 (1423 B; retail compares the counter as a word, `cmp dx, 0xa`, so the long type is not
+// retail's), plus best_fraction or clear declared before result 326/326; a bool clear with the long counter 345, with
+// clear first as well 348; on the short counter best_fraction before result 333, clear before result 333; the
+// retail-faithful bool clear set first in each pass re-measured 349 (aligned difference 195 against the body's 233:
+// retail's prologue and `sbb al, al`, but the rotated candidate is spilled between the two rotations, 1435 B). The
+// frame needs the shared collision-result type at its real 0x5c size, which also changes users in other lanes'
+// files this round (unknown_247fd0.cpp, unknown_2ba3e0.cpp, path_transitions.cpp).
+// Round 109 (lane 8, fast; aligned = difflib count 234): the pitch axis set field by field 333; the collision
+// result declared at function scope 333, the ray at function scope (assigned in the loop) 333, both 333 (all
+// same code: VC packs the frame the same whatever the scopes); `clear = true` first in each pass with the
+// function-scope collision result 327 (the listed long-clear-first form; 1424 bytes). Retail keeps a zero in
+// ECX for the result byte and the attempt counter, and pushes EBX only at the loop (ours at entry, for the
+// default best vector's k).
 // Round 26 (m3 lane 2, fast): bool clear set at the top of each pass with `return true` after the best tail
 // 327 (0x297660 4: the collision flag then passes in BL); that with one `return result` 349 at 1435 B (retail's
 // late EBX push, EBX scratch, EBP/EDI best i/j, AL clear and DL result, the tail is retail's code, but the loop
@@ -795,6 +811,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // copy (retail keeps two) 228 at 1484 B: retail's order up to its 0x1e3b00 call, but case 1's copy does not
 // cross-jump into it, so the direction/output tail still follows the shared copy; the tail written inside case 2
 // is byte-identical (228).
+// Round 189 (m3 lane 3, fast, control 322): the two flags declared after the other locals, point_valid first and
+// result last, result first and point_valid last 322 each (homes unchanged); `point_valid = result = false` with
+// point_valid declared first 324 (only the entry store order flips); point_valid set once at a new label before the
+// aim test 351, that with the reversed chain 349.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1405,6 +1425,10 @@ struct s_actor_looking_turn_request
 // noinline declaration of 0x1fdd90 here changes nothing): the side test as `if (first == A || first == B)
 // { bool current_side = first == A; ...` 464 (retail's threaded side stores); bool valid 519; that with the side
 // test 517; bool looking_valid 513; both bool 516; both with the side test 515.
+// Round 189 (m3 lane 3): BLOCKED-BY 0x1fdd90: retail calls it (its only retail caller is this function) and
+// our build inlines it (27 calls against retail's 28). Fast (control 548): forced defined inside the 0x2973f0
+// block 544; animation state long 550; forced with the top bools 548; the target-point pair declared after
+// 0x297600 543; forced inside with valid before the direction 544.
 // @retail 0x298370
 void function_298370(long actor_index)
 {
