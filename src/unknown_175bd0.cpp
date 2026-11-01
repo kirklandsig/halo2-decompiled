@@ -1839,6 +1839,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // pointer taken before the matrix test 202 (747 bytes); up stored before the cross product 86; the
 // else arm copying forward before position 115 (762 bytes); `(long)marker_index` at the three
 // indexings 77 (identical); the zero position as a chained assignment 79.
+// Round 105 (lane 7, fast with 0x178360): node copy first 107 (758 bytes, entry as retail up to the hoisted marker
+// index extension; aligned 66), with the position/forward/up declarations above it 107, with up declared first
+// 107, with the forward inputs declared at function scope 107; node first with the marker fields read at each
+// use (no marker pointer) 218 (779 bytes, caller 0x178360 86).
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -3257,10 +3261,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 	return result;
 }
 
-// score 88 (was 88): frame 0x94 agrees; the scale default/conditional branch, the point transform's
-// y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) and the lens call
-// setup remain. The lens call is BLOCKED-BY 0x2dba0: retail passes its tag index in ecx and the
-// position on the stack, ours the other way round (its body is in a contributor's file).
+// score 74 (was 88): frame 0x94 agrees; the scale default/conditional branch and the point transform's
+// y copy (retail keeps y in xmm5 and copies it to xmm4; ours scales it in place) remain. The lens call
+// now takes retail's registers (0x2dba0 matched in round 104; it was BLOCKED-BY 0x2dba0: retail passes
+// its tag index in ecx and the position on the stack).
 // Point/normal/both reverse captures 308/187/202; shared color scale 325; existing point operation
 // 548; color with point/normal/both captures 324/327/327; lifetime 287; branch color 324;
 // event/count names 287; part-pointer walk 394; conditional scale initialization 112. Read-only
@@ -3301,6 +3305,14 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // branch, ours only x; no helper spelling (local orders, `*=`, a scale local) or placement changes it.
 // Forward/up before the point 334; colour after the transform 219; position copied last 92; copies in
 // up/forward/position order 92; default-first scale before the copies 312.
+// Round 105 (lane 7, fast with callers and callees; 0x2dba0 now matched): `real scale = 1.0f; if (a) scale =
+// scale_a; if (b) scale *= scale_b;` after the colour copy 272 (1519 bytes, aligned 6), with the default
+// declared before the colour copy 270 (aligned 4: only the y copy's two movaps and its register remain, 6
+// bytes); on that, the node matrix declared at the loop top 270, the point transformed from the location's
+// position 339, the mode as long 270. Compile-only screen of the y copy: every order of the copies and the
+// scale block, unused/dead locals, and the shared point helper's local, scale-local and product orders: only
+// helper forms that change matched 0x179fb0/0x17a380 move it; a field-wise position copy gives retail's y
+// copy but turns the struct copy into float moves.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

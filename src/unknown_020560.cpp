@@ -1327,6 +1327,11 @@ bool function_0bfe60(dword const *flags, long bit);
 // by its link; the push constant appears once in the whole image). The set computed in the query
 // block 108; status = S_OK at the loop body top 138; the device declared before the status test 52;
 // the segment size read at both MakeRequestedSpace arguments 52; `!indices ? i : indices[i]` 118.
+// Round 106 (lane 7, fast; every other colour follows the counter's: retail EBP, ours EDI): on round
+// 7's row form (rebuilt 38): the device as `dword volatile **` 38; index and slot declared before the
+// loop 38; the row named before the status test after the k store 38; the frame read from the global
+// at each use 129 (the load sinks into the block); the slot fields read through the table (no slot
+// pointer) 148 (472 bytes). Source permuter, 600 s on the kept body (72 tries): nothing below 52.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

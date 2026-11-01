@@ -212,6 +212,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // (fast): `(long)file.handle != NONE` 42 (same code); a long loop index 111 (345 bytes); the long
 // result from the array element with the file copied inside the branch 42; success declared at its
 // assignment 42; `success = opened > 0; if (opened > 0)` 42.
+// Round 106 (lane 7, fast): the handle read into a HANDLE local with the element passed to the call
+// and the long result 44; the long result with the branch on success 55 (351 bytes); the result as
+// dword 42; the comparisons written constant-first 42; the file copy assigned after its declaration
+// 42 (same code each).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

@@ -610,7 +610,7 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 	g_4fa0c8.external = *buffer != g_4fa0c8.storage;
 }
 
-// score 34 (was 53): the scratch buffer is one address-taken record (storage, owner, buffer,
+// score 34 (was 34): the scratch buffer is one address-taken record (storage, owner, buffer,
 // size, flag; the init points the buffer at the storage) claimed by a getter that returns the buffer
 // and size through pointers; with the `void *` parameters view and one function-scope byte count the
 // length, both sums' order, the dispatch hoist and the reloads after the claim are retail's. Left:
@@ -707,6 +707,24 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // as file_offset/seek_position, buffer, total/total_size, bytes) 34 each and the direct arm's size
 // before its buffer 34 (all identical code: names do not break these register ties); the body case as
 // an early-out on `body_offset >= body_size` harness 88 against 22 (682 bytes); `size == bytes` 34 (identical).
+// Round 106 (lane 7; compile-only exact here, aligned in brackets, base [22]): retail's body arm ends in the
+// scratch clamp's `mov edi, ecx` (one `size = remaining` reached from both arms). One size assignment after
+// the arms with a body pointer local, `size = body ? remaining : MIN(size, remaining)`, gives retail's size
+// EDI / position ESI / buffer EBP and the whole scratch arm, 161 (689 bytes) [16: the body arm loads the
+// size first, so the dispatch hoist goes]; the same as if/else 161 [16]; with the local at case scope 161
+// [16]; per-arm remaining with `if (body || size > remaining) size = remaining;` 160 (689) [20: body arm
+// retail's but buffer/size EBP/EDI swapped]; `if (body || size > remaining expression)` 157 (691) [16];
+// the body local alone 161 [25]; capacity from each arm then MIN or if after the join [22-27, cmova];
+// names/declaration order/body-test operand order/total and signature sum orders on these: no change.
+// Diagnostic (a mixed read, not kept): the join plus a body-size local read before the switch for the
+// body test 24 (687 bytes) [12]: the body arm onward is retail's; left the entry total (EAX, retail EDX),
+// the switch in EDX with the load before the first test (retail ECX, load after `dec`), and the
+// signature sum folded into ESI (retail `lea esi, [ecx+edx]`). Without the total local on that [46].
+// Compile-only, no change [22]: position/size at function or switch scope, initialised size or buffer,
+// `size = body_size; size -= offset`, an explicit if clamp, the signature position spelled
+// `p = a; p += b`, as long, declared after the signature buffers or compared reversed, the cases
+// swapped; a forceinline seek helper for either position [31-65]. Flags (diagnostic): /O1, /Ox, /Oy-,
+// /Ob1, no /arch:SSE: none gives retail's colours.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

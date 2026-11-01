@@ -166,6 +166,12 @@ bool g_47f05b;
 // sizeof(c_havok_fixed_memory)` 34 (same code); the buffer named after the three global stores 36 (146
 // bytes, the 1s become immediates); `g_479894 = NULL; if (block) g_479894 = new (block) ...` 32 (139
 // bytes, the NULL store moves above the test, the vtable store still dropped).
+// Round 106 (lane 7, fast with every function of the files using the header): the size-only
+// constructor (buffer `this + 1`) 35 (140 bytes; 0x146b80/0x22c3e0 kept); the abstract constructor
+// clearing its four words with memset and then storing NONE 38 (152 bytes), clearing three words 37
+// (149), each with the size-only constructor 46/27 (153/150): the base vtable store is still dropped
+// and 0x146b80/0x146e30/0x22c3e0 lose (memset keeps a pointer to the words). Compile-only is not
+// exact here (the constants' registers differ).
 // @retail 0x146a20
 void function_146a20(void)
 {
