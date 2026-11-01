@@ -1447,6 +1447,15 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // three qsort calls written out 169 (420). Diagnostic: the else path re-querying instead of reading
 // player_count (no forwarding) 116: the result then goes straight to its home as retail, but index_count
 // stays in memory in both scans, so the forwarding is not the only cause.
+// Round 36 (m3 lane 14, fast): branch two's index fill re-measured 107: that branch is retail's except
+// that the 0x199ef8 result stays in EBX for the else path's `item_count = player_count` (the mode-one
+// path reloads it after 0x199dc9 as retail), so mode moves to the stack (frame 0x58); retail reloads it
+// there too, as it reloads every escaped count after 0x19a9b4. On that form: the mode-one maximum as one
+// conditional expression 107 (same code); the mode test inverted (else path first) 117; the fill reusing
+// the scan counter 107 (same code), in both branches 172 (420 bytes); the result chained into item_count
+// at the call (no else) with branch two's index fill 172 (417 bytes); without it 148 (as round 56).
+// Every function under 0x19a9b4 and 0x199dc9 is matched and their pointer writers' callers all pass
+// locals, so the reload is how link-time code generation summarises those chains, not this body.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2525,12 +2534,12 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // out-parameters force them into memory. A separate counter for the second loop moves the
 // first loop's player-slot pointer to retail's slot (-8) and scores 93, but the gain is under
 // eight, so the body stays as it is.
-// score 95 (was 95): this round: the four widget indices' declaration order (both loops),
+// Earlier round: the four widget indices' declaration order (both loops),
 // the two function-scope locals the other way round, the widget indices after the team
 // locals, the player slot kept in a local, the loop counter as an int and the voice query's
 // player index in a local all compile to the same code (95). Retail still reloads players[i]
 // after the voice-state query and keeps bitmap_a in ebx in the last loop.
-// score 95 (was 95): the locals live in the other stack slots (shown count, the first
+// Earlier: the locals live in the other stack slots (shown count, the first
 // loop's player, the second loop's four widget indices), retail reloads players[i] after the
 // voice-state query, and the last loop keeps the screen in edi and bitmap_a in ebx where
 // ours keeps the screen in ebx and false in edi.
@@ -2573,6 +2582,15 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // in EBX for all five calls and puts the `false` argument in EDI once text_b is pushed; retail pushes 0
 // and moves the screen into EDI. 0x2514fd shows the same reload symptom after 0x19a9b4, whose chain ends in
 // the same out-parameter session getter (0x596a0) as 0x53b40's.
+// Round 36 (m3 lane 14, fast): the screen parameter's address taken in a pointer local 95 (same code: retail
+// re-reads the screen from its home before the last loop's first call and again into EDI after text_b is
+// pushed, ours keeps it in EBX for all five calls); the shown count chosen once by `valid != NONE ? count :
+// 0` 315; the last loop's body as an inline helper taking the screen and slot 95 (same code); the second
+// loop's player index named once for its four uses 168 (922 bytes); the second loop's widget indices
+// renamed to sort in retail's slot order 95 (same code). Every caller and callee on the 0x53b40 chain (and
+// 0x19a9b4's) is matched, including the out-pointer writers 0x596a0/0x59670 and 0x596d0's callers, so the
+// players[i] reload comes from how link-time code generation summarises that chain (a call cycle through
+// code not written yet would give it), not from this body.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

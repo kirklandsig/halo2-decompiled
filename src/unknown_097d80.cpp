@@ -175,6 +175,13 @@ struct c_aggregate : c_child
 // and `for (long j = starts[i], end_block = starts[i + 1]; ...)` load starts[i] first as retail; the last
 // kept (31 under LTCG: those two loads still differ by the frame offset; without /GL nothing else changes, so
 // that build is byte-exact). Still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// Round 36 (m3 lane 14, fast; all 31 differences are the 4-byte frame offset and the swapped temporary slots):
+// produced declared at the loop-body top and zeroed in the call's block 42; the cleanup block as `blocks + k`
+// 31; total declared before error 31; `total = total + produced` 31; a named room argument 31; the cleanup item
+// tested without `!= 0` 31 (all same code).
+// Retail's slot 0x10 holds produced, the dispatch child cursor and the cleanup countdown, slot 0x14 the
+// children base, the inner count and the block pointer; ours groups the temporaries the same way but keeps
+// produced apart. Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -337,6 +337,14 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // NULL` 125 (both identical), material as one ternary 112 (494 bytes, aligned 33), weight after the
 // material index 125 (aligned 40), shape before weight 124 (aligned 46); on the block form geometry
 // declared first 49 (identical, 54).
+// Round 36 (m3 lane 14, fast), on the indexed form with a long count at the block top (rebuilt 140, 495 bytes:
+// retail's count handling, but cache_index ECX and the zero EDX where retail has EDX/ECX, so first is loaded
+// into EDX before the pushes and kept across the copy where retail loads it into EDI and spills it, and the
+// entries pointer goes to mode's home before the copy where retail keeps it in EDX): entries set before first
+// 140 (same code); the copy into `&g_4ba138[first]` with current set to `first + count` after it 164; a
+// separate walking cursor initialised from entries before or after n/index 158/158 (both parameters move to
+// the stack, the scaled index takes EBP, the zero takes ECX as retail); current stored after the copy 164;
+// first read before count 166.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
