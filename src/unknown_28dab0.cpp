@@ -258,6 +258,10 @@ void __stdcall swarm_delete(long arg_0);
 // compared against the result 81 (same code); the result declared after the tag pointer 81 (same
 // code); the delete path returning NONE 82 (287 bytes); the `> 0` count arm first 77; a separate
 // allocation local assigned to the result on success 98 (299 bytes).
+// Round 51 (lane 1, fast) on the kept form: the definition index read before the swarm pointer (retail's
+// read-and-spill place) 53 (first +0x16: the head swap returns); the two flag bytes after the gather point
+// 43; that with the NONE pair after the zero pair 43; flags last with the if-form limit 81 (289 bytes);
+// the index first with the flags last 53.
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {
