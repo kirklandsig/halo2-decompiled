@@ -201,6 +201,11 @@ struct s_24e9c7_bounds
 // do not order them); back as scalars re-measured 133; back plus up scalars 133; back plus side scalars 133;
 // up, side and back all scalars 133; back scalars with `size * (0.0f - forward_j)` 146 (739 bytes); all scalars
 // with it 146 (739 bytes).
+// Round 145: a compile-only frame screen shows a spilled scalar homes above result only when the back pair
+// is scalar (frame 0x44, one slot short of retail's two). Real (fast): across scaled in place as side
+// scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
+// side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
+// up/back 139 (742); the half width named and multiplied first 143 (739).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

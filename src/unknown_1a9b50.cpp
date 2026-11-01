@@ -519,6 +519,12 @@ extern point2f *g_468778;
 // acquisition 426/429. All three predicate calls, early distance and complete original body restored.
 // Round 471: Complete persistent actor/settings/slot/prop lexical priorities in eight
 // role-correct identity sets 375 each. Original pointer names, observations and body restored.
+// Round 145: ignoring register names, ours differs from retail in about 100 instructions (entry order,
+// result byte, prop home, facing reads, constant exits). Actor first with `if (...) {...; if (!f14 && !f13
+// && !f2d) return true;} return false;` 413 (1523 bytes); actor first with the result byte 413 (1555);
+// constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
+// settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
+// first facing dot read off the prop view 408 (1556).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
