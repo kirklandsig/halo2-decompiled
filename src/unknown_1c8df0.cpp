@@ -33,9 +33,13 @@ __declspec(noinline) short __stdcall function_1c8df0(short arg_2, short arg_3, p
 // MiniMax lane C (run 36, 10-31): applied the lane-E score-5 body (short category, bool clear
 // state, one bool probe result with `category = 1` on a hit, mode-1 rows reading the centre through
 // a named copy of the cast parameter) to the current parameter order.
-// score 5 (was 170): only the mode-1 positive point's x and z rows differ: retail folds the x
-// centre as a memory operand and loads the z centre into a register, ours loads the x centre ahead
-// of the first multiply and folds the z centre.
+// score 26 (was 170; review of run 36): short category, the clear state as a bool, and one bool probe
+// result with `category = 1` on a hit (function_16a040 returns bool, so category gets the same value) are
+// kept. The run's 5 also read the mode-1 rows through a second pointer to arg_1 (`centre`, the same value
+// as local_3): a duplicate local, not kept without a match. At 5 only the mode-1 positive point's x and z
+// rows differed: retail folds the x centre as a memory operand and loads the z centre into a register,
+// that form loaded the x centre ahead of the first multiply and folded the z centre. Scores are from
+// `check.py --fast 0x1c8df0 0x1e55d0` (0x1c8df0 alone gives 360).
 // Round 75 (all match-only, restored): clear state bool, one bool probe result for the mode-1/mode-2
 // probes with `category = 1` on a hit 28; with short category 26 (frame, slots, cmp ax all retail);
 // centre read through the cast parameter instead of the local copy 20: only the mode-1 x-row fold
@@ -222,16 +226,15 @@ short __stdcall function_1c8df0(short arg_2, short arg_3, point3f const *arg_4, 
    bool hit;
    if ((short)arg_5 == 1)
    {
-    point3f const *centre = (point3f const *)arg_1;
     point3f local_9;
     point3f local_10;
     real const spacing = 0.25f;
-    local_9.x = centre->x + local_8.i * spacing;
-    local_9.y = centre->y + local_8.j * spacing;
-    local_9.z = centre->z + local_8.k * spacing;
-    local_10.x = centre->x - local_8.i * spacing;
-    local_10.y = centre->y - local_8.j * spacing;
-    local_10.z = centre->z - local_8.k * spacing;
+    local_9.x = local_3->x + local_8.i * spacing;
+    local_9.y = local_3->y + local_8.j * spacing;
+    local_9.z = local_3->z + local_8.k * spacing;
+    local_10.x = local_3->x - local_8.i * spacing;
+    local_10.y = local_3->y - local_8.j * spacing;
+    local_10.z = local_3->z - local_8.k * spacing;
     if (local_7)
     {
      hit = function_16a040(local_4, &local_9, arg_4, arg_0, NONE, &local_6);
