@@ -693,6 +693,20 @@ bool function_119380(long arg_0, s_119380 *arg_1)
 void function_1e54d0(void *arg_0, long arg_1);
 bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 
+// score 35 (was 35): this round's trials on the tail predicate were all worse and are reverted:
+// `||` over two named bools 56, `|` over two named bools 48, `||` over the two comparisons inline
+// 56, `else if` with the call duplicated 56, and the guard inverted to `== NONE` with an early
+// return false 76. MSVC folds `||` into cmp/jne branches and keeps `|` as an or, so retail's
+// split setne/setne/test/jne/test/je form is not reachable from these source shapes.
+// score 35 (was 48): retail zero-extends the +0xb6 word with xor eax,eax before the load; ours
+// promotes the word with movzx eax,ax. Retail's last predicate is short-circuit
+// (setne/setne/test/jne/test/je), ours is a bitwise or, and retail keeps its false epilogue as
+// the first out-of-line block where ours lays it out last.
+// score 48 (was 83): retail zero-extends the +0xb6 word with xor eax,eax before the load and keeps
+// its false epilogue as the first out-of-line block; ours promotes the word with movzx and lays the
+// false epilogue out last.
+// Round I (MiniMax lane I): the guard is now `if (!= NONE) { ...; return local_4; } return false;`
+// and the +0xb6 word is read into a named word local, so the size reaches 0xbc380 in AX; 83 -> 48.
 // score 83 (was 83): retail puts the word at +0xb4 in CX and the word at +0xb6 in AX, so the size
 // reaches 0xbc380 as a 16-bit argument; our shared declaration takes a long, and the table base
 // and the looked-up object stay in other registers. Also: the object table base and the looked-up
@@ -747,15 +761,15 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
     *(short *)((byte *)local_0 + 0x206) = 0;
     function_118f90((s_orientation_request_118f90 *)((byte *)local_0 + 0x13c));
     s_forward_object *local_3 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
-    bool local_4 = false;
     if (local_3->animation_state_offset != NONE)
     {
-        local_4 = true;
+        bool local_4 = true;
         short local_5 = *(short const *)((byte const *)arg_1 + 0xb4);
         if (local_5 != NONE)
         {
             *(long *)((byte *)local_0 + 0x134) = local_5;
-            local_4 = function_bc380(arg_0, 0x138, *(word const *)((byte const *)arg_1 + 0xb6), 0) != 0;
+            word allocation_size = *(word const *)((byte const *)arg_1 + 0xb6);
+            local_4 = function_bc380(arg_0, 0x138, allocation_size, 0) != 0;
             local_0 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         }
         else
@@ -773,15 +787,15 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
             if (local_8->animation_set(0x7000001, 0x7000101, 0x7000101, 0x7000001, 2, 0x3f))
             {
                 bool local_11 = local_9 != 0x7000001;
-                bool local_12 = local_10 != 0x7000001;
-                if (local_11 | local_12)
+                if (local_11 | (local_10 != 0x7000001))
                     function_ba350(arg_0, 0.267f);
             }
         }
         else
             *arg_2 = true;
+        return local_4;
     }
-    return local_4;
+    return false;
 }
 
 bool (__stdcall *g_468594)(long, void const *, bool *) = function_118510;
@@ -1218,6 +1232,12 @@ void function_1e6120(s_biped_physics_output *arg_0, void *arg_1, real arg_2, boo
     bool arg_5, real arg_6);
 void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped_physics_output *arg_2);
 
+// score 42 (was 42): the velocity copy still differs by a register rotation (retail hoists the
+// copy's source load above the flag store) and the MOV/LEA order at the first 0x1e5af0 call stays
+// BLOCKED-BY that callee's body in another lane's file; no change was found this round.
+// score 42 (was 94): the found flag is written through a bool cast into a dword local and the squared
+// length is summed as three statements, so retail's byte store and its k, j, i loads match; the MOV/LEA
+// order at the first 0x1e5af0 call and the velocity copy into the re-fetched object still differ.
 // score 94 (was 94): retail pushes the whole found-flag dword to 0x1c4b00 and keeps its MOV/LEA
 // order at the first 0x1e5af0 call; both callees live in files this lane may not edit
 // (BLOCKED-BY 0x1c4b00 and 0x1e5af0). Frame 0x1f0 agrees; call setup, movement loads and
@@ -1328,9 +1348,13 @@ bool __stdcall function_118700(long arg_0)
             function_1e5af0(local_9, (s_biped_physics_output *)&local_3, &local_0->up, &local_0->forward);
         }
         vector3f *local_12 = (vector3f *)((byte *)&local_3 + 0x138);
-        bool local_13 = local_12->k * local_12->k + local_12->j * local_12->j + local_12->i * local_12->i > 0.0f;
+        real local_13_sq = local_12->k * local_12->k;
+        local_13_sq += local_12->j * local_12->j;
+        local_13_sq += local_12->i * local_12->i;
+        bool local_13 = local_13_sq > 0.0f;
         forward_flags_set(&local_0->flags, 0x10, local_13);
-        bool local_14 = function_119bc0(arg_0);
+        long local_14;
+        *(bool *)&local_14 = function_119bc0(arg_0);
         s_forward_object *local_15 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         *(vector3f *)((byte *)local_15 + 0x88) = local_11.field_c;
         function_1c4b00(arg_0, &local_11.field_c, NULL, local_14);
