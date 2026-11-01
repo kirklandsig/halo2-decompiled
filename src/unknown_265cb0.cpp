@@ -1185,6 +1185,12 @@ struct s_equipped_object_view
 // threshold entries selected (NULL when empty) before the held lookup 30 (142 bytes); the
 // entry object through object_header_get's header 28; an unused header lookup in the entry
 // block (diagnostic) gives retail's entry block but a data-first held reload 15 (142 bytes).
+// Round 67: two used entry lookups with the object pointer kept for the held slot 4 (tag chain exact;
+// entry data/index registers differ); a widened selected index or an object-array pointer 4 each; signed-byte
+// selected 11; entry object_get 27, second object_get 4; held index before object 4; result first 36;
+// conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
+// a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
+// 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {

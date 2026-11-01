@@ -278,12 +278,20 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 266: existing sample success before frame positioning or between positioning/sampling,
 // each in bool/byte/short/long storage, 276/276/279/278/276/276/279/278. Original result stores,
 // constructors and complete body restored; frame, getter and ordinal differences remain.
+// Round 270: Native countdown identifier copy/assignment, with direct base, weighted
+// identifier and both input policies: 296/296/284/284/327/327/301/301. Original
+// identifiers, separate constructors and body restored; frame, getter and ordinal homes remain.
 // Round I (MiniMax lane I, fast): the getter called through a member-function pointer local (only to keep
 // it out of line, which the noinline ruling rules out) with the twelve samples walked by a frames pointer
 // that reads each weight as sample[12] 137 (frame 0x2c as retail's); the getter called directly with that
 // walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
 // 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
 // in the sampled block 189. Original body restored.
+// Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
+// Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
+// Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each
+// with publication-owned weighted output 281/281/300/300. Original frame observations, constructors
+// and body restored; frame, getter expansion and ordinal homes remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

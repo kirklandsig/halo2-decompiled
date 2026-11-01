@@ -108,6 +108,8 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
+// prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
 // score 94 (was 94): BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // eax: `push -1` for `mov eax, -1` shifts every later offset by 3 bytes). A short strip-loop
 // index gives retail's prologue and count loop but 547 (the loop head's padding grows to a

@@ -46,6 +46,10 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // a point3f grid read back as in 0x194d30's decoder 61, with the scale read at each use 55; named i, j, k
 // locals 55; a face pointer local first 60; the point copied member-wise into a local 37; dead earlier
 // zero stores 37 (removed before allocation); k stored first 30.
+// Round 68: independent original/scaled z with long x and direct scale 37 (242 bytes), with short x
+// and the scale local 19, with short x and direct scale 53; mixed long x/short y 57; staged outputs 53;
+// existing in-place scale helper 87; scale as a helper parameter 27; staged outputs with long x and
+// direct scale 50 (242 bytes). Original helper and coordinates restored.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

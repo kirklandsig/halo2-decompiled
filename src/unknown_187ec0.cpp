@@ -299,6 +299,11 @@ struct s_seat_animations
 // (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
 // with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
 // `i` declared at function scope 52 (same code).
+// Round 33 (lane 15, fast): round 118's address-read form with `!result &&` in the while test 52 (same code);
+// the count/entries pairs as two-field block structs, a block pointer selected per inner pass 73 (type in EAX,
+// 181 bytes, 0x188130 1), the struct ternary `(first ? a->first : a->second).entries[i]` 57 (175 bytes, 0x188130
+// 12); the per-arm entry as if/else 78 (animation in EBX, 0x188130 17); the parent walk as a self tail call 70
+// (stays a call, no loop).
 // Round 65 (lane 12, fast with 0x188130/0x188640/0x188690), all on round 118's 52 form (rebuilt: 52,
 // animation/count/element in EBX/EBP/EAX for retail's EBP/EAX/EBX): the count selected by if/else 52;
 // the entry returned from the inner loop with a final `return NULL` 91 (143 bytes); `!result &&` in the
@@ -657,6 +662,8 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
+// from the call sites in other files, so the frame and the two scans stay as they are.
 // score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
 // pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
 // from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
