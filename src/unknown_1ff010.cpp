@@ -614,6 +614,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // cosine product, so the turned components colour XMM4/XMM7/XMM5 as k/j/i where retail has
 // XMM4/XMM6/XMM5 as i/j/k; retail's test zero is XMM0 after the scale products, and it multiplies x
 // as `movaps xmm1, scale; mulss xmm1, [x]`.
+// Round 230: native unsigned object/prop handles and signed-byte side truth, seven subsets; all with
+// unsigned-byte truth, scores [77, 77, 77, 77, 77, 77, 77, 77].
+// Original executable source restored. Zero-test scheduling and rotation register homes remain.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
