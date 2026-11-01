@@ -1771,7 +1771,9 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
-// score 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
+// score 248 (was 248): Frame 0x8c agrees; first global-load scheduling, the offsets in ECX rather than on
+// the stack (ret 0x10 versus 0x14), and the forward/up workspace homes remain.
+// Earlier: 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
 // own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
 // the mode read from [esp+0xa4] at 0xdef9e) with the biped in EDI, its definition in EBX and the index in EBP. Ours
 // takes the mode in EBX, the forward vector in EDX and the offsets in ECX (ret 0xc); their registers force a scratch
@@ -1790,6 +1792,9 @@ void function_dfd70(long arg_159e6d)
 // the inline test written hit-first 275, the vector test 240, the direction too 253, the back vector 248. Still
 // differs: retail falls through into the mode-0 0xb9dd0 call and then the crouch switch, and returns `ret 0x14`
 // (only `point` in EAX) where ours returns `ret 0x10`; `if (mode == 0)` first 254.
+// Round 289: view-forward, basis-up, both, head-direction, forward/direction, up/direction, all three,
+// and complete head/hit frame identities all 248 at 1041 bytes. Original helper/body restored; every
+// checked shared-helper user and matched caller retained its score.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -3735,7 +3740,7 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
+// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm5/xmm4,
 // retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
 // carriers still differ.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
@@ -3775,6 +3780,8 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // copy 171; up copied before the first rotation 229 (874 bytes). Lead: the rotate helper with scalar cross terms
 // is shared by 0x146320, 0x170d70 and 0x50650's files (each has its own copy, all held this round); one shared
 // header helper would let this body use it.
+// Round 289: staged rotation/side/up cross subsets 1/2/4/3/5/6/7 give 171/171/180/171/180/180/180;
+// all staged plus a native input snapshot 215. Original helper/body restored; frame and SIMD carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4184,7 +4191,7 @@ bool function_1f5560(long actor_index, vector3f *facing);
 /* jumps: an upward kick to the definition's jump speed (less for a tired
    player), relative to what the biped stands on; an actor may refuse. The
    biped index is read once from the stack argument (ret 4) */
-// score 210 (was 224): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
+// score 210 (was 210): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
 // (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
 // Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
 // biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
@@ -4199,6 +4206,11 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // (without the shared slot, restored). Tried earlier: late success 221 (subthreshold), shared vector producers 224;
 // CRT relative copy 224; common result exit 222 (subthreshold); all velocity names 224; late/shared 221;
 // natural parameter/common result/shared/CRT 234. All executable forms restored.
+// Round 289: long result/contact/both 211/212/211; native up/scalar up/actor observations 202/219/210;
+// native up plus long contact 193 (ordinary; rejected while depending on the inherited parameter-address
+// receiver), full scalar graph 222. Direct parameter on up/contact 213; direct up with bool/short/byte
+// contact 215/210/215; one result exit with bool/long/short contact 210/209/206 (four-point gain rejected).
+// All executable forms restored; the 0x24/0x28 frame and overwritten state-base lifetime remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
