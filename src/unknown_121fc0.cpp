@@ -151,6 +151,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // unique (five orders) never moves their slots; the slot order matches the count of memory references (retail:
 // cursor 5, size 5, next 4, count 4, unique 3; ours gives size 3, so it sits after count), so the size home
 // follows from the memory-resident clamp.
+// Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
+// 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
+// have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128
+// (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
+// loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
+// its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
 // @retail 0x121fc0
 void function_121fc0(void)
 {

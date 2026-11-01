@@ -1222,16 +1222,41 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
    the game has teams */
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
+// this round: retail's record defaults differ from ours in three places - it
+// zeroes the team and the three bytes after it as one dword at 0x7c, it zeroes only two of the three
+// longs at 0x70, and it sets the two bytes at 0x82 to 0xff (our source leaves them at the memset's
+// zero, so our record differs from retail's in the last two bytes). Dropping the third zero long at
+// 0x70 or the zero byte at 0x7d does move the allocation into retail's shape (the parameters test
+// becomes `test edi,edi` and the owner moves to EDX), but the score then rises to 206 and 208, and
+// the parameters pointer moves to ESI where retail keeps it in EDI, so all of them were reverted.
+// Reading the parameters at the call site (the decayed member) and testing them together with the
+// live state gives 186, and passing the current record's name to 0x7f660 instead of the requested
+// one gives 238; retail's `push ebx` shows the requested name is the right one, so that change was
+// reverted as well. The permuter on this function was stopped by its time limit without printing
+// anything. Still differs in the owner, the name count and the zero's allocation and the requested
+// cursor.
+// score 184 (was 184): this round: reading the parameters at the call site instead of through the
+// shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
+// compiles to the very same bytes, so the parameters null test still compares with the zero in
+// EDX (`xor edx,edx`, `cmp edi,edx`) where retail uses `test edi,edi`, and the owner, the name
+// count and the requested cursor keep their places; the original body was restored. Swapping the
+// two wcslen tests in the name test gives 209, and naming the current record's address in the
+// test instead of the `current` pointer gives 184 again, both reverted. Still differs in the
+// owner, the name count and the zero's allocation and the requested cursor.
+// Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
 // differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
+// Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // than 8, takes the memset path) and reads the parameters through the 0x4db0 member rather than
 // through the session_get_data_4db0 call; adding both was measured at 211 and 222, because MSVC
 // still compares the parameters with `xor edx,edx` where retail uses `test edi,edi`, reloads the
 // owner from the stack where retail keeps it in EDX, and computes the requested cursor with
 // `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
 // Still differs in the owner, the name count and the zero's allocation and the requested cursor.
+// Earlier 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
 // in this file found no lower form of them
@@ -1370,6 +1395,10 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // `current` 209 (905 bytes), with a dword name count 190. Our zero constant is register-allocated across the
 // update loop (EDX, `xor edx, edx` at the latch) exactly where retail reloads the name count into ESI; a
 // compile-only build without `current` gives retail's `test edi, edi` and memset-EAX zeros, LTCG does not.
+// Round 273: Complete clear-return/four-element-array/three-element-array
+// receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
+// 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
+// Original body restored; owner/count/zero and requested-record induction remain.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

@@ -250,6 +250,10 @@ static inline void quaternion_transform_vector(
 // swapped 200 and the struct renamed `halves` 200 (both the same code: these names do not move its slots);
 // `2.f * sine_half * cosine_half` 200 (same); the scale computed before the cross product 252 (1317 bytes,
 // retail's length, stack-masked aligned 259 against 229).
+// Round 278: Complete independent scalar output production in six row orders 333 each; with staged
+// transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
+// but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
+// spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -889,6 +893,11 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 278: Native last-use sum/product/mixed accumulators, left/right priority and band subsets:
+// 1835/1776/1805/1774/1776/1781/1774/1810. Product form confirms 1776 plain, EAX rotation and ret 4 but
+// frame 0x314. On that product graph, native row subsets and late matrix declaration:
+// 1807/1855/1989/1992/2093/2090/2238/2238. Original scalar graph, workspace, publications and body
+// restored; frame 0x314/0x300 and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

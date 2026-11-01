@@ -206,6 +206,11 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // both offsets through it with the depth limits written in the condition 233 (1153 bytes); the first offset alone
 // through it 222 (1146 bytes). Retail computes each depth limit lazily after the two `k < 0` tests (`mulss` by the
 // 4.0 in memory); ours hoists both limits and the 4.0 into registers ahead of the tests.
+// Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
+// Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
+// Round 483: coherent radius from output/producer, branch/common publication
+// and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
+// All regress; initial stores, alias-sensitive reads, original helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

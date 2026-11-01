@@ -338,6 +338,15 @@ static __forceinline bool structure_bsp_collision_available()
 // the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
 // (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
 // { requery }` 75 (295 bytes).
+// Round 63 (m3 lane 16, fast): compile-only, the join test also threads as a switch on the flag, behind an
+// `excluded || !0xbf9a0` guard, as a counter, as a parameter, and as `!!`, `== true`, `!= false`, `(char)`,
+// `(long)`, `? true : false`, `| false`, `^ false`, `& 0xff`; the C front end and a constructed/destructed
+// collision record thread it too. Only a bit-and join test keeps it: `if (excluded & 1)` 96 (297 bytes:
+// retail's `mov r8, 1; jmp` and unthreaded join, but `test r8, 1`, the flag spilled into the collision's
+// slot and NONE in EBX); that with the collision read through the source at every use 96; a plain
+// non-inline exclusion helper 103 (240 bytes: LTCG keeps it out of line); the kept form with the collision
+// read through the source at every use 53 (same code); a `short policy = 2` local set by 0x10a0b0 for
+// scenery and tested `== 2` before 0xbf9a0 and `!= 2` before the requery 62.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -949,6 +958,13 @@ done:
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the
 // existing `vector3f_add_scaled(probe, direction, 0.02f, probe)` 125 (same code).
+// Round 63 (m3 lane 16, fast): a bit-and join test (`else if (!(excluded & 1))`, diagnostic) keeps the flag
+// unthreaded and gives retail's allocation (flag in BL with `mov bl, 1; jmp` and `xor bl, bl` before 0xbf9a0,
+// the direction reloaded into ESI, NONE in EBX with `or ebx, -1` at the back edge, the result in its
+// parameter slot) but `test bl, 1` and a different layout: 149 (477 bytes); with one lightmap call reached
+// through a `found` flag 139 (471 bytes); either with the existing availability helper 148 (470 bytes: the
+// failure exit inline as retail's, but ESI pushed after it) / 150; the plain form with `*probe = *point`
+// before the flags computation 128.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

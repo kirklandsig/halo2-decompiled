@@ -588,6 +588,13 @@ done:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
 // bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
 // after it 54; `if (globals != NULL)` 54.
+// Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
+// with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
+// switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read
+// before the variant call 57 (171 bytes: retail's code but for the EBX buffer and the tag loaded before the
+// call); that with the NONE-guarded call 57; the repeated-copy form with the tag read first 44 (178 bytes);
+// the shared variant getter written with early returns (`if (variant) return variant; return &...;`) on the
+// natural form 54 (same code), on the kept form 48.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

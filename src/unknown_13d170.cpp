@@ -267,6 +267,12 @@ struct s_block_candidate
 // `candidates[tail]` 371, the scan's candidate read through `candidates[i]` 397 (1244 bytes), the loop test as
 // `page_count > offset` 370 (same code). Retail places the zero-trip limit update right after the loop guard
 // (`jg` into the body, the update falling through); every form here keeps it at the end.
+// Round 275: Reused candidate pages/time/both/best fields/pages-best/time-best/all 369/367/367/370/367/367/367; all with immutable successor 367. One/three-point leads rejected.
+// Original executable source restored; frame 0x1050 versus 0x1054, page/ring homes and policy blocks remain.
+// Round 277: Existing private iterator with field/aggregate initialization and candidate
+// assignment/memcpy 370 each; each with native successful-datum lookup 367 at 1213 bytes
+// (three-point gains rejected). Original helper use, iterator, lookups and body restored;
+// frame/page-tail homes and policy blocks remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
