@@ -1322,6 +1322,9 @@ struct s_looping_detail_request
 // 127, every caller unchanged; the count test as `>= 1` 128, as `!= 0` (diagnostic) 127, the query still
 // inlined; the definition index named once for the lookup and the audible arm's call 159; the camera position
 // as one pointer local for the add and 0x11bed0 125 (two points, not kept).
+// Round 226: caller/helper expanded control 127 (narrow control 139); native flag 127, offset setter
+// 151, flag/offset 151, velocity setter 132, flag/velocity 132, both setters 156, all three 156,
+// shared word flag writer 127. Original body restored; query expansion and detail retention remain.
 // Round 48 (m3 lane 11, plain): the file is already /Ob1 and 0x11b350 (an /Ob1 file) inlines the query in retail,
 // so the caller's flags are not the lever. The player count through a small inline accessor (one more inlined call
 // site) 127; the audible test through a named bool 127; the test as a two-arm switch on the mode field 164 (540

@@ -1224,6 +1224,10 @@ bool function_68670(byte *source, long size, void *block);
 // and forwarded to the payload read, the header at +0x10, the loop-top compare on memory), with the payload's update
 // first too 114, the payload's alone 136 (555), with the case-0 copy 137 (561), with the payload in the loop 76; the
 // header's `used` update first at function scope 109; the case-0 block-local copy alone 137 (561). All restored.
+// J228: reader order count/destination/offset, or destination/count/offset, coordinated at both
+// declarations, definition and calls: original/header-loop/separate-copy/both 71/118/138/138
+// each. Matched reader and three controls survive; the one-point gain is rejected. Original
+// reader contract and target body restored; header exposure and DX lifetime remain.
 // Round 36 (lane 15, fast): the decrement as the loop's step 171 (483 bytes, the cases tail-merge);
 // header renamed to sort after the payload 72 (same code); case 1's copy guarded by `header.size > 0`
 // 69 (553 bytes: a short test on SI before the stores, case 0 and the size register unchanged; -3, not

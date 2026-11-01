@@ -1316,6 +1316,9 @@ long function_2197f0(real gain);
 // ducking gain through a long local read as a real 127 (682 bytes: that branch is then retail's exactly, retail
 // reinterprets a by-value copy of the long gain, but a one-use local is kept only on a match).
 // J221: Elapsed/reciprocal/both/fraction role names 137 each; fade-in/full timing/ambience snapshots 144/179/182; parallel interpolation outputs 137; native table base plus original short lookup input 146 at 672 bytes (entry instructions agree). All original executable code restored.
+// J225: shared ducking-array receiver 164; external ducking-record references 137; array and references
+// 164; native fade-record value 174; fade value and array 181; fade value and references 174; fade value,
+// array and references 181; native ducking-record values 284. Original body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2178,6 +2181,8 @@ void sound_update_locations(void)
 // delta (every caller passed `0 - x, x`; 0x1269f0 matched with it). With the round-34 mix 29; all 64
 // helper/`+=` choices for the six adds screened (LTCG probe): all six through the helper 13 (kept, plain),
 // helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
+// J223: one receiver 176; elapsed read once 198; both 198; scalar bitmap 243;
+// bitmap with receiver/elapsed/both 245/228/228 (fast previews).
 // Lane 18 round 16 (one-link LTCG env, exact 13; fast): the existing bit_vector_test/bit_vector_set 13; early
 // `continue` for a NONE request and for no free slot 13; the unknown14 add as `+= PIN_126660` 77 (the fade-in add
 // then copies as retail, unknown14 still copies; the unknown18, unknown14 or fade-in add alone as `+=`, `x = x + PIN`
@@ -3325,6 +3330,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // voice renamed to sort first or last 78 each (names do not break the tie); case 0's work as an inline helper 251
 // (474 bytes, called), forceinline 228 (604); the mode from an inline getter with two returns 113 (540, called),
 // forceinline 214 (592 bytes: the class lookup inlines with it).
+// J225: native class mode field 49; native class mode and flag fields 49; native fields with two-case for
+// dispatch 78; dispatch with complete role names 78; native fields with range-record reference 49; dispatch
+// with range reference 78; dispatch with shared class index 98; dispatch with range reference and class
+// index 98. Original body restored.
 // Lane 18 round 16 (fast; the one-link env inlines 0x221810, so not used): the next start index named before the
 // loop-end `sounds = g_4e637c;` 49 (same code: the reload still precedes the ternary); the loop end through an
 // inline (pool, index) next-datum helper with data_find_index 49; that helper in the for loop with `case 1:
@@ -3727,6 +3736,12 @@ struct s_128ca0
 // 222 (same); the real sum written out 306; each pin argument as decibels_add(local_6, converted gain bits) 241
 // (1073), operands the other way 291 (1116); this file's decibels_pin single-exit (as src/unknown_2197f0.cpp's)
 // 237 (1036; 0x12a810 still matches), with the decibels_add pin arguments 231 (1052).
+// J224: Native byte views for pending/completed/both/submitted/pending-submitted/
+// completed-submitted/all state units 238/231/242/234/245/239/254; all with native short
+// pitch bounds 254. Completed-byte/all-byte units with reference inner gain and native
+// bounds 278/293; with both reference sums 278/293 (frame 0x494, first +0x44).
+// Original record declaration, body, gain helpers and every call restored; the two
+// extra argument homes and clamp joins remain. One incomplete-image comparison excluded.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

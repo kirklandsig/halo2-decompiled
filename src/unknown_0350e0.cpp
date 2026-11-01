@@ -1750,6 +1750,10 @@ real game_time_get_seconds();
 // as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
 // slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
 // retail's comparison order (506; 511 with the member form).
+// J225: point-difference helper 507; projection dot helper 507; scalar-output role names 507; vector-output
+// role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
+// directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
+// member vertex API 524. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2324,6 +2328,9 @@ s_cached_input_list g_5234e8[4];
 // 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
 // 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
 // each use (no list local, 556 bytes) 118 | 65.
+// Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
+// reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
+// (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2899,6 +2906,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // stack 8-byte aligned down from 0x335e0); the x87 block is byte for byte retail's either way, only the tail's pop
 // placement moved: 175 -> 177 positional, LCS-aligned 76 -> 73. Its differences as `double` parameters change
 // nothing (175, alignment kept); as one expression with no locals 176.
+// Round 226: table already in EBP, frame 0x18 versus 0x1c and missing final fade scratch stores remain.
+// Native object/mode/both 177; alpha first with those view subsets 212 each; byte result 173 at
+// 768 bytes (four-point gain below the retention bar). Original body and shared helper restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3052,7 +3062,7 @@ struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
 // score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
-// slot). This body matched in lane 13 round 38's full image and matches on the --fast image; adding almost any one
+// slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
 // other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
 // Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
 // with the table and assigned after the early return; declared before the table; both as `byte const *`.
@@ -3060,6 +3070,8 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // the callback arrays declared after table/definitions 30; `draw` declared before `fill` 17; both pointers `byte *const`
 // 4. Compile-only /FAs: the two homes follow which pointer is assigned first (reading the scenario first flips them,
 // but moves its load above the early return); names never move them.
+// Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
+// range/record, all native views and const callback arrays each 4. Original body restored.
 // @retail 0x41640
 void function_41640(void)
 {

@@ -152,6 +152,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // k*complement for ik/jk) 238 (1816). Retail's two rotation cases are scheduled differently from each other
 // (case 1 spills k^2 to +0x24, case 2 spills k^2 to +0x30 and s*j to +0x20), so its two inline copies got
 // different homes for the square/sine vectors.
+// J221: On native squared/sine vectors: shared complement 451; complete axis input 589; both 589; staged crosses 219; staged with complement/input/both 451/589/589; shared orientation 495. Original helper bodies, observations and complete function restored.
 // Round 129 (m3 lane 6, fast): case 0's up copied field by field k, j, i 354 (the jump tables then sit at
 // retail's address, but the copy becomes float loads and the cross recolours); the forward negations
 // written k, j, i 219 (same code); both 354; the rotation's j square moved ahead of ij 360 (1840 bytes);

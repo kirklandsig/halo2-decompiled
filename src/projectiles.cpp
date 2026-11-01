@@ -1240,6 +1240,9 @@ extern vector3f *g_4687ac;
 // 0x1c8df0 170 -> 457, 0xcf040/0x24da18/0x24e59f stay matched); on that, endpoints through vector3f_add_scaled
 // 173, radius compared from the field and read in the block 170, radius field at every use 158 (definition in
 // EBP as retail; frame 0x40 vs 0x34 and the shared return-true block remain). All restored.
+// Round 229: complete origin/target/both point values, native or library copies,
+// 196/181/221 in each family; both with bounded initial ray 221, shared query vector 218.
+// Every original input observation and executable body restored; native frame/tag/query homes remain.
 // @retail 0xfc030
 bool function_fc030(long projectile_index, point3f const *point, s_collision_result_1697c0 *collision)
 {
@@ -1435,6 +1438,9 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // 116; the sound records cleared before the effect records 121; the attachment stores with the flag last 115.
 // The sound loop's point and velocity copies hold their source pointer in ECX/EAX where retail uses EAX/ECX, so
 // the copy stores come out in the other order; same allocation cause as the BLOCKED-BY 0xfd740 entry.
+// Round 229: one done exit/exclusive arms with a twice-used selected effect result,
+// native unsigned ordinal and aggregate table defaults: 115/177/115/177/121/183/121/183.
+// Original exits, result reads, defaults and whole executable source restored; point/zero/selector homes remain.
 // @retail 0xfd0e0
 void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f const *direction,
 	point3f const *point, vector3f const *normal, word index, bool attached, long object_index,
@@ -2738,6 +2744,9 @@ PRIVATE __forceinline void projectile_impact_effect_parameters(s_effect_paramete
 // seven nonempty subsets 1190 each; all three readonly completed vectors 1190.
 // Original body, vector operands, arithmetic trees, damage scopes and interfaces restored;
 // frame 0x220/0x218 and velocity/request homes remain.
+// Round 229: full-width potential/settled/created carrier subsets 1213/1197/1222/1187/1216/1206/1229;
+// all three short 1228. Created long gains only three and is rejected; all original Boolean
+// carriers and executable source restored. Frame 0x220/0x218, velocity and request homes remain.
 // @retail 0xfaa60
 void function_faa60(vector3f *velocity, long projectile_index, s_collision_result_1697c0 const *collision,
 	point3f *end_point, vector3f *displacement, short collision_count)

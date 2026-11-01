@@ -334,6 +334,9 @@ void function_14bac0()
 // Round 442: null-unit/visited-root/both continues with the cached pool and original reload
 // paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
 // value 253, with native recipients 264. Original output, pool observations and body restored.
+// Round 229: repeated recipient handle ownership with native recipient step, actual relocation/destination
+// sharing and repeated visit-stamp ownership: 222/228/222/228/222/228/222/228. All original
+// executable source restored; frame 0x50/0x3c and readiness/recipient sharing remain.
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
