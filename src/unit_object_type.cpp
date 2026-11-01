@@ -2844,6 +2844,10 @@ void function_c5740(long unit_index, bool start)
 // material path as an inline helper 260 (kept out of line, 0xcf040 6); an early return on a NONE definition 94;
 // `goto done` for the weapon exit 94. Diagnostic (reverted): a global store in 0x1012c0 gives the pool reload but
 // 96 (351 bytes), so that reload is not the main cause.
+// Lane 18 round 24 (fast): separate material/definition tag locals 94 (same code); a NONE-initialised weapon index with
+// the early return kept 121 (333 bytes, 0xcf040 11); the definition tag as a ternary 94 (same code); `if (tag_index ==
+// NONE) return;` before the 0x188180 call 94 (same code); the weapon slot field read at each use 99. Retail sets EAX
+// (point) before ECX (forward) for 0x188180. Still BLOCKED-BY 0x188180 (parameter type and register convention).
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
