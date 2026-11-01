@@ -598,6 +598,14 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 36 (lane 15, fast): `present_teams = (1 << team) | present_teams` 32 (same code: the OR still lands
+// in the bit's register and the store follows the flag test); the store as `(word)(old_team_mask |
+// present_teams)` 32 (same code); a dword copy read from the field with the store through `globals` 130
+// (374 bytes, the copy folds into field reads); the word mask declared before the old playing mask 82;
+// a word copy read from the field with an uncast direct store 129 (375 bytes; the engine-index load
+// then hoists as retail's); the volatile present declared first 39. Diagnostic: the word form keeps
+// retail's entry but reloads the spilled word at each use (movzx in the compare, `mov esi` dword in
+// the update), where retail reloads it once into ECX at the loop exit with playing in EDX.
 // @retail 0x158140
 void function_158140(void)
 {

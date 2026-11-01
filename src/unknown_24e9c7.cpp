@@ -210,6 +210,10 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 35 (lane 15, fast): ours spills back's y (pair at -0x18/-0x14), retail side's y (pair at -0xc/-8, above
+// result). back renamed reverse_side / away, side renamed width_offset, up renamed upward 125 each (names do not
+// order the struct homes either); corners as full sums `x + up.x + back.x` 229 (664 bytes); scale read before size
+// 125; result assigned after the half width 131; the full width named, then halved 125.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -901,7 +901,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 134): with the address-taken scratch record and the two-pointer getter (see
+// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -968,6 +968,10 @@ struct s_signed_file_write_parameters
 // and copies it to EDI and puts the size in EBX, where retail loads the buffer straight into EDI
 // and the size into EAX (copied to EBX before the memset's zero); the 940-byte forms keep retail's
 // buffer register but give the buffer the parameters home (retail the task home).
+// Round 34 (aligned counts in brackets, opening [107]): getter as buffer, flag, size, owner 131 [113] (0x2ad7c0
+// 36); buffer, owner, size, flag 129 [111]; the extend arm's size as `size = buffer_size; if (remaining <= size)
+// size = remaining;` 264 [74] (944 bytes: the jump table moves; the offset is spilled where retail spills the
+// buffer); with the `void *parameters_view` cast 264 [74]; plus the extend-site getter order 264 [78].
 // Round 261: Shared WriteFile output for header+scratch/header+direct/header+publication/header+signat
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;

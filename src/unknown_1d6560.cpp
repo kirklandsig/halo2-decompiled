@@ -160,6 +160,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
 // to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
 // 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 33 (lane 15, fast): o,t,r with the kind-7 ternary re-measured 96 at 256 bytes [0] (rigid body computed
+// in place in ECX where retail copies the index to ESI, header data in ESI for retail's EDX, branchless kind 7);
+// on it the kind-7 path as `if (type == 1) return 0xc; return 1;` 96 (folded to the same select), case 0 as
+// `(byte >> 2) & 1` through the component 96 (still `shr eax, 2`), through object_index 141 [213], the kind-7
+// path as a one-case switch 124 [194]; o,r,t 105 and r,o,t 107 (240 bytes [13]).
+// Round 35 (lane 15, fast), on o,t,r with the kind-7 switch and case 0 through the component (124 at 276 [194]:
+// entry and case 0 as retail, but the type takes EDI and kind drops to the stack): type renamed object_type /
+// type_value, rigid_body renamed body 124/124/124; kind, level or component renamed 124/124/124 (names order no
+// register); the main switch inside `if (kind != 7)` with the kind-7 switch after it 115 at 272 [194]; per-case
+// returns with no result 124. On this body: case 0 as `(byte >> 2) & 1` or `(byte)(byte >> 2) & 1` 96/96 [0].
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -394,6 +404,12 @@ struct s_flag_word_bits
 // availability declared first 270; flags before the body index 240; model before the body index 253; model
 // through owner at each use 241; clamp inline 241; output as `replaced ? replacement : body_index` 252, with
 // mask 242; a separate output index 241, with mask 279.
+// Round 35 (lane 15, fast; aligned counts in brackets, base 241 [144]): `body_index = replacement;` before
+// `replaced = true;` 241 [144]; `available = true;` after the replace block 252 [129] (lead: the policy and
+// availability bytes then take retail's slots 0x12/0x13 and available gets retail's `mov dl, 1`; left: model in
+// ESI for EDX, body index ECX for EBX, replaced BL for CL); on it the mask test `body->flags & 0x20` 279 [144],
+// with both flags declared first 302 [185], the model read through owner at both uses 252 [129], the model local
+// before the body index 275 [188]; the clamp bound named `last` 242 [154].
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

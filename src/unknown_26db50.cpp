@@ -602,6 +602,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 35 (lane 15, fast): the angle with the ring term first 90 (same code); sine/cosine computed before the
+// direction copy 101 (1086 bytes); the direction copied after the angle 101 (1086); the origin pointer taken
+// before the pathfinding lookup 90; the distance as `ring * radius + radius * 1.2` 90.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

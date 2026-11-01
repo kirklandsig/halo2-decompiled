@@ -1944,6 +1944,9 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
+// 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
+// (497 bytes), creation arm first 130.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

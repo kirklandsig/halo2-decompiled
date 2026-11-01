@@ -334,6 +334,13 @@ void __stdcall function_1160c0(real dt)
 // and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
 // &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
 // axis 177. Body restored.
+// Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
+// segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
+// +0x10, previous +0x40, offset +0x4c (the axis, length and normalization code is otherwise retail's). The axis
+// is `vertical x direction`: the existing cross3f(&vertical, &direction, &axis) with the vertical declared just
+// before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
+// difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

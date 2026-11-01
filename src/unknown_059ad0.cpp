@@ -3666,6 +3666,12 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3767,6 +3773,9 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
 // address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
 // key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
+// function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
+// declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4489,6 +4498,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
+// acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
+// state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
+// code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
