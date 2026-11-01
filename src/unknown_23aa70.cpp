@@ -320,6 +320,10 @@ PRIVATE __forceinline void vertex_decode_23ac30(short x, short y, short z,
 // 170 (620 bytes, still flipped: node EBX, switch temp/bases EDI, source on the stack); with format 3
 // indexed too 170; with format 2 indexed too 170; case 4 written first of all 175; the index parameter
 // renamed (vertex_index) 175. Format 3 indexed alone 60 again (gain under 3, not kept).
+// Round 143 (fast, faithful here), format 4 indexed through `vertices`: the range built in the case and
+// the ranges decoder called directly 175; the decode helper taking bounds and point first 175; a shared
+// inline data + offset accessor in all four cases 175; decoded into a case-local point stored before the
+// node 175. Diagnostics: without format 2's zero store 177, without all three 173 (node on the stack).
 // @retail 0x23ac30
 void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 	s_vertex_bounds_23ac30 const *bounds, point3f *point, long *node)

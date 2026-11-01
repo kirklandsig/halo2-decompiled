@@ -130,6 +130,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 246: initial heading library copy with paired defaults, normalized input
 // and final output transfers in all eight combinations 803/803/803/803/803/803/803/810,
 // all on direct input. Original copies, parameter observation and whole body restored.
+// Round 144 (lane 4, fast): ours keeps the input pointer in EBX from the prologue (retail reads it from its
+// stack home, pushes EBX late for the heading pointer and loads the input into EDI only in the final arm), and
+// caches the three normalizer components on the x87 stack (retail `fld [x]; fmul [x]` each). A branch-local
+// input pointer copy 750 (same code); the normalizer squares through a two-pointer double dot 807; the epsilon
+// test as `fabs(local_0) < 0.0001f` 750 (retail's dword constant, nothing else moves); the input reference
+// taken after the position query 750; the normalized copy declared before the heading copies 750.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

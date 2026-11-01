@@ -214,6 +214,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
 // the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
 // with field_10 first 133.
+// Round 142 (lane 4, fast with 0x248cc0): field_10 first with the cache test as an empty `if (==) {} else`
+// 133 (876 bytes), through a `bool record_changed` 133, as `field_50 != local_1` with the mask cleared first
+// 129 (863 bytes), through a `parent` pointer for arg_2 133; the count increment next to the list link 208
+// (860 bytes); field_3c stored before the 0x249aa0 call 67 (a reorder past a call that takes the record).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

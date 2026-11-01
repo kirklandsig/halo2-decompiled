@@ -262,6 +262,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
 // the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
 // with the fraction before the delta 225; identical switch cases merged in all four switches 209.
+// Round 142 (lane 4, fast): fraction first (diagnostic) 207; with no per-pass disposal reset 207; the
+// boundary disposal as `if ((valuee & 2) && type == 0) { dispose = true; break; }` 96 (same code), with
+// fraction first 207, with fraction first and no reset 207, with no reset 96; the key table read before
+// the next-frame switch 145 (656 bytes).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

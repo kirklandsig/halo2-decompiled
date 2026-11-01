@@ -433,6 +433,11 @@ extern "C" void _ReadWriteBarrier(void);
 // global 162; that without the barrier 152; the current step with a pool local for the iterator and the
 // release 126; a pool local assigned after the iterator for the release only 158 (as noted earlier);
 // the release through `iterator.data` 126.
+// Round 143 (lane 4, fast with the file, faithful 122), the existing four-field datum iterator and
+// data_datum_iterator_next_inlined (as 0xc1720 and 0x1406b0): with the barrier 162; without it 152 (frame
+// 0x10, high water in ESI and the iterator's pool re-read per pass as retail, but no second pool home: the
+// element is formed from the same EDI pool); without the datum-index initialiser 152 (same code); with the
+// datum index named in the body for the release 162; released through `iterator.data` 153.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

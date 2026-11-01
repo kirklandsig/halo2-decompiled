@@ -978,6 +978,10 @@ bool __stdcall function_2399da(long controller_index)
 // lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
 // the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
 // first in that block 91.
+// Round 143 (lane 4, fast with 0xac050/0xac360/0x18ffc3, faithful 90): flat dispatch (remove, over-rank deny,
+// rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
+// test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
+// rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

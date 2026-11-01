@@ -577,7 +577,7 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 	return result;
 }
 
-// score 22 (was 55): kept in round 184 (coordinator ruling): the variant address named before the summary
+// score 22 (was 22): kept in round 184 (coordinator ruling): the variant address named before the summary
 // getter gives the session EBX as in retail, and 0x6e500 and 0x72700 match with it. Left: the opening's
 // second lea after the je (retail's comes before it) and a one-step scratch rotation through the summary
 // lea, the mask temp and the copy loop.
@@ -738,6 +738,11 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // count local, index scope, mask/slot spellings, nested tests, `players + i`, nested tail); const parameter,
 // function-scope or shared index, the size macro (5). Frame alignment comes from the players memset (no
 // effect). Flags: only /O1 and /Os give EBX, with different code.
+// Round 143 (lane 4, fast with the inlined callees and both callers, faithful 22): every opening that
+// computes both stored addresses before testing them gives retail's opening schedule and summary/mask
+// registers but the session ESI (0x6e500 69, 0x72700 94): NULL-preset pair 46, if/else pair 46, the pair
+// assigned players first 46, a two-out-pointer inline getter 46; on the preset pair the variant named at
+// the top of the state block 46 or just before the player loop 46.
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {

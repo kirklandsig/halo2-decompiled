@@ -851,6 +851,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Original transfers and complete body restored; coefficient preload and projection homes remain.
 // Round 100 (lane 8, fast): plane 0's d in every term order with camera-first or normal-first products: operand order
 // never changes the code; i/j/k 146, i/k/j normal-first 115 (same code), j/i/k 149, j/k/i 133, k/i/j 144, k/j/i 133.
+// Round 141 (lane 4, fast): the zero constant sits in XMM4 for the whole function in retail and in XMM3 here,
+// so the near plane's late e4.i load accounts for most of the setup, clip and t = 0 colour differences.
+// The intersection through the existing vector3f_add_scaled 119; normal-first/point-first operands in
+// the classification's i, k, j terms (nnp, npn, pnn, ppn) and a delta-first denominator j term 115 each
+// (the operand order is canonicalised); the output element stored directly 247 (1867 bytes); p1
+// declared before p0 120; the near plane's d grouped as `i + (k + j)` 145; the point memcpy
+// moved before the planes (after the memset) 193.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

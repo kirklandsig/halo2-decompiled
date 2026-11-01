@@ -156,6 +156,12 @@ bool function_25d9b0(long prop_index);
 // priority` inside and `return 0` after it 114 (567 bytes); the same with a long priority 140 (fast image).
 // Round 465: default-first/branch-complete property acquisition result, short/long priority,
 // existing/entry velocity workspace: 86/86/84/84/86/86/84/84. Two-count lead rejected; original body restored.
+// Round 143 (lane 4, fast with the file and its callees, faithful 86): the gate as `if (ok) goto done; }
+// priority = 0; done: return priority;` 91 again (retail's whole layout and zero epilogue; left: actor/node
+// EBP/EBX and priority spilled to the argument slot with the state in ESI), with `return priority` in the
+// gate and `priority = 0; return priority;` after it 105 (560 bytes), with the state fetched after the
+// velocity declaration 91; on the kept form the gate inverted (`if (priority <= 0) priority = 0; else`) 86
+// (same code) and the participant index named in the found path 86 (same code).
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
