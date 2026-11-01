@@ -1324,6 +1324,14 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 6, at query and write 6 (the listed 6: resize handle EAX, header address ECX, close copy EDX, each one register
 // before retail's), at resize, write and close 118; the getter at resize and write with the plain
 // `written = bytes == 0x800` 110. All restored: no match, and a getter with one caller is not kept.
+// Round 35 (lane 15, fast): the 7 and 6 forms reproduce, and the 7 form with a write handle local alone 114 (917
+// bytes: the close's copy dropped, the checksum load in ECX). On that write-local form: the query, resize, close
+// argument or close test through `g_557c90[index]` 114/114/114/114; the write local before the header / before
+// bytes_written 114/114. No `file` local (every use through `g_557c90[index]`) on the 7 / write-local / 6 forms
+// 283/278/284 (955-958 bytes). On the 7 form: an `s_file_write_flags flags(0)` local at the call / at the top of
+// the resized block 7/7; bytes_written before the header, `written` declared before / after `resized` 7/7/7. A
+// constructor on s_file_handle (to make the handle a class temporary like the flags) does not compile: the
+// handle sits in the async task union (C2620).
 // @retail 0x213970
 void function_213970(void)
 {
