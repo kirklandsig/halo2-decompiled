@@ -195,6 +195,15 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 108 (m3 lane 7, fast): the dot and cross tests through vector2f_products.h's existing dot_product2d
+// and cross_product2d (`dot(&other->direction, &direction) > 0`, `0 > cross(&other->direction,
+// &from->direction) * cross(&other->direction, &direction)`) give retail's whole dot/cross block (the loads
+// before the products, `mulss reg, reg` order and the dead `lea [from + 0x38]`) and retail's 630 bytes, but
+// without the early Y load every XMM register stays rotated: 150 (aligned 28/27 against 33/33); the cross
+// with `&search->nodes[parent].direction` 152 (634 bytes); the dot alone 147 (630); the cross alone 148 (632);
+// both with the normalizer through the file's scale helper 150. Compile-only, no normalizer form (scalar
+// direction locals, y read first, in-caller normalize, scale helper) loads y early: VC keeps y in its home and
+// folds it into `mulss inverse, [y]`.
 // Round 143 (lane 4, fast with the file, faithful 92): the node's direction copied field by field from the
 // struct 177 (608 bytes: the direction lives in registers, no store-back, and still no early Y load), from
 // the direction locals 177, with no direction locals 177; the direction from vector2d_from_points2d 91 (as
