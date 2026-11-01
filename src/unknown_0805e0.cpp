@@ -184,6 +184,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
 // 53 (callers 2/75); a const entry pointer 43 (identical); a for loop stepping `index = entry->next` with the
 // entry declared outside 56 (callers 17/74). AL holds the result through our loop, so the mask has no free register.
+// Round 36 (fast, with 0x1a303b/0x2b393c): no result variable, the loop ending on `index = next` and `return index !=
+// NONE;` 54 (131 bytes, `setne al`; both callers drop to 2); the per-pass result with a successor local (as round 37)
+// 59 (135 bytes; compile-only it hoists the mask into AL and builds the entry in place, but next shares the index
+// register), the same with the result declared after the index 59, with `else index = next` 59; a named `admitted`
+// bool with early returns and a successor local 49.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -673,6 +678,12 @@ void function_1537f0(s_profile_record *record);
 // Round 327: Carried entry pointer with direct long/unsigned-long/short/word count-up and
 // countdown bounds, 53 each at 255 bytes. Identity homes still fold; original pointer walk and
 // all initializers restored.
+// Round 36 (fast, with 0x7f8b0/0x1537f0): retail forwards the record's memset zeros into EBP/EBX but stores and
+// re-reads the identity, and its `cmp edx, end; jl` (signed) is the strength-reduced test of an index loop; ours
+// counts 350 down in a frame slot. Index loop with every field through `g_4cf98c[i]` 77 (238 bytes); the identity
+// zeroed after the record initializer in an index loop 78 (238); the links as four statements in retail's store
+// order on the pointer walk 53 (same code); flags and timestamp as two stores on the pointer walk 62 (253); the index
+// loop with both 80 (236). The compile-only build cannot inline 0x1537f0 (another file), so it does not reproduce this.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1135,6 +1146,15 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
 // canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
 // entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
+// Round 36 (fast, with 0x80330/0x80490/0x7fd10/0x7fd80): compile-only, upper takes EAX in all 50 random combinations
+// of the entry (cache_full / plain / mixed read), bound initializers, declaration order, both min/max spellings,
+// the three-way arm forms, the count path's order, flag and test (search7f.py). Real: upper declared first with
+// `lower = removed > position ? position : removed` 47 (not kept: 2); on it the flag set first in the `<` arm 48,
+// the count path upper first 48, `g_4cf978 > position` 47, the mixed read 366 (1162 bytes), the mixed read with the
+// explicit `>` arm and the count path's flag store 55; the mixed read with the `>` arm and the count path's flag
+// store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
+// with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
+// the declarations reversed, upper assigned first and the count path upper first 370.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
