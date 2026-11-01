@@ -194,6 +194,13 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 459: Native double correction-expression stages
 // absolute/root/both/scaled/absolute-scaled/root-scaled/all-three/all-four
 // 383/383/383/383/383/383/383/383. All executable trial forms restored.
+// Round 469: Native coordinate aggregate construction of working/output/query vectors in
+// seven nonempty subsets, then all with shared final vector setters: 390/453/463/414/376/449/460/487.
+// Working/query aggregates recover actor EAX and ret 0x20 at 376 (gain seven, rejected).
+// On that graph, magnitude-result update/query outputs at entry/native vector-position names
+// in seven subsets, then all with position at entry: 446/376/446/376/446/376/446/446.
+// Independent native-vector producer orders 465/546/564/645 on that graph: 435/376/381/439.
+// Original copies, helper bodies and call roles restored; frame and input transport remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

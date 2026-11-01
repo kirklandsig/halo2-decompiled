@@ -1099,7 +1099,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 597 (was 639): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
+// score 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
 // double (LTCG had pushed its 8-byte alignment need onto 0x2056e0's callers).
 // Physics-state branch scope, separate velocity outputs and both 715 each; final default-array
@@ -1116,6 +1116,9 @@ long function_10f5f0(long object_index);
 // names also has its own block, but the real build keeps 0x1990 (LTCG groups the 12-byte velocity first, so the
 // buffer sits apart and the kill-volume scalars start 12 bytes low). names `= { 0 }` 629, memset 634, both in a
 // block 629.
+// Round 469: Sixteen-point short/word/signed-byte/byte ordinals with three native axis bounds
+// 612 each; those four ordinals with the original buffer 612 each (2220/2264 bytes).
+// Frame 0x1990 still exceeds 0x1984; original complete body and local qualifier restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2795,6 +2798,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // nonempty combinations 1094/1072/1064/1066/1062/1053/1089; all with force/velocity role names 1089.
 // Original-graph persistent/planar/later/all native frame-object name families 1053/1053/1053/1053.
 // Original body restored; the frame remains 0x80 versus 0x74.
+// Round 469: Angular-output/scaled-velocity/heading-pair lifetime scopes in seven nonempty
+// combinations, then all with input declared at consumption: 1053/1053/1053/1053/1053/1053/1053/1053.
+// Every initializer, expression and call restored; frame 0x80 versus 0x74 remains.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3762,7 +3768,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 251 (was 286): every frame slot now retail's; left: the override search's exit (retail tests the found
+// score 251 (was 251): every frame slot now retail's; left: the override search's exit (retail tests the found
 // element out of line, threaded from the loop; ours re-tests i < count), the permutation pointer's load order,
 // integer registers in the ray copies, the scale products (ours copy the scale, retail scales in place), the
 // clamp/fallback store placement and the final flag writer. Before round 45 (286, was 303): the state/permutation
@@ -3808,6 +3814,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // point first 265, with the node test's zero arm last 263, with both 251 (kept); on 251 `real reach = 0.0f -
 // length;` before the ray / at the products / after the copies / between the copies 249/251/249/249 (in-place
 // products but a hoisted zero); the Havok clamp as an explicit store then if/else-if 257.
+// Round 469: Integer-displacement grouping with indexed mismatch-continue, body-stepped
+// cursor, predicate-owned cursor and indexed while searches 251/257/257/251;
+// the four searches with the original displacement 251/257/257/251. Original body restored;
+// frame 0xec agrees, metadata load order and found-index retest remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

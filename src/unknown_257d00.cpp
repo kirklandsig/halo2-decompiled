@@ -2095,11 +2095,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// MiniMax E run 26: score 478 (was 478): retail keeps the object index in EBX and pushes EBP and ESI before EDI, ours keeps the index in EDI and pushes EBP, ESI and EDI in the other order, so the prologue, the jump table and every case body differ; the actor/output acquisition and the length deficit remain.
 // score 478 (was 478): the frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
 // before its use and reuses EBX for the state pointer. The body is 2400 bytes against
 // retail's 2396.
+// Earlier: retail keeps the object index in EBX and pushes EBP and ESI before EDI, ours keeps the index in EDI and pushes EBP, ESI and EDI in the other order, so the prologue, the jump table and every case body differ; the actor/output acquisition and the length deficit remain.
 // Earlier 478 (was 478): Frame 0x1c agrees; actor/state registers and first point home still differ; eight scope trials restored.
 // Earlier: frame 28 agrees; actor/state registers and first point home still differ.
 // Short completion 531; iterator name 505; first point name 505; short countdown snapshots 505;
@@ -2167,6 +2167,12 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Original internal decisions, byte completion, iterator and every vector/call restored.
 // Complete actor-object/motion/position observations, seven subsets and case-owned position with both other
 // values: 629/624/645/617/637/667/674/653. Original complete executable source restored.
+// Round 469: Facing before pure displacement/all three planar aggregates/iterator object
+// field uniformly at uses in seven subsets, then all with facing aggregate: 492/620/621/491/492/620/621/513.
+// Isolated turning/animation/motion constructors and pairs, then turning/all with facing
+// aggregate: 591/506/506/612/600/514/512/513. Turning construction restores actor/state ownership and point +0x10
+// but regresses; constant-first distance/common result exit on turning/all graphs: 591/629/620/616.
+// Original complete body restored; actor/state ownership and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
