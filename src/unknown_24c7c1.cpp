@@ -616,6 +616,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
 // (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
 // block top / first 115/115; bool timer with the loop index at the block top 191.
+// Round 16 (m3 lane 17, fast; unchanged source 115 fast): `left` renamed to sort first 115 (same code: it
+// is a spill slot, so slot-name ordering does not reach it); `left` declared before `top` 115 (same); the
+// HUD state global read at each use 115 (same); the text buffer declared first 115 (same); `top` as a long
+// 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
+// tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
+// where retail starts a new group after origin (-0xd).
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

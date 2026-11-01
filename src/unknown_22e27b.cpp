@@ -262,6 +262,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // the three timing locals as one local struct (diagnostic) 206 (still scalar-replaced into EBX). On
 // the base: the declared current/following key pointers used for delta/offset/scale 225 (644 bytes),
 // with the fraction before the delta 225; identical switch cases merged in all four switches 209.
+// Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
+// next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
+// 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

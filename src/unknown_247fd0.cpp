@@ -206,6 +206,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 190 (878). Retail reloads arg_2 from its stack slot at every child-loop use (twice for the two list addresses);
 // the second list address, or every child-loop use, read through `&arg_2` 70/70 (copy-propagated, same code);
 // with field_10 first 133.
+// Round 16 (m3 lane 17, fast): the permuter (anneal, 600 s, 71 variants) found nothing below 70. Child
+// reciprocal from a named field_0c local 78; the 0x173ba0 mask as a named local 70 (same code); record
+// pointer through DATUM with field_10 last 70 (same code); reciprocal computed after the link call 80; child
+// rate computed into a local before the three child stores 102. Retail's link-call setup is 3 bytes longer
+// than ours (it reloads arg_2 for the second list address where ours reuses EAX); ours ends in two int3 pad
+// bytes, so the early exit's target (the first difference) is off.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
