@@ -1344,6 +1344,15 @@ bool function_0bfe60(dword const *flags, long bit);
 // the index as dword 53; the frame local dropped (the 64-bit counter read at the test and the modulo)
 // 125; the bitset row named before the test index 119 (459 bytes); the set computed after the count
 // 66; status and total declared at function scope 52.
+// Round 111 (lane 8, fast): the visibility-result outputs declared at function scope 52; the device as
+// `dword volatile **` on the kept form 52 (same code); a `total_count` local (`indices ? count :
+// g_51f40c.count`) 61; the slot as `g_51f40c.slots + index` 52; status declared before the slot tests
+// 138; the test index computed after the bitset row 117 (459 bytes).
+// Round 50 (lane 10, fast): the SDK begin-test call 158 again, and with the file built without /arch:SSE
+// (diagnostic, flags restored) 158: the SDK body (35 bytes, the same push) stays out of line either way, so the
+// flags are not what keeps retail's inline from ours; the slot read through a reference 52; the pixel count
+// as a long passed through a cast (0x20770's form) 52; the `continue` test after the bit-test block 139 (441
+// bytes); one `data` pointer shared by both draw calls 139.
 // @retail 0x20bb0
 void __stdcall function_20bb0(long player, dword mask, long const *indices, long count, bool query, visibility_draw_callback draw)
 {

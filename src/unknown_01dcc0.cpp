@@ -162,7 +162,7 @@ bool function_01dd60(long index, long *width, long *height)
 	return result;
 }
 
-// score 21 (was 21): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
+// score 24 (was 21): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
 // width/height/both unit subtraction before shifts 25/28/30; native packed words 30;
 // row-byte part 30; selected/masked new packed word 27/28; early dimensions 30.
 // width/height input registers and byte-gate normalization differ.
@@ -194,17 +194,20 @@ bool function_01dd60(long index, long *width, long *height)
 // expression with a named select 23; 0x1df20's three-statement packing with the select stored
 // directly and copied to the element 23 (width EDX, height ESI); that with an if/else store 40
 // (91 bytes); packing from the stored width/height fields 25. The shifts fold in every form.
+// Round 109: now the select before the stores with no width reference (index/width/height in ECX/ESI/EDI, plain
+// ret, retail's tail): 21 -> 24 positional, LCS-aligned 17 -> 10, and caller 0x335e0 matches with it. Left: the
+// folded shifts (`shl 0x14; and` for retail's `lea [esi*4]; shr 6; shl 0x18`, `lea [edi+0xfffff]; shl 0xc` for
+// `mov; shl 0xc; sub 0x1000`), which the notes above tie to retail building without global optimisation.
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
 	s_unknown_01dcc0 *e = &g_4b4b58[index];
-	dword const *width_reference = &width;
-	dword x = ((*width_reference * 4) / 64) << 24;
+	dword x = ((width * 4) / 64) << 24;
 	dword y = height << 12;
 	dword value = (x - 0x1000000) | (y - 0x1000) | (width - 1);
+	value = e->flag94 ? value : 0;
 	e->width = width;
 	e->height = height;
-	value *= (dword)(bool)e->flag94;
 	e->sub_header[4] = value;
 	e->elements[0][4] = value;
 }

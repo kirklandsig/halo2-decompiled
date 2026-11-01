@@ -289,6 +289,23 @@ static inline real interpolate_linear(real a, real b, real t)
 // (577 bytes, kept out of line by /O1), as `__forceinline` 96 (same code), with the fraction first 207;
 // the restart and disposal predicates both forceinline 96, with the fraction first 207; a 600 s permuter
 // run (54 tries) none below 96.
+// Round 50 (lane 10, fast): fraction first (t right after the elapsed clamp) with the expression restart 207 and
+// with the true-only restart 197 (645 bytes) again: retail's loop registers need the fraction first, and next time
+// then leaves its stack home for EBX unless one boundary block lacks the restart's `else` (the zero/dispose
+// register loses EBX). On fraction first with the expression restart: the dispose and restart tests as two
+// forced-inline predicate helpers 207 (same code); dispose declared first 207; `restart = false;` then `if (...)
+// restart = true;` in both blocks 193 (656 bytes, retail's allocation, the false store before the test), in one
+// block only 195/163; the if/else with the false arm first 207; restart cleared at the block top 217; a per-pass
+// restart reset with true-only blocks 209; dispose false at its declaration 207; the true-only restart in one block
+// only 189/162 (651 bytes); the restart break inside each block 207; the post-loop dispose test nested 207; the
+// per-pass dispose reset before the frame 207; identical loop-switch cases merged in block 1/block 2/both
+// 239/214/227.
+// Round 40 (lane 13, fast): fraction first + `animation.target` cast at each use + both loop restart tests
+// true-only (diagnostic) 197 at 645 bytes (every register and the [ebp-0xc] next time are retail's; only
+// the two `mov byte ptr [ebp-1], 0` stores are missing); on fraction first + target at each use with the
+// restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
+// break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
+// declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

@@ -195,6 +195,15 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 48: normalizer with one exit (distance zeroed in the tiny case) 92; with a result variable
 // 101; direction as an aggregate initializer 92; goal through a pointer 92; distance declared at
 // its assignment 92. A whole-file /Op build (diagnostic) makes the root a library call (far worse).
+// Round 108 (m3 lane 7, fast): the dot and cross tests through vector2f_products.h's existing dot_product2d
+// and cross_product2d (`dot(&other->direction, &direction) > 0`, `0 > cross(&other->direction,
+// &from->direction) * cross(&other->direction, &direction)`) give retail's whole dot/cross block (the loads
+// before the products, `mulss reg, reg` order and the dead `lea [from + 0x38]`) and retail's 630 bytes, but
+// without the early Y load every XMM register stays rotated: 150 (aligned 28/27 against 33/33); the cross
+// with `&search->nodes[parent].direction` 152 (634 bytes); the dot alone 147 (630); the cross alone 148 (632);
+// both with the normalizer through the file's scale helper 150. Compile-only, no normalizer form (scalar
+// direction locals, y read first, in-caller normalize, scale helper) loads y early: VC keeps y in its home and
+// folds it into `mulss inverse, [y]`.
 // Round 143 (lane 4, fast with the file, faithful 92): the node's direction copied field by field from the
 // struct 177 (608 bytes: the direction lives in registers, no store-back, and still no early Y load), from
 // the direction locals 177, with no direction locals 177; the direction from vector2d_from_points2d 91 (as
@@ -230,6 +239,15 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // the point afterwards 165; on round 122's helper form (106, re-measured: the preload is there, but y and
 // the inverse take XMM1/XMM0 where retail has XMM0/XMM1) y scaled before x 145, the tiny case tested
 // first 114. (--fast builds 0x2c39f0 at 175 for every form, the unchanged file too: a reduced-image caveat.)
+// Round 111 (lane 8, fast; one-file LTCG harness exact, entry through 0x2c41b0): lane 6's round-122 form
+// rebuilt 106 (634 bytes; left: y XMM1/inverse XMM0, retail XMM0/XMM1, and the second cross loads
+// other.x where retail multiplies y in place); on it: the sign test flipped (`cross(other, from) *
+// cross(direction, other) > 0`) 106; y read into a local in the normalizer (in the sum, before it, after
+// it, or x and y both) 106 (same code); y stored before x 145; normalize2d_fast through a cast 145; the
+// second factor as `-cross_product2d(&direction, &other->direction)` 115 (641 bytes); harness only: the
+// normalizer's products in other operand orders or as `*=` 106, the inverse renamed 106, `(1.0f /
+// distance)` at each use 152, the normalizer `static inline` 106, the dot's arguments swapped 106, the
+// reaches flag declared last 106, a `vector2f` direction 106.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

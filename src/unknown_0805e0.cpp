@@ -137,6 +137,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the found entry copied after the loop 43; a successor local with `break` 51; a guarded do-while with a successor 51.
 // Harness: early returns with a successor 49, `while (true)` with a successor test 52/57, the loop ended by
 // `index = NONE` in the found arm 43 (no hoist), every field through the table 69-71.
+// Round 28 (m3 lane 2, fast with 0x1a303b/0x2b393c): `while (!result && *iterator != NONE)` indexing through
+// the iterator 79 (102 bytes: the mask is hoisted into AL, but the loop reloads the iterator, which moves to
+// EBX with `ret`, both callers lose); the `!result` loop with `index = *iterator` re-read at the end 42 (iterator
+// in EBX, player on the stack, callers lose); `!result` loop with a successor local, result declared after the
+// index 37 (the listed form: player on the stack, ret 8, `!result` not threaded, mask an immediate); the same
+// with `index != NONE && !result` 53; a for loop stepping `index = *iterator` with `break` 51 (convention kept,
+// index and successor share ECX, mask an immediate).
 // Round 59 (fast; 0x1a303b/0x2b393c stayed matched): 1-8 unused locals at the top (diagnostic) 43 each;
 // result set before the copy 43; the entry pointer declared at function scope 43; `*iterator = index =
 // entry->next` without early returns 43; `g_4cf98c + index` 43; a two-use dword flags local 43 (all same code).
@@ -518,9 +525,10 @@ bool function_80660(void)
 struct s_profile_record;
 void function_1537f0(s_profile_record *record);
 
-// score 67 (was 67): frame 0x90 versus 0xa0: the three identity words fold away (retail stores them at
-// +0x10 and reads them back for the copy, with the source record right after at +0x1c); packed
-// source-byte carriers and initialization homes differ; signed array-end comparison recovered.
+// score 53 (was 67): frame 0x98 versus 0xa0: the three identity words fold away (retail stores them at
+// +0x10 and reads them back for the copy, with the source record right after at +0x1c); ours spills a
+// 350 countdown to +0x14 where retail compares the entry cursor with the array end (signed `jl`);
+// packed source-byte carriers and initialization homes differ.
 // Forward entry pointer 133; chained source resets 149; link-word fill 157; signed byte sentinel 149; unsigned entry index 133 (plain).
 // Existing record initializer with zero tail 130; short/word counters 133/133;
 // counters-before-version stores 132; separate link stores 133; initializer and store order 129 (plain).
@@ -626,6 +634,15 @@ void function_1537f0(s_profile_record *record);
 // entries walked with a signed index 45 (259 bytes, plain); not kept (a made-up struct that sets the stack homes;
 // no existing type pairs them). The record's field 0x40 then shares a register with the field 0x44 word and the
 // NONE constant lives in EBP, so the entry-tail clear is an LEA with two ECX stores.
+// Round 49 (lane 10): the entries walked with a pointer `for (entry = g_4cf98c; entry < g_4cf98c + 350;
+// entry++)` with the record's tail clear and 0xff sentinel kept 98 (292 bytes); the identity declared and
+// zeroed after the entry pointer 67; the existing 4-aligned s_player_properties as the record with the tail
+// clear dropped 78 (238 bytes), with an XUID identity zeroed after the record initializer 78 (238); the index
+// loop with the tail clear dropped 78 (238). Kept: the pointer walk with the tail clear and sentinel dropped
+// (the tail clear zeroed fields 0x7c-0x8f the inlined view copy never reads, and the sentinel re-stored the 0xff
+// the record initializer already leaves in field 0x7f) 53 (255 bytes, plain). On that: `entry !=
+// g_4cf98c + 350` 53, the record before the identity 53, an XUID identity 53, the identity `= { 0 }` 53. The
+// identity is still folded in every form.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -636,15 +653,12 @@ void function_7f930(void)
 	g_4cf97c = NONE;
 	g_4cf984 = NONE;
 	g_4cf988 = NONE;
-	for (long i = 0; i < 350; i++)
+	for (s_player_configuration_cache_entry *entry = g_4cf98c; entry < g_4cf98c + 350; entry++)
 	{
 		s_cached_player_identity identity;
 		memset(&identity, 0, sizeof(identity));
 		s_cached_player_source source;
 		function_1537f0((s_profile_record *)&source);
-		memset(source.unknown7c, 0, sizeof(source.unknown7c) + sizeof(source.field7f) + sizeof(source.unknown80));
-		source.field7f = 0xff;
-		s_player_configuration_cache_entry *entry = &g_4cf98c[i];
 		function_7f8b0((s_cached_player_view *)&entry->player, &identity, &source, NULL);
 		entry->next = entry->next_other = entry->unknown58 = entry->previous_other = NONE;
 		memset(&entry->flags, 0, sizeof(entry->flags) + sizeof(entry->unknown64));
@@ -1057,6 +1071,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // upper as `position < removed ? removed : position` 51; no `cache_full` flag (the removal calls guarded by
 // `removed != NONE`) 387 (1161 bytes); the plain entry alone, re-measured on this body, 370 (1162 bytes), with the
 // cmovle-shaped lower 370; the direction step as `change = 1; if (downward) change = -1;` 82.
+// Round 28 (m3 lane 2, fast with 0x80330/0x80490): on the current body, the count path assigning upper before
+// lower 50; the zero-initialized bounds declared above the full-cache test 49 (same code: their zero values are
+// threaded away, so they never interfere with the count and upper still shares its register); `cache_full`
+// kept with `removed` set to NONE and assigned inside the test 370 (1162 bytes); the flag declared before the
+// bounds 49; the shift test written `lower < upper` 49. Retail's upper takes ECX because the backward copy's
+// index `i = upper - 1` gets EAX (`lea eax, [ecx - 1]`); ours puts upper in EAX and decrements it in place.
 // Round 59 (fast): 1-8 unused locals at the top (diagnostic) 49 each. Round 149's plain entry rebuilt (cmovle lower,
 // explicit `>` arm, count path upper first with the flag cleared, flag set before the decrements) 54: only the
 // EDX/ESI load of the removed index and upper in EAX (coalesced with the count and the backward index) differ.

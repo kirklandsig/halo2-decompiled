@@ -964,6 +964,9 @@ real function_30bf0(vector3f *v);
 // optimal time as `sqrt(-root / two_a)` 236 (the SSE reciprocal stays); two_a written out at both divisions
 // with plain pointer reads 247 (ret 0x28, callers lost); C++ references to the two pointer parameters 232
 // (same code); `if (0.0f > gravity) gravity = 0.0f;` ahead of the vertical delta 247.
+// Round 189 (m3 lane 3, fast with the three matched callers): two_a from gravity 242 and two_a first with
+// `a = two_a * 0.5f` 230 (both lose every caller's convention); `two_a = a + a` 232 (the SSE reciprocal stays);
+// two_a before the discriminant base 238; delta.k computed with delta.i/j 233.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1775,6 +1778,11 @@ real function_17c900(short function_type, real input);
 // bytes); the wander amount as one nested ternary 348; the up pointer declared after the axis 348. Retail keeps the
 // index on the stack (re-read and shifted in the wander branch, its home then reused for the yaw) and the output in
 // EBX; the wobble path pops and writes the output itself.
+// Round 109 (lane 8, fast with 0xf8eb0/0xf86f0; aligned = difflib count 218): `to_target` declared before the
+// aim point 348; `point3f const *center` 348; the drift test as `distance > 0.0001f && flag` 354 (1471 bytes); the
+// up-vector pointer declared after `axis` 348; the lead block's speed through the existing magnitude3d 348 (LTCG
+// inlines it; identical code). The index EAX/output-stack convention (retail: index on the stack, re-read for
+// the salt, output in EBX) still sets every register from the first instruction.
 // Round 16 (m3 lane 17, fast): salt declared at entry and assigned in the wander branch 365 (1469 bytes), with
 // the output written at the three exits 382 (1480 bytes); to_target declared first 348 (same code); salt
 // products as `3 * salt` / `7 * salt` 348 (same code); the wander amount as one conditional expression 348

@@ -189,6 +189,16 @@ bool g_47f05b;
 // g_479880 stored before g_479890 36; `g_4798b4 += 1` 34 (same code); the buffer at `block +
 // sizeof(c_havok_fixed_memory)` 34 (same code); the pool placed through `block` too 40 (135 bytes); the
 // construction in a typed local published after the pool construction 38 (154 bytes).
+// Round 52 (lane 1, fast with 0x146b80/0x146e30/0x22c3e0/0x22c330): the size-only constructor (buffer at
+// `this + 1`) declared in the header and defined out of line in unknown_22c0a0.cpp, placed at g_479888, 35
+// (140 bytes); the size-only constructor on the fixed base, out of line, placed through `block` 35; that with
+// the abstract constructor also out of line 35 (an out-of-line definition inlined by LTCG drops the store as
+// the header one does); the refcount 1 as a member initializer 34; the abstract loop value as
+// `i < 3 ? 0 : NONE` 34 (same code).
+// Round 113 (lane 8, fast with 0x146b80/0x22c3e0 matched): `g_4798b4++` between the two constructions 38
+// (137 bytes); `g_479880 = true` alone after the first construction 39 (its store sinks to the join); the
+// pool through a typed local published after 34 (same code); the pool placed at `(byte *)g_479894 + 0x15040`
+// 44 (131 bytes, no reload at all); the pool address computed into `block` first 34 (same code).
 // @retail 0x146a20
 void function_146a20(void)
 {

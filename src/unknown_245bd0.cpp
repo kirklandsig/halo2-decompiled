@@ -347,6 +347,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
 // vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
 // file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
+// Round 28 (m3 lane 2, fast with 0x2461a0/0x245bd0/0x245d80): the sphere helper defined after this function
+// (prototype ahead) 57 (same code: the operand order is not parse order); the scale helper taking the vector
+// by value 397 (456 bytes, sphere helper outlined); `real scale;` declared first in the helper with the dot's
+// inputs swapped and the unit-z zeros stored separately 61 (every product still multiplies a copy of the scale,
+// so declaration order does not set it); length_sq3f(&d) with scale declared first 152; the difference copied
+// to the plane normal, then the existing vector3f_scale on the normal in place 397 (helper outlined).
+// The permuter cannot help here: it rewrites this function's body, and every difference is in the inlined helper.
 // Round 65 (lane 12, fast with 0x2461a0): the scale helper taking the vector by value 397 (456 bytes,
 // sphere helper outlined; 0x2461a0 84); the difference made in the plane's normal with the j,k,i sum
 // read from it and the scale in place 181 (693 bytes); the difference copied to the normal before the
@@ -369,6 +376,12 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
 // 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
 // existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
+// Round 49 (lane 10, fast): the depth test folded into the shape tests as `(...) && best_depth < depth` 57 (same
+// code); one difference component copied into a named scalar for the sum (0x2461a0's lever): j or k in the
+// j,k,i sum 57, i 61, j or k in an i,j,k or i,k,j sum 59; the sphere test as `distance_squared < r * r` with
+// length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
+// `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
+// the sphere helper 57 (no symbol-count rotation here).
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
