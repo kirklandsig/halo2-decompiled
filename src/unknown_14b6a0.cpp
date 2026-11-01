@@ -296,6 +296,10 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -1073,6 +1073,10 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 265: library response lower bound / negative-normal setter / response-velocity setter,
 // their pairs and all: 200/157/156/200/200/157/200; all with the existing sweep setter 200.
 // Original full body restored; quotient/query, selected homes and zero allocation remain.
+// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
+// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
+// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
+// homes, word loads and zero allocation remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
@@ -1283,6 +1287,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round I (MiniMax lane I, fast): its 42 came from dropping the function_119bc0 call and passing the flag
 // uninitialised (a behaviour change, not kept); with the call kept and the squared length summed as three
 // statements 92, as one expression 94. Original body restored.
+// Round 226: overlap-safe library copies at requested/output-basis/velocity masks 1-7:
+// 263/148/272/54/265/154/275; contiguous paired axes 314. Velocity-only memmove 54/1034 not kept:
+// retail copies inline, so the memmove call is one retail does not make. Original copy restored;
+// basis MOV/LEA, component loads and force publication remain.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {

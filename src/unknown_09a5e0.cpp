@@ -2206,6 +2206,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
