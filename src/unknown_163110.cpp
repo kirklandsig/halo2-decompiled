@@ -379,6 +379,10 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 103: the existing matrix normal rotation 28 (same code); on the top/bottom 6 form, normal pointers
+// or a named normal i 14 each, source/matrix/output formal ranking 6, the final x product folded into the
+// store, normal-first or x-first reassignment 6 each, final i through source 6, all distance normals through
+// source 560 (2825 bytes). Original helpers and body restored.
 // Round 37 (lane 13, one-file LTCG harness equal to the full build): x0 read through rect like the other three
 // corners 28 (kept: the identifier store and the rectangle loads now follow retail); on it the points local
 // dropped 28 (same code), the position pointer in the transform 40, a normal pointer in the error test 48,
@@ -603,6 +607,10 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // (dead copies of depth): before plane 2 with the pinned sum, 1-7 copies 36 each (only the x87 error tests
 // flip); before plane 0 on the dot3f form 58/91/75/50/48/52/51 for 1-7, with the per-plane orders
 // shifting: the canonical sum order is a temporary-numbering effect, so a match needs retail's numbering.
+// Round 276: All three transformed-normal results reused for publication and distance: direct/setter
+// publication, with/without all distance-product names 337/337/337/337; matrix-position field view on
+// those four graphs 620/620/611/611. All regress and shorten the body.
+// Original executable source restored; Original helper and body restored; frameless entry and diagnostic tests agree, plane-1 x-term and top/bottom distance/k-row scheduling remain.
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
@@ -898,6 +906,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Round 37 (lane 15, fast): that pointer used for all three plane-0 negations 251 (1867 bytes); the j/k-only
+// diagnostic re-measured 113 (the e4.i load stays after the copy: its gain is in the later classification
+// operands); plane 0's d negated before its normal 143; plane 1's negated vector computed before plane 0 426;
+// vector_e4 copied into a local vector3f before the normal copy and read from it in d 463 (1883 bytes, the copy
+// goes through integer registers to the frame); plane 1's negated vector declared at function scope 115 (same code).
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 119 135 130 242 246 135 127, first difference
+// always +0xbb (the e4.i load does not follow the temp count).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

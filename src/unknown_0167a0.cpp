@@ -1483,6 +1483,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // 6/MATCH; cases 12/13 written out[3] first with direct bodies 2/MATCH (case 13 left in source order), case 10
 // so 6, both 6; the bodies storing width last 5/MATCH (no reorder, but they zero xmm1). Diagnostics: dead
 // long/real temps 1-7 change nothing; case 18 with another value (no identical pair) does not reorder.
+// Round 279: Existing native four-vector persistent sample output, indexed/field consumers
+// with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
+// exact-only storage forms restored, including the temporary include; sampler and writers
+// unchanged. The mapped rescale word load remains.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

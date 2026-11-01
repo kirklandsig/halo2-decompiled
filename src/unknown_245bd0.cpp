@@ -386,6 +386,13 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // each except 6 (171, 669 bytes: a spill), so the temp count does not set these operand orders; the squared distance
 // through the existing accumulating helpers of src/unknown_2ba3e0.cpp (k, i, j / k, j, i statement sums through the
 // pointer) 150/152, each with the dot's inputs swapped and the unit-z zeros stored separately 150/152.
+// Round 37 (lane 15, fast with 0x2461a0/0x245bd0/0x245d80): ours multiplies copies of the scale for x and z
+// (retail multiplies the x and z differences in place, the helper's written order); the scale renamed
+// inverse_distance 57 and the difference renamed to_point 57 (names do not move the operand order); the sum
+// as `(real)(i * i) + (real)(k * k) + (real)(j * j)` 61; the sum through the array view
+// `d.n[0] * d.n[0] + d.n[2] * d.n[2] + d.n[1] * d.n[1]` 171 (669 bytes: differences and sum run j, k, i);
+// the sphere helper declared before this function and defined after it 57 (same code). Diagnostic (initialised
+// dead long temps at the top, k = 1..7): 57 57 57 57 57 171 57, the products never go in place.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

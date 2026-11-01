@@ -1860,6 +1860,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // (state == 1 as a request flag set again by the retry test, the getter, the identity copied into a
 // local XUID, an index scan only for type 5) 794 at 2942 bytes (aligned 289); the request flag alone
 // 730 (no flag byte appears; retail's `xor dl, dl` comes with the other parts).
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

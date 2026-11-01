@@ -902,6 +902,10 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
    list, except those given and those already on it */
 // score 81 (was 81): BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
 // only. Retail keeps the excluded-XUID
+// MiniMax R (11-01): no new form, no lower score; retail keeps the excluded-XUID cursor in EDI
+// and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
+// so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
+// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
 // cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
@@ -1459,6 +1463,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // score 117 (was 117): BLOCKED-BY 0x63d00. Retail keeps &player->xuid in ESI across 0x63d00 in the
 // clan-list loop (it treats 0x63d00 as clobbering EDX), so j takes EDI and the presence cursor spills to
 // [ebp-4], the friend count's earlier home; the early count homes follow from that.
+// MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
+// pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
+// the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
 // Earlier, 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization

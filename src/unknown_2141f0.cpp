@@ -216,6 +216,12 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Single-variable clamps `chunk = total - completed; if (...) chunk = limit;` with `chunk > limit` 38,
 // `limit <= chunk` 37 (retail's `cmp limit, chunk; jg` shape, registers still rotated: ours colours the limit
 // first) and `limit < chunk` 38.
+// Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
+// (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
+// after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
+// that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
+// chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
+// EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

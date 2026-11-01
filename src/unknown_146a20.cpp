@@ -211,6 +211,12 @@ bool g_47f05b;
 // /Ob1 for this file 34 (0x146b30 74), so the inlining mode does not keep the store. Retail's vtables fold (the
 // abstract and fixed vtables share the destructor 0x1470f0), so a polymorphic fixed base with no overrides would also
 // store 0x453760: the kept store may be that base's rather than the abstract's.
+// Round 19 (lane 17, fast with 0x146b80/0x146e30/0x22c3e0/0x146ac0/0x146de0/0x146da0/0x147090/0x2d6fc0):
+// the size-only constructor re-measured 35 (140 bytes, only the abstract vtable store missing). On it: a
+// constructor taking the whole block size (buffer `block_size - sizeof(*this)`) 35; the pool placed at
+// `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
+// struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
+// (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
 // @retail 0x146a20
 void function_146a20(void)
 {

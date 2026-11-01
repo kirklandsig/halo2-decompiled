@@ -782,6 +782,12 @@ struct s_device_machine_view
 // the zero store alone re-measured 117; the bits local `dword` without the `& 3` plus the zero store 122
 // (a full `movzx eax, word [esi+2]` and still the pushed ESI, so the conflict is not the 16-bit width);
 // `group->flags & 3` read directly without the word local 34.
+// Round 21 (lane 17; compile-only /FAs screen of the file reproduces the listing): on masks + the zero store
+// (122), a two-byte bitfield struct copy tested with `&&` 122, bitfields through a struct-pointer cast of the
+// field 122, a `word const *` to the group's flags 122, a `short` flags local 122, `register` on the group
+// pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
+// flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
+// spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

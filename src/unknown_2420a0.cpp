@@ -1286,6 +1286,11 @@ void c_game_engine_markers::v21(long object_index)
 // before the flag test 89 (aligned 24 against 30: the player pointer and team now precede the test, but
 // the team load stays folded into the player arithmetic where retail materializes the pointer and
 // loads the team after the engine-type compare), with the player before the absolute index 89.
+// Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
+// code); the absolute index computed inside the flag block 119; the effect team through the existing
+// function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
+// form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
+// kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {

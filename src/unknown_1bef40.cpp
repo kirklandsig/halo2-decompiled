@@ -63,6 +63,11 @@ short *function_e70b0(long unit_index, short *value);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// score 13 (was 13): the slot reference is still loaded late into EDX where retail loads
+// it early into ECX, and the inlined action lookup still scales the index in ECX where
+// retail scales it into EDX and reads the unit table late; reading the reference into a
+// named local before the actor's arithmetic moves the load but spills the actor pointer;
+// moving the barrier down to the reference's second use gives 89 and still loads it late
 // score 13 (was 13): the slot reference still loads into EDX after the actor's index
 // arithmetic, where retail loads it into ECX before it; reading the reference into a named
 // local before the actor's arithmetic (a bool or a copy) moves the load but costs the body.
@@ -142,6 +147,10 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
+// score 17 (was 17): the draw helper's seed store still precedes the delay's doubling
+// (retail doubles first) and the reset's zero fields are still stored before the NONE
+// fields; the reset's order is fixed in include/slot_handler.h and the draw helper in
+// include/unknown_0259d0.h, both outside this lane's files.
 // score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
 // unset reference into a one-use local; both are kept only with a match, so the helper call and the direct store are
 // back. The doubling as sample + sample stays (17, fast). The lane's tried forms:
