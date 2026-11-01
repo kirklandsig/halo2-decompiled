@@ -182,6 +182,10 @@ struct s_spawn_scenario_23aea0
 // function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
 // nested loops through a named source record pointer 123. No other retail function uses this
 // integer-offset store idiom, so no matched sibling shows its form.
+// Round 112 (m3 lane 7, fast): the table pointer stored before the tag read 105 (same code); the two scalar
+// defaults through g_502258[0]/[1] as dwords 142 (374 bytes); value0 by the dword array and value4/value8
+// through globals->types[type - 2] 105; `type = 2 + i * 6 + j` 105; the six records of a batch written out
+// (diagnostic) 105 (same code: VC's own unroll). Every form keeps the pointer induction.
 // @retail 0x23aea0
 void function_23aea0()
 {

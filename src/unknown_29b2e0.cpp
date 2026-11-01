@@ -60,7 +60,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 255 (was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
+// score 255 (was 255): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
 // where retail keeps them with the yaw at +0xc (local_11 at +0x10, the final pitch in the scale parameter's
 // home), the XMM numbering from the 1.0 constant on, the yaw clamp (retail clamps it in its stack home) and
 // the rotations' register and slot assignment differ.
@@ -199,6 +199,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 269: Independent yaw/pitch delta/limit/both 265/255/255; entry declarations 265/255/255;
 // per-axis scopes without/with entry declarations 255/255. Keep separate multi-use step limits,
 // plain 255; magnitude/yaw homes and XMM numbering remain. All other forms restored.
+// Round 112 (m3 lane 7, fast, 0x29b990 listed): the normalizer scaling all three by one reciprocal local
+// (`*=` or `local_1 * x`) 370/370 (1714 bytes; retail's 1.0 in XMM4 then, but X is preloaded and the sqrt
+// home moves to +0x14; 0x29b990 6); the reciprocal on the left for X only with Y/K scaled in place 370; the
+// epsilon test as `fabs(local_0) >= 0.0001f` 392 (0x29b990 42); the clamp helper as one conditional
+// expression 277 (1727 bytes). Compile-only screens (calls opaque, inlined angle helper copy) do not track
+// the real build here (the reciprocal form scored better there).
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
