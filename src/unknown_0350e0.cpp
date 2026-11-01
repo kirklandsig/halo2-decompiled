@@ -2217,7 +2217,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 147 (was 182; earlier 193, 324): PIN reevaluates the clamped expression as retail does (the target's
+// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2230,7 +2230,8 @@ real magnitude3d(vector3f const *v);
 // cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
 // interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
 // before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
-// Round 435: shared axis cross 147 (kept), staged axis cross 147; shared/staged rotation tangent 196;
+// Round 435: shared axis cross (cross3f(&first, &second, &axis)) 147, held 11-01: in the full LTCG build it makes
+// 0xc2d00 (unknown_0bffa0.cpp) lose its match (DIFF at +0x12e), so the axis stays written out; staged axis cross 147; shared/staged rotation tangent 196;
 // both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
 // axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
 // @retail 0x3e5a0
@@ -2252,7 +2253,9 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     {
         real angle = (real)(acos(dot) * step);
         vector3f axis;
-        cross3f(&first, &second, &axis);
+        axis.i = second.k * first.j - second.j * first.k;
+        axis.j = first.k * second.i - second.k * first.i;
+        axis.k = second.j * first.i - first.j * second.i;
         function_30bf0(&axis);
         real sine = (real)sin(angle), cosine = (real)cos(angle);
         real projection = dot3f(&axis, &first) * (1.0f - cosine);
