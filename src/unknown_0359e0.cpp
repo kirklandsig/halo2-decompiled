@@ -112,6 +112,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 461: shared doubled shift count long/short 88/100; both remaining coordinate parts
 // long, direct/long/short count 82/88/100; native short parts 87/94/91. Original
 // arithmetic, coordinate captures and full body restored; count homes and promotions remain.
+// Round 104 (lane 8, fast): the tail tests without `else` 111 (251 bytes); a named high mask (used
+// twice) 82 (identical); the height logarithm first 100 (0x136140 lost); the y shift folded into each
+// branch's lookup 82 (identical); the branch test on `common_bits <= 6` 82 (identical).
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

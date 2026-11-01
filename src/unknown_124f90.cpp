@@ -1230,6 +1230,13 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
+// Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
+// this round: the entry still loads the class table into EDI where retail loads it into
+// EDX, and the fade product is still multiplied by the fade-out time before the inverse, so the elapsed
+// difference keeps XMM2 where retail keeps XMM3 and every use of it differs; a named local for the scaled
+// product, a second local for the scaled-out product, a local for the elapsed-minus-hold difference and a
+// local for the whole product all compile to the same code.
 // score 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // lives in its own stack home from entry, each sum is stored there and the result is returned from it, at
 // retail's 678 bytes. Left: the entry (retail loads g_502118 first and pushes the unextended class index),
@@ -1298,6 +1305,8 @@ long function_2197f0(real gain);
 // stays XMM2, retail XMM3); a fade_out local for the tests and the product 141 (670 bytes); the time sum product-first
 // 137, `inverse * (elapsed - hold) * fade_out` 137 (same code); `(elapsed - hold) * (inverse * fade_out)` 172; the
 // reciprocal computed before the fade-out tests 187 (656 bytes).
+// N round 257: Native real/aggregate ducking gains and endpoints, real/aggregate returns, expression/accumulator 322/322/322/322/198/198/198/198.
+// Original value types, helper and complete body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2140,7 +2149,7 @@ void sound_update_locations(void)
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
-// score 17 (was 17): retail adds the clamped unknown18 step through a copy
+// score 14 (was 17): retail adds the clamped unknown18 step through a copy
 // register and adds the clamped unknown14 step in place; ours does the
 // opposite, so the two sites trade xmm1 and xmm2.
 // Round 29: target-first helper on the first three/four clamps 33/33; forceinline 33;
@@ -2164,6 +2173,9 @@ void sound_update_locations(void)
 // local: best 14 (first loop's step without the local, third as `+=`, fourth through the helper: third
 // in place, fourth a copy); retail's third/fourth forms appear only with the first two adds or the
 // fade-out add flipped and the 1.0 no longer hoisted (122).
+// Round 34 (lane 13, real check): kept the round-33 screen's best: the first loop's step without its
+// transition-time local, the unknown18 add as `+=` and the unknown14 add through the helper, 17 -> 14
+// (left: the unknown18 add is in place and the unknown14 add goes through a copy, retail the reverse).
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -2194,8 +2206,8 @@ void sound_environments_update(s_sound_environment const *requests)
 			}
 			if (slot != NONE)
 			{
-				real transition_time = request->transition_time > 0.001f ? request->transition_time : 0.001f;
-				real step = SOUND_SYSTEM->elapsed_time / transition_time;
+				real step = SOUND_SYSTEM->elapsed_time /
+					(request->transition_time > 0.001f ? request->transition_time : 0.001f);
 				s_sound_environment *environment = &SOUND_SYSTEM->environments[slot];
 
 				if (0.001f >= environment->fade)
@@ -2210,8 +2222,8 @@ void sound_environments_update(s_sound_environment const *requests)
 					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, 0.0f - maximum, maximum);
 					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, 0.0f - maximum, maximum);
 				}
-				approach_126660(&environment->unknown18, request->unknown18 - environment->unknown18, 0.0f - step, step);
-				environment->unknown14 += PIN_126660(request->unknown14 - environment->unknown14, 0.0f - step, step);
+				environment->unknown18 += PIN_126660(request->unknown18 - environment->unknown18, 0.0f - step, step);
+				approach_126660(&environment->unknown14, request->unknown14 - environment->unknown14, 0.0f - step, step);
 				environment->fade += PIN_126660(1.0f - environment->fade, 0.0f - step, step);
 				environment->transition_time = request->transition_time;
 				environment->index = request->index;

@@ -916,6 +916,10 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // declared first here and function_1c2690 before function_1c27a0 there 1; function_1d1540 declared
 // before function_b8840 in src/bipeds.cpp 1; function_278f00 before function_146bf0 in
 // src/unknown_0b8ca0.cpp 1; function_278f00 before function_1c51c0 in src/unknown_1c39c0.cpp 1.
+// Round 61: attempt declared before force 3; callee declaration at the TU top 1; consistent inline
+// declaration 1; byte callee result 1; the other caller's function_146da0 declaration first 1;
+// callee declared before function_278f00/function_146bf0 1; function_146bf0/callee/function_278f00
+// order 1; callee after both 1. Original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {

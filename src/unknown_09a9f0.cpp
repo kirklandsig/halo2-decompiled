@@ -445,6 +445,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // `result && value` 77; bool result declared after the creation call 80 (158); a header-pointer local
 // for the test on the long result 49 (same code); the flagged arm first on the long result 52. The EBP
 // cache of the last argument follows the shared header address (fewer live registers at the test).
+// Round 12 (lane 17, fast): `entity->object_index = object_index = v29(...)` (one chained value) on the long
+// result 49, on the early bool result 77; the flag tested as `(flags >> 4) & 1` on the long/early bool result
+// 49/77 (same code); the chained form with the early bool and the store and attach through the existing
+// 0xbb780 77 (still one shared header address under the link's inline).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -761,6 +765,11 @@ bool c_projectile_type::v8(long a, long b)
 // (word)index breaks. Also tried with the mask: bit tests as (flags >> 10) & 1
 // (12), result declared first (12), the compares' operands swapped (17), a
 // group_index local (12); the base class v27 call without the copy (52).
+// Round 34 (LTCG harness, base 1 = 5): with the mask, the volatile copy, object and flags in the five
+// other declaration orders 12/51/12/51/51; a plain long or dword index 12/12; the index field read at
+// each use 12 (also with b direct 12); the group value through an inline value getter, read twice,
+// 14 (b direct 14); a `real const &` for the two power reads 12 (b direct 12); permuter (600 s, 53
+// tries) none better.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

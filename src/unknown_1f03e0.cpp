@@ -490,6 +490,12 @@ PRIVATE inline void contact_cross(vector3f const *a, vector3f const *b, vector3f
 // (aligned 70); the selected arms writing a `support` local copied to out once inside the selected
 // branch 190 (1000 bytes), with the two copies 251 (also with `support` local to that branch or through
 // cross3f_staged, 251 each).
+// Round 120 (m3 lane 5): our two selected arms already store j/k from the same registers; what stops
+// the tail merge is where the g_4687b0 reload lands (ours right after the normal pointer's last use,
+// retail after the out->i store). `b` declared before `a` 228 (1002 bytes); 0x1f087b as plain
+// `inline` 122 (same code; 0x1f0870 590); 0x1f087b storing each component directly i, j, k 121
+// (0x1f0870 591 at 3047 bytes; each arm then computes and stores in turn), directly k, j, i 166
+// (975 bytes); the component pointer without the index local 172 (972 bytes). Original body restored.
 // @retail 0x1f2a80
 void function_1f2a80(byte const *request, bool moving,
     vector3f const *desired, long const *indices, long count, vector3f *out, vector3f const *velocity)
@@ -1582,6 +1588,14 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // passes it in ECX); shape_dot as a macro 230; the five accept assignments written in each of the three arms 361.
 // Round 248: complete native request/result/tuning-field identities, four double-magnitude
 // forms 230 each; four real-magnitude counterparts 233 each. Original body and types restored.
+// Round 120 (m3 lane 5): a per-arm `better` result tested once after the arms 240 (same layout: the
+// flag/no-flag arms stay inline and still share one height test); unknown58/selected/highest as one
+// chained NONE store 284; the airborne test as `(flags & 8) || (flags & 0x10)` 312 (that block is then
+// retail's branchy sequence exactly, but the component moves from EBX to ESI), with the movement as
+// `real` 311, with the contact list read at each use 232 (1072 bytes, component back in EBX; the NONE
+// locals still store after the count test); the flying test's planar dot i-first or with each
+// product's operands swapped 230/230 (same code: the speed dot still computes j before k).
+// Diagnostic, not kept: 0x1f1df0 out of line at both calls 301 (1005 bytes). Original body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

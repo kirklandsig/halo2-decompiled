@@ -537,6 +537,16 @@ done:
 // buffer 57 (171 bytes); the name declared before the tag with a named buffer 54 (173 bytes); the name
 // first, NONE guard and repeated copy 68 (189 bytes); tag first, repeated copy and early goto 44 (178
 // bytes); numeric order, NONE guard, repeated copy, early goto and a named buffer 72 (189 bytes).
+// Round 41 (lane 11, fast): the natural one-copy form again 54 (173 bytes; `mov ebx, 0x55c6e4` placed
+// right after the globals test, ahead of its `je`, so it dominates both uses; the selector then lands
+// in ECX and the tag load after the range compare); on it a NONE-defaulting switch with the translator
+// under `if (name_id != NONE)` and one copy 54 (173 bytes), the tag read before the variant call 57 (171
+// bytes); the tag (or the tag, variant and name) declared at function scope 54/54 (same code). Matched
+// parse_leader caches its buffer in ESI only because its first copy needs it there.
+// Round 119 (fast, on the 32 form): the name declared before the variant 32; the selector read into a local
+// before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
+// the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
+// its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

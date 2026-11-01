@@ -1020,6 +1020,11 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // destination local 195, `identities[count++]` 40 (retail's setup, the copy's registers swapped); the destination
 // set before the memset 216; the destination inside the branch with the count first/last 203/216; the count
 // after the pointer step 17.
+// Round 43 (lane 10): `identities[count]` with the increment after the copy gives retail's copy order
+// and IV setup but flips the colouring (state EBX, current ESI, count spilled) 195; with it: count
+// declared first 195, `joining` declared before `current` 199, `&identities[count]` 195, `identities +
+// count` 195, a 12-byte struct copy into `[count++]` 195; the element pointer `identities[count++]` named
+// before the copy 40 (as the plain post-increment form).
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

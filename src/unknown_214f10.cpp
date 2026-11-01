@@ -200,6 +200,12 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
 // code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
 // char-cast write and byte/bool-cast reads all forward the stored byte too.
+// Round 22 (m3 lane 2, fast): `_ReadWriteBarrier()` between the success store and its test gives retail's store
+// and memory re-test, but the array element then reloads after it and the handle stays in EAX without the xor:
+// on the long flow branching on success 50; `success = handle != INVALID` 50; branching on the long 42 (same
+// code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
+// 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
+// the element or the copy 49/50/50/49.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
