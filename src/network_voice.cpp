@@ -3121,6 +3121,9 @@ struct s_voice_route_choice
 // Round 462: Consumed next-ordinal choice pointer/reference before headset, original/reused talker
 // mask 1075/1084; after headset 1079/1088; reference forms 1075/1084/1079/1088. All suppress
 // four-way expansion; original body restored.
+// Round 267: cleared-low-bit routed-mode membership with choice-receiver/branch-radio/mode-observation
+// masks 0..7: 385/384/429/456/377/386/418/457. Mode-observation plus branch-radio forms lose both callers;
+// original observations, bitwise radio and full body restored; entry/cursor allocation remains.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

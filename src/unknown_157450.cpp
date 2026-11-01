@@ -5548,6 +5548,9 @@ void __stdcall function_d6bc0(long object_index);
 // 144; modifier cases (3, 1, 2) 144; modifier cases (1, 3, 2), reversed scheduling cases 144;
 // modifier cases (2, 1, 3), reversed scheduling cases 144; modifier cases (2, 3, 1), reversed
 // scheduling cases 144; modifier cases (3, 1, 2), reversed scheduling cases 144.
+// Round 266: eight dependency-safe initial tag/preset/rate/scenario declaration orders
+// 233/231/231/233/233/231/231/231. Original input observations and full body restored;
+// frame 0x14/0x18, independent timer spill and entry-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

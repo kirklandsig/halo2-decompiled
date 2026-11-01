@@ -1065,6 +1065,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // q * v code (compile-only screen). Magnitude through length_sq3f 310; the tail test through
 // length_sq3f 156 and dot3f 156; the effect data as the file's typed damage-effect record 156; the
 // parameter-address statement removed 156 (kept).
+// Round 265: library response lower bound / negative-normal setter / response-velocity setter,
+// their pairs and all: 200/157/156/200/200/157/200; all with the existing sweep setter 200.
+// Original full body restored; quotient/query, selected homes and zero allocation remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

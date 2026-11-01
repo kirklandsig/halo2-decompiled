@@ -634,6 +634,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // 276's graph); on the both-arms graph case 0 edge points as struct copies then `z +=`/`-=` 455 (2668
 // bytes), second.z first 549, both z last 407, `half_width + z` 407; second point first in case 0
 // alone 450.
+// Round 261: Complete geometry position via mutable/readonly native copy, mutable/readonly aggregate,
+// native assignment, existing setter, memcpy, y-x-z stores: 615/615/602/602/615/591/615/602. Match-
+// only forms all restored; frame and geometry/color homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

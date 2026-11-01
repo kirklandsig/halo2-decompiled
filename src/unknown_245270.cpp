@@ -278,7 +278,7 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 209 (was 203): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
 // retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
 // source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
 // home and the side bytes still differ.
@@ -485,6 +485,9 @@ void function_245400(s_source_245400 const *source, long index,
 // pointer 209/209/209 (source in ECX, 0x245aa0 MATCH each; the block-top read kept); just before the edge
 // vector 203 (EDX, 0x245aa0 3). (index, matrix, source, ...) with the entry read 209 (0x245aa0 16, the
 // element loaded through EDX); the old order with the entry read 209 (0x245aa0 16).
+// Round 259: complete first/second/both material-code reads at every use, with captured/live
+// table, 237/208/209/208/207/222; both code observations with native signed low-word
+// material field and captured/live table 209/222. Two-point best rejected; original restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

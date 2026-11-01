@@ -247,6 +247,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // squares 327 fast (1.0 in XMM6 as retail, first difference +0x8b, direction homes swap) but 374 plain (1894 bytes);
 // named i/j products stored after the k row 339; `opposite.k = 0` after the magnitude 344. Compile-only: no row
 // order, operand order, division, pointer or reciprocal placement gives retail's load-first j row.
+// Round 263: Direction/angle library copies and their pair tie fast control 336; sample library clamp with
+// none/either/both copies scores 421; complete graph with the shared accumulator library clamp 1040.
+// Original copies, clamps, angle observations and full body restored; full score 324, entry ESI save and
+// constant/accumulation allocation remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

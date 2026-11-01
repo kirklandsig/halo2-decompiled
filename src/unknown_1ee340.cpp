@@ -287,6 +287,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 462: One complete ray value with direct native start versus duplicate start, native/library
 // copy before/after origin: 248 in all eight forms, 1001/1001 bytes but frame 0x98 versus 0x90.
 // Original input observations, separate start and complete body restored.
+// Round 267: Native producer order (O origin, D direction, S start, A/B first/second edge):
+// OBADS/OBDAS/OBDSA/ODBAS/ODBSA/DOBAS/DOBSA/OADBS 192/192/191/191/191/191/191/193.
+// One-point forms restored with every original producer; frame 0x84 and origin/edge homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

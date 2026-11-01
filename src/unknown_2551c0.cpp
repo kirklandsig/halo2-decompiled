@@ -603,14 +603,14 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 	return local_0;
 }
 
-// score 90 (was 141): the object-plus-radius sum is written at both of its uses, the timing
+// score 89 (was 89): the object-plus-radius sum is written at both of its uses, the timing
 // default is a ternary, and the heading vector is declared ahead of the object index; the frame is
 // 0x54 and the length matches retail's. Still differs in the 0x110ab0 argument register (ECX where
 // retail uses EAX) and the scratch-register rotation after it, the sum's operand order (retail
 // adds the field first), the length and projection stack slots (retail's are four bytes higher),
 // the object lookup against the vector copies, and the timing call's argument loads and the
 // request stores.
-// score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
+// Earlier score 141 (was 141): frame 0x58 versus 0x54, first-length/radius homes and unit-call scratch allocation remain.
 // Earlier: frame 0x58 versus 0x54 and first-length/radius homes remain; retail keeps
 // the radius in the argument home and adds the object size only after the projection test.
 // Fallback timing initialized before query 200; later heading vector 219; later object lookup 223;
@@ -696,6 +696,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 450: live target identity 141; target object resolution 239; both 240; actor
 // resolution alone/with identity/with object/all 277/277/308/313 (record expansions exact-only);
 // all lateral projection products named 143. Original observations and body restored.
+// Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
+// 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
+// Original output declarations restored; unit-argument and first-length/projection homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

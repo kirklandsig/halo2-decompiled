@@ -689,6 +689,7 @@ static __forceinline long real_to_long(real value);
 // score 384 (was 384): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // Earlier (384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return
 // local_2;` (and the same with an if/else setting the flag) lands it where retail does, but arg_0 then takes
@@ -802,6 +803,9 @@ static __forceinline long real_to_long(real value);
 // actor 511 (1912 bytes); a redundant `local_2 = true` in the then-arm (diagnostic) 530. On the original form:
 // the last 0x1a9e00 dispatch moved after the if and guarded by `local_2 &&` 406 (the exit stays last); the
 // result declared before the slot view 384 (identical).
+// Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
+// their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
+// Original result, scopes, input/output query aliases, arithmetic and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

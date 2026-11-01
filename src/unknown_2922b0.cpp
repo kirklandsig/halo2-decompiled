@@ -199,6 +199,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 457: native second-rotation result/two distinct rotation results, original/early
 // minimum, original/staged rotation cross: 628/642/634/648/628/642/634/648.
 // One-point best rejected; original complete body and all in-place snapshots restored.
+// Round 259: all six cross-product parts named before subtraction, paired axis schedules
+// ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
+// helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -118,7 +118,7 @@ static inline void quaternion_transform_vector(
 }
 
 /* the rotation that takes one unit vector to another */
-// score 200 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// score 200 (was 200): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // Round 32 (second pass): retail's frame is 0x24 and its quaternion sits at [esp+0x24..0x34],
 // the same absolute homes as ours, but retail's cosine half is the frame bottom local [esp+0x10] and its sine half
@@ -127,13 +127,13 @@ static inline void quaternion_transform_vector(
 // home, but our frame then shrinks to 0x18 and the transform spills one slot instead of retail's three); the axis
 // components as named locals 282 and 325; a result vector in the transform helper 367 (frame grows, code grows).
 // Frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
-// score 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
+// Earlier 237 (was 237): Round 32: retail's frame is 0x24 against our 0x1c; retail keeps the clamped cosine and then
 // the sine half in the matrix parameter's home slot ([esp+0x38]) and the cosine half at the bottom local
 // ([esp+0x10]), while ours keeps both halves in the two-member struct at [esp+0x14]/[esp+0x18]; retail holds the
 // quaternion in xmm2/xmm1/xmm0 (i/j/k) where ours uses k/i/j. Tried: cross products with the vector operand first
 // 237 (identical - VC commutes the products); the axis components as named locals 344; the scale before the
 // crosses 325.
-// score 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
+// Earlier 237 (was 237): Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Frame 0x1c versus 0x24 and quaternion/cross spill overlap remain.
 // Lane 6 r85: helper with `s` computed first 302 (s and the doubled scalar hoisted above the matrix copy,
 // the doubled scalar spilled twice as retail, frame 0x20, constants one xmm lower); with vector-first
@@ -218,6 +218,15 @@ static inline void quaternion_transform_vector(
 // 0..7 237/291/281/293/200/267/265/252. Staged axis plus real scale kept: 200 plain,
 // 1321/1317 bytes. Five further coefficient orders 256/205/205/257/260; scalar before
 // cross/ratio/scale 310/200/200. Frame and quaternion/cross spill homes remain.
+// Round 258: isolated quaternion scalar observation with six coefficient schedules 246/265/257/249/272/269;
+// native scalar crosses on dot/w2/s and s/dot/w2 276/282. Original helper and body restored;
+// frame 0x1c versus 0x24 and quaternion/cross spill sharing remain.
+// Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
+// score 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
+// frame 0x1c/0x24 and quaternion/cross spill sharing remain.
+// Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
+// with written/direct/staged cross 246/243/254; independent halves with direct/staged/staged-dot
+// 208/209/250. Frames remain 0x1c or shrink to 0x18; original helper and half storage restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -768,7 +777,7 @@ void function_143250(
 	}
 }
 
-// score 1766 (was 1781): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
+// score 1766 (was 1766): Frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes remain.
 // Earlier: frame 0x314 versus retail 0x300; rotation admission and basis/matrix homes differ.
 // Earlier: full frame 0x300 agrees; rotation input and basis/matrix homes remain.
 // Frame pointer 3182; separate adjacent basis pairs [0,1] 2278, [2,3] 2320,
@@ -845,6 +854,9 @@ void function_143250(
 // Round 255: producer-ready retained columns 1/5, 2/5, 3/5, 4/5, 5/6, 1/4/5, 2/4/5,
 // 4/5/6 score 1772/1768/1768/1772/1771/1802/1801/1783. Original publication graph restored;
 // frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 263: Immutable first-assignment intermediates in all seven band subsets tie 1766 at 10773 bytes;
+// complete immutable graph without the mixed workspace 2229 at 10304 bytes. Original scalar declarations
+// and inherited workspace restored; frame, input admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

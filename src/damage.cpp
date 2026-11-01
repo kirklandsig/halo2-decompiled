@@ -1524,7 +1524,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
-// score 96 (was 179): what is left is register choice and the two unmatched callees' conventions. Retail keeps the
+// score 87 (was 96): accumulator/flag register homes and both unmatched callee conventions remain.
+// Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
 // accumulator pointer in ecx (reusing it for the 0xda110 call's last argument) and the exclusive-flag value in eax, ours
 // the reverse; the permutation pointer is loaded as `edi = permutations; movss [edi + eax + 8]; add edi, eax` where ours
 // uses a lea; 0xda110 takes its first argument in eax and 0xd9d60 its flag in al, which their own unmatched bodies decide
@@ -1536,6 +1537,9 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // diamond and reloads flags), no `region` local (165: the regions array is reloaded every iteration), `region` or `state`
 // declared first (186, 183), a `permutations` local or `permutation += i` (188), `pending ^= (pending ^ i) & 7` and its
 // word-cast variants (110).
+// Round 268: permutation bound before first field test 87 (kept); pending word 96; both 87;
+// canonical exclusive bool 104; permutation/exclusive 96; pending/exclusive 104; all 96;
+// all with permutation before destroyed-bit admission 174. Plain whole-image check confirms 87.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -1548,10 +1552,11 @@ void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_o
 	{
 		if (state->destroyed_permutations & (1 << i))
 			continue;
-		if (region->permutations[i].unknown08 != 0.0f)
-			continue;
 
 		s_damage_info_permutation *permutation = &region->permutations[i];
+
+		if (permutation->unknown08 != 0.0f)
+			continue;
 
 		if (permutation->skip_chance != 0.0f &&
 			permutation->skip_chance > (real)random_next(&g_4e7408->unknown0) * (1.f / 65535.f))
@@ -2038,7 +2043,7 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 
 /* starts a destroyed permutation's effect: attached to the object, or at
    the marker with the object's velocity */
-// score 69 (was 81): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
+// score 69 (was 69): retail takes the flag in al, the marker name in ecx and the object index in edx, with two stack
 // arguments (`ret 8`); the parameter order marker, object, flag, effect, owner is the one that gives that assignment
 // (the other orders put the flag in cl or dl, 81), but only while fewer callers pass it. With the calls of 0xdaaa0
 // and 0xda110 both present (with 0xdb760's), the flag stays on the stack (`mov al, [esp + 4]`, `ret 0xc`, 69); with
@@ -2048,6 +2053,8 @@ void function_176330(point3f const *point, s_effect_marker *markers);
 // Tried (all 69): the flag as long or byte, the owner cast hoisted to a local, the flag computed into a local bool or
 // as `!= 0` at the call sites, the marker branch first, the function moved before 0xdae60, the flag last or second.
 // @coldspear's permuter (#104, 2026-10-30): 66 -> 52 needs a volatile local pointer; its reorders alone gain nothing.
+// Round 268: entry output declarations / attached-path early return / persistent selected
+// marker, all seven subsets 69; native output role names 69. Original body restored.
 // @retail 0xd9d60
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner)
@@ -3369,7 +3376,7 @@ void function_d87e0(long list_index, bool can_take_damage)
 
 /* how many of the model markers of a name an object and its attached
    children are missing */
-// score 46 (was 47): the walk and the first marker test match. What differs is the marker loop head: retail loads
+// score 46 (was 46): the walk and the first marker test match. What differs is the marker loop head: retail loads
 // the marker array (+0x6c), then marker_name (a separate `mov ecx,[esp+0x94]`), then `add eax,esi; mov eax,[eax]; cmp eax,ecx`;
 // ours folds both into `mov eax,[esi+ecx]; cmp eax,[esp+0x94]`, so every instruction of the loop after that shifts.
 // Tried (all still 46): operand order of the name test, passing marker_name instead of name to 0xb8d30, the array
@@ -3377,6 +3384,8 @@ void function_d87e0(long list_index, bool can_take_damage)
 // view of the markers.
 // @coldspear's permuter (#104, 2026-10-30): 46 -> 31 only by changing an offset and swapping 0xb8d30's arguments at one
 // call (not kept).
+// Round 268: marker output at function/object/model/marker-loop scope, short or long missing
+// counter, all eight 46 at 332 bytes. Original scope and counter restored.
 // @retail 0xd88f0
 short __stdcall function_d88f0(long object_index, long marker_name)
 {

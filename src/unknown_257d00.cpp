@@ -1700,6 +1700,9 @@ void function_b7360(long object_index);
 // Round 322: Coupled movement-query publication with positive/negative success-or-fallback admission, bool/byte/short/long: 539/531/533/534 each. Original stores, returns, dispatch and body restored; entry actor/output carriers and length deficit remain.
 // Typed-array actor/command/both acquisitions, original/early actor-object observation, then both acquisition
 // orders: 471/471/471/470/470/470/477/478. Original complete executable source restored.
+// Round 260: Bounded notification bitset with entry/admitted short/long selector: mask shifts
+// 543/559/539/552, bit shifts 542/555/542/549. Original membership, selector observations, cases and
+// full body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

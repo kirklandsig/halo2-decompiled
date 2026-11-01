@@ -1404,6 +1404,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 252: Positive load decision byte/short/word/long at admission and selection 41/56/56/52/41/56/56/52.
 // Original complete executable source restored; Iterator/candidate scaling, leave-request registers and seat
 // loads across clearing remain.
+// Round 267: Seeded while/for, condition-declared actor, for-declared actor: 41/274/41/274;
+// the same four with collection-only iterator scope 41/274/41/274. Original traversal and iterator
+// lifetime restored; handle/candidate scaling and late request/seat scheduling remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2592,6 +2595,9 @@ struct s_scenario_scripting_view
 // Round 252: Native candidate/actor/displacement library-copy boundaries, seven memcpy subsets then complete
 // memmove 102/100/130/157/189/186/216/191. Original complete executable source restored; Actor/set/counter
 // homes and delayed scripting-data observation remain.
+// Round 266: native-array differences at direct/resolved/both branches, each with original/loop
+// short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
+// Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

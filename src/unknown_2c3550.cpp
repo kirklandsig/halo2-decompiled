@@ -217,6 +217,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // cross by name 149 (630 bytes, the preload is lost); with the normalizer's distance zeroed in the then-arm 114.
 // Compile-only screen: the preload appears only when y is read through the helpers' pointers after the
 // subtraction helper; product orders, store orders, sum order and the helpers' argument orders change nothing.
+// Round 258: Both captured normalized components used for native direction publication, y/x or
+// x/y capture order and publication after value08/position/distance/parent: 177/177/177/177/177/177/177/177.
+// Original native copy, captures and body restored; early Y preload and XMM allocation remain.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -649,7 +652,7 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
 // constant, and the path pointer and the obstacle, search and step homes differ.
-// score 675 (was 675): the frame 0x1f88 and the length agree, but retail keeps the success result
+// Earlier: the frame 0x1f88 and the length agree, but retail keeps the success result
 // in a stack byte where ours keeps a dword, loads the source radius before the 0.2f constant, and
 // the path pointer and the obstacle, search and step homes differ.
 // Round 134: retail's result is a stack byte (ebx = pathfinding, then NONE): bool result 757; radius as
@@ -714,6 +717,8 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 754, 748, 773, 675, 754, 768, 773, 786. Original executable source restored.
 // T47: Input-step cursor / forward inserted-step cursor / repeated blocking-segment receiver
 // subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
+// Round 260: Six direction/previous-direction/world-start declaration schedules 675/675/675/675/675/675;
+// reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

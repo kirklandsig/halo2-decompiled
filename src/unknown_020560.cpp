@@ -870,6 +870,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Singleton/multi-record shared table scope 589 (kept, plain; 2127/2122 bytes).
 // Round 248: pointer-end scans with direct ordinals, pointer/ordinal exclusions and shared
 // table ends 736/723/713/737/679/693/735/850; all original traversals restored.
+// Round 261: Coherent interpolation inline declaration, alone/with fraction-provider inline, each with
+// original/unsigned selected ordinals/zero-default fraction/both result forms: 608 each (2145/2122
+// bytes). All declarations and original body restored; count/selection/fraction homes and frame
+// remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

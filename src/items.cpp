@@ -617,6 +617,9 @@ struct s_item_collision_bsp
 // Round 252: Spin/axis/final-output lexical name families in all seven subsets, then all with contact-
 // position naming 211/211/211/211/211/211/211/211. Original complete executable source restored; Protected
 // plane-index width, plane joins and pending spin-k homes remain.
+// Round 266: untransformed plane copies dijk/kjid/kijd/jikd/ikjd/jkid/dkij/kdji
+// 211/210/211/211/210/209/211/210. Two-point best gain rejected; original copies and
+// complete body restored. Protected width, plane-join and pending spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1113,6 +1116,9 @@ struct s_item_flags_view_10b850
 // Round 252: Native accumulated-vector return with pointer/reference/value accumulator and additive inputs
 // 964/964/1106/964/964/1106/1092/1092. Original complete executable source restored; Frame 0x154 versus
 // 0x12c and Boolean/native workspace homes remain.
+// Round 266: library counter/correction/lift bounds, seven nonempty subsets and
+// all with bounded unsigned count, 871/897/912/876/895/923/939/939. Correction/lift recover frame
+// 0x148 but regress. Original bounds, flow operands, helpers and body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1443,6 +1449,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Original separate point, returned receiver, initializer order and complete body restored.
 // Round 465: uninitialized owner/event/point entry-declaration subsets 1..7, then all three
 // at active-object scope, 158 each on the two-Boolean graph. Original workspaces and full body restored.
+// Round 267: Conditional success publication after damping with bool/byte/short/long accumulator
+// 202/197/212/213; before damping 202/197/212/213. All exact-match-only forms restored;
+// original twice-used spin snapshot and bitwise result accumulation retained.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

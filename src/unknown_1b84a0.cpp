@@ -428,6 +428,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // branch and reloads the slot into EBX at the unknown04 test); the state pointer formed at entry from the
 // parameter 113 / sibling 182 (same code); sibling + limit read + result declared before the actor 191.
 // Retail also inlines matched 0x1f86f0 (the 504 test), which sits in an /Ob1 file (a flags lead).
+// Round 264: False-first single result, library movement minimum/two-use location index/
+// explicit marker-result masks 0..7 281/274/281/274/271/271/271/271. The first restores frame
+// 0x162c/result +0xf but regresses; original complete body and request producers restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
