@@ -313,6 +313,10 @@ PRIVATE __forceinline void function_21dcf1(long effect_index)
 struct s_looping_detail_request;
 long function_125f70(long definition_index, s_looping_detail_request *request, long *reason);
 
+// MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
+// the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
+// form that fixes that moves 0x189fe0's request into EDX and loses its eight matched callers in
+// src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight

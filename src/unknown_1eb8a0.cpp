@@ -293,6 +293,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
 // read 642; the counter conversion without `volatile` 671 (2860 bytes).
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

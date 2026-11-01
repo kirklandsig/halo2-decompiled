@@ -910,6 +910,12 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // getter tests fold), with a message pointer stepped at the body's end 160 (439 B). Lead for the user:
 // 0x63d00 built without LTCG (a flags decision); retail keeps the getter null test on `&messages[i]`.
 // Earlier: the listing was re-read only. Retail keeps the excluded-XUID
+// BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
+// only. Retail keeps the excluded-XUID
+// MiniMax R (11-01): no new form, no lower score; retail keeps the excluded-XUID cursor in EDI
+// and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
+// so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
+// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
 // cursor in EDI and spills the sender to [ebp+0x6c]; ours keeps the cursor in EDX and the sender
 // in EDI, and retail passes the cursor to 0x63d00 in EDX where ours passes it in ECX.
 // Still BLOCKED-BY 0x63d00's parameter order and clobber set, whose file belongs to another lane.
@@ -1470,6 +1476,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 /* copies the presence task's results into the friends and team members
    lists */
 // score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
+// MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
+// pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
+// the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
 // Earlier, 117 (was 117): frame agrees; count homes, early count lifetimes and flag reloads differ. Global optimization

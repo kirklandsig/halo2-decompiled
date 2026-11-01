@@ -339,6 +339,16 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
 // and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
 // helper coordinates declared z, y, x 218 (966 B). Original body restored.
+// Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
+// Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
+// Round 483: independent reverse-displacement admission with entry/perspective
+// inverse defaults, immediate/paired factor publication and either reciprocal
+// order 195/239/197/227/294/285/294/285. Original guard, defaults, factor
+// producers and full body restored; frame and displaced-transform spill remain.
+// Round 485: Existing scale helper only, native branch/in-place result and field/coherent
+// scale, 283/251/282/251; with all parallel row products 272/257/272/257.
+// All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
+// caller bindings and full body restored. Frame and second-transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

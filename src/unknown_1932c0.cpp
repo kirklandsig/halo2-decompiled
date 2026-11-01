@@ -957,6 +957,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 133: the tick as `volatile long ticks[2]` 3; as two volatile longs 10; unsigned 3; as a
 // volatile LARGE_INTEGER 3; this function placed before 0x194260 3; the retry counter at the
 // allocator's top 17 (0x194260 then 8).
+// Round 66: bitwise-or write result 53 (240 bytes); file != NULL 3; call-first short-circuit result 47;
+// null-initialized file 3; write-failure early exit 85; NULL != file 3; write == true 5; write != false 3.
+// Opening body restored.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {

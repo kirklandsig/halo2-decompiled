@@ -222,6 +222,9 @@ void c_button_widget_45d5d0::v8()
 // condition from `this` 66 (69 bytes); the eligibility inverted with the step first 2; `for` with a `continue`
 // per failed test 2; the eligibility as a named bool 2. Harness: an early-return previous-or-last helper at both 12
 // (retail's tail, entry coalesced into ESI); previous_wrapped entry with that step 37 (98 bytes).
+// Round 66: full for-loop 2; split widget declaration 2; scoped for with the step in its body 2;
+// step computed before eligibility 40 (100 bytes); function-scope step result 2; direct previous/last-sibling
+// branches through a field snapshot 37 (98); explicit this at entry 2; qualified step call 2. Body restored.
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {

@@ -75,6 +75,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  return result;
 }
 // score 330 (was 330): the block order follows retail's apart from a few blocks, but stack offsets
+// Stack homes, suffix address rederivation and block placement remain.
+// Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
+// left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
+// Earlier: the block order follows retail's apart from a few blocks, but stack offsets
 // still differ: the widget pointers, several buffers and layout, notably the status text's message and
 // suffix (-0x2cc and -0x4cc against retail's -0x258 and -0x458). Retail places the loop's
 // friends == false shift out of line (still within the loop), clears ebx inside the received-invite
@@ -152,6 +156,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // (`and al, 1; cmp al, bl`); the session player as if/else 330 (same code); `!friends ? >> 10 : >> 12` 331
 // (the >> 10 block first with a jmp, still not parked out of line after the player select's jmp as in
 // retail); the clears chained title first (`suffix[0] = title[0] = 0`) 330.
+// Round 279: Existing status producer writes the real final payload directly, before/after
+// the disjoint range helper, crossed with constructor-owned zero and native flag bits:
+// 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
