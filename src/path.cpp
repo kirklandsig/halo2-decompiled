@@ -436,6 +436,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // frame 0xe4); with the node pointer declared at the top and reused in the loop 368 (same code, the
 // address still folds); with `special` false then set by an if 368; on the long count: link count
 // incremented after the copy 359; count defined after the initialization loop 354.
+// Round 106 (fast): both builds return with ret 0x24. The step point renamed to sort after start 315 (same
+// slots); `point3f end, start;` 315; special declared at function scope before complete 315; the distance
+// test through length_sq3f 315; special false then set by an if on the long count 331 (1373 bytes).
 // Round 30 (lane 14, fast): a `s_type_c3b527 const *origin = &input->start;` for the delta block 334: the
 // delta block and the edge-geometry loop then are retail's code (`lea esi, [ebx + 0x14]`, `push esi`, the
 // step index in ESI), but the extra frame word shifts every slot by 4 and the post-loop gains a `jmp` into
@@ -836,6 +839,11 @@ bool function_2715a0(byte *buffer)
 // links/native masks 515; long remaining count and mutable links 502; long remaining count with
 // native masks 516; long remaining count and readonly links 502; long remaining count with
 // readonly links/native masks 516.
+// Round 106 (fast): retail also takes the link length's root before the 0x210be0 call (stored, divided
+// in SSE after it; ours sinks it past the call into an x87 divide) and tests `(short)link->type != NONE`
+// before the penalty switch. Both link points through a point-along-vector helper 486; sqrtf root 486;
+// margin computed before the call 487; both link flag tests as masks 522 (2052 bytes); the NONE type test
+// before the penalty switch 579 (2128 bytes).
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

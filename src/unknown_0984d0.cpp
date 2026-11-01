@@ -386,6 +386,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
 // ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
 // 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
+// Round 106 (fast): after the loop retail loads the count into ECX (ours EAX), which shifts the count == 1
+// block and the chain call. Count test inverted (chain call first) 109 at 544 bytes; result test as a scope
+// instead of the early return 115; loop condition operands swapped 115; dword handle 115; case 2/4 written
+// before case 1/3 162.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

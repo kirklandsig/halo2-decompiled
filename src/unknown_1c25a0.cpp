@@ -916,6 +916,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // declared first here and function_1c2690 before function_1c27a0 there 1; function_1d1540 declared
 // before function_b8840 in src/bipeds.cpp 1; function_278f00 before function_146bf0 in
 // src/unknown_0b8ca0.cpp 1; function_278f00 before function_1c51c0 in src/unknown_1c39c0.cpp 1.
+// Round 106 (fast): our walk reaches function_1c4040 through 0x278f00 -> 0x1c3770 -> 0x1d1540 ->
+// 0x1c39c0 -> here before 0x146bf0. This function moved ahead of the file's 0x146bf0/0x278f00 callers 1;
+// moved to the end of the file 1; function_146da0 before function_1c4040 in src/unknown_146a20.cpp
+// (alone) 1; function_1c4040 declared before function_278f00 here 1; function_146bf0 before
+// function_1c3770 in src/unknown_278f00.cpp 1 (function_1c4040 25, 0x1c39c0 lost at 41).
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {

@@ -544,6 +544,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
 // other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
 // and case 2's declaration orders, compile identically (286-290).
+// Round 106 (fast): the corner pointers a, b, c, d now 299 at 1284 bytes (aligned 142 -> 94, case 5 exact,
+// but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
+// case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
+// case 5's direction before its position 295; result without volatile 371; the actor test as an outer if 299.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
