@@ -418,6 +418,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // operands swapped 116; memcmp sized by the request's count (retail's `lea ecx, [edx*4]`) re-measured on
 // this body 178 (520 bytes). 0x991d0's call setup follows its declared order (one register argument,
 // the handle in EDX), so no parameter reorder has retail evidence.
+// Round 147 (m3 lane 4, fast; volatile-read body): the validation counter declared inside the count test's
+// block 203 (524 bytes); both cursors declared at case scope 195; the counter declared before the validity
+// flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
+// switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
+// inverted 109 (544 bytes, branches laid out opposite to retail).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

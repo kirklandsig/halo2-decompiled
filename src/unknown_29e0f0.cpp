@@ -165,6 +165,13 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 464: late per-group record default/endpoints/both/nearest-distance default
 // 403/448/430/398; record-distance/endpoints-distance/all 403/448/430; all with
 // complete matching-record search 423. Original per-group lifetimes and search restored.
+// Round 146 (lane 4, fast with 0x29e730): the group read through a multi-use `link` pointer at every use (no
+// local_15) 429 (1601 bytes); round 86's bit test on the field read ahead of local_15 459 (aligned 209 masked,
+// against 213); `long local_15` 496 (1559 bytes); the group bits through the existing bit_vector_test/
+// bit_vector_set 424 (1561 bytes, masked aligned 195: retail's separate test and set, but the pass-scan compare
+// stays 16-bit, `cmp word [..], dx`, where retail compares the movsx'd field with a 32-bit group in EBX); the
+// point bits through them too 424 (same code); `long local_15` with the helpers 496 (the set shares the test's mask again). Retail spills the group (EBX) to the arg_2 home and later reuses
+// that home for the pass's found flag (`mov byte ptr [esp + 0x80], 0`).
 // Round 474: Native early reference/provider/both ordinal snapshots 398 each;
 // complete link payload alone/with reference/provider/both 475 each; complete
 // graph with promoted provider ordinal 513. Original body and helpers restored.
