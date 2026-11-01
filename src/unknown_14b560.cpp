@@ -2043,6 +2043,11 @@ struct s_player_creation_record
 };
 #pragma pack(pop)
 
+// score 0 (was 33): matches retail (plain check): the reset of the player's controller is written
+// out in the NONE arm, where retail has 0x14f270's reset expanded, and the other arm's call to
+// 0x14f270 passes the controller through a local, so the compiler leaves the call out of line as
+// retail does instead of specializing it on the literal.
+// The rounds that led here are kept below.
 // score 33 (was 33): retail inlines function_14f270(index, record->value04) here one level (its NONE
 // arm inline, its recursive NONE call kept); our link keeps that variable-argument call out of line
 // (it inlines only constant-NONE calls), so the tail is written out and differs from +0x1f6.
@@ -2163,11 +2168,14 @@ void __stdcall function_14c090(long index, bool reuse, s_player_creation_record 
         {
             if (controller == NONE)
             {
-                function_14f270(index, controller);
+                ((s_players_globals *)g_4e8c20)->unknown1c[old_controller] = NONE;
+                --((s_players_globals *)g_4e8c20)->unknown0a;
+                *(long *)(current + 0x24) = NONE;
             }
             else
             {
-                function_14f270(index, NONE);
+                long none_controller = NONE;
+                function_14f270(index, none_controller);
                 *(long *)(current + 0x24) = controller;
                 ((s_players_globals *)g_4e8c20)->unknown1c[controller] = index;
                 ++((s_players_globals *)g_4e8c20)->unknown0a;
@@ -2229,6 +2237,9 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// score 775 (was 701): the first 0x151b80 call's boolean argument passed through a named local; the
+// call was no longer expanded, the body shrank to 2636 bytes and the score rose. Reverted; the frame
+// and the two expanded calls remain the blocker.
 // score 701 (was 701): frame 0x4c versus 0x74 and selective call expansion remain.
 // Earlier: frame 0x4c versus 0x74; request/pointer homes and call expansion remain.
 // frame 0x4c versus 0x74; request/pointer homes and call expansion differ.
@@ -2681,7 +2692,16 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
     return datum != 0;
 }
 
-// score 103 (was 103): the globals pointer stays live in EDI through both iterator loops;
+// score 103 (was 103): reading g_4e8c20 directly at every use instead of through the named
+// `globals` local builds to the same bytes in the full build (611 = 611, first difference
+// +0x8) and scores 175 against 193 in the reduced image, so the local is not what holds the
+// pointer in EDI; what still differs is the register itself: ours keeps g_4e8c20 in EDI where
+// retail has it in ESI, and retail's iterator holds the pool's index array in ECX where ours
+// has ESI, so the two roles are swapped.
+// score 103 (was 103): the store through the named `globals` local was tried again and scored
+// 180 in the full build against the 103 baseline, so it was reverted; the globals pointer stays
+// live in EDI through both iterator loops and retail keeps it in ESI, reloading it only at the
+// two stores; target/point homes still differ.
 // target/point homes still differ.
 // Earlier: the global is kept in EDI here and in ESI in retail,
 // so the prologue saves the other registers and the field that is written

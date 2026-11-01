@@ -3997,6 +3997,9 @@ static __forceinline long nonnegative_15ce70(long value)
 {
 	return value < 0 ? 0 : value;
 }
+// score 456 (was 470): the mode dispatch written as an if/else chain instead of a switch, and the
+// award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
+// attacker parameter is still copied into EDX in the entry block.
 // score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
@@ -4073,11 +4076,11 @@ static __forceinline long nonnegative_15ce70(long value)
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
-    long award = NONE;
     if (!game_engine_get()) return;
     s_engine_player *victim = engine_player_get(victim_index);
     long damage_type = damage & 0x3f;
     long damage_modifier = damage >> 6;
+    long award = NONE;
     bool special = damage_type == 3 || damage_type == 0x1a || damage_type == 0x18 || damage_type == 0x17 || damage_type == 0x14;
     long elapsed = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
     *(long *)((byte *)victim + 0x1b4) = elapsed;
@@ -4107,22 +4110,20 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
     if (total <= minimum) total = minimum;
     long mode = 2;
     if (function_x340af0()) mode = *(long *)((byte *)g_4e6948 + 0x1e4);
-    switch (mode)
+    if (mode == 0)
     {
-    case 0:
         function_15d6c0(victim_index, total, delay);
-        break;
-    case 1:
-        {
-            long now = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
-            long next = (now / interval + 1) * interval;
-            while (next < now + delay) next += interval;
-            victim->value164 = next - now;
-        }
-        break;
-    case 2:
+    }
+    else if (mode == 1)
+    {
+        long now = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
+        long next = (now / interval + 1) * interval;
+        while (next < now + delay) next += interval;
+        victim->value164 = next - now;
+    }
+    else if (mode == 2)
+    {
         victim->value164 = total;
-        break;
     }
     *(long *)victim->unknown168 = 0;
     if (victim->unit_index != NONE)
