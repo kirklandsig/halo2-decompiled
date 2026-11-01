@@ -332,6 +332,11 @@ void function_07b3e0(void)
 // at 131 bytes (the pool copy made before the index init); copy-then-assign order swapped 57 (116 bytes); scan
 // declared before the pool 13; the index declared before both pools 11, between them 11 (retail's copy order;
 // left: the found block keeps size/data in edx/ecx with no dead datum `add`). Not kept (one-use duplicate local).
+// Round 18 (lane 17, fast): the iterator aggregate-initialised `= { g_4cf8d8, NONE, NONE }` 58 (same code as
+// the iterator form); the two-local form with the scan copy taken from the pool local 60, the pool from the
+// scan local 60 (both coalesce: only two separate reads of the global keep EBX/EBP apart, 11); on that
+// two-read form the scan as data_next_absolute_index_inlined 65, the index assigned after the release 55.
+// Retail's dead `add ecx, esi` needs the datum pointer materialised, as only the iterator step does.
 // Round 107 (lane 8, fast with 0x7b650): `if (!g_4cf8d4) return;` guard 39 (same code); the datum index named
 // before the call 39 (same code); the iterator form re-measured 58 (120 bytes); the existing out-of-line
 // record_pool_next_used loop 106 (72 bytes, stays a call); the first find before the loop and the next at

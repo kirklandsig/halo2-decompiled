@@ -1448,6 +1448,11 @@ void function_1f86a0(long actor_index);
 // element local) 233. In retail EDI keeps the actor through the loop
 // untouched and EBX takes the entry (spilled at F+4, briefly the first 0xbaf40 result); ours gives BL the mask and
 // uses EDI for that result, reloading the actor.
+// Round 20 (lane 17, fast): the element index read once into a local and reused for the joint index at
+// the break 244; a plain break with `if (entry != NULL) joint_index = entry->unknown4;` after the loop
+// 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
+// first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
+// as the subscript base 134 (same code, so the head's early header load is not evaluation order).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
