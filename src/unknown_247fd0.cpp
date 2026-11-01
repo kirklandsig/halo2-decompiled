@@ -238,6 +238,12 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // 130 (863 bytes); a short child counter 76 (871 bytes); the reciprocal as an if/else 70 (same code). Compile-only
 // with field_10 first, all split: compare operands swapped, an empty or `;` then-arm, a named sample, a named
 // `changed` bool, dword-cast pointers, the cache stores swapped.
+// Round 110 (m3 lane 7, fast): compile-only, nothing code-less between the fstp and the compare folds it (empty
+// forceinline or inline calls, a label with a goto, `__assume`, `__noop`, a brace scope); only a compiler barrier
+// does. field_10 first 133 (re-measured as the control); field_10 first with the fifth draw through a plain
+// non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
+// before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
+// lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -535,6 +541,15 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 462: Complete initial scaled-position point-set/vector-scale producers, aggregate/setter
 // publication and original/early age: 393/393/358/363/411/397/376/377. All original geometry,
 // stores, helper graph and includes restored; frame and late EBP save remain.
+// Round 110 (m3 lane 7, fast): retail 0x247fd0 sinks its EBP push past the allocation test as ours does here, so
+// retail's entry push comes from the effect-flag block. The early exit as `goto done;` 356 (same code, re-measured
+// against round 137's goto form); the allocation failure as an early return with the body unnested 356 (same
+// code); the flag's store and test as two statements (`local_18 = local_24 != 0; if (local_24 != 0) return;`) 425;
+// the volatile flag declared in the effect block 356 (same code); the flag byte declared bare at function scope
+// 356 (same code). Retail copies field_10 with `movss` (ours, and retail's 0x247fd0, with an integer move) and
+// re-derives the effect record for the velocity (so a shared effect pointer would not fit): the copy through a
+// `real` local 359 (still an integer move); with a `(real)` cast 356 (same code); through the reused `last_sample`
+// 356 (integer move); through the grouped sample field 373 (1659 bytes: `movss` as retail, plus a store to the field).
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -620,6 +620,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
 // last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
 // 199 (865 bytes), with the if/else def and the false at the scan's start 199.
+// Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
+// == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
+// scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
+// declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
+// `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
+// nothing below 47.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
