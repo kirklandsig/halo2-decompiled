@@ -496,6 +496,9 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

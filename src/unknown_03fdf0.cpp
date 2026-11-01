@@ -394,6 +394,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // bytes: the short stays in BX, is extended into EDX for the copy and tested as `test bx, bx` at the loop
 // guard, where retail extends it once into EAX and tests EAX); on the indexed form the parameters as (mode,
 // cache_index) at the definition and the call 144 (same code), first as `current = first = previous` 144.
+// Round 288: field-major resets across groups in all six field orders, then
+// count/first/flags and flags/count/first with reversed group order, 54 each.
+// Original stores and executable body restored; index/count/zero and copy homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

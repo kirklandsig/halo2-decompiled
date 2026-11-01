@@ -292,6 +292,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
 // original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
 // with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
+// gives 620/623/650/649/613/651/651/653. Seven-point best is below the
+// retention margin; original case order and executable body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
