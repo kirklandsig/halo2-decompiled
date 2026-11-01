@@ -333,6 +333,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
+// Round 230: Origin/displaced inverse defaults staggered across the first/second transform
+// boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
+// between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
+// recover frame 0x2c but regress. Original defaults restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

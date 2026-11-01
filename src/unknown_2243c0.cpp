@@ -320,6 +320,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Lane 18 r14 (one-link LTCG env, exact for the first 82 instructions; counts over those, control 51): fallback
 // `local_tag & 0xffff` 67; the group as a dword local 73, with the masked fallback 73; the tag read at each use
 // 70; the two arms as one ternary 51, swapped arms with the negated test 51, `(dword)(word)` fallback 51 (same code).
+// Round 230: In-place fallback normalization with original/root/directory/nested/before-cache
+// lifetimes 152/152/152/152/152; original handle with root/directory/nested scopes 117/117/117.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

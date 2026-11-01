@@ -132,6 +132,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
 // 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
 // coordinate promotion, height/common homes and minimum selection remain.
+// Round 230: Mutable-formal scan with zero exit before/after result construction and
+// nonzero-first/zero-first test-owned result 105/91/82/82; private scan copy on
+// those four result graphs 105/91/82/82. Original helper/body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
