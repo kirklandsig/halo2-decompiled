@@ -1,3 +1,4 @@
+// @flags /O2 /Ob1 /arch:SSE /Gr
 // @flags /O2 /arch:SSE /Gr
 #include "unknown_11c920.h"
 #include "slot_handler.h"
@@ -68,6 +69,8 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
+// (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
 // score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
@@ -252,6 +255,9 @@ evaluate:
 	return 0;
 }
 
+// MiniMax R (11-01): no lower score; reading the slot's expected index into a local before the actor lookup
+// and the file's /Ob1 setting both leave it at 73 (0x25d740 is still inlined here); calling the view getter
+// twice (76) does not hold it out of line either.
 // score 73 (was 73): retail calls function_25d740 out of line and sinks the ESI/EDI saves; our
 // build inlines it, so the prologue differs at +0x13. This round: reading the slot's expected
 // index into a local before the actor lookup, the reversed compare, a named actor local and the

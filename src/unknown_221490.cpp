@@ -624,6 +624,12 @@ bool sound_driver_voice_create_buffer(
 // on both failures, the voice index on success) 146 (619, 0x191420 1); the count stored by
 // `globals->voice_count++` 71 (same code). Compile-only: both buffers in a force-inline helper taking both
 // flags (count and result outside) 150 (frame 0x98); the voice index starting at NONE with the 3D flag first 228.
+// Round 20 (lane 18, fast with 0x191420): no voice index local (the count field read at each use, the
+// result assigned after the test) with the 3D flag first 194 (589 bytes: the count takes EBP, both bools
+// spill); play declared first but the 3D flag assigned first 182 (599: the assignment order decides, not
+// the declaration order); the 3D block as a force-inline helper taking play, 3D flag first 182 (diagnostic);
+// `short voice_index = globals->voice_count++;` with the 3D flag first 191 (589), with play first 104;
+// one voice-index variable defaulting to NONE and returned, 3D flag first 194 (589).
 // Round 189 (m3 lane 3, fast with 0x191420): both bools declared uninitialised play first and assigned 3D
 // first 182 (599 bytes: the definition order decides, not the declaration order); declared 3D first and
 // assigned play first 71 (same code); the voice index read again inside the block after the bools, 3D

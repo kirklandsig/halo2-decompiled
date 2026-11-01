@@ -151,6 +151,10 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // failure falling to one shared return of g_470be8 111 (edi pushed before the guards), or to the
 // !character return with `!(>=)` 84 (the success gets its own epilogue); the started success falling to
 // a final block return after the else 70 (the jb still joins the nearby g_470be8 epilogue).
+// Round 68: slot data through unknownc 19; started and exhausted-search success sharing one return 19;
+// that with a plain result-bearing for loop 19; handler-view actor 19; one outer failure return 29;
+// state arms reversed 86; found flag with all success paths sharing one return 19; that with slot data 19.
+// Original state type, actor view, comparison and body restored.
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {
