@@ -1223,6 +1223,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // seven subsets 1011/902/1007/828/1011/902/1007; complete graph with plain inheritance while 1007.
 // Several shared users regress; every helper and original body restored. Return/output/candidate
 // homes, class/NONE roles and persistent zero carrier remain.
+// Round 520: actual named-table pointer/reference before/after candidate construction,
+// original/native iterator: 828/828/828/828/826/826/826/826.
+// Field receivers do not match; two-count initialization gains rejected. Body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
