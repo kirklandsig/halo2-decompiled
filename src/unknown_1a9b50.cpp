@@ -712,7 +712,7 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 382 (was 384): the frame and the length agree, and the early false exit's place, the
+// score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
 // target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
@@ -848,6 +848,10 @@ static __forceinline long real_to_long(real value);
 // Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
 // dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
 // the object velocity pointer before the magnitude 381 (one count, not kept).
+// Round 331: Query and later planar directions share one consumed vector at
+// direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
+// each. Original workspaces, entry/result graph, query aliases and entire body restored; early
+// rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
