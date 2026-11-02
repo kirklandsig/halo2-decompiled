@@ -236,6 +236,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // conditional/selection, each with current conditional/selection, 244/244/244/244; complete target
 // arms/selection with the same current forms 276/276/276/276. Original separate target lifetime,
 // native clamps and full body restored; root/yaw homes and constant/result registers remain.
+// M293: First clamp limit before yaw/after yaw/after gain/after signed target pitch,
+// conditional then if-else producers: 344/290/279/282/344/290/279/282. Original lifetime restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

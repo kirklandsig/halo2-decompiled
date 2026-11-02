@@ -144,6 +144,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 223: Native two-component perpendicular value with aggregate/field
 // construction, direct/stored projection and i/j publication order, all eight
 // combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
+// M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
+// vector-mediated/direct first projection:
+// 187/187/187/187/187/187/187/187. Original complete executable source restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

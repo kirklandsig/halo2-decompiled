@@ -239,6 +239,8 @@ struct s_spawn_scenario_23aea0
 // and the direct-union record 73/73. Only the default setter and native scalar/vector
 // record view remain; original scalar defaults, override reloads and signed loops retained.
 // Every other user keeps its score in reduced and ordinary checks; all matches survive.
+// M293: Retained-setter override early exit, paired scalar observations, actual record cursor,
+// their combinations, then native scalar truth tests: 61/75/75/76/76/93/93/61. All restored.
 // @retail 0x23aea0
 void function_23aea0()
 {
