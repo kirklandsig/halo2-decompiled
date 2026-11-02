@@ -971,6 +971,9 @@ bool function_2715a0(byte *buffer)
 // DH283: Repeated decremented-count/child-heap-index/stored-cost ownership subsets
 // 486/494/494/486/486/494/494; complete graph with promoted remaining count 516.
 // Original heap observations, cost casts, helper calls and complete body restored.
+// P270: complete point memcpy at goal/child/both/closest/goal+closest/child+closest/all,
+// then memmove at all three: 486/486/486/486/486/486/486/520. Original aggregate
+// transfers and complete body restored; state/node/link and scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

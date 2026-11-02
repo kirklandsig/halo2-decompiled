@@ -928,6 +928,9 @@ done:
 // retail callers pass stack iterators. A 192-form static-global harness search (short flags, direct reads,
 // block/entries if-else, definition local kinds, third-scan local, `alternate` local) keeps NONE in EBP in every
 // form. Left: whatever keeps g_4e0350 from being hoisted in the second scan.
+// P270: native unsigned explicit palette id with independent signed full-width
+// entry carriers, subsets 0..7: 176/189/202/202/201/202/215/214. Original selector
+// domains and all three scans restored; next-word/sentinel allocation remains.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2585,6 +2588,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 509: Persistent idle/remaining/last-seen timer field receivers, subsets
 // 1/2/4/3/5/6/7, 275 each; all with area bitmap receiver 302 (1119 bytes).
 // Original body restored; frame, iterator pool, point homes and intersection spill remain.
+// P270: existing generic squad producer with entry-owned area/point-pair/location
+// workspace subsets 0..7: 306/306/306/306/306/306/306/306. Original producer,
+// declaration scopes and body restored; frame, pool and intersection homes remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
