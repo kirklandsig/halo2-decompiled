@@ -584,6 +584,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // name subsets 349/126/349/126/349/126/349; all with component direction copy 310. The normalizer
 // forms grow to 1189/1170 bytes; neutral forms retain 1144. Original body/helper restored; initial
 // velocity receivers and 1.0 SSE residence remain.
+// M314: Existing squared-length helper with named squares/running sum/native input value/scalar
+// inputs 126/144/331/138; each with library velocity copy 130/148/331/142. Complete original
+// helper and target restored; early 1.0 residence and velocity-copy receivers remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2299,23 +2302,25 @@ void function_f5ee0(long vehicle_index);
 
 /* a wheel's spin advanced by its angular velocity, wrapped to the
    definition's period */
-PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
+PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *period)
 {
-	if ((*period) > 0.001f)
+	*spin += delta;
+	real advanced_spin = *spin;
+	if (*period > 0.001f)
 	{
-		if (!(spin > 0.0f))
-		{
-			spin += (*period);
-		}
-		return (real)fmod(spin, (*period));
+		if (!(advanced_spin > 0.0f))
+			advanced_spin += *period;
+		*spin = (real)fmod(advanced_spin, *period);
 	}
-	return 0.0f;
+	else
+		*spin = 0.0f;
 }
 
 /* the physics of type 0 vehicles (the differential-steered ones): the
    engine drives each side's contacts, the turn trading torque between
    the sides */
-// score 101 (was 101): 115 before round 114; the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
+// score 42 (was 101): frame 0x10 agrees; turn-product schedule and spin temporary/store placement remain.
+// 115 before round 114; the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
 // alignment need LTCG had pushed onto this caller); before that, frame 0x14 against 0x10 (one dead
 // slot below gear_throttle; the four used slots agree but sit 4 higher); zero/scalar residency and
 // spin schedule remain. Kept earlier: live period receiver, native twice-used gear and result-first
@@ -2365,6 +2370,9 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // gear-only scope alone and with each producer 101; scoped contact ordinal with stages/gear 101.
 // Original body and spin helper restored; NONE edge, zero/product carriers and spin staging remain.
 // Round 319: Per-contact selected torque result right-default/left-default/branch/conditional 101/101/101/101; each with NONE-first gear 127/127/127/127. Original complete body restored.
+// M314: Existing spin helper owns advance and in-place output, branch/default result with entry/per-use
+// time-rate and original/NONE-first torque: 120/121/170/164/42/133/176/199. Branch result,
+// entry time-rate and NONE-first torque kept, plain 42 at 685/682; every other user unchanged.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2385,11 +2393,10 @@ void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state
 
 	function_f1950(vehicle_index, engine_throttle, function_f1740(vehicle_index, gear_throttle));
 	short gear = vehicle->gear;
-	torque = 0.0f;
-	if (gear != NONE)
-	{
+	if (gear == NONE)
+		torque = 0.0f;
+	else
 		torque = function_f14f0(gear, vehicle_index) * VEHICLE_GET(vehicle_index)->unknown378;
-	}
 	torque_magnitude = torque >= 0.0f ? torque : 0.0f - torque;
 
 	real turn_torque = torque_magnitude * turn;
@@ -2400,10 +2407,8 @@ void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state
 	{
 		state->contacts[i].torque = (i & 1) ? right : left;
 	}
-	vehicle->unknown368 += left * dt;
-	vehicle->unknown368 = vehicle_wheel_spin(vehicle->unknown368, (real const *)(definition + 0x20c));
-	vehicle->unknown36c += right * dt;
-	vehicle->unknown36c = vehicle_wheel_spin(vehicle->unknown36c, (real const *)(definition + 0x20c));
+	vehicle_wheel_spin(&vehicle->unknown368, left * dt, (real const *)(definition + 0x20c));
+	vehicle_wheel_spin(&vehicle->unknown36c, right * dt, (real const *)(definition + 0x20c));
 	function_2056e0(vehicle_index, state, function_f5e00(vehicle_index), NULL, NULL);
 	function_f1c80(vehicle_index, state);
 	function_f5ee0(vehicle_index);

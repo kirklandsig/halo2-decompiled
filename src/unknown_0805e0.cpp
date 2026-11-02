@@ -734,6 +734,8 @@ void function_1537f0(s_profile_record *record);
 // identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
 // M312: Signed source sentinel with aggregate/late identity and native metadata-zero subsets 0-7:
 // 53/53/53/53/62/62/62/62. Original body restored.
+// M314: Signed source sentinel with full-byte header bitfields 44/45/46/47/44-45/46-47/all/44-46:
+// eight 53s. Original real type and complete body restored; identity homes still fold.
 // @retail 0x7f930
 void function_7f930(void)
 {
