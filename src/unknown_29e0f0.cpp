@@ -212,6 +212,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DL224: Group range-first/negative-first/split-range/split-bitmap eligibility 473/440/473/390;
 // the four with shared group bits 434/434/434/424. Original group observation, domains, helpers
 // and body restored; default/bitmap/endpoint homes, root roles and x87 scheduling remain.
+// DL229: twice-used validator status feeds admission and pass acceptance: raw short/long/word/dword
+// 428/426/428/426; normalized bool/byte/short/long 392/406/424/426. Exact-only flag producers
+// restored; selected defaults, root roles and endpoint/bitmap/x87 homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

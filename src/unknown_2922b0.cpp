@@ -236,6 +236,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
 // Original constant inactive return, private producers, in-place snapshots and complete body
 // restored; success/hit/input/minimum homes and axis schedules remain.
+// DL229: distinct shadowed ray-index/response-scalar/projection-object identities in seven subsets,
+// then complete basis identities, eight at 618. Original names and complete body restored;
+// native success/input/minimum/hit homes and inactive-exit placement remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

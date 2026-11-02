@@ -1360,6 +1360,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 234: Downstream request eligibility as the actual urgent argument, bool/byte/short/long after
 // outputs 996/995/1008/1009; before outputs 996/995/1009/1010. Original search and request guards
 // restored.
+// DL229: unsigned resolved mode/class/type storage in seven subsets 828 each;
+// all with native iterator aggregate 826. Exact-only API casts and every key type restored;
+// class/NONE, result/candidate/output homes and later zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

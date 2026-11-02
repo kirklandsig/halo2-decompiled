@@ -518,6 +518,9 @@ struct s_1f8a70_actor
 // signed-byte 376/379, short 410/413, word 410/413. Original result and body restored; frame
 // 0x84, early false and unit-output/route/result homes remain; recorded mode-three value question
 // unapplied.
+// DL229: complete destination-case orders 246753/247653/264753/267453/274653/276453/245763/254763
+// 379/375/379/379/375/379/379/379. Original case graph, dword selector and body restored;
+// frame, early pool/data staging and unit-output/result homes remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
