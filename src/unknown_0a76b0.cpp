@@ -844,7 +844,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
-// score 309 (was 318): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -874,6 +874,8 @@ extern vector3f *g_4687b0;
 // scaled aim blend retained. The direct random-call producer removes the one-use
 // scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
 // Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
+// Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
+// 309/309/309/309/309/309/309/308. Original executable source restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1703,7 +1705,7 @@ void __stdcall function_191fab(long definition_index, long value);
 void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 60 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
+// score 60 (was 60): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
@@ -1735,6 +1737,8 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Shared player lookup with direct reporting argument 60.
 // Only one pure player observation and direct reporting value selected; ordinary confirms 60 at 392/388.
 // Frame reuse agrees; request/weapon homes and retail getter-call expansion remain.
+// Round 362: Tested pickup-result / nested admission / mode-table case order, seven subsets; then tested result with shared mode.
+// 61/60/62/61/62/62/62/128. Original executable source restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
