@@ -958,6 +958,16 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
 // copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
 // as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// Round 56 (m3 lane 10; one-file LTCG harness, exact here; the first form confirmed --fast): `int next_party` 34; `int
+// parties[]` 34; `dword parties[]` 34; `(long)next_party` in the fill 34; next_party declared after the index 34; a
+// forceinline fill helper (first, last, value) 34, plain inline 34, (pointer, count, value) 56; a static next_party 60
+// (diagnostic); a one-element array 34; next_party read through its own address in the fill 34. Diagnostics
+// (value-changing): the fill value `(short)` or `(unsigned short)` 4 (retail roles; left the movsx, `lea ebx, [edx +
+// eax]` and the clamp register), `next_party + 1` 38 (retail roles), `(char)` 63, `-next_party` 48, `^ 1` 48, constant
+// 5 31, no maximum update 66 (retail roles): the player count gets EAX only when the rep stosd value is a temporary
+// computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
+// keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
+// alike, so it is no proxy for these roles.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

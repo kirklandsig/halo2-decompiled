@@ -1485,6 +1485,12 @@ void function_1f86a0(long actor_index);
 // 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
 // first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
 // as the subscript base 134 (same code, so the head's early header load is not evaluation order).
+// Round 56 (m3 lane 10, fast): `bool specified = (flags & 0x20) != 0` 241 (863 bytes); `long` or `dword` specified 248
+// (873 bytes); `same` testing the field with the mask local only in the decline 244 (868 bytes), the reverse 244; `byte
+// const` or `unsigned char` specified 134 (same code); no mask local (0x20 at both uses) 244 (868 bytes: frame 0x14 and
+// the masked byte at [esp+0x13] as retail, but the flags byte is CSE'd into BL for the 0x40 test and the entry stays in
+// memory), with the 0x40 test through a bit-6 bitfield 244, through the slot view 234 (865 bytes); the mask local with
+// the 0x40 test through the slot view 235 (866 bytes), through a bit-6 bitfield 134 (same code).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
