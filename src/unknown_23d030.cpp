@@ -364,6 +364,9 @@ extern byte g_51ec11;
 // the target and the matched second user. Original helper restored; zero, normalization and up/roll
 // allocation remain. Scores 291/128/280/304/101/307/295/345.
 // Original executable source restored.
+// DH302: Roll cosine at the unscaled projection / projection-and-cross boundary, then both
+// coefficients at those boundaries: 92/102/89/151; bare entry declarations repeat 92/102/89/151.
+// The 92/102 forms reach 1326 bytes; all tie or regress. Original coefficient phases and body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -1068,6 +1068,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
 // Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
+// DH302: On direct geometry fields, interleaved normal updates / complete far vector setter /
+// late unit-direction setter subsets 1/2/4/3/5/6/7 all 286; all with node-backed-only
+// point setter 300. Original body restored; point homes and cone/node allocation remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

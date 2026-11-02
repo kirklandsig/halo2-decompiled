@@ -1419,6 +1419,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // All other full-image measurements stay unchanged; entry table and second unit load remain.
 // Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
 // 95/96/95/96/94/95/94/95; original complete body restored.
+// DH302: Slot/weapon/both early failure guards and one complete exit 95/95/106/95;
+// each retaining the companion datum for both predicates 200/200/212/200. Original success
+// scopes and predicate lifetime restored; early table and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

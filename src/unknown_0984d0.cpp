@@ -491,6 +491,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // home, validation carriers and loop-entry reload remain. Original helper and body restored.
 // M316: On signed-byte ordinal graph: size/handle producer forwarding with inherited/plain cursor reads, then long producer result 188/194/189/209/209/209/209/80.
 // Validity home, validation carriers and loop-entry reload remain; original helper and inherited cursor reads restored. Original executable body restored.
+// DH302: On the signed-byte ordinal graph, call-first conjunction / compound Boolean
+// intersection / conditional accumulation / call-first intersection 211/209/210/209;
+// validity declared after the ordinal repeats 211/209/210/209. Original complete body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
