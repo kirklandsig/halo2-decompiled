@@ -274,6 +274,8 @@ struct c_aggregate : c_child
 // Round 521: repeated cleanup block/item/both record references, original/query-only
 // output scopes 31/31/31/31/31/31; block/item references with shared callback output
 // 31/31 (frame 0x8020, lowest loop homes still exchanged). Original complete body restored.
+// M312: Native block-count field with shared query output/block reference/error-first gate
+// subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

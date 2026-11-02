@@ -732,6 +732,8 @@ void function_1537f0(s_profile_record *record);
 // record 53 (261), with the source declared first 53 (261); the index loop with s_profile_record and a plain memset 78
 // (238); the identity as a const reference bound to a value-initialized temporary 53 (same code). Harness only: an
 // identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
+// M312: Signed source sentinel with aggregate/late identity and native metadata-zero subsets 0-7:
+// 53/53/53/53/62/62/62/62. Original body restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1228,6 +1230,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
 // `removed <= position` lower, count path lower first 62.
 // M310: Exact native copy endpoints: source-forward/reverse/both, destination-forward/reverse/both, mixed source/destination and destination/source [368, 377, 368, 371, 373, 370, 373, 371]. Original body restored.
+// M312: Paired absolute source/destination ordinals forward/reverse/both, each with native repair
+// cursor, then both signed-int with/without cursor: 384/107/391/789/803/789/391/789. Original
+// body restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

@@ -1219,6 +1219,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 287: Original family positions, query priorities 8-10-9/9-8-10/9-10-8/10-8-9/10-9-8,
 // peer priorities 23-24-22/24-22-23, then reversed query/session/peer interiors: 192/196/194/192/194/196/196/194 fast.
 // Original classifiers restored; delayed ESI save and full-only late-handler expansion remain.
+// M312: Native-input session interior priorities and remaining peer orders:
+// 196/196/196/196/196/196/196/196. Original body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
