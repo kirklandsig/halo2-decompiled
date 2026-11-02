@@ -183,6 +183,11 @@ long sound_classes_match(long class_a, long class_b)
 // named match flag 3; `return !g_55e780;` 13; index test with an `else return false` 3; a function-scope
 // long result with the late direct callback 132 (the callback then takes EBP after the index test as in
 // retail, but the result needs a stack slot: one-file LTCG probe).
+// Round 134 (fast): the source test as one positive condition `!(index == && callback && call)` 3; three
+// separate `return false` tests 3; the callback tested in an if/else 3; a matched flag set inside the index
+// test 3; the call's result named before its test 3. One-file LTCG harness (exact: 2): the source pointer
+// reassigned to its callback 3; both marker addresses named before or after the index test 3. With the load
+// after the index test the callback always takes EAX, though the source in EBP dies at that load.
 // @retail 0x21e0b0
 long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const *voice)
 {

@@ -32,6 +32,7 @@ const char *saved_game_type_get_storage_name(long type);
 char *function_122810(char *path, const char *suffix);
 bool saved_game_file_read_begin(void *buffer, dword size, bool non_roamable, s_saved_game_file_task *task, const char *path);
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task);
+bool function_216d70(char *path, const char *directory, long type);
 
 // @retail 0x2161d0
 bool function_2161d0(long file_index, void *buffer, long size)
@@ -86,6 +87,10 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // Round 102: a const cache pointer 10; a const path pointer 10; a multi-use location pointer 10; a location
 // reference 10; the location pointer/reference each with a path pointer 10/10; a const type 10; const cached
 // indices 10. Every form compiles to the baseline's code.
+// Round 134 (fast): the path built by calling the existing 0x216d70 (copy, terminate, append; LTCG inlines
+// it here as retail does) 10, kept in place of its body written out, with its type argument named first 10;
+// the profile copied from the bounded index 110 (309 bytes); result set before the task stores 20; progress
+// stored first 13; state first 12; succeeded first 11.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
@@ -119,10 +124,7 @@ bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file
 		local_0.field_44[0] = 0;
 		if (function_216800(file_index, &local_0.field_0) && local_0.field_0.language != -1)
 		{
-			long type = local_0.field_0.type;
-			strncpy(local_0.field_44, local_0.field_0.name, sizeof(local_0.field_44));
-			local_0.field_44[sizeof(local_0.field_44) - 1] = 0;
-			function_122810(local_0.field_44, saved_game_type_get_storage_name(type));
+			function_216d70(local_0.field_44, local_0.field_0.name, local_0.field_0.type);
 			result = saved_game_file_read_begin(buffer, size, false, task, local_0.field_44);
 		}
 	}

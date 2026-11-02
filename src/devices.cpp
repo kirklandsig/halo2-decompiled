@@ -1277,6 +1277,9 @@ PRIVATE inline real device_translation_distance_squared(point3f const *a, point3
 // lookup 31. Round 99: existing vector subtraction/length helpers 2; seconds divided by 30 2;
 // sampled renamed 2; start renamed 2; an independent duration matrix 13; step declared beside speed 2;
 // a forceinline distance helper 2; one shared distance local 33. All restored.
+// Round 134 (fast): a pointer local for channels[0] in both animation blocks 2; the same pointer in the first
+// block only 2; a const time 2; a const animation 2; the frame position named before the scale 2. Every form
+// keeps the fstp of the time between the 0.0f push and the animation push.
 // @retail 0x107ed0
 bool __stdcall function_107ed0(long device_index, long name, real seconds)
 {
