@@ -2278,6 +2278,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // signed long 155 (same code). Retail's dead `add ebp, 0x214` is the unit pointer's EBP turned into the
 // field pointer in place, so retail's unit web ends in EBP at the 0x2000 block and is reloaded from its
 // stack home after the slot loop (EBP then holds the first slot mask); ours keeps the unit in EBP.
+// Round 317: Per-use native child metadata/count/fraction source groups 1..7, all with read-only child
+// view 304/257/292/243/273/315/347/347 fast. Exact-only source-observation graphs restored.
+// Indexed lookup, object/offset homes and low-mask ownership remain; original full body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
