@@ -393,6 +393,12 @@ void function_14bac0()
 // six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
 // declarations 235/235. Original aggregate, output pointer, bounds and traversals
 // restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
+// Round 27 (m3 lane 18, fast; register-masked aligned 60 for the kept form): scoped form (iterators, points and centre in their own blocks, translated
+// point used directly, unit re-read at each use, second scan through 0x6b380) 259 (1048 bytes, frame 0x48) [40]; compile-only it has retail's exact frame layout,
+// under LTCG the second iterator stays at the top whatever its declaration scope, a diagnostic `(long)&iterator` passed to a call moves it to +0x2c (frame 0x44).
+// On that form: scenario read at each use 278 (1032) [39]; stamp local 259, plus index local 258 [37]; iterator declared at the outer scopes 259/259; named recipient 259;
+// pointer to the iterator 259; centre unscoped 259; for-increment reload of the pool 249 (no reload block above the head); reload dropped 263 (reload block above the head as
+// retail, 1032); reload after the block 258 (aligned 103); uncached pool reads through an inline next 258/262 [38]. Retail's spill/pool reload block sits above the loop head.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
