@@ -310,6 +310,7 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
 // Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
 // input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
+// M303: Shared bounded helper with library byte search, conditional/early return, original/direct source and flat/nested guards: 50 in all eight forms; shared find 37 and caller 84/75 regress, so helper and body restored.
 // Round 38 (m3 lane 2, fast with 0xb5f10/0xb61d0): retail moves start to EDI at entry so the inlined
 // length counter takes start's ECX (as 0xb61d0's counter takes start's EAX); ours keeps start in ECX and
 // counts in EDX. `(long)length >= count + start` 40; the length test nested under the sign tests 40; the

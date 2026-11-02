@@ -2235,6 +2235,9 @@ void function_269250(long clump_index, long actor_index)
 // reach 760 bytes; original continuation and body restored.
 // Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
 // unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
+// Round 235: Native current-clump receiver with declared prop identity/head and native node
+// identity subsets, eight forms 89 each. Entire 0x24-frame body restored;
+// category-byte homes, deletion completion and pool-register roles remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

@@ -655,6 +655,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // before the tags 283; a separate index for the request clear loop 278. Diagnostic only (semantic change,
 // reverted at once): with the cue NULL stores dropped the zero still takes ESI (258, 989 bytes), so the zero's
 // use count is not what takes ESI from bsp.
+// Round 315: Inner implied cluster guard removed, with native CRT point copy, request-store
+// order and direct angle-output subsets 271/271/271/271/316/316/316/316. Original guard, native copies,
+// helpers and complete body restored; BSP/count slots and camera/request scheduling remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
