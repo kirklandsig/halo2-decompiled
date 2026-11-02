@@ -497,6 +497,11 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
 // tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
 // helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.
+// Round 76 (lane 12, fast; st = structural count with registers masked against this body's 95): dword mask local with
+// `(large | 0x40) << 16` 269, st 96; allocation result after the start time 256, st 98; both 287, st 97; plus `!= false` on the two
+// 0x2148b0 tests 287 (`test al, al` stays, retail `cmp al, bl`); the movie open with a call per arm 251, st 92, with the mask local
+// 278, with both 298; plus a named direct-sound value 282 (1098 bytes, st 92). Still needs /arch:SSE for retail's
+// `fld; fcompi` and movss stores (build flags are the user's decision), and the mask's dword slot for frame 0x40.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

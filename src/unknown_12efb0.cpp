@@ -309,6 +309,25 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 292: Overlap-safe scalar-RGB/merge-record/four-channel input copies, subsets 1/2/4/3/5/6/7,
 // 1100/888/961/1214/1194/1077/1328; all with normalized-publication input copy 1552. All enlarge
 // frame/code; original helper bodies and source-weight capture restored. Palette/record/SIMD homes remain.
+// Round 76 (lane 12; plain 695 on the last form, fast otherwise; "al" is the aligned count against this body's 353,
+// "st" the same with register names masked against 109): retail's shape comes from a whole set of helper-level
+// forms. Weight and remaining updates last in the three-scalar helper (as matched 0x1317a0) with the nested clamp
+// call al 361; with the clamp written in the helper (`if (w < 0) w = 0; else if (w > 1) w = 1;`) 696, al 332 and that
+// helper then has retail's exact schedule apart from register names (the same clamp as a named local or through the
+// clamp inline 723, al 361); that plus char slot/getter shaped like matched 0x1318a0/re-read byte at the source-index
+// store and a named tag local surviving 0x1317a0 (EDI in retail, both arms) 701, al 424; the merge helper's weight
+// and remaining last, the four-channel helper taking r, g, b, a by value 688, al 181, st 57; the three output blocks
+// written directly in the body with their own inverse (every load/copy product side then right) 672, al 124, st 32;
+// the tag test nested with the 0x88 pointer inside it 701 (3817 bytes; -1 back in a register), st 27; the second-arm clamp as
+// `x < 0 ? 0 : (x > 1 ? 1 : x)` on a named x 705, st 21; `long slot_index = palette_slot;` with one tag local at
+// loop scope: 695, al 98, st 21, the 3819-byte form: record in EBX, cluster index in EDI, frame and loop head as retail.
+// Left on that form: retail moves the 0x130f60 result to EDX and keeps -1 in EAX (ours -1 in EDX, result in EAX, one
+// instruction short, so every later line is one off), the 0x88 pointer read, the second/third colour product sides
+// (retail L, C, L; ours C, L, C), the second four-channel call's schedule, the 0x6c store. Tried for -1 in EAX, all
+// unchanged: result declared before the out value, at function scope, split from its call; tag at function scope;
+// slot declared earlier; `NONE !=` tests; the tag lookup through a helper; a named no-source value (696, al 82);
+// diagnostics adding -1 uses or dropping a result use. The 0x88 pointer before the tag test loses -1 again (674).
+// None kept: the positional count stays above 616 until the -1 tie clears. Retry from these forms.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
