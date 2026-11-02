@@ -941,6 +941,15 @@ void function_25aba0(long actor_index);
 // kind-2 pops first with the stamp-first choice arm 131 (macro) / 38 (helper, 961 bytes);
 // `usable = function_1a80e0(...)` feeding one `level--` at the loop end 159 (it merges into kind-2's tail);
 // a goto from the enabled failure to the fallback pop 53 (the shared pop is laid out after the enabled tests).
+// Round 57 (lane 11, fast; choice pop stamp-first): one `if` per enabled test 175 (984 bytes, aligned 9: every
+// pop is retail's, state-one, kind-2 and next-handler split, choice fused; only the three in-place `dec; jmp`
+// remain where retail jumps to the fallback pop). So the compound test's shared pop block is what fuses a host: it
+// is absorbed into the tail of kind-2 (chain) or state-one, and that tail's load/dec/store are then alone in a
+// block. Every arm falling into one `level--` at the loop end 157; only the fallback and enabled failures sharing
+// it through a `usable` bool 159; `goto` the fallback pop 159 (absorbed into kind-2's tail, aligned 13); state-one and
+// kind-2 pops first 131; their lower level in a local computed before the stamp 119 (folded); the decrement
+// spelled `-= 1`, `+= -1`, `-1 + level`, `level + (short)-1`, `(short)(level - (short)1)` 119 each; dead trailing
+// stores after the pop `current = NULL` 119, `type = NONE` 119, `handler = NULL` with `continue` 134 (diagnostic).
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {

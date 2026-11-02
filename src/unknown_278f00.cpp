@@ -227,6 +227,13 @@ bool function_a7670(long object_index);
 // long/short-byte/short-short 258/195/300/305/304/299/305/304. All grow beyond retail length; original long
 // processing indices, eager searches, live body bound and consumed island index restored. Entry scratch,
 // scalar homes and admission register remain.
+// Round 57 (lane 11, fast): plain `for` island index + second scan setting the found flag 233 (957 bytes, aligned 60
+// from 81: selector EDX/list EAX where retail has EAX/EDX, DL for retail's BL, the header address folded after the
+// retry test, the index stored at its definition); the index saved in a local across the flagged path, in one
+// or two statements 259/259 (954 bytes, folded to the end of the path); the field byte in a local with the clear from
+// it 151 (not kept: 2 points); admission as nested ifs over a true preset 155; list preset to the second then
+// overwritten 236; on the plain-for base the byte local with `continue` / a nested block 233/233. Diagnostic,
+// reverted: a probe load before the outer loop 289 (selector stays EDX, so not one scratch rotation step).
 // @retail 0x278f00
 void function_278f00()
 {

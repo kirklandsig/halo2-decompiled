@@ -303,6 +303,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // element passed directly and no copy 44 (handle in EDI); on the file copy `success = (long)(handle test); if
 // (success)` 55; `success = handle test ? TRUE : FALSE; if (success)` 55 (351 bytes). Every form forwards the
 // stored byte to a register test.
+// Round 57 (lane 11, fast): completion flags as a two-byte array 60 or a named two-field struct 60 (351 bytes, both
+// forwarded); success from a ternary with `!= false` 55; from `!!opened` 55; through a named pointer written and
+// read 55. Diagnostic, reverted at once: the volatile success byte with the long test and the element passed
+// directly still matches byte for byte; no plain form re-reads the stored byte.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
