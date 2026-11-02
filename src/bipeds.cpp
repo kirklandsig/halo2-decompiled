@@ -2877,7 +2877,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 600 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 561 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
@@ -2900,6 +2900,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // D/B/DB/S/DS/BS/DBS/direct-rate+BS fast 649/656/643/646/632/654/639/654
 // (control 642); expanded 651/650/604/648/618/639/634/639 (control 649).
 // DB plain 615; BS plain 639. Original threshold, tests and state receiver restored.
+// F323: Frame 0x78 agrees; first +0x4e is the flight exit span, with scalar homes and vector scheduling still different.
+// Full-width special/wall/left truth subsets 1/2/4/3/5/6/7 and all native bytes
+// fast 600/639/652/631/615/633/622/642 (control 642); special alone plain 561,
+// 2728/2712 bytes. Keep only long special; every producer, condition and call is original.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -2930,7 +2934,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 		}
 		else if (biped->physics_mode != 5 && *(long *)(state + 0x70) != 0x6000084)
 		{
-			bool special = *(long *)(state + 0x70) == 0x7000039;
+			long special = *(long *)(state + 0x70) == 0x7000039;
 			bool wall = TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1);
 			vector3f facing;
 			real sine;

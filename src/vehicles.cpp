@@ -4723,7 +4723,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1126 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1117 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4747,6 +4747,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // one-point side-flip addition and five-point flip-only form restored.
 // P255: Angular-output/quaternion-conversion/late-force lifetime subsets 1-7 all 1126;
 // consistent vector-role names 1126. Frame 0xf8 and index/vector/rotation homes remain; restored.
+// F323: Frame 0xf8 versus 0xd8 and index/rotation homes remain. Sequential target reuse is plain-confirmed at 5056/5094 bytes.
+// Target/drift, target/strafe, acceleration, target+drift+strafe, drift+acceleration,
+// strafe+acceleration, all, all+rotation reuse 1130/1117/1127/1145/1130/1117/1145/1145.
+// Naming only 1126; target/strafe reuse with original names 1117 (plain). Keep only that reuse.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4861,7 +4865,6 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		real strafe_maximum = *(real *)(definition + 0x1f4) * flip_scale;
 		real strafe = vehicle->turn * flip_scale;
 		real strafe_fraction;
-		vector3f strafe_target;
 		vector3f strafe_velocity;
 		vector3f strafe_acceleration;
 
@@ -4873,16 +4876,16 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		{
 			strafe_fraction = 0.001f > (strafe_maximum >= 0.0f ? strafe_maximum : 0.0f - strafe_maximum) ? 0.0f : 0.0f - strafe / strafe_maximum;
 		}
-		strafe_target.i = strafe * facing.left.i;
-		strafe_target.j = facing.left.j * strafe;
-		strafe_target.k = facing.left.k * strafe;
+		target.i = strafe * facing.left.i;
+		target.j = facing.left.j * strafe;
+		target.k = facing.left.k * strafe;
 
 		real side_speed = facing.left.i * velocity.i + facing.left.j * velocity.j + facing.left.k * velocity.k;
 
 		strafe_velocity.i = facing.left.i * side_speed;
 		strafe_velocity.j = facing.left.j * side_speed;
 		strafe_velocity.k = facing.left.k * side_speed;
-		function_f1380(&strafe_acceleration, &strafe_target, &strafe_velocity,
+		function_f1380(&strafe_acceleration, &target, &strafe_velocity,
 			*(real *)(definition + 0x234) * strafe_fraction,
 			strafe_fraction * flip_scale * *(real *)(definition + 0x238), g_510c54->rate);
 

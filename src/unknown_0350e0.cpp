@@ -1660,6 +1660,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Round 503: angle/result-only, scalar-projection, vector-receiver and complete slot names
 // 193/193/193/193; the same four graphs with a double result carrier 290/290/290/290.
 // Original real result and every expression restored; separate result stack home remains.
+// F323: Independent result home and frame 0x14 versus 0x18 remain; complete original body restored.
+// Whole case orders 01324/02413/13240/24130/43210/31420/12340/04231
+// 195/205/195/205/201/222/193/250; every original case expression and helper preserved.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2254,7 +2257,8 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 182 (was 182; earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// score 182 (was 182): PIN reevaluates the clamped expression as retail does (the target's
+// Earlier counts 193, 324; the shared axis cross reached 147 and was held (see Round 435).
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
@@ -2280,6 +2284,10 @@ real magnitude3d(vector3f const *v);
 // F320: separate current/target reciprocals, complete aligned rotation sums and entry native-vector
 // declarations in all seven combinations 182 each; all with scalar role names 182. Raw length still
 // shares a clamped slot, frame 0x34 versus 0x38. Original executable body restored.
+// F323: Raw-length/dot/angle/cosine homes and frame 0x34 versus 0x38 remain.
+// Exact double current/target magnitude carriers, early immutable interpolation and combinations
+// 268/347/320/354/310/387/378; all with existing final scale 378. Original body restored;
+// both exact controls survive every preview.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3444,9 +3452,9 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 251 (was 272): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
+// score 251 (was 251): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
-// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// Earlier note: 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
 // Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
@@ -3468,6 +3476,10 @@ bool __stdcall function_391f0(void *state);
 // fog word with byte flags 251; byte flag initialization 299; all three 291;
 // fog word plus long count 300; all three plus long count 301. Keep only the fog word;
 // retail tests AX before widening the index. Frame 0x74 versus 0x70 and early zero remain.
+// F323: Frame 0x74 versus 0x70, early zero and array/loop homes remain; original observations restored.
+// Consistent structure/visibility/live count-table observations, seven subsets,
+// 284/266/306/278/281/306/281; all with the bounded native short ordinal 288.
+// Original complete body restored; stacked numeric headers merged.
 // @retail 0x36b50
 void function_36b50()
 {
