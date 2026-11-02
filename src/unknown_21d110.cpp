@@ -783,7 +783,12 @@ bool function_21a250(long definition_index, dword sound_flags, long identifier, 
 PRIVATE long const g_44a200[] = { 0, 1, 2 };
 PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 
-// score 30 (was 30): every remaining difference is a stack offset. Retail keeps the loop bool
+// score 30 (was 30): every remaining difference is a stack offset.
+// Round 52 (lane 13, plain): `long repeat_state = NONE; long loop_alternate = 0;` 234 (851 bytes); an
+// initialised long flag alone 177 (835 bytes); `effect->type == 2` named once for both tests 209; the 'snd!'
+// case's one-use gain and availability locals read directly, through casts 30 or a named sound-system
+// pointer 30 (identical code; the named pointer kept in place of the generic one-use locals); on it the gain
+// copied as a plain float assignment 64 (827 bytes: retail copies it with integer moves).
 // every remaining difference is a stack offset. Retail keeps the loop bool in a
 // dword-aligned unit (its low byte) just above repeat_state; ours is a one-byte home in the lowest unit,
 // which shifts the lighter dwords by four and reorders the heavier ones. Retail's order: sound flags,
@@ -993,12 +998,10 @@ void __stdcall function_21d630(long effect_index, long mode)
 					state.source_data_size = sizeof(state.source_data);
 					state.effect_marker.link.effect_index = effect_index;
 				}
-				long local_0 = *(long *)&entry->gain;
-				s_sound_system_effect_view *local_1 = (s_sound_system_effect_view *)g_4e6380;
-				bool local_2 = local_1->initialized;
-				*(long *)&state.gain = local_0;
+				*(long *)&state.gain = *(long *)&entry->gain;
 				state.flags |= 0x80;
-				if (local_2 && local_1->hardware_available && local_1->enabled)
+				s_sound_system_effect_view *sound_system = (s_sound_system_effect_view *)g_4e6380;
+				if (sound_system->initialized && sound_system->hardware_available && sound_system->enabled)
 				{
 					long listener_index;
 					long rate_limit_stage;

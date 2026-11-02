@@ -55,7 +55,13 @@ PRIVATE __forceinline real pinned_real(real const &value, real minimum, real max
 // the blend registers, the color0 store, the in-place strength add and the sete collision test match.
 // Left: the i == 0 block loads the strength before the colour copy, so the copy advances ebp (retail
 // copies through `lea eax, [ebp + 4]` first), and 0x131c20's `&color` is formed in edi and copied to ecx
-// (retail: ecx, then edi). Round 96: a colour output pointer for blending and packing 30 (identical);
+// (retail: ecx, then edi). Round 52 (lane 13, fast): colour first with 1 to 16 unused locals before the
+// light pointer or at entry 121 each (identical: not symbol numbering); colour first with a `continue`
+// out of the i == 0 arm 121; strength first with that `continue` 30; colour first with the light-count
+// test as an early `continue` 121; colour first with a const entry pointer 121; 0x131c20's parameters
+// reordered to (result, b, flags, t, a) everywhere 28 (retail's ecx-then-edi pair: it follows which
+// `&color` argument is evaluated first) but 0x131c20, 0x131d60 and 0xc0c80 stop matching. The in-place
+// add appears whenever the blend block is laid out before the first-light block. Round 96: a colour output pointer for blending and packing 30 (identical);
 // consuming the returned blend pointer 194; colour first with the strength-sum operands reversed 121;
 // the shared three-component setter for that copy 163; an entry-colour pointer for copy and blend 168;
 // the output pointer for both in-place arguments, and also for the copy, 30 each (identical);
@@ -1343,6 +1349,13 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
 // and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
+// Round 52 (lane 13, fast): the selection loop without the outer count test and the mask in the test 581;
+// that loop with `bool result = false` ... `result = true` 602 (0x3db00 lost); with `if (!parameters) return
+// false;` ... `return true;` 563 (frame 0x28, single count test and constant results as retail; block/query
+// still swapped); result first, that loop, `if (parameters)`, true last 589 (lost); retail's block start
+// (length, `adjusted = *lightmap`, `normal = *input_normal`, bias added in place after the normalize) with
+// the result variable 581, with true/false returns 549, alone 554 (all lose 0x3db00: block takes ebx as
+// retail, but record then takes esi and arrives in esi, `ret 8`).
 // Round 36 (lane 1, fast, with matched 0x3db00; aligned/shape = difflib counts over the listing, base 527/271):
 // `record` stays a stack argument only while our allocator gives it EBP; when it gets ESI this function
 // returns `ret 8`, 0xd4080's convention moves and 0x3db00 is lost. Loop without the outer count test 581
@@ -1542,6 +1555,13 @@ real function_30bf0(vector3f *vector);
 
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 364 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
+// rotation 435 (structural 143) as the base for: kij square with j/k normalize products as `*=` 429, all
+// three as `*=` 429 (identical); the shared normalize computing its own (i, j, k) magnitude with 0x30bf0's
+// product order 435 (151; 0xd37f0 545), that helper change alone 466; kij with the square first in the
+// fallback block 433 (1891 bytes, structural 123). Retail loads the normalize's j/k fields first (ours
+// multiplies the inverse, k in place), hoists the tag table load above the NONE test and reads the
+// rotation axis through g_4687b0 in both functions.
 // Round 36 (lane 1, fast, 0x3db00 kept; aligned/shape base 320/203): in-place direction2 rotation 435
 // (292/143, frame 0x40, 1870 bytes, first +0x57); with the square right after the direction1 negate 462
 // (288/125); in-place with the (k, i, j) squared length 429 (284/143, first +0x74); plus the colour2
@@ -1990,6 +2010,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 }
 
 // score 555 (was 555): frame 0x90 agrees; status/mesh/color/sample homes and selective helper expansion remain.
+// Round 52 (lane 13, fast): the format byte as a named byte local before/after the data pointer 555/555;
+// the result as `dynamic_valid ? 0 : 1` 687 (3040 bytes); the result test inverted 555; diagnostic, a flag
+// set in a test (`if (call) dynamic_valid = true;` in both format arms) 553. Retail after 0x24490 holds
+// zero in ebx, reads the format into dl, scales only vertices[0] by 5 before the format branch, and after
+// 0x241c0 stores result 0/valid 1 or result 1/valid bl per arm (`cmp al, bl`).
 // Earlier: frame 0x90 agrees and the first arm matches retail instruction for instruction
 // except its stack homes (lightmap +0x20 versus +0x34, mesh +0x2c versus +0x20, result/part, normal,
 // u/v/bsp/material slots: retail packs them jointly with the second arm's colours and normals); the
