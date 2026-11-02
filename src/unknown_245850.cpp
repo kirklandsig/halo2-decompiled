@@ -51,6 +51,12 @@ struct s_245850
 // 23; compound `*=` scale 14. Explicit parentheses change the code (fully parenthesised x rows
 // 103+); all 264 spellings of the z row 14-96, the 18 of the k row 14-20, and the 264 of the x
 // row with z,y,x point values and that y row 14-18.
+// Round 48: the point and plane transforms as file-local __forceinline helpers 328 / 267 / both
+// 515 (inline_depth(0) keeps them out of line); the plane rotated from a plane3f copy 171 (612
+// bytes); one set of x/y/z scalars shared by the point loop and the plane copies 11 (k row as
+// retail, j row's first two products swapped), with it the 8 j-row spellings 11-26 and the other
+// five plane copy orders 15-30. A long plane index needs declarations in items.cpp and
+// unknown_181a10.cpp (other lanes' files this round).
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

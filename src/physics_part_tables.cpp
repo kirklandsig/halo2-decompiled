@@ -9,52 +9,8 @@
 #include "unknown_11c920.h"
 #include "unknown_26b230.h"
 #include "globals.h"
+#include "physics_part_tables.h"
 #include <new>
-
-/* a shape object: a virtual table, the value 0x80 at +6 and 0 at +8 */
-class c_part
-{
-public:
-	virtual ~c_part() {}
-	c_part() : value08(0) {}
-	byte unknown04[2];
-	word value06;
-	long value08;
-};
-
-/* the first shape of a pair */
-class c_part_a : public c_part
-{
-public:
-	virtual ~c_part_a();
-	c_part_a() { value06 = 0x80; }
-	byte unknown0c[4];
-};
-
-/* a shape that points at another */
-class c_part_linked : public c_part
-{
-public:
-	c_part_linked(c_part_a *a) : owner(a) {}
-	c_part_a *owner;
-};
-
-/* the second shape of a pair, pointing at the first */
-class c_part_b : public c_part_linked
-{
-public:
-	virtual ~c_part_b();
-	c_part_b(c_part_a *a) : c_part_linked(a) { value06 = 0x80; }
-};
-
-/* the shape of a single element */
-class c_part_c : public c_part
-{
-public:
-	virtual ~c_part_c();
-	c_part_c() { value06 = 0x80; }
-	byte unknown0c[0x24];
-};
 
 /* the destructors are never called: the objects live in tag data */
 // @retail 0x1c2370
@@ -74,25 +30,6 @@ c_part_c::~c_part_c()
 {
 	__assume(0);
 }
-
-/* an element of the first and third blocks (0x80 bytes): a pair of shapes */
-struct s_pair_element
-{
-	byte unknown00[0x20];
-	c_part_a a;
-	c_part_b b;
-	byte unknown40[0x40];
-};
-
-/* an element of the second block (0x50 bytes): one shape */
-struct s_single_element
-{
-	byte unknown00[0x20];
-	c_part_c c;
-};
-
-typedef char assert_pair_element_size[(sizeof(s_pair_element) == 0x80) ? 1 : -1];
-typedef char assert_single_element_size[(sizeof(s_single_element) == 0x50) ? 1 : -1];
 
 /* the three blocks, at +0x20 of the tag's physics data */
 struct s_part_table

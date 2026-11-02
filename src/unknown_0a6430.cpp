@@ -32,6 +32,9 @@ PRIVATE byte *update_object_0a6430(long index)
 // Round 28: getter as an s_object_header array element 16; a named short level in the 0x100
 // block 16; getter plain inline 16; 0x200 compare count-first 17; the shadowing definition
 // locals renamed 16.
+// Round 48: the 0x200 block's object read before the count 16; the count set in else arms 53 (552
+// bytes); the 0x100 compare against a long state byte 16, the states passed as &state[0x51] 16, the
+// level cast back to short 20 (550 bytes).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {
