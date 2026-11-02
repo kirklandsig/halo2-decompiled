@@ -2741,6 +2741,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // hit producer 499. Both distance-scan values (494 plain, 1874/1908, frame 0x50
 // versus retail 0x4c) NOT kept: struct copies in two of the three scans, the subset
 // picked by score (mass scan keeps its pointer). Body restored at 530.
+// M322: Plain three-axis centroid/projection/impulse-scale loops, subsets
+// 1/2/4/3/5/6/7, then all with centroid-normalization loop:
+// 567/562/556/588/598/598/615/631; 1732-1816 versus retail 1908 bytes.
+// All regress; original complete body and arithmetic restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4890,6 +4894,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 1/2/4/3/5/6/7, then all with read-only tag receiver: 729/770/741/773/744/780/775/775
 // (fast control 655). All regress; complete original body restored. Frame 0xd0 agrees;
 // animation/state/tag homes and completion expansion remain.
+// M322: Native velocity-difference/position-integration axis loops and complete
+// lean-result ownership, subsets 1/2/4/3/5/6/7, then consistent timestep:
+// fast 684/667/646/676/675/658/667/656 against control 655.
+// NOT kept: lean-local 646 hoists the field read and merges the native
+// step/clamp field stores to one final store. Original body restored at full 648.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
