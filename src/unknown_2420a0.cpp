@@ -1489,6 +1489,10 @@ long function_2421d0(long team)
 // (reference local, by-value or reference helper, member helper, typed casts, dead second reads) stay cycling in a
 // compile-only copy. 0x2c0980 has the same chain and a second `or eax, -1` before its peer test, so look for one
 // shared helper.
+// Round 89: one peer guard with a shared two-use block, if/else or ternary 92 (154 bytes); one block
+// variable assigned in the flat arms 17; shared peer and block variables in nested arms 74 (212 bytes);
+// force-inline tag helper 17; result initialized at its declaration 17; existing peer accessor 17;
+// const peer receiver 17. Original body restored.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
