@@ -836,6 +836,11 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC477: Two native sorted endpoint-distance homes, producer direction, exchange-slot scope and
 // coherent near/far names: eight forms 793 each (reduced control 795; full 539). Two-point leads
 // rejected; original distance graph, body and helpers restored. Tag/count/plane homes remain.
+// Round 326: Complete old-bound snapshots/result branches/upper-first publication,
+// subsets 1-7, then reversed observation order: fast 778/808/790/779/778/809/790/790
+// against unchanged fast 795. Bounds snapshots plain 574 at 3616/3647, versus
+// opening plain 539/3647; rejected. Original body and every helper restored;
+// tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

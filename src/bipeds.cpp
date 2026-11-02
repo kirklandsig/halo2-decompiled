@@ -1866,6 +1866,10 @@ void function_dfd70(long arg_159e6d)
 // Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
 // forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
 // origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
+// Round 324: single complete mode dispatch orders 0123d/3012d/d0123/1203d/2103d/3201d/013d2/d3210
+// 392/375/392/393/393/378/388/375; shared user 610 -> 614 in all. Original helper restored.
+// Common origin setup once with mode orders 312d/123d/d312/1d23/2d31/321d/d213/231d:
+// 254 each; direct helper users unchanged, dispatcher 108 -> 109. Original helper restored.
 // Round 359: Forward/side/both scale observations 240/235/240; each with a complete
 // direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
 // 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
@@ -2667,10 +2671,17 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
 // push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
 // with uniform per-use counts 544. Original indexed scans and body restored.
+// Round 324: complete centroid scalar storage in both input-read orders, each with/without
+// reciprocal and all weighted products beside their consumers: 562 each. Frontloaded
+// weighted products also 562, reverted. Original aggregate centroid and body restored.
 // M309: Existing position helper before/after mass query 530/548; native signed view
 // 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
 // restored). Deduplicated exits 531; per-path result 591; false-default/result-first
 // 542/542. Original complete body, owning field and helper declarations restored.
+// Round 326: Existing complete centroid/direction/fallback scale producers,
+// seven subsets, then all with the per-body impulse scale before lift: 530 each.
+// Original component producers and body restored; frame 0x44 versus 0x4c,
+// result byte, state width and centroid/impulse homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3215,9 +3226,15 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 514: native input memcpy/memmove with direct output 368/383; aggregate
 // input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
 // Original helper and body restored; matrix/pivot homes and scalar transport remain.
+// Round 324: last-use scopes for parent matrix/world pivot/child world, subsets 1-7,
+// then all with matrix declared before origin: 368 each. Original scopes restored.
 // Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
 // subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
 // Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
+// Round 326: Cached scale/shared scale producer/branch-owned scaled point in
+// the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
+// the native point declaration first 367. Two-point lead rejected; original
+// alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3918,6 +3935,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 470: Repeated forward-field receiver at first rotation/before normalization,
 // each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
 // normalization SIMD ranks and trig/rotation/basis homes remain.
+// Round 325: Actual sine/cosine/axis const-reference formals in the twice-used rotation,
+// nonempty subsets then all with vector reference: 145/145/145/145/145/145/145/145. Original helper and body
+// restored; normalization SIMD numbering and coefficient/rotation homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

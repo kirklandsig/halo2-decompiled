@@ -3014,8 +3014,8 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 }
 
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
-// score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
+// score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
+// Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -3046,6 +3046,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // Round 360: elapsed accumulation/native signed-byte kind/result-from-alpha-test subsets,
 // 177/208/177/208/177/208/208; all with byte result 213. Native byte kind reaches
 // 773 bytes but retains the smaller frame. Earlier counts 175/194; original body restored.
+// F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
+// fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
+// 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4319,6 +4322,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Round 307: culled-unculled/gated-unculled/all families 179/198/192/183/189/210/186;
 // Round 307: first pass alone 171. Original caller and all shared helpers restored;
 // Round 307: late enabled stores, dead mode loads and the stub register convention remain.
+// F327: Existing light-pass producer for individual modes 3/20/7, then
+// 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
+// Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

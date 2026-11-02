@@ -877,6 +877,10 @@ extern vector3f *g_4687b0;
 // scaled aim blend retained. The direct random-call producer removes the one-use
 // scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
 // Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
+// Round 326: Remaining tag-pointer/released-index/saved-type lexical roles,
+// seven subsets, then all with the uninitialized type declaration before the
+// released index: 309 each. All capture points fixed; original complete body
+// restored. Definition/index/type/direction homes and offset/SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2570,7 +2574,7 @@ long function_c8f60(long unit_index, short seat_index);
 /* puts a unit in a vehicle's seat: attached to the seat's marker, its
    weapon put away (or dropped), its seat animations, and the seat's
    occupant asked to leave */
-// score 306 (was 306): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
+// score 293 (was 306): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
 // the unit pointer (ours keeps the unit in ebp and spills the offset to the same slot), so the constant-1
 // stores and most reloads differ; retail also tests the 0x3dc state as a zero-extended long and has a dead
 // `lea` of the header's unit field. Earlier: score 306 (was 321).
@@ -2595,6 +2599,11 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 360: admission/parent early failure guards and full-width result subsets,
 // 341/325/321/359/333/336/365; all with byte reset 369. Original admissions,
 // Boolean storage and complete body restored; entry vehicle/unit/ordinal residence remains.
+// Round 325: Complete unit/header/vehicle field receivers in seven subsets, then all with
+// final transform library copies: 405/306/293/406/419/289/420/420. Vehicle field reads
+// at both uses kept plain at 293 (1221/1209 bytes); original unit/header receivers and
+// transfers retained. Header/vehicle form 289 restored as a repeated computed address.
+// Entry vehicle promotion, unit/ordinal residence and state comparison width remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2627,8 +2636,7 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 				state_name = function_c7160(unit_index, seat_index, 0, vehicle_index, 0);
 
 			bool is_vehicle = TEST_FIELD_BIT(((1 << UNIT_ACTION_HEADER_GET(unit_index)->type) >> 1) & 1);
-			s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
-			byte *seat = *(byte **)(g_4e3b44[vehicle->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
+			byte *seat = *(byte **)(g_4e3b44[UNIT_ACTION_UNIT_GET(vehicle_index)->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
 
 			if (unit->unknown13c != NONE)
 				function_bbe60(unit->definition_index);
@@ -2717,7 +2725,7 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 				short user_index = unit_action_player_value28_get(unit->unknown13c);
 
 				if (user_index != NONE)
-					function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
+					function_1874b0(user_index, (vector3f const *)((byte *)UNIT_ACTION_UNIT_GET(vehicle_index) + 0x150));
 			}
 			result = true;
 			if (force)
@@ -4367,6 +4375,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // real late relative-position workspace 199. Two-point leads rejected; original native output and
 // whole body restored. Frame 0x110 versus 0x11c, frame-left and point schedules remain. The real-
 // position form recovers all quaternion homes, so another quaternion-name search is not justified.
+// Round 326: Actual away/left/world entry declaration lifetimes, seven subsets,
+// then all with the actual entry frame: 175 each. All producer points unchanged;
+// original declarations and native output restored; frame 0x110 versus 0x11c remains.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

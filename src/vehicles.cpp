@@ -2647,7 +2647,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2677,6 +2677,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
 // output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
 // remain.
+// F327: Distinct inverse output with the relative result in current/desired/inverse
+// 701/700/703; inverse declared at entry 701/700/703; complete matrix role names
+// with current/desired result 701/700. Original complete body restored; frame and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3484,6 +3487,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // complete forward product parts 131; with shared subtraction/native fallback copy/both
 // 133/149/152. Five-point producer form rejected. Original complete body restored;
 // projection i-product, cross ranks and angle/trig homes remain.
+// Round 325: Common real-angle/trig phase, switch/conditional dispatch, cosine/sine first
+// and case/default axis branch order: 184/160/184/159/184/160/184/159. Original complete body restored;
+// projection/cross ranks and x87 angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4035,6 +4041,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Round 525: Search-owned active scalars with six default creation orders and two threshold-failure
 // exits, eight forms 261/261/260/261/260/261/261/261. The found-index retest goes but extent falls to 1339;
 // original complete search, scalar observations and body restored.
+// F327: Four-use component index, completed true-arm return and both 176/176/176;
+// native byte quantization alone/with either/both 178 each; all with twice-used change
+// 178. Original complete body restored; found-index retest and collision/result allocation remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

@@ -1742,11 +1742,16 @@ void function_b7360(long object_index);
 // 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
 // enclosed short selector 466. Original admission, selector observations and complete body restored;
 // entry carriers and the 24-byte deficit remain.
+// Round 324: native record memmove boundaries, subsets 1-7 and all with direct output uses,
+// 472/309/487/309/486/323/499/499. All regress; complete callback and transfers restored.
 // Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
 // 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
 // Round 525: Shared case-seven/eight admission, either payload first, native bool/byte/short/long
 // moving result: 473/473/473/473/476/476/476/476. Original separate admissions, result widths, cases and
 // complete callback restored; pool/input/output ownership and the 24-byte deficit remain.
+// F327: Complete single-exit zero/two storage before/after acquisitions,
+// short/long/byte/dword 457/457/543/457 in either position. Original callback
+// restored; actor/output entry carriers and the 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

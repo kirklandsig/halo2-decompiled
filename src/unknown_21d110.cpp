@@ -953,6 +953,10 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // uninitialized 145/145/201/199, initialized 158/158/212/211 (fast control 58,
 // full baseline 30). Original snapshot, native byte and complete body restored;
 // alternate-byte and scalar homes remain.
+// Round 325: Bounded two-state enum capture, uninitialized/initialized with conditional/branch
+// producers: primary inequality 146/155/193/209; secondary equality 144/153/113/140
+// (fast control 58, plain 30). Original byte capture and complete body restored;
+// the uninitialized enum recovers early homes but widens the capture and consumer.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

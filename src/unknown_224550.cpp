@@ -306,6 +306,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // modulation, field/library transfers and original/entry seed workspace:
 // 236/236/486/486/236/236/498/498. Original tint/UV body and includes restored;
 // tint/secondary-UV homes and blend/reciprocal residence remain.
+// Round 325: Existing UV producer consumes its real four-element input array, pointer/reference
+// input and output with original/scalar pivot storage: 232/232/232/232/325/325/325/325. All alias-safe captures,
+// original contracts, workspaces and complete body restored; tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
