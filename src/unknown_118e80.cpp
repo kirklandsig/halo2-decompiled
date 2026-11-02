@@ -1126,6 +1126,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 293: Effect-request location/selected-point/original-center memmove subsets 1/2/4/3/5/6/7:
 // 219/206/203/211/212/219/225; all with selected-output memmove 340. Original body restored;
 // quotient/query and selected geometry homes remain.
+// N295: Native selected point/normal/location standard range-transfer subsets 1-7,
+// 344/357/337/272/356/365/348; all with matching effect-request ranges 333 (retail length).
+// Original body restored; quotient/query and selected geometry homes remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
