@@ -622,13 +622,15 @@ static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,so
 	work = _mm_add_ss(work, first);
 	other = _mm_shuffle_ps(first, first, 0xaa);
 	other = _mm_add_ss(other, work);
-	__m128 projected_a = other, projected_b = second;
-	float scalar_a, scalar_b;
+	__m128 projected_a = other;
+	// Round both projections before publishing either remaining error.
+	float scalar_b;
+	_mm_store_ss(&scalar_b, second);
+	float scalar_a;
 	_mm_store_ss(&scalar_a, projected_a);
 	cursor += 6;
 	result += 2;
 	cursor[-6].m128_f32[3] -= scalar_a;
-	_mm_store_ss(&scalar_b, projected_b);
 	cursor[-3].m128_f32[3] -= scalar_b;
 }
 
@@ -644,7 +646,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// score 1977 (was 1983): construct residual projections directly in their scalar homes.
+// score 1974 (was 1977): keep both rounded residual projections before the error writes.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
