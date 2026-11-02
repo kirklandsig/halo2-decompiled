@@ -96,6 +96,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 344: complete axis/input staging, their pair, returned matrix and its three staging subsets,
 // then native input-vector copies: 393/356/393/431/452/429/453/485. Original helpers and body
 // restored; frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain.
+// Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
+// Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
+// Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2515,6 +2518,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
 // Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
 // second loop as a search with the swap after it 365.
+// Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
+// Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
+// Round 308: helpers and body restored; prefix/state roles and decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

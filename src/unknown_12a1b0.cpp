@@ -1701,6 +1701,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 250: standard fill_n for sounds/gains/both 547/565/564; fill 547/563/564;
 // both complete initialization phases reversed with fill_n/fill 564/564. Original arrays,
 // initializer lists and header set restored; frame/playback/NONE and range/ring homes remain.
+// Round 308: native physical sound/detail/playback flag domains, seven subsets and shared gain-add
+// Round 308: boundary 479/486/452/438/494/469/469/488 reduced (control 479); sound/detail plain 421,
+// Round 308: playback word plain 467 against full 305. Original real types and complete body restored;
+// Round 308: frame 0x11c versus 0x128 and playback/NONE/range homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2322,6 +2326,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // normalization scale produced after energy 746 each (unchanged reduced control 694, full baseline 597).
 // Original ordinal, scale lifetime and complete body restored; entry truth, record/track homes and loop
 // alignment remain.
+// Round 308: native persisted sound/outer-tag/track-tag flag domains, seven subsets then guarded alternate,
+// Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
+// Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
+// Round 308: and record/track ownership remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -3657,7 +3657,7 @@ struct s_128ca0
 
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
-// score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// score 222 (was 222): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3757,6 +3757,9 @@ struct s_128ca0
 // with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
 // Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
 // round trip between each pin argument's sum and the pin parameter.
+// Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
+// Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
+// Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
