@@ -37,11 +37,11 @@ static __forceinline solver_projection_31c940 sum_three_projection(__m128 const 
 
 // Paired projections retain retail's separate loads of A's velocity fields.
 static __forceinline solver_projection_31c940 project_first_linear_velocity(solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &linear_axis)
 {
 	__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear), b->linear);
 	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
-	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
+	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, linear_axis)));
 }
 
 static __forceinline solver_projection_31c940 project_second_linear_velocity(solver_linear_row_31e7b0 const *row,
@@ -149,13 +149,14 @@ static __forceinline float const &load_friction_scale(solver_step_31c940 * const
 	return step->friction_scale;
 }
 
-// The second row's B axis is the shared cursor for these two normal rows.
+// Retain the first row's unshifted cursor alongside the second row's B axis.
+// Their separate uses keep retail's cursor bias over the same row storage.
 static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
-	__m128 *axis, solver_velocity_31c940 *a,
+	__m128 *axis, __m128 *first_axis, solver_velocity_31c940 *a,
 	solver_velocity_31c940 *const volatile &b, float *result)
 {
 	float target_a = axis[-5].m128_f32[3];
-	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b);
+	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis);
 	// Give the first error its float home before projecting the second row.
 	volatile float error_a = target_a * load_error_scale(step)
 		- projected_a.value * load_velocity_scale(step);
@@ -180,12 +181,12 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	}
 	else if (impulse_b > 0.0f)
 	{
-		apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
+		apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
 		apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 		return;
 	}
 	float candidate = error_a * axis[-4].m128_f32[3];
-	if (candidate > 0.0f) apply_linear(candidate, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
+	if (candidate > 0.0f) apply_linear(candidate, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
@@ -663,7 +664,7 @@ union solver_velocity_or_kind_31c940
 	int kind;
 };
 
-// score 1964 (was 1966): handle the first pair's fallback before joint updates.
+// score 1961 (was 1964): retain both normal-row cursors across the first pair.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -711,7 +712,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 3:
 			{
 				{
-					solve_contact_pair(step, op, normal_axes, a, b, result);
+					solve_contact_pair(step, op, normal_axes, terms, a, b, result);
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
