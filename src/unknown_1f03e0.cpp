@@ -961,6 +961,10 @@ struct s_flags_1f0870
 // forms revisit the clean store graph; original observations and full body restored.
 // Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
 // declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
+// Round 257: Native coordinate consumers for general delta/bounded scale/publication, seven subsets,
+// then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
+// retail length at 587; the three-point gains are rejected. Original complete body restored;
+// frame 0x34 and direct/vector homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
