@@ -760,10 +760,15 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
 // Round 260: Six direction/previous-direction/world-start declaration schedules 675/675/675/675/675/675;
 // reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
+// Round 261: all six relative lexical schedules of direction/previous-direction/world-start
+// 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
+// 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
 // Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
 // subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
 // Round 291: conditional/default-high actor-height producers, signed/unsigned flags and
 // long/Boolean success, 727/760/727/760/729/750/729/750. Original complete body restored.
+// Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
+// subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
 // Round 261: all six relative lexical schedules of direction/previous-direction/world-start
 // 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
 // 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.

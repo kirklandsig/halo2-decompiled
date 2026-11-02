@@ -1337,6 +1337,9 @@ struct s_looping_detail_request
 // Round 290: Shared offset/outer selected-player/outer camera workspace subsets 1-7 all 127;
 // complete workspace with native signed count 129. Original declarations and count restored;
 // entry frame/copy agree, detail retention and first-player expansion remain.
+// Round 289: signed-byte selected player, with native count/skip and shared offset
+// workspace subsets: 132/134/148/149/132/134/148/149. Original carriers and complete body
+// restored; detail retention and unwanted first-player expansion remain.
 // Round 291: Source/offset/velocity overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with native flag, 190/180/123/193/185/174/186/186. Four-point best rejected; original copies restored.
 // @retail 0x21cc60
@@ -1673,6 +1676,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // 489/489/489 reduced; with independent per-pass counts 492/493/394; active-only tail with
 // complete request storage and both/no count snapshots 394/488. Reduced control 479;
 // active-only tail/counts plain 379 at 1924 bytes (baseline 305/1923), restored.
+// Round 289: positive state work region, process-before-release arm, nested update/handle
+// admission, seven subsets: 305 each; complete graph with native full request 305.
+// Original guards, request, frame and complete body restored.
 // Round 291: Native integer activity/mask domains long/short/word: 305/304/304/410/410/304/304/304.
 // One-point forms rejected; original dword mask/activity, request and range loops restored.
 // @retail 0x21b0e0
@@ -1986,14 +1992,14 @@ void function_12a1b0(short voice_index, s_looping_track_sound *sound, s_looping_
 void function_21f8a0(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects);
 void __stdcall function_21f720(s_looping_impulse_parameters const *parameters);
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties, s_looping_effect_playback const *effects, bool force);
-// score 335 (was 335): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
+// score 339 (was 339): the frame is 0x4b4 where retail's is 0x4bc, and the stack slots are not
 // a shifted copy of each other: ours has homes at 0x74, 0x78 and 0x94 that retail does not use,
 // and retail has 0x64, 0x80, 0x84 and 0x9c that ours does not, so retail carries two more dword
 // locals in a different order and the gap cannot be closed by padding;
 // retail reads the track value and the source scale before the clear, the one-fill clear and the
 // inlined 0x221810 (BLOCKED-BY 0x221810, another file) and the inlined 0x12a420 at the
 // stop_channel site remain.
-// score 335 (was 335): frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
+// Earlier: frame 0x4b4 versus 0x4bc (retail reads the track value and the source scale before the
 // clear), the one-fill clear, 0x221810 inlined (BLOCKED-BY 0x221810) and 0x12a420 inlined at the stop_channel site remain.
 
 // Earlier: frame 0x4b4 versus 0x4bc, entry snapshots and the class lookup expansion still differ.
@@ -2038,6 +2044,10 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // 497; the playback lookups through the existing sound_definition_get 335 (same code); the stop flag through
 // word_flags_set at the state-else site 419, at both sites 419; the gain sum above the clear 333 (under the keep bar),
 // with the nested clear 498.
+// Y499: retained gain-parameter graph, early track-gain/source-scale/source-gain
+// input subsets 1-7: 339/467/465/464/462/481/481; all with flat zero aggregate 492.
+// Exact-only one-use snapshots all restored; frame remains 0x4b4/0x4bc with scalar homes,
+// class-query boundary, clear regions and stop-call expansion unresolved.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {
@@ -2275,6 +2285,13 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // xorps/movss where retail stores eax = 0 as integers, so the clear is not a float store); memset with
 // `4 * sizeof(real)` 611 (identical); `(definition->flags & 0x80) != 0` 611; `created = true` before the creation
 // call 611; re-measured: memset of &listener_gains[0] 611 (listed above as memset on &listener_gains).
+// Round 498: Alternate computed after source update/inside track phase/after acquisition,
+// bool/short per-track carriers 730/744, 786/743, 782/742; direct parameter bits at both
+// consumers 794/736 (exact-only). Reduced control 694, full 597. Frame/register and record/track
+// homes remain; original parameter-derived producer, widths and body restored.
+// Round 289: native previous/next transition carriers char/long, short/long, long/char,
+// long/short, char/char, short/short, char/short, short/char: 669/644/626/657/645/651/658/655.
+// Original state graph restored; entry truth ownership and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

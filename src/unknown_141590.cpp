@@ -287,6 +287,11 @@ static inline void quaternion_transform_vector(
 // Round 294: Complete rotated-vector memcpy/memmove publication with staged-cross/independent-half
 // combinations 334/311/334/311 and 348/383/348/383. Original helper/body restored; frame and
 // quaternion/cross spill sharing remain.
+// Round 267: result-component loop on staged-axis/real-scale construction,
+// long/short/byte/word ordinals with paired halves 266/1023/1023/1023,
+// independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
+// transform at 596 bytes; original helper, halves and complete body restored.
+// Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -926,6 +931,9 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // Round 46 (lane 14, plain): only terms whose single use is the next statement written into it: the first 420
 // (921 declarations) 1775 at 10763 bytes with retail's convention (rotation in EAX, ret 4; 0x22850 235, 0x23690
 // 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
@@ -949,6 +957,15 @@ void function_143250(
 // Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
 // 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
 // admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
+// Round 500: literal-only scalar cleanup with complete basis/single-consumer/reused
+// same-type copy families, masks 0..7, 1767/1948/1766/1936/1927/2000/1917/1986.
+// Original scalar and publication graph restored; frame, rotation admission and basis homes remain.
+// The full identity/literal graph has 917 numeric declarations, EAX rotation and frame 0x304
+// in the reduced image, but regresses to 1986 at 10988 bytes.
+// Round 222: numeric scalar identities, mutable first-assignment declarations,
+// first-producer/final-consumer declaration order, double-first/real-first declarations,
+// numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
+// precision boundary and publication retained; complete original scalar graph/body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

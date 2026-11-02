@@ -364,6 +364,9 @@ void __stdcall function_1160c0(real dt)
 // before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
 // difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
 // Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 298: Normalized axis store orders ikj/jik/jki/kij/kji 179/179/179/178/178; complete scalar
+// axis producers with jki/kij/kji normalization 192/190/192. One-point gains rejected; original
+// axis producers and body restored. Segment/previous/axis homes and rotation schedule remain.
 // Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
 // cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
 // cosine declared before sine 179; both 179; `rest_offset`, `last_position`, sine/cosine angle names 179

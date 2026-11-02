@@ -289,6 +289,12 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
 // address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
 // (same code).
+// Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
+// 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
+// through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
 // Round 440: call-free seated-reset/magazine/input field-test orders, subsets 1/2/4/3/5/6/7, then all with
 // seat/parent test order 657/620/782/657/759/782/759/759. Magazine producer clears the complete output
 // first. Call admissions, widths and values are preserved; no state/player allocation gain; original guard
@@ -296,6 +302,8 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
 // original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
 // with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
+// Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
 // Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
 // gives 620/623/650/649/613/651/651/653. Seven-point best is below the
 // retention margin; original case order and executable body restored.
@@ -308,6 +316,8 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
 // 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
 // through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// DH round 265: selective completed-result returns for reset/inventory/remaining-test subsets 1..7, then all with ordinary player:
+// 630/646/646/684/684/701/872/783. Original complete body restored.
 // Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
 // original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
 // with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.

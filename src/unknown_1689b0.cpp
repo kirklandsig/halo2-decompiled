@@ -1556,7 +1556,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain; the prism cursor is
+// score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1649,6 +1649,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through
 // the existing plane_distance_to_point 620 (frame 0xb958); long counters declared count/radius by kind 571 (2890
 // bytes); word counters declared that way 551 (one point); the loop without the `counts[2] > 0` guard 555.
+// Round 298: Independent sums/shared normalization with long counts, point-count-first cap and
+// shared plane distance, masks 0..7: 591/575/593/579/613/605/551/569. One-point gain rejected;
+// original sums, word counts, normalization, cap, plane producer and body restored.
+// Sum/query-zero/cursor homes remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
 // the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
@@ -1663,6 +1667,12 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 445: Native double radius-minimum/nearest-separation/normalization result domains,
 // seven subsets and full-width-count graph: 651/641/678/621/643/681/697/763.
 // Original complete executable body restored.
+// Round 451: Edge-reconstruction endpoint declarations at entry/radius/prism/producer
+// scopes, original and complete endpoint role names: 552/552/552/552/552/552/552/552. Original declarations, names and
+// complete body restored; sum homes, query zero and prism anchor remain.
+// Round 241: Native cross-product/point-difference/edge-query direction storage,
+// singles/pairs/all 580/552/553/580/581/553/581; all with long accepted counts 592.
+// Original vector storage, accepted word counters, helper and complete geometry restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
