@@ -319,6 +319,9 @@ union s_185be7
 // DH round 268: independent byte/word scratch declarations, clear order and entry scope,
 // seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
 // Original scratch lifetimes, CRT clears and complete body restored.
+// M294: Consumed range/filter-copy-mask/angular-output scopes, seven subsets,
+// then all with immutable controlled index:
+// 731/731/731/731/731/731/731/731. Original complete executable source restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

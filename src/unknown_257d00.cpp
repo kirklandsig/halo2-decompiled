@@ -2219,6 +2219,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 335: Complete turning/alignment/both-distance product parts, subsets 1-7,
 // 485 each; all parts const 485 (fast control 485; full 469). Actor/state allocation
 // and first point home remain; all original products, cases and body restored.
+// M294: Query/count-state arm orders 9/10/11/12, 9/11/10/12, 9/11/12/10, 10/9/12/11,
+// 10/12/9/11, 11/9/10/12, 12/9/10/11, 12/11/10/9:
+// 469/469/469/469/469/472/469/472. Original complete executable source restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

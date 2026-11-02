@@ -809,6 +809,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // DH round 268: native text storage for message/format/game/teams/main pair/auxiliary pair/
 // message+auxiliaries/format+auxiliaries 506/512/512/512/506/512/506/512. Only message
 // storage recovers EBP bias, still frame 0x860; six-point lead rejected. Original buffers and body restored.
+// M294: Native message storage with bounded widget-word/row-byte/campaign-bool domains,
+// seven subsets, then all with consistent state observations (exact-only):
+// 546/601/625/532/547/624/630/630. Original complete executable source restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

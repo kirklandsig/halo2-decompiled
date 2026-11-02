@@ -623,6 +623,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
 // pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
+// M294: Existing cost weighted products/accumulator/staged weighting/raw query parts,
+// in-class then forced expansion:
+// 67/67/67/67/67/67/67/67. Original complete executable source restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

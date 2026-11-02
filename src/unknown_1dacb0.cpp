@@ -1203,6 +1203,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // requests 1009 (2849 bytes); the iterated kinds requested before the asked-for ones 980; the named-animation
 // pointer declared at the block top 828; the iterator outputs declared before the iterator 828; the iterator
 // declared after the entry pointer 828. 0x1dbc80 stays 828 in every form.
+// M294: Per-attempt scalar candidate graph/index short/short, short/long, long/short, long/long,
+// defaults before/after lookup:
+// 1012/1012/1012/1012/1012/1012/1012/1012. Original complete executable source restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
