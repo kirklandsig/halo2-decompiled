@@ -387,6 +387,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 343: Group-classification result bool/byte/word/long, positive and complementary:
 // 122/122/122/122/122/122/122/122. Original dispatch, lookups, mask observation and call tuples
 // restored.
+// Round 350: Initially empty first/second/both receiver predicates 134/131/135; grouped initialization
+// 138; first/second/both receivers constructed bound 159/159/177, late construction 181. Fallback
+// masking and stage/pass homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

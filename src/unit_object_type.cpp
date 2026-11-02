@@ -2858,6 +2858,9 @@ void function_c5740(long unit_index, bool start)
 // Round 281: full-width material local 106; full-width slot 110; both 118; early receiver declarations 94;
 // nested weapon gates 94; named admission result 94; early receivers with full-width material 106;
 // immutable definition-argument lifetime 94. Full-width material forms also lose matched 0xcf040 (232).
+// Round 350: Single-exit weapon/fallback with guarded/conditional handle production, short/char slot and
+// original/pool receivers: 121/121/124/124/123/123/123/123. Definition/material/pool ownership and
+// effect convention remain.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)

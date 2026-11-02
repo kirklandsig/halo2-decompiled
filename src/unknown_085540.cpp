@@ -1252,6 +1252,9 @@ bool function_68670(byte *source, long size, void *block);
 // the copy count from header.size too 79.
 // M291: Complete outgoing-message aggregate/full memset initialization, each with native/separate sequence and function/loop received-header lifetimes:
 // 110/137/131/131/110/137/131/131. Original executable body restored.
+// Round 350: Positive payload delta word/int with native header/payload/both cursor
+// addition-then-remainder stores: eight forms 72 each. Header/sequence homes, DX size and forwarded
+// cursor remain.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
