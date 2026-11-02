@@ -1159,6 +1159,10 @@ void __stdcall function_43720(s_43740_input *input)
 // count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
 // 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
 // homes remain.
+// M319: Native subordinate header production via sparse member/mutable aggregate/
+// readonly aggregate/sparse library copy, count from published request 79/105/105/79;
+// count from producer header 81/105/105/81. Extra producer forms require exact
+// equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

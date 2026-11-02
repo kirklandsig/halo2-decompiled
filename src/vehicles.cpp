@@ -4310,7 +4310,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 765 (was 765): Frame 0x18 agrees, 16 bytes short; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
+// score 749 (was 765): Frame 0x18 and retail length agree; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
@@ -4343,6 +4343,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // AC481: active truth from the published output / read-only tag-table receiver /
 // read-only vehicle receiver, subsets 1/2/4/3/5/6/7: 765 each; all with table
 // acquisition before the pure object lookup 768. Original body restored.
+// M319: Common normalization with bool/byte/short/long forced state, original/direct
+// truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
+// publication alone 749 fast/plain, 2974/2974 bytes; retained with original
+// bypasses and bool state. Initial SIMD/definition allocation remains.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4557,14 +4561,7 @@ bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *
 
 done:
 	*value = result;
-	if (result > 0.0f || forced)
-	{
-		*active = true;
-	}
-	else
-	{
-		*active = false;
-	}
+	*active = result > 0.0f || forced;
 	return true;
 }
 

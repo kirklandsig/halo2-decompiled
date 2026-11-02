@@ -1923,6 +1923,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Re-measured: a record pointer with the xuid pointer 754 (aligned 364, twice: at the body top / beside the values pointer),
 // online_logon_connected() 729 (2862 bytes, aligned 343), with the record pointer 775. The slot helper's cmovne still needs
 // /arch:SSE (a file-flag decision).
+// M319: Slot index/native row/byte view/flags-address production before the
+// property copy, admission helper kept after it: after identity 709/709/709/761;
+// before identity 709/709/709/767. One-use producers require a match; all
+// restored. User cursor base/home, slot conversion and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

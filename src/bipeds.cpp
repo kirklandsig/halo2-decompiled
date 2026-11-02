@@ -2314,6 +2314,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // DH295: Complete per-use component getters with retained/at-use settling count, promoted/native
 // main-body result and entry/at-use tag: 74/99/74/89/86/103/87/101. All restored;
 // extra EBP, native body transport and flag scheduling remain.
+// M319: Full native component-index ownership at admission/getter, long/dword,
+// crossed with original/promoted-shared/native-shared/native-explicit body:
+// 63/73/75/73/63/73/75/73. All restored; extra EBP, body transport and flag stores remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
