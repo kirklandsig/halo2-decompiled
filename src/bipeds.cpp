@@ -1507,7 +1507,11 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 /* a biped's response to a damage impulse: it starts flinching or falling,
    a hard one knocks it over (and a ragdoll gets a random spin), and on
    the ground it turns to face away from the hit */
-// score 77 (was 77): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
+// MiniMax D (11-01): the mode byte now has a byte home (mode_byte) beside its long copy, so the 4/5 tests widen it
+// into eax and the 3 test keeps it in cl as retail does; the 0.5 scale goes through the existing vector3f_scale and
+// the magnitude is written i, k, j, which fixes the x87 squares.
+// score 20 (was 77): the two jne targets and the spin.i product (retail multiplies the angle into axis.i, ours into
+// a register copy) still differ, beside the reduced image's call and global addresses.
 // (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
 // in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
 // Earlier (score 122 (was 223)): tag/flag carriers, strong-result home, spin scaling and late call/output scheduling.
@@ -1596,9 +1600,7 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 
 		if (!(TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)))
 		{
-			velocity.i *= 0.5f;
-			velocity.j *= 0.5f;
-			velocity.k *= 0.5f;
+			vector3f_scale(&velocity, 0.5f, &velocity);
 		}
 		word_flags_set(&biped->flags_348, 1, true);
 		if ((TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) || (TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1)) || biped->physics_mode == 2)
@@ -1610,7 +1612,7 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 
 			cross3f(g_4687b0, &velocity, &axis);
 			function_30bf0(&axis);
-			magnitude = (real)sqrt(velocity.j * velocity.j + velocity.k * velocity.k + velocity.i * velocity.i);
+			magnitude = (real)sqrt(velocity.i * velocity.i + velocity.k * velocity.k + velocity.j * velocity.j);
 			spin_fraction = (real)random_next(&g_4e7408->unknown0) * 1.5259022e-05f;
 			angle = spin_fraction * magnitude * 1.5707964f;
 			spin.i = angle * axis.i;
@@ -1646,9 +1648,10 @@ apply:
 		}
 		if (biped->parent_object_index == NONE && biped->unknown13c == NONE)
 		{
-			long mode = biped->physics_mode;
+			byte mode_byte = biped->physics_mode;
+			long mode = mode_byte;
 
-			if (mode != 4 && mode != 5 && !biped->unknown34b && (strong || mode != 3) &&
+			if (mode != 4 && mode != 5 && !biped->unknown34b && (strong || mode_byte != 3) &&
 				impulse->j * impulse->j + impulse->k * impulse->k + impulse->i * impulse->i > 1.4f * 1.4f)
 			{
 				vector3f away = *impulse;
