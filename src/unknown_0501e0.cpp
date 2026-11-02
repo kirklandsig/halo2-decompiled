@@ -241,6 +241,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 500: native ordinal !=3/<=2 with long/dword/short/word domains
 // 409/221/401/221/400/399/400/399. Equality bounds change unrolling but regress;
 // extra frame word and coefficient/input/result homes remain. Original helper/body restored.
+// Round 502 (reduced): identity-conditional native/memcpy input protection, alias/scale-first
+// ownership 287/289/287/289; indexed outputs 290/305/290/305. Complete alias-safe scalar
+// helper and original body restored; extra frame dword and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

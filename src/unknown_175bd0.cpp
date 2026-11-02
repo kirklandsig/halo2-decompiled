@@ -2068,6 +2068,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // complete point and plane with named distance, mutable/const 379/379. Original zone producer
 // restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
 // Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
+// Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
+// 128/138/138/128/138/128/128/128. Original case order, body and zone producer
+// restored; early color/query ownership and frame 0x40 versus 0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3386,6 +3389,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
+// association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
+// restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

@@ -177,6 +177,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 499: Reused width/height dominance with bool/long decisions and private/shared
 // logarithms: 101/95/101/101/107/88/97/90. Original decisions, coordinates, helpers and body
 // restored; promotions and count homes remain.
+// Round 501: high-block logarithm peeling 16/8/4/16+8/16+4/8+4/16+8+4/16+8+4+2
+// 129/129/133/172/161/161/199/137; last loses the matched caller. Original helper/body
+// restored; delayed coordinate promotion and height/shared-count homes remain.
 // Round 223: Isolated non-SSE unit 94 (diagnostic); immutable/next-bit windows,
 // descending index/mask, ascending thresholds and three-/two-bit chunks give
 // 88/103/97/105/97/96/132/99. The next-bit/index/mask/first-threshold forms lose
