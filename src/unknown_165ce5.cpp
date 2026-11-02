@@ -1649,6 +1649,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // then all addresses at admission: 222/457/459/225/459/457/236/239
 // (fast control 220, full 218). Original addresses and complete body restored;
 // frame, unit/mode homes and independent look divisions remain.
+// Round 521: two-use native look-coefficient handoff, early/phase capture, optional
+// aiming-pair handoff and immutable receivers: eight at 220 (fast control 220, full 218).
+// All original carriers restored; frame, unit/mode and independent look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
