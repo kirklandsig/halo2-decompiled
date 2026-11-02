@@ -2060,9 +2060,17 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
+// Round 533: Immutable native entry direction with independent rotation output,
+// forward and up inputs, subsets 1/2/4/3/5/6/7 and complete vector role names:
+// 186/177/177/186/186/177/186/186. Original captures, writeback and body restored;
+// frame 0x80 versus 0xc0 and angle/vector-copy/draw homes remain.
 // AC480: Local/forward assignment initialization and existing native result setter, subsets
 // 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
 // original producer and body restored. Frame and independent vector-copy homes remain.
+// DH301: Actual drawing matrix, complete point setter and complete facing setter,
+// subsets 1/2/4/3/5/6/7, then all with uninitialized draw outputs before reset: 177 each.
+// All tie; complete original drawing objects, helper calls and body restored. Frame
+// 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2260,6 +2268,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
 // role names 63. Original draws, declarations and complete body restored; lazy saves
 // and the post-fstp count comparison remain.
+// Round 535: complete squared-norm parts, uniform centered sample producer and independent
+// entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
+// Original body restored; delayed saves and the post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2373,6 +2384,12 @@ real magnitude3d(vector3f const *v);
 // Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
 // bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
 // Both exact controls survive; original body, math APIs and all rounding/grouping restored.
+// Round 533: Complete projected-axis/cosine-aligned/sine-tangent expression parts,
+// subsets 1/2/4/3/5/6/7 and all with scalar/vector role names: 170/171/170/170/170/171/170/170.
+// Original products and body restored; raw-length/dot/angle homes and rotation allocation remain.
+// P275: Complete current/target/both input snapshots 246/288/266; same native vectors
+// normalized in place 245/287/265; both inputs captured at entry 272; both with early
+// normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2492,6 +2509,11 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
+// Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
+// DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,
+// immutable complete zxy, then zxy with full position memcpy: 136 each (fast control 136).
+// Original products, position assignment and complete body restored; list/cursor homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2635,6 +2657,13 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
 // subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
 // All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
+// DH299: Native nonnegative prefix and explicit post-swap tail decrements in both
+// removal passes, seven subsets, then complete graph with byte found: 317 each.
+// Original body restored; frame 0x30, prefix/state and ordinal homes plus decay rotation remain.
+// DH301: Original requested parameter retained with a genuine clamped-limit local;
+// branch/conditional clamp, safe entry parameter-copy and bounded unsigned-prefix
+// combinations: 377/321/435/321/377/321/435/321. Complete original body restored; frame 0x30
+// and retail length agree, prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3636,6 +3665,14 @@ bool __stdcall function_391f0(void *state);
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// Round 533: One genuine element ordinal shared by update pair/render pair/corresponding
+// first/corresponding second/opposite first/opposite second/all phases/all with ordinal role name:
+// 251 each. Original independent ordinals and body restored; frame 0x74 versus 0x70,
+// early zero and portal/fog homes remain.
+// DH301: Clock at each use, twice-used native elapsed result and distance-array reads
+// at each consumer, subsets 1/2/4/3/5/6/7, then immutable elapsed on the complete graph:
+// 310/251/277/295/288/277/275/275. All tie or regress; original complete body, reads,
+// publications and loops restored. Frame 0x74 versus 0x70 and zero/portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -4424,6 +4461,11 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F327: Existing light-pass producer for individual modes 3/20/7, then
 // 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
 // Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
+// Round 536: Shared cull call owned by nested result/explicit call arms/inside-range arms/normal-cull arms, then the same four with the raw caller gate: 214/138/138/138/217/191/191/191 fast.
+// Original helper and complete caller restored; enabled stores, mode loads and clear-call convention remain.
+// DH299: Complete branch-owned fog maximum crossed with raw mode-eight gate,
+// per-use source-group fields and native payload-byte count: 142/193/142/193/234/217/234/217.
+// Original maximum producer and callback restored; late enabled stores, dead mode loads and clear convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

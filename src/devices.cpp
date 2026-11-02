@@ -822,6 +822,9 @@ struct s_device_machine_view
 // Original body restored; word-load/EAX sharing and power-velocity zero join remain.
 // Round 78 (m3 lane 12, fast; word flags + the 0x1200055f zero store, aligned 4): a forceinline word getter taking the group pointer 122, a const pointer copy of
 // the group at the read 122, nested word tests 122, the pointer scoped to a block that ends before the tests 122 (all the pushed ESI, same code).
+// AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
+// before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
+// masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

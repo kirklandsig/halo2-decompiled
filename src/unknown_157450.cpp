@@ -2176,6 +2176,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // mode global's register (9). A permuter run was killed before it reported a result.
 // score 8 (was 8): the inlined equipment lookup keeps the object table base and the index in
 // swapped registers.
+// Round 125: old-index mask at the call 8; char index 38 (192 bytes), short index 41 (195);
+// const index 8; split declaration 8; iterator reference 8; second current-object pointer 8;
+// inline release declaration 8; grouped record renamed 8; record declared after initialization 8;
+// old-entry comparison reversed 8; upper-bound comparison reversed 10.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
