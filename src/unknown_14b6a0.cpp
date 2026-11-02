@@ -421,6 +421,9 @@ void function_14bac0()
 // unsigned selected-player and complete ancestry domains, 222/222/222/222; native result-tested recipient
 // counterparts 228/228/228/228. Native identity domains leave the frame and homes unchanged. Original
 // signed handles, returned point, selected-unit observation, both traversals and complete body restored.
+// N316: Actual alternate marker ordinal owns availability, short/long with original/native recipients and
+// separate/shared probe-bounds point: 238/251/235/236/242/251/235/236. Original Boolean, marker lifetime,
+// points and both traversals restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

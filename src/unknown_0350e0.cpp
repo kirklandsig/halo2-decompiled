@@ -2017,6 +2017,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // memcpy 178/180/173; heading/both plus memmove 197/201. Four-point leads and literal-bound
 // reference forms rejected; original angle producer and complete body restored. Frame and vector
 // homes remain.
+// N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
+// 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
+// angle/vector copies and draw homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {

@@ -540,6 +540,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // The selector now expands, but input roles and scalar/transfer scheduling regress; six forms worsen the
 // caller from 2 to 11. All complete-search ownership, helper qualifiers, center transfers and executable
 // body restored; original private selector, getters, caller inputs and arithmetic retained.
+// N316: Natural predicate/bound inner search with direct-result/count/center combinations:
+// 157/243/223/209/180/243/234/245. Original search, center copy, helper bodies and caller retained; input
+// roles and physics/projection scheduling remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
