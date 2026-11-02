@@ -3168,6 +3168,9 @@ struct s_voice_route_choice
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.
+// Round 153 (lane 4, fast): headset update as one expression 502 (1387 B); headset accumulated in its own
+// loop before the routing loop 491 (1183 B); talker bit computed once before the loop for both listener-mask
+// updates 391 (1294 B); talker's address taken 363 (no change); headset declared first 363.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

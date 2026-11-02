@@ -4509,6 +4509,10 @@ void function_15fe20(long team_index, color3f *color);
 // M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
 // all outputs via memset 671. Original output objects, return-pointer copies and complete body restored;
 // frame 0x48c and early homes agree, but native team-color transfers, sentinel reuse and byte shift residency remain.
+// Round 153 (lane 4, fast): weapon section in 0x15bb20's form (named unit index, engine_object_get, NONE
+// default inside the block, if-form selection) 119 (2688 B); `1 << (byte)iterator.index` 87; both 118
+// (2688 B); NONE default before the unit test with engine_object_get and if-form 119 (2688 B); the byte
+// shift with the two individual-block reorders 84.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5644,6 +5648,10 @@ void __stdcall function_d6bc0(long object_index);
 // 156/168/169/176/161/172/183/190. Original timer observations and body restored.
 // M283: Retained divisor/scenario/preset lexical spill-home subsets 1-7 score 144 each; all three with the initial tag receiver renamed 144.
 // Original names and body restored; frame 0x14/0x18, independent timer home and entry-base reloads remain.
+// Round 153 (lane 4, fast): zero test and schedule store through the field with the timer pointer formed
+// only for the countdown 176 (879 B; frame 0x18 but the new slot holds the index); the pointer defined before
+// a field zero test 176 (879 B); object pointer at the top of the loop body 229 (878 B); index at function
+// scope 144; countdown declared at the top of the loop body 144.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

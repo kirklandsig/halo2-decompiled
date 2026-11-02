@@ -249,6 +249,15 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 494: short persistent target count with native long query/choice and
 // bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
 // recover 3327 bytes but regress; all original counter domains, helpers and body restored.
+// Round 153 (lane 4, fast): retail keeps the existing-record count in memory at 0xec right below the existing
+// array (0xf0), one 0x104-byte object in the slot the query gains use earlier, and the target count at 0x88
+// right below the targets (0x8c). Diagnostic (a grouping struct, not keepable): the existing list as
+// {count, elements[64]} 875, every query array then in retail's slot and the count at 0xec; both lists 915
+// (frame 0x4e4); targets only 918. Existing count declared before the array 886; used mask declared first
+// 886; existing array and count declared at the top 886; append split into store and increment 886; target
+// count declared before the targets 886. The same list as a named {count, indices[64]} type used directly
+// (no references) 875 too; no existing type in src/ or include/ holds this list, so a new one would only
+// move homes: lead only.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
