@@ -241,6 +241,12 @@ struct s_24e9c7_bounds
 // across products and scaled in place, `0.0f -`, back scalars, up point 155; same, no back variable, up
 // scalars 153 (732 B); same as the first with unary minus 155; separate across scalars, back scalars, up
 // point 155; in-place side, back point, up scalars 147 (735 B otherwise); all sink the across products.
+// Round 194: a compile-only /FAs frame screen puts an 8-byte side point between the scalars once its
+// address goes to an inline pointer helper (side -0x10, between result -8 and kind -0x14; retail's pair
+// sits above result); with its address taken first (perpendicular then scale helpers) it stays below them.
+// Real (fast), side scaled in place by the half width through a pointer helper 134 (752 bytes), with up
+// and back as scalars 134; side from the negated forward scaled by size and then by the half width 145
+// (755); up scaled through the helper as well 143 (745); back negated through a helper 172 (766).
 // Round 150, each on the early-across form (`size * (0.0f - forward_j)`): side products across-first 138 (739
 // bytes); a named real half width for both side products 134; up computed before the half width 134; up as
 // `0.0f -` products 147 (735); the across pair declared right after size 138.

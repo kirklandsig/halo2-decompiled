@@ -135,7 +135,7 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 }
 #pragma inline_depth(255)
 
-// score 13 (was 108): the radius load and point/index store schedule still differs.
+// score 13 (was 13): the radius load and point/index store schedule still differs.
 // Earlier projection operand/sum order 95; radius local 30; multiply from the
 // object 32; radius copy first 19; depth as one expression 19-30;
 // record fields read directly 28; position pointer local 172.
@@ -163,6 +163,9 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 // radius/index stores swapped) and index/point/radius or point/index/radius record order matches
 // byte for byte. Normal build: index/point/radius 13, radius local first 30, radius local stored
 // before the index 31, record declared first 13, source point through a pointer local 175.
+// Round 37 (fast): index stored before the object lookup 14; arg_2 used directly (no index copy) 13;
+// the mode flag computed after the depth division 183; the lists entry read once 157; index copy
+// declared before the lists entry 13. Still BLOCKED-BY 0xbd610 (stub).
 // @retail 0x133790
 bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *arg_4, long arg_5, bool arg_6)
 {

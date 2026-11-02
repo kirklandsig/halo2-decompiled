@@ -860,6 +860,9 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // follow `push edi` as retail, but `xor esi, esi` sinks below it too); that with result declared before the barrier
 // 111 (306 bytes, four callers lost); start declared first with the zero-initialized locals ahead of the barrier 113;
 // the barrier right after the reader 6; the barrier with the counter declared in the loop's block 2.
+// Round 53 (lane 11, `--fast`): the switch then `return function_80e14(...)` (the existing inline
+// allocator) 87 (288 bytes, four callers lost); the type tests as an if/else-if chain 90; attempts
+// declared before timeout 5; result declared after the switch 94; a plain static reader in this file 2.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

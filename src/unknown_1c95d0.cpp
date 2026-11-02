@@ -35,7 +35,8 @@ long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
-// score 3 (was 3): Round 108 fast trials: swapped post-call tests 147; nested field-first tests 3;
+// score 3 (was 3): what is left is that retail stores the lookup's result
+// Round 108 fast trials: swapped post-call tests 147; nested field-first tests 3;
 // complemented disjunction 3; two-use actor-index snapshot 3; lookup result declared early
 // uninitialized/initialized 3/3; const lookup result 3; actor/target pointer declarations before
 // the condition 3. Original restored; lookup-result store still precedes retail's field reload/compare.
@@ -51,6 +52,10 @@ extern "C" void _ReadWriteBarrier(void);
 // flag declared before the call (barrier after it) 10; the event record declared before the call 3; the
 // record declared before the barrier 3. Retail keeps g_4e0300 in ESI across the call but reloads the
 // object's field, so its 0x1c9580 is seen as writing through pointers only.
+// Round 37 (fast): result flag cleared after the barrier 4; result declared, flag cleared, then the
+// lookup 10; the `arg_2 != 9` test named first 3; event record before the lookup with the flag after
+// the barrier 4; flag after the event record 4; a read-only barrier (`_ReadBarrier`) is not an
+// intrinsic in this compiler (becomes a call, 172).
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {

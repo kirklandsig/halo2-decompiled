@@ -1027,6 +1027,11 @@ bool __stdcall function_2399da(long controller_index)
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 115 (lane 7, fast): the rank stored before the rank-3 test re-measured 89; `have_member` as
+// `member.xuidTeamMember.qwUserID != 0` 90, with the stored rank 89; the have/may block nested under
+// `if (!have_member)` 92; the member's rank on the left of the permission comparison 91; the permission bit
+// tested from `flags` at both uses (no `may_change` local) 142 (428 bytes); the identity and permission
+// refusals both as guard returns ahead of a flat rank dispatch 90.
 // Round 52 (fast): the rank read once through its address into a local used at every rank use 90;
 // `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
 // call through a member pointer 90 (lane 7's form again); the permission test read from the membership

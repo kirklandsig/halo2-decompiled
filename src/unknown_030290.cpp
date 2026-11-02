@@ -364,6 +364,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
 // between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
 // recover frame 0x2c but regress. Original defaults restored.
+// Round 501: alias-protected native scaled input before/after the scale branch, field/loop
+// scaling and repeated/coherent scale observations 267/267/258/258/269/269/260/260.
+// Original alias-safe snapshots, helper and body restored; inverse/point homes remain.
 // Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
 // Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
 // Round 483: independent reverse-displacement admission with entry/perspective
