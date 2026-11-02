@@ -350,6 +350,10 @@ union s_185be7
 // AC477: Contiguous invalid-index/float-zero/short-zero reset fills, subsets 1..7, then
 // ordinary inline complete fill: 960/1021/1030/694/962/1021/1030/1030. Original reset and
 // complete body restored; control-root/NONE, settings/zero homes and flag joins remain.
+// Round 526: Actual held-input mask shifted through low bits, fixed/sparse termination,
+// word/dword remainder and indexed/cursor input 802/832/821/856/1109/1109/1125/1125.
+// Original two scans, duration cursor and complete body restored; control-root/NONE,
+// settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

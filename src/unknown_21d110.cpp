@@ -949,6 +949,10 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
 // Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
 // Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
+// Round 526: Complementary captured loop-primary state in bool/byte/short/long,
+// uninitialized 145/145/201/199, initialized 158/158/212/211 (fast control 58,
+// full baseline 30). Original snapshot, native byte and complete body restored;
+// alternate-byte and scalar homes remain.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

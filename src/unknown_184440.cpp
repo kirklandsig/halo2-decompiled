@@ -273,6 +273,10 @@ __forceinline bool function_184448(long arg_0)
 // Round 465: complete plane input before orientation, native/memcpy/normal-distance/
 // normal setter-distance, at face/entry scope: 987/987/966/973 twice.
 // Original split plane producer and body restored; frame and geometry homes remain.
+// Round 523: Scalar plane-transform input with complete scalar/native normalizer capture,
+// early/common result and original/scalar point input, 999/1080/1011/1052/1060/982/1033/976.
+// First form recovers frame 0x11cc and first +0x1d but regresses; original in-place inputs,
+// helpers, projection lifetimes and complete body restored.
 // P263: existing dominant-axis provider 1057; six persistent instance/geometry/material
 // pointer priorities 965/965/965/965/965/965; first/last with late worklist 965/965.
 // Original body and declaration restored; excess frame and geometry homes remain.
