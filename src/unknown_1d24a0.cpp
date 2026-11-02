@@ -283,6 +283,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // DH277: complete linked-component conditional/compound/nested/failure-first outcomes 901/901/902/992; each
 // with result declaration before object lookup 901/901/902/992. One-point leads rejected; all original
 // tests, fields, kernels and body restored.
+// Round 77 (m3 lane 12, fast control 902): retail reads the element's object field once into EDI ahead of the
+// record lookups, materialises the element pointer (`shl 3; add`) and spills it, and clamps the byte body slot
+// from AL. A named object-index local read before the record lookups 951 (4283 bytes), after them 926; the first
+// block's difference written straight into its normal (no staging copy) 961 (frame 0x1e4, 4235 bytes), with
+// the late object-index local 966; the element pointer as `(s_1d24a0 *)data + index` 902 (same code). Original
+// body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

@@ -226,6 +226,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH round 279: Shared per-iteration candidate-point address before/after stop guard, native group and
 // scalar point-bitmap interactions [442, 445, 452, 470, 459, 474, 492, 509]. Original executable body
 // restored.
+// Round 77 (m3 lane 12, fast control 390): retail stores false into the result byte again on the
+// no-selection exit and keeps the selected terminal and its candidate as shorts (`cmp word ptr [..], -1`,
+// no byte narrowing; its byte at the arg_2 home is the pass's found flag). Result assigned from the
+// selection test 430; `else` false after the output 400; short terminal and candidate 431; short terminal
+// alone 391; short candidate alone 446 (register-masked aligned 170 against 183). Original body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
