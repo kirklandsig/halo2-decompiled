@@ -518,6 +518,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // Complete opening body restored; no qualifying keeper.
 // DH280: Admitted-depth/previous-point/converted-coordinate branch ownership, seven subsets then all with
 // bounded short link count [350, 332, 336, 297, 354, 345, 334, 366]. Original executable body restored.
+// DH283: Repeated depth captured as short, with parent/edge/both field captures
+// 425/401/378/420; corresponding long depth forms 426/402/406/420.
+// Original indexed memcpy, field observations, private helpers and complete body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -952,6 +955,9 @@ bool function_2715a0(byte *buffer)
 // Complete opening body restored; no qualifying keeper.
 // DH280: Complete child-depth case priorities ADB/BAD/BDA/DAB/DBA, then update-first heap arms with
 // ABD/ADB/BAD [486, 488, 488, 486, 488, 490, 490, 492]. Original executable body restored.
+// DH283: Repeated decremented-count/child-heap-index/stored-cost ownership subsets
+// 486/494/494/486/486/494/494; complete graph with promoted remaining count 516.
+// Original heap observations, cost casts, helper calls and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

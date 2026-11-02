@@ -1433,6 +1433,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 313: Query output initialized to zero/expected size, crossed with false resize output
 // and pre-write count initialization: 41/54/219/214/95/110/213/188. Original outputs and failure-only
 // count initialization restored; query/count homes and write/checksum/validation joins remain.
+// DH283: Joint four-byte query-size/write-count/expected-size lexical priorities abc/acb/bac/bca/cab/cba
+// 33 each; expected-size declaration at iteration entry 33; with complete path/header identities 33.
+// Original storage names, declaration scopes, waits, helper calls and complete body restored.
 // @retail 0x213970
 void function_213970(void)
 {
