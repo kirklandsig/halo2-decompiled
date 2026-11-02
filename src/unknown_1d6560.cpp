@@ -183,6 +183,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // one read with the kind-7 switch listing cases 0/7/11 and an `__assume(0)` default 121 (284) [13]; two reads with
 // the main switch's through `component->object_index` 91 at 256 [146] (component on the stack, kind EDX), with
 // the kind-7 read through it instead 96 [0] (same code); one read with the body array named first 94 [13].
+// DL226: One completed native layer result across both kind routes, byte/char/short/word,
+// kind-arm defaults 97/99/125/125 and entry defaults 97/97/122/122. All lose 0x1d5bf0;
+// original result flow, repeated type observations and incoming convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

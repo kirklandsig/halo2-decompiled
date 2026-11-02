@@ -313,6 +313,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
 // gives 620/623/650/649/613/651/651/653. Seven-point best is below the
 // retention margin; original case order and executable body restored.
+// DL226: Intact inventory/capability/input handler-family order masks 1..8:
+// 656/620/656/632/643/632/643/643. Input-before-health gives 548 executable differences
+// versus 559 but 2268/2308 bytes and score 632; all restored. State/player/unit homes remain.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -692,6 +692,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
 // DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
 // 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
+// DL226: Uniform conditional zero/half multiplication, separate/together/coordinate-local,
+// inherited then ordinary sample: 179/190/205/189/213/223/238/221. All restored;
+// constant/limit ownership, direction carriers and jitter spill homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -942,6 +945,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL224: Final direction decision in bool/long/byte storage, bit before/after publication:
 // 173/166/173/166/173/166; selected direction pointer consumed twice, bit before/after publication
 // 213/215. All restored; sampled-vector slot and rotation/output schedule remain.
+// DL226: Existing complete vector setter at goal output, rotated output and original-input
+// copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
+// Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

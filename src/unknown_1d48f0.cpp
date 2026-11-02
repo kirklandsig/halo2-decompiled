@@ -249,6 +249,9 @@ const dword g_455978[81] = {
 // +0x44, sample +0x48). On that form: the endpoint copied from *arg_11 then offset in place 337 (2104 bytes);
 // the sample renamed, the radial scale through vector3f_scale, the endpoint declared at the loop top 306 each
 // (same code). Restored; a later round should keep this helper form once the homes can be moved.
+// DL226: Bounded table cursors on the retained planar scratch, vector-row/dword strides,
+// direct/cached range ends and relational/sentinel termination: eight forms 354. All restored;
+// optional bounds/exclusion homes and selective location/release expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,
