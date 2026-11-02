@@ -1445,6 +1445,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // 55: retail's `test edi, edi`), the 12-byte memset first 224 (aligned 51: retail's EAX block for the 16-byte group, the
 // 12-byte zero still in EDX where retail has ECX); on that the mask read from the field 224, the parameters pointer renamed
 // to sort before owner 224, the team compared as a long 224. Owner, name count and the requested cursor still differ.
+// M304: Current-record address after clear/array defaults/zero bytes/sentinels, with phase/entry
+// property output: all eight fast 211/927, same as unchanged fast preview (callee convention caveat).
+// Original address/output lifetimes and body restored; full baseline remains 184/926.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

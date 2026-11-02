@@ -1738,6 +1738,10 @@ void function_b7360(long object_index);
 // Round 286: Native actor/command/both array elements, command-first then actor-first, original
 // elements actor-first, both with output at use: 301/301/301/487/487/487/487/487. Original recovered case/result graph
 // and body restored; pool-first acquisition, actor/output carriers and 24-byte gap remain.
+// Round 517: On the current case-result graph, direct admission/enclosed execution/named admission
+// 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
+// enclosed short selector 466. Original admission, selector observations and complete body restored;
+// entry carriers and the 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2235,6 +2239,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // M294: Query/count-state arm orders 9/10/11/12, 9/11/10/12, 9/11/12/10, 10/9/12/11,
 // 10/12/9/11, 11/9/10/12, 12/9/10/11, 12/11/10/9:
 // 469/469/469/469/469/472/469/472. Original complete executable source restored.
+// Round 517: Complete facing fields at uses, existing dot and both squared-length helpers, subsets
+// 1-7: 505/470/496/469/505/470/503; direct fields with threshold-first comparison 505. Original
+// facing value, helper boundaries, all sums and body restored; actor/state ownership and first-point
+// home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
