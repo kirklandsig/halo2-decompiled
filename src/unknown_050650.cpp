@@ -637,6 +637,8 @@ struct s_collision_result_buffer_1697c0
 // with float absolute, squared-norm or native output: eight 651s (outlined). Forced native/immutable/
 // squared snapshots 441/441/452; forced complete scalar inputs 329. Original normalizer and body restored;
 // frame-bottom scratch and pitch-axis/result homes remain.
+// DH304: Private normalization-success bool/byte/short/long results, direct/common exits, 340/340/340/340/340/340/340/340.
+// Original real normalization result, helper and sampler restored; frame-bottom scratch and axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

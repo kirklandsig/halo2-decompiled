@@ -2071,6 +2071,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // fpatan) and calls the second; every other callee count agrees. bounds_112070 as plain inline 1064 (3171 bytes,
 // kept out of line), project_112070 as plain inline 1146, both 1378; a `__forceinline` redeclaration of 0x11df30
 // 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
+// DH304: Existing bounds producer returns the following eligibility query, bool/byte/long/dword with forced/ordinary inline, 840/809/809/809/1057/1050/1050/1050.
+// Original helper contract and complete body restored; frame 0xcc/0xd4 and first converter expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
