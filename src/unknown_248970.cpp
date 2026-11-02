@@ -351,6 +351,9 @@ public:
 // remain. Original executable body restored.
 // Round 351: Allocation-result, initialization-receiver and link-output declaration scopes on the recovered frame/input graph;
 // 54/54/54/54/54/54/54/49. Original executable source restored.
+// Round 353: Traversal head assigned after list publication, crossed with sentinel chaining,
+// independent ordinal declaration and native while latch, 95/96/95/96/95/96/95/96.
+// Original allocation/link values and complete body restored; child setup, pool/NONE and index homes remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

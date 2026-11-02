@@ -534,6 +534,10 @@ void function_245400(s_source_245400 const *source, long index,
 // parts, deferred accumulated stores and paired axial sums, each with early/late plane table,
 // 209/203/209/203/209/203/209/203. The matched helper user stays exact; late planes lose
 // the caller and gain only six. Entire helper/body restored; frame 0x24/0x2c and side homes remain.
+// Round 353: Native surface endpoints, secondary signed index and material low-word
+// declarations on the source-ECX graph, seven subsets 209 each; all with secondary-code-first
+// reads 208 (one-point gain rejected). Original data declarations and complete body restored;
+// frame 0x24/0x2c, matrix/table homes and independent side bytes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
