@@ -250,6 +250,9 @@ struct c_aggregate : c_child
 // M292: Boundary table ends before cleanup, crossed with boundary-scope collection output,
 // completed information-query scope and real item traversal, masks 0-7:
 // 31/42/31/42/77/88/77/88. Original executable body restored.
+// M302: Common signed block ordinal across dispatch/cleanup, before/after arrays,
+// separate/shared query output and start/end bound order: 31/31/31/31/31/31/33/33.
+// Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
