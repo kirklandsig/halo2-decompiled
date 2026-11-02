@@ -629,6 +629,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the angle, sine and cosine before the direction copy 246 (1104 bytes), the angle alone before the copy 246, the radius
 // as a `real const` local without the reference 222 (1083 bytes); on the current body the angle and trig first 101,
 // the `real const` radius 211 (1092 bytes).
+// Round 194 (fast): the j/k cross terms in a vector re-measured 100 (1081 bytes), with the named ring phase 96
+// (1090; there the dot sums k, j, i where retail sums j, i, k, the direction components sit in xmm5/4/3
+// for retail's xmm4/3/5, and the radius copies through EDX); on that 96 form the cross terms before the dot
+// 98, the component copies before the dot 96, the dot written on the copies 96 (without the phase 100),
+// the radius read before the record pointer 108.
 // Round 150: distance terms swapped (ring product first) 90; angle terms swapped (ring term first) 90; both 90;
 // the distance without the explicit double cast 90; the rotation's dot as dot3f(vector, axis) 90 (all the same
 // code: the ring still converts with fild).
@@ -638,6 +643,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 261: complete native rotated-vector publication with scalar/native input snapshots,
 // split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
 // All restored; SSE ring conversion and the unspilled rotation remain.
+// DH271: Byte/char/short/word remaining counts, each with original/named ring phase,
+// 90/143/90/143/90/143/90/143. Native remaining-count widths do not free the SSE conversion/rotation slot;
+// the named phase still grows the frame. Original complete body, rotation input snapshots, radius reference
+// and inherited local qualifier restored; radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -1778,6 +1778,8 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
+// MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
+// it measured a variant.
 // score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
@@ -3150,6 +3152,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
 // Round 260: coherent separate inline color/location/matrix declarations, seven subsets 93;
 // all three with per-call mode 108, losing the matched caller. Original declarations/body restored.
+// DH round 270: complete native transform result in the existing matrix, crossed with per-call mode, twice-
+// used node word and traversal-scope matrix, 110/140/110/140/110/140/110/140. Cached-mode forms retain frame
+// 0x4c and add copy work; per-call forms recover frame 0x54 but lose matched caller 0x176f60 (25). All
+// exact-only forms, input contracts, pointer-result ownership and complete original body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

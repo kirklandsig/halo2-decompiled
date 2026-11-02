@@ -346,6 +346,8 @@ public:
 // Round 504: child initialization orders 248c/482c/428c/842c with original for
 // 54/54/54/54; with head/ordinal/offset while latch 49/49/49/49. Five-point gains
 // rejected; original stores, for loop and complete body restored.
+// Round 342: Unsigned snapshot/traversal/allocation handle subsets on the separate-allocation graph, then all with unsigned produced handle: 54/54/54/54/54/54/54/54.
+// Original complete body restored; child pretest, pool/NONE ranks and allocation/link homes remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
