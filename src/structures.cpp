@@ -370,6 +370,9 @@ static __forceinline bool structure_bsp_collision_available()
 // the scenery test as if/else arms 77; with the probe nested under `if (!scenery_excluded)` 77; with `if
 // (excluded) return result;` before the requery 62 (threaded again); `if (scenery_excluded) excluded = true; else
 // { requery }` 75 (295 bytes).
+// Round 294: Native query point assignment/memcpy/memmove 81/81/77; direction
+// assignment/memcpy/memmove 80/80/75; both memcpy/memmove 113/137. Exact-only
+// input snapshots restored; exclusion BL and source-slot publication/reload remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1019,6 +1022,9 @@ done:
 // and native collision fields 157/156/156/160; with the existing initial point setter
 // 144/145/145/157. All regress; original record layout, grouped state, triangle access and
 // body restored; result/NONE/exclusion allocation and direction reloads remain.
+// Round 294: Initial probe memmove/three-long triangle memset/two-byte material memset
+// subsets 1/2/4/3/5/6/7 give 140/144/125/138/140/144/138; all with the availability
+// producer 158. Original body restored; exclusion/result/NONE and direction homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

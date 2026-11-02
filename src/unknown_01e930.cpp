@@ -497,6 +497,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
 // tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
 // helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.
+// Round 294: Status tail memset, length last/first, Boolean/mask 286/283/285/282;
+// native field-zero chains 287/285/288/286. Other producer users regress (18-19/75-78/42-50);
+// original helper and body restored; frame 0x3c/0x40 and status/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
