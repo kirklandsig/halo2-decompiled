@@ -274,6 +274,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // both comparison sides and named in both orders across all four helper pairings, 20 forms, 106 (same code); the neighbour's normalizer with the direction read into named locals, y/x or x/y,
 // harness positional 81/78/81/81 against the control's 81, no preload, squares starting at x (best 3 points lower, not kept). Left on the 106 form: y in XMM1 and the inverse in XMM0 (retail swaps them), and the second
 // cross's first product not multiplying y in place.
+// AC475: Existing in-place normalizer with distance output by pointer/reference, branch/common
+// publication and original/shared subtraction: 92/91/96/98/92/91/96/98. Complete shared dot/cross
+// consumers on the four subtraction/output graphs 144/160/144/160; original helper and body restored.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -800,6 +803,8 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // Round 300: Complete ten-byte obstacle/blocking CRT header resets and whole-step memmove
 // subsets 1/2/4/3/5/6/7, then all with Boolean success:
 // 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
+// AC475: Native outgoing mask byte/signed-byte/word/dword with long success
+// 774/774/675/675; with Boolean success 775/775/754/754. Original mask, result and full body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

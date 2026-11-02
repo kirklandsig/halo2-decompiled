@@ -270,12 +270,15 @@ struct c_aggregate : c_child
 // recovered, but low loop homes exchange; independent outputs and full body restored.
 // M304: Seven-cell cleanup item ordinal signed-char/byte/short/word with separate/shared query
 // output: 92/102/92/102/77/81/77/81. Original long ordinal, independent outputs and body restored.
+// M310: Native signed-int status/total/boundary storage, seven subsets, then all with signed-int traversal ordinals [31, 31, 31, 31, 31, 31, 31, 31]. Original body restored.
 // Round 521: repeated cleanup block/item/both record references, original/query-only
 // output scopes 31/31/31/31/31/31; block/item references with shared callback output
 // 31/31 (frame 0x8020, lowest loop homes still exchanged). Original complete body restored.
 // Round 75 (m3 lane 9; one-file LTCG harness, control 31): the output parameter as a `long &` 31, a pointer local for the output 31, the output in a local one-field struct 31, a
 // one-element array 31, both arrays in one local struct 31, the query's output in its own block 31 (frame 0x8024 each); a three-element boundary array with a separate end local 98 (frame 0x8020,
 // seven more instructions). The standing lead above is unchanged: this body built without /GL is byte-exact, and no /GL form shares the output's slot with the two loop spills (a flags decision).
+// M312: Native block-count field with shared query output/block reference/error-first gate
+// subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

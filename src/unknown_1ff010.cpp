@@ -634,6 +634,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // P262: New turn-copy phase/library/normalization-arm combinations
 // 130/130/130/132/132/132/132; paired requested/turn library copies after sine 132.
 // Original observations, copies, normalization arms and complete body restored.
+// Round 86 (KIMI2): dot inputs reversed 77; opposite-side cross 79; both reversed 79;
+// reversed cross with the original left predicate 79; shared three-component facing pointer 148;
+// two-use magnitude scale 85; named determinant 77; read-only magnitude 77. Original body restored.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

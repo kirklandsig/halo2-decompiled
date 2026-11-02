@@ -880,6 +880,9 @@ real g_55e618;
 // through vector3f_scale 187-198 (frame 0x118); dot3f written three times through the pointer 172 (1540); tangent after the sums 230; tangent reads through the particle 81.
 // With a `dot` local: helper grid (dot text/dot3f, perpendicular text/vector3f_scale, tangent text/point difference, position text/set/add-scaled) 188-194; normal locals 179, typed 188; staged
 // dot 186/185/179; `perp = dot; perp *= n` 187; `dot *= n.k` last 179; all perps set to dot then scaled 179; normal copied by fields 181; normal k,i,j 180; dot declared first 179; interleaved 182.
+// AC475: Canonical repeated mode-two truth bool/byte/short/word, original sentinel
+// 273/273/269/269; sentinel before start stores 271/271/269/269.
+// Original raw mode mask, sentinel order, reflection inputs and complete body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

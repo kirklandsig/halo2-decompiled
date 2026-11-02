@@ -195,6 +195,26 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 504: actual byte flag3 with repeated/shared type and primary/secondary
 // result defaults 96/94/100/91/104/91/108/91. Shared-type forms lose 1d5bf0 (13);
 // original byte layout, both type reads, result arms and complete body restored.
+// Round 118 (one-file harness, plain fast where marked; caller 0x1d5bf0 tracked): a /Gd compile-only screen of 1200
+// statement orders predicts the register parameters; of 72 forms that load the component in EAX and the index in ECX
+// the best is `long object_index = component->object_index; long absolute_index = object_index & 0xffff;` then the
+// rigid body, a `headers` local and a byte type, with case 0 reading `headers[component->object_index & 0xffff]`:
+// 28 (fast; 256 B, caller matches, jump table and all case bodies retail's). Not kept: the field local is used once.
+// Left in it: rigid body ECX for ESI, object index EDX for ECX, data ESI for EDX, and `shr eax, 2` for `shr al, 2`.
+// On it: `absolute_index` from the field directly 102, case 0 through the object_index local 102, a long type 97.
+// `object_index`, `headers`, `absolute_index`, rigid body, byte type with case 0 through `headers[object_index & 0xffff]`
+// or the object getter 68 (fast; 256 B, caller matches), not kept: only one of the two lookups uses `absolute_index`
+// (or `headers` is used once); `absolute_index` at both lookups, fast with the caller in brackets: object_index,
+// headers, absolute 99 [9], the default-case kind 7 switch 99 [9], long type 64 [9]; object_index, absolute, headers,
+// rigid body 101 [9]; object_index, headers, rigid body, absolute 128 [213]; object_index, absolute, rigid body,
+// headers 129 [213]; headers first 101 [11]. `headers` first with one component read 35 (harness; caller lost, all 60
+// parameter orders the same code); rigid body as `bodies + index`,
+// `(byte *)` arithmetic either way round or from a copied index 38
+// (same code); index modified in place 96; byte-shift spellings of the case 0 flag 38 (same code), the mask 57; inline
+// getters for the rigid body and the type 126 (224 B, caller lost).
+// Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
+// with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
+// forms lose the matched caller; original observations, body and convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -301,7 +321,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// score 146 (was 146): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
 // neighbor/key homes and remaining cold-block placement differ.
 // Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
@@ -455,6 +475,11 @@ struct s_physics_component_walk : s_havok_component
 // Round 345: Complete section-open/closed predicates in bool/byte/word/long storage: 146 each.
 // Direct complementary predicate, false comparisons and separate query rejection guards: 172 each.
 // Native bool predicates at their original computation kept; terminal scan now falls into the entry latch.
+// Round 118 (fast): the object index in a local for the first section query 179 (930 B), in both section loops 179;
+// the next group overwritten by `if` then widened 151; a key_b local 153; a const alias of the component for the
+// section queries 146 (same code).
+// Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
+// conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

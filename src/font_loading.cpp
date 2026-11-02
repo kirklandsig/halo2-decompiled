@@ -641,6 +641,12 @@ static inline word font_character_pixel(long alpha, long color)
 // subsets 0..3: 85/204/107/208; with native byte consumed span 91/204/110/208. Shared run alone
 // ties the opening body; all helper and domain combinations regress. Original private helper,
 // independent runs and complete decoder restored; parity extension, literal fusion and two-run reuse remain.
+// N316: Coherent signed source octets with numeric parity/word fill/unsigned count combinations:
+// 110/192/103/200/110/192/103/200. Original source octets, helper, counts and fills restored; alpha
+// width, literal fusion and two-run reuse remain.
+// N318: Literal command completes all three input bytes and continues; fixed one-byte common
+// tail, numeric parity/word fill/unsigned count masks 0..7: 128/188/119/192/128/188/119/192.
+// Original consumed span, helper and decoder restored; alpha width, literal fusion and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
