@@ -2644,6 +2644,9 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 328: actual unit-slot pointer/reference with native state and vector-zero
 // combinations 308/303/308/303 each. Frame 0xec and entry vehicle in EBP;
 // original native acquisition, scopes, observations and full body restored; residence remains.
+// Round 330: marker inverse in place, native seat-quaternion output and shared request,
+// subsets 1-7 then all with guarded full-width state 287/311/320/305/300/318/320/317. Original body restored;
+// entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -4423,6 +4426,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // basis construction, helper graph and full body restored; frame and XMM homes remain.
 // M311: Returned object-transform/point-helper composition/reversed actual-case subsets 1-7, all with
 // entry frame: 374/175/374/175/374/175/374/374; restored.
+// Round 330: consumed away/forward, side/frame-left and object/world position storage,
+// subsets 1-7 then all with native memcpy transfers 174/183/182/223/222/204/204/202. Original body restored;
+// frame and basis/point homes remain; original quaternion operands retained.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

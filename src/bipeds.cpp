@@ -1286,7 +1286,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 596 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// score 596 (was 596): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
 // Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
@@ -1344,6 +1344,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // restored. Keep the native packed-value setter contract with the shared velocity workspace;
 // ordinary whole-program confirmed. The sole call passes the existing four-byte object directly;
 // every setter body statement is unchanged. Frame and material/animation homes still differ.
+// Round 330: consumed nearest points for eye/center and shared target/body point,
+// subsets 1-7 then all with long airborne 616/600/604/619/615/600/600/644. Original complete body restored;
+// frame, material/animation homes and entry scheduling remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
