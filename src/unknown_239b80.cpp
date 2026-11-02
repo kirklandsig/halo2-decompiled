@@ -672,6 +672,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
 // 278/278/278/278 and conditional collection 302/278/278/278. All restored;
 // native count ECX, prior-side byte and SIMD homes remain.
+// Round 300: independent positive/negative Boolean accumulators with logical/
+// bitwise OR pairs, positive-test bool 288/304/318/315 and byte
+// 288/304/318/321. Original conditional collectors restored; count ECX,
+// prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

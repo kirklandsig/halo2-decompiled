@@ -159,7 +159,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // object and platform bits 148 (486 bytes), object only 131 (478), platform only 134 (481), both with the
 // priority from the request's audible field 147 (485). Retail's full header order
 // (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
-// score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
+// Earlier score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // frame 0xa8 and request EAX agree; first query expansion, header/result homes and playback convention differ.
 // Earlier 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
@@ -258,6 +258,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // complete marker-size arms 135, request priority 109 and combined marker/priority 134. One-point
 // gain rejected; all declarations, helpers and original body restored. Frame 0xa8, first query
 // expansion, state/flags/result homes and playback convention remain.
+// Round 300: completed-time destination captured after/before rounding with
+// ternary/first/second/both conditional publications 115/113/113/119 and
+// 121/119/119/125; original per-use destination with first/second/both
+// conditional stores 113/108/119. Two-point 108 rejected; original body restored.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
