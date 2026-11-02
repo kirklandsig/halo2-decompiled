@@ -1250,6 +1250,8 @@ bool function_68670(byte *source, long size, void *block);
 // kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
 // difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
 // the copy count from header.size too 79.
+// M291: Complete outgoing-message aggregate/full memset initialization, each with native/separate sequence and function/loop received-header lifetimes:
+// 110/137/131/131/110/137/131/131. Original executable body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

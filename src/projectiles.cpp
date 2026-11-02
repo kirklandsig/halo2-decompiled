@@ -1002,6 +1002,8 @@ real function_30bf0(vector3f *v);
 // solved-coefficient storage:
 // 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
 // frame, rounded-root scheduling and separate divisions remain.
+// M290: Independent/shared rounded polynomial-root storage with solver/entry declarations and original/shared horizontal-square storage:
+// 232/232/232/232/232/232/232/232. Original executable body restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
