@@ -199,6 +199,8 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Branch-native status plus native send stores/tests/both, without/with complete speaker copy:
 // 541/551/552/567/535/545 (reduced control 532). The changes share frame 0x228;
 // original send word, status scopes, copies and complete body restored.
+// DL230: complete gain-update bool/byte/short/long and pitch-update bool/byte/short/long decisions: 532/532/532/532/532/532/532/532.
+// Reduced control 532, full 545; original gate expressions and body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

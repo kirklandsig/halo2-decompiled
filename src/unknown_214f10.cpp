@@ -287,6 +287,8 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DL228: complementary failed-open bool/byte/short/word outcomes on native object/scalar
 // handle flows 41/41/43/43/41/41/43/43. One-point gains rejected; original full-width
 // outcome, success publication, native file object, both waits and body restored.
+// DL230: independent open/resize ordinary completion destinations at loop/function/operation scopes: 47/47/47/47/47/47/47/47.
+// Handle carrier and stored success-byte reload remain; original executable source restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

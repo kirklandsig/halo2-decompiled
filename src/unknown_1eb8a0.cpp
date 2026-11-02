@@ -323,6 +323,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DL228: native output-record return with joined/terminal exits, direct output and field-counter
 // subsets 641/641/696/696/643/643/699/699; direct-output graphs lose the exact caller.
 // One-point reductions rejected; original counter result, output pointer and body restored.
+// DL230: native complete squared lengths at activation/remaining displacement/sample, seven subsets: 680/642/668/642/680/642/666/670.
+// Last form also names the complete direction dot at its comparison; original expressions restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

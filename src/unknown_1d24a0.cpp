@@ -276,6 +276,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // 902/929/902/982/902/982/929/980. Other-result word forms use frame 0x1ec at 982/980; original
 // Boolean expressions restored; entry EAX/ECX, frame 0x1f0 and activity/record/vector homes
 // remain.
+// DL230: complete explicit add/subtract/standalone vector updates, seven subsets: 902/902/902/902/902/902/902/903.
+// Last form also names every complete coefficient gate; original kernels and body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
