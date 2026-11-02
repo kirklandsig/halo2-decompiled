@@ -1182,6 +1182,11 @@ long function_10f5f0(long object_index);
 // AC481: direct initial changed truth / branch-owned lit truth / logical final result,
 // subsets 1/2/4/3/5/6/7: 569/567/587/570/639/581/623; all with a signed
 // countdown point cursor 642. Original body restored; frame and flag-result homes remain.
+// F334: Coherent per-use definition, long stopped result and six-real extent subsets
+// 1/2/3/5/6/7: 761/583/761/761/583/761; all with short stopped 759.
+// Native short stopped alone 571; full-width reused final result 570.
+// Extent-only control 565 repeated an earlier form and is excluded; all executable
+// source restored. Frame, native flag-result bytes and sum-loop scheduling remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2706,6 +2711,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // AC481: desired.forward owns all facing observations; distinct relative output /
 // existing staged torque APIs / both position setters, masks 0..7:
 // 795/798/792/797/793/800/792/797. Original body restored; frame and scalar homes remain.
+// F334: Banked desired.up via existing scale/add-scaled producers, separate versus
+// consumed scale return, crossed with distinct relative output and shared force/torque
+// mass scales: 728/728/738/738/728/728/738/738. Frames remain 0xd0/0x104;
+// original full body restored. Retail frame 0xfc and scalar/vector homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4094,6 +4103,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // initialization 215/215/334/334. Original result production and all lifetimes restored.
 // Round 368: Two-use admitted world value, conditional/branch producer with completed fallback/clamp
 // subsets: 176/176/220/220/182/182/218/218; original complete body restored.
+// F334: Completed current/cached byte-to-real results, original/default-first arms,
+// with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
+// Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
+// original full body restored. Found-index/world/clamp/final flag allocation remains.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
