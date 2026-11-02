@@ -2956,6 +2956,11 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // P252: Low-byte flag payload/full-width driven/full-width paired direction truths, subsets 1/2/4/3/5/6/7:
 // 1053/1052/1095/1099/1080/1110/1080; all native byte carriers 1053. Subsets 4/3/5/6/7 shrink the frame to
 // 0x7c but regress; original complete body and 0x80 frame restored.
+// J238: Queried-velocity ownership 1056; complete native scale producers 1061; actual point-output
+// cursor 1058; query/scales 1066; query/point 1046 at retail length (six-point gain rejected);
+// scales/point 1066; all 1054; all plus contact-count cursor 1054. Coordinated forward-transform inline
+// declaration 1174 loses matched 0x16c2f0 (107) and is restored. Original complete body and
+// declarations restored; frame 0x80 versus 0x74 and velocity/force homes remain.
 // B358: Named repeated pitch/roll scales / one stable active-phase admission /
 // separate native point-loop indices, subsets 1/2/4/3/5/6/7:
 // 1067/1102/1052/1091/1067/1102/1091; all with paired shared projections 1091.
