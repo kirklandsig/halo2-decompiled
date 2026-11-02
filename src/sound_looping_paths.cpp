@@ -683,6 +683,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 318: Complete native request-row publication with temporary/direct angle output,
 // fade/tag order and iteration/query row lifetime: 368/304/368/304/368/304/368/304.
 // All grouped-storage forms are exact-only; original whole body and helpers restored.
+// Round 487: Whole-listener eligibility/cue continuations, separately/together 150/150/150;
+// each with pre-primary camera formation 200/200/200; separate active/index admissions
+// with either continuation 150/150. Original complete control graph and body restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
