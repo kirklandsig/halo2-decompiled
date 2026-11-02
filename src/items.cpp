@@ -1540,6 +1540,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N304: Spin field read at both uses before damping, bool/byte/short/long results
 // with bitwise/logical accumulation: 173/173/168/174/198/191/185/190. Bool/byte
 // recover return byte +0xf but regress; original two-use spin snapshot retained.
+// Round 257: Surface-clause/timer-admission evaluation priority and adjacent parent
+// declaration, seven subsets, then failed-attachment arm first: 139/142/140/141/139/142/141/207.
+// One-point forms rejected; original paired setters, spin capture, release helper and
+// complete body restored. Return byte +0xe/+0xf and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
