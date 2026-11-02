@@ -1448,6 +1448,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // phase 281/281/277/277; entry bool/byte/short/dword 281/281/290/277. Original byte
 // result, status graph and argument observation restored. Two other reduced links
 // produced no comparison and are excluded; pool/state/count/return differences remain.
+// Round 454: Nullable held-object lookups first/second/both, conditional and branch-produced
+// pointers 328/321/344/328/321/344; both with native success 320/320. Original queries, canonical
+// statuses, own-parameter observation, case sets and entire executable body restored; pool/state
+// allocation and count joins remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

@@ -288,6 +288,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 452: source-normal consumers direct/pointer/native late/native entry 154/208/229/258; the same with
 // both squared-edge expressions named 162/207/228/258. Original copied-plane consumers and edge expression
 // restored; early plane destination identity and corner frame colouring remain.
+// Round 454: Complete input-bounds native/field/memcpy/memmove values 235/247/235/231; each with
+// the existing shared final projection 241/257/241/235. Every form alters the prologue and
+// regresses. Original bound reads, normal/edge producers, corner helper, declaration set and
+// entire body restored; plane receiver and projection schedule remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -784,6 +788,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // identity; native points after selection, then field reads at use: 718/698/675/742/639/665/759/692. Original
 // endpoint copies, helper boundaries and complete body restored; tag/count/plane homes and rotation spills
 // remain.
+// Round 454: Private plane/angle/rotation expansion-local and parameter role names in subsets
+// 1..7, then all with tag-role names, 552 each. Original helper names and complete executable
+// source restored; tag spill +0xb4 versus +0x94, count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -134,6 +134,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 452: Common normalizer/default-vector boundary with retested/stored lateral classification, in-
 // place/separate requested distance and call/entry trace storage: 206/210/206/210/206/210/206/210. All
 // source, precision and inherited inline boundary restored; half/reciprocal/negation allocation remains.
+// Round 454: Complete repeated position/reference inputs, native copies of first/second/both
+// 226/219/273; complete field initializers 203/217/247; both through memcpy/memmove 273/261.
+// Native copies grow frame 0x3c to 0x48 or 0x54. Original field observations, scalar precision,
+// body and inherited inline boundary restored; half/reciprocal/projection allocation remains.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
