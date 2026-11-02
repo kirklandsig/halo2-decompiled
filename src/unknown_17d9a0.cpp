@@ -802,6 +802,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // M288: Long/short edge side on long axis induction 677/637; dword induction
 // 677/637; short induction 664/668; byte induction 664/668. All on the retained
 // exact-frame axis-loop graph; original predicate, induction and complete body restored.
+// Round 462: complete mode/radius/projection-plane input ownership, all seven subsets
+// 742/821/797/872/875/898/846; all with chained output counters 846. Original observations,
+// copies and body restored; exact frame, tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
