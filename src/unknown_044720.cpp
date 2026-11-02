@@ -161,6 +161,12 @@ void function_44720(void)
         ++index;
     }
 }
+// MiniMax R (11-01): retail builds the flag it passes to 0x41040 at the call site out of the
+// fourth argument's slot (`cmp dword ptr [esp+0x60], 0x1f` / `setne cl`), so the flag is that
+// argument, not the level; writing it that way reproduces those bytes and the 0x40 frame but
+// scores 148, and reading the entry through g_4ba138[index] instead of g_4ba138[(short)index]
+// scores 144. Retail keeps the entry pointer in EBP and the part counter in EDI, ours has them
+// the other way round. No lower score; body unchanged.
 // score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
 // through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
 // the flags word; this round's variants all scored worse, so the body is unchanged.
