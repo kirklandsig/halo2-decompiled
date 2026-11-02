@@ -806,6 +806,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
 // (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
 // and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
+// Round 340: player/team score candidates before admission on the current
+// score-pointer/short-selection graph, with entry-owned maximum, masks 1..7 and entry
+// declaration-only maximum, 512/512/512/576/593/576/593/512. Entire body restored;
+// frame 0x860/0x85c, EBP bias and initial flag/clock/score homes remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

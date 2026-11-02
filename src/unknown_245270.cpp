@@ -525,6 +525,10 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 337: target inline contract with late plane-table, native signed-word sides and
 // second-code-first subsets 209/203/224/226/208/206/223/224. Six-point best fails the retention
 // margin; original body and contract restored. Frame and independent side homes remain.
+// Round 340: existing point helper's immediate accumulations, complete product
+// parts, deferred accumulated stores and paired axial sums, each with early/late plane table,
+// 209/203/209/203/209/203/209/203. The matched helper user stays exact; late planes lose
+// the caller and gain only six. Entire helper/body restored; frame 0x24/0x2c and side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
