@@ -739,6 +739,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // alone/with planar/camera/both and assigned native position 669/657/633/628/628.
 // Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0
 // 400/308/407/428/408. Original geometry, products, observations and case order restored.
+// Round 518: half-width across tint on the entry-correct paired-point graph,
+// original/staged side/staged normal/both 325/325/325/325; with vertical normal
+// previous/neighbor/both order 321/334/406; both staged and both orders 406.
+// Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
