@@ -1046,6 +1046,9 @@ bool __stdcall function_2399da(long controller_index)
 // Round 347: Scalar selected identity shared by member copy and validity, late/producer capture crossed
 // with full member-presence and per-use permission: 147/147/155/155/158/158/151/151.
 // Original complete body restored; selected identity/rank ownership and the extra removal move remain.
+// Round 356: Complete selected/member 64-bit validity reductions, low-first/high-first/bitwise
+// halves alone and paired 170/170/164/143/143/176/176/164. Original validity and body restored;
+// selected-pointer/rank EAX/ECX ownership and the two-byte removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
