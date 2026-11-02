@@ -1348,6 +1348,9 @@ struct s_looping_detail_request
 // Round 251: Complete two-use camera-position value, mutable/const with original/audible-done/no-player-done
 // finalization, 168 in all six forms; native short count on the final two graphs 169/169 (reduced control
 // 124). Original whole body restored at full score 110; query expansion and detail retention remain.
+// Round 253: Final-position offset production with native count, source flag member and byte-result
+// subsets 0-7: 161/161/161/161/164/164/164/164. All original storage and source restored;
+// frame ownership regresses and the first-player query still expands.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

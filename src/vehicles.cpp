@@ -576,6 +576,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // 134; `speed` declared with the top locals 126; the normalizer's y product written `inverse * v->y` 126; `left`
 // written y first 126. Retail's normalizers keep the source operand order (x: inverse loaded, y: v->y loaded) where
 // ours loads inverse for both.
+// Round 253: Complete input capture with normalized-output staging, initial shared normalization and
+// full-width reversing truth subsets 0-7: 507/507/576/576/508/508/575/575. All helper and
+// target source restored; frame/velocity-copy, early 1.0 residence and later SSE colouring
+// remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1504,7 +1508,7 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 13 (was 40): Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
+// score 13 (was 13): Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
 // order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
@@ -1565,6 +1569,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // word ordinal with the same lifetimes 205/527/590/561. All eight bodies restored; original 40 retained.
 // Round 250: native value construction for channel/iterator/function-channel, seven subsets 40 each;
 // graph-only iterator/channel scope 13 plain, 2027 bytes; remaining SIB/reload/cross/dot ranks.
+// Round 253: First/second header access and failed-admission-return subsets 1/2/4/3/5/6/7:
+// 17/13/13/17/17/13/17; staged cross on graph-only workspace 13. All bodies restored;
+// frame/constructors agree, header SIB, join reload and cross/dot ranks remain.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3364,7 +3371,7 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 136 (was 145): Fallback up setter with staged cross, native up receiver and rotation setters kept;
+// score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
 // projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
@@ -3415,6 +3422,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 186/136/207/144/186/138/204; all with forward setter 220. Fallback up setter alone kept plain,
 // 136 at 828/806; original values/precision retained. Projection/cross ranks and trig homes remain.
 // Projection-only workspace scope on the fallback-setter graph 136 (tie, restored).
+// Round 253: Vector-difference/cosine-up/sine-axis parts subsets 1/2/4/3/5/6/7:
+// 134/144/157/144/155/134/168; all with byte flipping truth 176. The two-point forms
+// rejected; original complete body restored. Projection input ranks, trig homes and angle
+// residence remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
