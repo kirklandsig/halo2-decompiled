@@ -381,6 +381,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // coefficient rows and immediate/complete result publication 263/263/447/447/447/447/256/256.
 // All native-coordinate forms are nonexact and restored; original alias-safe helper,
 // snapshots, expressions and calls remain. Frame and second-transform spill remain.
+// Round 505: Complete branch-owned return predicate, long/bool, entry/after-factor declaration,
+// predicate after/before output stores: 203/235/203/235/210/245/210/245.
+// All regress; original early returns, alias-safe helper and frame defaults restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

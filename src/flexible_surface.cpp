@@ -683,6 +683,9 @@ void function_117dd0(long index, vector3f *wind)
 // Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
 // observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
 // Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
+// Round 505: Existing scaled-difference tangent producer, four weight/acceleration schedules
+// crossed with both dot input orders: 145/145/144/144/145/145/147/147, all 734 bytes.
+// Original difference/scale boundaries, weights, shared dot and full body restored.
 // @retail 0x118140
 void function_118140(long index)
 {

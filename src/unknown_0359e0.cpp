@@ -190,6 +190,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 503: present high-bit scan predicate, original/no zero guard, scan/count update
 // order, shifted predicate 82/82/98/98; masked predicate 89/89/96/96. All controls
 // remain matched; original helper/body restored. Early promotion and count homes remain.
+// Round 505: Shared low-band producer with optional high-band insertion, short/long low mask,
+// OR/add joins and symmetric y-shift production: 104/104/104/104/103/105/103/105.
+// All remain 270 bytes; original branch producers and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
