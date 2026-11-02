@@ -660,6 +660,10 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Round 456: Native seating-permission short/word/long/dword carriers, entry defaults
 // 180/180/180/180; defaults after actor acquisition 180/180/180/180. Original Boolean permission,
 // special predicate, iterator, points and full body restored; NONE/special register ownership remains.
+// Round 458: Actual Boolean state-field domain on the retained bitwise/proximity graph,
+// normalized bool, then native bool/byte/char/short/word/long/dword predicate carriers:
+// 47/193/193/193/57/57/190/190. Original byte declaration, predicate and body restored;
+// NONE EBP/EBX and special BL/CL remain.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

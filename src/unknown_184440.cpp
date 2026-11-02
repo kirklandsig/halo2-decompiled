@@ -253,6 +253,9 @@ __forceinline bool function_184448(long arg_0)
 // point/plane/both, memcpy point/plane/both, memmove point/plane:
 // 1021/1007/1022/965/965/965/1109/1039. Both field inputs give frame 0x11cc at 4506/4590 bytes; regresses.
 // Original native copies, transform helpers and complete body restored.
+// Round 458: Actual external face-plane/polygon-vertex transfers, native/memcpy/memmove
+// pairs excluding native/native: 965/1021/965/965/1021/989/989/1027. Original source transfers and
+// existing in-place transforms restored; frame 0x11d4 versus 0x11cc remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

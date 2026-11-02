@@ -861,6 +861,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round 455: Overlap-safe native transfers for normal/frame axes/pan axes, seven
 // subsets, then all with animation outputs: 459/470/477/301/493/452/445/488. Original aggregate copies,
 // projection, shared helpers and complete body restored.
+// Round 458: Actual point-mode view axes/origin reset/final camera position through
+// overlap-safe whole-value transfers, seven subsets, then all with memcpy normal input:
+// 455/402/490/374/482/483/400/400. Original pose observations, transfers, projection and body restored;
+// direction preload, normal/length/zero allocation and flag scheduling remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
