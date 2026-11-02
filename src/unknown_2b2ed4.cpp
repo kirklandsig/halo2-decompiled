@@ -194,6 +194,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 284: shared actual invitation/session/voice icon-result publication, subsets
 // 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
 // Original complete body restored; child/text/layout homes and suffix address rederivation remain.
+// Round 301: complete available/disabled/muted query-result arms, subsets 1-7,
+// 633/617/625/554/639/633/637; all with reused valid-player predicate 642. Original body restored.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)
