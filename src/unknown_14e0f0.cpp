@@ -9,6 +9,7 @@ long function_baf80(long object_index);
 bool function_e68c0(long type, long unit_index);
 bool function_f12e0(long unit_index);
 bool __stdcall function_14e200(long player_index, long target_index, point3f const *position, bool detach);
+bool function_11c5b0(long object_index, long trigger_volume_index);
 
 // @retail 0x14e970
 bool function_14e970(long player_index, long target_index, point3f const *position)
@@ -94,7 +95,6 @@ bool __stdcall function_c5460(long object_index, long ignore_index, point3f cons
 real function_30bf0(vector3f *vector);
 __declspec(noinline) void function_1420f0(transform4x3f *out, point3f const *position,
     vector3f const *forward, vector3f const *up);
-bool function_11c470(long trigger_index, point3f const *position);
 bool function_109e00(long object_index, vector3f *velocity, bool definition_flag_required);
 void function_b7740(long object_index, vector3f const *linear, vector3f const *angular, bool skip);
 void function_1c4b00(long object_index, void *linear, void *angular, long force);
@@ -152,48 +152,30 @@ static inline void transform_offset_point(transform4x3f const *frame, real scale
     point->z = frame->up.k * z + frame->left.k * y + frame->forward.k * x + frame->position.z;
 }
 
-// score 17 (was 17): trigger index/position carrier, pitch operands and result load differ.
-// Unqualified separate workspaces: frame pointer 593; zero inline depth 682;
-// global optimization off 1135; size preference 748; word phase 138 (fast).
-// Trigger test through 0x11c5b0 20 (trigger loop exact, first direction products flip);
-// that plus one exit 16; plus result in the loop condition 207; plus a yaw/pitch helper 16;
-// unqualified pool pointer 131 (data kept across 0xbaf80, retail re-reads it).
-// The existing facing setter 0x1874b0 248 and velocity update 0xb77d0 665 stay
-// out of line (their files are /Ob1); trigger test through 0x11c5b0 with one
-// exit 20, also with random_index 20; random_index alone 26. Compile-only: the
-// first test's product order flips with the 0x11c5b0 call, random_index or
-// reading target_index directly; only a pointer local to the direction gives
-// retail's order in both the first test and the pitch.
-// Round 118: one exit (the failure call in an if, the success body in its else) 17
-// (the final result load stays after the detach test). On the 0x11c5b0 trigger test
-// (20 now; with one exit 20): the first test written i first 20 or as `<= 0.0f` 22,
-// the target root read from the parameter 20, the placement radius by if 452, the
-// target store after the first test 464, the target header read at its use 174.
-// Round 64: direct target reads with 0x11c5b0 20; separate workspaces with it 20;
-// a result snapshot 20; placement radius after the direction copy 123; named horizontal
-// squared magnitude 20; split radius declaration 123; goto done 20; mixed target reads 20.
+/* puts a player's unit at a free spot around a target object's root (the
+   table's offsets, then random spots near each), or at the position when
+   the target is its own root or there is none; whether that worked */
 // @retail 0x14e200
 bool __stdcall function_14e200(long player_index, long target_index, point3f const *position, bool detach)
 {
-    long const *target_reference = &target_index;
     s_record_pool volatile const *objects = g_4e0300;
     byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
     long unit_index = *(long *)(player + 0x2c);
     byte *unit = *(byte **)(objects->data + (unit_index & 0xffff) * 12 + 8);
+    real horizontal;
     bool result = false;
-    union { point3f point; vector3f vector; } location;
-    point3f &placed = location.point;
-    if (*target_reference != NONE && function_baf80(*target_reference) != *target_reference)
+    if (target_index != NONE && function_baf80(target_index) != target_index)
     {
         long root = function_baf80(unit_index);
-        long target_root = function_baf80(*target_reference);
+        long target_root = function_baf80(target_index);
         byte *headers = objects->data;
         byte *target = *(byte **)(headers + (target_root & 0xffff) * 12 + 8);
         real placement_radius = (bool)(((dword)(1 << headers[(root & 0xffff) * 12 + 3]) >> 1) & 1) ? 2.0f : 0.35f;
-        vector3f &direction = location.vector;
-        direction = *(vector3f *)(target + 0x88);
+        vector3f direction = *(vector3f *)(target + 0x88);
         target_index = target_root;
-        if (!(direction.j * direction.j + direction.i * direction.i > 0.0f))
+        horizontal = direction.j * direction.j;
+        horizontal += direction.i * direction.i;
+        if (!(horizontal > 0.0f))
         {
             if (*(real *)(target + 0x78) < 0.7071067690849304f)
                 direction = *(vector3f *)(target + 0x70);
@@ -215,6 +197,8 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
             long ignore = pass == 0 ? target_root : NONE;
             for (unsigned short offset_index = 0; offset_index < 9 && !result; ++offset_index)
             {
+                point3f placed;
+
                 transform_offset_point(&frame, offset_scale, &g_453918[(short)offset_index], &placed);
                 result = function_c5460(root, ignore, &placed, NULL, *(long *)&placement_radius, 1.0f, 0);
                 if (!result)
@@ -246,83 +230,86 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
         for (short i = 0; i < *(long const *)(scenario + 0x130); ++i)
         {
             byte const *trigger = *(byte const **)(scenario + 0x134) + i * 0xe;
-            if (*(short const *)(trigger + 2) == g_4686c4 && *(long *)(player + 0x2c) != NONE &&
-                function_11c470(*(short const *)trigger, (point3f *)(attachment_object(*(long *)(player + 0x2c)) + 0x30)))
+            if (*(short const *)(trigger + 2) == g_4686c4 && function_11c5b0(*(long *)(player + 0x2c), *(short const *)trigger))
             {
                 result = false;
                 break;
             }
         }
     }
-    if (!result)
+    if (result)
     {
-        function_14ee20(player_index, target_index);
-        return result;
-    }
-    *(vector3f *)(unit + 0x88) = *g_4687a4;
-    if (*(short *)(player + 0x28) != NONE)
-    {
-        byte *sensor_globals = (byte *)g_51e994;
-        byte *sensor = sensor_globals + *(short *)(player + 0x28) * 0x2f0;
-        *(long *)(sensor_globals + 0xbc4) = 0;
-        *(long *)(sensor + 0x2ec) = 0;
-        *(long *)(sensor + 0x2e8) = 0;
-        long i = 0;
-        do
-        {
-            *(long *)(sensor + 0x40 + i * 0x44) = 0;
-            i++;
-        }
-        while (i < 10);
-    }
-    if (target_index != NONE)
-    {
-        byte *target = attachment_object(target_index);
-        vector3f direction = *(vector3f *)(target + 0x70);
-        *(vector3f *)(unit + 0x150) = direction;
-        *(vector3f *)(unit + 0x15c) = direction;
-        *(vector3f *)(unit + 0x180) = direction;
+        *(vector3f *)(unit + 0x88) = *g_4687a4;
         if (*(short *)(player + 0x28) != NONE)
         {
-            s_unknown_185ab0_entry *view = &g_4ed284->entries[*(short *)(player + 0x28)];
-            s_view_angles *angles = &view->angles;
-            angles->yaw = (real)atan2(direction.j, direction.i);
-            angles->pitch = (real)atan2(direction.k, sqrt(direction.i * direction.i + direction.j * direction.j));
-            if (view->yaw < 0.0f)
-                view->yaw += 6.2831854820251465f;
-        }
-        if (((1 << g_4e0300->data[(target_index & 0xffff) * 12 + 3]) & 1) &&
-            ((1 << g_4e0300->data[(*(long *)(player + 0x2c) & 0xffff) * 12 + 3]) & 1))
-        {
-            vector3f velocity;
-            if (function_109e00(target_index, &velocity, false))
+            byte *sensor_globals = (byte *)g_51e994;
+            byte *sensor = sensor_globals + *(short *)(player + 0x28) * 0x2f0;
+            *(long *)(sensor_globals + 0xbc4) = 0;
+            *(long *)(sensor + 0x2ec) = 0;
+            *(long *)(sensor + 0x2e8) = 0;
+            long i = 0;
+            do
             {
-                byte *current = attachment_object(*(long *)(player + 0x2c));
-                target = attachment_object(target_index);
-                if ((bool)((*(word *)(target + 0xc0) >> 1) & 1))
-                    *(word *)(current + 0xc0) |= 2;
-                else
-                    *(word *)(current + 0xc0) &= ~2;
-                if ((bool)((*(word *)(target + 0xc0) >> 2) & 1))
-                    *(word *)(current + 0xc0) |= 4;
-                else
-                    *(word *)(current + 0xc0) &= ~4;
-                *(long *)(current + 0xb8) = *(long *)(target + 0xb8);
-                *(long *)(current + 0x3e4) = *(long *)(target + 0x3e4);
-                *(long *)(current + 0x3e8) = *(long *)(target + 0x3e8);
-                long current_index = *(long *)(player + 0x2c);
-                function_b7740(current_index, &velocity, NULL, false);
-                function_1c4b00(current_index, &velocity, NULL, 1);
-                if (velocity.j * velocity.j + velocity.k * velocity.k + velocity.i * velocity.i > 0.0001f)
+                *(long *)(sensor + 0x40 + i * 0x44) = 0;
+                i++;
+            }
+            while (i < 10);
+        }
+        if (target_index != NONE)
+        {
+            byte *target = attachment_object(target_index);
+            vector3f direction = *(vector3f *)(target + 0x70);
+            *(vector3f *)(unit + 0x150) = direction;
+            *(vector3f *)(unit + 0x15c) = direction;
+            *(vector3f *)(unit + 0x180) = direction;
+            if (*(short *)(player + 0x28) != NONE)
+            {
+                s_unknown_185ab0_entry *view = &g_4ed284->entries[*(short *)(player + 0x28)];
+                s_view_angles *angles = &view->angles;
+                angles->yaw = (real)atan2(direction.j, direction.i);
+                horizontal = direction.i * direction.i;
+                horizontal += direction.j * direction.j;
+                angles->pitch = (real)atan2(direction.k, sqrt(horizontal));
+                if (view->yaw < 0.0f)
+                    view->yaw += 6.2831854820251465f;
+            }
+            if (((1 << g_4e0300->data[(target_index & 0xffff) * 12 + 3]) & 1) &&
+                ((1 << g_4e0300->data[(*(long *)(player + 0x2c) & 0xffff) * 12 + 3]) & 1))
+            {
+                vector3f velocity;
+                if (function_109e00(target_index, &velocity, false))
                 {
-                    function_b9b90(current_index, false);
-                    function_b7360(current_index);
-                    function_bba20(current_index);
+                    byte *current = attachment_object(*(long *)(player + 0x2c));
+                    target = attachment_object(target_index);
+                    if ((bool)((*(word *)(target + 0xc0) >> 1) & 1))
+                        *(word *)(current + 0xc0) |= 2;
+                    else
+                        *(word *)(current + 0xc0) &= ~2;
+                    if ((bool)((*(word *)(target + 0xc0) >> 2) & 1))
+                        *(word *)(current + 0xc0) |= 4;
+                    else
+                        *(word *)(current + 0xc0) &= ~4;
+                    *(long *)(current + 0xb8) = *(long *)(target + 0xb8);
+                    *(long *)(current + 0x3e4) = *(long *)(target + 0x3e4);
+                    *(long *)(current + 0x3e8) = *(long *)(target + 0x3e8);
+                    long current_index = *(long *)(player + 0x2c);
+                    function_b7740(current_index, &velocity, NULL, false);
+                    function_1c4b00(current_index, &velocity, NULL, 1);
+                    if (velocity.j * velocity.j + velocity.k * velocity.k + velocity.i * velocity.i > 0.0001f)
+                    {
+                        function_b9b90(current_index, false);
+                        function_b7360(current_index);
+                        function_bba20(current_index);
+                    }
                 }
             }
         }
+        if (detach)
+            *(word *)(player + 2) |= 0x2000;
     }
-    if (detach)
-        player[3] |= 0x20;
+    else
+    {
+        function_14ee20(player_index, target_index);
+    }
     return result;
 }

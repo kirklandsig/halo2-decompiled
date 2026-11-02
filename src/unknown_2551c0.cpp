@@ -223,6 +223,16 @@ short __stdcall function_2551c0(long actor_index)
 // Round 494: native slot data block with complete vector/axis/output component arrays 89;
 // vector/axis/both/output/vector-output/axis-output/all component-array roles
 // 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
+// Round 348: indexed slot payload on the complete setter graph 171; complete direction,
+// best-copy and rotation-output setter subsets 166/111/166/178/153/188/166.
+// Original helper and copies restored; early cross products and score-dot schedule remain.
+// Round 351: Complete mutable output-row bases, row/field accumulators and paired
+// projection accumulation, first with the native slot payload: 150/131/68/130/134/42/133/133.
+// On the 42 graph, complete rowwise/phasewise cross accumulators without/with
+// cosine complement 73/73/126/126. The 42 form gains only one; all original source restored.
+// Round 275: Complete sequential/interleaved cross accumulators, crossed with the
+// cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
+// Original helper, payload view and complete body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -762,6 +772,16 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 235: native signed/unsigned word/long exit-result producers at final observation
 // and entry-declared with original-site assignment: 89 each. Original final global
 // observation and complete body restored; initial unit-call scratch rotation remains.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
+// Round 507: Uniform three-use object radius after properties/delta/projection/positive
+// admission 221/221/216/215; opposite sum operands give the same four scores. Original
+// field observations and body restored; unit-argument and scalar homes remain.
+// Round 300: exact-only recovered entry/radius/request graph with paired final
+// clearance producers, both declaration orders, mutable/const and conditional/
+// complete result arms: 17 each (eight forms); reuse of distance for its
+// normalized-length and adjusted-projection phases 17. Restored: the entry
+// graph still needs a one-use unit snapshot; sum/length/projection homes differ.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

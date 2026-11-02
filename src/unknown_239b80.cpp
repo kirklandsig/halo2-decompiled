@@ -259,7 +259,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 203 (was 203): Frame 0x14 agrees; count/departure homes, scan bound, equality and compaction differ.
+// score 170 (was 170): native output ordinal separates iteration from produced length;
+// frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
+// Earlier at 203: frame 0x14 agreed; count/departure homes, scan bound, equality and compaction differed.
 // Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
 // after the index store 203; departure as `if (!left_start && !points2d_equal(...)) left_start = true;` 227
 // (767 B); NONE exit tested before the current/heading updates 273 (753 B); the two equality exits joined
@@ -366,6 +368,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 495: Standard duplicate search with long/short result and short/long outer
 // ordinal 243/243/235/235; overlap CRT forms 261/251/268/268. Original body restored;
 // count/departure homes and persistent bound allocation remain.
+// Round 348: independent short/native output ordinal with long/bool departure and
+// memcpy/memmove 261/250/260/262/170/259/248/264; native ordinal with original
+// long departure and memcpy retained at 170, 785/784 bytes, plain confirmed.
+// On that graph, short/word produced length 242/242; earlier current/pass lifetimes
+// 249/260; one native count for all admitted phases 274. Follow-ups restored.
+// Round 351: Heading/departure/current lifetimes on the retained native output-ordinal graph;
+// 204/215/254/244/209/245/244/228. Original executable source restored.
+// Round 275: Native current/next indices together, crossed with Boolean departure,
+// early heading and overlap CRT compaction 269/272/269/281/275/262/273/284. Every form loses
+// the matched caller; original word indices, helper and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -391,10 +403,11 @@ short function_239e50(short count, point2f const *points, short *indices)
 		}
 
 		real previous_angle = 0.f;
-		while ((short)hull_count < count)
+		for (long pass = 0; pass < count; ++pass)
 		{
 			real best_distance = -FLT_MAX;
-			indices[(short)hull_count++] = current;
+			indices[pass] = current;
+			hull_count = pass + 1;
 			short next = NONE;
 			real best_angle = FLT_MAX;
 			real best_delta = FLT_MAX;
@@ -681,6 +694,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // for/while/do-while 129/129/128; if/else fraction 249 (880 bytes); current after the distance through points[i] 249; named
 // size 249; `short last` 273; sides in a `bool[2]` 259 (frame +8, element 1 still CL); volatile previous side (diagnostic,
 // removed) 246. What it takes is a third read of count near the loop; no natural source for it found.
+// Round 507: Complete paired coordinate differences or absolute errors, xy/yx and
+// first/neighbor peer priorities, 129/143/147/151 each. Count ECX, prior-side byte and
+// SIMD homes remain; original equality helper and complete body restored.
+// Round 300: independent positive/negative Boolean accumulators with logical/
+// bitwise OR pairs, positive-test bool 288/304/318/315 and byte
+// 288/304/318/321. Original conditional collectors restored; count ECX,
+// prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

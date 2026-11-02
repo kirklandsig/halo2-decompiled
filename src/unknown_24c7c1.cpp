@@ -452,6 +452,9 @@ void __fastcall function_24cdaf(void)
 // read once into a long 43; saturation on the old value + 1 27; `value += 1` with an if clamp 6;
 // `hud->players + player_index` 6; `!= NULL` / `-= 1` countdown 6. Diagnostics: 1-8 unused locals
 // before the tick block 6 each; no countdown block 84 (tick roles unchanged); no saturation 54.
+// Round 77: assignment in the saturation condition 6; nested saturation assignment 6; pointer
+// assignment in the read/store 6/6; direct read with pointer store 6; pointer read with direct
+// store 6; tick update before the countdown 34; constant-first comparison 6.
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {
@@ -571,7 +574,7 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// score 115 (was 115): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
 // frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
 // frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
 // frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
@@ -690,6 +693,10 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 328: Carried message pointer with short/long/unsigned-long/word/byte row counters
 // 453/420/420/420/417; ordinary end-pointer for/while and direct active-range traversal
 // 322/322/322. Original indexed traversal restored; scalar, predicate and point homes remain.
+// Round 346: script/row/status text-buffer consumer scope subsets, then all phase scopes:
+// 120/121/121/121/121/120/114/114.
+// Frame 0x264 agrees; predicate packing, left word and color/rectangle/scalar homes remain. Fast control
+// 114; plain 115. Original executable body restored.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

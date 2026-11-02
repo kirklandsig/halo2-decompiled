@@ -1899,6 +1899,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round 57 (m3 lane 1, fast): on online_logon_connected() (729, aligned 479): the delay ternary
 // 729 (aligned 477); a user record pointer 775 (2846 bytes, cursor xuid-based in EBX); pointer +
 // ternary 775; pointer + identity memcpy from it 775; pointer + property copy first 774.
+// Round 234: Native user/request-descriptor/both/completed-record/user-completed/descriptor-completed/all values 828/718/824/741/845/741/837; all with descriptor assignment 837. All regress. User frame 0x190 and descriptor frame 0x6d8 versus retail 0xc0. Original full body restored; initial cursor/slot and later request/completion homes remain.
+// N303: Actual cache-group/request-player/completion-player element references, seven subsets,
+// then complete returned-record/property/destination elements: 709 each. Original receiver
+// forms restored; frame agrees, initial user cursor base/home and slot expansion remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
