@@ -377,6 +377,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scale, 283/251/282/251; with all parallel row products 272/257/272/257.
 // All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
 // caller bindings and full body restored. Frame and second-transform spill remain.
+// Round 503: Existing row dots, coefficient/input operand order, immediate/eager
+// coefficient rows and immediate/complete result publication 263/263/447/447/447/447/256/256.
+// All native-coordinate forms are nonexact and restored; original alias-safe helper,
+// snapshots, expressions and calls remain. Frame and second-transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

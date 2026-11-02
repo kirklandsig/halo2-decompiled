@@ -1653,6 +1653,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // ordinary/staged second, and both staged-second graphs with shared point differences:
 // 193/193/193/193/193/193/193/193. Result stack home and SSE producer allocation remain; original arithmetic
 // restored.
+// Round 503: angle/result-only, scalar-projection, vector-receiver and complete slot names
+// 193/193/193/193; the same four graphs with a double result carrier 290/290/290/290.
+// Original real result and every expression restored; separate result stack home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1949,8 +1952,27 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
     return result;
 }
 
+struct s_direction_entry
+{
+    byte unknown0[0xc];
+    real heading;
+    real elevation;
+    long unknown14;
+    long tag;
+    byte unknown1c[0x18];
+};
+struct s_direction_list
+{
+    byte unknown0[0x78];
+    long count;
+    s_direction_entry *entries;
+    real heading;
+};
+typedef char assert_direction_entry_size[(sizeof(s_direction_entry) == 0x34) ? 1 : -1];
+typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 : -1];
+
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
-// score 188 (was 188; earlier 204, 220, 298): frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// score 177 (was 188): earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
 // Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
@@ -1966,6 +1988,9 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
 // Round 435: shared/staged left cross 182/182; native matrix plus shared rotation 181/181,
 // in-place 189/189; original cross rows with shared rotation 191, in-place 189. All restored;
 // six/seven-point leads are below the keep gate. Current frame 0x80 vs 0xc0; loop/vector homes differ.
+// Round 503: native entry/list/both 188/188/188; each with shared axes 181/181/181.
+// Both records with capacity checked after entry selection 177 (861/857), kept;
+// shared axes plus that capacity check 176, exact-only and restored. Frame and vector homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -1975,14 +2000,15 @@ void function_3eec0()
         long index = NONE;
         if ((short)g_4b9eec >= 0 && (short)g_4b9eec < table->count)
             index = table->entries[(short)g_4b9eec].tag;
-        byte *definition = NULL;
-        if (index != NONE) definition = g_4e3b44[index & 0xffff].bytes;
-        for (long i = 0; i < *(long *)(definition + 0x78) && i < 64; ++i)
+        s_direction_list *definition = NULL;
+        if (index != NONE) definition = (s_direction_list *)g_4e3b44[index & 0xffff].bytes;
+        for (long i = 0; i < definition->count; ++i)
         {
-            byte *entry = *(byte **)(definition + 0x7c) + i * 0x34;
-            if (*(long *)(entry + 0x18) == NONE) continue;
-            vector3f local = direction_from_angles(*(real *)(entry + 0xc), *(real *)(entry + 0x10));
-            vector3f forward = direction_from_angles(*(real *)(definition + 0x80), 0.0f);
+            s_direction_entry *entry = definition->entries + i;
+            if (i >= 64) break;
+            if (entry->tag == NONE) continue;
+            vector3f local = direction_from_angles(entry->heading, entry->elevation);
+            vector3f forward = direction_from_angles(definition->heading, 0.0f);
             vector3f up = *g_4687b0;
             vector3f left;
             left.i = g_4687b0->j * forward.k - g_4687b0->k * forward.j;
@@ -2007,7 +2033,7 @@ void function_3eec0()
                 basis[0].k = 0.0f - local.k;
                 function_11d000(&basis[0], &basis[2]);
                 function_30bf0(&basis[2]);
-                function_2dba0(*(long *)(entry + 0x18), basis, false, 3, 0, i, &position, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
+                function_2dba0(entry->tag, basis, false, 3, 0, i, &position, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
             }
         }
     }
@@ -3366,7 +3392,7 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// score 251 (was 272): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
 // Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
@@ -3384,6 +3410,10 @@ bool __stdcall function_391f0(void *state);
 // Round 435: native camera 321, signed long count 268, cluster/camera 324, cluster/count 294,
 // camera/count 325, all three 343; all plus shared plane helper 343. Early uninitialized step
 // and step/distance declarations with the long count 268/268. All restored; four-point lead rejected.
+// Round 503: native signed fog word 251; native flag initialization 299; both 291;
+// fog word with byte flags 251; byte flag initialization 299; all three 291;
+// fog word plus long count 300; all three plus long count 301. Keep only the fog word;
+// retail tests AX before widening the index. Frame 0x74 versus 0x70 and early zero remain.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -3418,7 +3448,7 @@ void function_36b50()
     for (long i = 0; i < count; ++i)
     {
         long cluster = indices[(short)i];
-        long fog = *(short *)(clusters + cluster * 0xb0 + 0x76);
+        short fog = *(short *)(clusters + cluster * 0xb0 + 0x76);
         if (fog == NONE || *(long *)(*(byte **)(structure + 0x88) + fog * 0x88 + 0x24) == NONE) continue;
         selected[fog] = true;
         if (cluster == g_547f88.location.cluster_index) distance[fog] = -1.0f;

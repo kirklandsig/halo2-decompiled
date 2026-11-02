@@ -187,6 +187,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
 // 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
 // original helper calls, relations and body restored.
+// Round 503: present high-bit scan predicate, original/no zero guard, scan/count update
+// order, shifted predicate 82/82/98/98; masked predicate 89/89/96/96. All controls
+// remain matched; original helper/body restored. Early promotion and count homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
