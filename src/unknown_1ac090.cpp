@@ -945,6 +945,9 @@ struct s_1ac612
 // existing vector3d_from_points3d 29; best index/value declared before the query and assigned after it 29,
 // the index declared at entry 29. Diagnostic: actor_get as offset-first sum or array element 29/29
 // (header restored), so the EBP/EDI swap is not the accessor's spelling.
+// Round 80: entry actor reused for cleanup 79 (955 bytes); direct actor lookups 248 (968); squared-length
+// helper 137; marker-matrix pointer 29; direct marker indexing 100 (969); distance declaration before
+// the query 29; candidate/marker postincrement 29/29. Restored.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)

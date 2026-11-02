@@ -856,6 +856,10 @@ __forceinline long vehicle_round(real value)
 // angular output as axis workspace 30, with byte mode 174. Post-reader mode
 // byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
 // direct/staged before rate clamp 194/194, after clamp 223/223.
+// Round 80: side cross from the axis copy 113 (731 bytes); scale coefficient from axis.k 51;
+// the two-flip form with axis.k 57, with the side cross from axis 116 (730), with both 124 (728);
+// projection through axis then copied back 73 (775), on the two-flip form 72 (775), with the
+// velocity call selecting its output 157 (795). Restored.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {

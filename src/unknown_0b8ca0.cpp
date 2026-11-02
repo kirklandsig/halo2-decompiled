@@ -1550,6 +1550,9 @@ done:
 // sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
 // definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
 // palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
+// Round 80: a second descriptor receiver for size and placement offset 17; with wide size 27 (236 bytes);
+// with all offsets wide 27; all offsets wide and palette at the call 32; with a wide index 32; with a
+// datum local 31; the second receiver for size only 17, for placement offset only 17. Restored.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
