@@ -773,6 +773,10 @@ void __stdcall function_bc300(long object_index)
 // else, single exit 62 (233 bytes); the zero arm's block from `header->object` 42; the new size written
 // into the reallocation call 7; the alignment shift without the byte cast 6; `return true` / `return
 // false` in place of the result 90 (214 bytes, the result byte leaves the frame).
+// Round 106: pointer-initialized short/word snapshots used at every size read 5/5;
+// a two-byte memcpy snapshot 5; signed/unsigned reference views 5/5; memmove 117;
+// memcpy only for the zero test 5; a pointer-initialized short with nonzero arm first 70.
+// Original parameter, case order and body restored; the initial size load remains dword versus word.
 // @retail 0xbc380
 bool function_bc380(long object_index, long block_offset, long size, long alignment_bits)
 {

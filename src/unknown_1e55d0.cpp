@@ -67,6 +67,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
+// score 319 (was 319): Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
 
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
@@ -76,6 +77,7 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // third argument from [ebp+0xc]; ours takes the same three arguments in the same registers, but
 // keeps the output pointer in EDI and the input pointer in EBX where retail keeps them the other
 // way round.
+// Earlier: Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
 // BLOCKED-BY 0x1ec690 (round 30): retail passes the case-3 callee's input in EDI with two stack arguments; our
 // stub (src/stubs/bipeds.cpp) takes ECX/EDX and one stack argument, which is what moves input/output to
 // EBX/EDI here.
@@ -169,6 +171,15 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // same-shape arm last as an if/else swap 319 (same code); current shape read once for both tests 368;
 // the capsule radius clamp as a conditional expression 319 (same code); the ease state as the switch's
 // default instead of case 6 with __assume 336.
+// Round 280: aligned-helper conditional radius selection, matrix-first declaration,
+// result-first lower clamp and consistent minimum-radius snapshot combinations: eight
+// forms 319 each. Original helper and complete body restored; pointer ownership remains.
+// Round 332: Native state header with shared squared length, one time step and native point, subsets
+// 0-7: 319/319/320/320/319/319/320/320.
+// Original executable source restored; no eligible gain.
+// Round 284: inactive-tail early return, activity bool/byte/short/long and separate
+// refreshed-object lifetime: 319/319/318/319 twice. One-point word-storage gain rejected;
+// original aligned helper and complete body restored. Entry pointer ownership remains.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

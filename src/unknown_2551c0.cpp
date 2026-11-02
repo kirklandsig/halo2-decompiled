@@ -212,6 +212,14 @@ short __stdcall function_2551c0(long actor_index)
 // written-out dot in i, k, j order with direction first gives retail's j, k, i (not keepable: dot3f by hand, and the
 // rotation then reschedules); no form on the vector_k base gives retail's cross_k product (v.j copied, axis folded).
 // The state read through a typed `slot->unknownc` data struct (offsets 0xc lower) 89 (820 bytes).
+// Round 329: Complete first/second/both cross-product parts named across all rows
+// 68/68/67; with cosine complement, first/second/both 118/118/67; both with
+// named dot, without/with complement 67/67. Original helper and callback restored.
+// Round 446: native projection/cross/angular scalar precision, seven subsets 392/392/392/72/392/392/392;
+// all with complete score storage precision 414. Exact-only forms restored with original helper and body.
+// Round 494: native slot data block with complete vector/axis/output component arrays 89;
+// vector/axis/both/output/vector-output/axis-output/all component-array roles
+// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -724,6 +732,17 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 327: Complete entry readiness in bool/byte/short/long storage, positive and
+// complementary graphs, 87 each at 963 bytes. Unit argument and scalar homes remain; two-point
+// gains rejected.
+// Round 232: isolated unit-test blocked/ready result at its short-circuit boundary,
+// bool/byte/short/long storage, 89/89/89/89 and 89/89/89/89. No native result
+// width recovers the initial unit-argument register or later scalar/query homes; restored.
+// Round 235: native signed/unsigned word/long exit-result producers at final observation
+// and entry-declared with original-site assignment: 89 each. Original final global
+// observation and complete body restored; initial unit-call scratch rotation remains.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

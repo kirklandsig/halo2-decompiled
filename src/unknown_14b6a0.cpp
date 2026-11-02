@@ -307,6 +307,16 @@ void function_14bac0()
 // after/before/with destination and alternate) 262/262/262 (frame 0x48, homes reshuffled); with the centre,
 // height and radius in their own block 259 (same code). Retail also re-reads the visit counter at each test
 // where ours keeps the incremented value in ESI and reloads it after 0xb75a0.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
 // points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
 // (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
@@ -316,6 +326,13 @@ void function_14bac0()
 // declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
 // the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
 // body: the unit re-read from the player at the last call 243.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
 // (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
 // at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
@@ -331,9 +348,27 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 442: null-unit/visited-root/both continues with the cached pool and original reload
+// paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
+// value 253, with native recipients 264. Original output, pool observations and body restored.
+// Round 229: repeated recipient handle ownership with native recipient step, actual relocation/destination
+// sharing and repeated visit-stamp ownership: 222/228/222/228/222/228/222/228. All original
+// executable source restored; frame 0x50/0x3c and readiness/recipient sharing remain.
 // Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
 // recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
 // Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
+// buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
+// restored; frame, point/recipient sharing and readiness homes remain.
+// Round 334: first +0xf reserves 0x50 versus 0x3c; point/recipient sharing,
+// readiness homes and scalar spill order remain. Plain ordered traversal of the two
+// adjacent marker indices, long/short counter and separate/shared probe-bounds
+// workspace, 311/305/311/305; with native result-tested recipients
+// 304/302/307/305. Original separate probes, returned relocation output,
+// selected unit, observations and both player traversals restored.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
