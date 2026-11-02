@@ -1184,6 +1184,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // or edge instead of first_edge. Plain subsets on the kept body: first_vertex first 322; surface in test 321; end first
 // 341; ring pointer 353; first_vertex + surface 319; first_vertex + end 339; end + surface 338; those three 336; pointer
 // + first_vertex 351; pointer + surface 352; pointer + end 342; all four 339.
+// Round 482: Actual typed edge-surface/flag and portal-edge-pair fields, masks
+// 1..7, tie 324; complete fields with first-history declaration first 322.
+// Two-point gain rejected; original headers and complete traversal restored.
+// Frame 0x30/0x28, zero/radius residency and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

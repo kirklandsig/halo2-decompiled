@@ -1068,6 +1068,12 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
 // Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
+// AC483: Native selected displacement, two workspace names, producer/entry storage and record/setter
+// publication: 357/364/357/364/357/364/357/364. Node-backed-only point setter with short/long team
+// and producer/entry center: 297/300/297/300; complete direction setters repeat 297/300/297/300.
+// That asymmetric producer recovers point/normal homes and 1535 bytes, but the fallback center is
+// at +0x4c instead of +0x40. On it, retained origin/direction/node/all field addresses: 295/357/355/354.
+// All forms regress; original body restored. Shared-add include clashes with the existing cross helper.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
