@@ -282,6 +282,13 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // Round 462: actual child-duration branch/default result after/before publications
 // 98/98/118/102; each with the allocation pool held for both real uses 98/98/118/102.
 // Original output arms and pool observations restored; timestamp/compare and child homes remain.
+// Round 136 (m3 lane 5, fast with 0x248cc0/0x173ba0/0x249aa0/0x137bd0/0x173fd0/0x175070/0x1751d0): a retail-wide scan finds
+// 5 of 1862 `fstp` stores followed by a folded memory operand: 0x2481bf and 0x39e24 `cmp ebp, [m]` (not jump targets, both
+// after an unsigned random draw, ours splits both), 0x18700b `and byte [m], imm`, and two jump targets. On field_10 first
+// (133, aligned 21: only the split compare and the child loop's rotation): the four samples' local in its own block 133; a
+// seed pointer for the fifth draw 133; `==` with an empty then-arm 133; the fifth sample through the reference helper into
+// field_38 133; the cached record read into a local before the fifth draw 144. Kept order: creation time through a real
+// local 70 (same code); reciprocal as a default plus if 96; rate through a local with a default 98.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

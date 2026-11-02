@@ -1467,6 +1467,16 @@ long function_cbd50(long unit_index, short weapon_index);
 // AC460: Canonical permission assigned by status tests in primary dispatch, byte/bool/short/long
 // 164/194/377/381; both dispatches 164/194/377/381. Original expression producers, byte result,
 // unconditional queries, signed observations, parameter handling and complete body restored.
+// Round 77 (m3 lane 12, fast; difflib-aligned counts in brackets, control 164 [132, registers masked 49]):
+// if-form depletion (`if (first != NONE) depleted = count <= 0; if (second != NONE && count > 0) depleted =
+// false;`) 330 [132]; with an object-headers local for the unit and both weapon lookups 325 [116]; with a bool
+// result too 336 (1259 bytes) [92, masked 30]; the first query's slot read through the headers 340 [101];
+// headers local for the two weapon lookups only, unit from the entry lookup, bool result 349 (1257 bytes)
+// [83, masked 25]. The last reproduces retail's frame, pushes, EBP headers, ESI name, EDI state, the flag slots
+// and the first query's re-derived unit (`mov eax, ebp; mov ecx, [ecx + eax + 8]`); left: retail loads the
+// controlling field into EBX before its compare and reads the name before the state pointer, keeps depleted in
+// BL (initial false reloaded from +2) with interruptible in memory where ours swaps them, and re-derives the
+// unit from a fresh pool data load in the second query (29 bytes). Original body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -2047,6 +2057,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // M292: Exhaustive nonempty screen cases both/first, both/second, first/both, second/both, with
 // original/direct bounds fallback:
 // 853/886/859/858/856/894/861/861. Original executable body restored.
+// Y522: Primary/secondary converter-output transfer modes 01/02/10/11/12/20/21/22
+// 790/824/840/840/846/838/838/849; complete native component transfers and returned-value snapshots.
+// Mixed primary transfer/secondary value reaches frame 0xd4 at 846, first +0x23, but regresses.
+// Original escaped angle outputs, default values, helpers and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

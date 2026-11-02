@@ -176,6 +176,10 @@ extern real g_4c9798[36];
 // Original height-first producers, bounds, mode, capacity expressions and complete body restored.
 // Y499: retained long-mode graph, size/mode/both/extent/size-extent/all/bounds/aspect
 // scalar role families 197 each; original names and body restored. Mode/size homes and protected rounding reloads remain.
+// Round 516: Complete raw/bounded size producers on exhaustive long-mode graph;
+// branch/conditional clamp, height/width-first rounding and native/full height-limit
+// combinations. Mode/size homes and rounding reloads remain.
+// Scores 197/197/196/196/245/245/245/245; original executable body restored.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
