@@ -284,6 +284,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
 // 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// J238: Computed state-action result 287; shared actual hand/weapon acquisition 445; existing active
+// query 336; state/hand, state/query, hand/query 365/294/429; all 398, short selected action 383.
+// Original body restored; frame 8, incoming unit/name/actions ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
