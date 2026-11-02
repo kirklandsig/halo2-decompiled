@@ -52,6 +52,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
+// up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // Frame 0x2c and early J preload agree; root/yaw homes, one constant in XMM5 versus XMM4, and rotation registers remain.
@@ -251,6 +252,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // 365/371; both vector copies before normalization 289; direct length-test call 407. Original
 // numeric output, inputs, helpers and complete body restored; unity/root/yaw and rotation homes
 // remain.
+// Round 307: Complete projection-dot/cross producers at eight pairs of native trig boundaries on
+// the in-place angle/rotation graph, 178 each (1711 bytes). All matched controls preserved;
+// original helper and body restored. Unity register, root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
