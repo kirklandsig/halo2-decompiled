@@ -184,6 +184,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 479: shared native active-mixbin workspace for first/submix, first/routing,
 // submix/routing and all phases, declared before updates 535/542/532/542;
 // at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
+// DL225: separate four-speaker conversion/reduction using amplitude or square samples,
+// energy zero before/after conversion and storage at producer/entry: 604/599/604/599/
+// 604/599/604/599 (reduced control 532, full baseline 545). All sample storage restored;
+// frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

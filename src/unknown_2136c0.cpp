@@ -199,6 +199,9 @@ void function_213970(void);
 // 169/178/202/171/195/204/227/227. Separate allocation still prevents both complete bulk clears. Original body restored.
 // DH round 262: language after header payload/first sentinel, with native progress/handle reset
 // subsets 131/175/168/187 and 131/172/165/184. Original resets, getter site and complete body restored.
+// DL225: whole-record library clears for all three arrays, forward/reverse traversal
+// masks 0..7: 131/150/153/173/150/169/172/192. All restored; separate allocations
+// still prevent the two complete storage-block clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
