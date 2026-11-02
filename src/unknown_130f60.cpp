@@ -288,6 +288,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH round 268: accumulated-prefix CRT clears for first/second/both/third/first-third/
 // second-third/all 414/414/411/381/411/411/411; all with chained remaining stores 411.
 // Fast control 336 versus full 324; original complete clears, unit stores and body restored.
+// Round 235: Direct three-output table, long/short ordinal, const and scope variants
+// 410/757/410/757/410/764/410/764; factor-first products 410, explicit updates 412,
+// both 412, six product names 418. Original body/helper restored; early ESI save,
+// reciprocal and RGB/product scheduling remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

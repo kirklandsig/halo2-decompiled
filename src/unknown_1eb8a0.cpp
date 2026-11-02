@@ -320,6 +320,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DL225: alias-safe library direction copies at activation/refresh/angular fallback,
 // masks 1..7: 700/716/718/700/718/706/728; all with initial output copy 755. All restored;
 // frame 0x24 and clock EDI agree, but direction rather than sample still takes EBX at +9.
+// Round 235: Sample value observed before update, native/const/library/components
+// 758/758/758/774; conditional zero fallback 750/750/750/776.
+// All lose caller 0x1eb6f0; frame 0x24 remains, incoming sample/update and clock roles change.
+// Original observation points, counter result, helpers and complete body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

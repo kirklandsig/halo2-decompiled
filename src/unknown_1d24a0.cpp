@@ -271,6 +271,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
 // pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
 // entry/frame and activity/record/vector homes remain.
+// Round 235: Full selected coefficient value, early bit-25/26 and late low-option subsets
+// 998/990/990/993/993/998/998/990. All recover entry ECX/EAX and activity-byte home,
+// but frame grows to 0x24c versus 0x1d4. Complete original body restored;
+// entry/frame, activity and lower record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
