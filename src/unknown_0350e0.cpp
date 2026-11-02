@@ -108,6 +108,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // setters and matrix/trig role names 422/422/478/478/422/422/478/478; original-graph trig/vector/matrix
 // home names 356/356/356/356/356/356/356; complete names with row-local diagonal differences 356.
 // Original helpers/body restored; frame 0x98 versus 0x90 remains.
+// M323: Component-loop producer with long/dword/short/word ordinal 356/356/715/715; the same with native running sum 356/356/732/732. Narrow loops reach frame 0x90 but lose native extent; original producer and body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2071,6 +2072,7 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // subsets 1/2/4/3/5/6/7, then all with uninitialized draw outputs before reset: 177 each.
 // All tie; complete original drawing objects, helper calls and body restored. Frame
 // 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
+// M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -3673,6 +3675,7 @@ bool __stdcall function_391f0(void *state);
 // at each consumer, subsets 1/2/4/3/5/6/7, then immutable elapsed on the complete graph:
 // 310/251/277/295/288/277/275/275. All tie or regress; original complete body, reads,
 // publications and loops restored. Frame 0x74 versus 0x70 and zero/portal/fog homes remain.
+// M323: Existing native state-group fields with bool/byte/short/long outcomes 251/251/281/286; explicit conditional assignments 297/297/263/281. The 263 form reaches 1014 bytes but regresses; original body and phase observations restored.
 // @retail 0x36b50
 void function_36b50()
 {
