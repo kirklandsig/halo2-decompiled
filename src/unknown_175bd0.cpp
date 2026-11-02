@@ -3422,6 +3422,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 347: Complete point row publication xzy/yxz/yzx/zxy/zyx, then xzy/zxy/yxz with default-before-
 // color scale: 303/102/131/303/127/262/264/270.
 // Original complete body restored; scale prefix and point-Y preservation remain; both matched helper users regress under every order.
+// Round 470: Complete eligibility/dispatch category predicates bool/long/short/byte/char
+// 403/427/423/403/403; one dword/long group observation 380/380; Boolean categories
+// with byte capped flare ordinal 422. Original group observations and body restored;
+// scale prefix and preserved point-Y source remain.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

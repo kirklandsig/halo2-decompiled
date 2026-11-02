@@ -187,6 +187,8 @@ struct s_visibility_bound_record
 // both uninitialized at entry 413; both per view/frustum 407/407; entry array with view/frustum
 // query 407/407; both initialized at entry 422. Original declaration scopes and all values restored;
 // entry/table and plane/query homes remain.
+// Round 471: Uninitialized containment output at entry/fallback/part-loop/part/record/transform/point-input/query,
+// 433 each. Original false initialization and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

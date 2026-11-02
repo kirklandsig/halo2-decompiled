@@ -854,6 +854,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
 // each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
 // plain 323 versus baseline 257. Original result, presence and full body restored.
+// Round 469: Weapon-aim success-first/failure-first/two-use outcome/common failure join, bool/byte point presence: 270/264/265/258/270/264/265/258 (fast control 258). Original result graph and whole body restored; byte homes and case-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
