@@ -94,7 +94,10 @@ void function_82ac0(s_object_relevance_source *source, s_object_relevance_result
 
 // score 25 (was 25): retail places the allocation failure's `error = 2` arm after
 // the release block's return (it jumps back to the null test); ours lays it out
-// before the release block. Earlier at 25 (from 32): the error codes folded into the
+// before the release block.
+// Round 74: zero/result-initialized error in allocation scope 25/25 and at function scope 25/25;
+// zero-init with plain allocation/cleanup/both guards 25/25/25; function result-init with both 25.
+// Opening control flow restored. Earlier at 25 (from 32): the error codes folded into the
 // release test (32); the error set in an if/else with `result = error` before the
 // release, the index test nested: 25.
 // Earlier at 25 (from 25): cold allocation-error placement remains; validation-derived result 98;

@@ -175,6 +175,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // four differences 534; `fabsf` on all six 532; an inline previous/current compare helper on all six 617, on the
 // four differences 585 (one call stays out of line). Diagnostic only (flags are the user's call): the file without
 // /Op 723 (1728 bytes: inline fabs without rounding, but `fld input; fsub [stored]` and no xmm bounce).
+// Round 25 (lane 18): the voice sends as `switch (mode) { case 1: add; case 0: add; }` (case 1 falling into
+// case 0) 542 plain (not kept, three under the bar); the gain compare with a `(real)` cast 545 (same code); with
+// the double fabs called directly, a CRT call (547 fast). Retail writes every flag-bit test (shr/and r8, 1) into
+// one stack byte (+0xe, shared with the direct flag) and keeps 0 in EBP for the voice branch's zero arguments;
+// a shared function-scope bool 549 fast and a set helper with a bool parameter 545 fast both stay in registers.
 // Round 277: standard selected-gain/real-pin/bit-pin extrema, subsets 1..7,
 // 570/564/561/536/556/558/578; all with real gain value 578 (fast control 532,
 // full 545). Original body and helpers restored; frame and stream/gain homes remain.
@@ -184,6 +189,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 479: shared native active-mixbin workspace for first/submix, first/routing,
 // submix/routing and all phases, declared before updates 535/542/532/542;
 // at entry 535/542/532/542 (fast control 532). Original workspaces and body restored.
+// DL225: separate four-speaker conversion/reduction using amplitude or square samples,
+// energy zero before/after conversion and storage at producer/entry: 604/599/604/599/
+// 604/599/604/599 (reduced control 532, full baseline 545). All sample storage restored;
+// frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

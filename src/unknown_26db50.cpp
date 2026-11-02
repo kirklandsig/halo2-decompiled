@@ -602,6 +602,12 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
 // Round 52 (lane 10, fast): retail's store of the pathfinding data to a slot it never reads before the 0x26d100
 // call is the argument LTCG drops from 0x26d100's unused last parameter (0x26d0e0 passes its third argument,
 // 0x1fa7f0's result, the same way); passing 0x1fa7f0's result there replaces the volatile local at the same 90
@@ -637,6 +643,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 261: complete native rotated-vector publication with scalar/native input snapshots,
 // split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
 // All restored; SSE ring conversion and the unspilled rotation remain.
+// DH271: Byte/char/short/word remaining counts, each with original/named ring phase,
+// 90/143/90/143/90/143/90/143. Native remaining-count widths do not free the SSE conversion/rotation slot;
+// the named phase still grows the frame. Original complete body, rotation input snapshots, radius reference
+// and inherited local qualifier restored; radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
