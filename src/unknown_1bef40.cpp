@@ -157,27 +157,27 @@ static __forceinline long real_to_long(real value);
 // (retail doubles first) and the reset's zero fields are still stored before the NONE
 // fields; the reset's order is fixed in include/slot_handler.h and the draw helper in
 // include/unknown_0259d0.h, both outside this lane's files.
-// score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
+// Earlier, score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
 // unset reference into a one-use local; both are kept only with a match, so the helper call and the direct store are
 // back. The doubling as sample + sample stays (17, fast). The lane's tried forms:
-// score 6 (was 6): the reset's zero fields (0x4ac, 0x504) are still stored before the NONE fields
+// Earlier, score 6 (was 6): the reset's zero fields (0x4ac, 0x504) are still stored before the NONE fields
 // (0x5ac, 0x5b0) and the seed store still precedes the delay's doubling (retail doubles first); the
 // only form that reproduces retail's order makes the actor pointer volatile, which is not allowed.
-// score 6 (was 9): the reset's seven stores are written here in retail's order rather than through
+// Earlier, score 6 (was 9): the reset's seven stores are written here in retail's order rather than through
 // the shared helper. Left: the zero fields (0x4ac, 0x504) are still stored before the NONE fields
 // (0x5ac, 0x5b0), and the seed store still precedes the delay's doubling (retail doubles first).
-// score 9 (was 17): the unset reference read into a local before it is stored keeps the time-globals
+// Earlier, score 9 (was 17): the unset reference read into a local before it is stored keeps the time-globals
 // pointer load and the x87 scale spill in retail's order. Left: the seed store still precedes the
 // doubling (the draw helper is in include/unknown_0259d0.h) and the reset's store order is fixed in
 // include/slot_handler.h.
-// score 17 (was 19): the delay's doubling written as sample + sample (2.0f * sample gives 19) puts
+// Earlier, score 17 (was 19): the delay's doubling written as sample + sample (2.0f * sample gives 19) puts
 // the second draw's scale and the time-globals load in retail's order. Left: the seed store still
 // precedes the doubling, the reset's store order is fixed in include/slot_handler.h, and the
 // time-globals pointer still loads above the reference store.
-// score 19 (was 19): the delay's doubling and its +3 still sit one slot later than retail
+// Earlier, score 19 (was 19): the delay's doubling and its +3 still sit one slot later than retail
 // (after the seed store and the conversion store); both draws first, the swapped operands and
 // the inline draws all cost more. The reset's store order is fixed in include/slot_handler.h.
-// score 19 (was 19): the frame and the x87 code agree. Left: the first draw's doubling and +3 sit
+// Earlier, score 19 (was 19): the frame and the x87 code agree. Left: the first draw's doubling and +3 sit
 // one slot later in retail (after the seed store and the conversion store); retail stores the reset's
 // NONE fields after its first three zero stores and before 0x4ac/0x504 (ours after all five); and
 // our build loads the time-globals pointer above the reset's NONE stores and the reference store
@@ -213,6 +213,13 @@ static __forceinline long real_to_long(real value);
 // tick stores 56. Retail here, in 0x1b3ee0 and in 0x1c0430 keeps 0x4ac/0x504 after the NONE stores; our
 // build sinks the NONE stores past them in all 240 statement orders screened (compile-only, 0x1b3ee0).
 // MiniMax D (11-01): no new form, no lower score.
+// Round 51 (m3 lane 14, fast): retail's 0x1bcee0 inlines the same reset and matches with a barrier
+// between the 0x5b6 and 0x4ac stores; that barrier in actor_reset_state 18 (the wait spill then joins
+// the reset; 0x1c0430 26 -> 25, 0x1b3ee0 26, 0x1e23c0 7, 0x1b09b0 still matched); the seed pointer
+// named once for both draws 17 (same code); the second draw inside the wait product 47 (272 bytes);
+// `sample + sample + 3.0f` 19. Diagnostics only: the time-globals pointer address-taken 31 (284 bytes;
+// its load then follows the reference store as in retail, but reloads after the first tick store, and
+// the reset keeps source order); 0x4ac/0x504 through a second actor lookup 77 (not merged).
 // @retail 0x1befd0
 bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {
