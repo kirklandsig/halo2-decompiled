@@ -295,6 +295,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // N303: Native file/success operation result, both member orders at iteration/completed-open
 // scope: wide admission 48/48/48/48, published-byte admission 54/54/54/54. Exact-only
 // grouped results restored; handle ECX and success-byte memory test remain.
+// Round 51 (m3 lane 13, fast): success as an `if (bool success = handle test)` condition declaration 55
+// (351 bytes), with the array element passed directly and no copy 55; `success = (bool)(opened & 1)` with the
+// element passed directly and no copy 44 (handle in EDI); on the file copy `success = (long)(handle test); if
+// (success)` 55; `success = handle test ? TRUE : FALSE; if (success)` 55 (351 bytes). Every form forwards the
+// stored byte to a register test.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

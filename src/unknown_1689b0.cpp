@@ -1678,6 +1678,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // 4 bytes high); that with the edge sum renamed to sort first 594 and with the declarations swapped 594 (same
 // code each: names and declaration order do not move these slots); the nearest distance declared in the
 // prism loop at its reset 552 (same code), with separate sums 594.
+// Round 51 (m3 lane 13, fast): the count clamp as `point_count < 8 ? point_count : 8` 552 (same code), as
+// `count = 8; if (point_count <= 8) count = point_count;` 625 (2912 bytes); `inside = true` before the nearest
+// reset 552 (same code); a const prism pointer 552 (same code); closest declared before the inside flag 552
+// (same code). Retail's clamp is a select into a second register (`mov ecx, 8; jg; mov ecx, eax`).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

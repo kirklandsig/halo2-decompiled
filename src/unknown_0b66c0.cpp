@@ -315,6 +315,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // counts in EDX. `(long)length >= count + start` 40; the length test nested under the sign tests 40; the
 // source formed in the copy call as `start + (long)string` 28 (counter ECX as retail, but start arrives in
 // EDX; 0xb5f10 6); `return true` / `return false` with no result 48 (94 bytes); `if (++count > 0x200)` 40.
+// Round 51 (m3 lane 13, fast with 0xb5f10/0xb61d0): the volatile string parameter advanced (`string += start`)
+// instead of start 43 (108 bytes, 0xb5f10 6), advanced before the clamp 47 (108 bytes, 0xb5f10 6); the clamp to
+// 0x1ff before `count++` 40 (same code); the length test first, then the sign tests 46 (92 bytes, 0xb5f10 6);
+// the function `static` 40 (same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

@@ -628,6 +628,12 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // N301: Complete positive switch-outcome result in inherited Boolean/plain Boolean/short/long
 // storage at dispatch 366/384/380/370; declared first 366/384/380/370.
 // All restored; early root/actor retention and paired-vector scheduling remain.
+// Round 51 (m3 lane 13, fast): actor_index read once through its own address into a local at entry 280
+// (propagated, no entry load); case 5's two output sets as if/else arms with one `result = true` 278 (same code);
+// an explicit `default: break;` 278 (same code); case 2's trace result declared at the case's top 278 (same code).
+// Diagnostic only (volatile, reverted at once): a volatile read of actor_index at case 5's test 355 (1284 bytes,
+// 0x270d90 334). Retail's case-5 `cmp eax, -1` opens the case (actor loaded at entry, as a load hoisted from the
+// two sibling uses in cases 5 and 2).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

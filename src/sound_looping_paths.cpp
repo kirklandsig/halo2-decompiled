@@ -649,6 +649,12 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // the 0x18dc90 NULL, the count test and the cue stores).
 // Round 263: Native query-tail sentinel chains in six array orders 161/162/162/161/161/159; original-order chain with short/word
 // bounded fill induction 256/256. Original fill producer, count, helpers and complete body restored.
+// Round 51 (m3 lane 13; plain checks, as --fast warns that 0x18ab70 and 0x189fe0 build differently): the fill
+// guard as `count < 2` 266 (1015 bytes); the camera test as nested ifs 159 (same code); bsp as a const pointer
+// local 159 (same code). Fast, on round 26's transition-through-g_4e0348 form (278, a zero in ESI): bsp declared
+// before the tags 283; a separate index for the request clear loop 278. Diagnostic only (semantic change,
+// reverted at once): with the cue NULL stores dropped the zero still takes ESI (258, 989 bytes), so the zero's
+// use count is not what takes ESI from bsp.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
