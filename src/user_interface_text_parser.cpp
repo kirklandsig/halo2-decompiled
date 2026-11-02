@@ -620,6 +620,8 @@ done:
 // after it 54; `if (globals != NULL)` 54.
 // Round 342: Seven complete cyclic case priorities and one paired priority on the repeated-copy graph (33 executable differing rows each versus 25): 52/42/50/50/50/50/38/50.
 // Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
+// Round 345: Parameter-owned selected string handle on the retained case graph crossed with shared-copy, direct-tag and missing-definition boundaries: 32/54/45/45/32/54/45/45.
+// Original executable source restored; Early EDI save, tag/selector schedule and scratch-address caching remain; switch-table data is excluded from executable gains.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
