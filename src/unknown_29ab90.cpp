@@ -248,6 +248,10 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // DH281: Complete magnitude input-component declaration orders ijk/ikj/jik/jki/kij/kji, then K/J/I input
 // storage with planar single-root and both single-root results [343, 343, 345, 345, 345, 345, 354, 426].
 // Original executable body restored.
+// P260: Native magnitude square-product declaration orders ijk/ikj/jik/jki/kij/kji
+// on complete magnitude/zero-default planar joins: 343/343/345/345/345/345; K/J/I products
+// with named sum/absolute length 345/345. Two-point gains rejected;
+// original helpers/body restored, frame 0x58/0x64 and magnitude/query overlap remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

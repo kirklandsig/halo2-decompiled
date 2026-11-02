@@ -1135,6 +1135,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // N302: Complete paired equipment lookup loop, long/short/word/byte ordinal, defaults
 // at pair / at each producer: 345/369/369/369/336/369/369/369. Exact-only output pair and all
 // original code restored; frame agrees, sentinel/squad/substitution homes remain.
+// P260: Squad-bit zero default before/after actor result, after definition/cleanup/
+// settings/squad and before final settings guard: 341/341/341/341/340/336/254;
+// entry declaration with original initialization 254. Original lifetime/body restored;
+// sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

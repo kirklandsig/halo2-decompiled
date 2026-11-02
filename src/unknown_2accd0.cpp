@@ -1100,6 +1100,9 @@ struct s_signed_file_write_parameters
 // Round 314: Dispatch orders 0231/0321/1230/1302/1320/2031/2130/2310 on the
 // direct-header-return graph 294/292/320/327/314/326/317/320. Original complete cases
 // restored; early capacity acquisition and extension offset/buffer homes remain.
+// P260: Scratch extension file extent retained for offset and remaining bytes,
+// before/after getter, both sum orders and both minimum orders: 244 each.
+// Frame grows to 0x1c; original observations, getter and complete body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
