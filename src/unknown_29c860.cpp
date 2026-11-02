@@ -162,6 +162,16 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // PIN-macro clamps 63; the first limit as an if-form 113; the second limit as a ternary 97; the actor
 // lookup at its first use 83, after the first limit 70; the gain as a ternary or `field * angle` 2; the
 // clamps tested `x < -limit` 2.
+// Round 153 (lane 4; harness, then --fast): unused-local counts 1-20 at the top or before the call never move
+// the pair; paren pairs in 0x11cc90's products move later code only (1 pair 61/65, 2 pairs 116/120, 3 pairs
+// 34/38, 4 pairs 2); all 32 dot/cross operand orders 2. The pair follows which point lives longer after the
+// call (b read later, diagnostic, flips both products to a's fields; nothing later also a's), never mixed as
+// retail. 0x11cc90 through the existing 0x50650 40 (fast, CAVEAT; harness 34; 692 bytes); through
+// dot_product2d/cross_product2d 2;
+// result/limit/angle locals declared at the top 2; the second-limit subtract as its own statement 63; the
+// gain as `x = x * field` 2. Split cross in 0x11cc90 (harness): both products named 116, named in the
+// other order 116, accumulated `cross -= ...` 116, only one product named 60/60, negated accumulate 133;
+// none splits the pair.
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)
