@@ -450,6 +450,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 500: complete entry attributes/flags/both observations, block/indexed receivers
 // 54/163/87/144/141/141; bounded selection with attribute observation 112/138.
 // Original executable body restored; scaled-index entry and first-index/copy homes remain.
+// Round 502: actual destination-record cursor drives all entry indices; before-copy,
+// memcpy-result, after-copy and pre-loop ownership 165/151/165/165; indexed source receiver
+// 165/112/165/165. Original copy/index graph restored; scaled-index and first-index homes remain.
 // Round 117 (m3 lane 8): a 600 s permuter run on this body, none below 54; indexed form rebuilt 144 (492 bytes:
 // count CX and zero EAX where retail has AX and ECX, so first stays in EAX across the copy and entries goes straight
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
@@ -463,6 +466,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // compile-only it gives retail's AX/ECX/EDI head, but LTCG moves cache_index to EAX and leaves mode on the stack);
 // block form with that index 168 (491); indexed with n and index both early 167 (492); indexed with the selection
 // first 170 (490).
+// Round 288: field-major resets across groups in all six field orders, then
+// count/first/flags and flags/count/first with reversed group order, 54 each.
+// Original stores and executable body restored; index/count/zero and copy homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

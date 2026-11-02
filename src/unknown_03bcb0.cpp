@@ -352,6 +352,13 @@ complete:
     return final_value;
 }
 
+// score 88 (was 88): logic walked block by block against retail, no logic or behaviour difference. Retail returns 4cbb0's
+// al directly (call 4cbb0; pop; ret) and `xor al,al` on the false path; the draft's `result` byte costs a push ebx/setne/test.
+// The 4dfa0 union form (availability.ready, return false) gives that tail (381 bytes) but scores 109, because retail also
+// keeps four pointers the draft folds: lea eax,[eax+edx*8] + [eax+4] for the g_4e0350+0x37c pair, `add eax,edi; mov eax,[eax]`
+// for the tag instance, and lea eax,[eax+edx*2] before xor edx,edx/mov dx,[eax] (group), the movzx (first) and the dead lea
+// (shader entry) in the record_material chain; +12 bytes. Tried: named pointers (pair, group, first, shader entry) as
+// plain pointers, as a local struct pair and as bitfield structs, hoisted before `block` (105); dropping the (void)& lines (no change).
 // @retail 0x4e0d0
 bool __stdcall function_4e0d0(long tag, long context, long pass, long stage, long entry, long handle, s_sort_record *out)
 {
@@ -778,6 +785,13 @@ struct s_41490_record
     point3f position;
 };
 
+// score 72 (was 72): the build inlines 0x40e10 (27 bytes, defined in unknown_03f2b0.cpp) where retail calls it with
+// cl/dl = definition[0x16] bits 1/0; with `// @flags /O2 /Ob1 /Gr` on unknown_03f2b0.cpp (a trial only) ours calls it too and
+// the size is retail's (426), score 127. record->position as a struct copy gives retail's `add esi,0x64` then three stores
+// but scores 75 in the full build (122 with the call kept), so the member copies stay. With the call kept, ours takes `position` in ebx
+// (ret 0x1c) where retail has it on the stack (ret 0x20, loaded into ebp at entry, its slot reused for `pass`). Tried with the
+// call kept: volatile read of position at its first use (119; ret 0x20 but distance moves to ebx), that plus a volatile read of
+// distance at the 0x40e30 call (83; group then travels in ecx), that plus a volatile read of group (113), (void)&position (no change).
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -874,6 +888,7 @@ void function_3d000(real const *state)
 
 #include <string.h>
 #include "visibility_slot.h"
+#include "sampler_state.h"
 struct s_shader_cache;
 extern byte *g_485a80;
 extern long g_4858b8;
@@ -884,6 +899,29 @@ void function_12d50(bool scaled, real const *projection, real *output);
 point3f g_4c1b08[4];
 
 #pragma inline_depth(0)
+PRIVATE __forceinline void submit_quad_vertices(void)
+{
+    D3DDevice_Begin(D3DPT_QUADLIST);
+    D3DDevice_SetVertexDataColor(9, 0xffffffff);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[0].x, g_4c1b08[0].y, g_4c1b08[0].z, 1.0f);
+    D3DDevice_SetVertexDataColor(9, 0xffffffff);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[3].x, g_4c1b08[3].y, g_4c1b08[3].z, 1.0f);
+    D3DDevice_SetVertexDataColor(9, 0xffffffff);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[2].x, g_4c1b08[2].y, g_4c1b08[2].z, 1.0f);
+    D3DDevice_SetVertexDataColor(9, 0xffffffff);
+    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[1].x, g_4c1b08[1].y, g_4c1b08[1].z, 1.0f);
+    D3DDevice_End();
+}
+#pragma inline_depth()
+
+// score 182 (was 192): size equals retail (837) and every instruction after the first shader lookup is the same; the score is the
+// one-instruction shift of that lookup. Retail reads the tag as `mov eax,[eax+0x5c]; add eax,0x10; mov eax,[eax+4]` (slot 2 of an
+// 8-byte table; the same separate add is at 0x26c6b, 0x34d5a, 0x35097, 0x3923d, 0x5261b), ours folds it to [ecx+0x14], which also
+// puts the 0x14bc0 index in edx instead of ecx. Tried (all 182): slot struct + &slots[2], same through a __forceinline accessor
+// taking the slot pointer / the index / a void* element helper / a tag-block helper, a 16-byte slot, tags[1] through a long
+// pointer, struct copy of the slot (scalarized), memcpy of the slot, an unused first-word read. Stage addresses are written
+// through sampler_state_write (retail ORs the dirty flags once per call) and the quad through a file-scope inline_depth(0) helper
+// (the old whole-function pragma plus the in-body pair left the SetRenderState/SetTextureStageState wrappers out of line: 192).
 // @retail 0x3bf20
 long __stdcall function_3bf20(s_slot *slot, byte *data)
 {
@@ -910,14 +948,14 @@ long __stdcall function_3bf20(s_slot *slot, byte *data)
     program.PSFinalCombinerConstants = 0x1ff;
     D3DDevice_SetPixelShaderProgram(&program);
     function_12d50(false, NULL, NULL);
-    D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(1, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(1, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(2, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(2, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(3, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
-    D3DDevice_SetTextureStageState(3, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+    sampler_state_write(0, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+    sampler_state_write(0, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+    sampler_state_write(1, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+    sampler_state_write(1, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+    sampler_state_write(2, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+    sampler_state_write(2, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+    sampler_state_write(3, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+    sampler_state_write(3, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
     D3DDevice_SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
     D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
     D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0);
@@ -934,24 +972,12 @@ long __stdcall function_3bf20(s_slot *slot, byte *data)
     D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
     D3DDevice_SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-    #pragma inline_depth(0)
-    D3DDevice_Begin(D3DPT_QUADLIST);
-    D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[0].x, g_4c1b08[0].y, g_4c1b08[0].z, 1.0f);
-    D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[3].x, g_4c1b08[3].y, g_4c1b08[3].z, 1.0f);
-    D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[2].x, g_4c1b08[2].y, g_4c1b08[2].z, 1.0f);
-    D3DDevice_SetVertexDataColor(9, 0xffffffff);
-    D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, g_4c1b08[1].x, g_4c1b08[1].y, g_4c1b08[1].z, 1.0f);
-    D3DDevice_End();
-    #pragma inline_depth()
+    submit_quad_vertices();
     D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x1010101);
     D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 0);
     return 0x4b000;
 }
-#pragma inline_depth()
 
 
 
@@ -1585,6 +1611,14 @@ bool __stdcall function_1c8a0(D3DPRIMITIVETYPE type, word const *indices, long c
 void __stdcall function_14b60(dword flags, dword color, real depth, byte stencil);
 bool __stdcall function_3bd00(real height, dword color);
 
+// score 150 (was 150): logic walked against retail, no logic or behaviour difference (calls, argument order, 0x7c==0 test,
+// 0x100000 and >>19 flags, 12de70/3c270 order, both loops match). What differs is the frame: retail has none (push ebp after
+// the first test, push ebx/esi/edi after the second, three epilogues, spills in the render/clear argument slots [esp+0x14]/
+// [esp+0x18]); ours reserves one local slot (push ecx) so everything is pushed up front, shifting the rest. Retail also
+// tests 0x100000 as `shr eax,0x14; test al,1` (TEST_FIELD_BIT((flags >> 20) & 1) gives that form but scores 186 until
+// the prologue matches). Tried: nested ifs instead of early returns (same bytes), separate `fog`/`reference_tag` locals,
+// record_format_groups(tag) for the table walk, tag re-read from state at each use (183, no spill), tag initialised
+// before the 3c270 call (150, but moves the load before the call: not retail's order).
 // @retail 0x3c3c0
 bool __stdcall function_3c3c0(bool render, bool clear)
 {
