@@ -21,7 +21,28 @@ static __forceinline float angular_velocity(solver_angular_row_31e7b0 const *row
 	return sum_three_31c940(_mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b))).value;
 }
 
-// Keep paired projections as scalar objects until both rows are ready.
+// Construct the scalar in its consumer's storage. This avoids the integer
+// copies introduced by returning the plain scalar aggregate above.
+struct solver_projection_31c940
+{
+	float value;
+	__forceinline explicit solver_projection_31c940(__m128 const &v) { _mm_store_ss(&value, v); }
+};
+static __forceinline solver_projection_31c940 sum_three_projection(__m128 const &v)
+{
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	return solver_projection_31c940(xyz);
+}
+
+static __forceinline solver_projection_31c940 project_linear_velocity(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
+{
+	__m128 relative = _mm_sub_ps(a->linear, b->linear);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
+	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, row->linear)));
+}
+
 static __forceinline solver_scalar_31c940 linear_velocity(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
 {
@@ -101,8 +122,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 {
 	float target_a = row[0].linear.m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
-	solver_scalar_31c940 projected_a = linear_velocity(row, a, b);
-	solver_scalar_31c940 projected_b = linear_velocity(row + 1, a, b);
+	solver_projection_31c940 projected_a = project_linear_velocity(row, a, b);
+	solver_projection_31c940 projected_b = project_linear_velocity(row + 1, a, b);
 	// Retail spills the first error and both coupled impulses to 32-bit storage.
 	volatile float error_a = target_a * load_error_scale(step)
 		- projected_a.value * load_velocity_scale(step);
@@ -274,7 +295,7 @@ static __forceinline void solve_angular_friction_kernel(float target, float limi
 	*result += impulse;
 }
 
-// score 2151 (was 2072): reconstruct writeback loops and metadata reloads.
+// score 2144 (was 2151): construct coupled/residual projections in place.
 // Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -702,8 +723,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				do
 				{
 					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-					float velocity_a = linear_velocity(row, a, b).value;
-					float velocity_b = linear_velocity(row + 1, a, b).value;
+					float velocity_a = project_linear_velocity(row, a, b).value;
+					float velocity_b = project_linear_velocity(row + 1, a, b).value;
 					row[0].linear.m128_f32[3] -= velocity_a;
 					row[1].linear.m128_f32[3] -= velocity_b;
 					terms += 6;
@@ -716,8 +737,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				{
 					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-					float velocity_a = linear_velocity(row, a, b).value;
-					float velocity_b = linear_velocity(row + 1, a, b).value;
+					float velocity_a = project_linear_velocity(row, a, b).value;
+					float velocity_b = project_linear_velocity(row + 1, a, b).value;
 					row[0].linear.m128_f32[3] -= velocity_a;
 					row[1].linear.m128_f32[3] -= velocity_b;
 					terms += 6;
@@ -737,7 +758,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				do
 				{
-					row->linear.m128_f32[3] -= linear_velocity(row, a, b).value;
+					row->linear.m128_f32[3] -= project_linear_velocity(row, a, b).value;
 					++row; ++result; op += op[1];
 				} while (op[2] == 3);
 				terms = (__m128 *)row;

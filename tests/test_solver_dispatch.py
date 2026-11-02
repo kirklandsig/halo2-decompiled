@@ -551,6 +551,35 @@ def test_circular_coupling_nan_payloads(solver_images, precision):
         assert snapshots[0] == snapshots[1], (context, precision)
 
 
+@pytest.mark.parametrize('kind', [2, 3])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_linear_projection_preserves_nan_payloads(solver_images, kind, precision):
+    # Scalar-result construction must preserve the observed SSE/x87 operand
+    # order, including competing signed payloads in axes, velocities and targets.
+    fields = [TERMS, TERMS + 16, TERMS + 32, HEAP + 16, HEAP + 32,
+              HEAP + 0x80 + 16, HEAP + 0x80 + 32, TERMS + 12, TERMS + 60]
+    payloads = [0x7fc00001, 0xffc00001, 0x7fc54321, 0xffc54321]
+    cases = [(field, bits, None, 0) for field in fields for bits in payloads]
+    pairs = [(fields[0], fields[1]), (fields[1], fields[2]),
+             (fields[3], fields[5]), (fields[4], fields[6]),
+             (fields[7], fields[8])]
+    cases += [(first, a, second, b) for first, second in pairs
+              for a in payloads for b in payloads]
+    for first, a, second, b in cases:
+        data = solver_case(kind, 2)
+        put(data, STEP + 28, 'i', 1)
+        put(data, first, 'I', a)
+        if second is not None:
+            put(data, second, 'I', b)
+        context = ('linear projection NaN', kind, first, hex(a), second, hex(b))
+        snapshots = compare_case(solver_images, data, precision, context)
+        assert snapshots[0] == snapshots[1], (context, precision)
+        # At least one residual target consumes the injected NaN.
+        for heap, _ in snapshots:
+            assert any(math.isnan(struct.unpack_from('<f', heap, offset - HEAP)[0])
+                       for offset in (TERMS + 12, TERMS + 60)), (context, precision)
+
+
 def mixed_case(seed):
     data = solver_case(12, seed)
     for start, end in ((0x1000, 0x3000), (0x4000, 0x7000)):
