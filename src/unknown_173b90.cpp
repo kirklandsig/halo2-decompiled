@@ -629,6 +629,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Scores 270/270/269/269/298/298/299/299. Original executable body restored.
 // Round 459: Double scale/multiplier/both storage, scale-first variants and indexed single-wide variants
 // 328/320/322/328/320/322/311/324. Original executable source restored.
+// Round 461: Conditional validity results at system/location/particle cache transitions,
+// subsets 1-7, 140/131/144/179/171/161/192; one shared entry validity result 283.
+// Original invalidations, masks, offset/default lifetimes and shared rotations restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

@@ -635,6 +635,9 @@ struct s_item_collision_bsp
 // original spin products at the common join on those three graphs 328 each; shared float scale
 // with pointer/reference 328 each. Original source observations, random draws, pending-k join and
 // helper interfaces restored; protected plane width and plane/spin homes remain.
+// Round 461: Common collision-plane query with field/Boolean selection, branch/conditional
+// input and either plane declaration order: 290/348/290/348/290/348/290/348.
+// Boolean selection raises sibling 140 to 235; original query branches and complete body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1145,6 +1148,9 @@ struct s_item_flags_view_10b850
 // projection cosine-product orders ijk/ikj/jik/jki/kij/kji 924 each. All original flow operands,
 // private helpers and complete body restored; frame, entry Boolean publications and
 // carrier/collision/rotation homes remain.
+// Round 461: Overlap-safe carrier/linear/angular input transfers, subsets 1-7, then all
+// with the marker-matrix transfer: 892/873/859/837/916/861/907/920.
+// Original native copies, input observations, helper graph and complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

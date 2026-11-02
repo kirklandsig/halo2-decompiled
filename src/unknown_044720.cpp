@@ -460,6 +460,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 216/216/216/216; division with masked bit 218/218; division/remainder 251/251.
 // Original word addressing, query storage and body restored; entry/index spill
 // and center/query/bound homes remain at the correct 0x1094 frame.
+// Round 461: Branch-produced next-node result committed once per iteration, with filled-count,
+// short-cache and successful-query matrix scopes, masks 0-7: 236/223/250/238/236/223/250/238.
+// Original cache update, count initializer, native domains and complete body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
