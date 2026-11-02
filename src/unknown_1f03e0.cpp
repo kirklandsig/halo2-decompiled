@@ -1621,6 +1621,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 256: all three named dot products in the existing shared helper, six producer
 // orders 227 each; first/last orders with real movement 228/228. Original helper,
 // magnitude and complete body restored.
+// Round 518: one complete velocity sample for scan/fallback, with native
+// movement, earlier sentinel phase and count capture masks 0-7,
+// 334/332/335/333/334/332/335/333. Original observations and body restored;
+// zero-load width, reset/selection homes and selective material calls remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

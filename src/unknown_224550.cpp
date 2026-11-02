@@ -285,6 +285,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // origin-first/extent-first and flipped/unflipped arm order: 410/411/439/439/420/420/447/447. Original
 // helper, complete callback and all in-place input-before-store captures restored; tint/second-UV homes and
 // blend residence remain.
+// Round 515: Native first/next/both selected-frame values at index production or first use
+// 441/432/475/420/419/473; both with branch-produced primary aspects 474/466.
+// Tint/second-UV homes remain; complete native inputs, scalar phases and body restored.
 // Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
 // 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
 // component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
