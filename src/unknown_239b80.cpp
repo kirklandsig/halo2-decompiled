@@ -92,6 +92,11 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // at outer or function scope, denominator spellings 2; normal pointer 4-6, plane or d local 6, plane-distance helper
 // 6-8, scaled locals 6, `dx *=` 6, y output first 64; `+=` numerators give the first intersection exactly but flip
 // the second 4. Unused locals (diagnostic) rotate the second intersection's products only.
+// Round 83: defaulted classification distance 5; side-array pointer induction 208 (712 bytes);
+// side/previous/current pointers with a named projection 16, direct `points + current` 16,
+// without the defaulted distance 16, with an early defaulted projection 16; output base declared
+// after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
+// the three setup stores and first intersection's x product remain.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
