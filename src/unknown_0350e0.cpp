@@ -99,6 +99,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
 // Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
 // Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
+// Round 531: Global second-turn inputs with original helper, lexical first-result scope, paired scalar
+// setters and matrix/trig role names 422/422/478/478/422/422/478/478; original-graph trig/vector/matrix
+// home names 356/356/356/356/356/356/356; complete names with row-local diagonal differences 356.
+// Original helpers/body restored; frame 0x98 versus 0x90 remains.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1670,6 +1674,11 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // F323: Independent result home and frame 0x14 versus 0x18 remain; complete original body restored.
 // Whole case orders 01324/02413/13240/24130/43210/31420/12340/04231
 // 195/205/195/205/201/222/193/250; every original case expression and helper preserved.
+// Round 531: Whole direction input, case-owned projection vectors and whole displacement inputs, seven
+// subsets 421/221/341/204/373/275/289; complete immutable inputs 289. The five direction-copy graphs
+// with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
+// result home remains.
+// Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
