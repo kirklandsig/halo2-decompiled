@@ -2494,6 +2494,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
+// Round 81: contact-definition/contact/both names 10 each; `axle_torque` 10; `const delta` and
+// `real *const spin` 10 each; a local advance name 10; torque/braking declarations swapped 10;
+// definition/contact/both pointer arithmetic 10 each; a spin reference and helper advance/spin names 10 each;
+// throttle/torque joint declarations in either order 10 each; the wrap helper defined after its caller 10.
+// Opening body restored.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
