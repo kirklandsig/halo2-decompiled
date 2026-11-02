@@ -452,6 +452,7 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// MiniMax S (11-01): no new form, no lower score; 0x144f0 is still called with four stack arguments and the priority in XMM2 where retail passes the first three arguments in EAX/ECX/EBX; its definition is in src/unknown_01cf50.cpp.
 // score 100 (was 100): BLOCKED-BY 0x144f0 (unmatched, in src/unknown_01cf50.cpp): retail calls it with the tag
 // and two zeros in EAX/ECX/EBX and three stack arguments; our tree takes four stack arguments and the priority
 // in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw

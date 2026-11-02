@@ -1301,6 +1301,9 @@ long function_baf80(long object_index);
 // load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
 // a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
 // inline model-index helper for the object and its parent 22.
+// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
+// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
+// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1627,6 +1630,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
 // tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
@@ -1945,6 +1949,7 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
     return result;
 }
 
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
 // score 188 (was 188; earlier 204, 220, 298): frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
 // Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
@@ -2307,6 +2312,9 @@ s_cached_input_list g_5234e8[4];
 // score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): frame 0xa0 and loop constants agree; first +0xb saves
 // EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
 // also differs. Tried: all six
+// MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
+// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
 // Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
@@ -2897,6 +2905,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
@@ -3999,6 +4008,7 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
     if (enabled) { function_44550(); function_445d0(); }
 }
 
+// MiniMax R (11-01): no new form, no lower score: 0x44370 (src/unknown_01cf50.cpp, not my file) is still called out of line where retail inlines it into six of the passes.
 // score 165 (was 165, 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
 // reassigned from the extra gate), and the volatile store on it is gone. What still differs: retail stores
 // the constant 1 into that slot late (after the cull call, passes 3 and 16 only) where we store it early on

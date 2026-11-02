@@ -1231,6 +1231,10 @@ __declspec(noinline) void function_17aec0(short node_index, s_effect_datum *effe
 // the call 38, `short index = NONE;` at the top 40 (both thread the re-test with retail's effect esi/index edx,
 // but the copy or the `or edx, -1` stays at entry instead of on the NONE path); one index assigned in the call
 // branch and by the threaded ternary 35 (the call branch's value becomes its own web).
+// Round 111: outer NONE guard around the special case with a copied long index 29 (105 bytes); copied-index
+// special/fallback arms with one exit 23; threaded index with a const effect 35; threaded index with a two-use
+// hosted identifier 35; threaded index with memcpy 35; copied index with memcpy 11; dominating long copy before
+// the original special guard 29; outer NONE test on the copied index 41. Original body restored.
 // @retail 0x17aec0
 void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *matrix)
 {
@@ -2336,6 +2340,8 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax R (11-01): no new form, no lower score: retail still reloads the object's index after
+// the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
 // and 0xbaf80's bodies (src/unknown_0bad50.cpp) that decide it.
 // score 63 (was 63): only the object index differs: ours keeps it in ESI from entry across 0xbadc0

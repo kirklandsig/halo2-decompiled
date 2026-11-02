@@ -301,6 +301,12 @@ struct s_block_candidate
 // Left: ours keeps offset in EDI and current in EBX (retail EBX/EDI), the mask in EBX (retail EDX), pushes EDI
 // at entry, stores previous's NONE at entry, homes segment pages/time the other way round, and lays the case 0/1
 // policy bodies at the function's end.
+// Round 302: Scan cursor advanced before policy/prefetch with original/maximum timestamp and
+// field/reused page total 380/378/378/374; enclosing cursor scope 380/378/378/374. Frame reaches 0x1054,
+// but length grows to 1223-1232; original scan, values and body restored.
+// Round 240: Inner-scan policy/time/segment-home names, seven subsets and all with reversed
+// independent policy/time acquisition: 347/421/411/347/347/421/411/411. Policy-only field copy
+// exact-only; policy/time reaches frame 0x1054 at 411. Original executable body restored.
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.

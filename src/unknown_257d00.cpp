@@ -1718,6 +1718,14 @@ void function_b7360(long object_index);
 // Round 331: Common case-thirteen notification with branch/conditional flag values and
 // orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
 // producers and complete body restored; actor/pool/output allocation and length gap remain.
+// Round 223: Native orientation/motion/direct planar values in subsets 1-7
+// 502/470/508/459/495/469/500; all with explicit component construction 500.
+// The direct-field temporary at 459 is exact-only; intrinsic/native direct copies
+// without that temporary both 471. Original producers and complete body restored.
+// Round 335: Whole countdown case zero before 17/4/7/8/10/5/9/13 gives
+// 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
+// is rejected; original complete case order and body restored. Pool/actor/output
+// ownership and the forty-byte length gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2204,6 +2212,16 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // DH269: Independent timer/animation arm swaps 7/0, 9/10, 12/11, their pairs/all,
 // 485,487,487,487,487,485,485; all with case 5 before the timer pair 502. Reduced control 485
 // versus full 469; first +9 actor/state ownership persists. Original arms and entire body restored.
+// Round 499: One candidate handle for query and publication, crossed with candidate/point scopes
+// and both distance-comparison orientations: 490 each (fast control 485; full 469). Original
+// observations, scopes, case order and body restored; actor/state and point homes remain.
+// Round 223: Complete search arm before 1/4/7/0/5/9/10/12 gives
+// 630/481/469/489/489/488/464/468; five-point gain rejected. On before-ten graph,
+// first/both request receivers at uses and native bit updates alone/with both receivers
+// 481/481/502/489. Original body restored; actor/state and first point homes remain.
+// Round 335: Complete turning/alignment/both-distance product parts, subsets 1-7,
+// 485 each; all parts const 485 (fast control 485; full 469). Actor/state allocation
+// and first point home remain; all original products, cases and body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

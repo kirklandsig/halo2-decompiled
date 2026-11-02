@@ -18,9 +18,9 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
+// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
 // MiniMax lane E (11-01): no new form, no lower score.
-// score 230 (was 230): the mode bit loads the flags into edx where retail uses eax, so
-// the mode bit loads the flags into edx where retail uses eax, so
+// Earlier: the mode bit loads the flags into edx where retail uses eax, so
 // the mode bit loads the flags into edx where retail uses eax, so
 // every later offset drifts; the mode takes the frame's lowest slot where retail keeps
 // the size, and the size and the aspect stay in registers across the rounding calls.
@@ -149,6 +149,15 @@ extern real g_4c9798[36];
 // Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
 // each with coordinated pixel-size/mode names 230; coordinated names alone and
 // diameter lexical rank 230. Original declarations, names and body restored.
+// Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
+// long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
+// and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
+// Round 279: Complete immediate scalar results for projection/near/far row families,
+// seven nonempty subsets and all with both plane-distance results, 230 each. Original
+// compound updates and entire body restored; mode/size homes and rounding reloads remain.
 // Round 44 (lane 14): retail rounds the width (size / aspect) first into ESI and the height into EDI
 // and passes them to 0x1ddd0 in ESI/EDI with the index in ECX; ours keeps 0x1ddd0's width on the stack
 // (BLOCKED-BY 0x1ddd0). Width rounded first with the fix-up on the width 238; with long mode and height
@@ -159,15 +168,14 @@ extern real g_4c9798[36];
 // Round 325: Entry declaration families for both dimension results, all integer/real limits and
 // the actual point/normal workspaces, seven subsets and complete role identities, all eight
 // 230 at 1487 bytes. Original declarations restored; flags/mode/sizing and rounding homes remain.
-// Round 279: Complete immediate scalar results for projection/near/far row families,
-// seven nonempty subsets and all with both plane-distance results, 230 each. Original
-// compound updates and entire body restored; mode/size homes and rounding reloads remain.
 // Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
 // long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
 // and call tuple unchanged; mode/size homes and rounding reloads remain.
 // Round 283: width-first rounding on the retained overflow graph, full-word mode/height
 // and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
 // Original height-first producers, bounds, mode, capacity expressions and complete body restored.
+// Y499: retained long-mode graph, size/mode/both/extent/size-extent/all/bounds/aspect
+// scalar role families 197 each; original names and body restored. Mode/size homes and protected rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {

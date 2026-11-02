@@ -758,6 +758,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
 // (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
 // retail's recomputed frame count; every later line still differs).
+// Round 237: graph/animation/event lexical homes, seven nonempty subsets 93/93/93/93/93/93/93;
+// all three with earlier uninitialized declarations 93
+// Original executable body and helpers restored.
 // Round 113 (m3 lane 7, fast): callback and user as one by-value pair struct (callers build it, no pointer or
 // volatile) 124 (frame 0x10; the first callback load is reused at the second dispatch and kept in EBX through the
 // third, the animation spilled at the variant join); that with a volatile third read of the pair's callback 130 (539
@@ -768,6 +771,8 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // callback observations and complete executable body restored; second reload remains.
 // Round 444: Plain callback transport with complete loop/variant/rate decisions at their tests,
 // bool subsets 1/2/4/3/5/6/7 then full long decisions: 128/128/134/128/134/134/134/128. Original tests, callback slot and body restored.
+// Round 448: Complete identity-test bool results at dispatch guard subsets 1-7
+// and all four guards 93 each. Original direct tests, callback slot and body restored.
 // Round 237: graph/animation/event lexical homes, seven nonempty subsets 93/93/93/93/93/93/93;
 // all three with earlier uninitialized declarations 93
 // Original executable body and helpers restored.

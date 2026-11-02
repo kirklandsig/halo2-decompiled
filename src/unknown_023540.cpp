@@ -3313,6 +3313,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // whole/fraction/alpha/input orders fwria 939, fiwra 965, fwira 976, fiawr 35, faiwr 950,
 // iafwr 43, aifwr 959, frwia 771, frwai 452, fawri 31; alpha selector at its use 947; both
 // selectors at their uses 975.
+// Round 336: paired-selector branch/default forms 952/952/952/952/948/959/959/948;
+// clip/shift admission, width lifetime and negative-arm subsets 39/37/45/1092/1092/1097/1097,
+// nested rescale admission 1146; gain-span/all-quantizer producer boundaries and both,
+// then with the fixed sample, 31/31/31/31. Original complete body and helpers restored;
+// selector scheduling, reciprocal reload order and shift/clip quantizer homes remain.
 // Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
 // at selector production 243/31/957/243. Original body restored; selector order,
 // span/constant reload pairs and shift/clip quantizer homes remain.

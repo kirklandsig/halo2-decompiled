@@ -2242,6 +2242,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all

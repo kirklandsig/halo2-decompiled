@@ -946,8 +946,13 @@ struct s_flags_1f0870
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
+// Round 448: Shared direct/general, direct/history, general/history and all-phase
+// maximum-change scalar 591/590/590/591; sole mode read at its test on those
+// graphs 593/592/592/593. Original limits, mode, vector workspaces and body restored.
 // Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
 // 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
+// declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
 // Round 232: Branch-owned initial gravity/general-only damping/general-only flying
 // scope subsets and complete graph with early bounded-step declaration 610/629/638/626/628/634/637/637.
 // All restored; original frame, flag observations and shared normalization retained.
@@ -1328,11 +1333,11 @@ PRIVATE inline real contact_normalize(vector3f *vector)
 // Round 248: coherent complete-state first parameter with initial-point helper views, repeated
 // normal observation and native request/tuning fields 418/418/460/460/418/418/460/460.
 // Caller stays 230; all seven matched file controls survive. Original contract and body restored.
-// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
-// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // Round 289: Response-only selected contact address, with preferred cursor/count-store phase/entry success
 // result interactions masks 0..7, 430/456/429/455/524/521/525/522. All restored; original
 // receiver, qualified count, copies, response order and arithmetic retained.
+// Round 481: Independent preferred/candidate/final scan-ordinal identities, all seven subsets
+// 418 each; all three with response-pass identity 418. Original full body and qualified count restored.
 // Round 235: existing normalizer complete native/scalar/native-scale/scalar-setter
 // input captures, original exits 555/425/555/419; single-result joins 555/567/555/567.
 // Candidate-dot admission bool/byte/short/long 419 each; rejection 420 each.
@@ -1589,14 +1594,20 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
 // accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
 // second call).
+// Round 448: Separate selected/fallback entry lifetimes 221/221/221; supported-first
+// final admission 222, with either/both lifetimes 222/222/222; all with real movement
+// 225. Original distinct block workspaces, movement and selected-first test restored.
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
 // at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
 // rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
+// Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
+// and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
 // Round 329: Complete reset orders MNSZ/SNMZ/ZNMS/NSMZ/NZMS/MSNZ/SZNM/ZMSN
 // 223/221/222/221/222/222/222/223; N=normal, M=material, S=sentinel, Z=scalar zero. Both
 // reset phases use the same order; original stores and complete body restored.
-// Round 296: Accepted-state support-first, flag-first, scalar-first and interleaved stores, on original
-// and real movement graphs. Scores 221/224/221/221/224/227/224/224. Original complete body restored.
 // Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
 // native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
 // executable source restored; zero width, reset/selection homes and material-call expansion remain.
