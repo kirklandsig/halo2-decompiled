@@ -1,7 +1,7 @@
 // @flags /O2 /Ob1 /Gr /GL-
 #include "unknown_11c920.h"
 #include "globals.h"
-#include "unknown_1efac0.h"
+#include "pair_filter_class.h"
 
 class c_1c3450;
 void function_1c3450(c_1c3450 *arg_0);
@@ -40,7 +40,7 @@ public:
 // @retail 0x1c3410
 c_1c3410 *c_1c3410::function_1c3410(dword arg_0)
 {
- function_1c3450((c_1c3450 *)this);
+ ((pair_filter_base *)this)->pair_filter_base::~pair_filter_base();
  if (arg_0 & 1) g_480118->allocate((long)this, field_4, 0x22);
  return this;
 }

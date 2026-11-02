@@ -4,6 +4,7 @@
 #include "object_markers.h"
 #include "unknown_1428b0.h"
 #include <math.h>
+#include "vector_products.h"
 // @flags /O2 /arch:SSE /Gr
 
 struct s_object;
@@ -16,7 +17,7 @@ real magnitude3d(vector3f const *arg_0);
 bool __stdcall function_a75d0(vector3f *arg_0, real arg_1);
 quaternionf *function_141f60(matrix3x3 const *arg_0, quaternionf *arg_1);
 matrix3x3 *function_142eb0(matrix3x3 const *right, matrix3x3 const *left, matrix3x3 *out);
-void function_11d790(quaternionf const *arg_0, vector3f *arg_1, real *arg_2);
+void function_11d790(quaternionf const *arg_0, real *arg_2, vector3f *arg_1);
 void havok_component_rigid_body_angular_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 void havok_component_rigid_body_linear_velocity_get(s_havok_component *arg_1, long arg_0, vector3f *arg_2);
 real havok_component_rigid_body_mass_get(long arg_0, s_havok_component *arg_1);
@@ -104,7 +105,8 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
  arg_3->k = local_0.k - arg_2->k * local_1;
  return function_30bf0(arg_3);
 }
-// score 920 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
+// score 902 (was 902): Frame 0x1f0/0x1d4, entry/second activity and record/vector homes remain.
+// Earlier score 902 (was 920): Frame 0x1f0 versus 0x1d4; entry EAX/ECX, delayed EBX, second activity byte and record/vector homes differ.
 // Round 105: retail has 23 more mulss, 22 more movss and 15 more movaps, ours ~10 extra counted loops
 // (xor/dec/jne/add): retail's scale helper is unrolled. The helper as three statements gives retail's frame
 // 0x1d4 and the same 32 calls with matching instruction counts between calls in all but four segments, but
@@ -185,7 +187,90 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 161: Native external option dword/word/byte units 1007/965/1006; read-only selected record
 // with those units 1007/965/1006; native twelve-byte descriptor 920; descriptor plus dword options
 // 1007. All declarations, flag observations and original body restored.
+// Round 176: Library source captures in scale/add-subtract/both/planar/scale-planar/
+// add-subtract-planar/all 1310/1130/1552/1072/1500/1341/1762; all with projected output copy 1796.
+// Original helpers, short scale loop, response sharing and coefficient pair restored.
 // Round 33: Ordinary inline scale/add/subtract subsets, then all with planar producer: 920/920/920/920/920/920/920/920. Original forced producers, body and response sharing restored.
+// Round 388: Shared complete linear/angular change accumulator 1007; with intermediate
+// change pairs 37-50/37-58/50-58 or all linear changes 1003/1008/1008/1027;
+// with linear residual/axis reuse 1024/1018; all three reuse families 1064.
+// Original separate accumulators and all intermediate vectors restored; entry/frame homes remain.
+// Round 257: Final rounded-step/level/target declaration pairs at entry, all seven
+// nonempty subsets, then all with native scalar role names: 920 each. Every conversion
+// and read stayed at its producer; original declarations and complete body restored.
+// Round 268: Shared constraint error/axial speed/residual speed, seven subsets, then all with speed
+// change: 975/979/991/974/974/991/974/974. Original body restored.
+// Round 41: Native signed body-slot and composed owner/other activity carriers:
+// [997, 1001, 921, 970, 956, 1010, 1011, 1008]. Narrow byte/short slots recover entry ECX/EAX at unchanged frame 0x1f0;
+// body and record/vector homes still differ. Original slot, predicates, helpers and body restored.
+// Round 195: Complete wide-dot/real-dot/planar product groups and their four
+// combinations 947/938/938/954/947/920/954; all with projected-vector result
+// 958. Original kernels, short scale loop, coefficient pair, solver response
+// sharing and full body restored; entry, frame and record/vector homes remain.
+// Round 203: existing shared scale/accumulation/real-dot kernels, seven
+// subsets and all with shared displacement 1199/920/920/1199/1199/920/1199/1199.
+// Coordinated solver inline declaration on counted/expanded kernels 920/1199;
+// existing center point setter on expanded scale/scale-add 1168/1168.
+// Point production retains the expanded entry pair and grows frame to 0x1d8;
+// all helpers, declarations, original center copy and body restored.
+// Round 97 (lane 7): the angular accumulate through the existing vector3f_add_scaled 961 alone; with the
+// angular residual as three statements 902 (4267 bytes); with the residual through the existing
+// vector3d_from_points3d instead 902, kept (retail keeps the accumulated vector in XMM registers to the join);
+// the residual helper alone 913; the two linear-block residual subtracts through the same helper too 906,
+// either one alone 902 (same code); on 902 a long scale counter 933; the attached object index read once into
+// a named local 926. A renamed second activity bool moves no byte slot.
+// Round 455: Shared scaled accumulation at radial correction/planar projection/both/planar correction/
+// radial-planar corrections/both planar sites/all: 941/917/941/917/941/917/920; all with existing
+// point-difference producer 920. Frame remains 0x1f0; original residuals, helpers and body restored.
+// Round 255: existing shared difference API in the repeated subtract kernel, crossed
+// with radial/planar residual and initial displacement consumers, all eight 920.
+// Original kernels and full body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
+// Round 477: Add/subtract publication ikj/jik/jki/kij/kji 903/902/903/903/903; add-only jki/kji and subtract-only kji 904/904/904.
+// Original repeated producers, short scale loop, accepted angular consumers and complete body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
+// Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
+// linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 448: Early captured bit-25/26 options 993/993/989; late captured bit-2/1
+// options 949; the three combinations 907/907/907, complete role names 907.
+// Original option lifetimes and all kernels, response sharing and body restored.
+// Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
+// all with long scale ordinal 1682
+// Original executable body and helpers restored.
+// Round 50 (m3 lane 11, fast): retail's byte slots hold local_17 (record bit 2) at +9 and local_1 at +0xa where
+// ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
+// local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the
+// early return as a single-exit if 902 (identical code).
+// Round 65 (lane 16, fast): address-taken homes mapped from both listings: the marker, quaternion, body matrix
+// and product matrix stack identically at the top (each 0x1c higher in ours); the gap is all below the marker.
+// Retail keeps the second-block and angular response fractions in separate homes (+0xdc, +0x2c; ours shares
+// +0x10), the angular block's real output at +0xf4 next to the first block's response output (+0xf8). Each block's
+// response fraction declared in its own block 935 (frame 0x1f4; homes +0xf8/+0x20, not retail's); the one-use
+// motion-position pointer dropped 965 (4284 bytes); the first block's difference through the existing
+// vector3d_from_points3d without the staging copy 961 (frame 0x1e4, 4235 bytes); split responses with it 968.
+// The body slot index read once into its local everywhere (the angular block's three direct field reads through
+// the local) 941 (4232 bytes); the re-read after the lookup calls dropped 985 (frame 0x1ec); both 999.
+// Round 217: standard slot upper, paired byte bounds and response-fraction bounds, seven subsets,
+// then all with target-level bound: 998/980/1046/963/1006/1067/1131/1135. Original restored.
+// Round 331: Complete factor-first scale, reversed wide-dot and real-dot multiplicands, seven subsets
+// and all with planar product order: 902 each. Original private kernels and complete body restored;
+// entry/frame, second activity byte and lower vector/scalar homes remain.
+// Round 259: Shared scale for radial/planar/axial/angular/radial-planar/radial-angular/planar-angular/radial-planar-angular phases
+// 1009/1014/912/939/1136/1090/1074/1206. Original body and producer sites restored.
+// Round 283: reverse scale short/long/signed-byte 902/929/902; reverse short scale with reverse
+// add/subtract/both 1086/1060/1158; with forward add/subtract loops 1157; all reverse long 1239.
+// Original producers, accepted angular consumers and full body restored; frame and entry homes remain.
+// Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
+// all with long scale ordinal 1682
+// Original executable body and helpers restored.
+// Round 241: In-place direction-to-residual storage at radial/planar/angular sites,
+// singles/pairs/all 946/934/939/954/962/954/963; all with shared radial/planar differences 963.
+// Original separate direction/residual vectors, short scale loop and complete body restored.
+// Round 245: existing component upper-bit field at admission/activity/publication, seven
+// subsets 904/902/904/902/904/902/904; all with test-produced activity result 999.
+// Original component flag observations and publication, helpers, solver-response sharing
+// and complete executable source restored; entry/frame and activity/vector homes remain.
+// Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
+// pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
+// entry/frame and activity/record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
@@ -360,7 +445,7 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
      function_141f60(function_142eb0(&local_60.rotation, &local_24.matrix.rotation, &local_61), &local_62);
      vector3f local_63;
      real local_64;
-     function_11d790(&local_62, &local_63, &local_64);
+     function_11d790(&local_62, &local_64, &local_63);
      real local_65 = function_1d24a1(&local_63, &local_29);
      real local_67 = function_1d2280(true, local_18, havok_component_rigid_body_mass_get(local_10->field_1, local_14),
       local_64, coefficient_58 * arg_1, local_65, coefficient_5c, 0.0f,
@@ -368,11 +453,9 @@ void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
      function_1d24a2(&local_63, local_67, &local_59);
      vector3f local_68;
      function_1d24a2(&local_63, local_65, &local_68);
-     for (long axis = 0; axis < 3; ++axis)
-      local_68.n[axis] = local_29.n[axis] - local_68.n[axis];
+     vector3d_from_points3d((point3f const *)&local_68, (point3f const *)&local_29, &local_68);
      function_a75d0(&local_68, g_510c54->rate * coefficient_58);
-     for (long component = 0; component < 3; ++component)
-      local_59.n[component] = local_68.n[component] * -1.0f + local_59.n[component];
+     vector3f_add_scaled(&local_59, &local_68, -1.0f, &local_59);
      if (!(local_3 > response_fraction)) local_3 = response_fraction;
      local_2 = true;
     }

@@ -10,6 +10,7 @@
 #include "object_markers.h"
 #include "unknown_16d180.h"
 #include "matrix_transform.h"
+#include "bit_vector.h"
 #include <math.h>
 #include <xmmintrin.h>
 #include <string.h>
@@ -62,13 +63,20 @@ struct s_object_view
 	byte unknown0ab[0xb4 - 0xab];
 	long havok_component_index;
 	byte unknown0b8[0xc0 - 0xb8];
-	word unknown0c0 : 6;
-	word physics_active : 1;
-	word flag7c0 : 1;
-	word physics_disabled : 1;
-	word : 2;
-	word flag11c0 : 1;
-	word : 4;
+	union
+	{
+		struct
+		{
+			word unknown0c0 : 6;
+			word physics_active : 1;
+			word flag7c0 : 1;
+			word physics_disabled : 1;
+			word : 2;
+			word flag11c0 : 1;
+			word : 4;
+		};
+		word flags0c0;
+	};
 	byte unknown0c2[0xd4 - 0xc2];
 	long field_x10a40f;
 	byte unknown0d8[0x10e - 0xd8];
@@ -216,22 +224,24 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // component data loads into eax after index scaling, retail ecx before it.
 // Signed bitset 11; unsigned bitset 11; external object reference 4; object reference/bitset 11.
 // External header reference 18; header reference/bitset 20; type read first 4; bitset before object reference 11.
+// The view's own physics bits 4; the tail written out in both arms 106; disable tested first 4;
+// both index reads through the havok object getter 51; a word index 14; in a one-file LTCG
+// build the data stays in eax for every lookup spelling, even with the update tail deleted.
+// Round 55: no noinline 4; inline target 4; inline activation/update/list-update declarations 4/4/4;
+// component reference 4; const object and type 4; explicitly masked getter index 4.
+// Round 31: the pool data read into a component-array local before indexing 4; `if (disable) goto
+// update;` ahead of the activation 4; the address written index-first, `index * size + data` (diagnostic,
+// identical code, so the evaluation order of the lookup is not the cause) 4; the type read from the
+// header at each of its three uses 61; the component index re-read through OBJECT_GET 55. Matched
+// 0x11bce0 makes the same lookup with the data loaded after the index scaling, as ours does here.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
-	struct s_physics_flags
-	{
-		unsigned short : 6;
-		word active : 1;
-		unsigned short : 1;
-		word disabled : 1;
-		unsigned short : 7;
-	};
 	s_object_view *object = OBJECT_GET(object_index);
 	long type = OBJECT_HEADER_GET(object_index)->type;
 
 	if (((1 << type) & 0x1883) &&
-		TEST_FIELD_BIT(((s_physics_flags *)((byte *)object + 0xc0))->active) &&
+		TEST_FIELD_BIT(object->physics_active) &&
 		object->havok_component_index != NONE)
 	{
 		if (!disable)
@@ -243,10 +253,10 @@ void __stdcall function_b9b90(long object_index, bool disable)
 	}
 	else if (disable)
 	{
-		((s_physics_flags *)((byte *)object + 0xc0))->disabled = true;
+		object->physics_disabled = true;
 		goto update;
 	}
-	((s_physics_flags *)((byte *)object + 0xc0))->disabled = false;
+	object->physics_disabled = false;
 	function_b7360(object_index);
 
 update:
@@ -630,7 +640,24 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
-// score 231 (was 231): Caller-dependent alignment and scalar/angle homes remain.
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
+// score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
+// bool result byte) while ours keeps EBP for the global base and a dword result.
+// Earlier round: the root-walk loop and the table read are the only places
+// left that could give retail's frame shape, so each was tried alone and together: the table
+// read moved inside the root loop 216 fast (237 plain), a bool result instead of the dword
+// 264, and both together 220; every one is worse than the 231 we keep, so the body stands.
+// The remaining difference is the frame (retail self-aligns to 0xb4, ours is 0xac with
+// EBP-based globals) and the result width; nothing in the reachable code moves it.
+// Earlier: retail's x87 block computes atan2(radius, magnitude) (swapping ours scores 230).
+// Round 89: the reduced image self-aligns like retail, so trials were measured there (baseline 247)
+// and confirmed plain: the existing function_baf80 for the root walk 280 (stays out of line; retail
+// calls it out of line from 48 other functions, so this loop is its own); the table read inside the
+// root loop (retail's read after the NONE test, the table re-read after the loop) 216, plain 237;
+// plus a bool result (retail's stack byte) 220; plus the existing function_caf60 for the marker
+// position (retail inlines it) 167 at 895 B, with retail's threaded cluster loop, but plain 288 at
+// 855 B; plus the angle sum in real 191. Lead: apply those three once the full build self-aligns
+// (BLOCKED-BY 0x268c90: without `and esp, -8` EBP is free and holds the object table).
 // caller-dependent frame alignment and scalar homes differ;
 // Caller-dependent eight-byte alignment and scalar/angle homes remain.
 // Earlier 231 (from 231): caller-dependent frame alignment and scalar homes differ;
@@ -676,6 +703,49 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // scores this body 247; there a bool result 276, short result 235 (plain 239, no self-alignment),
 // marker/position/offset declared at function scope 247 each. Retail also keeps the player-index
 // NONE test at the loop latch and widens the zoom argument to 32 bits. Original body restored.
+// Round 189: actual initial/next cluster-query ordinary/inline/separate-noinline
+// declaration pairs (1,0)/(2,0)/(0,1)/(0,2)/(1,1)/(1,2)/(2,1)/(2,2), with direct radius,
+// 239 each. Original declarations and radius form restored; caller-dependent alignment remains.
+// Round 176: Comparison-produced near/facing/both long results 236/235/237; Boolean results 287/283/277;
+// one per-player success exit with comparison-produced long/Boolean result 237/277. Direct original
+// radius observations throughout; original result, inherited radius storage and all body statements restored.
+// Round 409: complete pool observations 251; one admitted unit handle throughout 262; both 251;
+// unsigned full handle alone/pool/unit/all 257/257/247/247; all with Boolean result 274.
+// Direct radius in all; original complete body restored.
+// Round 293: Consumer-stage visibility receiver/word ordinal/bit, all seven subsets, then all with unsigned bit production: 239 each. Both known callers preserved; direct original radius in each trial. Complete original body, inherited radius storage and interfaces restored.
+// Round 205: Existing marker-position provider with long/Boolean/word/byte results, inherited/direct radius:
+// 230/251, 280/295, 238/255, 260/272. One-point 230 rejected; all original forms restored.
+// Caller-dependent self-alignment, full-handle spills and scalar/angle homes remain.
+// Round 7 (lane 17): the angle now computes retail's value: retail loads the magnitude, then the radius,
+// then `fxch; fpatan`, which is atan2(radius, magnitude), and adds pi/4 as a float (`fadd dword` of the
+// float constant at 0x45e01c); ours computed atan2(magnitude, radius). The swap alone 232 plain (radius
+// loaded first, no fxch); with the angle sum in real (`(real)atan2(radius, (double)magnitude) + pi/4`)
+// retail's exact x87 sequence, 230 plain (kept). With the callers in the reduced image it no longer
+// self-aligns (fast now agrees with plain); without them it does (246): either caller alone gives LTCG
+// the alignment guarantee retail's lacked, so the frame is a call-chain property, not this body's.
+// On 230 (fast, callers included): the radius as a plain double (no alias) 235 (the field is re-read,
+// no double home); a bool result 273 (861 bytes), on the next form too 273; the header table read
+// inside the root walk 236; the range's zero as the model-NONE else arm 228 (retail's memory-zero
+// compare and else-arm xorps; below the keep bar, lead); on that, a single-result iterator step 273
+// (927 bytes), both offsets through vector3d_from_points3d 228, the typed visible_clusters field 228,
+// the step's ternary as `index != NONE ? ... : 0` 227 (below the bar, lead), and on that the outer
+// scope block removed 227, the link iterator at function scope 227, the squared radius before the
+// model index 227, the marker at loop-body scope 227, the near test as `radius_squared >
+// distance_squared` 227. Retail's latch NONE re-test and abs-index spill follow from its frame
+// pointer (the handle lives in memory); the zoom argument's 32-bit widening needs 0xc8880's
+// parameter (contributor, left alone).
+// Round 38 (m3 lane 14): both callers now match and the old BLOCKED-BY 0x268c90 no longer explains the frame:
+// with either caller alone in the image (0x268c90, or the table-called 0xbf2c0) ours never self-aligns, though
+// both call sites sit 4 bytes off an 8-byte boundary (0xbf2c0 after four pushes, 0x268c90 after a 0x50 frame and
+// four pushes) in retail and ours alike; 0xbf380's frame (0x2a04 against our 0x2a08) and
+// the table entry make no difference (diagnostics). Our LTCG self-aligns this body only with no caller in the
+// image, so the frame is BLOCKED by the toolchain's alignment rule, not by any caller's source. Fast, caller
+// included: the cluster test through the existing bit_vector_test 230 (same code, kept: it replaces that
+// helper's body written out); the distance through length_sq3f 230; the range test as an else-if 230; the
+// model index read at each use 227 (below the bar); a named radius for the square 230.
+// Y499: closed ancestry/range/marker phase subsets on the real-angle tree with direct double
+// radius operand 246/246/246/247/247/247/247; all with bool result 260. Reduced forms self-align
+// with both callers present, but frame 0xac versus 0xb4 and scalar homes remain. Original body restored.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -697,7 +767,7 @@ bool function_bba80(long object_index)
         short cluster = function_b8a80(root, &links);
         while (cluster != NONE)
         {
-            if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
+            if (bit_vector_test((dword const *)((byte *)g_4e6948 + 0x1138), cluster))
                 break;
             cluster = function_b8b20(&links);
         }
@@ -756,7 +826,7 @@ bool function_bba80(long object_index)
                     double const &radius = radius_value;
                     real magnitude = function_30bf0(&offset);
                     if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                        cos(atan2((double)magnitude, radius) + 0.7853981852531433f))
+                        cos((real)atan2(radius, (double)magnitude) + 0.7853981852531433f))
                     {
                         result = true;
                         goto done;
@@ -1454,32 +1524,32 @@ done:
     return result;
 }
 
-// score 17 (was 26): the name index parameter is read as a dword (address taken by the volatile reload), retail reads it
-// as a word both at entry and after function_bf090; the tail's registers differ (retail: type ecx, palette ebx, size eax
-// sign-extended at its load, datums esi then ebp). Tried: no volatile (name index stays in ebp, result spilled) 76;
-// function_bb760 call for the lookup, same 76; result declared after the force block 81; long/inline definition
-// fields with a block local 43, 34; long size only 38.
-// the placement tail: retail keeps the type in ecx and loads the
-// definition into eax, copying it to esi for the size and datums reads (palette offset first);
-// ours keeps the type in esi and reads the definition through eax/ecx.
-// Copy + volatile name reload 26; result declared before the lookup 83; no result variable 78;
-// result declared in the tail 85; long size 27; long offsets + palette at the call + datum local 27;
-// the 0xb7300 placement-block helpers (both orders, both product orders) 23; lookup via 0xbb760 17.
-// score 17 (was 17): type/descriptor/palette/stride allocation at the tail remains.
-// Test-produced result 78; with wide stride/call-use palette/both 76/44/42;
-// with direct offsets/type name/read-only descriptor/read-only wide 78/78/78/76.
-// entry agrees; tail type/base/palette/stride allocation differs.
-// Canonical descriptor fields through mutable/const pointers and references all 17;
-// the same four contracts with a promoted stride all 27 (236 bytes).
-// score 17 (was 17): entry agrees; tail type/descriptor/stride ownership still differs.
-// Shared type home 17; promoted placement index 28; both 28; shared type plus stride 27;
-// promoted index/stride 36; shared type/index/stride 36; shared type with call-use palette 37;
-// shared type/index with call-use palette 26.
-// score 17 (was 17): the same tail allocation and 237/236 length remain. Plain/typed aliases 17/17;
-// typed name 17; promoted datum index 19/236; typed block 17; direct name-index reads 31/236;
-// early field/base declarations 17/17; definition declaration/initialization first 17/17;
-// register type/size 17/17; alias with wide stride 27/236; definition/type-definition before guard 17/17;
-// placement-type name 17.
+// score 17 (was 17): entry agrees; in the placement tail retail keeps the type in ecx, the palette offset in
+// ebx and the size in eax (sign-extended at its load, the definition copied to esi first); ours keeps the
+// type in esi and the size as a word in bx (237 bytes against 236).
+// Tried: no volatile (name index stays in ebp, result spilled) 76; function_bb760 call for the lookup, same
+// 76; result declared after the force block 81; long/inline definition fields with a block local 43, 34;
+// long size only 38. Copy + volatile name reload 26; result declared before the lookup 83; no result
+// variable 78; result declared in the tail 85; long size 27; long offsets + palette at the call + datum
+// local 27; the 0xb7300 placement-block helpers (both orders, both product orders) 23; lookup via 0xbb760
+// 17. Test-produced result 78; with wide stride/call-use palette/both 76/44/42; with direct
+// offsets/type name/read-only descriptor/read-only wide 78/78/78/76. Canonical descriptor fields through
+// mutable/const pointers and references all 17; the same four contracts with a promoted stride all 27
+// (236 bytes). Shared type home 17; promoted placement index 28; both 28; shared type plus stride 27;
+// promoted index/stride 36; shared type/index/stride 36; shared type with call-use palette 37; shared
+// type/index with call-use palette 26. Plain/typed aliases 17/17; typed name 17; promoted datum index
+// 19/236; typed block 17; direct name-index reads 31/236; early field/base declarations 17/17; definition
+// declaration/initialization first 17/17; register type/size 17/17; alias with wide stride 27/236;
+// definition/type-definition before guard 17/17; placement-type name 17.
+// Round 14 (0xa73b0's lookup forms): definition read at each use with a datum local 33 (236 bytes);
+// definition local with a datum local 33; long stride with the placements pointer 27 (236 bytes, the
+// product then extends the index into eax); the product's operands either way round, no effect (17/27).
+// Round 101 (lane 7), `--fast`: palette address at the call 37 (240 bytes); a screen of palette offset short/long x
+// palette local/at the call x size short/long x placement offset short/long 17/17/27/27/37/37/26/26 (short palette
+// offset) and 17/17/27/27/25/25/32/32 (long); short type 115 (267 bytes); a named datum local 33 (236 bytes: size
+// sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
+// definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
+// palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
@@ -1564,18 +1634,6 @@ void havok_component_rigid_body_linear_velocity_get(s_havok_component *component
 void havok_component_rigid_body_angular_velocity_get(s_havok_component *component, long body, vector3f *velocity);
 void function_1d96d0(long index);
 
-// score 13 (was 13): final flag update is branchless, retail uses constant set/clear arms and separate exits.
-// Byte result 13; signed-byte result 13; word result 126; long result 124; guarded parent reference 13.
-// Byte result/parent reference 13; byte result/constant stores 20. A byte-wide store of the flag through a
-// local overlay of the object scored 7 (not kept: a cast to a made-up layout); the view's flag bits at
-// +0xc0 declared as byte bit fields (same bits) are the form to try.
-// Constant arms through a ternary 20; raw byte or/and arms 20; byte pointer to the flags at the join 22
-// (the hoisted common load stops the threading but loses the memory or/and); flags pointer at function
-// scope 20; ternary of bit-field stores 20; an inline parent test with a result variable 138 (object
-// moves to ebx, the result to the stack); early-return parent test 14; the whole update as a
-// force-inline helper 14/8. A byte bit-field store is branchless too (12), so byte fields alone do not
-// give the arms; retail's join keeps `mov bl, 1` unthreaded, which in matched code (0x59780) comes from
-// a result that stays live after its test.
 // @retail 0xbc5e0
 void __stdcall function_bc5e0(long index)
 {
@@ -1630,7 +1688,9 @@ void __stdcall function_bc5e0(long index)
         disabled = parent != NONE ?
             TEST_FIELD_BIT(OBJECT_GET(parent)->physics_disabled) : true;
     }
-    object->physics_disabled = disabled ? 1 : 0;
+    word *flags = &object->flags0c0;
+    if (disabled) *flags |= 0x100;
+    else *flags &= ~0x100;
 }
 
 PRIVATE __forceinline void object_attachment_point(transform4x3f const *matrix, point3f const *point, point3f *result)
@@ -1654,8 +1714,58 @@ void function_b8840(long index);
 long function_baf80(long index);
 void function_bba20(long index);
 
-// score 305 (was 305): the frame (0x64) and the body length (1236) agree with retail.
-// What still differs: retail keeps the pool pointer in EBX and re-derives pool->data from it,
+transform4x3f *function_b8bd0(long object_index, short node_index);
+
+// score 285 (was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. A shared `goto done` gives retail's epilogue but shrinks our frame to 0x60
+// (307; 308 with retail's shift-form flag tests), a flag with one `if` gives 323, and the byte
+// activity bit `(header->flags & 4) != 0` gives retail's `shr al, 2; and al, 1` at 281 (a
+// four-point gain, under the gate, so not kept). Retail also inlines function_b8bd0's marker
+// pointer; that file is /Ob1, so LTCG keeps our call and it cannot be changed here. This round:
+// the shared exit together with the byte activity bit is 308, and marking the declaration of
+// function_b8bd0 in this file __forceinline changes nothing (the call stays).
+// Earlier: retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// Another round (at 285, was 285): retail has one shared epilogue at 0xb987a, reached from the ancestry-loop
+// match, the !allowed test and the later branch; ours duplicates it, so the first difference is the
+// jump target at +0x76. This round: a `goto done` shared exit (both early exits) keeps the frame at
+// 0x64 and does give retail's single epilogue, but the score stays 285 - retail re-derives
+// pool->data over the pool pointer in ebx and reads the header byte through that copy, ours keeps
+// the first copy in edi and re-derives a second one into edx; folding the loop's early exit into the
+// allowed flag instead gives 340. The permuter found nothing below 285.
+// Earlier: frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Another round (at 285, was 285): frame 0x64 and entry agree; accepted header table, node-query expansion and SIMD homes remain.
+// Round 189 (m3 lane 3): retail has no call to 0xb8bd0 here: it reads the parent's node-matrix base before the
+// link stores (`movsx eax, word [edi + 0x116]` precedes the parent-index store) and indexes it by the node at the
+// 0x141590 call, and takes the header and the re-fetched object from a fresh `g_4e0300->data` plus the entry offset
+// (the offset is CSE'd, so `index` is not volatile). Best form 245 plain (1249 bytes): `index` not volatile, the
+// header from OBJECT_HEADER_GET(index) defined with was_active before the parent, the bit-7/8/6 tests in shift
+// form, the type test as `!((1 << type) & 0x80)`, and `byte *node_parent = OBJECT_GET(parent_index);
+// transform4x3f *node_matrices = (transform4x3f *)(node_parent + *(short *)(node_parent + 0x116));` before the
+// stores with `node_matrices + node_index` at the call. Not kept: node_matrices is a one-use local evaluated ahead
+// of stores, and without it the rest scores 304 (b8bd0 at the use) / 317 (index volatile again). Steps (fast): node
+// base before the stores 350 (1283 bytes), the whole node matrix there 349, the 0xb8bd0 call moved there 285; with
+// the child link through `g_4e0300->data + offset` 354, plus that header 341; non-volatile index + macro header
+// 296 (1236 bytes), without the node base 320; on 296 the bit-7/8 shift tests 302, bit-6 shift 296, type mask
+// 304, all three 253; header and was_active before the parent 245 (header first alone 253). On 245/253: object
+// and loop through OBJECT_GET 268/276, object through OBJECT_GET with pool kept 304/287, object through the header
+// view 245; cluster read at each use 285; node not volatile 290/300, also used directly 283; bit 6 through the
+// physics_active bitfield 276; flag7/flag8 bitfields 245 (same code); the bit-7 test named before was_active 245;
+// `allowed` first or offset before pool 253; node_parent as a two-use local with the offset read at the call 297;
+// `parent` renamed (parent_object, new_parent, attach_parent) 245 (homes unchanged).
+// Earlier: the frame (0x64) agrees; 1239 bytes against 1236. The entry now matches up to
+// +0x76 (pool in EBX, -1 in EAX). Retail inlines the node matrix lookup (0xb8bd0's body, here called
+// out of line because its file is /Ob1) and re-derives pool->data into EBX after the ancestry loop
+// for both the parent and the header, where ours takes the header from the entry's pool->data.
+// Round 27: the parent lookup written through pool->data, the activity bit carried in a byte, the
+// shift-form bit-7 test and the type-below-eight test each regress (298/285/292/292 against 285);
+// the original body is restored.
+// Round 89: the node matrix through function_b8bd0 at its use, the link through the early parent
+// pointer (retail's two parent lookups) kept, 305 -> 285 (a local for the matrix 285 too); on it the
+// same fresh lookup written in place as 0xbdef0 does 350; the header from g_4e0300->data 298; index
+// not volatile 319; the bit 7 and byte 0xc0 bit 6 tests by shift 290; the header and its active flag
+// read before the parent 294.
+// Earlier (at 305): retail keeps the pool pointer in EBX and re-derives pool->data from it,
 // ours keeps the pool in ECX and pool->data in EDI, so retail holds -1 in EAX and the object's
 // parent link in ECX where ours holds them in EBX and EAX.
 // Retail also shift-tests the object's flag bit 7 where ours masks it, takes the parent pointer
@@ -1691,6 +1801,75 @@ void function_bba20(long index);
 // after the walk as retail, but the flag spills); plus the file's bitfield tests (flag7, physics_active)
 // and a type-mask test 339; plus offset declared first 335; plus the ancestor walk through the object
 // getter 324 (aligned 159/159 against 154/162).
+// Round 172 DL: Shared post-ancestry header table 321; native resident pose record
+// 285; both 321. Native header activity bit with shared table/pose/both
+// 323/281/323; table with both shifted flag tests 313; all forms 318.
+// The four-count 281 gain fails the eight-count gate; original type layouts,
+// all helper bodies, node query and complete body restored.
+// Round 175: Existing point-producer native input captures, point/transform/both/rotation/
+// point-rotation/translation/rotation-translation/all 366/348/384/339/376/360/371/416;
+// all lose the shared sibling. Real header activity-bit producer with hidden/component/byte-active
+// shift subsets 281/285/285/290/281/285/285/290; four-point gain rejected. On native activity,
+// ancestry exit result alone/unsigned offset/uniform pool reads/both 290/290/299/299.
+// Complete original header, private helper and body restored; pool-data, node lookup and SIMD homes remain.
+// Round 191: complete entry/ancestry and accepted-refresh table graphs, reused byte/native
+// receivers 321/329, separate byte/native phase tables 304/328; with the physical slot
+// instead of the byte offset 320/320/303/303. All regress; original table reads restored.
+// Round 270 M: ordinary saved activity on the retained node-query graph, alone/with
+// ordinary index/ordinary node/both 289/314/289/317; the same four with the actual
+// header activity member 289/314/289/317. Original qualifiers, header and body restored.
+// Round 419: caller-side node-query force-inline declaration 285; with individual native
+// position/forward/up input pointers, masks 1/2/3/4/5/6/7, 285/283/283/283/283/283/283.
+// The two-point pointer forms are exact-match-only and rejected; original declaration and body
+// restored. Accepted header-table reload, expanded node query and transform carriers remain.
+// Round 194: Node-address/inverse phases after node, link and header writes 290/281/289/291/292/287; before first parent write 281/285. Native activity on inverse phases 278/286/283/280. On 278, hidden/connection/component shift subsets 285/281/278/284/285/281/284. Best 278 gains seven, rejected; original header and body restored.
+// Round 205: Shared rotation/axis providers 332/332; shared point provider alone/rotation/axis 542/431/447;
+// rotation/axis with the native activity member 315/330; rotation with the earlier inverse phase 334.
+// All restored; frame, accepted table transport and node-query expansion remain.
+// Round 30 (lane 11, fast = full here): after the ancestry loop retail derives the header from the
+// fresh data load it uses for the parent (EBX, data spilled at +0x14), tests bits 7 and 8 of the object
+// flags in shift form and computes the header bit in 8-bit arithmetic. A compile-only harness gives
+// each piece: the header as `g_4e0300->data + offset`, `(header->flags & 4) != 0` (`shr al, 2; and
+// al, 1`), and `>> 7`/`>> 8` shift tests. In the build: the header from g_4e0300->data 298 (pool moves
+// to EDI at entry), with both shift tests 304, plus the byte bit 300; the byte bit alone 281 (4, under
+// the gate), with both shift tests 290 (aligned 190 -> 174). All restored.
+// Round 4 (lane 18, fast): the header's active bit as a byte bitfield of the header view 281 (retail's
+// byte shr/and; four-point gain, not kept); on it the bit-7 flag test by shift 285, the header from
+// OBJECT_HEADER_GET(index) 302, the type test as `!((1 << type) & 0x80)` 290, the active flag not
+// volatile 289, the 0xc0 bit 6 test by shift 281. The slot_handler.h node-matrix helper can't be
+// included here (its header view clashes with this file's). Restored.
+// Round 205: Shared rotation/axis providers 332/332; shared point provider alone/rotation/axis 542/431/447;
+// rotation/axis with the native activity member 315/330; rotation with the earlier inverse phase 334.
+// All restored; frame, accepted table transport and node-query expansion remain.
+// Round 247: both real header stores through native byte members, with saved activity,
+// complete root flags and native cluster-word subsets, 285/281/285/281/285/281/285/281.
+// Four-point lead is below the gate; original header type, byte stores, activity
+// observation, root fields, node query, shared transforms and full body restored.
+// Round 497: Native root-cluster reads at every use, crossed with native saved activity/common
+// exit/closed spatial scope, 284/282/284/282/307/310/307/310. Three-point best is below the keep
+// gate; complete original body restored. Accepted table reload, node-query expansion and SIMD homes
+// remain.
+// Round 54 (m3 lane 1, fast): a caller-side `__forceinline` declaration of 0xb8bd0 with the node matrix taken
+// before the link stores 285 (1240 bytes: still called; retail computes the parent's node-table base before the
+// parent link store, so its source took the matrix there); `node` not volatile 285; the 0xc0 bit 6 test through
+// s_object_view::physics_active 285 (folds to the same byte test); flag bits 7/8 through s_object_view's
+// flag7/flag8 303 (1222 bytes); index and node both not volatile 323 (1202 bytes).
+// Round 46 (lane 14, fast): retail inlines 0xb8bd0 here and also 0x142570 (this file's attachment-point helper
+// writes that body); both callees' files are /Ob1. Round 189's form with the node matrix taken through 0xb8bd0
+// defined `inline`, before the link stores, 300. A data local at entry for the object and
+// the ancestry walk, the parent and header from `pool->data` after it 302, header first 302, the walk alone 292;
+// the object through the header view, header at entry 285.
+// Round 231: complete point-result/rotation staging 284/284; per-row/all partial pairs
+// 293/293; all row products 283; conditional scaling alone 285, with complete
+// point-result/rotation staging 284/284. Every row-staging form loses the matched
+// sibling; original two-caller helper and complete body restored.
+// Round 118: 0xb8bd0 declared inline in its own file (diagnostic; retail inlines it here and reads the parent's
+// node-matrix offset before the link stores) 342, and matched 0xbcc20/0x11b710 stop matching: BLOCKED-BY 0xb8bd0
+// (its file is /Ob1); `allowed` as one && expression 317; the ancestry walk as a while loop 285; the two link tests
+// in one || 293; the rest of the body nested under `if (allowed)` 307 (1213 bytes).
+// Round 289: existing point-helper coordinate captures yxz/xzy/zyx/yzx/zxy
+// 284/285/293/288/293; yxz/xzy/zyx with native activity 282/283/294. The shared sibling
+// regresses 62/127/125/50/127/62/127/125; original helper and full body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
@@ -1715,8 +1894,6 @@ void __stdcall function_b93b0(long parent_index, volatile long index, volatile s
     function_b7300(index);
     if ((bool)((*(dword *)(object + 4) >> 8) & 1)) function_b87b0(index);
     if ((object[0xc0] & 0x40) && header->type != 7) function_b8840(index);
-    parent = (byte *)OBJECT_GET(parent_index);
-    transform4x3f *nodes = (transform4x3f *)(parent + *(short *)(parent + 0x116));
     *(long *)(object + 0x14) = parent_index;
     short node_index = node;
     object[0x18] = (byte)node_index;
@@ -1727,7 +1904,7 @@ void __stdcall function_b93b0(long parent_index, volatile long index, volatile s
     *(short *)(object + 0x2c) = NONE;
     *(short *)(object + 0x2e) = g_4686c4;
     transform4x3f inverse;
-    function_141590(&nodes[node_index], &inverse);
+    function_141590(function_b8bd0(parent_index, node_index), &inverse);
     point3f position;
     vector3f forward, up;
     object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);

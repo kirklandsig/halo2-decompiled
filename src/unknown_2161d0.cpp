@@ -32,6 +32,7 @@ const char *saved_game_type_get_storage_name(long type);
 char *function_122810(char *path, const char *suffix);
 bool saved_game_file_read_begin(void *buffer, dword size, bool non_roamable, s_saved_game_file_task *task, const char *path);
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task);
+bool function_216d70(char *path, const char *directory, long type);
 
 // @retail 0x2161d0
 bool function_2161d0(long file_index, void *buffer, long size)
@@ -76,6 +77,20 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // a volatile done store (diagnostic only, reverted) 10.
 // Short/long/byte/signed-char completion 96/93/110/110; done/success result chains 19/10;
 // bounded-index statements 10, with long completion 93; size guard first 75; shared upper bound 104.
+// Round 88: the path built through the existing copy/terminate/append helper shape 10; separate
+// location and path locals 19 (frame 0x140: retail keeps 4 bytes between them); a named path
+// pointer 10; result read back from the task 10; the build as an inline member of the record 10.
+// Round 10: separate location and plain path array locals 19 (the reuse stays: mov edx, esi); the
+// append through an inline member of the record 10; through a static inline function 10; a path pointer
+// for the append only 10; the storage name in its own local first 10. (Matched 0x216da0 recomputes after
+// an inlined member's call; here that form keeps the reuse.)
+// Round 102: a const cache pointer 10; a const path pointer 10; a multi-use location pointer 10; a location
+// reference 10; the location pointer/reference each with a path pointer 10/10; a const type 10; const cached
+// indices 10. Every form compiles to the baseline's code.
+// Round 134 (fast): the path built by calling the existing 0x216d70 (copy, terminate, append; LTCG inlines
+// it here as retail does) 10, kept in place of its body written out, with its type argument named first 10;
+// the profile copied from the bounded index 110 (309 bytes); result set before the task stores 20; progress
+// stored first 13; state first 12; succeeded first 11.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {
@@ -109,10 +124,7 @@ bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file
 		local_0.field_44[0] = 0;
 		if (function_216800(file_index, &local_0.field_0) && local_0.field_0.language != -1)
 		{
-			long type = local_0.field_0.type;
-			strncpy(local_0.field_44, local_0.field_0.name, sizeof(local_0.field_44));
-			local_0.field_44[sizeof(local_0.field_44) - 1] = 0;
-			function_122810(local_0.field_44, saved_game_type_get_storage_name(type));
+			function_216d70(local_0.field_44, local_0.field_0.name, local_0.field_0.type);
 			result = saved_game_file_read_begin(buffer, size, false, task, local_0.field_44);
 		}
 	}

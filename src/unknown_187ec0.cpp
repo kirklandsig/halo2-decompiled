@@ -5,9 +5,9 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "sound_sources.h"
+#include "impacts.h"
+#include "main_messages.h"
 #include <math.h>
-
-#define k_maximum_local_players 4
 
 struct s_player_datum
 {
@@ -39,18 +39,6 @@ struct s_object_header
 	s_pitch_object *object;
 };
 
-static inline long local_player_first_index(void)
-{
-	for (long i = 0; i < k_maximum_local_players; i++)
-	{
-		if (g_4e8c20->entries[i] != NONE)
-		{
-			return i;
-		}
-	}
-	return NONE;
-}
-
 static inline s_player_datum *player_get(long player_index)
 {
 	return (s_player_datum *)g_4e8c24->data + (player_index & 0xffff);
@@ -58,6 +46,19 @@ static inline s_player_datum *player_get(long player_index)
 
 // score 3 (was 3): ours computes the record address in ecx and copies it into esi, retail computes it in esi
 // directly; ours is padded with three int3s.
+// Round 15: the record pointer computed before the index test 5 (retail's three instructions, ahead of the test);
+// the index defaulted to NONE outside the player test 3; the player field read at each use with the pointer 3;
+// the shared first-local-player helper 3 (kept: identical code); the pointer set under the test and tested 16.
+// Every form without a pointer local (direct copy, memcpy, a typed table, value/out/flag lookups, a reused
+// index) loads the index into esi (16).
+// Round 12 (lane 18): the record with its real field layout (two reals, a 16-byte map, a short; 4-byte aligned) 3,
+// that with the direct copy 16; `&table[index]` 3; byte arithmetic with sizeof 3, direct 16; the copy as the
+// declaration's initializer 3; the record declared before the pointer 3; the index as dword (cast or local) 3,
+// direct with the cast 16; a table-base pointer local at the top 3; the global declared with its size 3; the
+// permuter (58 annealed tries) best 3.
+// Round 102: an independent source index 3; guard/source ownership swapped 3; the source index declared separately 3,
+// at function scope 3, inside the guard 3; a source reference with that copy 3; record before pointer with it 3;
+// the copy initializer with it 3. All compile to the baseline's three instructions.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {
@@ -138,40 +139,20 @@ public:
 	short m_index;
 };
 
-// score 33 (was 33): key EDI/EBX and entry-live absent result still differ; 56/65 bytes.
-// key EDI/EBX and entry-live absent result remain.
-// Earlier: key EDI/EBX and entry-live absent result still differ; 56/65 bytes.
-// Search cursor 38; conditional result 35; count read once 33; pointer walk 46;
-// pointer/exhaustive result 50; exhaustive result 46; unsigned index 39; post-search result 36.
-// Shared-bound noinline/stdcall/cdecl 33/33/33; inline target absent; unsigned entry-result
-// inline/noinline/stdcall/cdecl 39/39/39/33 (aligned caller included); signed entry-result noinline 42; all restored.
-// Entry-live result with break, key compared first 42 (key on the stack); early return in the loop
-// 42; aligned char buffer in 0x1eb020 with that body 42; 0x188640 calling without its key reference
-// 42 (0x1eb020 lost); __stdcall 0x188640 42; parameters swapped 42. With the 0x1eb020 -> 0x188640
-// call removed, or 0x1eb020 unaligned, that body and 0x188640 both match: the aligned caller's edge
-// keeps the key out of ebx. BLOCKED-BY 0x1eb020
-// Native return object first/bound first/found constructor 42/42/42; late result object 35;
-// cursor object with member/copy exhaustion 41/40; entry object/live field bound 42;
-// entry object with completed search 46. Existing class and aligned caller unchanged.
-// Post-search/shared-bound/positive-count class results 41/42/51; while class 46;
-// unsigned positive search 25; unsigned class 51; class copy 33/46.
-// Positive equality/nested equality 22/22; direct return/cursor 28/28;
-// post-search object/scalar 27/25. Negative guard 25; negative equality 22 (a count < 0 guard before an unsigned search, 67/65 bytes; not kept);
-// negative direct return/scalar 28/25; signed/unsigned normalized bounds 26/27.
-// Pointer-derived indices: range-first-return 46; range-completed-test 70; range-native-result 91;
-// range-exhausted-exit 75; range-ordered-bound 46; range-local-object 92; range-computed-index 97;
-// range-result-from-count 84.
-// Descriptor base before cursor/bound/after cursor 39/39/33; live count 39;
-// base with entry short/word/wide result 41/39/41; positive-domain base 32.
-// All include the aligned upstream caller; preliminary one-source scores excluded.
 // @retail 0x1885f0
 c_block_index function_1885f0(s_globals_element_block_view const *globals, long key)
 {
 	long count = globals->count;
-	long index = 0;
-	while (index < count && key != globals->elements[index].key)
-		++index;
-	return c_block_index(index < count ? (short)index : NONE);
+	short result = NONE;
+	for (long index = 0; index < count; ++index)
+	{
+		if (key == globals->elements[index].key)
+		{
+			result = (short)index;
+			break;
+		}
+	}
+	return c_block_index(result);
 }
 
 static inline s_globals_element *globals_element_get(s_globals_element_block_view const *globals, short index)
@@ -185,31 +166,7 @@ static inline s_globals_element *globals_element_get(s_globals_element_block_vie
 	return result;
 }
 
-// score 6 (was 6): key is retained in EDI rather than retail EBX; 75/75 bytes.
-// Earlier: the key reaches 0x1885f0 on the stack (ours) instead of in ebx (retail). With
-// the key is passed in EDI instead of retail's EBX, rotating the entry saves and loads;
-// key pointer before globals 6; direct index construction 6; delayed globals assignment 6;
-// read-only key pointer 6; global at each use 6; read-only index result 6;
-// direct key address 29; read-only key parameter 6.
-// the key reaches 0x1885f0 on the stack (ours) instead of in ebx (retail). With
-// 0x1885f0's entry-live result body (key compared first, break) both match unless the caller 0x1eb020
-// is 16-byte self-aligned (with a frame pointer but no alignment, or a double buffer, both match), and
-// only while 0x1885f0 returns its index class through memory (a short result keeps the key in a register).
-// Key as a by-value class 6 (0x1eb020 copies it through eax); that class with the entry-live body 7;
-// an explicit short out pointer 25; key read through a volatile own-parameter cast 8; the entry-live
-// body with 0x1eb020 not taking &material_index/buffer declared after result 7/7; the search as a
-// constructor of the index class 10 (key still on the stack). With the current search body the key
-// travels in edi (ours) where retail uses ebx. With the entry-live body: the search as a const member
-// of the block view 9 (search 42); the getter applied to the call's result 9; a const globals pointer
-// 7; __fastcall search 7; an unsigned key 7; the file without /arch:SSE 7 (diagnostic). The reduced
-// image holds no 0xec4f0 and still keeps the key off ebx, so 0x1eb020's caller is not the cause.
-// BLOCKED-BY 0x1eb020
-// constructor of the index class 10 (key still on the stack). BLOCKED-BY 0x1eb020
-// Further trials: saved-key/search convention remains EDI rather than EBX; aligned upstream edge unchanged.
-// existing index construction 9; returned-index bridge 6.
-// default index/member assignment 9; default index/value assignment 9.
-// read-only block/construction 9; read-only block/bridge 6.
-// read-only block/member assignment 9; read-only block/value assignment 9.
+inline s_globals_element *function_188640(long key);
 // @retail 0x188640
 s_globals_element *function_188640(long key)
 {
@@ -255,7 +212,9 @@ struct s_seat_animations
 	s_seat_animation *animations;
 };
 
-// score 63 (was 63): retail's ebp is not a frame pointer: it holds animation for the whole body, and result lives
+/* the first of the animation's entries (by type) for the element or its nearest
+   parent that has one */
+// score 55 (was 55): retail's ebp is not a frame pointer: it holds animation for the whole body, and result lives
 // in the push ecx slot ([esp + 0x10]), stored on a hit and reloaded into edx after the inner loop. Ours keeps result
 // in ebp and reloads animation from its parameter slot at every use; that register-or-spill choice is the whole
 // difference. Retail's inner loop has no result test (a hit stores and breaks, then index = parent and the outer
@@ -266,27 +225,119 @@ struct s_seat_animations
 // first ? &first_entries[i] : &second_entries[i] 80; count in the for condition 99; count inside the outer loop 77
 // (0x188130 20); the search as an inline helper 101; a found index then the pointer 105; i < count && !result
 // with that shape 63 (0x188130 20); animation before or after type in the parameter list 71.
+// Count declared before result 65 (with the entry pointer and no guard 79: result in eax).
+// The entry pointer, no guard and `if (result) break;` before `index = parent` gives retail's
+// first 13 instructions (first in the animation's slot, result in the push ecx slot,
+// animation in ebp) but 64 at 178 bytes: element_index then arrives in ecx (0x188130 20)
+// and the loop tail is duplicated; with the parameter as the walking index 76, index
+// declared first 64, element declared first 64; with element_index read once through its
+// address 64 (element_index back on the stack, 0x188130 matches; left: count/element
+// registers swapped, the 16-bit index load, the duplicated tail); that read with the
+// parent step before the test 71 (type in eax).
+// Round 116: the index as the material class (parameter and walking local) gives retail's 16-bit
+// index load, 55 (c_block_index the same). On it: count before result 57; first/index/count/result
+// order 55; no inner guard with count first 65; class + entry pointer + no guard + count first 71
+// (158 bytes); that with `if (result) break;` before the parent step 63 (185 bytes: retail's
+// animation/result homes, but the tail is duplicated and count/element swap EAX/EBX), with a short
+// index local 64. Without the inner guard the first pass loads type into ESI unless count is
+// declared before result.
+// Round 118 (one-file harness, ~900 forms): renames, loop spellings, scopes, getter shapes, parameter
+// orders and inline count/entry helpers change nothing. `entry = first ? &animation->first_entries[i] :
+// &animation->second_entries[i]` with no guard gives retail's inner loop and tail (result spilled to the
+// push ecx slot, reloaded into EDX) but allocates animation to EBX, so LTCG passes it there: 78 (157 bytes,
+// 0x188130 17); with animation read once through its address 52 (retail's code with animation/count/element
+// in EBX/EBP/EAX for retail's EBP/EAX/EBX; no declaration order, counter or flag type, compare order or loop
+// spelling rotates them); with the guard 76 (0x188130 17), with count first 79, its if/else spelling 79.
+// Round 120: ours computes the getter's element address in ECX (`add ecx, esi`) and copies it out; retail
+// forms it in element's register (`lea ebx, [ecx + esi]; test ebx, ebx`), as in 0x1882d0. Getter shapes
+// (byte offset, elements local, inverted early return or ternary, else arm, long index, index + elements)
+// keep the add. `while (s_globals_element *element = ...)` with the per-arm entry and the guard 79
+// (155 bytes: animation in EBP, element spilled, result in EAX); that with the address read and no guard
+// 52; the getter in a for loop's init and step 164 (243 bytes); the while declaration with the entries
+// pointer, no guard and the break before the parent step 63 (185 bytes); animation before type in the
+// parameter list with the address read 52.
+// Round 82: explicit entry byte offset 53; offset with compared-entry result 71 (0x188130 1); count before result,
+// no inner guard, offset and compared entry 71 (158 bytes, caller matched); result declared first but initialized
+// after count 71; per-arm entry 85 (187); single-exit label 71; element declared before result 71; pre-tested inner
+// while 71. All restored; the offset's two-point gain was below the retention threshold.
+// Round 44: native entry-index equality, reversed receiver, compared-entry result, count-first
+// unguarded result, per-arm entry, true entry cursor and promoted traversal with/without inner
+// result guard 55/55/61/71/78/64/80/66. Native type restored; result/animation allocation remains.
+// Round 13 (fast): result tested in the outer loop's condition, `while (!result && (element = ...) != NULL)`,
+// no inner guard and no break after the parent step 65 (type arrives in EAX and goes to ESI, result in EAX,
+// 0x188130 1); with the entry pointer `&(first ? ... : ...)[i]` 63 (0x188130 12); result declared before first
+// 65/64; with the index read once through its parameter's address 65/63 (same code).
+// Round 93 (lane 8): without the inner guard, the entry as `&(first ? first_entries : second_entries)[i]`
+// 63 at 172 bytes: the body is retail's instruction for instruction but for the register permutation,
+// and LTCG then passes animation in EAX and type in ECX (ret 4; matched 0x188130 12). Without the guard
+// and the per-arm entry pointer 78 (0x188130 17); that with `!result &&` in the while test instead of
+// the break 78 (17); with the count read inside the outer loop 84 (0x188130 1); with `type == 0` at each
+// use 88 (0x188130 18). Retail's EBP for animation is what keeps it a stack argument.
+// Lane 16 r48 (fast): no inner guard 65 (type in EAX, result in EAX, count in EBP; 0x188130 1, 0x1882d0
+// 23); no guard with `entry = &(first ? ... : ...)[i]` 63 (animation in EAX, type in ECX, two-local
+// frame; 0x188130 12), with count declared before result 71 (0x188130 matches), result declared first
+// 64 (0x188130 12), count computed from `type == 0` before first 80 (0x188130 1).
+// Round 95 (lane 8), on round 118's 52 form (no inner guard, per-arm entry, animation read once
+// through its address; reproduced 52, 0x188130 matches; its getter adds into ECX and copies to EAX
+// where retail forms the element with `lea ebx, [ecx + esi]; test ebx, ebx`): element_index also
+// read through its address as in 0x1882d0 52 (same code); result declared before first 69
+// (0x188130 1); the array-select entry `&(first ? ... : ...)[i]` 62 (0x188130 3); `if (result)
+// break;` before the parent step 66 (185 bytes); count declared before result 61.
+// Round 38 (m3 lane 10, fast): the entries pointer selected once per outer pass, before the guarded inner
+// loop 65 (0x188130 3), without the guard 67 (0x188130 3); `return &entries[i]` from the inner loop with a
+// final `return NULL` 89 (145 bytes, 0x188130 17); animation as a const reference parameter 55 (same code);
+// the inner guard written `!result && i < count` 66 (0x188130 12).
+// Round 55 (lane 12): the compare through the class's operator== 55; the parent field typed as the
+// class 55; no inner guard with the per-arm entry and `first = !type` 78 (0x188130 17); the array-select
+// entry with count spelled from `type == 0` ahead of first 80 (0x188130 1); the getter as one ternary 65
+// (0x188640 22, 0x188690 18). One-file harness (same code as the build): the parameter in either other
+// order, getter early returns/nested test/forceinline/long index, the entry field as the class,
+// `index(element_index)` or a default-constructed index assigned after, and all 120 declaration orders
+// of the address-read form change nothing (the address-read form stays at its EBX/EBP/EAX rotation).
+// Round 135 (lane 4, fast with 0x188130): the existing 0x188690 called through an `inline` declaration 79
+// (186 bytes); 0x188690 taking the material class by value, called here with its other callers updated, 77
+// (159 bytes; 0xd9110 10 -> 171); round 118's 52 form rebuilt 52, and on it the entries pointer per iteration
+// with `&entries[i]` 65 (0x188130 1), result declared after count 61, element declared first 52 (same code),
+// `i` declared at function scope 52 (same code).
+// Round 33 (lane 15, fast): round 118's address-read form with `!result &&` in the while test 52 (same code);
+// the count/entries pairs as two-field block structs, a block pointer selected per inner pass 73 (type in EAX,
+// 181 bytes, 0x188130 1), the struct ternary `(first ? a->first : a->second).entries[i]` 57 (175 bytes, 0x188130
+// 12); the per-arm entry as if/else 78 (animation in EBX, 0x188130 17); the parent walk as a self tail call 70
+// (stays a call, no loop).
+// Round 65 (lane 12, fast with 0x188130/0x188640/0x188690), all on round 118's 52 form (rebuilt: 52,
+// animation/count/element in EBX/EBP/EAX for retail's EBP/EAX/EBX): the count selected by if/else 52;
+// the entry returned from the inner loop with a final `return NULL` 91 (143 bytes); `!result &&` in the
+// outer loop's condition instead of the break 52; the entry pointer declared at function scope 52; the
+// element_index parameter as the walking index 52. Retail's own 0x188690 forms the element with
+// `add ecx, eax; mov eax, ecx`, so the lea/test in this body follows element's register, not the getter.
+// Round 52 (lane 1, fast with 0x188130): the two count/entries pairs typed as a tag-block struct (count,
+// entries) with the block selected per iteration and no inner guard 57 (175 bytes: retail's result spill and
+// EDX reload, but animation is then register-passed in EAX, type in ECX, ret 4; 0x188130 12); that struct
+// with retail's value selects and no guard 63 (172 bytes, registers permuted: animation EAX, count EBP,
+// element ECX); the struct on the guarded form 55 (same code); one block reference selected once with its
+// count in the loop test 98 (135 bytes); the value selects with `if (count > 0)` around the inner loop 57.
 // @retail 0x187fe0
-s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, short element_index)
+s_seat_animation_entry *function_187fe0(long type, s_seat_animation const *animation, c_type_47f957 element_index)
 {
 	bool first = type == 0;
 	s_seat_animation_entry *result = NULL;
 	long count = first ? animation->first_count : animation->second_count;
-	short index = element_index;
-	s_globals_element *element;
+	c_type_47f957 index = element_index;
 
-	while ((element = globals_element_get((s_globals_element_block_view *)g_4e034c, index)) != NULL)
+	while (globals_element_get((s_globals_element_block_view *)g_4e034c, index.m_index) != NULL)
 	{
-		for (long i = 0; i < count && !result; i++)
+		s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, index.m_index);
+
+		for (long i = 0; i < count; i++)
 		{
-			s_seat_animation_entry *entries = first ? animation->first_entries : animation->second_entries;
-			if (entries[i].element_index == index)
+			s_seat_animation_entry *entry = first ? &animation->first_entries[i] : &animation->second_entries[i];
+			if (entry->element_index == index.m_index)
 			{
-				result = &entries[i];
+				result = entry;
 				break;
 			}
 		}
-		index = element->parent_index;
+		index = c_type_47f957(element->parent_index);
 		if (result)
 			break;
 	}
@@ -360,7 +411,7 @@ static inline s_seat_animation_entry *seat_animation_entry_find(long tag_index, 
 	if (animation_index != NONE)
 	{
 		s_seat_animations *animations = (s_seat_animations *)g_4e3b44[tag_index & 0xffff].bytes;
-		result = function_187fe0(type, &animations->animations[animation_index], element_index);
+		result = function_187fe0(type, &animations->animations[animation_index], c_type_47f957(element_index));
 	}
 	return result;
 }
@@ -371,44 +422,23 @@ s_seat_animation_entry *function_188130(long tag_index, long index, long type, s
 	return seat_animation_entry_find(tag_index, index, type, element_index);
 }
 
-// score 22 (was 22): EBP holds the table instead of the requested index; native walk index 21, direct input 33;
-// native parent assignment 21; native requested index 22; both indices 21, direct input 33; native hit return 21; result first 21.
-// Native parent/request/both formals 22/14/14; register parameter second/third/last 22/22/22;
-// native parent with register last 22; native indices with register second 14. All restored: unmatched index wrappers rejected.
-// initial word load, requested-index/table register ownership and lookup schedule still differ.
-// This round: success before parent 28; native carry with alias 30; initial negative guard 73; signed loop admission 79; walking formal 38; direct native carry 35; complete per-tag result 56; success inside tag arm 28.
-// initial short load and global-table/entry-index register lifetimes differ.
-// Earlier requested-index snapshot 22; parent snapshot 28; explicit lookup 22; found return 22;
-// word carry 22; result first 22; one-element array 21; for parent walk 71; parameter walk 22;
-// entry local, null break, shared return and memcpy copy 22. Direct short carry 33; native carry 31;
-// result loop guard 22; tag workspace lifetime 22; ancestor local names 22; complete result 30;
-// native carry with stack input 23; existing entry lookup 105.
-// initial word load, EBP entry/table lifetime and lookup registers remain;
-// native entry formal 22; native parent formal 22; both native formals 22;
-// direct tag field 22; current-element traversal 141; separate inline declaration 22;
-// separate noinline declaration 22; existing element query 59.
-// score 22 (was 22): long requested index 22; both indices as a block-index class 11 (word load,
-// requested index in EBP, the table reloaded per tag; only `lea ebx, [ecx+edx]; test ebx, ebx`
-// left); with 0x1883e0's two material parameters of the same class too, 0x1883e0 matches and
-// 0x188180 drops 89 -> 70, but 0x1883e0's callers in held/contributor files declare short/long;
-// requested index only as the class 11; without the element reference 23; declaration orders,
-// names, loop guard 11; early-return or ternary lookup helper 12 (0x188690/0x188130 lose).
+/* the requested entry from the first tag found on the element or its parents
+   that has one */
 // @retail 0x1882d0
-s_seat_animation_entry *function_1882d0(long type, short element_index, long index, short entry_element_index)
+s_seat_animation_entry *function_1882d0(long type, c_type_47f957 element_index, long index, c_type_47f957 entry_element_index)
 {
-	short const *element_reference = &element_index;
-	short local_0 = *element_reference;
+	c_type_47f957 local_0 = element_index;
 	s_seat_animation_entry *result = NULL;
-	s_globals_element *element;
 
-	while ((element = globals_element_get((s_globals_element_block_view *)g_4e034c, local_0)) != NULL)
+	while (globals_element_get((s_globals_element_block_view *)g_4e034c, local_0.m_index) != NULL)
 	{
+		s_globals_element *element = globals_element_get((s_globals_element_block_view *)g_4e034c, local_0.m_index);
 		long tag_index = element->tag_index;
 		if (tag_index != NONE)
 		{
-			result = seat_animation_entry_find(tag_index, index, type, entry_element_index);
+			result = seat_animation_entry_find(tag_index, index, type, entry_element_index.m_index);
 		}
-		local_0 = element->parent_index;
+		local_0 = c_type_47f957(element->parent_index);
 		if (result)
 		{
 			break;
@@ -476,7 +506,9 @@ bool function_172750(long mode, point3f const *point, real radius);
 /* element_index starts the parent walk of 0x1882d0's fallback lookup, and
    entry_element_index (the fifth argument, which retail reads into esi) is
    the element whose values and seat entries are looked up */
-// score 118 (was 118): frame 0x1c agrees; tag/remapped-index ownership and the dead-argument output home remain.
+// score 118 (was 118): frame 0x1c agrees; tag/remapped-index ownership and the dead-argument output home remain
+// (ret 0x28 against 0x30: the entry index arrives in eax, the tag index on the stack; retail passes only the
+// tag index, in ebx).
 // Earlier: frame 0x1c agrees; tag/remapped-index registers and output homes remain.
 // Earlier forms and observations:
 // Defaults before element 175; index before element 165; both before element 151;
@@ -501,6 +533,28 @@ bool function_172750(long mode, point3f const *point, real radius);
 // existing material class for the 4th/5th parameters (and 0x1882d0's) it matches (fast;
 // tag index in EBX, first index on the stack): BLOCKED-BY the declarations in src/impacts.cpp
 // and src/projectiles.cpp, which name the old parameter types.
+// Round 21: in the all-stack first pass the entry index is loaded once at entry into a free register (so
+// LTCG makes it the register argument) in every source order tried: element lookup moved to its use 191;
+// both entry pointers declared at the top 170; second entry declared first 118; first index as an if
+// statement 118; first index computed inside the distance arm 124.
+// Round 420: first payload defaults 193; second payload defaults 151; both payload defaults 176; variant
+// defaults 184; first payload and variants 175; second payload and variants 175; all defaults 193; all
+// defaults and type outcomes 172. Original body restored.
+// Round 49: still BLOCKED-BY the declarations in src/impacts.cpp (held change) and src/projectiles.cpp
+// (another lane's this round), which name the old parameter types the round-135 match changes.
+// Round 104: second value index as `index == 13 ? 4 : 3` 161; NULL entries set in an else of the tag test 162;
+// element looked up after the first index 165; `index == 13 || index == 14` 121; unbraced fallback lookups 118.
+// The material-class parameters stay BLOCKED-BY the declarations in src/impacts.cpp and src/projectiles.cpp.
+// Round 108: 0x1882d0's two material parameters as the material class (no parameter reference) 118 here.
+// Round 474: Complete first/second/both conditional variant results 165/168/170;
+// whole first/second/both entry values 178/167/205; second/both payload pairs
+// before variants 131/159. Original body restored; tag/index and output homes remain.
+// Round 52 (lane 1, fast): the entry index wrapped once in a material-class local 118 (same code);
+// element_index read once through its address for the fallback lookups 118 (same code); the element
+// through the existing 0x188690 210 (472 bytes); each tag lookup as `tag_index != NONE ? ... : NULL` 162;
+// the second tag lookup first 172. Re-measured: the 4th/5th parameters as the material class (0x188180's
+// call adapted) still match here (fast), 0x188180 56; still BLOCKED-BY the declarations in
+// src/impacts.cpp and src/projectiles.cpp.
 // @retail 0x1883e0
 void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index, long entry_element_index, long index, long variant,
 	long *first_value04, long *second_value04, long *first_value, long *second_value, long *first_value0c, long *second_value0c)
@@ -526,11 +580,11 @@ void function_1883e0(long tag_index, bool ignore_distance, point3f const *point,
 		}
 		if (!first_entry)
 		{
-			first_entry = function_1882d0(0, element_index, first_index, (short)entry_element_index);
+			first_entry = function_1882d0(0, c_type_47f957(element_index), first_index, c_type_47f957((short)entry_element_index));
 		}
 		if (!second_entry)
 		{
-			second_entry = function_1882d0(1, element_index, index, (short)entry_element_index);
+			second_entry = function_1882d0(1, c_type_47f957(element_index), index, c_type_47f957((short)entry_element_index));
 		}
 
 		if (first_entry)
@@ -608,11 +662,20 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
-// score 77 (was 77): frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ.
-// Earlier forms and observations:
-// frame 0x48 agrees; effect/forward registers and first-counter spill remain.
-// frame 0x48 agrees; effect/forward inputs and first-counter spill remain.
-// Earlier: frame 0x48 agrees; effect/forward registers and first-counter spill remain.
+// score 77 (was 77): still BLOCKED-BY 0x1883e0's 4th/5th parameter types (their declarations in
+// src/impacts.cpp and src/projectiles.cpp). Round 71 (lane 9, fast): the compressed forward in a named local
+// 77; the velocity source through a named pointer 77; `(short)entry_element_index` at the 0x1883e0 call 95
+// (346 bytes); g_47d8e0 in a short local before that call 77; the sound position declared in the block that
+// fills it 77; the effect point declared before the two arrays 77.
+// MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
+// from the call sites in other files, so the frame and the two scans stay as they are.
+// Earlier, 77: retail's own clone takes the point in EAX and the forward vector in ECX and
+// pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
+// from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
+// items.cpp, unknown_246f10.cpp). Retail also calls 0x1883e0 with twelve stack arguments where
+// ours passes thirteen: BLOCKED-BY 0x1883e0 (another file).
+// Earlier: frame 0x48 agrees; first counter spill recovered; effect/forward inputs and second scan differ
+// (BLOCKED-BY 0x1883e0, see below). Earlier forms and observations:
 // Point setter 89; component loop 317; origin value 150; description position 105;
 // late description 89; result-array names 89; query-owned defaults 122; facing value 149.
 // frame and array homes agree; input registers and the first scan counter differ;
@@ -637,6 +700,30 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // retail's eax/ecx inputs and only the second scan differs (short/word 56, dword/long 70).
 // Callee entry index through its address 77; volatile effect read 90 (retail inputs);
 // aggregate effect point 77; typed effect-direction local 77; point and description first 77.
+// Round 94 (lane 6): with 0x1883e0's parameters as c_type_47f957 (held to 2026-11-02) and the
+// second scan on a 32-bit index, 77 -> 46.
+// Round 36: query inline 77; query and target inline 77; target inline 77; array-decay outputs 77;
+// function-scope counters 77; aggregate sound position 77; compression last 76 (rejected); vector assign 77.
+// Round 116: named effect index 77; named sound index 77; both 77; dword second scan with the named
+// sound index 89; description filled before the effect scan 98.
+// Round 118: effect point through the existing vector3f_add_scaled 77; first array filled first 77;
+// the fills paired by index 76; velocity copied first 77; effect point after the query 96.
+// Round 52 (lane 1, fast): the sound position as an aggregate initializer 77 (same code); the scan index
+// types exchanged (short first, dword second) 120 (364 bytes); the six NONE defaults as one chained
+// assignment 77; one chained assignment per array 77; the locals declared position, effect point, second,
+// first 77; the fills paired by index re-measured 76. With 0x1883e0's 4th/5th parameters as the material
+// class (diagnostic) 56 (346 bytes): this takes retail's inputs, so the input split follows 0x1883e0's
+// convention; left are the second scan (retail: dword index in EDI, scale in EBP) and the `or esi, -1` slot.
+// Round 131 (lane 5, fast): effect value read once through its address 89 (346 bytes; forward then arrives
+// in ECX as in retail and the stack count is retail's, but EBX holds the effect value from entry where
+// retail loads 0x1883e0's tag into it); the six defaults as one plain loop 342 (536 bytes); on the address
+// form a dword/long second scan 87/87 (344 bytes: retail's indexed loop with scale hoisted after the
+// compression call, registers rotated: index ESI, NONE EBP, scale EDI); that with the location copied
+// before the velocity 88. Still BLOCKED-BY 0x1883e0's declarations. Original body restored.
+// Round 25 (lane 17, fast): effect point as `point + forward * 0.01f` 77, as `0.01f * forward + point` 77, as an
+// aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
+// their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
+// src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

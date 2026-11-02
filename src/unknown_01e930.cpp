@@ -78,7 +78,7 @@ s_bink_bitmap g_55ece8;
 long __stdcall function_12d2f0(long a, long b, long c, long d);
 void function_12c600(void);
 double timing_ticks_to_seconds(__int64 ticks);
-bool function_2148b0(long a);
+bool function_2148b0(real *a);
 struct D3DTexture *function_23e340(short width, short height, short format,
 	void *(__stdcall *allocate)(long size, long alignment), long *size, void **data, struct D3DTexture *header);
 short function_1358c0(short format);
@@ -189,24 +189,12 @@ void function_155ed0(void)
 	}
 }
 
-// score 9 (was 9): in the padding path retail computes the alignment difference
-// before pushing ebx and reloads the capacity global into ecx after the mask, ours
-// pushes ebx first and reloads the capacity global into edi earlier.
-// remaining-first expression 53; shared completion 75; named padding 53;
-// named mask 53; shared completion and mask 75; recomputed start 47;
-// named allocation extent 53; remaining extent with shared completion 86.
-// Round 22: explicit capacity store in the padding path/all paths 9/9; named alignment
-// difference 19; explicit size/result assignments 9/9; integer-address result 9;
-// const remaining/mask 9; reversed result-mask operands 9.
-// Further forms: unsigned-mask zero-alignment guard 28; aligned guard 20; flat guards 28;
-// named padding test 9. Signed-mask counterparts 36/45/36/40. Original body restored.
-// Initial base/capacity address ownership also differs. One captured capacity with
-// delta/shared-mask/early-publication combinations: 45/44/54/54/44/44/54/54; restored.
+/* takes size bytes, aligned, from the top of the permanent block (the texture
+   allocator 0x23e340 calls) */
 // @retail 0x156620
 void *__stdcall function_156620(long size, long alignment)
 {
-	long remaining = g_4e9188.permanent_memory_size - size;
-	byte *result = g_4e9188.permanent_memory + remaining;
+	byte *result = g_4e9188.permanent_memory + (g_4e9188.permanent_memory_size - size);
 
 	if (alignment)
 	{
@@ -216,11 +204,7 @@ void *__stdcall function_156620(long size, long alignment)
 		{
 			size += (alignment - (long)result) & mask;
 			result -= (alignment - 1) & (alignment - (long)result);
-			g_4e9188.permanent_memory_size -= size;
-			return result;
 		}
-		g_4e9188.permanent_memory_size -= size;
-		return result;
 	}
 	g_4e9188.permanent_memory_size -= size;
 	return result;
@@ -361,6 +345,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	__asm rdtsc
 }
 // score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
+// MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
+// `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
+// size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
+// the retry ordinal as a function-scope local 239 (MiniMax E run 12; under the keep bar, restored).
 // Round 231: shared retry helper/native byte block/both/shared audio arrays/helper-arrays/byte-
 // arrays/all/Boolean large-block selection 313/287/313/339/364/339/364/347; separate noinline
 // format-size query declaration 287. Original body and declaration restored.
@@ -395,6 +383,123 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 217: initialized texture size/data/both at native phase 246/246/249;
 // the same private output defaults at entry 284/284/295; both outputs in reverse
 // declaration order at native/entry phase 249/295. Original body restored.
+// Round 269: Successful allocation/movie/texture phase nesting, seven subsets,
+// and all with post-protection acceptance nested: 245 each at 1104 bytes.
+// Original early cleanup returns, helpers and full body restored; frame stays 0x3c.
+// Timestamp producer original with inclusive/selected clamp 245/244; forced
+// with original/inclusive/selected clamp 244/245/244; outlined with all three
+// clamps 310 each. Original helper contract, clamp and full body restored.
+// Round 274: Common false-default skippability across both admission tests, bool/byte/short/long
+// at the original phase 267/267/276/276, at entry 285/285/287/287. Original result,
+// allocation/clock/audio/output phases and full body restored; frame remains 0x3c.
+// Separate native constant audio arrays at entry: surround bins/volumes, stereo bins/volumes,
+// surround pair/stereo pair/both bins/all 290/300/289/299/307/296/297/306. All restored.
+// Round 411: Allocation result produced on both admission arms, void/byte pointers and
+// long/dword carriers with entry/post-clock declarations, all eight 285; each carrier
+// with false-default skippability at admitted/entry phase, all eight 281. All are 1098
+// bytes with frame 0x3c; original entry allocation zero and complete body restored.
+// Round 214: native start/elapsed/both clock records at original or entry declaration phases,
+// including independent mixed phases, 244 each in eight forms. Exact-only records restored;
+// frame 0x3c/0x40 and status/clock/output homes and instruction policy remain.
+// Round 431: Allocation-clock/memory-decoder/texture-output consumption scopes, seven subsets; all with
+// read-only movie input: 244/244/244/244/244/244/244/244. Original consumption scopes, helpers and
+// complete executable body restored.
+// Round 21 (lane 13): retail builds this body with SSE (movss stores of 1.0f, `fld; fcompi` for the
+// timeout) while this file has no /arch:SSE; no other function here has float code. Retail's size is
+// `((flags & 0x100) | 0x40) << 16` with the mask spilled to a dword slot (the 0x40 frame) and the
+// start time's low half in EDI. `dword large = flags & 0x100` 273; the mask test written at both
+// uses (retail's or/shl size) 269; the allocation result declared after the start time 256; both
+// 287; `(real)` on the seconds before the 0.1f compare 244 (float compare, still fcomp/fnstsw).
+// Round 104: retail is SSE code (movss stores, fcompi), so the body belongs with src/unknown_1564e0.cpp's SSE
+// Bink functions (moved there, with the memory helper in unknown_01e930.h). There: the ternary testing
+// `(flags & 0x100)` itself gives retail's and/or 0x40/shl 0x10 (a `large` local gives neg/sbb); the movie open as
+// an if/else with a call per arm gives retail's branch and spills the mask; `size` read back from
+// permanent_memory_size after the three stores gives retail's ebp size/esi block/edi start; the retry loop as a
+// do/while is unrotated (for (;;) and do-while(true) rotate); `!((real)timing_ticks_to_seconds(elapsed) < 0.1f)`
+// gives fld dword/fcompi/jbe; `function_1358c0(g_55ece8.format)` stays a call; the success path inside a positive
+// last texture test puts the shared failure exit last; one bool for both loading queries gives cmp al, bl.
+// Together aligned 109 -> 74 but 322 at 1061 bytes: frame 0x44 (retail packs start with the first clock temporary
+// and the second clock temporary with the memory status, ours the other way), two zero stores to the status slot
+// at entry unexplained, D3DDevice_IsBusy out of line in every unrotated loop form, the size constant 10 in ebp.
+// Lane 18 round 6: the calls line up by position through SwitchToThread; after it ours trails by 13 instructions
+// (the rotated loop's second allocation call and the failure exit placed after the loop). Size query called with
+// `g_55ece8.format` (stays a call, 10 not in EBP) 245; that plus long width/height in 0x23e340 and its
+// declaration 252; do/while retry loop 315 (1061 bytes, unrotated, D3DDevice_IsBusy a call); the same with the
+// attempts branch ending in `continue` 315; do/while plus the format-field query 311. Original body restored.
+// Round 109 (lane 6, fast; the body re-checked against retail field by field, no value difference): the size as
+// `(flags & 0x100) ? ...` with the movie flags still from `large` 275; both through the mask, no `large` 269; the
+// retry counter declared after the block pointer 260, before it 260; `!(seconds < 0.1f)` 244 (same code). The x87
+// `fcomp qword`/fnstsw compare and the 1.0f stores stay non-SSE while the file has no /arch:SSE.
+// Round 7 (lane 17, fast, in this file): the retry loop as `do { block = ...; if (!block) { retry or timeout
+// arm } } while (!block);` 315 at 1061 bytes (aligned 109 -> 123); the movie open as an if/else with a call
+// per arm 251 (aligned 120); the format's bits read as `function_1358c0(g_55ece8.format)` 245 at 1100 bytes
+// (aligned 109 -> 96: the call stays out of line as retail's, where `function_1358c0(10)` folds to a table
+// load; lead); that with the sound interface read once into a local 251 (aligned 107), with
+// `dword large = flags & 0x100` 278 (aligned 99).
+// Round 9 (lane 17, fast; aligned base 109): the mask tested at both uses with the movie open as an if/else
+// with a call per arm 278 (1102 bytes, frame 0x44, aligned 136); that with the format-field size query 286
+// (1112 bytes, aligned 119); a dword mask local for both uses with the per-arm open 283 (frame 0x44); a dword
+// mask local for the open and the size ternary on `flags & 0x100` 269 (frame 0x3c, aligned 111; diagnostic, a
+// local/direct mix), with the per-arm open 278. Retail's movss 1.0 stores and fld/fcompi timeout compare need
+// /arch:SSE, which this file's flags lack (build flags are the user's decision).
+// Round 256: Shared width/height/both short locals 255/254/257; promoted long locals 256/255/259;
+// both short/long at entry 257/259. Original dimension reads and complete body restored; frame
+// 0x3c and clock/output homes remain.
+// Round 50 (lane 1, fast): format-field size query + per-arm movie open 255; `size` read back from
+// permanent_memory_size after the three stores 242; that + format-field query 241; that + per-arm open
+// 248; all three 253. Retail's constant 10 sits in EBP for the texture call and the format store, and
+// its retry loop is top-tested with one allocation call (ours rotated, the call duplicated).
+// Round 475: Plain surround-volume/stereo-volume/stereo-bin producer subsets
+// 1/2/4/3/5/6/7: 254/243/262/245/264/243/245; all with adjacent material loops 297.
+// Stereo volume loop 243 at 1098 bytes; both stereo loops 243 at 1099: one-point
+// leads below threshold. Entire body restored; frame 0x3c versus 0x40 remains.
+// Round 49 (lane 11, fast): the first loading query in a `bool loading` local 239 (its test becomes retail's
+// `cmp al, bl`); the same local also holding the second query 238 (both tests retail's; 6 points, under the keep
+// bar); skippable as `!query` 273; on the 238 form: size and movie flags tested on `flags & 0x100` directly 267
+// (retail's and/or/shl size, but the mask lands in EDI where retail spills it to the 0x40 frame's extra dword);
+// `dword large = flags & 0x100` 271 (1102 bytes); the retry counter at function scope 260; the format-field size
+// query 245 (1100 bytes); the allocation result declared after the start time 256 (the last two are the listed
+// scores of those forms alone, so the loading local's gain cancels in them). Lead: the loading local is retail's
+// for both queries, so it may count once the frame's mask slot is found.
+// Round 46 (lane 14, fast): retail's start clock sits below its elapsed clock (ours the other way round);
+// elapsed renamed waited 244, start renamed clock_start 244, both 244 (homes unchanged); the retry counter
+// renamed retries 244; block declared before the size test 256 (the listed 256 form), with waited 256.
+// Retail's SSE code (movss 1.0f stores, fld/fcompi timeout) still needs /arch:SSE, which this file lacks.
+// Round 325: Actual inlined status/clock temporary identities in both lexical orders, with
+// coordinated consumer-clock identities, all eight 244 at 1098 bytes. All original
+// helper and consumer identities restored; frame 0x3c/0x40 and early homes remain.
+// Round 275: explicit word-unit allocation masks, long/dword mask and size carriers, ternary/per-arm
+// open 269/278/269/278/269/278/269/278; retained byte-unit masks 272/280/272/280. Exact-only
+// arithmetic producers restored; frame 0x3c/0x40, zero/clock/output homes and instruction policy remain.
+// Round 277: standard elapsed bound/volume fills/material pair fills, subsets 1..7,
+// 301/278/332/258/322/300/352; all with volume declarations first 352. All file
+// controls survive; original body restored, frame and clock/output homes remain.
+// Round 35 (lane 15, fast): retail stores the size to permanent_memory_size first (ours last, after the
+// neg/sbb select). The stores reading back the size from permanent_memory_size at the test and the
+// allocation 270 (1106 bytes); that with both selections on `flags & 0x100` and no `large` 267; the start
+// time read before the three stores 240 (aligned 200 -> 216) / before the size 242; `dword large = flags &
+// 0x100` with the size ternary on the mask 269. The SSE float code still needs /arch:SSE (flags lead only).
+// Round 276: Explicit signed timestamp returns, no/zero initialization in low-first and high-first output
+// orders 310/286/310/286; each with a one-use end tick at subtraction 310/286/310/286. No-init/zero-init
+// frames 0x30/0x38 regress.
+// Original executable source restored; Original timestamp helper and complete body restored; frame 0x3c versus 0x40, clock/output homes and instruction policy remain.
+// Round 278: Separate bounded-pump and timed allocation phases, long/dword/short/byte ordinal: break-on-
+// success 288/288/289/304; result-conditioned finite loop 312/312/311/328. All preserve the thirty-pump
+// sequence but shrink the frame to 0x34 and grow code. Original retry phase, clocks, helpers, file policy
+// and full body restored; frame 0x3c/0x40 and status/allocation/output homes remain.
+// Round 290: existing retry producer on the entry-result/Boolean graph, direct-mode/format-field/movie
+// observation masks 0..7, 291/291/279/279/313/313/285/285; all frames 0x3c. Exact-only elapsed
+// precision, include, clocks, calls and original body restored; frame 0x40 and instruction-policy gaps remain.
+// Round 444: Shared terminal cleanup for allocation/movie/texture/protected-texture failures,
+// subsets 1/2/4/8/3/12/7/15: 244/244/244/244/244/244/241/239. Original early cleanup returns, complete body and file policy restored.
+// Round 446: complete native 64-bit size/retry/mode storage, seven subsets
+// 280/298/314/288/317/339/363; all with native skip storage 363. Original domains and complete body restored.
+// Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
+// tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
+// helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.
+// Round 294: Status tail memset, length last/first, Boolean/mask 286/283/285/282;
+// native field-zero chains 287/285/288/286. Other producer users regress (18-19/75-78/42-50);
+// original helper and body restored; frame 0x3c/0x40 and status/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

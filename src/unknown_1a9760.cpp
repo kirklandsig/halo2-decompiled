@@ -9,16 +9,145 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 104 (was 104): frame 0x3c agrees; half/offset XMM allocation and x87/SSE projection scheduling differ;
+// score 85 (was 85): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
+// Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
+// and the x87/SSE projection scheduling are unchanged, and that round's trials in
+// this file found no lower form of them
+// Earlier (104): the frame 0x3c agrees; the half and offset XMM allocation and
+// the x87/SSE projection scheduling remain, and that round's trials in this file
+// found no lower form of them
+// Earlier: frame 0x3c agrees; half/offset XMM allocation and x87/SSE projection scheduling differ;
 // tried position base 105; origin base 105; displacement base 105; geometry bases 105; unsigned component 104;
 // degenerate normal first 104; squared magnitude value 104; rejected direction loop 104.
+// Scale/add operand orders 104 each; split squared magnitude 105; inner += 117; earlier magnitude declaration 104;
+// component counter scope 104; mode stores before scaled output 104. Original body restored.
 // the rotated vector's XMM allocation differs - retail
 // keeps the two dot products in xmm1 and xmm0 where ours uses xmm5 and xmm3 -
 // and the second subtraction and the x87 sum are swapped.
-// score 104 (was 104): the negated component in its own local keeps 0.0 in xmm7 for the
+// Earlier: the negated component in its own local keeps 0.0 in xmm7 for the
 // > 0.0f test as retail does, but 177 (aligned 63 against 64; all six term orders of the
 // projection give the same code); that with the components written out 188; components
 // written out k first 193; the flag store before the copy 104; the copy after the loop 104.
+// Round 196: uniform original-direction reads 163; retained scalar inputs 197; double square 105;
+// live/scalar inputs with double square 164/197; normalized-vector setter on original/live/scalar inputs
+// 217/255/243. All restored; half/offset allocation and x87/SSE schedule remain.
+// Round 412: complete normalization scale loop/shared scalar scale/direct division/shared double scale 105/177/105/184; with nonpositive projection first 105/184/105/184. Original body and precision restored.
+// Round 288: shared affine/difference producers with in-place/distinct output, ordinary/forced
+// difference declaration and original/earlier magnitude 262, 251, 262, 251, 262, 234, 262, 234. Original restored.
+// Round 194: Advancing position/scale-input/origin component pointers and complete subsets 105/105/104/105/105/104/105/105; complete second-projection differences/products/both 105/105/104; per-component named half-step 105. All preserve the original grouping but give no gain; original body and inherited inline boundary restored.
+// Round 9 (lane 2, fast): the existing prop-level getter 0x2684f0 for the opening test 230 (979 bytes; the
+// inline-depth window keeps it out of line), without the window 320 (1072 bytes; the body alone without it
+// 383); unary minus for both negations 176 (986 bytes); the half step as `0.5f * v + position` 104; the
+// length's squares in i, j, k order 108; the projection straight into its own local (no store to the
+// vector first) 104.
+// Round 126: without this file's inline_depth(0) pair LTCG inlines 0x25d700 and 0x1e4290 (retail calls
+// both): 383 (1119 bytes); and with the header normalize3d for the first normalization 424 (1152), with
+// dot3f for the final test 424, with `-x` for `0.0f - x` 424; normalize3d with the pragma kept (then
+// called, not inlined) 273 (927 bytes).
+// Round 46 (lane 9): local_6 and the final test's dot are each one term rotated against retail ((y, x, z)
+// and (k, i, j) where retail sums (z, y, x) and (j, k, i)), the function-wide reassociation order; retail also
+// keeps one SSE zero (xmm7) for `0 - j`, both compares and the k store, loads -1.0 at each use, and reads
+// unknown290 only after the unknown424 copy. Tried: local_5 computed directly with `0 - j` written twice 104
+// (identical); a named negated component used twice with local_5 direct 177 (989 bytes; one xorps zero as
+// retail), with the terms k, j, i 177; the reciprocal written at each use 105; fabs on the float 219 (1020
+// bytes); the unknown456 store after the offset loop 108; a short component counter 247. Under
+// inline_depth(0) even a __forceinline helper is called, so no header helper can take part.
+// Diagnostic lead (not kept): `/Ob1` in place of the pragma pair still inlines 0x25d700 and 0x1e4290, 383
+// (1119 bytes), with normalize3d and dot3f 424 (1152).
+// Round 53: the short-vector arm first (`if (fabs < eps) local_4 = 0; else ...`) 104; `local_8 * k` 104;
+// the dot with the negated component first in each product 104; `0.5f * v` 104; the unknown456 store just
+// before the magnitude 108. Harness: all but the last compile byte-identically.
+// Round 40 (lane 11, fast): the first difference (+0x6f) is register numbering: retail gives the half
+// constant xmm3 and the three offset components xmm1/xmm2/xmm0, kept live into the projection, and the
+// length xmm7; ours 0.5 in xmm0, the components in xmm5/xmm2/xmm3, the length in xmm1. local_3 declared
+// before local_2 / at the top 104/104; the trace result, local_5 with local_6, and local_8 declared at the
+// top 104/104/104 (all the same code).
+// Round 251: Native direction input/selection/output memcpy, seven subsets, 104 each; complete memmove 233.
+// Original body and include restored; half/offset XMM allocation and x87/SSE projection scheduling remain.
+// Round 64 (lane 12; one-link LTCG env with the slot table's object, equal to the full listing; env positional
+// 86 for the old body): each of the three float sums grouped in the order retail evaluates it (projection
+// (k + j) + i, local_6 (z + y) + x, final test (j + k) + i) 96 (kept); the projection alone 97 (k-first sum, k in
+// XMM0, one kept zero as retail). Left: the half/reciprocal/negation chain in XMM1 and local_3.i in XMM4 (retail
+// XMM3/XMM1), local_5 kept in XMM0 (retail copies it to XMM6) so -1.0 is hoisted into a register, the inner pairs
+// of local_6 and the final test swapped, and the unknown290 reads scheduled above the target stores. Env, on the
+// grouped projection: half step's operand orders, dword counter, local_3 declared first or at the top, local_4/
+// local_8 declared at the top 79 each (no change); the rotated stores in the five other orders 77-78; local_6 and
+// the final test in each grouped/ungrouped term order 78-79; short counter 205; the component loop written out
+// 184. Env, without it: the component loop written out 185; the normalization's three stores in the five other
+// orders 97/103/98/169/171; a rotated-vector local copied back 179 (1015 bytes), stored per component 167.
+// Round 67 (lane 12; env positional in brackets): retail keeps the tail in source order because unknown290 is read
+// and unknown458 written through pointers; `facing` (unknown290, declared with local_2/local_3, before the
+// half-step loop) and `scaled_direction` (unknown458) give retail's tail order: 96 -> 85 (kept; env 78 -> 66). `facing`
+// declared just before the test or after the loop folds unknown290.i into the product (988 bytes, 112 [91]);
+// `facing` alone 102; `scaled_direction` alone 96. On the kept form: the dot's six term orders grouped or not [66-70] (the
+// k term stays first, retail j); normalization stores in the five other orders [78-87]; local_5 assigned
+// directly, local_8 declared first, `0.5f * v`, `local_8 * k` [66 each]. Left: the 0.5/reciprocal/negation
+// chain in XMM1 with local_3.i in XMM4 and the normalized i in XMM3 (retail XMM3/XMM1/XMM4), and the dot's
+// k-before-j product.
+// Round 36 (lane 13; compile-only screens of the block up to the first 0x30bf0 call reproduce ours, then fast):
+// the side dot's terms come out in descending first-mention order of the direction's fields (the length's text
+// order moves the j/k-term pair), but the term with the fresh `0 - j` always comes first where retail has it
+// last (k, j, i). The direction scaled i, k, j 178 (989 bytes); the length written k, i, j 106; a separate
+// perpendicular vector for the dot (then copied over the offset) 201 (1015 bytes), declared at the top 201,
+// with the i, k, j scaling 206; the offset computed after the normalization 216 (1013 bytes).
+// Round 33 (lane 14, fast; aligned counts from a difflib alignment, original 86): the final test accumulated
+// j, k, i in a named local 105 (aligned 84; retail's dot instructions, still scheduled above the unknown424
+// copy); half-step components written out 192; negated j named and used for the projection and the store
+// 177 (aligned 85); the projection accumulated k, j, i (`local_5 = k-term; += j-term; += i-term`) 97
+// (aligned 87: z/y/magnitude/j/k registers and the xmm7 zero become retail's, half/x and inverse/i stay
+// swapped); that with the negated j named first 176 (989 bytes, aligned 80), plus the side projection
+// accumulated z, y, x 176 (aligned 93); the k, j, i projection with the j, k, i final test 98. Retail does not
+// hoist the -1.0 load (else branch and memory operand), so it copies the projection into xmm6.
+// Round 69 (lane 12; env positional, 66 for this body): the else arm's constant first, local_6's negation as an
+// assignment or constant first, the sign test's operands swapped, the else arm as copies then `*=` [66 each, same
+// code]; the arms swapped (`if (!(local_5 > 0.0f))`) [66]. Diagnostic: without local_6's negation the -1.0 is loaded
+// in the else arm as retail [59], so the hoist pairs those two uses. local_6 as the dot of a named offset vector
+// (position - unknown370, any component order, declared at the top or in the block) gives retail's shape there (all
+// three differences before the products, -1.0 loaded in the else arm, memory-operand negation) but copies local_3.i/j
+// to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
+// [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
+// alone [66].
+// Round 335: Native offset passes position/scale/scaled-input/affine 197/237/199/181;
+// affine-pass normalization orders ikj/jik/jki/kij/kji 180/180/180/179/181.
+// The affine graph reaches 996 bytes and first +0xa9, but regresses; original
+// offset producer, normalization and complete body restored at 85.
+// Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
+// `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
+// itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
+// test as `local_5 * local_6 < 0.0f` 85 (same code); /Op around the function (diagnostic) 241 (1024 bytes).
+// Round 71 (lane 12; env positional in brackets, 66 for this body): the perpendicular's j and k stores ahead of
+// local_5's copy gives retail's copy of the projection (`movaps`) but stores j, k, i [173, 995 bytes, aligned 57];
+// the local_6 sign test as `local_5 * local_6`, `local_5 = local_3.i = ...` chained, the unknown456 store first
+// [66 each]; the projection with the negated term first, grouped or not [66/66/74]. A separate `perpendicular`
+// vector (0 - j, i, k) for the projection, the else arm and local_6 shares local_3's slot and gives retail's
+// projection (0 - j first, i product in place) but no copy of local_5 and the -1.0 still hoisted: [165], --fast
+// 169 at 996 bytes; with local_5 declared first [165]; perpendicular filled j, k, i [166, 996 bytes]; the
+// projection i, j, k [166]; local_6 through a named offset vector, grouped or i, j, k [164/164], with the i, j, k
+// projection [171]. Diagnostic (not kept): normalize3d/dot3f/vector3d_from_points3d expanded under a scoped inline
+// window 211 (1015 bytes).
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
+// Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
+// original/earlier magnitude 233/237/239/245/85/183/199/210
+// Original executable body and helpers restored.
+// Round 452: Common normalizer/default-vector boundary with retested/stored lateral classification, in-
+// place/separate requested distance and call/entry trace storage: 206/210/206/210/206/210/206/210. All
+// source, precision and inherited inline boundary restored; half/reciprocal/negation allocation remains.
+// Round 454: Complete repeated position/reference inputs, native copies of first/second/both
+// 226/219/273; complete field initializers 203/217/247; both through memcpy/memmove 273/261.
+// Native copies grow frame 0x3c to 0x48 or 0x54. Original field observations, scalar precision,
+// body and inherited inline boundary restored; half/reciprocal/projection allocation remains.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
+// Round 223: Native two-component perpendicular value with aggregate/field
+// construction, direct/stored projection and i/j publication order, all eight
+// combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
@@ -31,6 +160,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     }
     vector3f local_2 = local_0->unknown37c;
     vector3f local_3;
+    vector3f const *facing = &local_0->unknown290;
     local_0->unknown456 = true;
     for (long component = 0; component < 3; ++component)
         local_3.n[component] = (local_0->position.n[component] + local_0->unknown258.n[component] * 0.5f) - local_0->unknown370.n[component];
@@ -46,7 +176,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
         local_4 = 0.0f;
     if (local_4 > 1.5f)
     {
-        local_3.i = local_3.i * (0.0f - local_2.j) + local_3.j * local_2.i + local_3.k * local_2.k;
+        local_3.i = (local_3.k * local_2.k + local_3.j * local_2.i) + local_3.i * (0.0f - local_2.j);
         real local_5 = local_3.i;
         local_3.i = 0.0f - local_2.j;
         local_3.j = local_2.i;
@@ -58,8 +188,8 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
             local_2.i = local_3.i * -1.0f;
             local_2.j = local_3.j * -1.0f;
         }
-        real local_6 = (local_0->position.z - local_0->unknown370.z) * local_3.k +
-            (local_0->position.y - local_0->unknown370.y) * local_3.j +
+        real local_6 = ((local_0->position.z - local_0->unknown370.z) * local_3.k +
+            (local_0->position.y - local_0->unknown370.y) * local_3.j) +
             (local_0->position.x - local_0->unknown370.x) * local_3.i;
         if (local_6 * local_5 < 0.0f)
             local_6 *= -1.0f;
@@ -88,14 +218,15 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
         if (function_30bf0(&local_2) == 0.0f)
             local_2 = *g_4687a8;
     }
-    local_0->unknown458.i = local_2.i * 10.0f;
-    local_0->unknown458.j = local_2.j * 10.0f;
-    local_0->unknown458.k = local_2.k * 10.0f;
+    vector3f *scaled_direction = &local_0->unknown458;
+    scaled_direction->i = local_2.i * 10.0f;
+    scaled_direction->j = local_2.j * 10.0f;
+    scaled_direction->k = local_2.k * 10.0f;
     local_0->unknown41c = 4;
     local_0->unknown420 = 4;
     local_0->unknown424.vector = local_2;
-    if (local_0->unknown290.j * local_2.j + local_0->unknown290.k * local_2.k +
-        local_0->unknown290.i * local_2.i > 0.8f)
+    if ((facing->j * local_2.j + facing->k * local_2.k) +
+        facing->i * local_2.i > 0.8f)
         function_1e4290(arg_0, true);
 }
 #pragma inline_depth(255)

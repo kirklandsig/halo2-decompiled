@@ -92,26 +92,29 @@ void function_82ac0(s_object_relevance_source *source, s_object_relevance_result
 	}
 }
 
-// score 25 (was 32): retail places the allocation failure's `error = 2` arm after
+// score 25 (was 25): retail places the allocation failure's `error = 2` arm after
 // the release block's return (it jumps back to the null test); ours lays it out
-// before the release block. Was: the error codes folded into the release test
-// (32); the error set in an if/else with `result = error` before the release, the
-// index test nested: 25.
-// score 25 (was 25): cold allocation-error placement remains; validation-derived result 98;
+// before the release block.
+// Round 74: zero/result-initialized error in allocation scope 25/25 and at function scope 25/25;
+// zero-init with plain allocation/cleanup/both guards 25/25/25; function result-init with both 25.
+// Opening control flow restored. Earlier at 25 (from 32): the error codes folded into the
+// release test (32); the error set in an if/else with `result = error` before the
+// release, the index test nested: 25.
+// Earlier at 25 (from 25): cold allocation-error placement remains; validation-derived result 98;
 // allocation/handler error defaults 63/64; valid-scope error 98; native payload word 25;
 // validation plus payload word 98; size-first and type-first publication 25/25.
 // Allocation failure remains before cleanup. Immutable
 // allocation/handler/size 25/25/25; shared allocator receiver 29; indexed
 // output 34; output element reference 25; signed-word error 41; direct failure
 // result on the nested-index body 40.
-// score 25 (was 25): Cold error-2 placement still differs. Success-first
+// Earlier at 25 (from 25): Cold error-2 placement still differs. Success-first
 // coded outcome 59; tested public outcome 75; path-defined outcome 81;
 // function-scope size 25; registry record 25; produced-count reference 25;
 // native publication on tested outcome 112; path-defined success 78.
 // allocation error 2 still precedes the cleanup return.
 // Reused size output 80; signed output 25; initialized output 45; globals/count/handler
 // references 25/25/25; native item-size local 25; result after release 41.
-// score 25 (was 25): allocation error 2 still precedes the cleanup return.
+// Earlier at 25 (from 25): allocation error 2 still precedes the cleanup return.
 // Outcome at handler/size 48/50; invalid defaults 98/98;
 // positive-size/allocation/success/default-success 56/58/75/72.
 // Cold allocation error still precedes cleanup.
@@ -121,11 +124,24 @@ void function_82ac0(s_object_relevance_source *source, s_object_relevance_result
 // presence 76; complete index predicate 25; native pointer advancement 25;
 // immutable post-info release owner 25; presence/owner 76; separated error
 // enum 25; enum/presence 76; validation/publication/owner 25.
-// score 25 (was 25): error-2 arm still inline before the release, retail sinks
+// Earlier at 25 (from 25): error-2 arm still inline before the release, retail sinks
 // it past the cleanup return. Arms swapped 49; success/error returns split 73;
 // handler-error default 64; separate post-hoc allocation test 25; function-scope
 // error 25; const block 25; error declared after allocation 25; separate test with
 // result after release 41.
+// Round 41: error defaulting to 2 just after the allocation 60; result defaulting to 2
+// there (3 on handler failure, 0 on success) 57; `block && handler` success test with
+// `result = block ? 3 : 2` in an else/after it 39/39 (setne); the same test with an
+// if/else of constants (3 then 2) 25 (jumps threaded, arms in source order), into result
+// 40, arms 2 then 3 27; result 3 then `if (!block) result = 2` 51; the release through
+// 0x8a6f0's force-inline release helper 25. No matched retail function outside a switch
+// has this late `mov reg, imm; jmp back` block.
+// Round 52: retail's late `mov ebx, 2; jmp` block is a jump-threaded block (as in the matched 0x1405a0,
+// 0x2797a0, 0x5f480): error-code arms followed by a success test give it. `if (!v10) error = 3` then
+// `if (error == 0) { publish; goto }` 40 (publish goes late too); publish in the v10 arm then
+// `if (error == 0) return result;` 56 (retail's block order in a compile-only build, but `xor eax, eax`
+// for the success return and all pushes at entry); error-tested release 25; success flag tested before
+// the release 25; `block && v10` success test with an else-if error chain 25.
 // @retail 0x8b110
 long c_vtable_450cb8::v0(long index, long a2, long a3, long *count, s_item_450cb8 *items, void *a6)
 {

@@ -143,7 +143,6 @@ struct s_placement_2bc1
 // Unconditional event with options pointer 32; byte mode before event 31; mode against event type 31;
 // mode declaration before team 31; object result before query 16; creation condition assignment 16;
 // function-scope object result 16; combined result/mode lifetimes 31; event before mode declaration 31.
-// event before team 63; early event plus sender 63; event before creation 63; returning initializer before creation 90;
 // event filled before the mode test 32 (stores now precede the test but the mode load folds into the
 // compare after them, 223 bytes); test result as a bool before the fill 76; fill then send helper 32;
 // mode read into a local before the fill 31 (load order right, constant 4 not shared in eax);
@@ -153,6 +152,21 @@ struct s_placement_2bc1
 // test); named marker-test bool 5.
 // Marker-query inline declarations 5; native tag hierarchy 5; creation/announcement/both names 5/5/5;
 // missing-tag return 5; tag field at both uses 50; direct tag receiver 5; native tag with both names 5.
+// Round 123: const object result 5; early return without an engine 5; team passed without
+// its short cast 5; position pointer local for the marker query 5; creation pointer local 5. Diagnostics:
+// without the team call 38 (the copy then uses EDX), without the event 142, without the final
+// call 39: the copy's register follows the allocation of the whole tail.
+// Round 55: early return when no object is created 5; the existing game_engine_get() for the engine
+// test 5; the out-of-line event sender 61 (not inlined); tag index read without the definition
+// local 5; event declared at the top of the marker block, filled in place 32.
+// Round 67: short team at both calls 44 (228 bytes; mode tail exact, marker prefix regresses); short team only
+// at the update or at entry with the original marker argument 5 each; event pointer 61 (198 bytes, send not
+// inlined); shared creation pointer 5; full-width team copy 5; shared creation pointer plus earlier object
+// result 5; NONE-initialized object result 5. A 2400 s permuter run timed out during its initial full build.
+// Round 49: tag read without the definition local 5; a local for the definition's +0xc pointer 5; engine
+// test `!= NULL` 5; NULL owner argument 5; event declared before the team call, unscoped 32 (223 bytes).
+// The stub callee is not the cause: matched 0x152a50 and 0x1e04a0 copy the placement with EAX before the
+// same stub call, and 0x1e04a0's second site uses ECX.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {
@@ -245,10 +259,24 @@ struct s_item_object_2bc1
 /* updates a team's item each tick: how long it has been away from home, its
    return home once it has waited too long, and the points of the player
    holding it */
+// MiniMax G run (not kept, m3 review): 33 with the countdown computed before the timer's test, the tally
+// counted before the timer reset, and the test written `(unsigned char)timer != 0xff` (a byte compare, as
+// retail's cmp al,0xff); the cast is the steering part: without it the same form is 55, under the keep bar.
+// A byte cast that only steers the compare is kept only with a byte match.
 // score 62 (was 97): retail spills the item pointer to the stack before it
 // reads the rate, so the rate and its forty-times multiply land in different
 // registers than ours; the countdown is also still decremented in al, while
 // retail keeps the decremented byte in cl.
+// Round 8: MSVC gives al to whichever byte value is compared as a signed byte
+// and moves the other one out of the way, so the countdown can only sit in cl
+// while the timer is the compared value; retail compares the countdown and
+// copies it into al, which no form here reproduces: the countdown compared
+// inside the test 91, before the test 91, as an int expression 67 (a 32-bit
+// test), through an int local 91, the expiry test before the store 91, a
+// redundant timer test as well 100; the rate in its own short local 61 (the
+// same code); the maximum line before the object pointer 70.
+// The expiry tested as `timer <= 1` 61 (the countdown lands in cl as in retail, but
+// retail compares it through a copy in al); not kept, gain under 8.
 // Standard convention (see docs/DECOMPILING.md):
 //   1. Retail keeps it __stdcall: the team argument is read from [esp + 0x3c]
 //      and the function returns with ret 4. Without the marker LTCG moves the

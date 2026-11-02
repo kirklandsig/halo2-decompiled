@@ -3,6 +3,7 @@
 #include "unknown_123b30.h"
 #include "kill_volumes.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 #include <math.h>
 #include <string.h>
 
@@ -80,14 +81,14 @@ struct s_direction_rotation_input
 
 PRIVATE __forceinline void rotate_direction(vector3f *vector, const vector3f *axis, real sine, real cosine)
 {
-	real projected = dot3f(vector, axis) * (1.0f - cosine);
-	vector3f cross;
-	cross.i = vector->j * axis->k - vector->k * axis->j;
-	cross.j = vector->k * axis->i - vector->i * axis->k;
-	cross.k = vector->i * axis->j - vector->j * axis->i;
-	vector->i = vector->i * cosine + projected * axis->i - cross.i * sine;
-	vector->j = vector->j * cosine + projected * axis->j - cross.j * sine;
-	vector->k = vector->k * cosine + projected * axis->k - cross.k * sine;
+	real dot = dot3f(vector, axis);
+	real projected = dot * (1.0f - cosine);
+	real cross_i = vector->j * axis->k - vector->k * axis->j;
+	real cross_j = vector->k * axis->i - vector->i * axis->k;
+	real cross_k = vector->i * axis->j - vector->j * axis->i;
+	vector->i = vector->i * cosine + projected * axis->i - cross_i * sine;
+	vector->j = vector->j * cosine + projected * axis->j - cross_j * sine;
+	vector->k = vector->k * cosine + projected * axis->k - cross_k * sine;
 }
 
 // @retail 0x1ecf50
@@ -99,15 +100,13 @@ void function_1ecf50(vector3f *forward, vector3f *up, s_direction_rotation_input
 		dot = PIN(dot, -1.0f, 1.0f);
 		if (!(fabs(dot - 1.0f) < 0.0001f))
 		{
-			real angle = (real)acos(PIN(dot, -1.0f, 1.0f));
+			real cosine = PIN(dot, -1.0f, 1.0f);
+			real angle = (real)acos(cosine);
 			if (angle != 0.0f)
 			{
 				vector3f axis;
-				axis.i = input->up.j * input->direction.k - input->up.k * input->direction.j;
-				axis.j = input->up.k * input->direction.i - input->up.i * input->direction.k;
-				axis.k = input->up.i * input->direction.j - input->up.j * input->direction.i;
-				real length = function_30bf0(&axis);
-				if (length != 0.0f)
+				cross3f(&input->up, &input->direction, &axis);
+				if (function_30bf0(&axis) != 0.0f)
 				{
 					*up = input->up;
 					*forward = input->forward;
@@ -184,7 +183,18 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
-// score 642 (was 642): Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
+// score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
+// activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
+// and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// Earlier convention form: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// The stack layout agrees with the matched caller 0x1eb6f0 (out, dt, d, q, pos; state ESI, update AL, a ECX,
+// b EDX); retail loads q into EBX at entry (and again after the first normalize), ours d.
+// Earlier (merged stacked note, was 642 -> 642), MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
+// Earlier: Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
 // Frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // Frame 0x24 and clock EDI agree; direction/sample homes and scalar schedules remain.
 // Frame 0x24 and clock EDI agree; d/q homes and scalar schedules remain. Native
@@ -252,6 +262,64 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 679/644/665/664/662/677/648; all plus initial vector assignment 657. Assignment alone
 // and with initial difference/addition/refresh 644/676/659/664. Original snapshots, math,
 // counter result, qualification and exact caller restored.
+// Round 268: Shared two-phase rise/fall/count workspaces, seven subsets, then all with the remaining-
+// time workspace: 642/642/642/642/642/642/642/683. Original body restored.
+// Round 189: original velocity observed at the first output producer, native at-use/entry
+// value and output readback with conditional/native zero 661/661/687/676; each with the
+// shared output dot 670/670/672/668. Original observations, math and counter result restored.
+// Round 290: Native dword/word/byte/signed-byte completion fields with original result arms all
+// 642; direct ordered completion stores 744/648/646/646. Original executable source restored.
+// Round 427: reuse the existing capped length for distance publication, with shared-cap
+// predicate/complete step arms/complete count arms masks 0..7: 667/705/671/711/701/722/704/708.
+// Original selection, predicates, count producers, observations and complete body restored;
+// exact caller preserved in all eight trials; direction/sample homes remain.
+// DL202: Shared duration-count producer with joined/terminal/conditional results and remaining-distance
+// initializers 703/708/681/703/681/708; native output arguments 642/708.
+// Complete supplied-direction native/const/setter/CRT observations 731/731/743/731,
+// frame 0x2c and caller loss in each. Original 0x24 frame, inputs, qualifiers and caller restored;
+// direction/sample residence and coefficient schedules remain.
+// DL210: native active/limited/settled byte declarations, masks 1-7, then all with fast; existing completion bit helper in value/arm forms;
+// scores 642/649/649/642/642/649/649/649/642/642. Original source forms restored.
+// Output sample/displacement/normalizer declarations before output acquisition, seven subsets 642 each;
+// all with the activation workspace declared at entry 642. Original initializers and complete body restored.
+// Round 259: ordered complete activation/direction/sample dot accumulators, subsets 1..7,
+// then all with the settling accumulator: 671/642/681/665/683/642/681/681. Original sums,
+// inherited counter qualification, body and exact caller restored; direction/sample homes remain.
+// Round 129 (lane 5, fast, caller checked): both activation length sums written j, k, i 642 (same x87 order:
+// it follows the delta components' first assignment); the first clamp's 12/8 factor before t 718 (2861 B,
+// caller lost); the first clamp as PIN with the cap inline 761 (2914 B); the activation target through a
+// point-along-vector helper 668 (2883 B), with the direction refresh through vector3d_from_points3d 670
+// (both blocks then store through eax/edi as retail, EBX unchanged); both direction refreshes through
+// vector3d_from_points3d 665 (2888 B).
+// Round 326: complete sampled input at its projection producer, working/separate values and
+// branch/conditional zero fallback 685/706/689/689; those graphs with early second/third factors
+// 651/663/678/678. Original observations, expression trees and body restored; direction/sample homes remain.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
+// Round 66 (lane 9, fast, caller 0x1eb6f0 matched in each): d read through `vector3f *const *` at every use 673
+// (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
+// output position copied through `out->position` before the position pointer 642; the w dot before the counter
+// read 642; the counter conversion without `volatile` 671 (2860 bytes).
+// Round 25 (lane 18, fast; aligned counts by difflib in brackets, original [757]): the first clamp's speed
+// factor selected before t 718 [630], caller 0x1eb6f0 0 -> 22 (the factor byte takes CL, so a leaves ECX and
+// b goes to the stack); the first two clamps so 744 [601], caller 22 (our s->fast load is CSE'd from the first
+// clamp to the duration; retail loads it three times, AL/CL/AL); s->limit read at each use (retail reads it
+// four times) 689 [734]; with the second clamp's factor first 719 [581]; with the output clamp's too 719
+// [573]. Callers kept in the last three. Original body restored.
+// Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
+// 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
+// graphs also lose the exact caller; original body, helpers and 0x24 frame restored.
+// Round N284: Ramp-admission orders settled-ticks-distance/distance-settled-ticks/
+// distance-ticks-settled/ticks-settled-distance/ticks-distance-settled 642/696/696/695/696;
+// nested settled/distance/ticks gates 642/696/695. Original sample, comparisons,
+// counter result and complete body restored; exact caller preserved throughout.
+// Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
+// producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
+// Original sample observations, output math, inherited counter qualification and body restored.
+// DL225: alias-safe library direction copies at activation/refresh/angular fallback,
+// masks 1..7: 700/716/718/700/718/706/728; all with initial output copy 755. All restored;
+// frame 0x24 and clock EDI agree, but direction rather than sample still takes EBX at +9.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
@@ -828,47 +896,13 @@ PRIVATE __forceinline long movement_counter_increment(byte value)
  return next;
 }
 
-// score 88 (was 157): attached ESI/EBP roles and scan setup still differ; per-use direction 88.
-// Unsigned attached handle 157; const contacts 157; unsigned selection 157;
-// initialized found 364; forward workspace 482; shared difference 237; const objects 157.
-// On per-use scan: direct count 88; direct table 356; both 356; found first 87 (one-point addition dropped).
-// score 88 (was 88): own-object/node registers and contact-table setup still differ.
-// Native flags/parent/both 88/88/88; attachment/position/input-field references 88/88/88;
-// frame pointer 563; global analysis off 1220.
-// Validated attached handle 88; detached selection lifetime 396; outer found 88;
-// state reference 88; output flag reference 88; post-validation selection 106;
-// selected contact reference 88; direct output test result 104. Attached object/node and scan setup still differ.
-// score 88 (was 88): attached object/node roles and scan setup remain; current-handle bits 88;
-// node-transform input pointer 88; full-width definition bits 90; shared object handle,
-// shared receiver and both lifetimes 88; live input flags 88; native contact count 88.
-// score 78 (was 88): Own-object/node roles, dot scheduling and scan setup remain. Shared component
-// lookup, native owner/table/count/all fields, native component receiver and external contact array each
-// 88f; long found result 411f.
-// own-object/node roles and contact-scan setup still differ.
-// Node byte/data offset and immutable handle 88; shared projection scale 90;
-// scale plus in-place difference 78; nested/best-first scan 88/98; detached dot 88;
-// independent forward output on the scaled flow 437. Input values and grouping retained.
-// score 78 (was 78): own-object/node roles and contact-scan setup still differ.
-// outer projected-up lifetime 78f; scale-output pointer consumed 78f.
-// both scale lifetimes 78f; shared cross on scale flow 78f.
-// signed-byte found 78f; signed-byte disabled 78f.
-// both byte results 78f; scale output plus byte found 78f.
-// owner/node roles and late contact setup remain; per-use/external-reference owner
-// fields 376/385; conditional/guarded existing counter results 437/437;
-// per-use/reference owner plus conditional 453/450; plus guarded 453/450.
-// own-object/node registers and contact scan setup still differ.
-// Own handle bits 78; attached counter field reference 78; selected-index success 398;
-// orientation test result 78; detached shared difference 166; detached shared cross 78;
-// both detached helpers 78; contact height field reference 78. Opening body retained.
-// score 78 (was 78): owner/node registers and contact-table setup remain.
-// Early best 78; best before selected 88; scalar contact copy 300; library copies 78;
-// third dot inputs commuted 78; selected guard first 83; byte counter return 415; ordinary inline counter 78.
-// score 78 (was 78): attached esi/ebp roles; from the contact scan on, scratch registers rotate one step
-// because the table is loaded before the unroll test. count before table 78; found before the
-// attached flag 77; table read per iteration via an element pointer 337; table indexed per iteration
-// 346 (retail's scan and everything after it, shifted one byte by a loop-alignment nop while the
-// attached roles stay swapped; aligned 49 -> 19); on that: dot inputs swapped, function-scope handle,
-// release flag, named up pointer 346 each.
+/* whether a direction lies within 60 degrees of the world up vector */
+PRIVATE inline bool direction_faces_up(vector3f const *direction)
+{
+ vector3f const *up = g_4687b0;
+ return dot3f(up, direction) > 0.5f;
+}
+
 // @retail 0x1ed4a0
 void function_1ed4a0(s_state_c570 *state, dword *output, byte const *input)
 {
@@ -889,8 +923,7 @@ void function_1ed4a0(s_state_c570 *state, dword *output, byte const *input)
    transform4x3f matrix;
    function_142a60((transform4x3f *)(other + *(short *)(other + 0x116) + (short)state->field_18 * 0x34),
     (transform4x3f *)state->field_1c, &matrix);
-   real dot = dot3f(g_4687b0, &matrix.up);
-   state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
+   state->field_0c = direction_faces_up(&matrix.up) ? movement_counter_increment(state->field_0c) : 0;
    if (state->field_0c)
    {
     real projection = dot3f(&matrix.forward, &matrix.up);
@@ -902,35 +935,38 @@ void function_1ed4a0(s_state_c570 *state, dword *output, byte const *input)
     {
      function_b75a0(object_index, &matrix.position, &matrix.forward, &matrix.up, NULL, false);
      state->position = *(point3f *)&matrix.up;
-     goto attached_done;
     }
+    else
+     function_1ed340(state, object_index);
    }
+   else
+    function_1ed340(state, object_index);
   }
-  function_1ed340(state, object_index);
+  else
+   function_1ed340(state, object_index);
  }
-attached_done:
  if (state->field_14 == NONE)
  {
   dword flags = *(dword *)(input + 0x18);
   if (!(flags & 0x40))
   {
    component = g_51e9b8->data + (*(long *)(input + 0x40) & 0xffff) * 0xa0;
-   s_movement_contact_1ed4a0 *contacts = *(s_movement_contact_1ed4a0 **)(component + 0x88);
    long count = *(long *)(component + 0x8c);
    real best = -FLT_MAX;
    for (long i = 0; i < count; i++)
    {
-    if (contacts[i].direction.k > 0.70710677f && contacts[i].direction.k > best)
+    if ((*(s_movement_contact_1ed4a0 **)(component + 0x88))[i].direction.k > 0.70710677f &&
+     (*(s_movement_contact_1ed4a0 **)(component + 0x88))[i].direction.k > best)
     {
      selected = i;
-     best = contacts[i].direction.k;
+     best = (*(s_movement_contact_1ed4a0 **)(component + 0x88))[i].direction.k;
     }
    }
    bool found;
    s_movement_contact_1ed4a0 *contact;
    if (selected != NONE)
    {
-    contact = &contacts[selected];
+    contact = &(*(s_movement_contact_1ed4a0 **)(component + 0x88))[selected];
     if (flags & 2) state->position = *(point3f *)&contact->direction;
     else
     {
@@ -939,8 +975,8 @@ attached_done:
      state->position.z += contact->direction.k;
     }
     function_1201a0((vector3f *)&state->position, g_4687b0);
-    state->field_11 = contact->field_14 == NONE;
     found = true;
+    state->field_11 = contact->field_14 == NONE;
    }
    else { state->position = *(point3f *)g_4687b0; found = false; }
    if (havok_component_any_rigid_body_active((s_havok_component *)component) && !found) goto clear_counters;
@@ -949,8 +985,7 @@ attached_done:
     state->field_0c = movement_counter_increment(state->field_0c);
     goto increment_duration;
    }
-   real dot = dot3f(g_4687b0, (vector3f *)&state->position);
-   state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
+   state->field_0c = direction_faces_up((vector3f *)&state->position) ? movement_counter_increment(state->field_0c) : 0;
    if (!state->field_0c || state->field_0d < movement_round_ticks(g_510c54->field_2_3 * 0.15f)) goto increment_duration;
    long other_index = *(long *)(input + 0xc);
    if (other_index == NONE || selected == NONE) goto increment_duration;

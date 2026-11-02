@@ -27,34 +27,36 @@ struct c_component_joint_snapshot_5 : lane_b_rigid_constraint_description
 // 0x41498c, spring 0x414b4c, prismatic 0x414ca4) give each one's result count
 // and kind; the ball and socket's validity slot is the shared 0x31bc80, which
 // always passes.
-class lane_a_ball_socket : public lane_a_constraint
+class lane_a_ball_socket : public lane_b_rigid_constraint
 {
 public:
 	__m128 pivot_a, pivot_b;
 	lane_a_solver_result results[3];
 	virtual lane_a_solver_result *runtime();
+	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 3; }
 	virtual bool_result_2da7f0 valid() const { return true; }
 	virtual long kind() const { return 0; }
 	void export_description(c_component_joint_snapshot_4 *description) const;
 	void import_description(c_component_joint_snapshot_4 const *description);
-	void info(lane_a_constraint_info *output) const;
+	virtual void info(lane_a_constraint_info *output) const;
 };
-class lane_a_spring : public lane_a_constraint
+class lane_a_spring : public lane_b_rigid_constraint
 {
 public:
 	__m128 pivot_a, pivot_b;
 	float length;
 	lane_a_solver_result results[1];
 	virtual lane_a_solver_result *runtime();
+	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 1; }
 	virtual bool_result_2da7f0 valid() const;
 	virtual long kind() const { return 8; }
 	void export_description(c_component_joint_snapshot_3 *description) const;
 	void import_description(c_component_joint_snapshot_3 const *description);
-	void info(lane_a_constraint_info *output) const;
+	virtual void info(lane_a_constraint_info *output) const;
 };
-class lane_a_prismatic : public lane_a_constraint
+class lane_a_prismatic : public lane_b_rigid_constraint
 {
 public:
 	__m128 pivot_a, pivot_b, axis_a, axis_b, perpendicular_b;
@@ -62,13 +64,14 @@ public:
 	float minimum, maximum, friction;
 	lane_a_solver_result results[7];
 	virtual lane_a_solver_result *runtime();
+	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 7; }
 	virtual bool_result_2da7f0 valid() const;
 	virtual long kind() const { return 6; }
 	void import_fields(c_component_joint_snapshot_5 const *description);
 	void export_description(c_component_joint_snapshot_5 *description) const;
 	void import_description(c_component_joint_snapshot_5 const *description);
-	void info(lane_a_constraint_info *output) const;
+	virtual void info(lane_a_constraint_info *output) const;
 };
 
 struct s_314320 : lane_b_constraint_aggregate

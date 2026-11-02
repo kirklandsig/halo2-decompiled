@@ -61,8 +61,8 @@ struct s_transition_collision
 };
 
 // @retail 0x26f150
-bool function_26f150(short type, point3f const *start, point3f const *end,
-    point3f const *alternate_start, point3f const *alternate_end)
+bool function_26f150(short type, point3f const *start, point3f const *alternate_start,
+    point3f const *end, point3f const *alternate_end)
 {
     real speed = 0.f;
     if (type >= 0 && type < 6 && ((s_transition_globals *)g_4e034c) && ((s_transition_globals *)g_4e034c)->count > 0)
@@ -146,7 +146,7 @@ bool function_26f8f0(s_object_marker const *marker)
 }
 
 // @retail 0x26f930
-short function_26f930(long object_index, s_object_marker *markers, short capacity, long flags)
+short function_26f930(long object_index, s_object_marker *markers, short capacity, word flags)
 {
     short count = 0;
     if (flags & 1)
@@ -229,6 +229,9 @@ bool function_270130(s_object_marker const *marker, point3f const *position, rea
 // A direct word cast 20; the existing orientation predicate forced inline 22; count declared before
 // best_distance and assigned in place 20; const count 20; the loop ordinal declared outside 20;
 // const actor 20; success result assigned before the point query 106; const marker 20.
+// Round 16: dot3f alignment 26; a forward-vector pointer 26; a short cast at the call 20; the
+// flags field typed short 20; a long loop ordinal 827. With 0x26fbf0's flags as word (diagnostic,
+// restored) this is 4, and with dot3f for the alignment too 2 (only the j product's operands).
 // @retail 0x26fc80
 bool function_26fc80(long actor_index, long object_index, real distance, void *path, point3f *point)
 {
@@ -267,9 +270,14 @@ bool function_26fc80(long actor_index, long object_index, real distance, void *p
     return result;
 }
 
+// score 165 (was 209): Frame and incoming actor/point homes agree; marker flags, cursor and SSE homes remain.
+// Round 428: repeated span snapshot 204; single result 189; both 185; existing point differences
+// in both geometry branches 191; with span 187; with result 167; all three 165 (656/660, kept).
+// Shared actor-position pointer with span 240. Original sum trees and call tuples preserved.
 // @retail 0x26fe90
 bool function_26fe90(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point)
 {
+    bool result = false;
     s_actor_view *actor = actor_get(actor_index);
     s_transition_character *character = (s_transition_character *)function_1e4a50(actor->unknown054);
     if (character)
@@ -285,32 +293,31 @@ bool function_26fe90(long actor_index, long object_index, real distance, s_objec
                 marker->matrix.forward.k * g_4687b0->k + marker->matrix.forward.j * g_4687b0->j;
             if (alignment > 0.95f)
             {
+                real span = marker->unknown6c;
                 vector3f segment;
-                segment.i = marker->matrix.up.i * marker->unknown6c;
-                segment.j = marker->matrix.up.j * marker->unknown6c;
-                segment.k = marker->matrix.up.k * marker->unknown6c;
+                segment.i = marker->matrix.up.i * span;
+                segment.j = marker->matrix.up.j * span;
+                segment.k = marker->matrix.up.k * span;
                 real squared_length = segment.k * segment.k + segment.j * segment.j + segment.i * segment.i;
                 real squared;
                 if (squared_length > 0.0001f)
                 {
-                    real y = actor->position.y - marker->matrix.position.y;
-                    real z = actor->position.z - marker->matrix.position.z;
-                    real x = actor->position.x - marker->matrix.position.x;
-                    real t = (z * segment.k + y * segment.j + x * segment.i) / squared_length;
+                    vector3f delta;
+                    vector3d_from_points3d(&marker->matrix.position, &actor->position, &delta);
+                    real t = (delta.k * segment.k + delta.j * segment.j + delta.i * segment.i) / squared_length;
                     if (t < 0.f) t = 0.f;
                     else if (t > 1.f) t = 1.f;
                     real negative = 0.f - t;
-                    real dy = segment.j * negative + y;
-                    real dz = segment.k * negative + z;
-                    real dx = negative * segment.i + x;
+                    real dy = segment.j * negative + delta.j;
+                    real dz = segment.k * negative + delta.k;
+                    real dx = negative * segment.i + delta.i;
                     squared = dz * dz + dy * dy + dx * dx;
                 }
                 else
                 {
-                    real y = marker->matrix.position.y - actor->position.y;
-                    real x = marker->matrix.position.x - actor->position.x;
-                    real z = marker->matrix.position.z - actor->position.z;
-                    squared = z * z + y * y + x * x;
+                    vector3f delta;
+                    vector3d_from_points3d(&actor->position, &marker->matrix.position, &delta);
+                    squared = delta.k * delta.k + delta.j * delta.j + delta.i * delta.i;
                 }
                 if (best_distance > squared) { best_distance = squared; best = i; }
             }
@@ -320,42 +327,12 @@ bool function_26fe90(long actor_index, long object_index, real distance, s_objec
             *out = markers[best];
             if (point && !function_270130(out, &actor->position, distance, point))
                 *point = out->matrix.position;
-            return true;
+            result = true;
         }
     }
-    return false;
+    return result;
 }
 
-// score 31 (was 31): frame 0xe34 and retail length agree; collector flags, scan/selected-index
-// comparison and copy widths remain. Earlier at 154:
-// comparison and copy widths, and alignment-dot j ordering remain. Earlier at 154:
-// the flags argument to 0x26f930 is 16-bit in retail (as for 0x26fc80,
-// the flags argument to 0x26f930 is 16-bit in retail (as for 0x26fc80,
-// BLOCKED-BY 0x26f930's `long flags`), which shifts the loop padding; the alignment dot's j
-// term loads g_4687b0 first where retail loads the marker. Tried: single exit 167;
-// long best 199; long loop index 202; point names 199; vector helper 202;
-// single exit with long best 181; the helpers with the alignment written out 154 (loop
-// pointer based at +0x4c); dot3f operands swapped 154; 0.95f < dot 154; a named alignment
-// 154; the alignment through markers[i] 154 (more x87 differences); both dots written out
-// with the delta and normalize helpers 141 (14 more instructions off once aligned).
-// Input-only marker/actor/character/all receivers 154 each; wide count 106; word selection 156;
-// word induction 106; combined native scan 113; wide count with wide scan/selection/both 66/120/33;
-// actual marker cursor with wide count 67, with wide scan 63, with short count 153;
-// paired wide scan/selection with short count 31 kept; unsigned-word scan on that graph 120
-// with either count; all-wide marker cursor 30 (sub-threshold addition, discarded).
-// Candidate/delta/selected-point uninitialized entry storage, all seven subsets and all three with the native
-// marker array: 154/154/154/154/154/154/154/154. Protected query promotion, loop padding and dot allocation
-// remain
-// original declaration scopes restored.
-// Round 379: query before defaults 32; false result after providers 164; entry short count 31;
-// query/result 164, query/count 32, result/count 164, all three 164; selected-index Boolean 98.
-// Original body restored; the alignment dot agrees on this graph.
-// Round 164: native point setter at final/capture/both 51/50/166; short selection with
-// original count and wide scan 66, plus final/capture/both setters 169/170/142;
-// selected marker pointer 196. All restored; original short count and wide ordinals retained.
-// Round 279: separate geometric/weighted distances with scale/update/admission guards
-// 31/31/31/31/33/33/33/33, all at 608 bytes. Original body restored; collector promotion
-// and scan/copy widths remain.
 // @retail 0x26f990
 bool function_26f990(long actor_index, long object_index, real distance, s_object_marker *out, point3f *point)
 {
@@ -365,21 +342,20 @@ bool function_26f990(long actor_index, long object_index, real distance, s_objec
     if (character)
     {
         s_object_marker markers[32];
+        short best = NONE;
         real best_distance = FLT_MAX;
-        long best = NONE;
         point3f best_point;
         short count = function_26f930(object_index, markers, 32, character->marker_flags);
-        for (long i = 0; i < count; i++)
+        for (short i = 0; i < count; i++)
         {
-            s_object_marker *marker = &markers[i];
-            if (dot3f(&marker->matrix.forward, g_4687b0) > 0.95f)
+            if (dot3f(&markers[i].matrix.forward, g_4687b0) > 0.95f)
             {
                 point3f candidate;
-                function_270130(marker, &actor->position, distance, &candidate);
+                function_270130(&markers[i], &actor->position, distance, &candidate);
                 vector3f delta;
                 vector3d_from_points3d(&candidate, &actor->position, &delta);
                 real length = normalize3d(&delta);
-                real dot = dot3f(&delta, &marker->matrix.left);
+                real dot = dot3f(&delta, &markers[i].matrix.left);
                 length *= (real)(3.f / (1.f + 2.f * fabs(dot)));
                 if (best_distance > length)
                 {
@@ -495,10 +471,24 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 278 (was 278): Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
+// score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
+// negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
+// 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
+// Earlier (278): frame 0x40 and length agree; early root EBX retention, actor ownership and paired-edge float/vector scheduling remain.
+// Earlier: Frame 0x40 agrees; early root EBX retention and float/vector scheduling remain.
 // Earlier 278 (was 278): frame 0x40 agrees; early pathfinding EBX ownership and float scheduling differ.
 // entry root retention and floating-point scheduling differ;
 // result first 299; surface first 299; vector names 299; vector helper 299;
+// Earlier (278): frame 0x40 and length agree. Retail loads actor_index into EAX at entry (case
+// 5 tests it first) and so moves pathfinding into EBX (pushed at entry); ours loads actor_index in
+// case 5 and keeps pathfinding in EAX, which re-colours every case; paired-edge float/vector
+// scheduling also differs. Tried: result first 299; surface first 299; vector names 299; vector helper 299;
+// frame 0x40 and length agree. Retail moves pathfinding to EBX at entry and
+// loads actor_index (first stack argument) into EAX there for case 5's test, which also forces
+// result into the dead out slot; ours keeps pathfinding in EAX and loads the actor at its use.
+// Everything after the entry follows (case 2 differs only in the pops).
+// Tried: result first 299; surface first 299; vector names 299; vector helper 299;
 // case order 300; separate vector declarations 299.
 // Round 24: trace-time state reload, mutable entry, both, coherent pathfinding/surface swap,
 // direct distance arguments and direct projected-origin 299 each; c/b/a/d pointer
@@ -518,6 +508,111 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // DH round 218: paired-edge vector aggregates/native surface reference/both 278/278/278;
 // ordinary result on these three graphs 340/340/340; all endpoint role names with aggregates,
 // with/without surface reference 278/278. Original body and qualifier restored.
+// Round 187: complete parallel dot-prefix parts/two-use upper fraction/both 278/278/278;
+// each and both with existing vector differences 297/297/297; complete incremental rows with
+// differences 296; complete shared dot/difference producers 351 (sum order differs, match-only).
+// All endpoints, qualifier, original rows and body restored.
+// Round 434: parent value captured in paired/actor/trace cases 395/384/330; paired-actor/
+// paired-trace/actor-trace 421/399/388; all cases 421, all with native radius snapshot 420.
+// Parent records grow the frame to 0x44/0x4c/0x50; original field observations and body restored.
+// Round 41 (fast): actor_index declared first (every declaration and call) 278; the actor test
+// nested 278; projection terms in z, y, x order (both/one/other) 278; dot3f for both projections,
+// either argument order, 278 (identical code). Diagnostic only, reverted: actor_index read at entry
+// through a volatile cast gives retail's EBX entry (aligned 199 -> 134, masked 58 -> 39) but swaps
+// the EAX/ECX parameters (318, 1284 bytes); a plain entry copy is propagated away (280).
+// Round 46: one vertices base for the case 1/6 corners 280; writable start-out parameter 279;
+// reversed entry declarations 278; case 5 fallback first 278; shared function-scope position 278.
+// Diagnostics: no actor in case 2 326, extra actor tests 360, actor declared first 278 (no entry load).
+// Round 6 (lane 17): the actor test as a function-scope bool used in case 5 364 (1292 bytes; aligned
+// 200 -> 139: retail's `push ebx; mov ebx, eax` entry and the actor loaded at entry, but compared there
+// with setne where retail keeps the value in EAX and compares in case 5); that bool at the top of case 5
+// 278; a short type local for the switch 280; `(long)` switch operand 278; const surface pointer 278.
+// Round 448: Call-site interpolation constructors (t01-t08) rejected as helper expansion;
+// existing shared helper constructor with native origin/direction/output capture
+// (t09-t16) 268/368/362/389/372/385/383/396/268/436/436/436/416/436/436/436.
+// Original body and helpers restored; Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling remain.
+// Round 49 (lane 16, fast = plain 278 here): result without volatile 340 (1252 bytes); the start-out
+// parameter declared mutable without the alias local 279 (as round 46); the two point distances
+// passed inline 278, case 5's actor test as an outer if 278 and case 2 reading the state's
+// pathfinding at each use 278 (all three same code). Retail loads actor_index into EAX at entry
+// (an enregistered stack parameter), which pushes pathfinding into EBX; ours loads it at the use.
+// Round 99 (lane 8): case 5 with the fallback in an `actor_index == NONE || !...` arm 278; the radius test
+// as `radius * 2.f < first_length` 278; `margin = radius * inverse` 278; the half-way branch first 277;
+// `if (!parent_point) break;` before the corner tests 278.
+// Round 40 (reduced-relink screen, base 275): a case-5 `actor` copy, `*= -1.f`, the existing vector3f_scale for
+// the negation, one vertices pointer for case 5, the actor test as a case-5 bool 275 each (same code); case 2
+// before case 5 349; case 5's direction before its position 275 (aligned 198 -> 168: case 5's tails become
+// retail's, case 2 is re-coloured). The corner pointers in all 24 declaration orders: a, b, c, d 290 (1285
+// bytes, aligned 123: actor_index loaded into EAX at entry and pathfinding homed in EBX as retail, case 5
+// exact, but pathfinding then arrives in EDX); a, b, d, c 301-305 (1285); b, a, c, d 303-312 (1277); the
+// other 19 274-277. On a, b, c, d the projection and origin sums in three term orders each, with case 5's
+// and case 2's declaration orders, compile identically (286-290).
+// Round 125 (m3 lane 5, fast): retail's caller sets ECX (surface index), EAX (pathfinding), EDI (entry)
+// in that order, as ours already does, so no parameter reorder has evidence. a, b, c, d re-measured 299
+// (1284 bytes: actor index loaded into EAX at entry and pathfinding homed in EBX as retail, but
+// pathfinding arrives in EDX); on it the surface declared first 299, the result declared first 299,
+// a, b, d, c 314, one `vertices` base for the four corners 295.
+// Round 106 (fast): the corner pointers a, b, c, d now 299 at 1284 bytes (aligned 142 -> 94, case 5 exact,
+// but the actor load is the first instruction, so LTCG passes pathfinding in EDX, 0x270d90 313, and
+// case 2's 0x26c590 setup is re-coloured). On that graph: result first 299; surface before start_out 299;
+// case 5's direction before its position 295; result without volatile 371; the actor test as an outer if 299.
+// Round 35 (lane 13): result declared first 278; surface pointer declared first 278; corners a, b, c, d 299
+// (1284 bytes: actor_index loaded into EAX at entry and pathfinding moved to EBX as retail, but LTCG then passes
+// pathfinding in EDX); with the surface pointer first 299; with case 5's direction copied before its position 295.
+// Retail's caller sets up ECX, EAX, EDI in the same order as ours, so no parameter reorder is indicated.
+// Round 36 (m3 lane 14, fast; aligned = difflib count, base 199): the a, b, c, d corners re-measured 299 (1284
+// bytes, aligned 119; the corner code and case 5 become retail's, actor_index is loaded at entry, but pathfinding
+// arrives in EDX). On them: the projection and origin sums grouped `(y + z) + x` 300 (aligned 105; grouped on
+// the base form 278, same code); `first` and `second` through the existing vector3d_from_points3d 299 (1288,
+// aligned 96), with both sums grouped 304, origin grouped only 304, the projection written vector-first 299;
+// with that helper and both sums through dot3f 280 (1284, aligned 89: the projection, origin, distances and
+// stores take retail's shape apart from first.j/first.k swapping registers; every dot3f argument order 280);
+// dot3f with the corners' own differences 299 (aligned 119); dot3f projection with the origin written out,
+// grouped or not, 304/299. Diagnostic: first's components assigned i, k, j give retail's `(j + k) + i`
+// projection order (303; the stores reorder). On the dot3f form: fraction and margin as two divisions 280
+// (same code: one reciprocal), the reciprocal written in both 280, the radius through a source pointer 280,
+// the radius test ahead of the reciprocal 327, the reciprocal named before the projections 280, both reciprocal
+// products written the other way round 280. The length
+// (+4) is only the margin product: retail multiplies the reciprocal in place by the radius in memory
+// (`mulss xmm2, [eax]`), ours loads the radius and multiplies by the reciprocal; with that and the entry's
+// pathfinding register fixed, the dot3f form would align everything after case 1/6.
+// Round 62: the corner pointers a, b, c, d 299 fast and plain (1284 bytes, aligned 119: actor_index loaded
+// into EAX as the first instruction, so pathfinding arrives in EDX and moves to EBX after it; retail moves
+// EAX to EBX first and loads the actor fourth); that with case 5's direction first 295; case 5's direction
+// first alone 278 (aligned 169); a, b, c, d with the result declared first or the edge vectors declared
+// before the corners 299 each. The only caller (0x270d90) does not change the convention in the plain build.
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 325: Complete native surface snapshot at dispatch, crossed with both difference setters,
+// ordinary result and actor-valid direction scope: 387/397/365/366/397/401/373/380.
+// All restored; root retention is not recovered and most frames/extents grow.
+// Round 275: complete native vertex values in paired/actor/trace cases 502/337/400;
+// paired-actor/paired-trace/actor-trace/all 526/551/438/575; all with shared
+// differences 583. Exact-only snapshots restored; early root/actor ownership and vector scheduling remain.
+// Round 29 (m3 lane 2, fast): case 2's position declared before its direction point 284 (on a, b, c, d 299);
+// round 36's vector3d_from_points3d + dot3f form re-measured 280, and on it the 24 corner declaration orders:
+// a,b,c,d 280 (1284 B), a,b,d,c 295 (1284 B), b,a,c,d 274 (1280 B, a gain of 4: not kept), the other 21
+// 349-353 (1280 B); only a,b,c,d / a,b,d,c load actor_index at entry, and both then take pathfinding in EDX.
+// b,a,c,d with the result declared first 274.
+// Round 128 (m3 lane 5, fast): retail passes the actor index in EAX to 0x270400 in case 5 straight from the
+// entry load and compares it at the case start. `NONE != actor_index` 278; the negation as `*= -1.f` 278;
+// `margin = state->source.radius * inverse` 278; the reciprocal before the projections 278 (all same code);
+// `first`/`second` through vector3d_from_points3d 297 (masked-register differences 96 before it).
+// Round 45 (lane 14, fast), on the b, a, c, d corners with vector3d_from_points3d and both sums through dot3f: the
+// base 274 (aligned 199 -> 158); with case 5's direction declared first 274; case 2's position declared first 280;
+// both 276; both dot3f calls taking `&first` first 274. Left on it: the entry, first.j/first.k and the 1.0/radius*2
+// constants in swapped XMM registers, and the margin formed in the radius register, not in place in the reciprocal's.
+// Round 40 (lane 14, fast): a, b, c, d re-measured 299 (1284 bytes, actor load first, pathfinding in EDX,
+// 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
+// of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
+// for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 74 (m3 lane 12, fast): the radius test inverted with the 0.5 arm first 277; a named upper bound
+// `1.f - margin` 278; the clamp as one nested ternary 278; `fraction < margin` for the lower test 278; the margin
+// compared with 0.5 before the clamp (not equivalent, diagnostic) 367 (1264 bytes). Retail's case 5 passes the
+// entry-loaded actor straight to 0x270400 in EAX (its register parameter); retail's caller 0x270d90 sets ECX, EAX,
+// EDI interleaved with the pushes, so it gives no parameter-order evidence.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

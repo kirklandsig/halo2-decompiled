@@ -26,6 +26,10 @@
 #include "visibility_slot.h"
 #include "geometry_cache.h"
 #include "unknown_0494b0.h"
+#include "normalize3d.h"
+#include "vector_products.h"
+#include "unknown_033a0b.h"
+#include "bit_vector.h"
 
 
 
@@ -66,19 +70,35 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
+// MiniMax R (11-01): no new form, no lower score.
+// score 356 (was 356): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
+// difference: both matrices (forward axis angle step*0.5 from 0x485624.., up axis angle step*0.3 from 0x485630..,
+// constants 0.5 / 0.3 / 1.0 read from the XBE), all nine entries of each, and the up*k + left*j + forward*i sum order
+// of the vector rotation (0x3a148-0x3a2f0, 0x3a37c-0x3a526) agree with the source. Only scheduling and registers differ.
+// Original note: both axes are read straight from g_485618 as retail does (no local copies of
+// the axis, which was the whole 16 points). Retail interleaves the two matrices' sin/cos and spills
+// differently (frame 0x90 vs 0x98), and stores each rotated component to g_467104 straight from
+// xmm with the input vector copied component-wise; here the vectors are copied through integer
+// moves. Tried: rotating g_467104 in place (368), the vector by value into an out parameter
+// (386), in-place scalar locals (377), accumulating one sum variable (377), aliasing in/out (639,
+// wrong), both angles hoisted (361), second rotation first (372), sine before cosine (357).
+// Round 38: retail writes each rotated component straight back to g_467104 (only i and j are copied to the stack, k is
+// re-read from memory) and the second pass reads g_467104 back, so the in-place form is the closer shape: in place
+// (368, frame 0x78, 633 -> 548 aligned differences), in place with both angles as named locals (353; the 0.3 angle goes
+// to SSE where retail keeps both angles on the x87 stack), in place with the squares before sine/cosine (390), in place
+// with named sine products (356), in place with each rotated vector stored right after its own local (368); on the
+// in-place + named-angles form: the matrices declared second, first (353), the angles declared before them (353).
+// Round 487: first-turn results at declaration 376; with direct final publication 376; final publication
+// alone 357; diagonal-first matrix stores 367; alias-safe explicit output with staged components 380;
+// that output form with global first-turn inputs 472; native returned-vector initialization with late
+// inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
+// restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
-    real axis0_i = g_485618.forward.i, axis0_j = g_485618.forward.j, axis0_k = g_485618.forward.k;
-    vector3f axis0;
-    axis0.i = axis0_i;
-    axis0.j = axis0_j;
-    axis0.k = axis0_k;
-    vector3f axis1 = g_485618.up;
     matrix3x3 first, second;
-    rotation_from_axis(&axis0, step * 0.5f, &first);
-    axis0 = axis1;
-    rotation_from_axis(&axis0, step * 0.30000001192092896f, &second);
+    rotation_from_axis(&g_485618.forward, step * 0.5f, &first);
+    rotation_from_axis(&g_485618.up, step * 0.3f, &second);
     vector3f forward = g_467104.forward;
     vector3f left = g_467104.left;
     vector3f up = g_467104.up;
@@ -573,9 +593,6 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
 void function_14bc0(short index, short element, bool use_depth);
 extern long g_4858b8;
 
-// score 17 (was 17): the three calls are set up differently: retail passes the globals
-// in ECX and the word in EAX where ours uses EDX, and the last call's argument order
-// differs (the callees' conventions are fixed in their own files).
 // @retail 0x3ede0
 void function_3ede0(void)
 {
@@ -589,16 +606,15 @@ void function_3ede0(void)
 		byte *data = 0;
 		if (index != NONE) data = g_4e3b44[index & 0xffff].bytes;
 		byte *definition = g_4e3b44[*(long *)(data + 4) & 0xffff].bytes;
-		long count = *(long *)(definition + 0x48);
-		if (count != g_4c5038.count)
+		if (*(long *)(definition + 0x48) != g_4c5038.count)
 		{
-			g_4c5038.count = count;
+			g_4c5038.count = *(long *)(definition + 0x48);
 			g_4c5038.valid = false;
 			return;
 		}
 		if (g_4c5038.valid)
 		{
-			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, count);
+			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, *(long *)(definition + 0x48));
 			function_14bc0((short)g_4858b8, 0, true);
 			function_4c690(*(long *)(data + 4), matrices);
 		}
@@ -726,6 +742,20 @@ void function_1bd50(void *state);
 bool __stdcall function_16610(long tag, long stage, long wanted_pass, long variant,
     long target, bool copy);
 
+// score 26 (was 26): retail reloads g_4858c4 after function_1bd50 (no saved register, no
+// push/pop esi); ours keeps it in ESI across the call. Tried: a local for the first read,
+// a local for the tag (both 26). Also tried (all 26): an early return, the test in a bool local,
+// a pointer to the +0xe0 field for the tests, `NULL`/`true` spellings of the arguments, a local for
+// the second tag read after the call. Retail never takes g_4858c4's address, so its reload means
+// retail's 0x1bd50 counts as writing it (the same symbol as a global 0x1bd50 stores, a structure?).
+// Round 186: a store to g_4858c4 added to 0x1bd50 as a diagnostic gives retail's reload exactly, so the
+// cause is outside this body: g_4858c4 and g_485a58 (which 0x1bd50 writes) look like members of one
+// retail storage struct, BLOCKED-BY g_4858c4's definition (src/unknown_030290.cpp). Tried (all 26 unless
+// noted): `_ReadWriteBarrier()` after the call; the signature test nested in its own `if`; the fields
+// read by index (`((long *)g_4858c4)[0x38]`); `&& tag` for `!= 0`; the flag stored after the call 31.
+// Round 109 (all 26): ours already reloads `[esi+0xe0]` after 0x1bd50, only the g_4858c4 symbol stays cached;
+// the signature tested first; the test as `!(... == NONE || ... == 0 || ... != 'shad')`; a shader local assigned
+// again from the global after the call; an early return on a tag local; an inline predicate on the shader.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -1096,53 +1126,33 @@ struct s_vector_perturbation
 	real step;
 };
 
-extern "C" void _ReadWriteBarrier(void);
 __declspec(noinline)
-#pragma intrinsic(_ReadWriteBarrier)
 // @retail 0x4b3d0
 void function_4b3d0(s_vector_perturbation *state)
 {
 	state->speed_fraction = function_36a40(state->speed_fraction, state->speed_spread * g_509418, 0.0f, 1.0f);
 	real speed = (state->speed_maximum - state->speed_minimum) * state->speed_fraction + state->speed_minimum;
-	vector3f *velocity = &state->velocity;
-	velocity->i = state->direction.i * speed;
-	velocity->j = state->direction.j * speed;
-	velocity->k = state->direction.k * speed;
+	vector3f_scale(&state->direction, speed, &state->velocity);
 	state->first_fraction = function_36a40(state->first_fraction, state->direction_spread * g_509418, -1.0f, 1.0f);
 	state->second_fraction = function_36a40(state->second_fraction, state->direction_spread * g_509418, -1.0f, 1.0f);
 	state->magnitude_fraction = function_36a40(state->magnitude_fraction, state->magnitude_spread * g_509418, 0.0f, 1.0f);
-	_ReadWriteBarrier();
-	real first = state->first_fraction * state->direction_scale;
-	state->perturbation.i = (real)(state->first_axis.i * first) + state->base_direction.i;
-	state->perturbation.j = (real)(state->first_axis.j * first) + state->base_direction.j;
-	vector3f *perturbation = &state->perturbation;
-	perturbation->k = (real)(state->first_axis.k * first) + state->base_direction.k;
-	_ReadWriteBarrier();
-	real second = state->second_fraction * state->direction_scale;
-	perturbation->i = (real)(state->second_axis.i * second) + perturbation->i;
-	perturbation->j = (real)(state->second_axis.j * second) + perturbation->j;
-	perturbation->k = (real)(state->second_axis.k * second) + perturbation->k;
-	function_30bf0(perturbation);
-	real magnitude = state->magnitude * state->magnitude_fraction;
-	perturbation->i *= magnitude;
-	perturbation->j *= magnitude;
-	perturbation->k *= magnitude;
-	_ReadWriteBarrier();
-	velocity->i += state->perturbation.i;
-	velocity->j += state->perturbation.j;
-	velocity->k += state->perturbation.k;
+	vector3f_add_scaled(&state->base_direction, &state->first_axis, state->first_fraction * state->direction_scale, &state->perturbation);
+	vector3f_add_scaled(&state->perturbation, &state->second_axis, state->second_fraction * state->direction_scale, &state->perturbation);
+	function_30bf0(&state->perturbation);
+	vector3f_scale(&state->perturbation, state->magnitude * state->magnitude_fraction, &state->perturbation);
+	vector3f_add(&state->velocity, &state->perturbation, &state->velocity);
 	state->step = state->step_scale * g_509418;
 }
-#pragma function(_ReadWriteBarrier)
 
-struct s_33a0b_view;
-extern s_33a0b_view *g_485a58;
 extern real g_485a6c;
 real g_485a30;
 real g_4e69c0[4];
 real g_4c19b0, g_4c19b4;
 
-// score 89 (was 153): the first colour is copied and the second added to it.
+// a scalar for a selector: constants, frame values and their products, the clamped luminance of the
+// view's two summed colours, an object value, a fade fraction or a per-player value
+// score 88 (was 89, 153): the first colour is copied and the second added to it, green first (the other five
+// orders of the three `+=` score 88 to 167, the six orders of the copies 89 to 166).
 // What still differs: retail adds each second component straight from memory
 // (`addss xmm0, [eax + 0x38]`); ours loads both into registers first and adds
 // them there. Retail also shares only the `0 > value` exit with case 16,
@@ -1150,68 +1160,78 @@ real g_4c19b0, g_4c19b4;
 // which shifts the code after it. Summing in one expression, via vector or
 // struct fields, through references, with a compiler barrier, if/return or
 // assignment forms of the clamp, an inline clamp and reordered cases score
-// 89 to 271.
+// 89 to 271. Tried 2026-10-31: the sums as three plain locals in any channel order and either operand order,
+// or inside the weighted expression (all 147: the second operand then is a memory operand as in retail, but the
+// loads and the muls are scheduled differently); if/return, nested ?: and `1.0f < value` spellings of the clamps
+// (all 89: still the jump into case 16's compare). Also tried: a struct overlay for the two colours with the sums as
+// one expression, as three reals or as a field-wise copy (146 to 147: the
+// sums come out in the wrong order and the clamp still shares case 16's compare).
+// Round 280: plain add/copy/both channel loops 89/88/89; library copy with add loop 278;
+// complete selector result with original/add/both/library-copy producers 182/183/183/287.
+// Original body restored; memory adds and upper-clamp sharing remain.
 // @retail 0x336f0
 real function_336f0(long selector)
 {
+    real result;
     switch (selector)
     {
-    case 0: return 0.0f;
-    case 2: return 0.0f;
-    case 13: return 0.0f;
-    case 38: return 0.0f;
-    case 16: return 1.0f > g_485a30 ? g_485a30 : 1.0f;
+    case 0: result = 0.0f; break;
+    case 2: result = 0.0f; break;
+    case 13: result = 0.0f; break;
+    case 38: result = 0.0f; break;
+    case 16: result = 1.0f > g_485a30 ? g_485a30 : 1.0f; break;
     case 23:
         if (g_485a58)
         {
-            real const *values = (real const *)g_485a58;
-            color3f summed;
-            summed.red = values[4];
-            summed.green = values[5];
-            summed.blue = values[6];
-            summed.red += values[12];
-            summed.green += values[13];
-            summed.blue += values[14];
-            real value = summed.blue * 0.114f + summed.green * 0.587f + summed.red * 0.299f;
-            return 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
+            vector3f summed;
+            vector3f_add(&g_485a58->vector10, &g_485a58->vector30, &summed);
+            real value = summed.i * 0.299f + summed.j * 0.587f + summed.k * 0.114f;
+            result = 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
         }
-        return 1.0f;
-    case 12: return 1.0f;
-    case 22: return 1.0f;
-    case 17: return g_485a30;
-    case 10: return g_485774;
-    case 24: return g_485774;
-    case 3: return g_4857f8;
-    case 33: return g_4857f8;
-    case 4: return g_485864;
-    case 25: return g_485864;
-    case 18: return g_485864 * g_485774;
-    case 27: return g_485864 * g_485774;
-    case 19: return g_485858 * g_4857f8;
-    case 36: return g_485858 * g_4857f8;
-    case 20: return (1.0f - g_485858) * g_4857f8;
-    case 35: return (1.0f - g_485858) * g_4857f8;
-    case 21: return g_485a6c;
-    case 26: return (1.0f - g_485864) * g_4857f8;
-    case 28: return g_48578c;
-    case 29: return g_485868;
-    case 30: return (1.0f - g_485868) * g_48578c;
-    case 31: return g_485868 * g_485774;
-    case 32: return g_4857a4;
-    case 34: return g_485858;
-    case 37: return function_33670(*(long *)g_485a58);
+        else
+            result = 1.0f;
+        break;
+    case 12: result = 1.0f; break;
+    case 22: result = 1.0f; break;
+    case 17: result = g_485a30; break;
+    case 10: result = g_485774; break;
+    case 24: result = g_485774; break;
+    case 3: result = g_4857f8; break;
+    case 33: result = g_4857f8; break;
+    case 4: result = g_485864; break;
+    case 25: result = g_485864; break;
+    case 18: result = g_485864 * g_485774; break;
+    case 27: result = g_485864 * g_485774; break;
+    case 19: result = g_485858 * g_4857f8; break;
+    case 36: result = g_485858 * g_4857f8; break;
+    case 20: result = (1.0f - g_485858) * g_4857f8; break;
+    case 35: result = (1.0f - g_485858) * g_4857f8; break;
+    case 21: result = g_485a6c; break;
+    case 26: result = (1.0f - g_485864) * g_4857f8; break;
+    case 28: result = g_48578c; break;
+    case 29: result = g_485868; break;
+    case 30: result = (1.0f - g_485868) * g_48578c; break;
+    case 31: result = g_485868 * g_485774; break;
+    case 32: result = g_4857a4; break;
+    case 34: result = g_485858; break;
+    case 37: result = function_33670(*(long *)g_485a58); break;
     case 39:
         if (g_4b9f5c != NONE && g_4b9f84 > g_4b9f80)
-            return 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
-        return 0.0f;
+            result = 0.0f - (1.0f / (g_4b9f84 - g_4b9f80)) * g_4b9f80;
+        else
+            result = 0.0f;
+        break;
     case 40:
         if (g_4b9ed8 >= 0 && g_4b9ed8 < 4)
-            return g_4e69c0[g_4b9ed8];
-        return 1.0f;
-    case 41: return g_4c19b0;
-    case 42: return g_4c19b4;
+            result = g_4e69c0[g_4b9ed8];
+        else
+            result = 1.0f;
+        break;
+    case 41: result = g_4c19b0; break;
+    case 42: result = g_4c19b4; break;
     default: __assume(0);
     }
+    return result;
 }
 
 struct s_slot_key
@@ -1225,57 +1245,66 @@ void function_020b40(long value, long index);
 // @retail 0x2dba0
 bool function_2dba0(long tag, vector3f const *direction, bool alternate, long c, long d, long e, point3f const *position, color3f const *color, real alpha, real amount, real scale)
 {
-    bool const volatile *alternate_input = &alternate;
-    bool result_value = 0;
-    bool volatile result = false;
+    bool result = false;
     if (g_4b9ed4 != NONE && tag != NONE && alpha > 0.0f)
     {
         byte *definition = g_4e3b44[tag & 0xffff].bytes;
-        if ((amount > 0.0f || !(definition[0x2a] & 1)) &&
-            !(definition[0x28] & (*alternate_input ? 8 : 4)))
+        if (amount > 0.0f || !(definition[0x2a] & 1))
         {
-            real delta_i, delta_j, delta_k;
-            delta_i = position->x - g_4b9da0.x;
-            delta_j = position->y - g_4b9da0.y;
-            delta_k = position->z - g_4b9da0.z;
-            real near_distance = *(real *)(definition + 0x18);
-            real far_distance = *(real *)(definition + 0x1c);
-            if (near_distance == far_distance || far_distance >
-                delta_k * g_4b9dac.k + g_4b9dac.j * delta_j + g_4b9dac.i * delta_i)
+            bool hidden = (alternate && (definition[0x28] & 8)) || (!alternate && (definition[0x28] & 4));
+            if (!hidden)
             {
-                s_slot_key key;
-                memset(&key, 0, sizeof(key));
-                key.a = *alternate_input;
-                key.b = g_4b9ed4;
-                key.c = c;
-                key.d = d;
-                key.e = e;
-                s_2e3f0_record record;
-                function_2e230(tag, position, direction, color, alpha, amount, scale, &record);
-                long index = function_0209b0(&key, &record, sizeof(record));
-                if (index != NONE)
+                vector3f delta;
+                vector3d_from_points3d(&g_4b9da0, position, &delta);
+                if (*(real *)(definition + 0x18) == *(real *)(definition + 0x1c) ||
+                    *(real *)(definition + 0x1c) > dot3f(&delta, &g_4b9dac))
                 {
-                    long next = NONE;
-                    if (*(short *)(definition + 0x16))
+                    s_slot_key key;
+                    memset(&key, 0, sizeof(key));
+                    key.a = alternate;
+                    key.b = g_4b9ed4;
+                    key.c = c;
+                    key.d = d;
+                    key.e = e;
+                    s_2e3f0_record record;
+                    function_2e230(tag, position, direction, color, alpha, amount, scale, &record);
+                    long index = function_0209b0(&key, &record, sizeof(record));
+                    if (index != NONE)
                     {
-                        key.c = 4;
-                        next = function_0209b0(&key, &record, sizeof(record));
+                        long next = NONE;
+                        if (*(short *)(definition + 0x16))
+                        {
+                            key.c = 4;
+                            next = function_0209b0(&key, &record, sizeof(record));
+                        }
+                        function_020b40(next, index);
+                        result = true;
                     }
-                    function_020b40(next, index);
-                    result = true;
                 }
             }
         }
     }
-    { result_value = result; goto return_exit; }
-
-return_exit:
-    return result_value;
+    return result;
 }
 
 extern bool g_4ba019;
 long function_baf80(long object_index);
 
+// score 12 (was 12): the parent lookup differs. Retail masks the parent index (`and eax, 0xffff`,
+// `lea`) before it loads g_4e0300, ours loads g_4e0300 first and uses movzx; the first model
+// load also goes through EDX in ours and EAX in retail. Tried: `long parent_slot = parent & 0xffff`
+// (22), the same with byte-offset addressing (22). Also tried: `[parent & 0xffff]` written directly (22,
+// 459 bytes: retail loads g_4e0300 into EAX after the mask, ours into ECX before it), the parent object
+// and definition in one expression (22), `(word)parent` inline (12), the model read without the
+// definition local (12), `model` reused for the parent's model (12), `object_index != parent` (13),
+// `parent` declared before the model test (12), definition/model declared at the top (12).
+// Round 109: the first chain's definition also lands in EDX (retail EAX, reusing the dying register as the model
+// load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
+// a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
+// inline model-index helper for the object and its parent 22.
+// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
+// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
+// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1331,6 +1360,8 @@ void function_4baf0(long object_index, real distance, byte *first, byte *second)
 }
 
 #include <math.h>
+#include "vector_angles.h"
+#include "vector_products.h"
 
 extern transform4x3f *g_4687d0;
 void function_146de0(void);
@@ -1353,36 +1384,25 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
         byte *definition = NULL;
         if (index != NONE)
             definition = g_4e3b44[index & 0xffff].bytes;
-        real const &heading = *(real *)(definition + 0x80);
         vector3f forward;
-        forward.i = (real)(cos(heading));
-        forward.j = (real)(sin(heading));
-        forward.k = (real)sin(0.0);
-        vector3f left;
-        left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
-        left.j = forward.i * g_4687b0->k - forward.k * g_4687b0->i;
-        left.k = forward.j * g_4687b0->i - forward.i * g_4687b0->j;
+        direction_from_angles(&forward, *(real *)(definition + 0x80), 0.0f);
+        matrix3x3 axes;
+        axes.forward = forward;
+        axes.left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
+        axes.left.j = forward.i * g_4687b0->k - forward.k * g_4687b0->i;
+        axes.left.k = forward.j * g_4687b0->i - forward.i * g_4687b0->j;
+        axes.up = *g_4687b0;
         transform4x3f transform = *g_4687d0;
-        transform.forward = forward;
-        transform.left = left;
-        transform.up = *g_4687b0;
+        transform.rotation = axes;
         transform.scale = *(real *)(definition + 0x14);
         transform.position.x = *(real *)(definition + 0x18) * g_4b9da0.x;
         transform.position.y = *(real *)(definition + 0x18) * g_4b9da0.y;
         transform.position.z = *(real *)(definition + 0x18) * g_4b9da0.z;
-        /* The existing assembly callee reads its first matrix through ECX.
-           Keep these local stores visible across that assembly boundary. */
-        for (long component = 0; component < 13; ++component)
-            ((volatile real *)&transform)[component] = ((real const *)&transform)[component];
-        transform4x3f const *source = matrices;
-        transform4x3f *destination = out;
-        for (long i = 0; i < count; ++i, ++source, ++destination)
+        for (long i = 0; i < count; ++i)
         {
-            *destination = *source;
-            destination->position.x += offset->i;
-            destination->position.y += offset->j;
-            destination->position.z += offset->k;
-            function_142a60(&transform, destination, destination);
+            memcpy(&out[i], &matrices[i], sizeof(transform4x3f));
+            vector3f_add((vector3f const *)&out[i].position, offset, (vector3f *)&out[i].position);
+            function_142a60(&transform, &out[i], &out[i]);
         }
         result = true;
     }
@@ -1422,7 +1442,6 @@ struct s_320b0_box
 // @retail 0x320b0
 bool function_320b0(s_320b0_box const *box)
 {
-    real const volatile *box_scale = &box->matrix.scale;
     byte *context = (byte *)g_547f88.context;
     box3f bounds;
     bounds.x0 = 0.0f - box->radius.i;
@@ -1441,42 +1460,38 @@ bool function_320b0(s_320b0_box const *box)
             real x = ((point3f *)edges)[i].x;
             real y = ((point3f *)edges)[i].y;
             real z = ((point3f *)edges)[i].z;
-            real scale = *box_scale;
-            if (scale != 1.0f)
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
         {
             long i = edge * 2 + 1;
             real x = ((point3f *)edges)[i].x;
             real y = ((point3f *)edges)[i].y;
             real z = ((point3f *)edges)[i].z;
-            real scale = *box_scale;
-            if (scale != 1.0f)
+            if (box->matrix.scale != 1.0f)
             {
-                x = scale * x;
-                y = *box_scale * y;
-                z = *box_scale * z;
+                x = box->matrix.scale * x;
+                y = box->matrix.scale * y;
+                z = box->matrix.scale * z;
             }
-            real const *m = (real const *)&box->matrix;
-            transformed[i].x = m[1] * x + m[7] * z + m[4] * y + m[10];
-            transformed[i].y = m[2] * x + m[8] * z + m[5] * y + m[11];
-            transformed[i].z = m[3] * x + m[9] * z + m[6] * y + m[12];
-                }
+            transformed[i].x = box->matrix.forward.i * x + box->matrix.left.i * y + box->matrix.up.i * z + box->matrix.position.x;
+            transformed[i].y = box->matrix.forward.j * x + box->matrix.left.j * y + box->matrix.up.j * z + box->matrix.position.y;
+            transformed[i].z = box->matrix.forward.k * x + box->matrix.left.k * y + box->matrix.up.k * z + box->matrix.position.z;
+        }
     }
     s_bounds3d projected;
     bool visible = function_1652e0((s_view *)(context + 4), *(real *)(context + 0x74), transformed,
         24, NULL, NULL, &projected, true, false);
-    bool overlaps = projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
+    visible &= projected.x1 >= *(real *)(context + 0xa4) && *(real *)(context + 0xa8) >= projected.x0 &&
         projected.y1 >= *(real *)(context + 0xac) && *(real *)(context + 0xb0) >= projected.y0;
-    return visible & overlaps;
+    return visible;
 }
 
 PRIVATE __forceinline real random_signed_value(s_random_globals *random)
@@ -1616,6 +1631,29 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
+// score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
+// Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
+// tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
+// returns early on each path and reuses the scale slot for the x87 result (frame 0x14).
+// Tried: case 0 and default as break with y and x pre-zeroed (194; the switch then loses its
+// case 0 table entry), y = 0 in those cases (193).
+// Also tried 2026-10-31 (all 193, `result` is promoted to xmm0 every time): an inline helper that writes
+// the angle through a `real *`, `real *angle = &result`, a dead `&result` pointer, the atan2 in a double
+// local, `return` inside the `if` (275); `volatile real result` gives retail's frame and entry store (187) but
+// zeroes xmm6 instead of xmm0 and so is not kept.
+// Also tried 2026-11-01: the helper as two cross3f calls (193, identical code) or cross3f + cross3f_staged (193,
+// identical); every three-term sum grouped `(a + b) + c` (195: retail computes all three products before adding,
+// so its sums are flattened, j,k,i for case 1/3's y and k,j,i elsewhere, while ours come out i,k,j); dot3f and
+// vector3d_from_points3d for the dots and camera-relative vectors (197, 788 bytes). A compile-only screen (no /GL)
+// showed product operand order and the case 2/4 term orders are canonicalised, while the helper's component order,
+// case 1/3's y term order and the assignment order of `reference` move the schedule; its best (perpendicular
+// i,k,j, case 1/3 y i,k,j, case 2/4 reference j,i,k) scored 206 in the real build (776 bytes), since that harness
+// returns on x87 and does not model the result slot.
+// Shared first cross ordinary/staged, ordinary first with ordinary/staged second, staged first with
+// ordinary/staged second, and both staged-second graphs with shared point differences:
+// 193/193/193/193/193/193/193/193. Result stack home and SSE producer allocation remain; original arithmetic
+// restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1666,6 +1704,7 @@ real function_2f2d0(vector3f const *direction, point3f const *position, long mod
 
 extern real g_5234c8;
 byte g_4c19c0, g_55e6c6;
+extern dword g_4b8438;
 struct s_2e9e0_saved { long tag; point3f position; };
 s_2e9e0_saved g_4c19c4[4];
 dword g_4c1a04;
@@ -1675,18 +1714,45 @@ real function_13bb90(s_tag_data const *curve, real input, real range);
 void function_13be80(s_tag_data const *curve, real input, color3f *color);
 bool function_47fd0(long tag, short stage, short fallback, byte flags);
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color);
-void function_0222d0(D3DRENDERSTATETYPE state, dword value);
 
 PRIVATE inline real clamp_2e9e0(real value)
 {
     return value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
 }
 
+real game_time_get_seconds();
+
+// MiniMax R (11-01): no new form, no lower score.
+// score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
+// (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
+// scales multiplied by size into the two float args). Checked against retail block by block (0x2e9e0-0x2f2ca, 2026-10-31): every
+// field offset and size, condition direction, constant (0x45dbc0 1.0, 0x45dbbc 0.5, 0x45dc0c 2.0, 0x45dc54 pi/180, 0x45dddc pi,
+// 0x45dfa0 1/256), the 2e3f0 outputs, the 163ba0/13bb90/13b390/13be80/2f2d0/47fd0/131f40/480a0 argument orders and the loop shape
+// agree; the only other mismatches found are the slot flags read (now a dword like retail's 0x2eaa9 and 0x20d80) and the order of
+// the time/hash sum (retail h0*k, + time, + h1 at 0x2ecd6-0x2ed1f; the form below emits that order, the old one emitted h1 first).
+// Retail also re-reads the entry flags from memory after function_47fd0
+// (test byte [edi], 8), recomputes the opacity expression in each PIN arm, reads far_angle straight from the definition, and
+// loops with the count guard kept. What still differs: retail inlines D3DDevice_SetVertexData2f (0x2f17c-0x2f1ba) but the reduced
+// image calls it (full build may differ); ebx and ebp swapped (retail definition in ebx, NONE/time in ebp); stack slot order and
+// frame (0x90 against 0x94; retail puts alpha at +0x28, tag +0x30, position +0x40, direction +0x4c, amount +0x6c, scale +0x84,
+// color +0x88 and shares +0x14 between time and size); the camera angle sum is emitted k, j, i (retail j, i, k at 0x2ed71-0x2edbb)
+// whatever order the terms are written in (3 orders, 507); 0.0/1.0 are reloaded instead of kept in xmm5/xmm6.
+// Tried: far_distance read in place (552), all clamps as PIN (543), declaration order of the out locals (no change),
+// attenuation hoisted together with animated (576), several spellings of the hash sum (548), the flags dword kept in a local
+// (590), camera sums as separate double locals (no change). Round 38: the time is the existing game_time_get_seconds
+// (0x146630, the same code; 507). The `D3DDevice::SetVertexData2f` member form makes LTCG inline the push-buffer write
+// as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
+// slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
+// retail's comparison order (506; 511 with the member form).
+// J225: point-difference helper 507; projection dot helper 507; scalar-output role names 507; vector-output
+// role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
+// directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
+// member vertex API 524. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
     long tag = NONE;
-    real time = g_510c54 && g_510c54->active ? g_510c54->game_time * g_510c54->rate : 0.0f;
+    real time = game_time_get_seconds();
     point3f position;
     vector3f direction;
     color3f color;
@@ -1702,8 +1768,10 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
         if (visibility <= 0.0f) return 0;
     }
     real context_alpha = 1.0f;
-    if ((context[4] & 2) && (context[4] & 1))
+    // retail loads the slot's flags as a dword (mov eax, [esi+4], 0x2eaa9), as 0x20d80 does, not a byte
+    if ((*(dword const *)(context + 4) & 2) && (*(dword const *)(context + 4) & 1))
         context_alpha = clamp_2e9e0(context[3] * g_5234c8);
+    color3f animated = { 1.0f, 1.0f, 1.0f };
     vector3f delta;
     delta.i = position.x - g_4b9da0.x;
     delta.j = position.y - g_4b9da0.y;
@@ -1717,12 +1785,12 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
     real near_distance = *(real *)(definition + 0x18), far_distance = *(real *)(definition + 0x1c);
     if (near_distance != far_distance)
         attenuation = clamp_2e9e0((forward - far_distance) / (near_distance - far_distance));
-    real near_angle = *(real *)(definition + 8), far_angle = *(real *)(definition + 0xc);
-    if (near_angle != far_angle)
+    real near_angle = *(real *)(definition + 8);
+    if (near_angle != *(real *)(definition + 0xc))
     {
-        real inverse = 1.0f / (near_angle - far_angle);
+        real inverse = 1.0f / (near_angle - *(real *)(definition + 0xc));
         real projection = delta.i * direction.i + direction.j * delta.j + direction.k * delta.k;
-        attenuation *= clamp_2e9e0(0.0f - far_angle * inverse - projection * inverse);
+        attenuation *= clamp_2e9e0(0.0f - *(real *)(definition + 0xc) * inverse - projection * inverse);
     }
     attenuation *= clamp_2e9e0(alpha);
     real unoccluded_alpha = context_alpha * attenuation;
@@ -1732,7 +1800,7 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
         dword seed = (dword)context >> 5;
         dword hash = 0xffffffff;
         function_163ba0(&hash, &seed, 4);
-        time = (hash & 0xff) * (1.0f / 256.0f) + time + ((hash >> 8) & 0xff);
+        time = ((hash >> 8) & 0xff) + ((hash & 0xff) * (1.0f / 256.0f) + time);
     }
     if (*(long *)(definition + 0x4c) > 0)
         attenuation *= function_13bb90((s_tag_data *)*(byte **)(definition + 0x50), time, 0.0f);
@@ -1742,22 +1810,22 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
             *(short *)(definition + 0x2c), *(real *)(definition + 0x30));
         real camera_angle = (real)atan2((double)delta.j * g_4b9e4c.j + (double)delta.i * g_4b9e4c.i + (double)delta.k * g_4b9e4c.k,
             (double)delta.j * g_4b9e58.j + (double)delta.i * g_4b9e58.i + (double)delta.k * g_4b9e58.k);
-        color3f animated = { 1.0f, 1.0f, 1.0f };
         if (*(long *)(definition + 0x54) > 0)
         {
             s_tag_data *curve = (s_tag_data *)*(byte **)(definition + 0x58);
-            function_13be80(curve, function_13b390(curve, time, 0.0f), &animated);
+            color3f sampled;
+            function_13be80(curve, function_13b390(curve, time, 0.0f), &sampled);
+            animated = sampled;
         }
         if (*(long *)(definition + 0x5c) > 0)
             base_angle += function_13bb90((s_tag_data *)*(byte **)(definition + 0x60), time, 0.0f) * 3.1415927410125732f;
-        long i = 0;
-        do
+        for (long i = 0; i < *(long *)(definition + 0x40); ++i)
         {
             byte *entry = *(byte **)(definition + 0x44) + i * 0x30;
-            word flags = *(word *)entry;
-            real opacity = clamp_2e9e0((*(real *)(entry + 0x1c) - *(real *)(entry + 0x18)) * amount + *(real *)(entry + 0x18));
+            word const *flags = (word const *)entry;
+            real opacity = PIN((*(real *)(entry + 0x1c) - *(real *)(entry + 0x18)) * amount + *(real *)(entry + 0x18), 0.0f, 1.0f);
             real size = ((*(real *)(entry + 0x14) - *(real *)(entry + 0x10)) * amount + *(real *)(entry + 0x10)) * scale;
-            opacity *= (flags & 0x20) ? unoccluded_alpha : attenuation;
+            opacity *= (*flags & 0x20) ? unoccluded_alpha : attenuation;
             if (opacity > 0.0f && size > 0.0f)
             {
                 real angle = *(real *)(entry + 0xc) * 0.01745329238474369f;
@@ -1772,15 +1840,15 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
                 selected.red = *(real *)(entry + 0x24) * animated.red;
                 selected.green = *(real *)(entry + 0x28) * animated.green;
                 selected.blue = *(real *)(entry + 0x2c) * animated.blue;
-                if (!(flags & 0x10))
+                if (!(*flags & 0x10))
                 {
                     selected.red *= color.red;
                     selected.green *= color.green;
                     selected.blue *= color.blue;
                 }
-                if (flags & 1) angle += camera_angle;
-                if (flags & 4) size *= clamp_2e9e0((visibility + 1.0f) * 0.5f);
-                if (flags & 2) size *= forward;
+                if (*flags & 1) angle += camera_angle;
+                if (*flags & 4) size *= clamp_2e9e0((visibility + 1.0f) * 0.5f);
+                if (*flags & 2) size *= forward;
                 real displacement = *(real *)(entry + 8);
                 point3f point;
                 point.x = displacement * reflected.i + position.x;
@@ -1788,32 +1856,37 @@ long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
                 point.z = reflected.k * displacement + position.z;
                 if (!function_47fd0(*(long *)(definition + 0x24), 0, *(short *)(entry + 4), 0))
                 {
-                    if ((flags & 8) && !g_4c19c0)
+                    if (*flags & 8)
                     {
-                        function_0222d0(D3DRS_ZENABLE, 2);
-                        g_4c19c0 = true;
+                        if (!g_4c19c0)
+                        {
+                            g_4b8438 = 2;
+                            D3DDevice_SetRenderState(D3DRS_ZENABLE, 2);
+                            g_4c19c0 = true;
+                        }
                     }
-                    else if (!(flags & 8) && g_4c19c0)
+                    else if (g_4c19c0)
                     {
-                        function_0222d0(D3DRS_ZENABLE, 0);
+                        g_4b8438 = 0;
+                        D3DDevice_SetRenderState(D3DRS_ZENABLE, 0);
                         g_4c19c0 = false;
                     }
                     D3DDevice_SetVertexData2f(8, clamp_2e9e0(1.0f - *(real *)(entry + 0x20)), 0.0f);
                     real sine = angle == 0.0f ? 0.0f : (real)sin((double)angle);
                     real cosine = angle == 0.0f ? 1.0f : (real)cos((double)angle);
-                    function_480a0(&point, cosine * size, sine * size, x_scale, y_scale,
+                    function_480a0(&point, x_scale * size, y_scale * size, cosine, sine,
                         function_131f40(opacity, &selected));
                 }
             }
-            ++i;
-        } while (i < *(long *)(definition + 0x40));
+        }
     }
     if (definition[0x28] & 1)
     {
         if (g_4c1a04 < 4)
         {
-            g_4c19c4[g_4c1a04].tag = tag;
-            g_4c19c4[g_4c1a04++].position = position;
+            s_2e9e0_saved *saved = &g_4c19c4[g_4c1a04++];
+            saved->tag = tag;
+            saved->position = position;
         }
         else if (!g_55e6c6) g_55e6c6 = true;
     }
@@ -1869,6 +1942,32 @@ struct s_render_reset_state;
 void function_16b10(s_render_reset_state *state);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 
+PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevation)
+{
+    vector3f result;
+    result.i = (real)(cos(elevation) * cos(heading));
+    result.j = (real)(cos(elevation) * sin(heading));
+    result.k = (real)sin(elevation);
+    return result;
+}
+
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
+// score 188 (was 188; earlier 204, 220, 298): frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
+// at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
+// with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
+// frame 0x7c against retail's 0xc0 and 846 against 857 bytes, and the register roles (retail keeps the loop count in ebx, the entry
+// in ebp, spills `definition` to [esp+4] and the entry offset to [esp+0x2c]; ours keeps `definition` in ebx). Retail builds `local`
+// and `forward` straight into their slots (0x14, 0x20) and then block-copies local, forward and up into one argument-like area
+// (0x30, 0x3c, 0x54, with a slot for `left` at 0x48 that is never stored); `left` stays in xmm registers there.
+// Retail reads the entry's heading and elevation straight from memory for `local` (fld [ebp+0x10] ... fld [ebp+0xc] twice) but
+// loads the definition's heading once for `forward`, so `local` is not a call of the same helper as `forward`.
+// Tried: sin/cos without the (real) casts (223), out-pointer helper for both (284/260), for `local` only (256/228), by-value basis helper with `left` as a vector (261, 357 when
+// passed whole) or as three reals (253), `left` from a returning cross helper (235), `local` written inline from the entry fields
+// (269/247), a by-value world_direction(local, forward, up) helper (203 but 846 bytes of different temps), basis declared before position (no change).
+// Round 435: shared/staged left cross 182/182; native matrix plus shared rotation 181/181,
+// in-place 189/189; original cross rows with shared rotation 191, in-place 189. All restored;
+// six/seven-point leads are below the keep gate. Current frame 0x80 vs 0xc0; loop/vector homes differ.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -1883,42 +1982,34 @@ void function_3eec0()
         for (long i = 0; i < *(long *)(definition + 0x78) && i < 64; ++i)
         {
             byte *entry = *(byte **)(definition + 0x7c) + i * 0x34;
-            long tag = *(long *)(entry + 0x18);
-            if (tag == NONE) continue;
-            real heading = *(real *)(entry + 0xc), elevation = *(real *)(entry + 0x10);
-            vector3f local;
-            local.i = (real)(cos(heading) * cos(elevation));
-            local.j = (real)(sin(heading) * cos(elevation));
-            local.k = (real)sin(elevation);
-            real angle = *(real *)(definition + 0x80);
-            vector3f forward;
-            forward.i = (real)(cos(angle) * cos(0.0));
-            forward.j = (real)(sin(angle) * cos(0.0));
-            forward.k = (real)sin(0.0);
+            if (*(long *)(entry + 0x18) == NONE) continue;
+            vector3f local = direction_from_angles(*(real *)(entry + 0xc), *(real *)(entry + 0x10));
+            vector3f forward = direction_from_angles(*(real *)(definition + 0x80), 0.0f);
             vector3f up = *g_4687b0;
             vector3f left;
-            left.i = up.j * forward.k - up.k * forward.j;
-            left.j = up.k * forward.i - up.i * forward.k;
-            left.k = up.i * forward.j - up.j * forward.i;
+            left.i = g_4687b0->j * forward.k - g_4687b0->k * forward.j;
+            left.j = g_4687b0->k * forward.i - g_4687b0->i * forward.k;
+            left.k = g_4687b0->i * forward.j - g_4687b0->j * forward.i;
             vector3f direction;
             direction.i = local.j * left.i + local.k * up.i + local.i * forward.i;
             direction.j = local.i * forward.j + local.j * left.j + local.k * up.j;
             direction.k = local.i * forward.k + local.j * left.k + local.k * up.k;
+            local = direction;
             if (1.0f > g_4b9f58)
             {
                 g_4670bc = true;
                 function_16b10((s_render_reset_state *)g_485b48);
                 point3f position;
-                position.x = direction.i * 1023.875f + g_4b9da0.x;
-                position.y = direction.j * 1023.875f + g_4b9da0.y;
-                position.z = direction.k * 1023.875f + g_4b9da0.z;
+                position.x = local.i * 1023.875f + g_4b9da0.x;
+                position.y = local.j * 1023.875f + g_4b9da0.y;
+                position.z = local.k * 1023.875f + g_4b9da0.z;
                 vector3f basis[3];
-                basis[0].i = 0.0f - direction.i;
-                basis[0].j = 0.0f - direction.j;
-                basis[0].k = 0.0f - direction.k;
+                basis[0].i = 0.0f - local.i;
+                basis[0].j = 0.0f - local.j;
+                basis[0].k = 0.0f - local.k;
                 function_11d000(&basis[0], &basis[2]);
                 function_30bf0(&basis[2]);
-                function_2dba0(tag, basis, false, 3, 0, i, &position, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
+                function_2dba0(*(long *)(entry + 0x18), basis, false, 3, 0, i, &position, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
             }
         }
     }
@@ -1995,39 +2086,40 @@ void c_octree_radius_view_ab::function_3f970(short index, plane3f const *planes,
         return;
     }
     real child_radius = radius * 0.5f;
-    point3f child;
-    child.x = center->x - child_radius;
-    child.y = center->y - child_radius;
-    child.z = center->z - child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[0], planes, bounds, &child, child_radius);
-    child.x = center->x - child_radius;
-    child.y = center->y - child_radius;
-    child.z = center->z + child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[1], planes, bounds, &child, child_radius);
-    child.x = center->x - child_radius;
-    child.y = center->y + child_radius;
-    child.z = center->z - child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[2], planes, bounds, &child, child_radius);
-    child.x = center->x - child_radius;
-    child.y = center->y + child_radius;
-    child.z = center->z + child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[3], planes, bounds, &child, child_radius);
-    child.x = center->x + child_radius;
-    child.y = center->y - child_radius;
-    child.z = center->z - child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[4], planes, bounds, &child, child_radius);
-    child.x = center->x + child_radius;
-    child.y = center->y - child_radius;
-    child.z = center->z + child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[5], planes, bounds, &child, child_radius);
-    child.x = center->x + child_radius;
-    child.y = center->y + child_radius;
-    child.z = center->z - child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[6], planes, bounds, &child, child_radius);
-    child.x = center->x + child_radius;
-    child.y = center->y + child_radius;
-    child.z = center->z + child_radius;
-    ((c_octree_radius_view_ab const *)tree)->function_3f970( children[7], planes, bounds, &child, child_radius);
+    // each child center is its own brace-initialized local: assigning one shared point3f member by member
+    // schedules the stores ahead of the argument pushes, retail interleaves them
+    {
+        point3f child = { center->x - child_radius, center->y - child_radius, center->z - child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[0], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x - child_radius, center->y - child_radius, center->z + child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[1], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x - child_radius, center->y + child_radius, center->z - child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[2], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x - child_radius, center->y + child_radius, center->z + child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[3], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x + child_radius, center->y - child_radius, center->z - child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[4], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x + child_radius, center->y - child_radius, center->z + child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[5], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x + child_radius, center->y + child_radius, center->z - child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[6], planes, bounds, &child, child_radius);
+    }
+    {
+        point3f child = { center->x + child_radius, center->y + child_radius, center->z + child_radius };
+        ((c_octree_radius_view_ab const *)tree)->function_3f970( children[7], planes, bounds, &child, child_radius);
+    }
 }
 
 
@@ -2035,9 +2127,27 @@ void c_octree_radius_view_ab::function_3f970(short index, plane3f const *planes,
 /* retail keeps the fraction on the x87 stack, unrounded */
 PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 {
-    return (double)random_next(&random->seed) * (1.0f / 65535.0f);
+    return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
+// score 57 (was 202): the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// first and the length is then built from the stored motion[] values, so the just-stored z stays on the
+// x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
+// float copy (`magnitude`) used by the divide and `fabs((real)length)` so the 0.0001 constant stays a float
+// (retail: sqrt result moved into z's slot, `fst` to the float temp); the six -1..1 samples are `real`
+// (sample + sample - 1.0f), which gives retail's dword `fsub`; the entry+0xc fraction is evaluated before its
+// range, as retail does. What still differs: retail pushes ebx/ebp and esi/edi lazily inside the two count
+// guards (we push all four at the top, with a 4-byte larger frame; ours also loads the random globals and the
+// count above the second guard); `motion[1] = inverse * motion[1]` order (same code); the loop test reads the
+// count into edx instead of comparing against [ebx].
+// Tried: explicit `if (count > 0)` guard around the loop (257), count read once before the loop (116),
+// double length without the float copy (172/106), assignment of the length inside the fabs (178),
+// `(real)fabs(length)` (106), samples as doubles with a float constant (does not change the fsub).
+// Round 280: loop-local/random-at-every-use 57/57; plain while 57; repeated count
+// receiver alone/with loop random/while/both 57 each; outer empty-state exit with
+// loop random and count receiver 300. Exact-only receiver forms restored with the
+// full original body; lazy saves and the post-fstp memory compare remain.
+// Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2058,39 +2168,40 @@ bool function_39a80(byte *state)
                 *(real *)(state + 0x1c) = 0.1f;
                 *(real *)(state + 0x20) = 0.8f;
             }
-            motion[6] = (real)((*(real *)(state + 0x20) - (double)*(real *)(state + 0x1c)) *
-                random_unit_fraction(random) + *(real *)(state + 0x1c));
+            double upper = *(real *)(state + 0x20);
+            double lower = *(real *)(state + 0x1c);
+            motion[6] = (real)(random_unit_fraction(random) * (upper - lower) + lower);
             motion[0] = (real)(random_unit_fraction(random) * *(real *)(state + 0x30));
             motion[1] = (real)(random_unit_fraction(random) * *(real *)(state + 0x34));
-            /* retail squares the unrounded z, not the stored float */
-            double z = random_unit_fraction(random) * *(real *)(state + 0x38);
-            motion[2] = (real)z;
-            real magnitude = (real)sqrt((double)motion[0] * motion[0] + (double)motion[1] * motion[1] + z * z);
-            if (!(fabs(magnitude) < 0.0001f))
+            motion[2] = (real)(random_unit_fraction(random) * *(real *)(state + 0x38));
+            double length = sqrt((double)motion[0] * motion[0] + (double)motion[1] * motion[1] + (double)motion[2] * motion[2]);
+            real magnitude = (real)length;
+            if (!(fabs((real)length) < 0.0001f))
             {
                 real inverse = 1.0f / magnitude;
                 motion[0] *= inverse;
                 motion[1] *= inverse;
                 motion[2] *= inverse;
             }
-            *(real *)(entry + 0xc) = (real)(random_unit_fraction(random) *
+            double fraction = random_unit_fraction(random);
+            *(real *)(entry + 0xc) = (real)(fraction *
                 (*(real *)(state + 0x28) - (double)*(real *)(state + 0x24)) + *(real *)(state + 0x24));
             motion[7] = 0.0f;
             if (0.0001f > *(real *)(state + 8)) *(real *)(state + 8) = 1.0f;
             if (0.0001f > *(real *)(state + 0xc)) *(real *)(state + 0xc) = 1.0f;
             if (0.0001f > *(real *)(state + 0x10)) *(real *)(state + 0x10) = 1.0f;
-            double sample = random_unit_fraction(random);
-            *(real *)entry = (real)((sample + sample - 1.0f) * *(real *)(state + 0x10));
-            sample = random_unit_fraction(random);
-            *(real *)(entry + 4) = (real)((sample + sample - 1.0f) * *(real *)(state + 8));
-            sample = random_unit_fraction(random);
-            *(real *)(entry + 8) = (real)((sample + sample - 1.0f) * *(real *)(state + 0xc));
-            sample = random_unit_fraction(random);
-            motion[3] = (real)(sample + sample - 1.0f);
-            sample = random_unit_fraction(random);
-            motion[4] = (real)(sample + sample - 1.0f);
-            sample = random_unit_fraction(random);
-            motion[5] = (real)(sample + sample - 1.0f);
+            real sample = (real)random_unit_fraction(random);
+            *(real *)entry = (sample + sample - 1.0f) * *(real *)(state + 0x10);
+            sample = (real)random_unit_fraction(random);
+            *(real *)(entry + 4) = (sample + sample - 1.0f) * *(real *)(state + 8);
+            sample = (real)random_unit_fraction(random);
+            *(real *)(entry + 8) = (sample + sample - 1.0f) * *(real *)(state + 0xc);
+            sample = (real)random_unit_fraction(random);
+            motion[3] = sample + sample - 1.0f;
+            sample = (real)random_unit_fraction(random);
+            motion[4] = sample + sample - 1.0f;
+            sample = (real)random_unit_fraction(random);
+            motion[5] = sample + sample - 1.0f;
         }
         state[0x86] = true;
     }
@@ -2100,13 +2211,37 @@ bool function_39a80(byte *state)
 
 
 
+real magnitude3d(vector3f const *v);
+
+// score 182 (was 182; earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
+// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
+// frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
+// and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
+// length shares the slot of a. Tried: plain, reference and macro forms of the length (193-217),
+// first/second vectors in either order and operand order of the scalings (193-214), b before a (279),
+// the dot test last (205), angle and cosine spelled separately (193), the current length as its own named local before the PIN (217), as an assignment inside the PIN (193).
+// Retail also spills a second temp at +8 for rotated.i and orders sine/cosine slots (+0x10/+0xc) differently; the rotation arithmetic differs from there on.
+// Round 38: both lengths are the existing magnitude3d (0x24590; retail's x87 length code is its body), 193 -> 182; the
+// frame (length slot) and the cross product's operand registers still differ. Tried: first rotated in place with named
+// cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
+// interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
+// before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
+// Round 435: shared axis cross (cross3f(&first, &second, &axis)) 147, held 11-01: in the full LTCG build it makes
+// 0xc2d00 (unknown_0bffa0.cpp) lose its match (DIFF at +0x12e), so the axis stays written out; staged axis cross 147; shared/staged rotation tangent 196;
+// both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
+// axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
+// DH round 270: existing vector setters at normalization/rotation/both/final-scale/normalization-and-
+// scale/rotation-and-scale/all boundaries 198/188/204/182/198/188/204; normalization and final setters with
+// scalar rotation results 198. Magnitude and protected neighboring body stay matched in previews. Frame 0x34
+// versus 0x38 and raw-length/dot/angle/cosine homes remain; entire original body and every arithmetic tree
+// restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
-    real const &name_734d0c = (real)sqrt((double)current->i * current->i + (double)current->j * current->j + (double)current->k * current->k);
-    real a = name_734d0c < 0.0001f ? 0.0001f : name_734d0c > 10.0f ? 10.0f : name_734d0c;
-    real target_size = (real)sqrt((double)target->i * target->i + (double)target->j * target->j + (double)target->k * target->k);
-    real b = target_size < 0.0001f ? 0.0001f : target_size > 10.0f ? 10.0f : target_size;
+    real a = PIN(magnitude3d(current), 0.0001f, 10.0f);
+    real b = PIN(magnitude3d(target), 0.0001f, 10.0f);
     vector3f first, second;
     real inverse = 1.0f / a;
     first.i = current->i * inverse;
@@ -2116,7 +2251,7 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     second.i = target->i * inverse;
     second.j = target->j * inverse;
     second.k = target->k * inverse;
-    real dot = second.k * first.k + second.j * first.j + second.i * first.i;
+    real dot = dot3f(&second, &first);
     if (fabs(dot) < 0.9999f && a > 0.0001f && b > 0.0001f)
     {
         real angle = (real)(acos(dot) * step);
@@ -2126,7 +2261,7 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
         axis.k = second.j * first.i - first.j * second.i;
         function_30bf0(&axis);
         real sine = (real)sin(angle), cosine = (real)cos(angle);
-        real projection = (axis.k * first.k + axis.j * first.j + axis.i * first.i) * (1.0f - cosine);
+        real projection = dot3f(&axis, &first) * (1.0f - cosine);
         vector3f rotated;
         rotated.i = projection * axis.i + cosine * first.i - (axis.k * first.j - axis.j * first.k) * sine;
         rotated.j = projection * axis.j + cosine * first.j - (first.k * axis.i - axis.k * first.i) * sine;
@@ -2159,7 +2294,7 @@ struct s_cached_input_entry
 {
     s_cached_input input;
     real elapsed;
-    dword initial;
+    real initial;
     dword last_seen;
     dword created;
 };
@@ -2178,6 +2313,38 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
+// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): frame 0xa0 and loop constants agree; first +0xb saves
+// EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
+// also differs. Tried: all six
+// MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
+// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// loaded inside it, and the depth dot product orders its terms differently. Tried: all six
+// term orders and several groupings (140), constants in locals (140). The flag as a branchy
+// && stored through a long (136).
+// Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
+// (loaded once, re-read at the loop top) with i in esi, the index in ebx, the object in edi and the
+// cursor in ebp; ours gives `list` ebp. `g_547f98` read at each use instead of the `list` local 113 | 77
+// (frame 0x9c, retail 0xa0, so not kept), with `!(depth >= 0.0f)` 111 | 75, with the camera fields 110
+// | 75, with `g >= 0 ? (g <= 3 ? g : 3) : 0` 113 | 83; `!(depth >= 0.0f)` alone 132 | 69 (retail's
+// `comiss depth, 0; jae`); the depth as `g_4b9e14.right.k * x + up.k * y + forward.k * z + position.z`
+// 133 | 68. The view/count slots are swapped against retail as in 0x33400 (view is register-assigned
+// at the clamp's join, then spilled: `xor eax, eax` for the zero arm and a dead reload).
+// Round 109 (plain checks, positional | LCS-aligned, base 132 | 61): the three forms that matched sibling 0x33400
+// (`&g_5234e8[view]` at both calls in place of the `state` local, the depth sum written `g_4b9e2c * y + g_4b9e20 * x
+// + g_4b9e38 * z`, `!(depth >= 0.0f)`) give retail's clamp stores, view/count slots and xmm5-xmm7 constants:
+// 130 | 54, not kept (a 2-point gain). What is left is a register permutation: ours keeps `list` in EBP (pushed at
+// entry, spilled for the entry pointer and reloaded after 0x3e9c0), index in EDI (0x31590's argument register),
+// object in ESI; retail spills `list` (reloaded into EAX at the loop top), keeps index in EBX (copied to EDI for
+// 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
+// 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
+// each use (no list local, 556 bytes) 118 | 65.
+// Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
+// reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
+// (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
+// DH round 270: bounded short/word scan ordinals on original/direct-state/native-total/streaming-output
+// graphs, reduced 148/133/147/132/126/135/148/133 (control 136). The native signed-short ordinal plus total
+// reaches 548 bytes in preview but plain is 142 at 562 bytes; restored. Original frame 0xa0 and
+// list/cursor/index register split remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2201,15 +2368,13 @@ long __stdcall function_31910(s_cached_input *output)
             result->data[1] = index;
             result->data[2] = parent;
             result->data[3] = *(dword *)(entry + 0x100);
-            real depth = position.z * g_4b9e38 + position.x * g_4b9e20 + position.y * g_4b9e2c + g_4b9e44;
+            real depth = g_4b9e38 * position.z + g_4b9e20 * position.x + g_4b9e2c * position.y + g_4b9e44;
             if (depth < 0.0f) depth = 0.0f - depth;
             if (!(depth > 0.1f)) depth = 0.1f;
             real score = (g_4b9ed0 / depth) * radius * 2.0f;
             *(real *)&result->data[4] = score;
-            bool object_flag = false;
-            if (object != NONE)
-                object_flag = g_4e0300->data[(object & 0xffff) * 12 + 3] == 2;
-            ((byte *)result)[2] = object_flag;
+            long object_flag = object != NONE && g_4e0300->data[(object & 0xffff) * 12 + 3] == 2;
+            ((byte *)result)[2] = (byte)object_flag;
             ((byte *)result)[0] = function_3e9c0(parent);
             ((byte *)result)[1] = (byte)((*(dword *)definition >> 5) & 1);
             ((byte *)result)[3] = (byte)((*(dword *)definition >> 20) & 1);
@@ -2221,13 +2386,17 @@ long __stdcall function_31910(s_cached_input *output)
     return function_4ac30(state, output, 3, 0.01f);
 }
 
+// Matches when function_117dd0's source (flexible_surface.cpp, which takes g_4ba034's address) is in the
+// image: retail reloads the frame count from memory, and the other sources only do the same once that
+// global is address-taken (check --fast 0x4a7c0 alone: 352). The simple counted loop is unrolled by the
+// compiler; written out by hand it scored 385.
 // @retail 0x4a7c0
 void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, long count)
 {
-    dword volatile used = 0;
-    for (long i = 0; i < state->count; ++i)
+    dword used = 0;
+    s_cached_input_entry *entry = state->entries;
+    for (long i = 0; i < state->count; ++i, ++entry)
     {
-        s_cached_input_entry *entry = &state->entries[i];
         for (long j = 0; j < count; ++j)
         {
             if (entry->input.data[1] == inputs[j].data[1])
@@ -2248,65 +2417,20 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
             --k;
         }
     }
-    long n = 0;
-    for (long center = 2; n < count - 3; n += 4, center += 4)
-    {
-        if (state->count < 32 && !(used & (1 << (n + 0))))
-        {
-            state->entries[state->count].input = inputs[n + 0];
-            state->entries[state->count].last_seen = g_4ba034;
-            state->entries[state->count].created = g_4ba034;
-            state->entries[state->count].initial = state->entries[state->count].input.data[3];
-            state->entries[state->count].elapsed = 0.0f;
-            ++state->count;
-            used |= 1 << (n + 0);
-        }
-        if (state->count < 32 && !(used & (1 << (center - 1))))
-        {
-            state->entries[state->count].input = inputs[center - 1];
-            state->entries[state->count].last_seen = g_4ba034;
-            state->entries[state->count].created = g_4ba034;
-            state->entries[state->count].initial = state->entries[state->count].input.data[3];
-            state->entries[state->count].elapsed = 0.0f;
-            ++state->count;
-            used |= 1 << (center - 1);
-        }
-        if (state->count < 32 && !(used & (1 << center)))
-        {
-            state->entries[state->count].input = inputs[center];
-            state->entries[state->count].last_seen = g_4ba034;
-            state->entries[state->count].created = g_4ba034;
-            state->entries[state->count].initial = state->entries[state->count].input.data[3];
-            state->entries[state->count].elapsed = 0.0f;
-            ++state->count;
-            used |= 1 << center;
-        }
-        if (state->count < 32 && !(used & (1 << (center + 1))))
-        {
-            state->entries[state->count].input = inputs[center + 1];
-            state->entries[state->count].last_seen = g_4ba034;
-            state->entries[state->count].created = g_4ba034;
-            state->entries[state->count].initial = state->entries[state->count].input.data[3];
-            state->entries[state->count].elapsed = 0.0f;
-            ++state->count;
-            used |= 1 << (center + 1);
-        }
-    }
-    for (; n < count; ++n)
+    for (long n = 0; n < count; ++n)
     {
         if (state->count < 32 && !(used & (1 << n)))
         {
             state->entries[state->count].input = inputs[n];
             state->entries[state->count].last_seen = g_4ba034;
             state->entries[state->count].created = g_4ba034;
-            state->entries[state->count].initial = state->entries[state->count].input.data[3];
+            state->entries[state->count].initial = *(real *)&state->entries[state->count].input.data[3];
             state->entries[state->count].elapsed = 0.0f;
             ++state->count;
             used |= 1 << n;
         }
     }
 }
-
 
 
 struct s_unknown_13bf00;
@@ -2321,12 +2445,37 @@ static void swap_cached_input(s_cached_input_entry *a, s_cached_input_entry *b)
 
 static void clamp_cached_input(s_cached_input_entry *entry)
 {
-	real &value = *(real *)&entry->initial;
-	real maximum = *(real *)&entry->input.data[3];
-	if (value < 0.0f) value = 0.0f;
-	else if (value > maximum) value = maximum;
+	real *maximum = (real *)&entry->input.data[3];
+	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
+// score 317 (was 317): the logic was walked against retail block by block (0x4ac30-0x4b159) and
+// agrees: the four passes (pairs to the front, first flagged entry, drop of just-created flagged entries, duplicate
+// key removal), both sorts (modes 1 and 2), the decay loop, the growth loop and the output copy. What is left is
+// register allocation. Retail keeps `first` in edx and the state in ebp for the first three loops and reloads `first`
+// from [esp+0x10] into ebp as loop 3's counter (0x4ad43); here `first` stays in ebp, the state is in edx and the
+// counter lives in memory, which adds a few instructions and shifts everything after it. The decay loop's unrolled
+// body is rotated one entry (base entry-0xc, first copy at +0x24) where retail's base is the first copy's `initial`
+// field; its copies 2-4 match retail. Gains this round: the last (growth) loop is a counted do/while (retail ends
+// it with dec ecx/jne, not a pointer compare), and the decay loop declares a pointer to `initial` before the
+// entry pointer (377 -> 317 with the same bytes length as retail). Earlier: `initial` is a real, compare operand
+// order, one-expression clamp. Tried: index loop `i < limit` for the growth loop (715, unrolled), pointer
+// compare for the decay loop (367, divides by 36), decay loop as `--i >= limit`, `i = count; i > limit` with
+// entries[i - 1] (349), a second pointer decremented alongside i (375), entry derived from `initial` (369),
+// declaration order of first/last/requested/found/i (317-319), per-loop `long i` (317), an `entries` alias (317),
+// a copy of `first` for the later calls (370), found set before/after the swap (360/318). Without the
+// "last >= i" forms 390; "limit <= i" stops the unrolling (802).
+// Round 487: persistent-count / ordinal / paired / complete role names 317 each; no separate found flag 436;
+// prefix count initialized before admission 331; separate named phase ordinals 317; retained-only removal
+// cursor advancement 318. All eight executable forms restored; frame 0x30 agrees, early prefix/state
+// register roles and the two counter homes remain exchanged. Earlier scores were 405 and 424.
+// Round 36: a compile-only build reproduces this listing (aligned 131 against retail); `first` takes EBP in all 60
+// random combinations of declaration order, loop tests, flag order, per-loop counters, an entries alias and the
+// clamp spelling, in renames, and even with its address taken (diagnostic), so the EBP/EDX choice is not a spelling.
+// Retail's growth loop computes `elapsed + step`, stores it and re-reads elapsed for `initial + elapsed`; a pointer to
+// `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
+// Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
+// second loop as a search with the swap after it 365.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2338,10 +2487,10 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 		if (limit > state->count) limit = state->count;
 		bool found = false;
 		long i;
-		for (i = 0; i <= last; ++i)
+		for (i = 0; last >= i; ++i)
 		{
 			byte *flags = (byte *)&state->entries[i].input.data[0];
-			if (i < last && flags[0] && flags[1])
+			if (last > i && flags[0] && flags[1])
 			{
 				swap_cached_input(&state->entries[i], &state->entries[0]);
 				++first;
@@ -2362,12 +2511,12 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 		}
 		if (state->count > requested)
 		{
-			for (i = first; i <= last; ++i)
+			for (i = first; last >= i; ++i)
 			{
 				s_cached_input_entry *entry = &state->entries[i];
 				if (((byte *)&entry->input.data[0])[2] && entry->created == g_4ba034)
 				{
-					entry->initial = 0;
+					entry->initial = 0.0f;
 					swap_cached_input(entry, &state->entries[last--]);
 					--i;
 				}
@@ -2379,7 +2528,7 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 			s_cached_input_entry *entry = &state->entries[i];
 			if (i > 0 && entry->input.data[2] != -1 && entry->input.data[2] == state->entries[i - 1].input.data[2] && !((byte *)&entry->input.data[0])[3])
 			{
-				entry->initial = 0;
+				entry->initial = 0.0f;
 				entry->elapsed = 0.0f - step;
 				swap_cached_input(entry, &state->entries[last--]);
 			}
@@ -2389,11 +2538,12 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 		{
 			for (i = state->count - 1; i >= limit; --i)
 			{
+				real *initial = &state->entries[i].initial;
 				s_cached_input_entry *entry = &state->entries[i];
-				if (!((byte *)&entry->input.data[0])[3] && *(real *)&entry->initial > 0.0f)
+				if (!((byte *)&entry->input.data[0])[3] && *initial > 0.0f)
 				{
 					entry->elapsed -= step;
-					*(real *)&entry->initial += entry->elapsed;
+					*initial = entry->elapsed + *initial;
 					clamp_cached_input(entry);
 				}
 				else entry->elapsed = 0.0f;
@@ -2401,32 +2551,36 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 		}
 		if (limit > 0)
 		{
-			s_cached_input_entry *end = state->entries + limit;
-			for (s_cached_input_entry *entry = state->entries; entry != end; ++entry)
+			s_cached_input_entry *entry = state->entries;
+			long remaining = limit;
+			do
 			{
-				if (*(real *)&entry->input.data[3] > *(real *)&entry->initial)
+				if (*(real *)&entry->input.data[3] > entry->initial)
 				{
 					entry->elapsed += step;
-					*(real *)&entry->initial += entry->elapsed;
+					entry->initial = entry->initial + entry->elapsed;
 					clamp_cached_input(entry);
 				}
 				else entry->elapsed = 0.0f;
-			}
+				++entry;
+			} while (--remaining);
 		}
 	}
 	for (long i = 0; i < state->count; ++i)
 	{
 		output[i] = state->entries[i].input;
-		output[i].data[3] = state->entries[i].initial;
+		*(real *)&output[i].data[3] = state->entries[i].initial;
 	}
 	return state->count;
 }
 
 
-PRIVATE __forceinline real motion_random_step(real value, real step)
+PRIVATE __forceinline real motion_random_step(double value, double step)
 {
-    double random = (double)random_next(&g_4e7408->seed) * (1.0f / 65535.0f);
-    real next = (real)((random + random - 1.0f) * step + value);
+    // a float, so the 1.0f below stays a float constant as in retail (`fsub dword [1.0f]`); no rounding store is
+    // emitted, so the x87 keeps the fraction unrounded
+    real random = (real)random_unit_fraction(g_4e7408);
+    real next = (real)(step * (random + random - 1.0f) + value);
     return next < -1.0f ? -1.0f : next > 1.0f ? 1.0f : next;
 }
 
@@ -2445,6 +2599,20 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// MiniMax R (11-01): no new form, no lower score.
+// score 517 (was 529; 561 before that): the logic matches retail block by block (walked statement by statement against
+// 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
+// is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
+// state+0x18, view+0x104, view+0x120 (offset[1]), view+0x158 and state+0x2c. Reading the strength before the cycle test
+// and storing the fade before the phase now give the first two as retail; the offset group still starts at view+0x11c
+// (offset[0]) with every order of its loads and stores (6 spellings, 520-525), and the frame is 0x60 vs 0x38. Retail also
+// reads the velocity back from memory for the speed limit (we reuse the registers and spill them), keeps `step` on the
+// x87 stack and multiplies with `fmul st(2)` where we emit `fld st(2); fmulp st(1)` (the product's operand order makes no
+// difference), computes dz, dy, dx before the three products, and reads the flags byte at state+0x94 for the cycle bit
+// (a byte read scores 538 but is a type pun, not kept). Tried: a speed-limit helper (560, same code), factor order in the
+// random step (no change), the lane order of offset and of the view fields (no change), dz/dy/dx from the stored
+// position (587), phase read before the cycle test (+7 over the per-branch read), structs for the state and view
+// layouts (517 with the two reorders, 536 without; the byte offsets are kept).
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -2460,7 +2628,8 @@ bool __stdcall function_37260(byte *state, real step, byte const *parameters)
     real dx = g_485618.position.x - previous.x;
     real delta = g_485618.forward.k * dz + g_485618.forward.j * dy + g_485618.forward.i * dx;
     real range = *(real *)(state + 0x7c) - *(real *)(state + 0x78);
-    if (flags & 2)
+    bool reset_times = ((flags >> 1) & 1) != 0;
+    if (reset_times)
     {
         *(real *)(state + 0x18) = 0.25f;
         *(real *)(state + 0x1c) = 0.5f;
@@ -2476,22 +2645,27 @@ bool __stdcall function_37260(byte *state, real step, byte const *parameters)
     long i = 0;
     do
     {
-        real phase = *(real *)(state + 0x18 + i * 4);
+        real phase;
+        // the strength is read before the cycle test and the fade is stored before the phase: in this order the
+        // compiler starts its loop pointers at state+0x18 and view+0x104, where retail's start
+        real strength = *(real *)(state + 0x88 + i * 4);
         if (cycle)
         {
+            phase = *(real *)(state + 0x18 + i * 4);
             if (*(real *)(view + 0x140) > phase) phase += 1.0f;
             phase -= *(real *)(view + 0x140);
-            *(real *)(view + 0x104 + i * 4) = phase;
             real centered = phase * 2.0f - 1.0f;
-            *(real *)(view + 0xec + i * 4) = (1.0f - centered * centered) * *(real *)(state + 0x88 + i * 4);
+            *(real *)(view + 0xec + i * 4) = (1.0f - centered * centered) * strength;
+            *(real *)(view + 0x104 + i * 4) = phase;
         }
         else
         {
+            phase = *(real *)(state + 0x18 + i * 4);
+            *(real *)(view + 0xec + i * 4) = strength;
             *(real *)(view + 0x104 + i * 4) = phase;
-            *(real *)(view + 0xec + i * 4) = *(real *)(state + 0x88 + i * 4);
         }
         real distance = phase * range + *(real *)(state + 0x78);
-        real radius = (real)(tan((double)g_485640 * 0.5f) * distance);
+        real radius = (real)(tan(g_485640 * 0.5f) * distance);
         point3f old = *(point3f *)(view + 0xc8 + i * 12);
         real x = 0.0f, y = 0.0f, z = 0.0f - distance;
         if (g_48568c[13] != 1.0f)
@@ -2669,10 +2843,13 @@ void function_41c80(short type, s_41c80_state const *state)
     }
 }
 
+// score 146 (was 149 on a 169-source fast image): retail has color, marker count and the markers in one frame block with the
+// amount in its own slot, and loops on a count it holds in ebx; the slots still differ. Tried:
+// separate color/count/markers locals (+1), one shared scale local (no change).
 // @retail 0x41980
 void __stdcall function_41980(short type, long object_index)
 {
-    struct s_attachment_scratch_r16 { long count; color3f color; real amount; s_object_marker markers[65]; };
+    struct s_attachment_scratch_r16 { color3f color; long count; s_object_marker markers[65]; };
     s_attachment_scratch_r16 scratch_r16;
     
     if (type == 0)
@@ -2686,7 +2863,7 @@ void __stdcall function_41980(short type, long object_index)
             if ((entry->type == 0x6c656e73 || entry->type == 0x4d475332 || entry->type == 0x7464746c) && entry->tag != NONE)
             {
                 scratch_r16.count = function_b8d30(object_index, entry->marker, scratch_r16.markers, 65, false);
-                scratch_r16.amount = function_be6d0(object_index, i);
+                real amount = function_be6d0(object_index, i);
                 scratch_r16.color = *(color3f const *)g_468710;
                 if (entry->color_index)
                     function_bad50(object_index, entry->color_index, (point3f *)&scratch_r16.color);
@@ -2699,7 +2876,7 @@ void __stdcall function_41980(short type, long object_index)
                         {
                             byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                             real scale = (tag[0x28] & 0x40) ? matrix->scale : 1.0f;
-                            function_2dba0(entry->tag, &matrix->forward, function_3e9c0(object_index), 0, object_index & 0xffff, added, &matrix->position, &scratch_r16.color, 1.0f, scratch_r16.amount, scale);
+                            function_2dba0(entry->tag, &matrix->forward, function_3e9c0(object_index), 0, object_index & 0xffff, added, &matrix->position, &scratch_r16.color, 1.0f, amount, scale);
                             ++added;
                         }
                         else if (!g_55e6c7)
@@ -2712,7 +2889,7 @@ void __stdcall function_41980(short type, long object_index)
                         if (*(long *)(tag + 8) > 0 && (**(byte **)(tag + 12) & 0x20))
                             scale = matrix->scale;
                         function_42850(object_index, entry->tag, &matrix->position, &matrix->forward,
-                            &matrix->up, scale, scratch_r16.amount, (vector3f *)&scratch_r16.color);
+                            &matrix->up, scale, amount, (vector3f *)&scratch_r16.color);
                     }
                     else if (entry->type == 0x7464746c)
                         function_429a0(0, object_index, entry->tag, NONE, &matrix->position,
@@ -2727,24 +2904,51 @@ void function_30c60(dword handle, point3f *position, long *out);
 
 PRIVATE __forceinline real object_view_distance(point3f const *position)
 {
-    double x = (double)position->x - g_4b9da0.x;
-    double y = (double)position->y - g_4b9da0.y;
-    double z = (double)position->z - g_4b9da0.z;
-    return (real)(sqrt(z * z + y * y + x * x) * g_4b9dcc);
+    real x = position->x - g_4b9da0.x;
+    real y = position->y - g_4b9da0.y;
+    real z = position->z - g_4b9da0.z;
+    return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
+// score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
+// first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
+// (the early `= false` made it a memory byte); the object is reached through a pointer to the table
+// slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
+// frees the x87 temporaries before the multiply, as retail does.
+// Still open: retail keeps the object table in ebp and `kind` (spilled to [esp+0x18] after the
+// flag test) in memory, with a frame 4 bytes larger (a float slot at +0x1c and the opacity byte get
+// dead zero stores in the final fade block); ours needs `volatile` on kind to keep it out of ebp,
+// which is why this stays a near miss. Retail loads the flag byte into al and tests it with
+// `shr al,2; test dl,al` (dl == 1 from `result = true`), ours folds it to `test [esi+0x10a],4`
+// whatever the spelling (bool cast, `& result`, byte local, `== 1`: all 175-190). Retail also reads
+// the fade at [ecx+0x2b0] straight from memory at every use of the first clamp (no local); spelled
+// that way (a repeated inline helper or a pointer local) the code matches there but swaps esi/edi
+// (object / table offset) and scores 186-208.
+// Round 109: object_view_distance's differences are `real` locals (they were `double`, which made LTCG keep the
+// stack 8-byte aligned down from 0x335e0); the x87 block is byte for byte retail's either way, only the tail's pop
+// placement moved: 175 -> 177 positional, LCS-aligned 76 -> 73. Its differences as `double` parameters change
+// nothing (175, alignment kept); as one expression with no locals 176.
+// Round 226: table already in EBP, frame 0x18 versus 0x1c and missing final fade scratch stores remain.
+// Native object/mode/both 177; alpha first with those view subsets 212 each; byte result 173 at
+// 768 bytes (four-point gain below the retention bar). Original body and shared helper restored.
+// DH round 270: temporal/final/both clamps as PIN value expressions 177/177/177; each with live first-fade
+// field reads 204/204/204; both with those reads and reversed cases/shared position lifetime 204/204. Frame
+// stays 0x18 versus 0x1c; initial alpha/kind scheduling and final fade scratch stores remain. Entire
+// original body, output roles and distance helper restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
-    bool result = false;
+    bool result;
     s_scalar_object_header *header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
-    byte *object = header->object;
+    byte **object_slot = &header->object;
+    byte *object = *object_slot;
     byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-    volatile long kind = *(signed char *)(object + 0xaa);
+    volatile long kind = *(signed char *)(object + 0xaa); // kept in memory as retail does, see the note above
     real alpha = 0.0f;
     if (!(object[6] & 1))
     {
-        byte opacity, second;
+        byte first_output, opacity;
         switch (*(short *)(definition + 0x18))
         {
         case 0:
@@ -2753,14 +2957,14 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
                 point3f position;
                 long region;
                 function_30c60(object_index, &position, &region);
-                function_4baf0(object_index, object_view_distance(&position), &opacity, &second);
+                function_4baf0(object_index, object_view_distance(&position), &first_output, &opacity);
                 alpha = opacity * 0.003921568859368563f;
             }
             break;
         case 2:
         {
-            point3f position = *(point3f *)(object + 0x30);
-            function_4baf0(object_index, object_view_distance(&position), &opacity, &second);
+            point3f position = *(point3f *)(*object_slot + 0x30);
+            function_4baf0(object_index, object_view_distance(&position), &first_output, &opacity);
             alpha = opacity * 0.003921568859368563f;
             break;
         }
@@ -2784,7 +2988,11 @@ bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_spec
                     alpha *= 1.0f - fade;
             }
         }
+        else
+            result = false;
     }
+    else
+        result = false;
     if (!result && *(long *)(object + 0x14) != NONE)
         result = function_3d7f0(function_baf80(object_index), &alpha, out_special);
     header = &((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff];
@@ -2808,9 +3016,9 @@ s_cached_input_list g_5246f8[4];
 // @retail 0x33400
 long function_33400(byte const *list, s_cached_input *output, long mode)
 {
-    long volatile selected = 0;
+    long selected = 0;
     long view = g_4b9ed4 < 0 ? 0 : g_4b9ed4 > 3 ? 3 : g_4b9ed4;
-    long volatile count = *(short const *)(list + 4);
+    long count = *(short const *)(list + 4);
     for (long i = 0; i < count; ++i)
     {
         long object_index = (*(long const **)(list + 0xc))[(short)i];
@@ -2828,8 +3036,8 @@ long function_33400(byte const *list, s_cached_input *output, long mode)
                 entry->data[1] = object_index;
                 entry->data[2] = object_index;
                 *(real *)&entry->data[3] = alpha;
-                real depth = g_4b9e38 * position.z + g_4b9e20 * position.x + g_4b9e2c * position.y + g_4b9e44;
-                if (depth < 0.0f) depth = 0.0f - depth;
+                real depth = g_4b9e2c * position.y + g_4b9e20 * position.x + g_4b9e38 * position.z + g_4b9e44;
+                if (!(depth >= 0.0f)) depth = 0.0f - depth;
                 if (!(depth > 0.1f)) depth = 0.1f;
                 *(real *)&entry->data[4] = (g_4b9ed0 / depth) * radius * 2.0f;
                 ((byte *)entry)[0] = function_3e9c0(object_index);
@@ -2839,12 +3047,17 @@ long function_33400(byte const *list, s_cached_input *output, long mode)
             }
         }
     }
-    s_cached_input_list *state = &g_5246f8[view];
-    function_4a7c0(state, output, selected);
-    return function_4ac30(state, output, 4, 0.005f);
+    function_4a7c0(&g_5246f8[view], output, selected);
+    return function_4ac30(&g_5246f8[view], output, 4, 0.005f);
 }
 
 struct s_sort_record;
+/* an entry of the scenario's tag reference block at +0x37c, indexed by a placement record's first byte */
+struct s_placement_tag_reference
+{
+    dword group_tag;
+    long tag_index;
+};
 typedef bool (__stdcall *t_41640_fill)(long, void *, long, long, long, void *, s_sort_record *);
 typedef void (__stdcall *t_41640_draw)(long, long, long, long, long, dword, byte *);
 bool __stdcall function_4de20(long, long, long, long, long, long, s_sort_record *);
@@ -2854,6 +3067,16 @@ void __stdcall function_4e260(long, long, long, long, long, dword, byte *);
 void __stdcall function_4ebd0(long, long, long, long, long, dword, byte *);
 void __stdcall function_4ede0(long, long, long, long, long, dword, byte *);
 void __stdcall function_4efa0(long, long, long, long, long, dword, byte *);
+
+// The draw callback of the sixth placement type. It forwards to the same routine as the fifth
+// type's (function_4efa0), so the linker folds the two identical bodies into one; retail's
+// table setup still treats them as two different addresses (both are stored as immediates).
+void __stdcall draw_placement_type_5(long tag, long context, long first, long second,
+    long third, dword handle, byte *material)
+{
+    function_4ede0(tag, context, first, second, third, handle, material);
+}
+
 void function_40e30(short group, long tag, real distance, long level, short kind,
     dword and_mask, dword or_mask, t_41640_fill fill, dword value, void *context);
 point3f *function_3f220(dword a, dword b, dword c, point3f *out);
@@ -2862,7 +3085,21 @@ bool function_165010(s_frustum_set_view const *set, long section_index,
     point3f const *center, real radius, bool *contained);
 real distance3d(point3f const *a, point3f const *b);
 real g_525980[3];
+struct s_1321f0;
+bool function_1321f0(long index, s_1321f0 const *data);
 
+// MiniMax R (11-01): no new form, no lower score.
+// score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
+// slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
+// other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
+// Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
+// with the table and assigned after the early return; declared before the table; both as `byte const *`.
+// Round 73 (--fast now also 4): the `handle` union declared first 4 (plain 4); `view` declared at function scope 4;
+// the callback arrays declared after table/definitions 30; `draw` declared before `fill` 17; both pointers `byte *const`
+// 4. Compile-only /FAs: the two homes follow which pointer is assigned first (reading the scenario first flips them,
+// but moves its load above the early return); names never move them.
+// Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
+// range/record, all native views and const callback arrays each 4. Original body restored.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -2870,7 +3107,7 @@ void function_41640(void)
         (t_41640_fill)function_4dfa0, (t_41640_fill)function_4e0d0,
         (t_41640_fill)function_4e0d0, (t_41640_fill)function_4e0d0 };
     t_41640_draw draw[6] = { function_4e260, function_4ebd0, function_4ebd0,
-        function_4ede0, function_4efa0, function_4efa0 };
+        function_4ede0, function_4efa0, draw_placement_type_5 };
     byte *table = *(byte **)((byte *)g_4e0348 + 0x238);
     if (!g_4ba025) return;
     byte *definitions = (byte *)g_4e0350;
@@ -2890,13 +3127,14 @@ void function_41640(void)
             byte *record = *(byte **)(table + 0x1c) + record_index * 24;
             s_geometry_block_info *block = (s_geometry_block_info *)(*(byte **)(table + 0x14)
                 + *(short *)(record + 6) * 0x2c);
-            long definition_index = (signed char)record[0];
+            signed char definition_index = record[0];
             if (definition_index < 0 || definition_index >= *(long *)(definitions + 0x378)
                 || *(short *)(record + 0xa) <= 0 || !function_12de70(block, 3)) continue;
-            long tag = (*(long **)(definitions + 0x37c))[(signed char)record[0] * 2 + 1];
-            if (tag == NONE) continue;
-            byte *definition = g_4e3b44[tag & 0xffff].bytes;
+            s_placement_tag_reference const *reference =
+                &(*(s_placement_tag_reference **)(definitions + 0x37c))[(signed char)record[0]];
+            if (reference->tag_index == NONE) continue;
             long part_index = record[1];
+            byte *definition = g_4e3b44[reference->tag_index & 0xffff].bytes;
             if (part_index >= *(long *)(definition + 0x10)) continue;
             byte *part = *(byte **)(definition + 0x14) + part_index * 20;
             long instance = record[2];
@@ -2907,30 +3145,26 @@ void function_41640(void)
             long material = (*(long **)(definition + 4))[material_index * 2 + 1];
             if (material == NONE) continue;
             dword packed = *(dword *)(record + 0x14);
-            point3f position;
-            function_3f220(packed & 0x3ff, (packed >> 10) & 0x3ff, packed >> 20, &position);
+            point3f decoded;
+            point3f position = *function_3f220(packed & 0x3ff, (packed >> 10) & 0x3ff, packed >> 20, &decoded);
+            real radius = record[3] * 0.0313725508749485f;
             position.x = node->center.x - 4.0f + position.x;
             position.y = node->center.y - 4.0f + position.y;
             position.z = node->center.z - 4.0f + position.z;
-            real radius = record[3] * 0.0313725508749485f;
-            long section = *(short *)(record + 4);
-            if (section == NONE || !(g_547f88.flags[section >> 5] & (1 << (section & 31)))) continue;
+            short section = *(short *)(record + 4);
+            if (section == NONE || !function_1321f0(section, (s_1321f0 const *)&g_547f88)) continue;
             long frustum = ((signed char *)g_547f88.indices)[section];
             bool contained = false;
             if (function_165010((s_frustum_set_view *)g_547f88.context, frustum,
                     &position, radius, &contained))
             {
                 long distance_class = entry[9];
-                point3f camera = g_4b9da0;
-                if (g_525980[distance_class] > distance3d(&camera, &position) - radius)
+                if (g_525980[distance_class] > distance3d(&g_4b9da0, &position) - radius)
                 {
                     handle.fields.record = *(long *)(range + 0x14) + i;
                     handle.fields.distance = distance_class;
-                    long callback_index = part[4];
-                    t_41640_fill selected_fill = fill[callback_index];
-                    t_41640_draw selected_draw = draw[callback_index];
                     function_40e30(0, material, 10000.0f, 0, 0xffff, NONE, 0,
-                        selected_fill, (dword)selected_draw, (void *)handle.value);
+                        fill[part[4]], (dword)draw[part[4]], (void *)handle.value);
                 }
             }
         }
@@ -2960,19 +3194,64 @@ void matrix4x3_from_forward_and_up(transform4x3f *out, vector3f const *forward, 
 extern vector3f *g_4687bc;
 struct s_collision_result_1697c0
 {
-    byte unknown00[8];
+    long type;
+    real t;
     point3f point;
     byte unknown14[0x24 - 0x14];
     short unknown24;
-    byte unknown26[0x4c - 0x26];
+    byte unknown26[0x5c - 0x26];
 };
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
     long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result);
 
+PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f const *offset, point3f const *origin,
+    point3f *corner)
+{
+    real x = offset->x;
+    real y = offset->y;
+    real z = offset->z;
+    if (matrix->scale != 1.0f)
+    {
+        x = matrix->scale * x;
+        y = matrix->scale * y;
+        z = matrix->scale * z;
+    }
+    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x + origin->x;
+    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y + origin->y;
+    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
+}
+
+// score 394 (was 394): the four corners are written out (retail has four copies of the scale
+// test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
+// 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
+// (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
+// from forward object+0x70 / up object+0x7c, corner order (-r,-r) (r,-r) (r,r) (-r,r) (the old draft had x and y
+// swapped), vertex colour (1,1,1,alpha) then uv (0,0) (0,1) (1,1) (1,0), and z of vertices 1-3 taken from corner 3
+// (0x74; corners 1 and 2 never compute z). D3DDevice::Begin (the member form) lets the compiler inline Begin as
+// retail does (call 0x400fa0 plus the push-buffer words); D3DDevice_Begin keeps it out of line (457). Passing the
+// corner offset as one reused point3f (retail stores z at [esp+0x10] for corner 0 but multiplies a constant 0.0 in
+// the others) took 403 to 394. Still differs: frame 0xd0 vs 0xe0 (retail reserves the alpha spill at 0x78 and 12
+// more bytes below the 0x5c-byte collision result) and the registers/spills of the corner math (retail keeps
+// scale, forward.i and up.j in xmm5, xmm3, xmm4 across all four corners and radius / -radius in slots 8 and 0xc).
+// Tried: loop with ternaries (950), local point3f/sign array loops (465-496), shared x/y/z locals in four
+// blocks (456), block-scoped locals (653), pairs loop (906), sum operand permutations per axis (no change),
+// 0.0f - radius (464), a negative_radius local (464), -radius in the offsets (405), four separate offset
+// locals (396, frame 0xe4), copying collision.point to a local origin (398, real 12-byte copy), a scale local /
+// x *= scale / reordered x sum in the helper (no change). Round 38: the vertex colour as the existing color4f (alpha
+// first, red/green/blue 1.0) gives retail's 0xe0 frame: retail spills alpha at +0x74 and keeps the colour's other 12
+// bytes unwritten (388, first difference +0x30, not kept: -6); left to differ: retail spills radius at its definition
+// (+8, -radius at +0xc) and keeps the scale in xmm5. Also tried: alpha before the corners (413), alpha or the
+// corners/offset declared at function scope (394), color4f plus radius after the matrix call (391), plus offset
+// declared before corners (388), plus the offsets through real_point3d_set (389), plus the corner helper adding the
+// origin after the transform (`origin->x + transformed.x`, as retail orders that add; 402, 1786 bytes), plus the
+// colour's red/green/blue set before alpha or the colour declared at function scope (388).
+// Round 487, all with native color4f: aggregate offset 388; complete transformed-point staging through
+// the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
+// names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
+// frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
-    (void)&opacity;
     s_collision_result_1697c0 collision;
     byte const *object = ((s_scalar_object_header *)g_4e0300->data)[object_index & 0xffff].object;
     collision.unknown24 = NONE;
@@ -2984,34 +3263,29 @@ void function_32ce0(long object_index, real opacity)
         matrix4x3_from_forward_and_up(&matrix, (vector3f const *)(object + 0x70),
             (vector3f const *)(object + 0x7c));
         point3f corners[4];
-        for (long i = 0; i < 4; ++i)
-        {
-            real x = i < 2 ? 0.0f - radius : radius;
-            real y = i == 0 || i == 3 ? 0.0f - radius : radius;
-            real z = 0.0f;
-            if (matrix.scale != 1.0f)
-            {
-                x *= matrix.scale;
-                y *= matrix.scale;
-                z *= matrix.scale;
-            }
-            corners[i].x = matrix.forward.i * x + matrix.up.i * z + matrix.left.i * y + matrix.position.x + collision.point.x;
-            corners[i].y = matrix.up.j * z + matrix.left.j * y + matrix.forward.j * x + matrix.position.y + collision.point.y;
-            corners[i].z = matrix.up.k * z + matrix.left.k * y + matrix.forward.k * x + matrix.position.z + collision.point.z + 0.001f;
-        }
-        real fraction = *(real const *)(collision.unknown00 + 4);
-        real alpha = (1.0f - fraction) * opacity;
-        D3DDevice_Begin(D3DPT_QUADLIST);
+        point3f offset;
+        offset.x = radius * -1.0f;
+        offset.y = radius * -1.0f;
+        offset.z = 0.0f;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[0]);
+        offset.x = radius;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[1]);
+        offset.y = radius;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[2]);
+        offset.x = radius * -1.0f;
+        shadow_corner(&matrix, &offset, &collision.point, &corners[3]);
+        real alpha = (1.0f - collision.t) * opacity;
+        D3DDevice::Begin(D3DPT_QUADLIST);
         D3DDevice_SetVertexData4f(9, 1.0f, 1.0f, 1.0f, alpha);
         D3DDevice_SetVertexData2f(3, 0.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[0].x, corners[0].y, corners[0].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[0].x, corners[0].y, corners[0].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 0.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[1].x, corners[1].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[1].x, corners[1].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[2].x, corners[2].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[2].x, corners[2].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[3].x, corners[3].y, corners[3].z, 1.0f);
-        D3DDevice_End();
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[3].x, corners[3].y, corners[3].z, 1.0f);
+        D3DDevice::End();
     }
 }
 
@@ -3114,6 +3388,25 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
+// MiniMax R (11-01): no new form, no lower score.
+// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
+// `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
+// to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
+// is unrolled four times by the compiler (1535 bytes, 956); retail keeps the count in memory ([esp+0x10], dec; jne) and does not
+// unroll, which the post-decrement form also gives without volatile. What still differs: retail compares the portal
+// side with `je found` straight into the plane code, ours re-tests `side == 2` after the loop (a `do { if (..) goto found; } while
+// (++side < 2); continue; found:` form removes that but scores 274); retail reads the current cluster as a long (movsx ebx, word
+// [0x547f90]; cmp ebx, -1) and reloads the global inside the fog loop, ours compares a cached copy (`long current_cluster`
+// makes the front match retail's order but scores 299 with the later spills); the camera x/y/z and 32767.0f stay in xmm3-xmm6 across
+// the portal loop, and retail re-makes zero with xorps inside each block (here one zero is shared from the function start); the
+// outer loop's index lives in edi in retail (spilled around the portal loop) and in ebx here.
+// Tried: the 2-iteration for loop with the volatile counter (299), with a plain counter (273); a plain counter with the
+// unrolled tests (956, the loop is unrolled and grows to 1535 bytes); `for (k < count) portals[k]` (972, unrolled);
+// a while loop with a side index (295); camera_z read before camera_y (no change).
+// Round 435: native camera 321, signed long count 268, cluster/camera 324, cluster/count 294,
+// camera/count 325, all three 343; all plus shared plane helper 343. Early uninitialized step
+// and step/distance declarations with the long count 268/268. All restored; four-point lead rejected.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -3156,12 +3449,16 @@ void function_36b50()
         {
             real minimum = 32767.0f;
             short *portals = *(short **)(current + 0x90);
-            volatile long remaining = *(long *)(current + 0x8c);
-            for (; remaining > 0; --remaining, ++portals)
+            long remaining = *(long *)(current + 0x8c);
+            while (remaining-- > 0)
             {
-                if (*portals == NONE) continue;
-                byte *portal = *(byte **)(structure + 0x60) + *portals * 0x24;
-                if (*(short *)portal != cluster && *(short *)(portal + 2) != cluster) continue;
+                short portal_index = *portals++;
+                if (portal_index == NONE) continue;
+                byte *portal = *(byte **)(structure + 0x60) + portal_index * 0x24;
+                long side;
+                for (side = 0; side < 2; ++side)
+                    if (((short *)portal)[side] == cluster) break;
+                if (side == 2) continue;
                 real *plane = (real *)(*(byte **)(*(byte **)(structure + 0x18) + 0xc) + *(long *)(portal + 4) * 16);
                 real value = 0.0f - (camera_y * plane[1] + camera_z * plane[2] + camera_x * plane[0] - plane[3]);
                 if (0.0f > value) value = 0.0f - value;
@@ -3219,13 +3516,11 @@ byte g_509413;
 // @retail 0x335e0
 void __stdcall function_335e0(long mode)
 {
-    bool enabled = function_0226d0();
-    if (enabled) enabled = function_335c0() != 0;
-    if (!enabled) return;
+    if (!function_0226d0() || !function_335c0()) return;
     s_cached_input records[32];
-    g_485a46 = enabled;
+    g_485a46 = true;
     function_01ddd0(9, 0x100, 0x100);
-    g_509413 = enabled;
+    g_509413 = true;
     long count = function_33400((byte const *)g_547f88.lists[2], records, mode);
     for (long i = 0; i < count; ++i)
         function_32350(records[i].data[2], *(real *)(records[i].data + 3));
@@ -3317,6 +3612,15 @@ extern s_record_pool *g_509434;
 extern long g_4ba050;
 long __stdcall function_3ddd0(long object_index);
 
+// score 1 (was 1): indexed byte-load encoding remains.
+// Native previous-level short/long, four-byte byte/signed-char table pointers, selected byte/signed-char element
+// pointers, read-only table with char/short previous; pointer advance mutable/const, exhaustive null branches,
+// late null-pointer lifetime: 13/53/1/1/1/1/1/13/1/1/50/53. Indexed cache byte still differs only in SIB
+// base/index order; original loads and arithmetic restored.
+// A 480-second annealed search: 45 attempts, none below 1.
+// Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
+// one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
+// Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -3391,6 +3695,19 @@ real function_50650(real cosine);
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d,
     point2f const *scale, bool perspective, bool negate, point2f *out);
 
+#ifndef PIN
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+#endif
+
+// score 43 (was 270): the three clamps use PIN, which reevaluates the
+// clamped expression as retail does (for the angle, function_50650 inlined
+// twice and then called), and the curve's base value is read where it is
+// used. What still differs: retail pushes ebx and edi after the first test and
+// keeps the state pointer in esi (ours ebx); it stores the pow result straight
+// to *strength and rereads it, comparing with a zeroed register; and it tests
+// function_30830's result as a byte. A pow on *strength or in double, and a
+// bool return for function_30830 (195 -> 189 for that function, 81 -> 80
+// here, across four files) were tried.
 // @retail 0x4ff50
 void function_4ff50(byte const *definition, byte const *state, bool facing, real time,
     real cosine, real *strength, real *horizontal, real *vertical, real *out)
@@ -3400,15 +3717,9 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
         byte const *curve = *(byte **)(definition + 0x3c);
         if (facing)
         {
-            real angle = function_50650(cosine) * 0.6366197466850281f;
-            if (angle < 0.0f) angle = 0.0f;
-            else if (angle > 1.0f) angle = 1.0f;
-            real lower = curve ? *(real const *)(curve + 0x14) * 0.6366197466850281f : 0.0f;
-            if (0.0f > lower) lower = 0.0f;
-            else if (lower > 0.9998999834060669f) lower = 0.9998999834060669f;
-            real value = (angle - lower) / (1.0f - lower);
-            if (0.0f > value) value = 0.0f;
-            else if (value > 1.0f) value = 1.0f;
+            real angle = PIN(function_50650(cosine) * 0.6366197466850281f, 0.0f, 1.0f);
+            real lower = PIN(curve ? *(real const *)(curve + 0x14) * 0.6366197466850281f : 0.0f, 0.0f, 0.9998999834060669f);
+            real value = PIN((angle - lower) / (1.0f - lower), 0.0f, 1.0f);
             *strength = value;
             if (value > 0.0f)
             {
@@ -3431,18 +3742,17 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
         }
         if (curve)
         {
-            real base = *(real const *)(curve + 0x10);
             if (*strength > 0.0f)
             {
                 real value = function_13bb90((s_tag_data const *)curve, time, 0.0f);
-                out[0] = base - (base - value) * *strength;
+                out[0] = *(real const *)(curve + 0x10) - (*(real const *)(curve + 0x10) - value) * *strength;
                 value = function_13bb90((s_tag_data const *)(curve + 8), time, 0.0f);
-                out[1] = base - (base - value) * *strength;
+                out[1] = *(real const *)(curve + 0x10) - (*(real const *)(curve + 0x10) - value) * *strength;
             }
             else
             {
-                out[0] = base;
-                out[1] = base;
+                out[0] = *(real const *)(curve + 0x10);
+                out[1] = *(real const *)(curve + 0x10);
             }
         }
     }
@@ -3531,6 +3841,29 @@ PRIVATE inline short key_list_find_index(byte const *list, long key)
     return NONE;
 }
 
+// score 88 (was 182): only difference left is one stack slot. Retail's frame is 4 bytes larger: it stores
+// a second zero (the register that also holds the loop index) at [esp+0x1c] before the guard,
+// never read in the loop, and compares the count against that register (`cmp edx, ecx`) where
+// ours folds to `test`. Tried: the index declared before the loop, an explicit running group
+// index (`++group_index` in the loop header), an extra counter bumped with `rendered` (all 182).
+// Also tried 2026-10-31 (all 182): a second counter `j` bumped with `i` and used in the second call, a dead
+// local assigned in the loop, `if (g_4ba134 > i)` around the loop with `i` declared first, a cached count; the
+// optimizer drops every unused counter, so the slot is not an ordinary dead local. Retail's two other
+// differences are in the inlined last pass (also seen in 0x31170): a dead `mov eax, [g_485898]` before
+// `xor eax, eax; call 0x15680` and a `mov byte [esp+0x13], 1` after that call; five spellings of the
+// `normal_cull && (g_485898 ...)` argument fold them away (182).
+// The last pass is 0x44370's mode 11 inlined: its `case 11: enabled = true; function_0496f0();` is the
+// late store (BLOCKED-BY 0x44370, see 0x423c0). Also tried: `enabled = true;` before the filter call in
+// draw_light_source_pass (177; 0x31170 278 -> 274), with it `first_group + i` as a named group index (177),
+// `rendered` declared last (177), direct g_4ba074[i] reads with no entry pointer (177), first_group declared
+// first (174; without the helper change 179).
+// 2026-11-01: the extra slot was 0x133790's counter argument: retail passes the address of a `long` set to 0 before
+// the loop (as matched 0x133720 does), not the bounds; `long counter = 0;` passed as `&counter` gave retail's frame
+// (182 -> 88). Still different: a one-register rotation in the group-field copy, the entry->x push and the `&counter`
+// push; 0x494b0's arguments are set up ecx-then-eax (its parameters swapped everywhere, window first, gives retail's
+// eax-then-ecx and 0x494b0 still matches, but only 86); pass 11's dead g_485898 load and late `enabled` store (BLOCKED-BY
+// 0x44370). Also tried (88 unless noted): `counter` declared first (97), direct g_4c1a48[1] field accesses, a named
+// `group_index = first_group + i`, the `group` reference declared before the loop.
 // @retail 0x30ed0
 void function_30ed0()
 {
@@ -3538,6 +3871,7 @@ void function_30ed0()
     byte *state = (byte *)g_4c0b78.state;
     byte *list = *(byte **)(state + 0x14);
     long first_group = g_4c19ac;
+    long counter = 0;
     for (long i = 0; i < g_4ba134; ++i)
     {
         s_flag_entry const *entry = &g_4ba074[i];
@@ -3561,7 +3895,7 @@ void function_30ed0()
         if (r[1] > *(real *)(frustum + 0xa4)) r[1] = *(real *)(frustum + 0xa4);
         if (!(r[2] > *(real *)(frustum + 0xa8))) r[2] = *(real *)(frustum + 0xa8);
         if (r[3] > *(real *)(frustum + 0xac)) r[3] = *(real *)(frustum + 0xac);
-        function_133790((s_bit_vector_pool *)state, index, false, (long *)&bounds3d, first_group + i, true);
+        function_133790((s_bit_vector_pool *)state, index, false, &counter, first_group + i, true);
         function_44ac0(3, 2, first_group + i);
         function_0494b0(clip, (real const *)&bounds3d);
         draw_configured_pass_r18(10);
@@ -3590,7 +3924,7 @@ void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab co
 s_bit_vector_pool *function_1320f0(long kind, long count, bool flag, long mask, byte const *projections,
     byte const *origin, real radius, void *filter, real plane_offset, long bsp);
 bool first_person_weapon_get_marker(long object, long marker, point3f *position, vector3f *forward, vector3f *up);
-real function_31b40(vector3f *direction, vector3f const *up);
+real function_31b40(vector3f const *direction, vector3f *up);
 void function_31660(long light, long tag, s_index_state_31660 *visibility, long parent, long root, bool flag, bool *special);
 void function_31c20(s_bit_vector_pool *visibility, bool flag, long parent);
 void function_2cb30();
@@ -3607,23 +3941,24 @@ void function_31c80()
     long count = function_31910(records);
     for (long i = 0; i < count; ++i)
     {
-        long const &light_index = *(long const *)(records[i].data + 1);
-        real weight = *(real *)(records[i].data + 3);
-        if (!(weight > 0.07000000029802322f)) continue;
+        long light_index = *(long const *)(records[i].data + 1);
+        if (!(*(real *)(records[i].data + 3) > 0.07000000029802322f)) continue;
         byte *light = g_4e030c->data + (light_index & 0xffff) * 0x110;
-        byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
         long parent = NONE, root = NONE;
+        byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
         if (*(short *)(light + 0x54) != NONE)
         {
             parent = *(long *)(light + 0x4c);
+            long top = NONE;
             for (long current = parent; current != NONE; current = *(long *)(((s_scalar_object_header *)g_4e0300->data)[current & 0xffff].object + 0x14))
-                root = current;
-            if ((definition[0] & 0x20) && !(*(dword *)definition & 0x40000))
+                top = current;
+            root = top;
+            if ((*(dword *)definition & 0x20) && !(*(dword *)definition & 0x40000))
             {
-                long node = function_b8c40(parent, *(short *)(light + 0x54));
-                first_person_weapon_get_marker(parent, node, (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8));
-                point3f *position = (point3f *)(light + 0x84);
                 vector3f *offset = (vector3f *)(light + 0xac);
+                point3f *position = (point3f *)(light + 0x84);
+                long node = function_b8c40(parent, *(short *)(light + 0x54));
+                first_person_weapon_get_marker(parent, node, position, offset, (vector3f *)(light + 0xb8));
                 point3f *endpoint = (point3f *)(light + 0x90);
                 endpoint->x = position->x + offset->i;
                 endpoint->y = position->y + offset->j;
@@ -3635,9 +3970,9 @@ void function_31c80()
         function_c17f0(light_index, (s_light_shape_ab *)shape, true);
         if (g_509440 < 8) g_4c6b00[g_509440++].index = light_index;
         s_bit_vector_pool *parent_visibility = g_4ba010 ? 0 : &g_547f88;
-        bool special = !(definition[0] & 8) && g_4ba020 && *(real *)(light + 0xf8) > 0.0f && *(short *)shape != 0;
+        bool special = !(*(dword *)definition & 8) && g_4ba020 && *(real *)(light + 0xf8) > 0.0f && *(short *)shape != 0;
         long bsp = *(short *)(light + 0x48);
-        if (bsp == NONE && (definition[0] & 0x20) && (*(dword *)definition & 0x40000)) bsp = g_4b9ee4;
+        if (bsp == NONE && (*(dword *)definition & 0x20) && (*(dword *)definition & 0x40000)) bsp = g_4b9ee4;
         long mask = (*(dword *)definition >> 12) & 0x400;
         short projection_count;
         function_c1d90((s_light_frame_ab *)(light + 0x84), (s_light_shape_ab *)shape, (s_light_projection_ab *)projections, &projection_count);
@@ -3652,7 +3987,7 @@ void function_31c80()
         function_133720(state, true);
         function_44720();
         function_31170(*(long *)(light + 4), (s_view_camera *)shape, light_index,
-            (s_view_source *)(light + 0x84), special, weight);
+            (s_view_source *)(light + 0x84), special, *(real *)(records[i].data + 3));
     }
 }
 
@@ -3660,10 +3995,10 @@ void __stdcall function_352e0(long target, bool multiple);
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force);
 
-PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, bool extra_enabled, bool depth, bool normal_cull, long target, bool filter)
+PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte extra_enabled, bool depth, bool normal_cull, long target, bool filter)
 {
-    bool enabled;
-    *(volatile bool *)&enabled = (bool)((g_4c1a48[group].flags >> mode) & 1) && extra_enabled;
+    byte enabled = (g_4c1a48[group].flags >> mode) & 1;
+    if (enabled) enabled = extra_enabled;
     if (enabled)
     {
         g_467130 = mode;
@@ -3680,6 +4015,30 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, bool
     if (enabled) { function_44550(); function_445d0(); }
 }
 
+// MiniMax R (11-01): no new form, no lower score: 0x44370 (src/unknown_01cf50.cpp, not my file) is still called out of line where retail inlines it into six of the passes.
+// score 165 (was 165, 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
+// reassigned from the extra gate), and the volatile store on it is gone. What still differs: retail stores
+// the constant 1 into that slot late (after the cull call, passes 3 and 16 only) where we store it early on
+// every enabled path; retail keeps a dead load of g_485898 in the passes that never cull; function_14b60
+// takes its first argument in eax in retail (mov eax, 1) but is pushed here (callee not matched).
+// Tried: a byte gate with the byte globals passed directly (no setne, 209 because the dead load is missing),
+// reversed/ternary/non-short-circuit forms of the cull test (213-216), a local copy of g_485898 (165).
+// Cause: each pass is `if (function_44370(mode)) { function_44550(); function_445d0(); }`; retail inlines
+// 0x44370 into passes 1, 3, 8, 7, 2 and 16 (its mode table folded per mode) and calls it for 15 and 21. The
+// late store is 0x44370's `case 3: case 16: enabled = true;`, the dead load its
+// `g_485898 >= 4 && g_485898 <= 7 ? 0 : settings->cull_mode` with a cull mode of 0 (BLOCKED-BY 0x44370: it
+// and its table live in a contributor file). Also tried: the cull test reversed (165), the raw byte gates
+// (209: pass 8's gate exact, the rest shifts), `if (enabled && !extra_enabled) enabled = 0;` (200),
+// `bool enabled = ... && extra_enabled` (235), every pass as draw_configured_pass_r18 (842: 0x44370 stays
+// out of line), the helper with a cull-mode parameter and `if (mode == 3 || mode == 16) enabled = true;`
+// (180), the same with 0x44370's mode-based gate (187: passes 3 and 8 exact, cull arms reversed) and with
+// `cull_mode && (...) ? 1 : 0` (187).
+// Also tried 2026-11-01: 0x14b60 written in place of its stub so its flags go in eax (250: the body needs an 8-byte
+// stack-alignment pad and this function then realigns its frame with `and esp,-8`); passes 1, 3, 7 and 16 through
+// draw_light_source_pass (204: pass 1 then matches, but 3 and 16 lose retail's late store), only passes 1 and 7
+// through it (192), with draw_light_source_pass's cull argument as `g_485898 >= 4 && g_485898 <= 7 ? 0 : (normal_cull
+// ? 1 : 0)` (211: the dead load still folds away, and 0x32350 rises to 587); the gate as `if (!extra_enabled)
+// enabled = 0;` (191; 0x41cc0 186, 0x2bcd0 362); every pass as draw_configured_pass_r18 also with the mode table const (842).
 // @retail 0x423c0
 void __stdcall function_423c0(void *payload)
 {
@@ -3710,10 +4069,36 @@ void __stdcall function_15720(real x, real y);
 extern byte g_4ba018;
 extern dword g_4b843c;
 
+// score 237 (was 278, 300): the camera is now a register parameter (the `&camera` alias that forced it onto the stack is gone, so the
+// stack arguments are retail's four and the epilogue is `ret 0x10`), the pass-13 test is retail's two separate bit tests and the
+// pass-30ed0 test is retail's `shr 2` form. What still differs: (1) retail keeps the stores to g_4ba014 that precede a conditional
+// branch (the initial 0, after the bit-1 step, after the 0x24 step) and tests the flags through `mov cl, al`, as if g_4ba014 could be
+// aliased by the indirect loads that follow; ours drops them. (Forcing that with `((byte *)&g_4ba014)[0]` scores 242, but that takes a
+// global's address as a trick and is not used.) (2) the four passes are 0x44370's body inlined in retail (dead g_485898 loads, the
+// `enabled = true` re-store after pass 11's cull call), BLOCKED-BY 0x44370 as in 0x404b0. (3) 0x4a1e0 takes its register arguments in a
+// different order (retail: camera in ecx, source in eax, resource in edx; callee not matched). (4) retail lays the `>` chain out as
+// ja, ja, jbe-to-else with the `or 2` falling through.
+// Tried: a local `flags` stored to g_4ba014 after each step (293: the compiler drops the intermediate stores), flags as a ternary or a
+// negated condition (289, same), `(byte)` / `!= 0` / bool casts on the first bit test (278, same).
+// Second pass (logic walked against 0x31170-0x31518: every branch, mask, pass argument and the tail agree, so what is left is code
+// shape): (5) retail reads the flags twice for the last pass (`test byte ptr [g],1` then `mov edx,[g]; shr edx,1`) where we
+// load once; 0x3fdf0 shows the same quirk. (6) 0x4a1e0's own prologue (retail 0x4a1e0-0x4a28f) reads source from eax (+0x50..+0x68),
+// camera from ecx (`mov dx,[ecx]`) and resource from edx (`cmp edx,-1`), exactly as retail's caller loads them (0x311b4-0x311c3), so
+// the call-site difference is the stub's register mapping, not this function. Tried: the bit sets through an inlined copy of
+// 0x30ca0 (`if (v) g |= 1 << n; else g &= ~(1 << n)`, 278, same code; the real 0x30ca0 is called, not inlined, from 0x32350), the
+// `!enabled || bit0` branch order (278), a `moving` bool folded into one ternary store (278), a volatile-cast read of g_485a40
+// to provoke the store before the branch (no change to the store). A dword bit-field view of g_4ba014 (cast of its
+// address, not kept) scores 274 and 264 with the inlined sets, but still drops the store before `test bl,bl` and turns the bit-0
+// read into `mov al,[g]`; no spelling tried reproduces that store, so the 54-byte shortfall (and the shifted compare after it) stays.
+// 2026-11-01: bits 1 and 3 set through the existing bit_vector_set(&g_4ba014, ...) (237): g_4ba014 is then address-taken, so the
+// initial 0 store and the store before the definition read appear and the `>` chain gets retail's layout; still one store short
+// (retail also stores after the bit-1 step, before `test bl,bl; je`, then tests bit 0 through `mov cl, al`). Also tried on top of
+// that (all 237): bit 0 tested with bit_vector_test in the `enabled` test or in the last pass's test, every constant bit
+// operation (|= 0x24, &= ~0x2c, &= ~0x10) as bit_vector_set calls, the bit-1 test as a named `moving` bool, the `enabled`
+// test inverted (`!enabled || bit 0` clears). g_4ba014 defined in a non-LTCG object instead (diagnostic) changes nothing (278).
 // @retail 0x31170
-void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool special, real scale)
+void function_31170(long tag, s_view_camera *camera, long resource, s_view_source *source, bool enabled, real scale)
 {
-    bool &enabled = special;
     byte *definition = g_4e3b44[tag & 0xffff].bytes;
     function_40e90(0);
     if (enabled) enabled = (g_4c1a48[2].flags & 0x400) != 0;
@@ -3722,15 +4107,12 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
     g_4ba014 = 0;
     if ((!g_510c50 || !((byte *)g_510c50)[5]) && *(short *)(definition + 4) == 0)
         g_485950.i = g_485950.j = g_485950.k = 0.0f;
-    s_view_camera *const *camera_home = &camera;
-    g_4ba014 = *(short *)*camera_home == 0 ? 1 : 0;
-    if (g_485950.i > 0.009999999776482582f || g_485950.j > 0.009999999776482582f || g_485950.k > 0.009999999776482582f) g_4ba014 |= 2;
-    else g_4ba014 &= ~2;
-    if (enabled && !(g_4ba014 & 1))
+    g_4ba014 = *(short *)camera == 0 ? 1 : 0;
+    bit_vector_set(&g_4ba014, 1, g_485950.i > 0.009999999776482582f || g_485950.j > 0.009999999776482582f || g_485950.k > 0.009999999776482582f);
+    if (enabled && !(bool)((g_4ba014 >> 0) & 1))
     {
         g_4ba014 |= 0x24;
-        if (g_485a40 > 0.0f && *(short *)(definition + 0x14) != 2) g_4ba014 |= 8;
-        else g_4ba014 &= ~8;
+        bit_vector_set(&g_4ba014, 3, g_485a40 > 0.0f && *(short *)(definition + 0x14) != 2);
     }
     else g_4ba014 &= ~0x2c;
     g_4ba014 = g_4ba014 & ~0x10;
@@ -3741,10 +4123,10 @@ void function_31170(long tag, s_view_camera *camera, long resource, s_view_sourc
     }
     if ((bool)((g_4ba014 >> 2) & 1) || (bool)((g_4ba014 >> 1) & 1) || (definition[0] & 0x20))
         draw_light_source_pass(1, 11, true, false, false, g_4858b8, true);
-    if (g_510c50 && ((byte *)g_510c50)[5] && (g_4ba014 & 4) && g_4ba134 > 0) function_30ed0();
+    if (g_510c50 && ((byte *)g_510c50)[5] && (bool)((g_4ba014 >> 2) & 1) && g_4ba134 > 0) function_30ed0();
     draw_light_source_pass(1, 14, true, false, false, 1, false);
     draw_light_source_pass(1, 12, true, false, false, g_4858b8, false);
-    if ((g_4ba014 & 3) == 3) draw_light_source_pass(1, 13, true, false, false, g_4858b8, false);
+    if ((g_4ba014 & 1) && (bool)((g_4ba014 >> 1) & 1)) draw_light_source_pass(1, 13, true, false, false, g_4858b8, false);
     g_4858bc = 0;
     g_4b843c = 0;
     D3DDevice_SetRenderState(D3DRS_STENCILENABLE, FALSE);
@@ -3765,6 +4147,34 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
+// score 138 (was 210): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
+// calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
+// stores 1 into the slot after function_15680 in both arms of pass 3, and the three passes with
+// normal_cull false still load g_485898 into a dead eax in retail. Tried: a gated helper that
+// keeps the raw g_4ba022 byte in the slot (removes the extra `mov [esp+0x1c],1` stores and matches
+// pass 8, 6 differing spots left, but 26 bytes short so the score is 193), the volatile spelling
+// from 0x423c0 (209), `enabled = enabled && extra` (213).
+// Round 186: LCS-aligned this body is only 12 instructions off (the positional count is the shifts):
+// the early `enabled = 1` stores, pass 3's late stores, pass 8's raw gate byte, the dead g_485898 loads
+// of the three no-cull passes and function_14b60's eax argument. A gate pointer (`byte const *gate`,
+// NULL for the ungated passes, `if (enabled && gate) enabled = *gate;`) leaves 6 (193 positional,
+// 958 bytes): the dead loads only appear when 0x44370 itself is inlined at link time (a file-local
+// copy folds them away), and 0x14b60's register argument needs its body (disabled in its owner's
+// file because it moves matched 0x14ac0's frame). Also tried: `enabled &= extra_enabled` 191,
+// `!(g_485898 >= 4 && g_485898 <= 7) && normal_cull` 138, 0x44370's `>= 4 && <= 7 ? 0 : cull`
+// 138 (cull arms reversed), `if (enabled && extra_enabled != 1)` 167.
+// Round 280: existing configured provider for culled/gated/both/unculled/culled plus
+// unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
+// plain loop over the actual mode sequence 795. Provider stays out of line;
+// original whole body and call roles restored. Flag stores and stub convention remain.
+// Round 36 (fast, the shared pass helper changed for all three callers): the gate only for modes 2/8 with
+// `if (mode == 3 || mode == 16) enabled = true;` after the cull call and pass 8's raw byte 193 (958 bytes;
+// 0x423c0 201, 0x2bcd0 371), the same with the `!= 0` gate 186, with `g_485898 >= 4 && g_485898 <= 7 ? 0 :
+// cull` 193; the gate pointer with that late store 193, with the cull ternary 193. The late store is
+// threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
+// 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
+// retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -3780,11 +4190,11 @@ void __stdcall function_41cc0(void *payload)
     function_352e0(NONE, true);
     for (long i = 0; i < level_count; ++i)
         function_44c90(0, NONE, levels[i + 1], 0x11818e, mask, 0x8000, 0x40000, false);
-    draw_source_pass_r18(0, 1, true, true, true, 1, false);
-    draw_source_pass_r18(0, 3, true, true, true, g_4858b8, false);
-    draw_source_pass_r18(0, 8, g_4ba022 != 0, false, false, g_4858b8, false);
-    draw_source_pass_r18(0, 20, true, false, false, g_4858b8, false);
-    draw_source_pass_r18(0, 7, true, false, false, g_4858b8, false);
+    draw_selected_source_pass(0, 1, true, true, true, 1, false);
+    draw_selected_source_pass(0, 3, true, true, true, g_4858b8, false);
+    draw_selected_source_pass(0, 8, g_4ba022 != 0, false, false, g_4858b8, false);
+    draw_selected_source_pass(0, 20, true, false, false, g_4858b8, false);
+    draw_selected_source_pass(0, 7, true, false, false, g_4858b8, false);
     draw_configured_pass_r18(2);
     draw_configured_pass_r18(16);
     draw_configured_pass_r18(18);
@@ -3826,44 +4236,37 @@ void function_020770();
 void __stdcall function_13870(bool finish, bool blur);
 bool function_13630();
 
-PRIVATE __forceinline void draw_orchestration_source_pass(long group, long mode, bool extra_enabled, bool depth, bool normal_cull, long target, bool filter)
-{
-    bool enabled = (g_4c1a48[group].flags & (1 << mode)) && extra_enabled;
-    if (enabled)
-    {
-        g_467130 = mode;
-        g_467134 = (void *)group;
-        g_467138 = &g_4c1a48[group];
-        g_4858b4 = target;
-        function_14bc0((short)target, 0, true);
-        if (mode == 1 && !g_485a75 && !g_485a76) function_14b60(1, 0, 0.0f, 0);
-        function_15680(normal_cull && (g_485898 < 4 || g_485898 > 7) ? 1 : 0);
-        if (filter) function_0496f0();
-        function_15370(depth ? 1 : 0);
-        function_44550();
-        function_445d0();
-    }
-    else
-    {
-        g_467130 = 0;
-        function_15370(depth ? 1 : 0);
-    }
-}
-
-PRIVATE __forceinline s_depth_parameters_13450 zero_orchestration_parameters()
-{
-    s_depth_parameters_13450 parameters = {0};
-    return parameters;
-}
-
+// MiniMax R (11-01): no new form, no lower score.
+// score 331 (was 453; the fast check's score counts every line after a one-instruction shift, so most of it is
+// shift): the prologue now matches to +0x48 (memset of the parameters, the identifier read first); draw_ui and
+// finish are bool (caller 0x13680 pushes raw bools: 103 -> 16); the calls of 0x2c370 for 2..6 are
+// written out as retail has them (a loop kept 0x1595d0 and 0x14ddc0 inlined); the 0x25dc0 call, the scale test and the
+// tail match. Still different: (1) retail stores the constant 1 into the pass flag late, only after the
+// cull call of pass 3; passes 1, 5, 20 have no such store, ours stores early in all of them (a
+// helper variant without the extra gate for 1/5/20 removes those stores but then ours is 20 bytes short and
+// the shift raises the score to 411-437); (2) the passes that never cull keep a dead load of g_485898 in
+// retail (3 loads, same cause as 0x423c0); (3) function_14b60 takes its first argument in eax in retail
+// (callee not matched); (4) the second 0x25dc0 call: retail builds the first flag with a branch diamond
+// (mov dl,1 / jle / xor cl,cl / jmp / mov cl,1), ours folds it to setle (kept: `g_4c19ac <= 0`; a flag
+// local set inside a test 327, bool/byte/long locals, if-else, ternaries, two calls (447, tail duplicated) 273-357); (5) 0x3ba90 returns long here but retail
+// stores only its al (bool), which needs the definition in unknown_03bcb0.cpp changed to bool
+// (-1 instruction, 2bcd0 354 only because the shift moves). Tried: a plain {0} parameter block (398, dead
+// zero stores dropped), the helper-returned block (320 before the memset form). Round 38: the weapon tag read
+// straight from the object table without the one-use object local (331, kept); `!(g_4c19ac > 0)` (331, still
+// setle); the weapon object as a pointer whose tag is read at each use (331 positional, but it gives retail's esi
+// object register: 20 -> 18 aligned differences); `if (g_4c19ac > 0) f(false, true); else f(true, true);` (421,
+// tail duplicated); `bool last = function_3ba90(...) != 0` (352). BLOCKED-BY 0x44370 (pass flags, dead loads),
+// 0x14b60 (a stub), 0x3ba90 (returns long).
 // @retail 0x2bcd0
-void __stdcall function_2bcd0(long frame_mode, long draw_ui, bool world_effects, long finish,
+void __stdcall function_2bcd0(long frame_mode, bool draw_ui, bool world_effects, bool finish,
     long context_mode, long filter_mode, real transition)
 {
-    s_depth_parameters_13450 parameters = zero_orchestration_parameters();
-    parameters.distance = transition;
+    long identifier = ++g_4ba03c;
+    s_depth_parameters_13450 parameters;
+    memset(&parameters, 0, sizeof(parameters));
+    parameters.identifier = identifier;
     parameters.mode = filter_mode;
-    parameters.identifier = ++g_4ba03c;
+    parameters.distance = transition;
     function_13450(&parameters);
     if (!function_289e0() && !function_159610())
     {
@@ -3879,18 +4282,22 @@ void __stdcall function_2bcd0(long frame_mode, long draw_ui, bool world_effects,
             }
             else
             {
-                draw_orchestration_source_pass(0, 1, true, true, true, 1, false);
-                draw_orchestration_source_pass(0, 3, true, true, true, g_4858b8, false);
-                draw_orchestration_source_pass(0, 5, true, false, false, g_4858b8, false);
-                draw_orchestration_source_pass(0, 8, g_4ba022 != 0, false, false, g_4858b8, false);
-                draw_orchestration_source_pass(0, 20, true, false, false, g_4858b8, false);
+                draw_selected_source_pass(0, 1, true, true, true, 1, false);
+                draw_selected_source_pass(0, 3, true, true, true, g_4858b8, false);
+                draw_selected_source_pass(0, 5, true, false, false, g_4858b8, false);
+                draw_selected_source_pass(0, 8, g_4ba022, false, false, g_4858b8, false);
+                draw_selected_source_pass(0, 20, true, false, false, g_4858b8, false);
                 function_2c370(0);
                 function_335e0(filter_mode);
                 draw_configured_pass_r18(7);
                 function_31c80();
                 function_2c370(1);
                 draw_configured_pass_r18(2);
-                for (long pass = 2; pass <= 6; ++pass) function_2c370(pass);
+                function_2c370(2);
+                function_2c370(3);
+                function_2c370(4);
+                function_2c370(5);
+                function_2c370(6);
             }
             if (frame_mode != 2)
             {
@@ -3925,7 +4332,7 @@ void __stdcall function_2bcd0(long frame_mode, long draw_ui, bool world_effects,
             draw_configured_pass_r18(15);
             function_1595d0();
             function_42b20(-13);
-            if ((byte)draw_ui) function_1e370();
+            if (draw_ui) function_1e370();
             if (frame_mode != 2)
             {
                 if (filter_mode != 2 && !g_4b9f88) function_25dc0(g_4c19ac <= 0, true);
@@ -3941,12 +4348,12 @@ void __stdcall function_2bcd0(long frame_mode, long draw_ui, bool world_effects,
                         long weapon = function_cbd50(unit, (signed char)unit_data[0x212]);
                         if (weapon != NONE)
                         {
-                            byte *local_ec1b9c = ((s_scalar_object_header *)g_4e0300->data)[weapon & 0xffff].object;
-                            long tag = *(long *)local_ec1b9c;
+                            long tag = *(long *)((s_scalar_object_header *)g_4e0300->data)[weapon & 0xffff].object;
                             if (tag != NONE)
                             {
-                                point2f *scale = (point2f *)(g_4e3b44[tag & 0xffff].bytes + 0x314);
-                                if (scale->x != 0.0f && scale->y != 0.0f) function_2afa0(scale);
+                                byte *definition = g_4e3b44[tag & 0xffff].bytes;
+                                if (*(real *)(definition + 0x314) != 0.0f && *(real *)(definition + 0x318) != 0.0f)
+                                    function_2afa0((point2f *)(definition + 0x314));
                             }
                         }
                     }
@@ -3954,14 +4361,14 @@ void __stdcall function_2bcd0(long frame_mode, long draw_ui, bool world_effects,
                 function_3fdf0(context_mode, false);
                 function_404b0(context_mode);
                 function_3fdf0(context_mode, true);
-                if ((byte)draw_ui) function_40870();
+                if (draw_ui) function_40870();
                 g_485a76 = 0;
                 if (filter_mode != 2 && world_effects) function_2dd30();
+                if (finish && filter_mode != 2) draw_configured_pass_r18(17);
                 if (filter_mode != 2)
                 {
-                    if ((byte)finish) draw_configured_pass_r18(17);
                     function_020770();
-                    function_13870(world_effects, (byte)finish != 0);
+                    function_13870(world_effects, finish);
                 }
             }
         }
@@ -4129,117 +4536,156 @@ PRIVATE __forceinline void shadow_cross_32350(vector3f const &a, vector3f const 
     out->k = z;
 }
 
+PRIVATE __forceinline real absolute_32350(real value)
+{
+    return value >= 0.0f ? value : 0.0f - value;
+}
+
+// score 491 (was 492, 623, 506; 491 since 0x31170 sets g_4ba014 bits through bit_vector_set): retail returns a separate false byte, not the special flag (`mov al, [esp+0xb]` on every
+// non-success exit; the flag 3d7f0 writes is the byte at [esp+0x13]), so a special object returns false; the draft
+// returned the flag. 31f50's 5th output feeds the depth, its 4th the *2 field (the draft had them swapped), the
+// two cross products are separate branches (cmov before), the frame points come from g_47fd18+0xc, and the final
+// pass is draw_light_source_pass. A block-by-block walk of the rest against retail (2026-10-31) found no further
+// behaviour difference: constants (0.0002, 0.09, 0.9, 0.5, 2.0), field offsets, call argument orders, both
+// cross-product arms, the box fields and the g_509413/g_509414 stores all agree. The two pass bits are tested as
+// `!(bool)((~(flags >> n)) & 1)` (retail `shr; not; test`), as in 0x3d380. Still differs: (1) retail pushes
+// esi/edi only after the early exits, ours at entry, and its frame is 4 bytes smaller; the byte returned on the
+// failure exits is stored at entry and read back from memory in retail (the inlined pass's `enabled` shares its
+// slot), ours folds it to `xor al, al` and merges the exits, which is why retail has five epilogue copies;
+// (2) 0x4a1e0 takes source/camera/resource in eax/ecx/edx in retail (callee unmatched, same as 0x31170);
+// (3) retail holds the constant 1 in ebx for the whole inlined pass (`test bl, dl`, `and al, bl`, `mov [..], ebx`),
+// ours uses immediates; (4) retail's |x| > |y| keeps both absolute values and re-evaluates the winner in each arm
+// (ja/jbe diamond), ours selects with a move (ternary and if/else compile the same, 523 with the origin change).
+// Tried: the result as a volatile local byte (482; not kept, as it doesn't make the function match), if/else
+// statements for the larger magnitude (531, ternary 524 before the frame-point change), `!(bit) || !(bit)` and
+// `== 0` spellings of the gate (same shr/test form), loading the origin once (`*(point3f *)g_47fd18 =
+// *(point3f *)(g_47fd18 + 0xc) = *origin;` gives retail's exact store sequence, 527; through a local copy 608
+// with the cross arms laid out the other way round; later xmm numbers move, so the score rises), every order of
+// the three dot-product terms (the compiler picks k, j, i anyway).
+// Also tried 2026-11-01: a single exit (`result = true` on success, the g_509413/g_509414 stores once after the
+// `!special` block, `else if` for the special arm, one `return result`; 552 in a fast check, 1758 bytes: the exits
+// merge and result stays in al); absolute_32350 as a function-like macro (497: gives retail's two abs diamonds and
+// the re-evaluated arms, but the registers differ and the listing shifts), the same with `largest` as one
+// conditional expression (497); `bool result = false;` declared first (492); `fabs(dot3f(&forward, axis))` (492).
+// The constant 1 that retail keeps in ebx through pass 11 and the result byte sharing that pass's `enabled` slot
+// both come from 0x44370 inlined there with its mode table folded (retail's table at 0x43fa1c is in .rdata;
+// ours, g_render_modes_storage, is a non-const global; making it const changes nothing here and 0x44370 still stays out of
+// line, 842 for 0x423c0 with every pass calling it), BLOCKED-BY 0x44370.
 // @retail 0x32350
 bool __stdcall function_32350(long index, real input_alpha)
 {
     byte *object = ((s_scalar_object_header *)g_4e0300->data)[index & 0xffff].object;
+    bool result = false;
     real alpha = 0.0f;
-    bool special = false;
+    bool special;
     bool eligible = function_3d7f0(index, &alpha, &special);
     alpha *= input_alpha;
-    if (!eligible || *(long *)(object + 0x14) != NONE || !g_4ba020) return special;
+    if (!eligible || *(long *)(object + 0x14) != NONE || !g_4ba020) return result;
     bool object_flag;
-    if (!function_3d7c0(index, &object_flag)) return special;
-    if (special)
+    if (!function_3d7c0(index, &object_flag)) return result;
+    if (!special)
     {
-        if (g_509413)
+        real radial = *(real *)(object + 0x3c) > 0.00019999999494757503f ? *(real *)(object + 0x3c) : 0.00019999999494757503f;
+        real axial = radial;
+        byte *lighting = function_3dc90(index);
+        bool object_type = object[0xaa] != 1;
+        if (!lighting || !(*(real *)(lighting + 0x1c) > 0.0f)) goto failed;
+        alpha *= *(real *)(lighting + 0x1c);
+        if (!(alpha > 0.09000000357627869f)) goto failed;
         {
-            if (function_32ac0())
+            vector3f const *light_direction = (vector3f *)(lighting + 0xc);
+            point3f const *origin = (point3f *)(object + 0x30);
+            function_31f50(index, origin, light_direction, &radial, &axial);
+            *(point3f *)(g_47fd18 + 0xc) = *origin;
+            *(point3f *)g_47fd18 = *origin;
+            vector3f &forward = *(vector3f *)(g_47fd18 + 0x28);
+            forward = *light_direction;
+            function_30bf0(&forward);
+            real largest;
+            if (absolute_32350(forward.i) > absolute_32350(forward.j)) largest = absolute_32350(forward.i);
+            else largest = absolute_32350(forward.j);
+            real depth = axial * 2.0f + largest;
+            *(real *)(g_47fda0 + 0x2c) = depth - axial;
+            *(real *)(g_47fda0 + 0x30) = depth + axial - axial;
+            *(real *)(g_47fda0 + 0x20) = radial * 2.0f;
+            vector3f const *axis = g_4687ac;
+            vector3f &up = *(vector3f *)(g_47fd18 + 0x34);
+            if (fabs(forward.k * axis->k + forward.i * axis->i + forward.j * axis->j) < 0.8999999761581421f)
+                shadow_cross_32350(forward, *axis, &up);
+            else
+                shadow_cross_32350(forward, *g_4687b4, &up);
+            function_30bf0(&up);
+            byte shape[0x74];
+            function_c1930((s_light_definition_ab *)g_47fda0, (s_light_shape_ab *)shape);
+            function_c1a80((s_light_frame_ab *)g_47fd18, (s_light_shape_ab *)shape, (s_light_definition_ab *)g_47fda0);
+            s_320b0_box box;
+            box.matrix.scale = 1.0f;
+            box.matrix.forward = forward;
+            shadow_cross_32350(up, forward, &box.matrix.left);
+            box.matrix.up = up;
+            box.radius.i = *(real *)(g_47fda0 + 0x30) * 0.5f;
+            box.radius.j = *(real *)(shape + 0x58) * 0.5f;
+            box.radius.k = *(real *)(shape + 0x5c) * 0.5f;
+            point3f center;
+            point3f const &second_point = *(point3f *)(g_47fd18 + 0xc);
+            center.x = second_point.x + box.matrix.forward.i * (0.0f - box.radius.i);
+            center.y = second_point.y + box.matrix.forward.j * (0.0f - box.radius.i);
+            center.z = second_point.z + box.matrix.forward.k * (0.0f - box.radius.i);
+            box.matrix.position.x = *(real *)(g_47fd18) - center.x + second_point.x;
+            box.matrix.position.y = *(real *)(g_47fd18 + 4) - center.y + second_point.y;
+            box.matrix.position.z = *(real *)(g_47fd18 + 8) - center.z + second_point.z;
+            if (!function_320b0(&box)) goto failed;
+            byte projections[6 * 0x1bc];
+            short projection_count;
+            g_4858bc = 0;
+            *(real *)(g_47fd18 + 0x74) = alpha;
+            function_c1d90((s_light_frame_ab *)g_47fd18, (s_light_shape_ab *)shape, (s_light_projection_ab *)projections, &projection_count);
+            real radius = (real)sqrt(box.radius.k * box.radius.k + box.radius.j * box.radius.j + box.radius.i * box.radius.i);
+            function_1320f0(2, projection_count, false, 0, projections, (byte const *)&box.matrix.position, radius, &g_547f88, 0, *(short *)(object + 0x2c));
+            visibility_object_lists_update_flags((s_visibility_object_lists *)&g_54aa68, index, false, 0);
+            function_2cbc0(object_type);
+            function_44720();
+            g_4ba018 = 1;
+            g_4ba014 = 0;
+            if (*(short *)((byte *)g_54aa68.lists[0] + 4) > 0)
             {
-                g_509414 = 1;
-                g_509413 = 0;
-                function_32ce0(index, alpha);
+                g_4c5008 = g_47fda0;
+                g_4ba014 = 0x14;
+                function_30ca0(false, 5);
+                function_4a1e0((s_view_source *)g_47fd18, (s_view_camera *)shape, NONE,
+                    (s_view_flags *)g_47fda0, 1.0f, true, 1.0f);
+                function_48ee0(g_47fd18, shape, g_47fda0);
+                g_485a30 = alpha;
+                function_40e90(0);
+                if (!(bool)((~(g_4c1a48[2].flags >> 10)) & 1) && !(bool)((~(g_4c1a48[1].flags >> 11)) & 1))
+                {
+                    draw_configured_pass_r18(10);
+                    function_222a0();
+                    draw_light_source_pass(1, 11, true, false, false, g_4858b8, true);
+                }
+                function_4a780();
             }
-            else g_509414 = 0;
+            g_4ba018 = 0;
+            g_4ba014 = 0;
+            g_509413 = 1;
+            g_509414 = 0;
+            return true;
         }
-        else if (g_509414) function_32ce0(index, alpha);
-        return special;
-    }
-    real radial = *(real *)(object + 0x3c) > 0.00019999999494757503f ? *(real *)(object + 0x3c) : 0.00019999999494757503f;
-    real axial = radial;
-    byte *lighting = function_3dc90(index);
-    bool object_type = object[0xaa] != 1;
-    if (!lighting || !(*(real *)(lighting + 0x1c) > 0.0f)) goto failed;
-    alpha *= *(real *)(lighting + 0x1c);
-    if (!(alpha > 0.09000000357627869f)) goto failed;
-    {
-        vector3f const *light_direction = (vector3f *)(lighting + 0xc);
-        point3f const *origin = (point3f *)(object + 0x30);
-        function_31f50(index, origin, light_direction, &radial, &axial);
-        *(point3f *)(g_47fd18 + 0xc) = *origin;
-        *(point3f *)g_47fd18 = *origin;
-        vector3f &forward = *(vector3f *)(g_47fd18 + 0x28);
-        forward = *light_direction;
-        function_30bf0(&forward);
-        real abs_x = forward.i >= 0.0f ? forward.i : 0.0f - forward.i;
-        real abs_y = forward.j >= 0.0f ? forward.j : 0.0f - forward.j;
-        real largest = abs_x > abs_y ? abs_x : abs_y;
-        real depth = radial * 2.0f + largest;
-        *(real *)(g_47fda0 + 0x2c) = depth - radial;
-        *(real *)(g_47fda0 + 0x30) = depth + radial - radial;
-        *(real *)(g_47fda0 + 0x20) = axial * 2.0f;
-        vector3f const *axis = g_4687ac;
-        if (!(fabs(forward.k * axis->k + forward.i * axis->i + forward.j * axis->j) < 0.8999999761581421f)) axis = g_4687b4;
-        vector3f &up = *(vector3f *)(g_47fd18 + 0x34);
-        shadow_cross_32350(forward, *axis, &up);
-        function_30bf0(&up);
-        byte shape[0x74];
-        function_c1930((s_light_definition_ab *)g_47fda0, (s_light_shape_ab *)shape);
-        function_c1a80((s_light_frame_ab *)g_47fd18, (s_light_shape_ab *)shape, (s_light_definition_ab *)g_47fda0);
-        s_320b0_box box;
-        box.matrix.scale = 1.0f;
-        box.matrix.forward = forward;
-        shadow_cross_32350(up, forward, &box.matrix.left);
-        box.matrix.up = up;
-        box.radius.i = *(real *)(g_47fda0 + 0x30) * 0.5f;
-        box.radius.j = *(real *)(shape + 0x58) * 0.5f;
-        box.radius.k = *(real *)(shape + 0x5c) * 0.5f;
-        point3f center;
-        center.x = origin->x + forward.i * (0.0f - box.radius.i);
-        center.y = origin->y + forward.j * (0.0f - box.radius.i);
-        center.z = origin->z + forward.k * (0.0f - box.radius.i);
-        box.matrix.position.x = *(real *)(g_47fd18) - center.x + origin->x;
-        box.matrix.position.y = *(real *)(g_47fd18 + 4) - center.y + origin->y;
-        box.matrix.position.z = *(real *)(g_47fd18 + 8) - center.z + origin->z;
-        if (!function_320b0(&box)) goto failed;
-        byte projections[6 * 0x1bc];
-        short projection_count;
-        g_4858bc = 0;
-        *(real *)(g_47fd18 + 0x74) = alpha;
-        function_c1d90((s_light_frame_ab *)g_47fd18, (s_light_shape_ab *)shape, (s_light_projection_ab *)projections, &projection_count);
-        real radius = (real)sqrt(box.radius.k * box.radius.k + box.radius.j * box.radius.j + box.radius.i * box.radius.i);
-        function_1320f0(2, projection_count, false, 0, projections, (byte const *)&box.matrix.position, radius, &g_547f88, 0, *(short *)(object + 0x2c));
-        visibility_object_lists_update_flags((s_visibility_object_lists *)&g_54aa68, index, false, 0);
-        function_2cbc0(object_type);
-        function_44720();
-        g_4ba018 = 1;
-        g_4ba014 = 0;
-        if (*(short *)((byte *)g_54aa68.lists[0] + 4) > 0)
-        {
-            g_4c5008 = g_47fda0;
-            g_4ba014 = 0x14;
-            function_30ca0(false, 5);
-            function_4a1e0((s_view_source *)g_47fd18, (s_view_camera *)shape, NONE,
-                (s_view_flags *)g_47fda0, 1.0f, true, 1.0f);
-            function_48ee0(g_47fd18, shape, g_47fda0);
-            g_485a30 = alpha;
-            function_40e90(0);
-            if ((g_4c1a48[2].flags & 0x400) && (g_4c1a48[1].flags & 0x800))
-            {
-                draw_configured_pass_r18(10);
-                function_222a0();
-                draw_source_pass_r18(1, 11, true, false, false, g_4858b8, true);
-            }
-            function_4a780();
-        }
-        g_4ba018 = 0;
-        g_4ba014 = 0;
+    failed:
         g_509413 = 1;
         g_509414 = 0;
-        return true;
+        return result;
     }
-failed:
-    g_509413 = 1;
-    g_509414 = 0;
-    return special;
+    if (g_509413)
+    {
+        if (function_32ac0())
+        {
+            g_509414 = 1;
+            g_509413 = 0;
+            function_32ce0(index, alpha);
+        }
+        else g_509414 = 0;
+    }
+    else if (g_509414) function_32ce0(index, alpha);
+    return result;
 }

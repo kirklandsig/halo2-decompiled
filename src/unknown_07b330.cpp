@@ -147,15 +147,27 @@ bool __stdcall function_07b140(void *object, long destination, long type, long s
 	return result;
 }
 
-// score 3 (was 3): only the handler call's argument setup differs: retail passes the message
-// type in eax, the message in ecx, the receiver in edx and the address on the stack, ours
-// passes the address in eax and the message on the stack (0x938e0's declaration, another file).
-// convention (retail: message type EAX, message ECX, receiver EDX, address on the stack; ours
-// address EAX, message on the stack). Tried: explicit message cast 3; function-scope type 3;
-// storage declared first 3; size declared before type 5; receiver local 3.
+// score 3 (was 3): only the handler call's argument setup differs, BLOCKED-BY 0x938e0 (its body
+// sets the convention): retail passes the message type in eax, the message in ecx, the receiver
+// in edx and the address on the stack; ours passes the address in eax, the type in ecx and the
+// message on the stack. Tried: explicit message cast 3; function-scope type 3; storage declared
+// first 3; size declared before type 5; receiver local 3.
 // Round 47: separate dispatcher noinline declarations 3; loop-scoped storage 3;
 // function-scope size 3; function-scope collection 3; explicit member access 3;
 // element-address decode 3; array-address decode 3; 32-bit storage elements 3.
+// Round 192: native int/unsigned-int dispatch selectors 3/3; inline dispatch 3;
+// initial overflow guard 119; failed-header break/return 75/71;
+// actual header-result bool/long carriers 77/31. All restored; dispatch argument roles remain.
+// Round 39 (m3 lane 12), on 0x938e0 with its address read once through its address (the address
+// then stays on the stack as in retail): parameter orders (address, message, type) 3, (message,
+// type, address) 35, (message, address, type) 35; one retail-order switch 3, with (type, address,
+// message) 3 (0x938e0 220 fast). The type stays in ecx and the message in eax. All restored.
+// Round 33 (m3 lane 11), on 0x938e0: a free function (type, address, handler, message) 3; case 10 in
+// the first switch 3; entry copies of message and this 3; one retail-order switch for every case but
+// 5/6/7 with a second switch for them 5 (0x938e0 208: the type then comes in eax and the address on
+// the stack as in retail, but the handler in ecx and the message in edx); on that: case 2 first 5,
+// case 4 first 5, the free-function order 5, 5/6/7 through an inline helper with its own switch 5,
+// case 3/8/24 first 5/5/5, the 5/6/7 switch ahead of the others 6 (handler stays in ecx in all).
 // @retail 0x7afd0
 bool s_network_message_gateway::read_packet(const s_type_99af70 *address, s_bitstream *stream)
 {

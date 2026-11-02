@@ -44,7 +44,19 @@ s_player_state *function_16f3a0(long index);
 // and `(0.0f - height)` at each use 39; a state pointer and the negated read at each use 57 (x/y
 // right, z multiplied in place); that with a named height for z only 39 (CSE folds it); z first 38;
 // a displacement vector 46; the state pointer first 67; eye sums forward-first, feet declared
-// first, z written temp-first 57.
+// first, z written temp-first 57; the height as a unary minus 28; the feet set through a
+// point-along-vector helper 28; y row before x 37; the height before the eye sums 38; every
+// product written memory-first 28. Retail multiplies a register by a writable global only
+// here and at 0x224fd0 (no matched model); compile-only screens give x/y right only when
+// the negation is an expression at each use, which then multiplies z in place.
+// Round 31: the named height plus the negated read written at the x and y uses 101 (one
+// subtraction, all three products copy the height, z in place; compile-only keeps z right
+// there but not in the real build); the named height defined after y for z only 101; a const
+// pointer to the camera storage for every camera read 66; the forward vector copied to a local
+// 142 (copied to the stack); feet seeded with the eye sums and updated with `+=` 66.
+// Round 69: shared vector3f_add_scaled with separate / in-place output 28/28; expression x/y
+// with z read through the height's address 57, through the existing point setter 57; the union's
+// array view 28; in-place eye construction 28; immutable height 28; split negation 28.
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {

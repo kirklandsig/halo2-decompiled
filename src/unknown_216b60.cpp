@@ -17,14 +17,22 @@ struct s_saved_game_drive
 	word unused : 15;
 };
 
+struct s_saved_game_name
+{
+	word text[128];
+
+	bool fill(long type, word const *display_name, long language)
+	{
+		return function_216da0(type, text, display_name, language);
+	}
+};
+
 extern s_saved_game_drive g_4e61c0;
 extern long g_55c154;
 char *function_11c9c0(char *buffer, long maximum_count, char const *format, ...);
 void unicode_string_snprintf(word *buffer, long maximum_count, word const *format, ...);
 
-// score 9 (was 9): the call to XCreateSaveGame takes the full name from the
-// register edi, retail recomputes its address with a lea, so retail's code is
-// five bytes longer and ours has five more bytes of padding at the end
+/* writes the first free save game name into the buffer, if there is one */
 // @retail 0x215f40
 bool __stdcall function_215f40(long type, byte *buffer)
 {
@@ -41,10 +49,10 @@ bool __stdcall function_215f40(long type, byte *buffer)
 		do
 		{
 			unicode_string_snprintf(name, 128, L"Halo%04d", index + 1);
-			word full_name[128];
-			full_name[0] = 0;
-			function_216da0(type, full_name, name, g_55c280);
-			if (XCreateSaveGame(root, full_name, 3, 0, path, sizeof(path)) != 0)
+			s_saved_game_name full_name;
+			full_name.text[0] = 0;
+			full_name.fill(type, name, g_55c280);
+			if (XCreateSaveGame(root, full_name.text, 3, 0, path, sizeof(path)) != 0)
 				break;
 			index++;
 		}
@@ -58,28 +66,6 @@ bool __stdcall function_215f40(long type, byte *buffer)
 	return name[0] != 0;
 }
 
-// score 20 (was 20): after the call to 0x216da0 retail recomputes the name address with a lea
-// where ours copies EDI, and that reuse shortens the first branch of the function.
-// separate noinline name builder 20; validation-result lifetime 124; complete create predicate 50;
-// aggregate path initializer 20; name initialized before path 20; success-scoped root 20;
-// create rejection exit 34; formatting-result carry 22.
-// short success 51; caller inline contract 20; drive-root noinline 20; API status local 20;
-// creation-failure clear 71; validation noinline 20; conditional success 20; short/clear 57.
-// formatted-name address reuse and the resulting short branch remain; ordinary
-// type input 20; direct api status result 21; function scope drive root 20; role named buffer homes
-// 20; explicit library path clear 58; byte status result 54; drive before status lifetime 20; query
-// failure returns 63.
-// formatted-name address reuse still shortens the branch.
-// Long success result 52; initialized name/root arrays 67/64; path after
-// name success 23; function scope buffers 35; drive root result 29;
-// format failure single exit 20; nested validation 20.
-// where ours copies EDI. Path and name in one struct 58; (void)&name in 0x216da0 20; 0x216da0
-// reading name through its address 39; noinline declarations of 0x216da0/0x217a80 20; 0x216da0
-// result variable 20.
-// The post-format name address is still reused and the first branch is short.
-// Signed success byte 54; native status result 55; branch-owned result 61; failure-selected result
-// 55; input validation carry 61; success/drive homes 20; initialized drive 20; direct success exit
-// 62.
 // @retail 0x216120
 bool function_216120(word *string, long type)
 {
@@ -89,12 +75,12 @@ bool function_216120(word *string, long type)
 	if (string && *string && g_51ea14 && function_1249f0(0, &drive))
 	{
 		char path[256] = "";
-		word name[128];
+		s_saved_game_name name;
 		char root[8];
-		name[0] = 0;
-		if (function_216da0(type, name, string, g_55c280))
+		name.text[0] = 0;
+		if (name.fill(type, string, g_55c280))
 		{
-			if (XCreateSaveGame(function_216400(0, root, 8), name, 3, 0, path, sizeof(path)) != 0)
+			if (XCreateSaveGame(function_216400(0, root, 8), name.text, 3, 0, path, sizeof(path)) != 0)
 				result = true;
 		}
 	}
@@ -121,32 +107,33 @@ bool unicode_string_list_has_string(long tag_index, long string_handle);
 void function_217a80(long string_handle_2, long language, word *buffer);
 word *unicode_string_append(word *destination, word const *source, long maximum_count);
 
-// score 8 (was 8): after the call to 0x217a80 the text buffer's address is taken from esi
-// (`mov eax, esi`), where retail recomputes it (`lea eax, [esp + 0x10]`); the rest of the
-// function agrees, including both calls to the string append helper.
-// copy helper 8; ordinary input parameters 8; guard owned prefix buffer 12; prefix value
-// initialization 69; native string handle 8; out of line format declarations 8; available prefix
-// buffer 21; lookup result function scope 8.
-// Prefix lexical name 8; declaration after output clear 8; direct prefix clear 8;
-// nested language guards 8; string-list local 8; result local 8;
-// display/language input homes removed separately 8/8.
-// Copy-result destination 22; output rebound to copy/delimiter/both 46/49/47;
-// output rebound to suffix/both appends/all returns 9/49/47; copy-and-append destination 22.
+/* the text of a localized string, filled from the string list */
+struct s_localized_text
+{
+	word text[256];
+
+	void fill(long string_handle, long language)
+	{
+		function_217a80(string_handle, language, text);
+	}
+};
+
 // @retail 0x216da0
+
 bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long language)
 {
 	(void)&display_name;
 	(void)&language;
-	word text[256];
+	s_localized_text text;
 	name[0] = 0;
-	text[0] = 0;
+	text.text[0] = 0;
 	if (language != NONE && g_55c158 != NONE)
 	{
 		long string_handle = saved_game_type_get_name_id(type);
 		if (unicode_string_list_has_string(g_55c158, string_handle))
 		{
-			function_217a80(string_handle, language, text);
-			wcsncpy(name, text, 127);
+			text.fill(string_handle, language);
+			wcsncpy(name, text.text, 127);
 			name[127] = 0;
 			unicode_string_append(name, g_470054, 128);
 			name[127] = 0;
@@ -160,19 +147,6 @@ bool function_216da0(long type, wchar_t *name, wchar_t const *display_name, long
 extern long g_55c280;
 dword function_217b70(word const *text);
 
-// score 5 (was 5): the prefix address after the call to 0x217a80 is reused from esi instead of
-// being rematerialized as a lea, and the rest of the function agrees.
-// Prefix declared before the ordinal 5; function-scope index/language 5/5; early length declaration 5;
-// prechecked append 91; force-inline append 5; ordinal/buffer lexical names 5/5; short language
-// ordinal 84; signed byte language ordinal/result 46/75; short ordinal and byte language 85; byte
-// ordinal and language 92; unsigned measured length 5; completed-name return 5; completed-name return
-// with short ordinal and unsigned length 84; shared both/initial/suffix bounded copies 5/5/5; append
-// result span 5; initialized prefix array 119; language before id query 13; named prefix comparison 5;
-// unmatched prefix continue 5; incoming homes removed separately/all 5/5/5/5/5; immutable loop inputs 5;
-// starting-language global per iteration 47; ordinary while traversal 111.
-// 0x217a80 as a member of its 256-character buffer: this function MATCH, but 0x216da0 48 (its language
-// parameter then shares esi, the zero constant takes ebp); same with swapped value parameters; buffer
-// struct by pointer to a free function 5; 0x217a80 copying with unicode_string_copy 5.
 // @retail 0x216e50
 void __stdcall function_216e50(word const *display_name, long type, char *language, word *name)
 {
@@ -188,13 +162,13 @@ void __stdcall function_216e50(word const *display_name, long type, char *langua
 	for (long i = 0; i < 9; i++)
 	{
 		long current_language = (first_language + i) % 9;
-		word prefix[256];
-		prefix[0] = 0;
-		function_217a80(string_handle, current_language, prefix);
-		unicode_string_append(prefix, g_470054, 256);
-		prefix[255] = 0;
-		long length = function_217b70(prefix);
-		if (!wcsncmp(display_name, prefix, length))
+		s_localized_text prefix;
+		prefix.text[0] = 0;
+		prefix.fill(string_handle, current_language);
+		unicode_string_append(prefix.text, g_470054, 256);
+		prefix.text[255] = 0;
+		long length = function_217b70(prefix.text);
+		if (!wcsncmp(display_name, prefix.text, length))
 		{
 			*language = (char)current_language;
 			wcsncpy(name, display_name + length, 16);

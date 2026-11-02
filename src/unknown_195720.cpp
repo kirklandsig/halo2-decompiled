@@ -32,6 +32,18 @@ bool function_1946f0(s_bitstream *stream)
 // positive clear count 21; inclusive remaining count 2; named byte mask 2; native signed bit offset 2.
 // Index expression at each use 2; bytes through the dword buffer member 2; data pointer local 35;
 // plain masked assignment 2; size-first bound comparison 4.
+// `saved / 8` at the two address uses or at every use 2/2; a `byte *const &` reference to the data
+// field before/after the index 2/2; the masked byte as an explicit read-modify-write 2.
+// Round 37: the byte index declared at the function's top, after `saved`, at the discard block's top, at the
+// mode block's top with the count 2/2/2/2; an int index 2; the index computed before the counter store 17.
+// Round 97: masked pointer dereference 2; clear-start index first alone 2; two-use buffer pointer 40;
+// current-byte pointer 46; two-use next-byte index 24; grouped remaining count 2;
+// buffer member only at the mask or only at the clear 2/2.
+// Round 70 (--fast): index and count declared at function scope 2; a named bit index 2; the mask named
+// in its block 2; the clear from `&data[index + 1]` 2; a named size for the count 2. Compile-only screens
+// (same code as the build here): no spelling, cast, integer address sum, scope, temp count or deleted
+// neighbour statement flips either lea; small probes give [index + data] only when the address is the
+// index's sole use (0x1957d0's shape) and [data + index] whenever the index is used again.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {
@@ -179,22 +191,6 @@ void function_194fa0(s_bitstream *stream, word *buffer, long count)
 	}
 }
 
-// score 38 (was 38): retail computes both logarithms before either product, keeps
-// the upper one on the x87 stack until the division (FILD n + FDIVP) and stores the
-// integer weights in the dead lo/hi argument slots (PUSH ECX frame); ours multiplies
-// the lower product first, divides with FIDIV and needs a second slot. Implicit
-// integer weights 43 (FIMUL); one expression with the log calls 43; named exponent
-// with inline conversions 43; weights before the logs 38; named exponent 38; double
-// intrinsics 41; the blend as an inline helper taking the logs 38 (diagnostic only);
-// n declared after the logs 38.
-// frame is 8 bytes versus 4; lower product precedes upper log;
-// upper-first logs, real weighted sum/exponent, entry log homes and reader declarations 38;
-// explicit log/weight locals with one result 64; positive interior admission 49.
-// Extra four-byte stack slot and endpoint-log scheduling remain.
-// double logs 38; upper double log 38; lower product reversed 38; upper reversed 38; both reversed 38; integral lower weight 44; integral upper weight 44; direct interior return 36, rejected two-point gain.
-// frame 8 vs 4; log/weight scheduling prevents argument-slot reuse;
-// limit before compare/read/call 41/44/60; limit/log local renames 38;
-// earlier weight declarations 38; integer weights 43; named weighted logs 38.
 // @retail 0x194ff0
 real function_194ff0(s_bitstream *stream, real lo, real hi, long bits)
 {
@@ -203,12 +199,7 @@ real function_194ff0(s_bitstream *stream, real lo, real hi, long bits)
 	{
 		if (value >= (1 << bits) - 1)
 			return hi;
-		long n = (1 << bits) - 1;
-		real log_lo = (real)log(lo);
-		real log_hi = (real)log(hi);
-		real weight_lo = (real)(n - value);
-		real weight_hi = (real)value;
-		lo = (real)exp((weight_lo * log_lo + weight_hi * log_hi) / (real)n);
+		lo = (real)exp(event_dequantize_real(value, (1 << bits) - 1, (real)log(lo), (real)log(hi)));
 	}
 	return lo;
 }

@@ -97,8 +97,10 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 							transform4x3f moved;
 							vector3f previous_velocity;
 							function_142a60(&motion->transform, &matrix, &moved);
-							carrier_point_velocity(&motion->previous_center, &motion->previous_velocity,
-								&motion->previous_angular_velocity, &matrix.position, &previous_velocity);
+							vector3f previous_offset;
+							vector3d_from_points3d(&motion->previous_center, &matrix.position, &previous_offset);
+							cross3f_staged(&motion->previous_angular_velocity, &previous_offset, &previous_velocity);
+							vector3f_add(&motion->previous_velocity, &previous_velocity, &previous_velocity);
 							vector3f *object_velocity = &object->velocity;
 							object_velocity->i -= previous_velocity.i;
 							object_velocity->j -= previous_velocity.j;
@@ -114,13 +116,14 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 							point3f moved;
 							transform4x3f_apply_point(&motion->transform, &matrix.position, &moved);
 							vector3f displacement;
+							displacement.i = matrix.position.x - moved.x;
+							real scale = (real)g_510c54->field_2_3;
 							displacement.j = matrix.position.y - moved.y;
 							displacement.k = matrix.position.z - moved.z;
-							displacement.i = matrix.position.x - moved.x;
 							vector3f change = {
-								displacement.i * (real)g_510c54->field_2_3,
-								displacement.j * (real)g_510c54->field_2_3,
-								displacement.k * (real)g_510c54->field_2_3
+								displacement.i * scale,
+								displacement.j * scale,
+								displacement.k * scale
 							};
 							function_b75a0(object_index, &moved, NULL, NULL, NULL, false);
 							*velocity = object->velocity;
@@ -139,8 +142,11 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 	return result;
 }
 
-// score 88 (was 88): Frame 0x88 agrees; the second point-velocity copy (angular i preloaded,
-// x offset before y) and the nonrotating scale (clock copied for j and k) remain, five bytes long.
+// score 10 (was 10): Frame 0x88 agrees; two x-component adds remain: the second point-velocity first
+// linear add uses a register copy and memory add (retail loads linear.x and adds the cross term), and the
+// velocity update adds change.x as a load and add (retail copies change.x and adds the velocity from memory).
+// Frame 0x88 and first point block agree; the second point first linear add uses a register
+// copy and memory add instead of a direct load/add. The nonrotating scale/add schedule remains at retail length.
 // Earlier: point-velocity and nonrotating scale/add
 // Frame 0x88 and first point-velocity agree; second point-velocity and nonrotating schedules remain.
 // Frame 0x88 and first point block agree; second point inputs, nonrotating products and five extra bytes remain.
@@ -207,6 +213,41 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // complete moved position 202; with coherent nonrotating frame names 202. Original helpers restored.
 // At-use clock displacement producer orders ijk/ikj/jik/kij/kji 88/87/88/87/87;
 // shared displacement producer 177; aggregate and immutable aggregate 88/88.
+// Complete native moving record / read-only record / object-header payload / both 88 each;
+// read-only headers / both with read-only motion / both with read-only headers / all 88 each.
+// Round 38: second staged 181; first staged 176; first direct 177; second direct 181. With a named
+// clock: first staged 74 (plain-confirmed, kept), second staged 186, first direct 89, second direct 179.
+// Displacement orders on the kept graph ijk/ikj/jik/kij/kji 74/73/74/73/73; the one-point forms restored;
+// a nonrotating velocity receiver 164.
+// Round 418 on the first-staged graph: second complete point result 179; clock before
+// all displacement producers / after j / after k 68/31/30; second complete result with
+// those clock positions 171/175/175, with the first clock and shared change scale 171.
+// Shared change scale on the after-k/after-j clocks 30/31; final delta scale 30;
+// both scales on the after-k clock 173. Only the after-k clock read is kept, plain 30;
+// all helpers and output boundaries restored. Frame and retail length agree; the
+// second point's first linear add and nonrotating SIMD scheduling remain.
+// Round 97: x difference, then the clock scale, then the y and z differences 10 (kept: retail copies the
+// scale for x and scales y and z in place); x, scale, z, y 18; on the kept form: velocity-add operands
+// swapped 10 (identical); one/two throwaway tuples at entry 163/172 (diagnostic; the adds never flip);
+// delta before the velocity add 61; `+=` component adds 37; displacement scaled in place 172.
+// Round 296: Point-transform/velocity-transform/publication inline-noinline summaries, all seven nonempty subsets, 30 each; clock after completed displacement on the first-staged graph 74. All declarations and arithmetic restored.
+// Round 202 on the first-staged/x-before-clock graph: second shared math boundaries 170;
+// complete second result 175; both 200; complete updated velocity 193; math/update 207;
+// second/update 221; all 230; direct-cross/update 214. CRT output copies rotating/nonrotating/both:
+// memcpy 10/10/10; memmove 195/194/226; both copies with second shared math 170/237.
+// All complete output locals, CRT calls, includes and math boundaries restored.
+// Round 16: the change through the existing in/out scale helper 10; the delta negation through it 10;
+// both 172; the object velocity written out without its pointer local 238; the output copy read from
+// the object 10. The same point-velocity helper loads the linear x first in matched 0x109e00.
+// Round 89: shared object-velocity receiver 199; second output pointer 163; nonrotating receiver 162;
+// change renamed scaled_change and displacement renamed offset 10 each; second linear pointer 164;
+// const change and const scale 10 each; force-inline point-velocity helper 10 (0x109e00 still matched).
+// Round 31 (0x109e00 matched each time): a nonrotating velocity receiver pointer also used for the
+// output copy 162 (compile-only: it gives the x add retail's copy-then-memory form but reorders the
+// rotating block); `result` declared first 12; the change built by statements 10 (identical);
+// previous velocity declared with the offset and the moved transform at its call 10; the delta as
+// `-change.i` 52. Compile-only screens of 128 local-declaration combinations (headers, platform index,
+// definition, velocity pointer, declaration places) found none that flips only the two x adds.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
@@ -377,6 +418,97 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // 111); that plus the center through carrier_vector_from_havok 151 (object index
 // in eax as retail, entry index on the stack); with the entry pointer computed
 // first 153; the pointers together with the entry first 112.
+// Round 279: physics-array/count/both/index-list/array-list/count-list/all metadata
+// snapshots 247/135/247/169/247/171/247; all with existing center conversion 239.
+// Original search and center copy restored; entry registers and projection order remain.
+// Complete previous-state library transfers: transform 112, three vectors 116, both 114;
+// with existing center conversion 151/154/149. Existing staged cross alone 112, with complete
+// transfers and center conversion 149. Original copies, search, products and caller restored;
+// object/entry input registers, physics-record spill and center/projection schedule remain.
+// Round 419: object record 112; physics record 112; object record/physics record 112; search body record
+// 112; object record/search body record 112; physics record/search body record 112; object record/physics
+// record/search body record 112; object record/physics record/search body record/existing center
+// conversion 149. Entry register pair, physics-record spill and center/projection scheduling remain.
+// Original body restored.
+// Complete previous-state library transfers: transform 112, three vectors 116, both 114;
+// with existing center conversion 151/154/149. Existing staged cross alone 112, with complete
+// transfers and center conversion 149. Original copies, search, products and caller restored;
+// object/entry input registers, physics-record spill and center/projection schedule remain.
+// Round 33 (fast, agreeing with the full count; 0xb7060 checked each time): with the center through
+// carrier_vector_from_havok (149) the object index arrives in EAX as retail, but the entry pointer
+// takes EBP and the component EBX (retail EBX/EBP), so the entry index stays on the stack (ebp is never
+// a register argument) and 0xb7060 goes 2 -> 11. On that form: the entry declared after the component
+// index 149, before the object 151; the entry as `entries + entry_index` 149; the search loop indexing
+// component->bodies[i] directly (no element pointer) 123 (928 bytes, the found flag moves to a
+// parameter slot, same EBX/EBP swap). Without the center change: that loop indexing 235, with the
+// entry after the component index 146.
+// Round 236: signed/unsigned matching-body result, native/late default and existing center converter 231/239/253/246/231/239/253/246.
+// Original executable body restored.
+// Round 241: entry/component/entry-component/object/entry-object/component-object/
+// all receivers at use 303/303/353/133/303/307/352; all with existing center converter 362.
+// Original body restored; input registers, physics spill and center/projection scheduling remain.
+// Round 40 (screen, base 101; 0xb7060 2 throughout): bisected, only dropping the body search loop moves the
+// object index to EAX as retail, and then the entry index stays on the stack (the transform block, the
+// transfer block and the calls move nothing). The dot as `dot = k; dot += j; dot += i` 99 (the k and j
+// products up-first as retail); dot3f in either order, the first two terms parenthesised, the terms i, j, k
+// 101 each; cross3f_staged(up, forward, left) 101, cross3f 113; with the `+=` dot: the scaled terms as one
+// vector3f 124 (918 bytes), updated in place 122, `up->i = up->i - scaled_i` 99.
+// Round 121 (m3 lane 5, fast): the three axis pointers declared before the normalize calls, orders
+// left/forward/up, left/up/forward, up/left/forward 131/131/132 (all three lea hoisted above the
+// first call; retail interleaves); one exit with body_index declared NONE beside the component index
+// and the update under `if (body_index != NONE)` 112 (same code), that with the center through
+// carrier_vector_from_havok 149. Compile-only (no LTCG, same axis block as ours): every one-expression
+// dot spelling gives the same code; no by-name or pointer access per axis or per written component
+// moved the dot's k,i,j order or the swapped products. A 600 s permuter run was cut off by its time
+// cap while confirming a candidate.
+// Round 125 (m3 lane 5, fast): the entry pointer declared before the object lookup 113 (the entry index
+// still arrives in EAX); the entry as `entries + entry_index` 112 (same code); the hand-written cross and
+// dot replaced by the existing cross3f_staged(up, forward, left) and dot3f 112 (same code, kept).
+// Round 60 (m3 lane 9, fast with 0xb7060; real builds of round 40's screened forms): the dot as `dot = k;
+// dot += j; dot += i` 110 (k and j products up-first as retail), with the three axis pointers declared
+// together before the normalize calls 109, with `up->i = up->i - scaled_i` 110; the center through
+// carrier_vector_from_havok with the `+=` dot and the axis pointers 153 (264 instructions as retail, object
+// index in EAX, entry index on the stack); the loop's body pointer declared before the outer loop 112.
+// Retail's call in 0xb7060 sets ECX (entry) before EAX (object), as the declared order implies.
+// Round 63 (lane 12, fast; an LTCG env link with the stand-in callers and 0xb7060 is exact: 915 bytes of code
+// against retail's 925): the failure stores valid-first 112 (same code); `up->i = up->i - scaled_i` on the current
+// body 112 (same code); the entry before the object 113; the search loop tested `!found && i < count` 253 (908);
+// `found` declared before the default body 119. The dot written k/j/i up-first, forward-first, all up-first or as
+// i, j, k terms: same code (env). A /Gd compile loads the object index into EAX and the entry index into EBP.
+// Round 150 (0xb7060 checked): center through carrier_vector_from_havok 149 (0xb7060 11; entry pointer EBP,
+// component EBX); with a statement-sum dot k, j, i 151; the failure stores as one chained assignment 112 (same
+// code), with the center change 149; the center change with the search's body pointer declared before the outer
+// loop 149. Compile-only: 1-32 unused-local probes before the axis pointers or after the inverse never change
+// the dot's k, i, j term order (only its registers).
+// Round 128 (m3 lane 5, fast with 0xb7060): retail's roles (object EAX, entry ECX) are the declared-order rule
+// (first EAX, last ECX); with the center through carrier_vector_from_havok (149, 0xb7060 11) the body is retail's
+// but for the entry/component EBX/EBP swap and the entry index on the stack, whose home slot then holds `found`
+// (frame 0x44 against 0x48; retail keeps `found` at +0x13 and the definition at +0x20). On that form: `found`
+// declared before the default body 154; the entry before the object 151; the object through a `headers` local
+// (as carried_object_motion_apply) 129 (928 bytes). Without it: `found` first 119; the `headers` local 132.
+// Round 70 (m3 lane 9, fast with 0xb7060): our head coalesces the object index with the object pointer (ECX), so the
+// entry index takes EAX. A named masked object index 132, a header element pointer 132 (head unchanged both times),
+// the entry by byte offset 112; 0xb7060 stays 2 in each.
+// Round 291: uninitialized entry/component/physics pointer declarations at entry, all
+// subsets then existing center conversion, 112/112/112/112/112/112/112/149. Original body restored.
+// Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
+// 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
+// body and call inputs restored; input register pair and early physics-pointer spill remain.
+// Round 290: actual default-body field captured once, char/long value with short/long result,
+// original/converted center, 115/149/267/257/265/257/272/257. Converted centers keep frame 0x44
+// and caller 11 versus 2; original helper, search and body restored. Entry roles and early physics spill remain.
+// Round 219: canonical search latch as byte/char/short/long, each with original/native center
+// transfer: 112/149/112/149/131/236/238/160. Original Boolean latch, center transfer, helpers and
+// body restored; object/entry convention, physics spill and projection schedule remain.
+// Round 334: frame 0x48 agrees; first +0 reverses object/entry registers,
+// then the physics spill and center/projection schedule differ. Actual body-array
+// byte displacement stepped in the original loop, signed/unsigned and bool/byte
+// found combinations, 140/140/140/140; with existing complete center conversion
+// 130/130/130/130 at 928 bytes, frame 0x44, caller 2 -> 11. Original search,
+// center transfer, helpers, arithmetic and complete body restored.
+// Round 292: Overlap-safe previous transform/velocity-pair/center transfers, subsets 1/2/4/3/5/6/7,
+// 236/229/220/219/223/243/256; all with existing center converter 248. Original complete file,
+// helpers, copies and caller restored; input register pair, physics spill and projection schedule remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
@@ -432,7 +564,7 @@ void function_109660(long object_index, long entry_index)
 					function_30bf0(left);
 					vector3f *up = &entry->transform.up;
 					function_30bf0(up);
-					real dot = up->k * forward->k + up->j * forward->j + forward->i * up->i;
+					real dot = dot3f(forward, up);
 					real scaled_i = forward->i * dot;
 					real scaled_j = forward->j * dot;
 					real scaled_k = forward->k * dot;
@@ -440,12 +572,7 @@ void function_109660(long object_index, long entry_index)
 					up->j -= scaled_j;
 					up->k -= scaled_k;
 					function_30bf0(up);
-					real cross_k = forward->j * up->i - forward->i * up->j;
-					real cross_j = forward->i * up->k - forward->k * up->i;
-					real cross_i = up->j * forward->k - up->k * forward->j;
-					left->i = cross_i;
-					left->j = cross_j;
-					left->k = cross_k;
+					cross3f_staged(up, forward, left);
 					function_30bf0(left);
 				}
 				return;

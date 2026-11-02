@@ -253,23 +253,3 @@ class class_2dc220
 public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
-
-// Havok round 37: library callees of the island split (0x30e720)
-
-// the grouping set up over a parent table and a scratch table
-// @stub 0x3720a0
-grouping_3720a0::grouping_3720a0(array_2d91d0 *parents, array_2d91d0 *scratch)
-{
-}
-
-// starts each body in its own group, then joins the bodies of each pair
-// @stub 0x372200
-void grouping_3720a0::function_372200(array_2d91d0 const *pairs, long count)
-{
-}
-
-// lists the groups
-// @stub 0x372390
-void grouping_3720a0::function_372390(groups_372300 *groups)
-{
-}

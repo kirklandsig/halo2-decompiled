@@ -732,7 +732,23 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // gain as `*(real *)&gain_bits` 25, or read that way at each call 25; the
 // existing bit-pattern helper with the field's bits 89 (the gain bits stay in
 // edi and are stored again for each sum); the helper's sum written field first
-// 25; the field read through its parameter's address instead of the copy 144.
+// 25; the field read through its parameter's address instead of the copy 144;
+// a float add without the copy 118 (SSE); each sum passed straight into the
+// clamp call 106; each next sum computed before the previous level's scaling
+// 81; the field passed as its bits to a long parameter 106; the sum stored back
+// into the copy 120. A volatile copy is always loaded first (compile-only
+// screens), so retail's first sum suggests a non-volatile copy.
+// Round 118: the operand order follows argument evaluation: a gain that has to be
+// loaded at the call (a volatile gain) goes first. Volatile gain with the volatile
+// copy 35 (the first sum exact, every later sum gain first); volatile gain with a
+// plain helper 144; the field passed as a one-real struct 106, as its bits to a
+// long parameter 106, with the gain as `*(real *)&gain_bits` 106. The header's
+// bits-in/bits-out decibel sum compiles to SSE (compile-only; retail's own uses of
+// it are SSE too), so this function's x87 sum is a double sum. Round 69: the existing
+// decibel-to-volume helper for room / both room fields 25/25; aggregate description
+// initialization 116; split first / all result declarations 25/25; the first gain read
+// through its own address 25, through the integer bits' address 92; helper conversion
+// order 25.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

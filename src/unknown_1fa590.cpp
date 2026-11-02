@@ -9,6 +9,7 @@
 #include <math.h>
 #include "slot_handler.h"
 #include "normalize3d.h"
+#include "vector_products.h"
 
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 
@@ -31,41 +32,6 @@ struct s_motion_adjustment_result
 	vector3f velocity;
 };
 
-// score 73 (was 73): retail loads normalized j/k into xmm1/xmm0 before fsqrt and multiplies them in
-// frame 0x24 agrees; early J/K loads and the tick clamp still differ.
-// Earlier at 73: retail loads normalized j/k into xmm1/xmm0 before fsqrt and multiplies them in
-// place (i stays a memory operand), which also moves two j products earlier and costs 8 bytes
-// (7 in the normalization branches, 1 in the clamp); the tick clamp differs. Kept: else-copy
-// of the raw offset into a motion vector 92 (integer copy registers now retail's), then the
-// existing normalize3d 73. Tried after: motion products in any operand order 73;
-// scale helper for the motion 80; step before the copy 103, after sqrt 96; normalize_inline 85;
-// out-of-line function_30bf0 167; motion = offset before the if 73; declarations moved 73; the
-// normalize written out with a named inverse and the scale helper loads all three early 67;
-// MAX(0, *ticks - 1) gives retail's tail exactly (80 at 533 bytes, aligned 16 -> 12).
-// Earlier, at 86: product schedule, raw-copy registers and early normalization J/K loads differ;
-// left/up/both accumulation loops 86/86/86; target/combined/both scale receivers 131/86/131;
-// float square root 86; float absolute value 86.
-// tried offset aggregate 86; squared length value 96; adjustment rate value 109; tick rate value 120;
-// current position value 106; basis input value 128; offset component loop 103; normalization component loop
-// 96.
-// Raw-delta name 86; unit-direction name 86; combined-vector name 86; two offset names 86; entry
-// length 86; entry step 86; both scalar declarations 86; normalization scope 86.
-// Round 132: left/up/both in-place scale [95, 109, 109]; left/up/both native weighted values
-// [95, 109, 108]; mixed in-place/value scales [109, 109]. Early normalization J/K loads and
-// tick clamp remain.
-// Shared unit-scale difference 71; immutable raw offset 73; normalized motion initializer 73;
-// normalizer forceinline declaration 73; complete velocity publication 111;
-// difference plus motion initializer 71; immutable offset plus motion initializer 73;
-// difference plus normalizer declaration 71 (two-point gains restored).
-// Normalized output 81; selected pointer 100; conditional scale result 108; branch scale receiver 105;
-// normalized/motion/both library copies 73/73/73; normalized output with tick clamp 80.
-// Round 138: left i/j/k product parts 73/73/73; up i/j/k parts 73/73/73; up at offset 99; with left j part 102.
-// Round 85: the matched 0x294050 shows retail's pattern (j/k loaded before the test, then
-// mulss in place) where the normalized vector comes straight from stores; here it comes from
-// the struct copy. Normalize forms as other files write them: inverse * i, j * inverse,
-// k * inverse 73 (identical code); components read after the length 73; components read first
-// 84; sum grouped i*i + (j*j + k*k) 73; normalized assigned per component from the offset 78
-// (526 bytes, values stay in registers).
 // @retail 0x1fa810
 void __stdcall function_1fa810(long *ticks, s_motion_adjustment_result *out, s_motion_adjustment const *state)
 {
@@ -92,18 +58,11 @@ void __stdcall function_1fa810(long *ticks, s_motion_adjustment_result *out, s_m
 	real step = g_510c54->rate * state->rate;
 	vector3f motion;
 	if (length > step)
-	{
-		motion.i = normalized.i * step;
-		motion.j = normalized.j * step;
-		motion.k = normalized.k * step;
-	}
+		vector3f_scale(&normalized, step, &motion);
 	else
 		motion = offset;
-	out->velocity.i = state->current.i + motion.i;
-	out->velocity.j = state->current.j + motion.j;
-	out->velocity.k = state->current.k + motion.k;
-	long remaining = *ticks - 1;
-	*ticks = remaining < 0 ? 0 : remaining;
+	vector3f_add(&motion, &state->current, &out->velocity);
+	*ticks = *ticks - 1 < 0 ? 0 : *ticks - 1;
 }
 
 /* a node of a 2d tree: a line and the two children (negative: a leaf) */
@@ -489,24 +448,12 @@ long function_1fa3a0(long structure_index, long surface_index, long object_index
 
 real g_557c70;
 real function_30bf0(vector3f *v);
-void function_c7840(vector3f const *desired, vector3f *current, transform4x3f const *frame, real rate,
+void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate,
     vector3f *velocity, real const *limits, real max_speed, real acceleration);
 
-// score 4 (was 8): the dot product's last term still loads the facing component into
-// the register where retail loads the forward one, and the call to 0xc7840 sets up its
-// null frame argument before the address of the desired vector where retail does it after.
-// the last-term operand swap, a const facing parameter, a desired-address pointer local,
-// a named alignment local, a named idle bool and a mutable settings pointer all compile
-// to the same bytes; the != branch swap 28; the nested-if duplicated else 317/996;
-// the forward const reference 202; the settings/object declaration swap 6. The call-setup
-// order follows the unmatched contributor callee 0xc7840's register binding.
-// null frame argument before the address of the desired vector where retail does it after
-// score 4 (was 4): final alignment product and null-frame/address setup remain; desired default 84;
-// forward/facing values 255/232; facing plus default 227; forward plus default 253;
-// const limits 4; control value 237; control plus default 240.
 // @retail 0x1faf80
-bool function_1faf80(vector3f *facing, long object_index, void const *settings_pointer,
-    vector3f const *control, real threshold, real *turn)
+bool function_1faf80(long object_index, void const *settings_pointer, vector3f const *control,
+    real threshold, vector3f *facing, real *turn)
 {
     s_slot_object_view *object = object_get(object_index);
     real const *settings = (real const *)settings_pointer;
@@ -558,7 +505,7 @@ bool function_1faf80(vector3f *facing, long object_index, void const *settings_p
     if (settings[9] == 0.0f)
         *forward = desired;
     else
-        function_c7840(&desired, forward, NULL, g_510c54->rate, (vector3f *)object->unknown094, limits, settings[8], settings[9]);
+        function_c7840(NULL, forward, &desired, g_510c54->rate, (vector3f *)object->unknown094, limits, settings[8], settings[9]);
     return true;
 }
 
@@ -591,7 +538,7 @@ void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *t
         byte *settings = *(byte **)(state + 8);
         real limits[4] = { -3.1415927410125732f, 3.1415927410125732f, -3.1415927410125732f, 3.1415927410125732f };
         vector3f *velocity = (vector3f *)(ticks + 1);
-        function_c7840(g_4687b0, up, NULL, g_510c54->rate, velocity, limits,
+        function_c7840(NULL, up, g_4687b0, g_510c54->rate, velocity, limits,
             *(real *)(settings + 0x88), *(real *)(settings + 0x8c));
         vector3f axis = *velocity;
         real angle = function_30bf0(&axis) * g_510c54->rate;

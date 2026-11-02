@@ -307,17 +307,10 @@ struct s_23600_object_header
 	byte *object;
 };
 
-// score 3 (was 3): the section's number is loaded into eax and the table of
-// numbers into ecx, ours loads the table into eax and the number into ecx.
-// Swapping the operands of the address, copying the two parameters into
-// locals and dropping the address hacks all leave the load order alone
 // @retail 0x23600
-void *function_23600(long tag, long object_index, byte const *indices, long section_index, long node_index)
+void *function_23600(long tag, byte const *indices, long section_index, long object_index, long node_index)
 {
 	void *result = NULL;
-	(void)&indices;
-	(void)&section_index;
-	(void)&node_index;
 	if (tag != NONE)
 	{
 		s_23600_definition *definition = (s_23600_definition *)g_4e3b44[tag & 0xffff].bytes;
@@ -1191,8 +1184,20 @@ void __cdecl function_24970(s_histogram_state *state)
 // use in case 3 sits: without the out[3] store, or with it before out[2],
 // the registers are retail's (37: store order). Tried: one subtraction
 // (globals on both sides) 66; begin declared first 17; a span local 17;
-// the scale read plainly in case 4 17; ~70 harness forms of the clamp,
-// declarations, scopes and the top test, all 17
+// the scale read plainly in case 4 17 (kept); ~70 harness forms of the clamp,
+// declarations, scopes and the top test, all 17; the bounds through a range
+// pointer 17 (same code); out[2] from the begin local 65; a span local with
+// the globals 66; a shared bounds point helper for cases 1 and 4 17. In a
+// compile-only build every form that merges the two subtractions gets
+// retail's pair, and every two-subtraction form (~190: mixes, declaration
+// orders, compare sides, scopes) gets ours unless begin stays live to out[2].
+// Round 55: case 1's out[3] stored before out[2] 18; case 4's out[2] stored first 33; both
+// subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
+// place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
+// LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
+// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
+// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
+// subtraction readback plus final memset 35; a named post-store zero used twice 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1229,8 +1234,7 @@ scaled:
         out[2] = 0.0f;
         out[3] = 1.0f;
         out[0] *= g_4b9d90;
-        // Read the scale again after the first output store.
-        out[1] *= *(real const *)&g_4b9d90;
+        out[1] *= g_4b9d90;
         return true;
     default:
         return false;
@@ -1912,7 +1916,16 @@ struct s_filter_rows
 // out of line); a slot pointer local 17; an index local 17; a slot row
 // pointer 17; with `inline` on 0x1cc30's definition it is inlined but its
 // constant index still folds, 17. BLOCKED-BY 0x1cc30: the unfolded add needs
-// a helper from another file, taking the slot pointer, inlined at link time
+// a helper from another file, taking the slot pointer, inlined at link time.
+// Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
+// with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
+// or block scope with function_1cc30(12) 28/28 (not inlined).
+// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
+// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
+// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
+// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
+// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
+// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2025,8 +2038,6 @@ static __forceinline void *surface_texture_get(long index)
     return result;
 }
 
-// score 2 (was 2): the loop's head reloads the two bounds from the stack in
-// the other order, ours reloads the low bound first and retail the high bound
 // @retail 0x24ee0
 void function_24ee0(s_24ee0_state const *state, short mode)
 {
@@ -2071,18 +2082,14 @@ void function_24ee0(s_24ee0_state const *state, short mode)
     }
     if (mode == 2)
     {
-        D3DResource_BlockUntilNotBusy(texture);
-        byte *bits;
-        dword pitch, width, height, slice;
-        D3D::PixelJar::FindSurfaceWithinTexture(texture, (D3DCUBEMAP_FACES)0, 0,
-            &bits, &pitch, &width, &height, &slice);
+        D3DLOCKED_RECT rectangle;
+        D3DTexture_LockRect(texture, 0, &rectangle, NULL, 0);
         for (long y = 0; y < 64; ++y)
         {
             byte component = curve[y * 4];
             for (long x = 0; x < 64; ++x)
             {
-                dword color = D3DCOLOR_XRGB(component, curve[x * 4], component);
-                ((dword *)bits)[function_024e50((word)y, (word)x)] = color;
+                ((dword *)rectangle.pBits)[function_024e50((word)y, (word)x)] = D3DCOLOR_XRGB(component, curve[x * 4], component);
             }
         }
         real bounds[4];
@@ -2400,6 +2407,7 @@ void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 251 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
@@ -2456,6 +2464,30 @@ dword __cdecl function_131fc0(real alpha);
 // Round 253: bounded native pixel short/long/word/dword producers 427/410/427/448;
 // native pixel lifetime across bitmap guard 438/439/438/433. Original float dimensions,
 // full-stack marker, state calls and complete body restored.
+// Round 169: native fallback source/destination/both records, native source/destination/both
+// input fields, and both records plus source/both input fields: eight forms 251 each.
+// Parallel reciprocal-first UV products with original/native/native-field rectangles 251
+// each; native source-before-target frame names 251. Complete native fallback production,
+// with native input fields/frame names/both plus reciprocal-first products: 257 each.
+// Original arrays, fallback order, products and complete body restored.
+// Round 261: actual four-corner vertex table, byte/word/long/dword with long ordinal
+// 337/337/353/353; with short ordinal 339/339/343/343. Original unrolled draws restored.
+// Native mutable/immutable normalized texture rectangles, combiner order and shared
+// alpha-clamp combinations 313/313/313/313/313/313/313/313; frame 0x38 versus 0x28. Original body restored.
+// On the standard-marker base: both default rectangles built unconditionally, source first, then
+// the source and destination defaults selected 260 (aligned 143 -> 128: retail's slots and test
+// order; retail also writes each selected default back into the parameter's home); as aggregate
+// initializers 260; offset converted once 260; selected by ternaries 260; with the reciprocals
+// before Begin 256. The zero constant (EDI against retail's EBP) follows the 0x144f0 call.
+// Round 43: both alpha clamps in 0x2a2f0's clamp shape (zero, else one then the value unless above one;
+// retail's store-then-overwrite) 247 (four-point gain, not kept); with the final-combiner words through
+// PS_COMBINERINPUTS 247 (same code; the EFG stores stay cross-jumped because both arms use EDX); both
+// default rectangles built first, source/destination selected after 256/256 (1711 bytes); with the macros
+// 256; the RGB output word through PS_COMBINEROUTPUTS 247. Retail reads inverse from its home each time
+// (EBX carries 0x144f0's fallback), ours caches it in EBX: BLOCKED-BY 0x144f0.
+// Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
+// kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
+// clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2703,7 +2735,7 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                     if (sample) function_0235a0(source + 12, &matrix);
                     if (use_samples)
                     {
-                        point3f const *position = (point3f const *)function_23600(tag, object_index, indices, bucket, sample);
+                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, sample);
                         if (position)
                         {
                             byte *bsp = *(byte **)(structure + 0x84);
@@ -2748,11 +2780,12 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
     coordinates[1] = ((x * sine + y * cosine) * scale + 1.0f) * 0.5f;
 }
 
+// MiniMax D (11-01): no new form tried, no lower score.
 // score 282 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
-// its 0 lives there. 0x144f0 sits in a contributor file this round; no new form tried.
+// its 0 lives there. No new form tried (0x144f0 in src/unknown_01cf50.cpp is machine 3's per m3_owner.py, open to a later round).
 // The stage call is BLOCKED-BY 0x144f0: retail passes tag in EAX, stage in ECX and the fallback in EBX
 // (ret 0xc), and reads the first bitmap formal as a full dword (cmovne). Round 73: for loop 334;
 // stage-nonzero ternary 334; selected bitmap local 294 at 2001 bytes (strength-reduced sampler table);
@@ -2815,6 +2848,30 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // Round 383: paired diameter products before normalization 356; full bounds before normalization 354;
 // complete horizontal/vertical product-and-bound phases 336/340; native rectangle counterparts
 // 356/354/336/340. Original reciprocal, product overlap and body restored.
+// Round 166: paired corner production with both angle pairs live, explicit/first-corner-first/
+// table-loop/table-loop after first corner 407/368/358/361; native point outputs
+// 407/368/358/361. Original separate UV producers and trig lifetimes restored.
+// Round 169: reciprocal-first normalization 282; branch-owned outputs 340, with reciprocal-first
+// 340; incoming scale results 343, with reciprocal-first/exclusive maximum 343/343;
+// branch-owned outputs with exclusive maximum 340; paired dimension-first products plus
+// reciprocal-first normalization 282. Original paired diameters, scale and trig homes retained.
+// Round 180: Entry declarations of first/second/bounds output buffers, masks 1-7, then all with
+// entry trig declarations: 282/282/282/282/282/282/282/282. Original executable body restored.
+// Round 74: stage name 282; entry stage 443; entry stage with scaled-dimension names 443 and
+// with a reciprocal name 443; original-position stage with both scalar names 282; both scalar
+// names 282; scaled-dimension names 282; reciprocal name 282. Original executable body restored.
+// Positional counts here are dominated by the blocked stage call: the stage loop has a different
+// instruction count, so every later line is shifted. Aligned (difflib) leads: scales normalized in
+// their own parameters (retail's homes) 343 (aligned 134 -> 123); with half extents
+// `scale * width * 0.5f` 368 (aligned 110, 2007 bytes); a long first bitmap formal gives retail's
+// cmovne (with half extents 348, aligned 114; with both 374, aligned 95), but its declaration
+// is in a contributor file.
+// Round 43: the alpha clamps already have retail's store-then-overwrite shape; renaming the inlined
+// 0x131fc0's scale local (diagnostic) leaves its param-home slots (scale 0x6c, pixel 0x70; retail the
+// reverse) unchanged, 282. Stage loop still BLOCKED-BY 0x144f0 (machine 3's, src/unknown_01cf50.cpp).
+// Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
+// in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
+// coordinate arrays declared second-first 282; declared just before the bounds 282.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -2937,10 +2994,7 @@ struct s_2a2f0_record
 };
 
 #pragma inline_depth(0)
-// score 145 (was 145): one missing register copy of the bitmap count before the bounds compare
-// (retail inlines the bitmap lookup 0x137550); everything else aligns. Swapped bounds compare 145;
-// the existing lookup called in a full-depth window 258 (out of line); plain count read 167;
-// separate count copy 145 (propagated); file-local forced lookup 258/297 (in a window, spills).
+// draws five full-width strips textured with the tag's bitmaps, each scrolled by the game time
 // @retail 0x2a2f0
 void __stdcall function_2a2f0(long tag, real alpha)
 {
@@ -3016,15 +3070,15 @@ void __stdcall function_2a2f0(long tag, real alpha)
                 height = 1.0f;
                 if (!(local_98083a < 1.0f)) height = local_98083a;
             }
-            // Reload the count after the dimension writes.
-            long count = *(volatile long *)(definition + 0x44);
+            long count = *(long *)(g_4e3b44[definition_index].bytes + 0x44);
             byte *selected;
             if (count > 0)
             {
                 short index = (short)((short)i % count);
+                byte *group = g_4e3b44[definition_index].bytes;
                 selected = NULL;
-                if (g_4e3b44[definition_index].bytes && index >= 0 && index < count)
-                    selected = *(byte **)(definition + 0x48) + index * 0x74;
+                if (group && index >= 0 && index < *(long *)(group + 0x44))
+                    selected = *(byte **)(group + 0x48) + index * 0x74;
             }
             if (count > 0 && *(short *)(selected + 0xa) == 0)
                 function_14390(0, (s_type_7ba8e9 *)selected, 0.0f);
@@ -3094,10 +3148,8 @@ extern dword g_4b82e8;
 __declspec(noinline) double __stdcall function_2b480(real value);
 dword __cdecl pack_color4f(color4f const *color);
 
-PRIVATE __forceinline real clamp_filter_unit(real value)
-{
-    return value < 0.0f ? 0.0f : value > 1.0f ? 1.0f : value;
-}
+
+#define FILTER_PIN(x) ((x) < 0.0f ? 0.0f : (x) > 1.0f ? 1.0f : (x))
 
 PRIVATE __forceinline dword filter_output_shift(long exponent, long threshold)
 {
@@ -3117,6 +3169,9 @@ PRIVATE __forceinline long filter_quantized_byte(real value, bool direct)
     return (long)function_2b480(value);
 }
 
+/* blending and depth states of the filter passes; retail calls every one of these
+   state writes out of line, and each caller writes the depth bias itself */
+#pragma inline_depth(0)
 PRIVATE __forceinline void set_filter_blending(bool additive)
 {
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
@@ -3127,11 +3182,19 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     function_0222d0(D3DRS_ZENABLE, 2);
     function_0222d0(D3DRS_ZWRITEENABLE, 0);
     function_0222d0(D3DRS_ZFUNC, 0x203);
-    g_4b8450 = 0;
-    D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
 }
+#pragma inline_depth(255)
 
-// score 853 (was 853): frame 0x2c agrees; capability/save roles, state expansion and scalar homes differ.
+// score 31 (was 31): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// selectors (retail loads small into CL first and computes input before the alpha selector), the
+// constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
+// first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
+// Earlier 226 (was 949): length and prologue agree; mode zero and one still inline the
+// blending helper's ZENABLE write (VC's inline budget: retail inlines only the first seven
+// state writes, ours one more cheap one), the small selector is loaded after the fraction move,
+// and the quantizer temporaries of modes one to three take shift's home where retail takes clip's.
+// Earlier: frame 0x2c agrees; small permission now has retail byte tests,
+// but mode-bound/save roles, state expansion and scalar homes differ.
 // Earlier: Frame 0x2c agrees; capability/save roles and state expansion remain.
 // frame 0x2c agrees; saved registers, mode flags and state-call expansion differ.
 // Short capability flags 1195; short rescale state 1204; color homes renamed 978;
@@ -3186,6 +3249,78 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 282: complete encoded output words, ternary/descending/result/ascending forms,
 // each with original/complete first-output word [1128,1131,1128,1131,1121,1121,1129,1130].
 // Original output helpers and complete body restored; capability/save roles remain.
+// Round 393: complementary small/negative/return-state subsets
+// 932/858/933/934/1212/935/1213; all with Boolean small-denial 1210. Original carriers restored.
+// Round 261: shared quantizer byte/word/dword results 985/1007/853; quantizer/output/both
+// formal orders 853 each; byte/word results with both orders 985/1007. Original helpers restored.
+// Round 187: Integral slope cap long/short/word/dword 1141/1161/1161/1082; each with inverse-span entry workspace 1141/1161/1161/1082. All restored; frame/save and state expansion remain.
+// Upper-default shared clamp, branch/entry result with original/Boolean permission and
+// sampled/live alpha: 1118/1120/1101/1103/1105/1109/1085/1089. Retail length in all forms; original helper/body restored.
+// Aligned (difflib) leads, all longer than retail: the eleven stage states through sampler_state_write
+// (retail's per-state dirty-flag ors; it never calls 0x224f0 here) 1143 (aligned 218 -> 202); with a
+// bool small permission 1121 (192); with mode one's eight clamps as FILTER_PIN over fields read at
+// each use (0x25e50's form) 1174 (173: mode one then matches but for registers); with the offset and
+// gain clamps as FILTER_PIN too 1171 (102); a long alpha selector instead 1154 (204). Left: our link
+// inlines 0x222d0 at mode zero's eight blending states and the final depth state (retail calls all 36
+// out of line), and the offset clamp branches where retail stores 1.0 and conditionally overwrites it.
+// Round 224: existing blending helper inline/ordinary declarations with bool/byte/
+// short/long additive input 1457/1457/1453/1453/1457/1457/1453/1453. Actual-mode helper
+// long/short/byte/dword under force-inline 853 each, under inline 1446/1455/1534/1446.
+// Original helper contract, all call inputs and complete body restored.
+// Round 444: small/negative permission pairs byte/bool, signed-char/bool, bool/byte
+// 1083 each; bool/word, byte/word, signed-char/word 1187; dword/bool and dword/byte
+// 1109. Byte small permission alone kept after full plain confirmation (4832/4828 bytes).
+// Round 234: Packed fraction byte/word, RGB byte/word/dword, alpha word/dword and combined native
+// channels on the long/bool capability graph: 903/852/1112/853/853/1101/1107/1111. All restored;
+// capability/save roles and state expansion remain.
+// Round 449: cutoff floor before state setup, fixed-only/full decomposition,
+// with ordinary/scoped normalization reciprocal: 1197/1197/1127/1127; each
+// with exponent computed before setup 1121/1121/1151/1151. Original scalar
+// lifetimes restored; mode-bound register and state expansion remain.
+// Round 451: Byte/signed-byte success crossed with bool/byte/signed-byte/word/long rescale storage:
+// 1194/1194/1194/1194/1202/1202/1187/1187. Original status carriers restored.
+// Round 468: Late descriptor arms 1023/2013/3012/0213/0312/1230/2301/3210
+// 972/1112/1106/1085/1081/1117/1086/1119. Order 1023 kept plain at 4848/4828 bytes;
+// order 0312 reaches retail length but gains only two. Initial capability switch unchanged.
+// Round 474: Complete encoded mode-three pair 949 (plain, 4828/4828 bytes);
+// mode-zero RGB 972; pair/RGB 949; final word 1100; pair/final 1074;
+// RGB/final 1100; all 1074; all/full alpha 1083; first/second word alone
+// 954/967. Pair kept; mode-bound/save roles and state expansion remain.
+// Round 217: Complete span/scaled-endpoint/center-term expression boundaries, seven subsets,
+// then all with immutable normalization reciprocal: 1083/1083/1083/1083/1083/1083/1083/1083. Original arithmetic-expression spellings restored.
+// Selector 3 and full-word alpha, exact-only sampler/upper-default/live-field subsets: 1085/1092/997/1102/1122/1147/1124/1170. No nonmatching selector-3 form retained.
+// Clean upper-default clamp with original/full-word alpha: 1099/1100.
+// All clean forms restored too; no eligible gain.
+// Round 43 (aligned difflib counts in brackets): retail tests the modes 0, 1, 2, 3: that chain 1094 [286];
+// with the stage states through sampler_state_write 1070 [274], plus a long alpha selector 1069 [224]
+// (byte selector 1078 on the final form); every render state through function_0222d0 without the
+// inline_depth pairs 1120 [224], with 0x224f0 stage states 1160/1148; the seven skip-state states through
+// function_0222d0 with the existing pairs 1122 [203]; floors through 0x2b460 1120 (same code); mode one's
+// clamps as FILTER_PIN over fields read at each use 1079 [188], offset/gain clamps too 1080 [108]; mode
+// three's selected inputs through PS_COMBINERINPUTS 1108 [51]; the blend-mode setter 0x142f0(10) in the
+// skip-state block 1219; skip-state ZBIAS through function_0222d0 571 [48]; RGB input 7 through
+// PS_COMBINERINPUTS 1094 [46]; the offset clamped as 0x2a2f0 clamps its alpha (zero, else one then the
+// value unless above one) 329 [45], as if plus ternary 1094; the blending helper's ZBIAS through
+// function_0222d0 328 [42]; `fraction = whole = 255` 326 [40]; extra_texture declared at function or chain
+// scope 326/326; a plain-inline stage-state helper 1374; a plain or non-inline blending helper 1556/1556;
+// function_14f60(0, 3) as retail passes it (EDI still holds the bound 3, as in 0x25e50 and 0x26e50) 935
+// [27] (prologue and registers now agree); the four selector/split declarations in all 24 orders
+// 226..980 (alpha before input 227 [41], kept); floors through 0x2b460 again 227/228.
+// Round 133: the blending helper under a file-scope inline_depth(0) pair 250 (4812 bytes: ZBIAS
+// called too); with its ZBIAS write moved to the four callers 31 (4828, kept); the redundant pair
+// around DEPTHCLIPCONTROL removed 31 (kept). On that: the quantizer input by reference 31, a
+// function-scope input shared by all quantizers 31, both 31 (the slot stays shift's); fixed/
+// whole/fraction/alpha/input orders fwria 939, fiwra 965, fwira 976, fiawr 35, faiwr 950,
+// iafwr 43, aifwr 959, frwia 771, frwai 452, fawri 31; alpha selector at its use 947; both
+// selectors at their uses 975.
+// Round 336: paired-selector branch/default forms 952/952/952/952/948/959/959/948;
+// clip/shift admission, width lifetime and negative-arm subsets 39/37/45/1092/1092/1097/1097,
+// nested rescale admission 1146; gain-span/all-quantizer producer boundaries and both,
+// then with the fixed sample, 31/31/31/31. Original complete body and helpers restored;
+// selector scheduling, reciprocal reload order and shift/clip quantizer homes remain.
+// Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
+// at selector production 243/31/957/243. Original body restored; selector order,
+// span/constant reload pairs and shift/clip quantizer homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3193,7 +3328,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     bool result = false;
     real offset = 0.0f;
     bool small = false;
-    long allow_small = false;
+    byte allow_small = false;
     bool allow_negative = false;
     real maximum = 1.0f;
     real inverse_distance = 1.0f / g_48565c;
@@ -3227,48 +3362,55 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     if (low < 0.0f)
     {
-        if (allow_negative) offset = clamp_filter_unit(0.0f - inverse_span * low);
+        if (allow_negative)
+        {
+            real unclamped_offset = 0.0f - inverse_span * low;
+            if (unclamped_offset < 0.0f) offset = 0.0f;
+            else
+            {
+                offset = 1.0f;
+                if (!(unclamped_offset > 1.0f)) offset = unclamped_offset;
+            }
+        }
         else if (!shift || !clip) goto failure;
         low = 0.0f;
     }
     if (!skip_state)
     {
         function_14bc0((short)g_4858b8, 0, true);
-        function_14f60(0, 0);
-        function_0224f0(0, D3DTSS_ADDRESSU, 3);
-        function_0224f0(0, D3DTSS_ADDRESSV, 3);
-        function_0224f0(0, D3DTSS_ADDRESSW, 3);
-        function_0224f0(0, D3DTSS_MAGFILTER, 1);
-        function_0224f0(0, D3DTSS_MINFILTER, 1);
-        function_0224f0(0, D3DTSS_MIPFILTER, 0);
-        function_0224f0(0, D3DTSS_MAXMIPLEVEL, 0);
-        function_0224f0(0, D3DTSS_MAXANISOTROPY, 0);
-        function_0224f0(0, D3DTSS_MIPMAPLODBIAS, 0);
-        function_0224f0(0, D3DTSS_COLORSIGN, 0);
-        function_0224f0(0, D3DTSS_ALPHAKILL, 0);
-        g_4b8308 = 0x1010101; D3DDevice_SetRenderState(D3DRS_COLORWRITEENABLE, 0x1010101);
-        g_4b82e8 = 0; D3DDevice_SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
-        g_4b82ec = 0; D3DDevice_SetRenderState(D3DRS_ALPHATESTENABLE, 0);
-        g_4b8448 = 0; D3DDevice_SetRenderState(D3DRS_CULLMODE, 0);
-        g_4b843c = 0; D3DDevice_SetRenderState(D3DRS_STENCILENABLE, 0);
-        g_4b8438 = 0; D3DDevice_SetRenderState(D3DRS_ZENABLE, 0);
-        g_4b82fc = 0; D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, 0);
+        function_14f60(0, 3);
+        sampler_state_write(0, D3DTSS_ADDRESSU, 3);
+        sampler_state_write(0, D3DTSS_ADDRESSV, 3);
+        sampler_state_write(0, D3DTSS_ADDRESSW, 3);
+        sampler_state_write(0, D3DTSS_MAGFILTER, 1);
+        sampler_state_write(0, D3DTSS_MINFILTER, 1);
+        sampler_state_write(0, D3DTSS_MIPFILTER, 0);
+        sampler_state_write(0, D3DTSS_MAXMIPLEVEL, 0);
+        sampler_state_write(0, D3DTSS_MAXANISOTROPY, 0);
+        sampler_state_write(0, D3DTSS_MIPMAPLODBIAS, 0);
+        sampler_state_write(0, D3DTSS_COLORSIGN, 0);
+        sampler_state_write(0, D3DTSS_ALPHAKILL, 0);
+        function_0222d0(D3DRS_COLORWRITEENABLE, 0x1010101);
+        function_0222d0(D3DRS_ALPHABLENDENABLE, 0);
+        function_0222d0(D3DRS_ALPHATESTENABLE, 0);
+        function_0222d0(D3DRS_CULLMODE, 0);
+        function_0222d0(D3DRS_STENCILENABLE, 0);
+        function_0222d0(D3DRS_ZENABLE, 0);
+        function_0222d0(D3DRS_ZWRITEENABLE, 0);
 #pragma inline_depth(0)
         function_0222d0(D3DRS_ZFUNC, 0x207);
 #pragma inline_depth(255)
-        g_4b8450 = 0; D3DDevice_SetRenderState(D3DRS_ZBIAS, 0);
-#pragma inline_depth(0)
+        function_0222d0(D3DRS_ZBIAS, 0);
         function_0222d0(D3DRS_DEPTHCLIPCONTROL, 0x10);
-#pragma inline_depth(255)
         function_1cc30(12);
         function_1c710(g_51f0f0);
     }
     long fixed = (long)floor(low * 65536.0f);
     long whole = fixed >> 8;
     long fraction = fixed & 0xff;
+    long alpha_input = small ? 4 : 24;
     long input = small ? 5 : 4;
-    byte alpha_input = small ? 4 : 24;
-    if (whole > 255) whole = fraction = 255;
+    if (whole > 255) fraction = whole = 255;
     memset(&g_484f68, 0, sizeof(g_484f68));
     g_484f68.PSTextureModes = 1;
     g_484f68.PSCombinerCount = 0x11108;
@@ -3299,7 +3441,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         bool extra_texture = configuration == (byte const *)NONE;
         if (extra_texture)
         {
-            if (!skip_state) set_filter_blending(true);
+            if (!skip_state)
+            {
+                set_filter_blending(true);
+                function_0222d0(D3DRS_ZBIAS, 0);
+            }
             g_484f68.PSTextureModes = 0x21;
             g_484f68.PSAlphaInputs[0] = 0x19140000;
             g_484f68.PSAlphaOutputs[0] = 0x90;
@@ -3316,7 +3462,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         real gain = 1.0f / (exponent > 8 ? 4.0f : exponent > 7 ? 2.0f : 1.0f);
         gain /= exponent > 0 ? 2.0f : 1.0f;
         gain /= inverse_span / (real)(1 << exponent);
-        g_484f68.PSConstant1[6] = function_131fc0(clamp_filter_unit(gain * offset));
+        g_484f68.PSConstant1[6] = function_131fc0(FILTER_PIN(gain * offset));
         g_484f68.PSConstant0[6] = 0x7f000000;
         g_484f68.PSRGBInputs[6] = 0x1d201220;
         g_484f68.PSRGBOutputs[6] = filter_output_shift(exponent, 7);
@@ -3325,7 +3471,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         long upper = filter_quantized_byte(inverse_span * 256.0f / (real)(1 << exponent), true);
         long lower = filter_quantized_byte(inverse_span * 0.5f, true);
         g_484f68.PSConstant1[7] = ((dword)upper << 24) | lower;
-        g_484f68.PSRGBInputs[7] = 0x20 | (small ? 0x2000 : 0);
+        g_484f68.PSRGBInputs[7] = PS_COMBINERINPUTS(0, 0, small ? 0x20 : 0, 0x20);
         g_484f68.PSRGBOutputs[7] = 0x4500;
         g_484f68.PSAlphaInputs[7] = 0xd120c02;
         g_484f68.PSAlphaOutputs[7] = filter_output_first_shift(exponent);
@@ -3336,16 +3482,19 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     else if (mode == 1)
     {
         color4f first, second;
-        real alpha = *(real const *)(configuration + 0x28);
-        first.alpha = clamp_filter_unit(alpha);
-        first.red = clamp_filter_unit(*(real const *)(configuration + 0x1c) * alpha);
-        first.green = clamp_filter_unit(*(real const *)(configuration + 0x20) * alpha);
-        first.blue = clamp_filter_unit(*(real const *)(configuration + 0x24) * alpha);
-        second.alpha = clamp_filter_unit(*(real const *)(configuration + 0x68));
-        second.red = clamp_filter_unit(*(real const *)(configuration + 0x5c));
-        second.green = clamp_filter_unit(*(real const *)(configuration + 0x60));
-        second.blue = clamp_filter_unit(*(real const *)(configuration + 0x64));
-        if (!skip_state) set_filter_blending(false);
+        first.alpha = FILTER_PIN(*(real const *)(configuration + 0x28));
+        first.red = FILTER_PIN(*(real const *)(configuration + 0x1c) * *(real const *)(configuration + 0x28));
+        first.green = FILTER_PIN(*(real const *)(configuration + 0x20) * *(real const *)(configuration + 0x28));
+        first.blue = FILTER_PIN(*(real const *)(configuration + 0x24) * *(real const *)(configuration + 0x28));
+        second.alpha = FILTER_PIN(*(real const *)(configuration + 0x68));
+        second.red = FILTER_PIN(*(real const *)(configuration + 0x5c));
+        second.green = FILTER_PIN(*(real const *)(configuration + 0x60));
+        second.blue = FILTER_PIN(*(real const *)(configuration + 0x64));
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSAlphaInputs[0] = 0x8200000;
         g_484f68.PSAlphaOutputs[0] = 0x40;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3353,7 +3502,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         real gain = 1.0f / (exponent > 5 ? 4.0f : exponent > 4 ? 2.0f : 1.0f);
         gain /= exponent > 0 ? 2.0f : 1.0f;
         gain /= inverse_span / (real)(1 << exponent);
-        g_484f68.PSConstant1[5] = function_131fc0(clamp_filter_unit(gain * offset));
+        g_484f68.PSConstant1[5] = function_131fc0(FILTER_PIN(gain * offset));
         g_484f68.PSAlphaInputs[5] = 0x1d201220;
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
         g_484f68.PSConstant0[6] = pack_color4f(&first);
@@ -3373,7 +3522,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 2)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x21;
         g_484f68.PSConstant0[4] = small ? 0x7f0000ff : 0;
         g_484f68.PSRGBInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3413,16 +3566,20 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 3)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));
-        g_484f68.PSRGBInputs[4] = (((((configuration[0] ? 0x10 : 0) + 9) << 16) | ((configuration[0] ? 0x10 : 0) + 10)) << 8) | 0x10002;
+        g_484f68.PSRGBInputs[4] = PS_COMBINERINPUTS(configuration[0] ? 0x19 : 0x09, 0x01, configuration[0] ? 0x1a : 0x0a, 0x02);
         g_484f68.PSRGBOutputs[4] = 0x3045;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[4] = filter_output_shift(exponent, 1);
         g_484f68.PSConstant0[5] = pack_color3f((color3f const *)(configuration + 0x1c));
-        g_484f68.PSRGBInputs[5] = (((configuration[0] ? 0x10 : 0) + 11) << 8) | 0x24250001;
+        g_484f68.PSRGBInputs[5] = PS_COMBINERINPUTS(0x24, 0x25, configuration[0] ? 0x1b : 0x0b, 0x01);
         g_484f68.PSRGBOutputs[5] = 0x1045;
         g_484f68.PSAlphaInputs[5] = 0x1d201d00 | (exponent > 6 ? 0x20 : 0);
         g_484f68.PSAlphaOutputs[5] = filter_output_shift(exponent, 4);
@@ -3458,40 +3615,16 @@ failure:
 
 dword g_4b8424;
 void function_27aa0();
-// score 5 (was 5): opening projection remains x/y/z with direction x first.
-// Z/y/x with all/first/third k copy-then-multiply 101/101/101; buffer after projection 16;
-// input view after projection 16; early buffer with late input view 16; early dot declaration 16;
-// first k-i-j row 23; multi-use first-scale local 101.
-// score 5 (was 16): retail adds the dot product's terms z, y, x and loads the
-// position's x before the direction's; here x, y, z with the direction's x
-// first. Tried: the terms z, y, x 16 (the k products then copy the scale);
-// y, x, z 7; x, z, y 20; y, z, x 20; z, x, y 18; one expression in any order,
-// dot3f either way round or partial sums 105-106; n[] subscripts 16; scale
-// first in the products 16; vector3f_scale for the rows 101-105; position as
-// the first parameter (with the caller) gives retail's dot with z, y, x but
-// the j products then load the component first, 14 (654 bytes)
-// New trials at 5: zero-initialized buffer 160; cleared buffer 160;
-// cleared trailing triple 105; first/third/second row component loops
-// 242/242/242; coefficient loop 242; first reciprocal divided in place 104.
-// score 5 (was 5): Opening projection loads x before z. Last projection term
-// after reciprocal one/two/three 38/151/149; y and z after first reciprocal
-// 51; split projection 59; fourth reciprocal at use 140; third reciprocal at
-// use 136; fade clamped in its output slot 63.
-// opening projection loads remain x/y/z rather than z/y/x.
-// Six-by-four buffer 5; branched reciprocal 72; full buffer initializer 155;
-// direction/scalar/tail/third-row ordering 100/148/143/75; shared span carrier 144.
 // @retail 0x25a10
-void function_25a10(vector3f const *direction, point3f const *position, byte const *state)
+void function_25a10(byte const *state, point3f const *position, vector3f const *direction)
 {
     real constants[24];
     real const *settings = (real const *)state;
-    real dot = position->x * direction->i;
-    dot += position->y * direction->j;
-    dot += position->z * direction->k;
-    real span = settings[12] - settings[11];
-    real first = 1.0f / (0.0001f > span ? 0.0001f : span);
-    span = settings[18] - settings[17];
-    real second = 1.0f / (0.0001f > span ? 0.0001f : span);
+    real dot = dot3f((vector3f const *)position, direction);
+    real first_span = settings[12] - settings[11];
+    real first = 1.0f / (0.0001f > first_span ? 0.0001f : first_span);
+    real second_span = settings[18] - settings[17];
+    real second = 1.0f / (0.0001f > second_span ? 0.0001f : second_span);
     real third = 1.0f / (0.0001f > settings[44] ? 0.0001f : settings[44]);
     real fourth = 1.0f / (0.0001f > settings[45] ? 0.0001f : settings[45]);
     constants[0] = direction->i * first;
@@ -3528,7 +3661,6 @@ void function_25a10(vector3f const *direction, point3f const *position, byte con
 extern dword g_4b8308, g_4b82e8, g_4b82f4, g_4b82f8, g_4b8324, g_4b82ec, g_4b8448, g_4b843c, g_4b8438, g_4b8450;
 dword __cdecl pack_color4f(color4f const *color);
 
-#define FILTER_PIN(x) ((x) < 0.0f ? 0.0f : (x) > 1.0f ? 1.0f : (x))
 
 // @retail 0x25e50
 bool __stdcall function_25e50(void *context)
@@ -3808,11 +3940,9 @@ void function_147af1(long first, long second, c_render_window *window);
 struct s_2f800_view;
 void function_2fd90(s_2f800_view const *view, box2f const *clip, byte *out);
 
-// score 34 (was 34): the two globals are written in the other order, a byte
-// is loaded where retail loads a whole word, and the calls at the end are in
-// a different order with their arguments set up differently. The tail is
-// 0x13680's convention (retail passes the flag in bl; BLOCKED-BY 0x13680);
-// the flag passed from the frame's copy 34.
+// MATCH (was 8): the frame counter and the flag live in storage whose address retail takes, so
+// their stores keep their place among the other render-global stores and block copies; they are
+// written through their own addresses here for that (the full check loses nothing).
 // @retail 0x2ba10
 void function_2ba10(s_2f970_view const *view, long cluster, long player,
     byte const *camera, bool enabled, long leaf, bool invalid, vector3f const *sky_color,
@@ -3827,11 +3957,11 @@ void function_2ba10(s_2f970_view const *view, long cluster, long player,
     g_4b9ee8 = invalid;
     g_4b9ed8 = object;
     g_4b9edc = object_index;
-    ++g_4ba038;
+    ++*(dword *)&g_4ba038; /* address-taken in retail: see above */
     g_4b9ee9 = kind;
     g_4b9eec = sky_index;
     memcpy(&g_4b9ef0, geometry, 0x120);
-    g_4ba010 = 0;
+    *(byte *)&g_4ba010 = 0; /* address-taken in retail: see above */
     memcpy(&g_4b9da0, view, 0x74);
     function_2fd90((s_2f800_view const *)&g_4b9da0, (box2f const *)sky_color, (byte *)&g_4b9e14);
     function_3d2c0();

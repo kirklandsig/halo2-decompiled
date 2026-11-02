@@ -3,6 +3,7 @@
 #include "unknown_11c920.h"
 #include "unknown_1cec30.h"
 #include "constraint_helpers_314090.h"
+#include "joint_descriptions_312920.h"
 
 
 class c_1d1261
@@ -172,71 +173,10 @@ public:
 
 
 
-class c_contact_rule_fallback
-{
-public:
- hkBool accepts(long a, long b);
-};
+#include "pair_filter_class.h"
 
-
-class c_component_joint_strength
-{
-public:
-    void set_strength(real strength);
-};
-
-// @stub 0x312b80
-void c_component_joint_strength::set_strength(real strength) {}
 
 #include <xmmintrin.h>
-struct c_component_joint_snapshot_0
-{
-    __m128 data[6];
-    c_component_joint_snapshot_0();
-};
-struct c_component_joint_reader_0
-{
-    void read(c_component_joint_snapshot_0 *output);
-};
-
-struct c_component_joint_snapshot_1
-{
-    __m128 data[9];
-    c_component_joint_snapshot_1();
-};
-struct c_component_joint_reader_1
-{
-    void read(c_component_joint_snapshot_1 *output);
-};
-
-struct c_component_joint_snapshot_2
-{
-    __m128 data[9];
-    c_component_joint_snapshot_2();
-};
-struct c_component_joint_reader_2
-{
-    void read(c_component_joint_snapshot_2 *output);
-};
-
-// @stub 0x313b30
-c_component_joint_snapshot_0::c_component_joint_snapshot_0() {}
-
-// @stub 0x313c50
-void c_component_joint_reader_0::read(c_component_joint_snapshot_0 *output) {}
-
-// @stub 0x313320
-c_component_joint_snapshot_1::c_component_joint_snapshot_1() {}
-
-// @stub 0x3134a0
-void c_component_joint_reader_1::read(c_component_joint_snapshot_1 *output) {}
-
-// @stub 0x312920
-c_component_joint_snapshot_2::c_component_joint_snapshot_2() {}
-
-// @stub 0x312ab0
-void c_component_joint_reader_2::read(c_component_joint_snapshot_2 *output) {}
-
 class c_world_callback_registration
 {
 public:
@@ -326,22 +266,10 @@ struct s_2da8c0
 
 struct s_1d1540 { void function_30be00(void *arg_0); };
 struct s_1d1541 { void *function_30d2b0(void *arg_0); };
-/* the two snapshots and the six constraints 0x1d77d0 builds */
-class c_component_joint_0 { public: c_component_joint_0(c_component_joint_snapshot_0 const *info); };
-class c_component_joint_1 { public: c_component_joint_1(c_component_joint_snapshot_1 const *info); };
-class c_component_joint_2 { public: c_component_joint_2(c_component_joint_snapshot_2 const *info); };
+/* Unwritten constructors for the three remaining joint kinds. */
 class c_component_joint_3 { public: c_component_joint_3(c_component_joint_snapshot_3 const *info); };
 class c_component_joint_4 { public: c_component_joint_4(c_component_joint_snapshot_4 const *info); };
 class c_component_joint_5 { public: c_component_joint_5(c_component_joint_snapshot_5 const *info); };
-
-// @stub 0x313de0
-c_component_joint_0::c_component_joint_0(c_component_joint_snapshot_0 const *info) {}
-
-// @stub 0x313550
-c_component_joint_1::c_component_joint_1(c_component_joint_snapshot_1 const *info) {}
-
-// @stub 0x312d50
-c_component_joint_2::c_component_joint_2(c_component_joint_snapshot_2 const *info) {}
 
 // @stub 0x314b00
 c_component_joint_3::c_component_joint_3(c_component_joint_snapshot_3 const *info) {}

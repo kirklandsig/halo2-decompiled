@@ -298,7 +298,20 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // 26; conditional pool refresh with header reference 24, with absolute slot 24.
 // the sensor table pointer is kept in ECX, retail keeps it in EAX. Tried (r27b): the
 // mask written inline at each test 26; the friendly-team test as `!= NONE && call` with
-// the rider branch in the else 26.
+// the rider branch in the else 26. The rider lookup in both arms of the friendly test through a
+// forceinline vehicle-type helper 261 (480 bytes: no cross-jump; the no-call arm also keeps
+// the data pointer, which retail re-reads); one pool local for both lookups 108 (pool in EBX,
+// NONE no longer a register); rider index as a ternary 26; no-rider arm first 60 (366); a named
+// rider pointer 26.
+// Round 59: the existing object accessor at the initial/both lookups 26/26; the existing header
+// accessor at the initial/both lookups 26/26; direct team reads 137; a pre-call pool with inline
+// masks 119; a post-test pool select 87; a single-exit pool refresh 83; a shared initial/rider
+// pool with the single-exit refresh 114. Original body restored.
+// Round 57 (m3 lane 9): without the friendly-team call ours keeps the data pointer for the rider lookup, so only
+// retail's partial reload of the array pointer after the call is missing (a load our build never inserts on
+// one path); a global store in 0x1df560 (diagnostic) changes nothing (26). The array pointer in a local at the
+// rider block start 26 (sunk); the same local for the first lookup only 26; an unsigned mask 26; a char team
+// local 121; a byte result 26.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
@@ -396,6 +409,20 @@ __forceinline short function_1a1fb0(short height)
 // (on the stack but kept in ebx).
 // Scoped primary receiver 9; split branch receivers 9; store in the override condition 9;
 // a two-use height-field pointer 61; a shared setter 9; const receivers 9; clamp-and-store helper 34.
+// Round 39: plain blip uses with `(void)&blip` 78 (and caller 0x1a264e loses its match); the blip
+// reread before the clamp 21, at the top of the arm 21; the override as nested ifs 9; a char height
+// 9. Retail never takes g_4e6948's address (byte scan), so the store does not pin the load there;
+// ours gives the global eax and the blip edx (retail: blip eax, global ecx after the store).
+// Round 57 (exact one-file harness; scores for identical code, else the harness's aligned count):
+// ours hoists the global load above the height store and allocates blip edx / global eax (retail
+// blip eax, global ecx after the store). The arm's pointer read again at each use aligned 3 but one
+// instruction longer; a new arm local 9; the arm's read before the clamp aligned 5 (reordered); a char clamp result 9;
+// `blip->type` compares without the view aligned 11 (blip an ebx register parameter); a
+// `T *const *` reference aligned 15; a named options pointer after the store 9, before the clamp
+// aligned 5 (reordered); a named override bool 9; type tests first aligned 6.
+// Round 70 (--fast): a byte type 9; the clamp as a nested ternary 44 (216 bytes); each height
+// initialised from the clamp 9; an early return for the NONE object 9; the type mask named once
+// (as motion_sensor_object_type does) 60 (213 bytes, the mask held in ebx).
 // @retail 0x1a1faf
 void motion_sensor_blip_set_type(long local_player_index, long object_index, s_motion_sensor_blip *blip)
 {

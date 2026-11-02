@@ -7,6 +7,7 @@
 #include "ai_actor.h"
 #include "vector_products.h"
 #include "unknown_26c380.h"
+#include "unknown_0259d0.h"
 
 /* the state of a slot of type 0x53 */
 struct s_slot_53
@@ -138,7 +139,22 @@ static __forceinline long real_to_long(real value);
 // final i-product load/multiply operands differ at +0xf4.
 // Projection in the existing helper 6; Boolean projection 6; facing first 6;
 // Boolean facing first 6; product scalars kji/ijk 2/2; Boolean scalars 2;
-// facing first with scalars 2.
+// facing first with scalars 2. Round 14: the data block through slot->unknownc (FORMS
+// report) 6; the else branch through vector3d_from_points3d 2 (kept); the helper's result
+// ignored 2; a facing pointer before the call or before the test 6/6 (j term first); the
+// direction declared from the helper's result 51. Retail keeps each product's text order.
+// Round 88: dot3f argument orders 6/6; direct < 0 2; slot-field projection 50;
+// vector3f_add_scaled 2; with point difference 39; manual point difference 39;
+// real_point3d_set 2. Original two-difference body restored.
+// Round 38 (fast): a facing pointer for the k and i actor reads with slot_state->direction.i 2;
+// slot_state->direction for all three direction reads 50 (472 B); a facing pointer for all three 6
+// (also before the helper call, or for k/j, or j/i with direction.i through the slot 6 each). A
+// one-file LTCG harness (exact: 2) over 136 spellings of the dot never loads direction.i first.
+// Round 134 (fast): the projection named at the block top and tested `< 0` 2; the direction pointer
+// assigned only from the helper's result 4; initialised from the helper call 4; a velocity pointer for
+// the helper's argument 4; a facing reference for the dot 6. Harness probes: parentheses (1-7) anywhere
+// in the function leave it at 2 (only around the i product: 6); unused locals only swap the j/i terms;
+// an earlier read of direction->i or of the facing's i (diagnostic) 80-117.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
@@ -157,9 +173,7 @@ bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 			direction = function_1ab4b1(&state->velocity, 0.5f, &state->position, &actor->position, direction);
 			if (0.0f > actor->unknown290.k * direction->k + actor->unknown290.j * direction->j + direction->i * actor->unknown290.i)
 			{
-				direction->i = state->position.x - actor->position.x;
-				direction->j = state->position.y - actor->position.y;
-				direction->k = state->position.z - actor->position.z;
+				vector3d_from_points3d(&actor->position, &state->position, direction);
 			}
 			slot_state->direction.k = 0.0f;
 			if (function_30bf0(direction) > g_45dbd8)

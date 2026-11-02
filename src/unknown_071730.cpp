@@ -3,6 +3,7 @@
 #include "unknown_058dd0.h"
 #include "unknown_0662e0.h"
 #include "globals.h"
+#include "unknown_08b110.h"
 #include <xtl.h>
 #include <string.h>
 
@@ -64,7 +65,15 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 439 (was 439): retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// score 439 (was 439): retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// Round 30 (lane D): the permuter found no better form, so the body is unchanged. What still differs:
+// retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
+// where this body calls them, retail's frame is 0x3e4 against our 0x3e8, and the result byte and the
+// getter/readiness handling are still the ones the rows below describe.
+// Earlier at 439: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
+// retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Retail stores the tested session state to a dead stack slot before each early exit (the idiom
 // 0x706f0 and 0x5c490 reproduce only with volatile locals), so every later row is shifted in the
 // lockstep compare. Round 152, nested rewrite without gotos (existing value getter, live-state
@@ -145,6 +154,81 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Original complete lookup count and signed zero/negative admission restored.
 // Round 226: Property/balance defaults before count observation 457/439; both 457; each/both
 // with Boolean reset 472/469/472; property with Boolean balance 462; all with both Booleans 479. All restored.
+// Round 409: roster count at every use 439; actual identity-end traversal with captured/live count
+// 450/450; those three with the shared live-state predicate 484/480/480; field-count/end
+// traversal with native long final result 444/468. Original complete body restored.
+// Round 189: plain strict/fallback balance loop, long ordinal with short/bool/long/byte
+// result 580/591/588/591; short ordinal with those four results 580 each. Original
+// attempts restored; the rolled loop shortens away from retail and leaves the frame excess.
+// Round 214: final canonical 0/1 result storage on the complementary waiting graph:
+// signed-byte/byte 465 each; short/word 449 each; int/unsigned-int/long/dword 444 each.
+// Original bool result restored; frame 0x3e8/0x3e4, result/state homes and getter boundary remain.
+// Round 431: Final result from unchanged transition/reset tests, bool/byte/short/long carriers,
+// combined tail then per-phase publication: 449/455/484/480/441/461/476/471. Original conditional true
+// stores, result carrier and complete executable body restored.
+// Round 441: Deadline expiry owns guard/reset result; bool expiry with long/bool/short/byte reset 469/450/469/450; long expiry 463/447/463/447. Long expiry plus byte/bool reset recovers frame 0x3e4 but regresses; all original computations and body restored.
+// Round 449: primary/secondary/both entry states read at each equality
+// use 439 each; with secondary receiver declared after first guard 457
+// each; primary/both live states with conditional index producer 467 each.
+// Original snapshots, receiver lifetime and index producer restored; frame,
+// dead state stores and getter boundary remain.
+// Round 247: distinct strict/fallback imbalance outputs with phase/entry cost and
+// readiness storage, 439/439/439/439; the same four with identifier storage at entry
+// 442/442/442/442. Original shared output, declarations and entire body restored.
+// Round 259: persistent settings across all four solver uses: team count, capacity, party
+// flag, minimum, maximum, capacity pair, party triple and all five,
+// 467/474/451/455/455/499/472/455. Original queries, receivers and full body restored.
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 53 (m3 lane 1; kept: the three clock reads through the existing header time_now() and the
+// variant index through the existing get_value_49c8(), byte-identical 439, in place of their bodies
+// written out): the property value cleared before the player-count test 457 (1577 bytes); the first
+// start time read into a local before the clock 439 (aligned diff 155 from 162: retail's load order;
+// one-use, not kept); the reset flag as bool 469 (frame 0x3e4). Retail's 0x5b080 call is why ours
+// keeps the session state in ESI after the getter call (the inlined body re-tests it).
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
+// DH round 264: On the complementary waiting graph, native producer record/existing kind-four setter/
+// both/native long balance/record-balance/setter-balance/all/all with initial memset
+// 439/477/477/454/454/477/477/486. Original record, property construction, short balance
+// and complete body restored; frame/result/state/getter homes remain.
+// Round 282: Boolean reset with result/completed, reset/reset_required and
+// transition_pending/waiting name combinations, eight at 469/1562. Frame 0x3e4 agrees
+// but result remains at +0xe; original long reset, names and entire body restored.
+// Round 283: positive type/primary-state/secondary-state admission gates, all seven subsets, each 439;
+// all gates with delayed secondary receiver 457. Original complementary waiting graph, receivers and
+// whole body restored; frame, state stores and getter boundary remain.
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 221: coordinated byte return with Boolean/native-byte final storage 439/439; with Boolean reset
+// 469/469. Signed-byte return on those four graphs 439/439/469/469. Every native return declaration
+// loses matched dispatcher 0x706f0 (123) and is rejected. Boolean reset recovers frame 0x3e4 but
+// shortens to 1562/1589; result remains at +0xe versus +0xf. Original Boolean interface, caller
+// declaration, long reset, short balance, waiting decision and whole body restored; frame/state stores
+// and getter boundary remain.
+// Round 217: actual assignment output cursor, long/int/short/word ordinal at phase/entry scope,
+// 441/441/443/443/441/441/443/443. Original indexed producer and complete body restored.
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
+// DH round 264: On the complementary waiting graph, native producer record/existing kind-four setter/
+// both/native long balance/record-balance/setter-balance/all/all with initial memset
+// 439/477/477/454/454/477/477/486. Original record, property construction, short balance
+// and complete body restored; frame/result/state/getter homes remain.
+// Round 304: false result after receivers/type/primary/secondary admission, with explicit early
+// false outcomes: 441/446/470/470; with Boolean reset 471/449/484/484 (frame 0x3e4). Original
+// result default, long reset and complete body restored; result/state homes and getter boundary remain.
+// DL224: Coordinated inline count/team balancer and player-lookup declarations in seven subsets
+// 439 each; all three with the capacity getter 439. All checked user scores agree; every original
+// declaration and body restored. Frame, dead state stores, result-byte home and data-getter
+// boundary remain.
+// Round 241: Shared long balance-output scratch with completed roster count/deadline/final deadline,
+// singles/pairs/all 439/441/439/441/439/441/441; all with first elapsed result 441.
+// Original separate scalar phases and complete body restored; frame and result/state/getter homes remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -168,12 +252,10 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			local_3 = true;
 			goto finished;
 		}
-		long local_7 = NONE;
-		if (local_2->state > 2 && local_2->state <= 8)
-			local_7 = local_2->value49c8;
+		long local_7 = local_2->get_value_49c8();
 		s_surface_description *local_8 = function_192e60(local_7);
 		byte *local_9 = local_2->get_data_4a00();
-		long local_10 = (long)(g_510548 ? g_51054c : GetTickCount()) - arg_0->unknowna68;
+		long local_10 = time_now() - arg_0->unknowna68;
 		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
 		long local_12 = false;
 		bool wait_for_transition = true;
@@ -182,9 +264,9 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		if ((dword)local_2->player_count > *(dword *)((byte *)arg_0 + 0xa6c))
 		{
 			*(dword *)((byte *)arg_0 + 0xa6c) = local_2->player_count;
-			*(long *)((byte *)arg_0 + 0xa70) = g_510548 ? g_51054c : GetTickCount();
+			*(long *)((byte *)arg_0 + 0xa70) = time_now();
 		}
-		long local_17 = (long)(g_510548 ? g_51054c : GetTickCount()) - *(long *)((byte *)arg_0 + 0xa70);
+		long local_17 = time_now() - *(long *)((byte *)arg_0 + 0xa70);
 		s_session_property_value local_14 = {0};
 		if (!local_8 || !local_9)
 		{
@@ -198,8 +280,8 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			*(long *)(local_9 + 0x184) == network_session_get_maximum_players(local_2))
 			goto local_28;
 		if (*(long *)(local_11 + 8) == 0 &&
-			(local_10 > g_network_configuration.value1e4 * 1000 ||
-			 *(long *)(local_11 + 0x10) > g_network_configuration.value1e0))
+			(local_10 > g_network_configuration.value1c0[9] * 1000 ||
+			 *(long *)(local_11 + 0x10) > g_network_configuration.value1c0[8]))
 			*(long *)(local_11 + 8) = 2;
 		if (!network_session_players_match(local_1, local_2) || local_16.field_360 ||
 			local_2->player_count != *(long *)(local_9 + 0x184))

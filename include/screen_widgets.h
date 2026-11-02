@@ -518,7 +518,7 @@ public:
 	void add_child(c_class_1a2c81 *widget);
 	void remove_child(c_class_1a2c81 *widget);
 	c_class_1a2c81 *find_text(long index);
-	c_class_1a2c81 *find_bitmap(short index);
+	c_class_1a2c81 *find_bitmap(long index);
 	c_class_1a2c81 *find_model(short index);
 	void set_child_value6e(long type, short index, bool value);
 	c_class_1a2c81 *find_by_id(long id);
@@ -533,6 +533,41 @@ public:
 	/* unknown_24c177.cpp */
 	long child_count();
 	c_class_1a2c81 *get_child(long index);
+	/* the first and the last of the widget's siblings */
+	__forceinline c_class_1a2c81 *first_sibling()
+	{
+		c_class_1a2c81 *widget = this;
+		while (widget->previous)
+			widget = widget->previous;
+		return widget;
+	}
+	__forceinline c_class_1a2c81 *last_sibling()
+	{
+		c_class_1a2c81 *widget = this;
+		while (widget->next)
+			widget = widget->next;
+		return widget;
+	}
+	/* the sibling after the widget, wrapping round to the first */
+	__forceinline c_class_1a2c81 *next_wrapped()
+	{
+		c_class_1a2c81 *result;
+		if (next)
+			result = next;
+		else
+			result = first_sibling();
+		return result;
+	}
+	/* the sibling before the widget, wrapping round to the last */
+	__forceinline c_class_1a2c81 *previous_wrapped()
+	{
+		c_class_1a2c81 *result;
+		if (previous)
+			result = previous;
+		else
+			result = last_sibling();
+		return result;
+	}
 
 	/* the old name of start_animation */
 	void function_22e957(long type) { start_animation(type); }

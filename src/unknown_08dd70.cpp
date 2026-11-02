@@ -145,6 +145,33 @@ struct s_handler_slot
 // reverse chained handler/gateway/both pair clears 55/51/59; those forms with
 // complete reciprocal-slot and active-field lifetimes 55/51/59; both reversed
 // pairs in phase scopes 59; reversed pairs/field lifetimes/native handler byte 59.
+// Round 95 (lane 8): retail's `mov ecx, [eax + 0xc]; add eax, 0xc` is the shape of a
+// pointer-to-pointer variable (the matched list walks 0x984d0/0x89df0 have it), with the
+// address shared by the test load and the store. The handler flag as a one-byte memset 29
+// (same code); that with one-pointer memsets of both back-pointers 29 (same code); the
+// back-pointer memsets alone 29; the link/messages pairs as plain stores in retail's order
+// (handler 0x14, 8, 4; gateway 0x10, 0xc) with the handler flag memset, with or without the
+// back-pointer memsets 59/59 (retail's store order and EBX zero, but no materialised
+// back-pointer address: 8 bytes short there); plain pairs with the back-pointer memsets 59;
+// the back-pointers as one-member structs with an inline detach() on the handler, the
+// gateway or both 29/29/29 (same code), both with plain pairs 59.
+// KIMI1 r94: guarded gateway 12-byte clear 73; gateway/handler/both 12-byte
+// ranges 29/29/29 (same code); base plus back-pointer field aliases handler/
+// gateway/both 29/29/29 (same code); base plus active-field alias 54;
+// scoped link local 29 (same code); direct first link global read 29 (same code).
+// Round 51 (lane 1): the tail's link load after the 0x5a0-byte clear (retail) needs g_510560 to be
+// address-taken: reading it through its address gives 23 (diagnostic, not kept), and all six pointer
+// globals so 23 (the handler/gateway blocks unchanged). Retail's six zero stores share EBX, which a
+// memset of a six-pointer struct does not give (fresh `xor ecx, ecx`, compile-only), and nothing in
+// retail takes these globals' addresses directly; the 0x510518..0x51057c globals may be one struct
+// whose session id (0x510528) has its address taken, but that spans ~200 functions. Back-pointer clears
+// after the inner test 29 (the cleared store sinks into the test; same count); the dispose bodies or
+// T** detach helpers in another file (LTCG-inlined) 67/59: every field address still folds. A
+// compile-only screen (it reproduces this body) folds `&handler->gateway` in every spelling: pointer
+// and reference locals, an if-declaration, a sub-object with inline release(), T**/T*& helpers,
+// 1/3/4/8-byte memsets and memcpy, /O1, /Os, /Ox, /Ob0/1; only a compound `*p |= x` or a memset of
+// the tested flag keeps a derived pointer. In a one-file LTCG link the link load is hoisted above the
+// clear whether g_510560 is defined in an LTCG object, left unresolved or defined in a /GL- object.
 // @retail 0x8dd70
 void function_8dd70(void)
 {

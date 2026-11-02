@@ -104,6 +104,85 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 224: direct input plus shared cross/speed/publication 748/750/881; cross+speed 748;
 // cross+publication, speed+publication, all, all+native normalizer setter 886 each. Two-point
 // cross gains rejected; original input access, helpers and outputs restored.
+// Round 267: Isolated response/position/normalized-input home identities on direct input,
+// all seven subsets and jointly with the magnitude identity, 804 each. Frame 0x8c versus
+// retail 0x88; original body, input access and helpers restored.
+// Round 392: Native scalar/flag/heading actor fields, scalar+flag/scalar+heading/flag+heading/all,
+// then all with object-first acquisition: 804/804/804/804/804/804/804/829. All direct-input forms restored.
+// Round 394: Direct-input shared addition/scalers/both/projection/addition-projection/scalers-
+// projection/all/all with shared normalizer 747/804/747/804/747/804/747/785. Three-point gains rejected; all restored.
+// DH round 234: direct input/live lateral-radius field with last/scale/direction query
+// output defaults, eight combinations 835/835/808/808/832/832/805/805. All restored;
+// early input/heading and normalizer memory-product homes remain on frame 0x88.
+// Round 408: direct input with lookup/position ordinary/inline/noinline declaration
+// pairs, excluding ordinary/ordinary, 804 each (eight forms). Original declarations,
+// complete body, input home and all arithmetic helpers restored.
+// Round 417: direct input, per-use heading/up receivers and planar-normalizer inline
+// declaration, seven subsets then all with staged cross: 903/803/891/803/903/803/891/803.
+// All executable source, helper calls and declarations restored.
+// Round 425: Direct input with collision-output flag/flag/vector lexical homes, all seven
+// subsets 803 each; all three with the false flag initialized at first use 805. Original
+// input access, query homes, initialization, helpers and complete body restored.
+// Initial heading/default/input setter subsets and all with output setters
+// 833/847/886/744/832/839/827/871; new-frame normalizer fabsf/input/inline subsets
+// 744/746/746/744/744/936/936; best 744 at frame 0x88 and retail length
+// gains six, below the keep threshold. Original input access, helpers and body restored.
+// Round 246: initial heading library copy with paired defaults, normalized input
+// and final output transfers in all eight combinations 803/803/803/803/803/803/803/810,
+// all on direct input. Original copies, parameter observation and whole body restored.
+// Round 47 (lane 10, fast with 0x1f9e70 and 0x110ab0 listed; retail keeps arg_1 in EDI and the +0x290 pointer in
+// EBX from the prologue, ours the other way): the +0x290 pointer defined right after the actor 833, before the
+// arg_8 test 833, before the 0x26c test 833; local_5 copied from the field with the pointer defined after it 741
+// (positional only: aligned 590 -> 614), the pointer after local_7/local_8/local_10 741 each; local_7 before
+// local_6 753; local_3 declared after the 0x26c test 746; local_8 and its 0xb9dd0 call before the pointer 816.
+// Round 144 (lane 4, fast): ours keeps the input pointer in EBX from the prologue (retail reads it from its
+// stack home, pushes EBX late for the heading pointer and loads the input into EDI only in the final arm), and
+// caches the three normalizer components on the x87 stack (retail `fld [x]; fmul [x]` each). A branch-local
+// input pointer copy 750 (same code); the normalizer squares through a two-pointer double dot 807; the epsilon
+// test as `fabs(local_0) < 0.0001f` 750 (retail's dword constant, nothing else moves); the input reference
+// taken after the position query 750; the normalized copy declared before the heading copies 750.
+// Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
+// 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
+// entire body restored.
+// DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
+// subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
+// DH round 264: Direct input and native normalized-input setter with zero-default/magnitude-default/
+// canonical-magnitude/entry-result normalizer exits 807/754/811/750; matching float-absolute
+// forms 807/754/811/750. All at retail length but frame 0x8c; original input, helper and body
+// restored; early handle/heading and memory-product homes remain.
+// Round 47 (m3 lane 13, fast, input reference kept; without it the input moves to EAX, frame 0x8c): the shared
+// normalize3d() from include/normalize3d.h gives retail's normalizer instruction for instruction (memory squares,
+// fst/fabs, dword epsilon, in-place mulss, zero store; homes 4 off) 771 (aligned 421 -> 413); the planar input and
+// heading copies as `*(vector2f const *)` struct copies (retail's dword moves) 750 at 3499 bytes; both 797; both
+// plus magnitude2d() for the radial distance (retail's float squares) 833 at frame 0x8c; that plus the radial test
+// evaluated once through a conditional expression (retail's single fcompi branch) 850. Swapping the names of two
+// vector locals moves no home. Retail keeps the object index in EDI and pushes EBX late for the heading pointer;
+// ours holds the input pointer in EBX from the prologue.
+// Y492: direct-input native planar input/heading/both copies 813/813/821;
+// with normalized-input setter 758/758/766; both planar copies with initial-heading
+// setter, without/with normalized-input setter 820/823. All restored; early
+// input/heading and normalizer memory-product homes remain.
+// Round 288: On native normalized-input setter/direct input: mode default/history coefficient/both/correction root/mode+root/history+root/all/all with shared addition; shared addition alone and with mode/history/root/mode+history/mode+root/history+root,
+// 822/807/822/750/822/807/822/813/749/822/755/749/813/822/755 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 298: Uniform existing bound macro/direct input with normalized-input setter, staged cross
+// and real absolute API in all eight combinations 804/750/750/809/807/750/748/816. Two-point gain
+// rejected; original input, helpers and body restored. Frame/input/heading and norm homes remain.
+// DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
+// subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
+// DH round 264: Direct input and native normalized-input setter with zero-default/magnitude-default/
+// canonical-magnitude/entry-result normalizer exits 807/754/811/750; matching float-absolute
+// forms 807/754/811/750. All at retail length but frame 0x8c; original input, helper and body
+// restored; early handle/heading and memory-product homes remain.
+// Round 500: direct input and normalizer output orders ikj/jik/jki/kij,
+// 804 each; with real absolute-length storage 748 each (two-point gains rejected).
+// Original input access, helper and full body restored; early input/heading homes remain.
+// DH round 266: heading/response/spare initialization after input normalization, subsets
+// 1/2/4/3/5/6/7 and all with reversed defaults: 834/827/796/831/831/850/837/837.
+// Direct-input lifetime graphs miss early heading and memory-product homes; original restored.
+// DH271: Native component aggregates for heading/default pair/normalized input, masks 1/2/4/3/5/6/7, then
+// all with reversed independent defaults, 819/840/811/882/784/813/847/832. All new forms use direct input
+// and regress; original input observation, real vector copies, private helpers and full body restored. Early
+// input/object/heading and memory-product homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

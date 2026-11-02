@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_11cc90.h"
 #include <math.h>
+#include "vector_products.h"
 
 real g_5476c8;
 vector3f *g_4687bc;
@@ -139,33 +140,6 @@ void function_11d610(quaternionf *q)
 	}
 }
 
-// score 11 (was 15): output-first parameters recover the call setup and dot product;
-// the cross-product multiply and reciprocal reload schedule still differs.
-// Earlier at 15: cross i,j,k 23; reciprocal after cross 36; j as a.k*b.i-a.i*b.k 15;
-// separate square root 15; clamp s<=0 17. With output first: cross k,i,j or i,k,j 11;
-// j,k,i / j,i,k / i,j,k 19; reciprocal after cross 32; w store first 21;
-// stores k,j,i 20; products straight into output 32; shared cross into a local 24,
-// into output then scaled 74; branches swapped 38; separate square root, ternary
-// clamp, sqrtf, or i/k product operands swapped 11 each. Arithmetic body unchanged.
-// Minimal two-use input captures: a.i 36; b.k 32; a.j 36; b.i 15;
-// a.i/b.k 34; a.j/b.k 37; a.k/b.j 35; b.i/a.k 37.
-// cross-product multiply and root reload scheduling remain; dot product and frame agree.
-// Earlier forms: retail emits the dot product's j term first (ours i first) and
-// hoists one more cross product multiply before the first subtract; the source order
-// of the terms does not change our schedule. The corrected output-first interface gives 11 (caller stays 551): retail's dot product and operand
-// order; then only retail's i term first multiply (a->j * b->k) hoisted before the
-// first subtract and s reloaded after the j subtract still differ. Tried: cross terms
-// in i, j, k order 23; reciprocal after the cross terms 36; j as a->k * b->i - a->i *
-// b->k 15; square root in its own local 15; clamp as s <= 0 17. With (out, a, b):
-// cross terms in k, i, j or i, k, j order 11, in j, k, i / j, i, k / i, j, k order 19;
-// reciprocal after the cross terms 32; out->w stored first 21; stores in k, j, i
-// order 20; products written straight into out 32; cross3f into a local 24, into out
-// then scaled 74; branches swapped (s < 0.001f) 38; square root in its own local,
-// clamp as a ternary, sqrtf, i or k terms with swapped operands 11 each.
-// Shared point setter 11; scaled-component setter 19; shared cross plus setter 24; native coordinate
-// input/setter/scaled-setter 11/11/19; reused first-k/second-j scalar captures 24/30.
-// Reciprocal between k/j or j/i 29/32; native i coordinates, compound i or j, immutable
-// root, split cross declarations and reversed threshold 11 each.
 // @retail 0x11d6a0
 void function_11d6a0(
 	quaternionf *out,
@@ -173,32 +147,33 @@ void function_11d6a0(
 	vector3f const *b)
 {
 	real s = (dot3f(a, b) + 1.f) * 2.f;
+	real w;
 	if (!(s > 0.f))
 		s = 0.f;
 	s = (real)sqrt(s);
 	if (s >= 0.001f)
 	{
-		real inv = 1.f / s;
-		real k = a->i * b->j - a->j * b->i;
-		real j = b->i * a->k - b->k * a->i;
-		real i = a->j * b->k - a->k * b->j;
-		out->i = i * inv;
-		out->j = j * inv;
-		out->k = k * inv;
-		out->w = s * 0.5f;
+		real inv;
+		cross3f_staged(a, b, (vector3f *)out);
+		inv = 1.f / s;
+		out->i *= inv;
+		out->j *= inv;
+		out->k *= inv;
+		w = s * 0.5f;
 	}
 	else
 	{
 		function_11d000(a, (vector3f *)out);
-		out->w = 0.f;
+		w = 0.f;
 	}
+	out->w = w;
 }
 
 // @retail 0x11d790
 void function_11d790(
 	quaternionf const *q,
-	vector3f *axis,
-	real *angle)
+	real *angle,
+	vector3f *axis)
 {
 	real w;
 	real m;

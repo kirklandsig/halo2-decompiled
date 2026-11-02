@@ -4,6 +4,7 @@
 #include "unknown_0259d0.h"
 #include <math.h>
 #include "vector_products.h"
+#include "unknown_11cc90.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -143,7 +144,20 @@ PRIVATE __forceinline void function_244de2(real thickness, short count, point3f 
 
 // score 6 (was 6): the sum of squares is emitted with the x87 terms in the
 // other order and the loads inside the second inlined call are ordered
-// differently; the frame, the two prism writes and the calls all match
+// differently; the frame, the two prism writes and the calls all match.
+// Zero-initialised then x, y 6; the direction's i/j copied and rotated through
+// a temporary 244 (y saved) / 224 (x saved); a separate projected direction 155;
+// y stored before x with a const view for the sum 136.
+// Round 31: the hand-written normalization replaced by the existing normalize2d_fast on a
+// vector2f 6 (identical code, kept); on that: y written before x 136 (x squared first but taken
+// from st0); the dot computed just before the first prism 92; the swapped corners exchanged the
+// other way 18; `-x` for `0.f - x` in the second prism 6. Compile-only: writing only x through a
+// pointer gives retail's square order and reload, but puts the second prism's loads in y, x,
+// distance order (retail y, distance, x); routing both prisms through function_24526f with a
+// plane local grows the frame.
+// Round 68: point2f normalization view 6; length local / condition-scoped length 6/6;
+// shared 2d dot / 3d add / both 6/6/6; lower corner copied from the first 6;
+// upper and lower shared setters together 203. Original body restored.
 // @retail 0x244de0
 void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 	real arg_3, long arg_4, long arg_5, long arg_6, byte arg_7,
@@ -177,19 +191,10 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_0->field_1c = *arg_1;
 			local_0->field_28 = arg_3;
 		}
-		point2f local_1 = { -arg_1->j, arg_1->i };
-		real local_2 = (real)sqrt(local_1.x * local_1.x + local_1.y * local_1.y);
-		if (!(fabs(local_2) < 0.0001f))
+		vector2f local_1 = { -arg_1->j, arg_1->i };
+		if (normalize2d_fast(&local_1) != 0.f)
 		{
-			real local_3 = 1.f / local_2;
-			local_1.x = local_3 * local_1.x;
-			local_1.y = local_3 * local_1.y;
-		}
-		else
-			local_2 = 0.f;
-		if (local_2 != 0.f)
-		{
-			real local_4 = arg_0->y * local_1.y + arg_0->x * local_1.x;
+			real local_4 = arg_0->y * local_1.j + arg_0->x * local_1.i;
 			point3f local_5[4];
 			local_5[0] = *arg_0;
 			local_5[1].x = arg_0->x + arg_1->i;
@@ -199,11 +204,11 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_5[2].z -= arg_2;
 			local_5[3] = *arg_0;
 			local_5[3].z -= arg_2;
-			function_244de2(arg_3, 4, local_5, local_1.x, local_1.y, 0.f, local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
+			function_244de2(arg_3, 4, local_5, local_1.i, local_1.j, 0.f, local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
 			point3f local_6 = local_5[1];
 			local_5[1] = local_5[3];
 			local_5[3] = local_6;
-			function_244de2(arg_3, 4, local_5, 0.f - local_1.x, 0.f - local_1.y, 0.f, 0.f - local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
+			function_244de2(arg_3, 4, local_5, 0.f - local_1.i, 0.f - local_1.j, 0.f, 0.f - local_4, 0.f, arg_4, arg_5, arg_6, arg_7, arg_8, arg_9, arg_10);
 		}
 	}
 }
@@ -276,7 +281,31 @@ void function_245400(s_source_245400 const *source, long index,
 	function_244ca0(height, radius, list, field_00, field_04, surface->field_08,
 		material->field_04, material->field_05, point, material->field_06);
 }
-// score 203 (was 203): frame 0x24 versus 0x2c; source receiver and side-byte homes remain.
+// score 209 (was 209): the frame is 0x24 against retail's 0x2c; the source now arrives in ECX as in
+// retail (the plane table read at the top of the material-test block, the parameters in 0x245400's
+// source-first order), which matches the caller 0x245aa0, but the register homes, the plane table's
+// home and the side bytes still differ.
+// Earlier at 203 (MiniMax H): no new in-file form moved it; retail declares 0x245540 with its
+// matrix and source the other way round, and that declaration and its call live in src/unknown_245850.cpp.
+// Earlier at 203 (from 203): the frame is 0x24 against retail's 0x2c and the source receiver's home
+// differs; retail declares 0x245540 with its matrix and source the other way round, and that
+// declaration and its call live in src/unknown_245850.cpp.
+// Earlier at 203 (from 203): frame 0x24 versus 0x2c; source receiver and side-byte homes remain.
+// Earlier: the transform block is the only place left where retail's arithmetic
+// differs from the shared helpers: retail's point transform sums (forward.*x + up.*z) + left.*y
+// + position.*, where the shared point transform sums (up.*z + left.*y) + forward.*x, and an
+// inline expression written in retail's order reproduces retail's point-transform instructions
+// one for one (only the matrix base register and the frame offsets differ); retail's direction
+// rows are (forward.*x + left.*y) + up.*z for the i and k rows but (up.*z + forward.*x) +
+// left.*y for the j row, an order no shared helper has. The score does not move with either
+// order (203 in all three combinations tried), because retail's frame (0x2c against our 0x24)
+// and its source receiver (ECX, copied to ESI at entry, against our EDX) misalign the whole
+// listing: 203 of the 210 instruction pairs differ whatever the body is. Retail's source
+// arrives in ECX and its matrix is the first stack argument, so retail declares 0x245540 as
+// (index, matrix, source, height, radius, a5, a6, collection); ours is (index, source, matrix,
+// ...), and that declaration and its call live in src/unknown_245850.cpp. Retail's 0x244de0
+// takes the direction vector in EAX and the transformed point in ECX, ours takes the point in
+// EAX and the vector in EDX; per the parameter-order rule neither is changed.
 // Earlier: Frame 0x24 versus 0x2c, source receiver and independent side homes remain;
 // frame 0x24 versus 0x2c. Retail receives the source in ecx and keeps it in esi
 // until the plane-table read (scheduled after the edge vector), computes both side flags eagerly (one
@@ -416,11 +445,97 @@ void function_245400(s_source_245400 const *source, long index,
 // bool/byte/word/long side carriers 204/204/204/204/204/204/224/224.
 // Original independent ordered facing tests and full executable body restored.
 // Round 223: Complete orientation eligibility in bool/byte/short/long storage, exhaustive/default-true producers 202/202/202/202/202/202/202/202. Exact-match-only result forms restored; original early returns and in-place transforms retained.
+// Round 72: source-first parameter order as 0x245400 declares it (with the 0x245aa0 call) 203, still
+// EDX; second-material record pointer 203; transformed-point call in the transform arm 246 (the
+// transform becomes a register argument, 0x245aa0 46); widened codes before the edge 203; side
+// bytes before the plane pointers 203.
 // Round 175: native const source member, original/native plane field and bool/byte sides
 // 203/203/203/203; each with uniform material-table reads 210/210/210/210.
 // Original free-function interface, source declaration and every call restored.
+// Complete first/second/both native vertex inputs 245/215/270;
+// with a complete surface 287/272/318; both with material/surface+material 261/304.
+// Original endpoint receivers, source records and complete body restored.
+// Round 264: existing difference/cross/rotation force-inline declaration subsets,
+// all seven 203; all with the actual point-transform boundary 203. Original
+// declarations and body restored; frame 0x24/0x2c, source and side homes remain.
+// DH round 236: true cross output at function entry with independent direction, transformed
+// point and both side-byte entry storage, all eight combinations 203 each. Initializations and
+// input reads stayed fixed. Original declarations/body restored; frame and source/side homes remain.
+// Round 398: signed-code side producers with original masks and independent facing exits,
+// bool/byte/word/long 223/223/219/220; direct native material words on those graphs
+// 222/222/216/217. Complete original body and side producers restored.
+// Round 285: existing staged cross with original/first/second/both direct plane receivers,
+// then the same four with entry cross-output storage: 203/209/209/231/203/209/209/231 fast.
+// Original complete body restored; frame, source receiver and side homes remain.
+// Round 13 (lane 14): second code and plane table ahead of the first code 203; plane table first
+// 203; early return on equal materials 203; point transform before the vector transform 203; edge
+// vector after the side flags 202 (not kept). Source still arrives in EDX.
+// Round 203: destructive plane-code decoding, paired/sequential long 204/206, dword 203/205,
+// short 206/206, word 206/206; the independent side spill reuses the matrix argument home.
+// Actual marked point transform, return/native output 405/405; scaled-vector/both calls 386/582;
+// each with a force-inline declaration 405/405/386/582. Original body and declarations restored.
+// Round 441: Native point ownership, complete result with copy/setter after rejection 209/219, beside edge 206/216; transform-only in-place point after direction 220/205, before direction 211/208. All exact-only forms restored; original frame/source/side homes remain.
+// Round 97 (lane 7): retail's (index, matrix, source, ...) parameter order at the definition,
+// declaration and the 0x245aa0 call 203 (source still EDX, matrix still EBP from entry). The source
+// arrives in ECX whenever its last use comes before the facing block (the plane table read at the top
+// 209; at the top of the material-test block 209), in EDX whenever the plane table is read after the
+// edge vector. Plane table at the block top with the right-surface index and code read first 208;
+// the matrix read through its address at its test 208 (still EBP from entry); right-surface index and
+// code read first alone 206. Retail's borrowed-EBP region and plane table in EBX appear only when the
+// matrix is read from its stack home at the test.
+// Round 41, with 0x245400's (source, index, matrix, ...) order at the definition, declaration and call:
+// plane table read at function entry / at the top of the material-test block / just after the materials
+// pointer 209/209/209 (source in ECX, 0x245aa0 MATCH each; the block-top read kept); just before the edge
+// vector 203 (EDX, 0x245aa0 3). (index, matrix, source, ...) with the entry read 209 (0x245aa0 16, the
+// element loaded through EDX); the old order with the entry read 209 (0x245aa0 16).
+// Round 110 (lane 8, fast; the reduced image holds 2 sources): the facing test with the side test
+// inverted (`!=` arm first) 209; sides as `(code & 0x8000) != 0` 209; the two sides in a two-element
+// array 207; sides computed inside the plane-index test 209; a named `same_side` comparison 209 (all
+// compile alike: our build sinks both side bits into one xor, retail computes them eagerly into a
+// stack byte and BL and compares bytes).
+// Round 259: complete first/second/both material-code reads at every use, with captured/live
+// table, 237/208/209/208/207/222; both code observations with native signed low-word
+// material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
+// Round 53 (lane 10, fast): ours keeps the material table in EBX for the whole body and the matrix in EBP
+// from entry; retail spills the table (+0x18) and the first material index (+0x1c) and uses EBX for the
+// second code, the plane table and the side bit. The final call's fields read through `arg_1->field_2c` 205
+// (0x245aa0 107); the first material index as `short` 207; the code test as `second != first` 209 (same
+// code); the second code read first with that test 208; a first-material record pointer for the final call 209.
+// Round 43 (lane 14, fast): plane table read after the edge vector 203 / after the long code copies 203 /
+// that with the side bits before the plane pointers 203 (all three move the source back to EDX, 0x245aa0 3);
+// side bits before the plane pointers alone 209; second material through a record pointer 209; the emit
+// call's material fields read through the source again 205 (0x245aa0 107).
+// Round 65 (lane 16, fast): 0x244de0 now takes the point in ECX and the vector in EAX as retail (its first
+// difference is at +0x141), so the call setup is not the cause. The side bools named once more as
+// `bool same_side = local_10 == local_11;` before the plane test 209 (identical); as one named comparison of
+// the shifted codes 225 (767 bytes, frame 0x28: the matrix is no longer held in EBP from entry and EBP takes the
+// second code, but the sides still fold into the branch); that with the second material read first 225; that
+// with the plane table read after the edge vector 227 (and 0x245aa0 113: the source then arrives in EDX); the
+// facing dot through dot3f 237 (755 bytes).
+// Round 493: all three facing projection parts in ijk/ikj/jik/jki/kij/kji order 208/208/208/208/208/208;
+// sequential accumulation with complete parts in kji/ijk order 209/209. Original expression
+// restored; frame 0x24/0x2c, side bytes and delayed matrix load remain.
+// Round 260: existing native 3x3 rotation with staged cross/shared dot/unsigned decoded words,
+// 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
+// Round 263: Joint paired-mask/xor side equality, signed/unsigned material words and existing staged-cross combinations
+// 239/239/211/211/239/239/211/211. Original side producers, material carriers, cross call and complete body restored.
+// DH round 265: complementary facing rejection with bool/byte/word/long sides, original/staged cross:
+// 211/211/211/211/211/211/211/211. Original complete body restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
+// Round 337: target inline contract with late plane-table, native signed-word sides and
+// second-code-first subsets 209/203/224/226/208/206/223/224. Six-point best fails the retention
+// margin; original body and contract restored. Frame and independent side homes remain.
+// Round 340: existing point helper's immediate accumulations, complete product
+// parts, deferred accumulated stores and paired axial sums, each with early/late plane table,
+// 209/203/209/203/209/203/209/203. The matched helper user stays exact; late planes lose
+// the caller and gain only six. Entire helper/body restored; frame 0x24/0x2c and side homes remain.
 // @retail 0x245540
-void function_245540(long arg_0, s_source_245400 const *arg_1,
+void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
 	long arg_5, long arg_6, s_collection_245270 *arg_7)
 {
@@ -431,13 +546,13 @@ void function_245540(long arg_0, s_source_245400 const *arg_1,
 	short second_material = (short)materials[*(short *)local_0->field_0a].field_00;
 	if (first_material != second_material)
 	{
+		plane3f const *local_7 = *(plane3f const *const *)((byte const *)arg_1 + 0xc);
 		point3f const *local_4 = &arg_1->field_3c[((word const *)local_0)[0]].field_00;
 		point3f const *local_5 = &arg_1->field_3c[((word const *)local_0)[1]].field_00;
 		vector3f local_6;
 		vector3d_from_points3d(local_4, local_5, &local_6);
 		long local_2 = first_material;
 		long local_3 = second_material;
-		plane3f const *local_7 = *(plane3f const *const *)((byte const *)arg_1 + 0xc);
 		plane3f const *local_8 = &local_7[local_2 & 0x7fff];
 		plane3f const *local_9 = &local_7[local_3 & 0x7fff];
 		bool local_10 = (bool)((local_2 >> 15) & 1);

@@ -258,7 +258,166 @@ done:
 	parse_copy(buffer, g_55c2e4);
 }
 
-// score 49 (was 54): our size-optimized build keeps the buffer address in EBX for its two
+// score 32 (was 32): earlier, at 49: our size-optimized build hoists the buffer address 0x55c6e4 into EBX
+// Round 102 (lane 7, fast): the output parameter in a named local used by both copies 32; the selector
+// in a named engine local 32, with the tag read after it 32; on the one-copy form the output local 54
+// and the engine local 54 (the buffer address still hoisted into EBX at the definition test). In all
+// of retail's size-built game code only this function and unmatched 0x2ca284 both push an address
+// constant and load it into a register (0x2ca284 has calls between its uses), so no matched sibling
+// shows the idiom.
+// (saved in the prologue) for its two uses, the translator's pushed argument and the copy's
+// EAX source; retail pushes it as an immediate and moves it into EAX again. VC7.1 /O1 always
+// keeps a twice-used address constant in a callee-saved register when one use is on every
+// path (compile-only probes); matched 0x148b8c pushes its constant twice only because its
+// two uses lie on exclusive paths. Retail also reads the tag between the variant test and its
+// branch, keeps the selector in EAX and lays the cases out 0/1/9/2/3/4/7/8 (ascending string
+// IDs); with case 9 written third and the variant read raw with the tag load before the NULL
+// fallback (that writes the variant getter out) only the five EBX rows differ (54 positional).
+// Tried: native name ID, const globals, name declaration first, default first and absent
+// cases 54; selected-name fallback result 54; numeric case order 49; descending 52; native
+// copy 54; direct selector 57 (171 bytes); const variant 54; scalar names 54; entry
+// variant/tag declarations 54/54; native buffer object 49; a word-typed buffer 49; seven
+// adjacent case-pair layouts 48-51; translator inline/noinline 49/49; native copy
+// inline/noinline 49/49; both inline 49; selected parameter 49; even-priority cases 56;
+// low/high pairs 51; the translator call in each case 37 (171 bytes; ESI then holds the
+// buffer), the same in retail's block order 42, with the tag read in each call 45; the buffer
+// named once 49; `&g_55c6e4[0]` or `(word *)&g_55c6e4` at the translator 49/54; a static
+// buffer 54; the copy called directly 54; coordinated getter inline/inline-noinline/noinline
+// 49/49/49; parser inline 49; null-definition exit 72; native tag member 49 (with null exit
+// 72); terminal case first 54; name-block orders 51-55; session getter and variant-wrapper
+// declaration crosses 49-52 (getter inline loses two checked callers, wrapper outlining loses
+// the checked variant parser); the tag read before the variant call 55; the default case
+// copying and returning 58 (180 bytes); the selector read straight from the variant getter 55;
+// the getter as a ternary 56; `name_id = NONE` with an `if (name_id != NONE)` guard 49/54;
+// `if (!globals) goto done` 54; an explicit `goto done` after the call 54. Round 9: the switch
+// and call moved into a plain static helper 150 (not inlined, 63 bytes); global optimization
+// off 112 (220 bytes, diagnostic: both immediates come back, everything else spills); the copy
+// written after the translator with its own return, or in each branch, 38 (178 bytes: the
+// translator path still caches the buffer in ESI), with distinct address spellings there 38.
+// our size-optimized build keeps the buffer address 0x55c6e4 in EBX for its two
+// uses (a size tie under /O1, saved in the prologue); retail pushes it as an immediate for the
+// translator and moves it into EAX again for the copy (no matched size-built function does that; a
+// favour-speed setting gives it, not kept). With case 9 written third (retail's block order
+// 0/1/9/2/3/4/7/8, ascending string IDs) and the variant read raw with the tag load before the default
+// fallback, every other instruction lines up (54 positional: only the EBX rows differ). Tried: native
+// name ID, const globals, name declaration first, default first and absent cases 54; direct tag field
+// 45 (171 bytes); existing getter/copy force-inline 54/54; selected-name fallback result 54; numeric
+// case order 49; descending 52; native copy 54; direct selector 57 (171 bytes); const variant 54;
+// scalar names 54; entry variant/tag declarations 54/54; native buffer object 49; seven adjacent
+// case-pair layouts 48/49/51/51/51/51/50; translator inline/noinline 49/49; native copy
+// our size-optimized build keeps the buffer address 0x55c6e4 in EBX for its two
+// uses (saved in the prologue; in bytes a tie under /O1: push/pop ebx + mov ebx, imm against push imm +
+// mov eax, imm); retail pushes it as an immediate for the translator and moves it into EAX again for the
+// copy (no matched size-built function does that; a favour-speed setting gives it, not kept). With case
+// 9 written third (retail's block order 0/1/9/2/3/4/7/8, ascending string IDs) and the variant read raw
+// with the tag load before the default fallback, every other instruction lines up (54 positional: only
+// the EBX rows differ).
+// Tried: native name ID, const globals, name declaration first, default first and absent cases 54;
+// direct tag field 45 (171 bytes); existing getter/copy force-inline 54/54; selected-name fallback
+// result 54; numeric case order 49; descending 52; native copy 54; direct selector 57 (171 bytes); const
+// variant 54; scalar names 54; entry variant/tag declarations 54/54; native buffer object 49; seven
+// adjacent case-pair layouts 48/49/51/51/51/51/50; translator inline/noinline 49/49; native copy
+// inline/noinline 49/49; both inline 49; selected parameter 49; even-priority cases 56; low/high pairs
+// 51; the translator call in each case 37 (171 bytes; ESI then holds the buffer), the same in retail's
+// block order 42 (171 bytes), with the tag read in each call 45 (171 bytes: only the EBX buffer and the
+// tag load differ); the buffer named once 49; `&g_55c6e4[0]` at the translator 49; coordinated getter
+// inline/inline-noinline/noinline 49/49/49; parser inline 49; null-definition exit 72; native tag
+// member 49; native member with null exit 72; terminal case first 54; name-block order 54;
+// reverse/encoded name order 51/51; entry/middle/tail name pairs 55/53/53; tail/middle groups first
+// 53/54; session getter inline/noinline crossed with ordinary, forceinline, noinline and inline-noinline
+// shared variant-wrapper declarations 49/49/52/52/49/49/52/52 (getter inline loses two checked callers,
+// wrapper outlining loses the checked variant parser); the tag read before the variant call 55 (171
+// bytes); the default case copying and returning 58 (180 bytes); a const tag 49 (identical); the
+// selector read straight from the variant getter 55 (171 bytes); the copy repeated after the translator
+// with its own return 38 at 178 bytes (the switch path then caches the buffer in ESI, the default path
+// uses the immediate; not retail's shape); the getter as a ternary 56; case 9 third 54; the variant
+// read raw with the tag load before the fallback 49; both 54; with both, a static buffer, the copy
+// called directly and `&g_55c6e4` at the translator 54/54/54; retail's case order with `name_id = NONE`
+// and an `if (name_id != NONE)` guard in place of the default's `goto done` 54; with `if (!globals)
+// goto done;` 54; retail's order with the tag read in the call plus the guard 45, plus the early exit
+// 45; on the retail-order body `&g_55c6e4[0]` at the copy 54, an early `goto done` for a missing
+// definition 54, the selector straight from the getter 57 (171 bytes), an explicit `goto done` after
+// the call 54; the buffer as a word array (no cast at the translator) 49, on the retail-order body 54;
+// the name preset to NONE with the call guarded by `name_id != NONE` 49/54 (identical code: the guard
+// is threaded away); a file-static buffer 49; explicit empty cases 5 and 6 on the retail-order body
+// 54. The name typed as dword 49/54.
+// Round 35 (more): retail's case order alone 54; with `name_id = NONE` and an `if (name_id != NONE)`
+// guard in place of the default's `goto done` 54; with `if (!globals) goto done;` 54; retail's order
+// with the tag read in the call plus the guard 45, plus the early exit 45. DL179: the getter/wrapper
+// declaration crosses keep 37/37/39/39/37/37/39/39 code rows.
+// Round 103 (fast; parse_variant stays matched): the copy called directly 49; `(word *)&g_55c6e4` at
+// the translator 49; the tag read in the shared call 45 (171 bytes); the name declared at the top 49;
+// the tag read before the variant call 55 again (171 bytes; a repeat of the listed form); the unused
+// `string_handle` parameter holding the case's string handle 49.
+// our size-optimized build keeps the buffer address in EBX for its two uses; retail
+// our size-optimized build hoists the buffer address 0x55c6e4 into EBX for its
+// two uses (saved in the prologue); retail pushes it as an immediate for the translator and moves
+// it into EAX again for the copy (no matched size-built function does that; a favour-speed setting
+// gives it, not kept). With case 9 written third (retail's block order 0/1/9/2/3/4/7/8) and the
+// variant read raw with the tag load before the default fallback, every other instruction lines
+// up (54 positional: only the five EBX rows differ). Tried: native name ID, const globals, name
+// declaration first, default first and absent cases 54; direct tag field 45 (171 bytes); existing
+// getter/copy force-inline 54/54; selected-name fallback result 54; numeric case order 49;
+// descending 52; native copy 54; direct selector 57 (171 bytes); const variant 54; scalar names
+// 54; entry variant/tag declarations 54/54; native buffer object 49; seven adjacent case-pair
+// layouts 48/49/51/51/51/51/50; translator inline/noinline 49/49; native copy inline/noinline
+// 49/49; both inline 49; selected parameter 49; even-priority cases 56; low/high pairs 51; the
+// translator call in each case 37 (171 bytes; ESI then holds the buffer), the same in retail's
+// block order 42 (171 bytes), with the tag read in each call 45 (171 bytes); the buffer named once
+// 49; `&g_55c6e4[0]` at the translator 49; coordinated getter inline/inline-noinline/noinline
+// 49/49/49; parser inline 49; null-definition exit 72; native tag member 49; native member with
+// null exit 72; terminal case first 54; name-block order 54; reverse/encoded name order 51/51;
+// entry/middle/tail name pairs 55/53/53; tail/middle groups first 53/54; session getter and
+// variant-wrapper declaration crosses 49/49/52/52/49/49/52/52; the tag read before the variant
+// call 55 (171 bytes); the default case copying and returning 58 (180 bytes); a const tag 49; the
+// pushes it as an immediate and moves it into EAX again (no matched size-built function does that; a
+// favour-speed setting gives it, not kept), and the tag/selector schedule follows. In bytes the EBX
+// cache is a tie (push/pop ebx + mov ebx, imm against push imm + mov eax, imm). Tried: native name
+// ID, const globals, name declaration first, default first and absent cases 54; direct tag field 45
+// (171 bytes; still 39 code rows); existing getter/copy force-inline 54/54; selected-name fallback
+// result 54; numeric case order 49; descending 52; native copy 54; direct selector 57 at 171 bytes;
+// const variant 54; scalar names 54; entry variant/tag declarations 54/54; native buffer object 49;
+// seven adjacent case-pair layouts 48/49/51/51/51/51/50; translator inline/noinline 49/49; native
+// copy inline/noinline 49/49; both inline 49; selected parameter 49; even-priority cases 56; low/high
+// pairs 51; the translator call in each case 37 (171 bytes; ESI then holds the buffer), the same in
+// retail's block order 0/1/9/2/3/4/7/8 42 (171 bytes), with the tag read in each call 45 (171 bytes:
+// retail's block order and late EDI save, only the EBX buffer and the tag load differ); the buffer
+// named once 49; `&g_55c6e4[0]` at the translator 49; coordinated getter inline/inline-noinline/
+// noinline 49/49/49; parser inline 49; null-definition exit 72; native tag member 49; native member
+// with null exit 72; terminal case first 54; name-block order 54; reverse/encoded name order 51/51;
+// entry/middle/tail name pairs 55/53/53; tail/middle groups first 53/54; session getter inline/
+// noinline crossed with ordinary, forceinline, noinline and inline-noinline shared variant-wrapper
+// declarations 49/49/52/52/49/49/52/52 (the getter inline loses two checked callers; wrapper
+// outlining loses the checked variant parser); the tag read before the variant call 55 (171 bytes);
+// the default case copying and returning 58 (180 bytes); a const tag 49; the selector read straight
+// from the variant getter 55 (171 bytes); the copy repeated after the translator with its own return
+// 38 at 178 bytes (the switch path then caches the buffer in ESI; not retail's shape). Round 35:
+// retail's case order alone 54; with `name_id = NONE` and an `if (name_id != NONE)` guard in place
+// of the default's `goto done` 54; with `if (!globals) goto done;` 54; retail's order with the tag
+// read in the call plus the guard 45, plus the early exit 45.
+// favour-speed setting gives it, not kept), and the tag/selector schedule follows. Native name ID,
+// const globals, name declaration first, default first and absent cases 54; direct tag field 45 (171
+// bytes); existing getter/copy force-inline 54/54; selected-name fallback result 54; numeric case
+// order 49; descending 52; native copy 54; direct selector 57 at 171 bytes; const variant 54; scalar
+// names 54; entry variant/tag declarations 54/54; native buffer object 49; seven adjacent case-pair
+// layouts 48/49/51/51/51/51/50; translator inline/noinline 49/49; native copy inline/noinline 49/49;
+// both inline 49; selected parameter 49; even-priority cases 56; low/high pairs 51; the translator
+// call in each case 37 (171 bytes; ESI then holds the buffer), the same in retail's block order
+// 0/1/9/2/3/4/7/8 42 (171 bytes), with the tag read in each call 45 (171 bytes: retail's block order
+// and late EDI save, only the EBX buffer and the tag load differ); the buffer named once 49;
+// `&g_55c6e4[0]` at the translator 49. direct tag field 45 (171 bytes; still 39 code rows); selected-
+// name fallback result 54. Numeric case order 49; entry variant/tag declarations 54/54. Coordinated
+// getter inline/inline-noinline/noinline 49/49/49; parser inline 49; null-definition exit 72; native
+// tag member 49; native member with null exit 72; terminal case first 54. name-block order 54;
+// reverse/encoded name order 51/51; entry/middle/tail name pairs 55/53/53; tail/middle groups first
+// 53/54. Executable rows do not improve; original cases restored. Native buffer object 49; seven
+// adjacent case-pair layouts 48/49/51/51/51/51/50. Best executable reduction is one row. Translator
+// inline/noinline 49/49; low/high pairs 51. Round 74: the tag read before the variant call 55 (171
+// bytes); the default case copying and returning 58 (180 bytes); a const tag 49 (identical); the
+// selector read straight from the variant getter 55 (171 bytes); the copy repeated after the
+// translator with its own return 38 at 178 bytes (the switch path then caches the buffer in ESI, the
+// default path uses the immediate; not retail's shape, not kept).
+// our size-optimized build keeps the buffer address in EBX for its two
 // uses; retail pushes it as an immediate and moves it into EAX again (no matched size-built
 // function does that; a favour-speed setting gives it, not kept), and the tag/selector
 // schedule follows. Native name ID, const globals, name declaration first, default first
@@ -279,7 +438,7 @@ done:
 // buffer register and selector/tag scheduling remain different.
 // Numeric case order 49; descending 52; native copy 54; direct selector 57 at 171 bytes;
 // const variant 54; scalar names 54; entry variant/tag declarations 54/54.
-// score 49 (was 49): extra buffer EBX cache and selector/tag schedule remain.
+// Earlier: extra buffer EBX cache and selector/tag schedule remain.
 // Coordinated getter inline/inline-noinline/noinline 49/49/49; parser inline 49; null-definition exit 72;
 // native tag member 49; native member with null exit 72; terminal case first 54.
 // extra buffer save and selector/tag schedule remain; name-block order 54;
@@ -291,6 +450,181 @@ done:
 // extra EBX buffer cache and selector/tag scheduling remain.
 // Translator inline/noinline 49/49; native copy inline/noinline 49/49; both inline 49;
 // selected parameter 49; even-priority cases 56; low/high pairs 51.
+// DL179: Session getter inline/noinline crossed with ordinary, forceinline, noinline
+// and inline-noinline shared variant-wrapper declarations 49/49/52/52/49/49/52/52;
+// code rows 37/37/39/39/37/37/39/39. Getter inline loses two checked callers;
+// wrapper outlining loses the checked variant parser. All original declarations restored.
+// translator with its own return 38 (178 bytes; not retail's shape). Round 5: the getter as a
+// ternary 56; case 9 third 54; the variant read raw with the tag load before the fallback 49
+// (retail's tag/selector schedule); both 54; with both, a static buffer, the copy called directly
+// and `&g_55c6e4` at the translator 54/54/54.
+// our size-optimized build keeps the buffer address in EBX for its two uses
+// (a size tie under /O1); retail pushes it as an immediate and moves it into EAX again (no matched
+// size-built function does that; a favour-speed setting gives it, not kept), and the tag/selector
+// schedule follows: retail reads the tag between the variant test and its branch and keeps the
+// selector in EAX. Retail lays the case blocks out as 0/1/9/2/3/4/7/8 (ascending string IDs).
+// Tried: native name ID, const globals, name declaration first, default first and absent cases 54;
+// selected-name fallback result 54; numeric case order 49; descending 52; native copy 54; direct
+// selector 57 at 171 bytes; const variant 54; scalar names 54; entry variant/tag declarations
+// 54/54; native buffer object 49; seven adjacent case-pair layouts 48/49/51/51/51/51/50;
+// translator inline/noinline 49/49; native copy inline/noinline 49/49; both inline 49; selected
+// parameter 49; even-priority cases 56; low/high pairs 51; the translator call in each case 37
+// (171 bytes; ESI then holds the buffer), the same in retail's block order 42 (171 bytes), with the
+// tag read in each call 45 (171 bytes: retail's block order and late EDI save, only the EBX buffer
+// and the tag load differ); the buffer named once 49; `&g_55c6e4[0]` at the translator 49;
+// coordinated getter inline/inline-noinline/noinline 49/49/49; parser inline 49; null-definition
+// exit 72; native tag member 49; native member with null exit 72; terminal case first 54;
+// name-block order 54; reverse/encoded name order 51/51; entry/middle/tail name pairs 55/53/53;
+// tail/middle groups first 53/54; session getter inline/noinline crossed with ordinary,
+// forceinline, noinline and inline-noinline shared variant-wrapper declarations
+// copying and returning 58 (180 bytes); a const tag 49 (identical); the selector read straight from
+// the variant getter 55 (171 bytes); the copy repeated after the translator with its own return 38
+// at 178 bytes (the switch path then caches the buffer in ESI, the default path uses the
+// immediate). Round 35, all with the shared call: the cases in retail's block order 54 (retail's
+// layout, still the EBX buffer, two bytes ahead); on it `&g_55c6e4[0]` at the copy 54, an early
+// `goto done` for a missing definition 54, the selector straight from the getter 57 (171 bytes),
+// an explicit `goto done` after the call 54.
+// Round 19 (lane 11): the buffer only this function references (no other retail use of 0x55c6e4),
+// with internal linkage 49; the copy in the default case with its own return 58 (180 bytes); a
+// NONE name tested before the translator 49; the tag read at the translator call 45 (171 bytes);
+// both 45 (171 bytes).
+// 54; the name typed as dword 49/54. Round 36, on the retail-order body: the missing-definition path
+// copying and returning early 72 (189 bytes); `&g_55c6e4[0]` at both uses 54; the buffer named in a
+// local for both uses 54; const definition pointer and tag read 54; the default label first 54.
+// Round 317: Existing getter default-first/complete-result arms, crossed with case-9 priority
+// and direct tag consumption, 52/56/59/54/63/45/61/45. Four-count leads rejected;
+// all original getter statements, shared buffer and parser body restored.
+// Later (32, from 49): retail's case order (0, 1, 9, 2, 3, 4, 7, 8) with the copy repeated after the
+// translation; ours still keeps the switch's value in EDI from the entry and pushes the buffer address
+// in ESI where retail pushes it as an immediate, and the selector load lands in ECX.
+// Round 109 (lane 5, fast; parse_variant stays matched), on the 32 form: the tag read before the
+// variant call 44 (tag in EBX, buffer still cached in ESI); the tag read in the translator call 45
+// (globals in EBX, selector in EAX as retail); `if (!globals) goto done;` 32 (same code); numeric
+// case order 38; the variant read raw with the tag load before the fallback (getter written out,
+// diagnostic) 33 (tag load in retail's slot but in ECX, so ESI stays free to cache the buffer). A
+// speed-preference diagnostic inlines the definition getter and the copy (118 at 224 bytes), so a
+// speed setting alone does not give retail's immediates. Matched siblings parse_variant and
+// parse_mapname cache their buffer constant in ESI; here retail's ESI holds the tag.
+// Round 109 (lane 6, fast): one shared copy after the `if (globals)` block (the switch's default
+// skipping the translator) 54: the tag then sits in ESI, EDI is pushed only around the switch and
+// popped after the translator, as retail, but the buffer address is hoisted into EBX at the globals
+// test for its two uses; on it the tag read before the variant call 57, the selector straight from
+// the getter with the tag first 57, `if (!globals) goto done;` 54, the tag read at the translator call
+// 45 (171 bytes; the selector then in EAX as retail, still the EBX buffer).
+// Round 98 (lane 8; LTCG env link, address-taken entry; env rows positional/aligned, base 42/35): one
+// shared copy after the `if (globals)` block with the default's `goto done` 47/29 (173 bytes, buffer
+// hoisted into EBX); with `&g_55c6e4[0]` at the translator 47/29; the tag read at the translator call
+// 43/33 (174 bytes); `name_id` declared before the definition lookup 42/35 (identical); the translator
+// called in each case with the shared copy 42/35 (170 bytes).
+// Round 24 (lane 14, fast), all on the natural one-copy form (54: buffer address hoisted into EBX at the
+// globals test, selector in ECX, tag loaded after the range compare): the buffer address read once into a
+// named `wchar_t *` local used by the translator and the copy 54 (same code); numeric case order 49; an
+// early `if (!globals) goto done;` with function-scope locals 54; `name_id` preset NONE with `default:
+// break` and the translator under `if (name_id != NONE)` 54; the four parse buffers as one two-dimensional
+// array (sym+offset constants) 54. Retail's translator takes the name in EDI (its matched body), so EDI's
+// late push is the call's argument register; the EBX hoist is the only thing the natural form lacks.
+// Round 181 (lane 3): a compile-only /O1 screen hoists 0x55c6e4 into a callee-saved register in all
+// six exit shapes tried (natural, copy on both paths, early null return, default copy and return,
+// both exits, per-case translator), so no exit shape removes it. Real build: the natural form 54
+// (173 bytes, every row aligned but the EBX hoist and the late tag load); an early copy-and-return
+// for a missing definition on the current form 77 (194 bytes); the default case copying and
+// returning 32 (same count); the natural form with the tag read before the variant call 57 (171
+// bytes) and just before the translator 45 (171 bytes).
+// Round 9 (lane 17, fast): a compile-only /O1 screen of 128 combinations (tag/variant/name declaration
+// orders, retail or numeric case order, `goto done` or a NONE-guarded call, shared or repeated copy,
+// `if (globals)` or `if (!globals) goto done`, the buffer named in a local or not) keeps 0x55c6e4 in a
+// register on at least one path in every one. Real: tag first, NONE guard, early goto and a named
+// buffer 57 (171 bytes); the name declared before the tag with a named buffer 54 (173 bytes); the name
+// first, NONE guard and repeated copy 68 (189 bytes); tag first, repeated copy and early goto 44 (178
+// bytes); numeric order, NONE guard, repeated copy, early goto and a named buffer 72 (189 bytes).
+// Round 41 (lane 11, fast): the natural one-copy form again 54 (173 bytes; `mov ebx, 0x55c6e4` placed
+// right after the globals test, ahead of its `je`, so it dominates both uses; the selector then lands
+// in ECX and the tag load after the range compare); on it a NONE-defaulting switch with the translator
+// under `if (name_id != NONE)` and one copy 54 (173 bytes), the tag read before the variant call 57 (171
+// bytes); the tag (or the tag, variant and name) declared at function scope 54/54 (same code). Matched
+// parse_leader caches its buffer in ESI only because its first copy needs it there.
+// Round 119 (fast, on the 32 form): the name declared before the variant 32; the selector read into a local
+// before the switch 32; a const tag 32 (all identical code); one shared copy after the `if (globals)` block 54;
+// the tag read before the variant call 44. In retail the tag load sits between the variant's NULL test and
+// its branch, i.e. before the getter's fallback in the IR; the shared getter keeps it after.
+// Round 126 (m3 lane 6, fast; parse_variant stays matched): the shared getter as a ternary on the 32 form 48 (the
+// select copies the variant into ECX, the tag still loads after the range compare), with the tag read before the
+// variant call 44; on the one-copy form (default skipping the translator) the ternary getter 54 (173 bytes; buffer
+// address still hoisted into EBX), with the tag read first 57 (171 bytes), with a NONE-defaulted name and a guard 54.
+// Round 45 (lane 11, fast), all on the natural one-copy form (54, 173 bytes; only the EBX constant, the
+// selector's ECX and the late tag load differ): the selector read into a named local before the tag 54;
+// the shared getter with two returns (`if (variant) return variant; return &g_54e4a0;`) 54, with the
+// selector local 54 (parse_variant stays matched); the variant declared at function scope 54; an explicit
+// `else goto done;` on the globals test 54. Retail's .text holds 0x55c6e4 twice and no data table holds
+// any parse buffer; the matched siblings each hold their buffer constant once (cached in ESI).
+// Round 126 (m3 lane 6, fast; parse_variant stays matched): the shared getter as a ternary on the 32 form 48 (the
+// select copies the variant into ECX, the tag still loads after the range compare), with the tag read before the
+// variant call 44; on the one-copy form (default skipping the translator) the ternary getter 54 (173 bytes; buffer
+// address still hoisted into EBX), with the tag read first 57 (171 bytes), with a NONE-defaulted name and a guard 54.
+// Round 108 (lane 8; a one-file LTCG harness with the callee files and the ballast object gives this code
+// exactly): the variant getter's fallback written as a ternary 48 (178 bytes; parse_variant stays matched); one
+// shared copy after the `if (globals)` block 54 (173 bytes, buffer hoisted into EBX), with the ternary getter 54;
+// a named pointer to the tag field read at the translator call 45 (178 bytes, globals in EBX); the tag declared
+// at function scope 32 (identical). All real (fast).
+// Round 14 (lane 17, fast; parse_variant stays matched), on the natural one-copy form (54): the shared
+// getter's fallback as a ternary 54 (same code: the tag load stays after the fallback join), with the tag
+// read before the variant call 57 (171 bytes; the tag loads before the call); the selector read into a
+// local before the tag 54; numeric case order 49 (173 bytes); numeric order with the tag read first 55
+// (171 bytes). Retail's tag load sits between `test eax, eax` and `jne` in the call's block, so in its IR
+// the tag read precedes the fallback branch.
+// Round 13 (lane 18, fast; parse_variant stays matched): a compile-only /O1 screen hoists 0x55c6e4 exactly
+// when the translator path uses that address twice (a different buffer at the copy removes it), and the
+// matched siblings here hoist theirs in retail too, so a file-flag change would not fit them (the earlier
+// favour-speed diagnostic stays a flags lead only). Real: numeric-to-retail case order with the tag read in
+// the translator call 39; `if (!globals) goto done;` with the tag read in the call 45; `name_id` preset NONE
+// with `default: break` and the translator/copy under `if (name_id != NONE)` 32 (same count); the buffer
+// named once for the translator and the copy 32; the tag read in the translator call alone 45.
+// Round 32 (m3 lane 2, fast; parse_variant stays matched): the natural one-copy form re-measured 54 at 173 bytes
+// (only the EBX hoist and the selector/tag schedule it moves); on it a caller-side `if (tag_index != NONE)` guard
+// around the translator 61 (178 bytes) and an early `goto done` for a NONE tag 61 (178 bytes); on the kept form the
+// tag read in the translator call with the cases in numeric order 41; the one-copy form with both 45 (171 bytes);
+// the kept form with `if (!globals) goto done;` and the tag read before the variant call 44. Retail references
+// 0x55c6e4 only from these two immediates (no pointer table in its data). Diagnostic, not kept: a speed preference
+// with automatic inlining off pushes the immediate again but LTCG still inlines 0x148350 (224 bytes, 118), so the
+// hoist is the size-preference tie (flags lead only).
+// Round 39 (m3 lane 15, fast; parse_variant stays matched): the selector read into a `dword` local on the natural
+// one-copy form 54 (173 bytes, same as that form), on the current form 32 (same code); with the tag read before
+// the variant call 57 (171 bytes) and 44 (178 bytes); the natural form with the `dword` selector in numeric case
+// order 49 (173 bytes).
+// Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
+// only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
+// the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
+// bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
+// after it 54; `if (globals != NULL)` 54.
+// Round 113 (m3 lane 7; an LTCG env link reproduces the build, without the whole-program objects 186
+// bytes): the natural one-copy form with the getter's call, the tag read and the fallback written in that order
+// (diagnostic, it writes out the existing getter) 54 at 173 bytes (fast): tag load and selector exactly retail's, only
+// the EBX hoist of 0x55c6e4 left; on it 18 spellings of the buffer at the translator and the copy, with `goto done`
+// or a NONE guard, env 60 each (identical); an early `if (!globals) goto done;` identical; the translator in each case
+// env 58 (171 bytes); the natural form with the tag read before the getter env 59 (167 bytes); the current form with
+// the written-out getter env 48 (the base's figure).
+// DL218: Zero-default name results with local/entry initialization and complete signed/unsigned
+// arms tie 32 with the repeated exit, 54 with one copy. No reduction of entry EDI save or scratch-
+// buffer cache; original complete parser and all call values restored.
+// Round 63 (m3 lane 16, fast; parse_variant stays matched): a compile-only /O1 screen still caches the buffer
+// with a NONE-guarded translator call and with a `(wchar_t const *)(word *)` copy source; the name from a
+// switch-with-returns inline helper stays out of line. Real: the natural one-copy form with the tag read
+// before the variant call 57 (171 bytes: retail's code but for the EBX buffer and the tag loaded before the
+// call); that with the NONE-guarded call 57; the repeated-copy form with the tag read first 44 (178 bytes);
+// the shared variant getter written with early returns (`if (variant) return variant; return &...;`) on the
+// natural form 54 (same code), on the kept form 48.
+// Round 194 (fast; parse_variant stays matched): the natural one-copy form re-measured 54 (173 bytes);
+// an early copy-and-return for a missing definition with the natural tail 72 (189 bytes, the two copies
+// are not merged), with the default case copying and returning 77 (194), with the current repeated
+// copy 77 (194); the early return with the natural tail and the tag read before the variant 68 (187);
+// a const variant pointer on the natural form 54 (173), on the current form 32 (same code).
+// Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
+// only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
+// the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
+// bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
+// after it 54; `if (globals != NULL)` 54.
+// Round 342: Seven complete cyclic case priorities and one paired priority on the repeated-copy graph (33 executable differing rows each versus 25): 52/42/50/50/50/50/38/50.
+// Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
@@ -310,6 +644,9 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		case 1:
 			name_id = 0x1000010d;
 			break;
+		case 9:
+			name_id = 0x700010e;
+			break;
 		case 2:
 			name_id = 0x600010f;
 			break;
@@ -325,13 +662,12 @@ void __stdcall parse_gametype(long string_handle, word *buffer)
 		case 8:
 			name_id = 0xb000115;
 			break;
-		case 9:
-			name_id = 0x700010e;
-			break;
 		default:
 			goto done;
 		}
 		function_1a0180(tag_index, name_id, (word *)g_55c6e4);
+		parse_copy(buffer, g_55c6e4);
+		return;
 	}
 done:
 	parse_copy(buffer, g_55c6e4);

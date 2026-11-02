@@ -9,8 +9,10 @@
 #include "object_iterator.h"
 #include "unknown_1428b0.h"
 #include "unknown_20fe20.h"
+#include "unknown_20f1a3.h"
 #include "unknown_11cc90.h"
 #include "vector_angles.h"
+#include "slot_handler.h"
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
@@ -194,19 +196,6 @@ long function_20f960(long index, s_audio_priority_table *table, bool *expired)
 	return result;
 }
 
-PRIVATE __forceinline long function_20f1a3(byte const *arg_0, real arg_1)
-{
-    long local_0 = *(long const *)(arg_0 + 8);
-    real local_1 = *(short const *)(arg_0 + 2) * arg_1;
-    long local_2;
-    __asm
-    {
-        fld local_1
-        fistp local_2
-    }
-    return local_0 + local_2;
-}
-
 // @retail 0x20f1a0
 real function_20f1a0(long object_index, short type)
 {
@@ -245,11 +234,6 @@ PRIVATE __forceinline bool audio_object_type_matches(byte *object, long type)
 	return *(long *)(definition + 0x5c) > 0 && *(long *)(*(byte **)(definition + 0x60) + 4) == type;
 }
 
-// score 2 (was 2): the parent is loaded before the seat test's branch here
-// and after it in retail; read inside the seat test it lands in eax and is
-// moved to esi for the call: a header pointer 73, related NONE by default and
-// tested after the seat test 73, a ternary 73, the unit fetched again 64, the
-// call inside the condition 73.
 // @retail 0x20c2f0
 bool __stdcall function_20c2f0(long object_index, long type, real *scale)
 {
@@ -258,12 +242,12 @@ bool __stdcall function_20c2f0(long object_index, long type, real *scale)
 	{
 		byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
 		if (audio_object_type_matches(object, type))
-			goto found;
-		if ((1 << *(byte *)(object + 0xaa)) & 3)
+			result = true;
+		else if ((1 << *(byte *)(object + 0xaa)) & 3)
 		{
-			long parent = *(long *)(object + 0x14);
 			if (*(short *)(object + 0x1fc) != NONE)
 			{
+				long parent = *(long *)(object + 0x14);
 				if (*(byte *)(g_4e0300->data + (parent & 0xffff) * 12 + 3) == 1)
 				{
 					long related = function_1caa10(parent);
@@ -271,26 +255,25 @@ bool __stdcall function_20c2f0(long object_index, long type, real *scale)
 					{
 						byte *other = *(byte **)(g_4e0300->data + (related & 0xffff) * 12 + 8);
 						if (audio_object_type_matches(other, type))
-							goto found;
+							result = true;
 					}
 				}
 			}
-			object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-			long weapon = function_cbd50(object_index, *(char *)(object + 0x212));
-			if (weapon != NONE)
+			if (!result)
 			{
-				byte *other = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
-				if (audio_object_type_matches(other, type))
-					goto found;
+				object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+				long weapon = function_cbd50(object_index, *(char *)(object + 0x212));
+				if (weapon != NONE)
+				{
+					byte *other = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
+					if (audio_object_type_matches(other, type))
+						result = true;
+				}
 			}
 		}
-		goto local_0;
-		found:
-		result = true;
-		if (scale)
+		if (result && scale)
 			*scale *= 2.0f;
 	}
-local_0:
 	return result;
 }
 
@@ -1131,12 +1114,19 @@ void function_2118c0(void)
 
 	g_4f93bc.cell_count = (short)globals->count;
 }
-// score 14 (was 14): the two locals are kept in the other stack slots: the
-// float is stored at [esp+0x30] here and at [esp+0x38] in retail, so every
-// slot of the frame is at another offset. Also: retail steps b * 8 in esi
-// where ours steps b and scales it. Tried: t to tc in the band loop 14;
+// score 14 (was 14): the k loop spills w2 and w0 after the two float offsets
+// here and before them in retail; retail steps b * 8 in esi where ours steps b
+// and scales it. Tried: t to tc in the band loop 14;
 // m set before the indices 14; a for loop over b 14; index operands swapped
-// 14; the output rows indexed from row 175.
+// 14; the output rows indexed from row 175; (r169) a short row 166; every row
+// as b * 8 + x 150; a [3][8][8] table 150; a row += 8 loop, a row induction
+// variable, inline row accessors, w's computed in the loops 150-180 (all rows
+// become pointer IVs); previous at the k level 22; tb before ta 20.
+// Round 55: a local 3D table pointer/reference 150/150; function-scope/split wrapped
+// indices 14/14; split float declarations 14; early band reset 14; sample/function-scope row 14/14.
+// Round 141 (lane 4): the band row as `b * 8` 150 (every row becomes a pointer IV); w3, w2, w0
+// declared in that order 150; a long band index 134; the knots named (`next = previous + 2.0f`,
+// `current = previous + 1.0f`) 14 (same code); the first sample row from the band row 163.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1793,34 +1783,15 @@ struct s_squad_definition_entry;
 struct s_squad_definition_view;
 s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 
-PRIVATE __forceinline bool audio_team_is_hostile(short team)
-{
-    bool result = true;
-    if (team != NONE)
-    {
-        long mode = g_4e6948->state;
-        if (mode == 1)
-        {
-            if (team >= 0 && team < 16)
-                result = !function_0bfe60((dword const *)((byte *)g_4f55ec + 0xc4), team * 16 + 1);
-        }
-        else if (mode == 2)
-            result = function_15e020(team, 1);
-        else
-            result = team != 1;
-    }
-    return result;
-}
-
-PRIVATE __forceinline bool audio_target_is_known(long actor_index, long object_index)
+PRIVATE __forceinline bool audio_target_is_known(byte *unit, long object_index)
 {
     if (object_index != NONE)
     {
-        long index = function_25d770(actor_index, object_index);
+        long index = function_25d770(*(long *)(unit + 0x12c), object_index);
         if (index != NONE)
         {
-            short state = *(short *)(g_502418->data + (index & 0xffff) * 0x3c + 0x24);
-            if (state >= 1 && state <= 2)
+            s_prop_node_view *node = prop_node_get(index);
+            if (node->unknown24 >= 1 && node->unknown24 <= 2)
                 return true;
         }
     }
@@ -1833,7 +1804,7 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
     {
         long index = *(long *)(actor + 0x338);
         if (index != NONE)
-            return *(long *)(g_502418->data + (index & 0xffff) * 0x3c + 0x20) == object_index;
+            return prop_node_get(index)->object_index == object_index;
     }
     return false;
 }
@@ -1842,21 +1813,17 @@ PRIVATE __forceinline bool audio_target_is_current(byte *actor, long object_inde
 short function_20d8c0(long source_index, s_audio_priority_table *table, byte const *request,
     long object_index, long target_index, long previous_index, long *tag_index, real *weight)
 {
-    (void)&table;
-    (void)&request;
-    (void)&object_index;
-    (void)&target_index;
-    (void)&previous_index;
-    (void)&tag_index;
-    (void)&weight;
     byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
     byte *actor = NULL;
     byte *source = NULL;
-    byte *target = NULL;
     short type = *(short const *)(request + 2);
     bool eligible = true;
     real scale = 1.0f;
     long source_unit_index = NONE;
+    bool found = false;
+    real result_weight;
+    long tag;
+    byte *target = NULL;
     if (target_index != NONE)
         target = *(byte **)(g_4e0300->data + (target_index & 0xffff) * 12 + 8);
     if (source_index != NONE)
@@ -1885,172 +1852,209 @@ short function_20d8c0(long source_index, s_audio_priority_table *table, byte con
         }
         if ((bool)((*(dword *)(object + 0x134) >> 3) & 1))
             eligible = false;
-        if ((!object[0xaa] && object[0x39d]) || !eligible)
-            goto failed;
-        if (previous_index != NONE && function_114440(object_index) ==
-            *(long *)(g_4f9398->data + (previous_index & 0xffff) * 0x54 + 0x4c))
-            goto failed;
-        if (actor)
+        if ((object[0xaa] || object[0x39d] <= 0) && eligible &&
+            (previous_index == NONE || function_114440(object_index) !=
+             *(long *)(g_4f9398->data + (previous_index & 0xffff) * 0x54 + 0x4c)))
         {
-            dword mask = function_1a7ad0(actor_index);
-            if ((*(dword const *)(request + 0x3c) & mask) != mask)
+            if (actor)
             {
-                type = NONE;
-                eligible = false;
-                goto checked;
-            }
-            long action = *(long *)(actor + 0x858);
-            if (action != NONE)
-                eligible = *(bool *)(g_502408->data + (action & 0xffff) * 0xd4 + 0x82);
-        }
-        if (!eligible)
-            goto checked;
-        if ((request[0xa] & 1) && object_index != target_index && actor &&
-            !audio_target_is_known(actor_index, target_index))
-            goto invalid;
-        if ((request[0xa] & 2) && object_index != source_unit_index && actor &&
-            !audio_target_is_known(*(long *)(object + 0x12c), source_unit_index))
-            goto invalid;
-        {
-            bool friendly = false;
-            if (!audio_team_is_hostile(*(short *)(object + 0x138)))
-                friendly = true;
-            else if (actor && *(long *)(actor + 0x7c) != NONE)
-            {
-                long clump = *(long *)(actor + 0x7c);
-                friendly = *(short *)(g_502420->data + (clump & 0xffff) * 0x50 + 0x10) > 1;
-            }
-            if ((bool)(((dword)request[0xa] >> 2) & 1))
-            {
-                if (!friendly)
-                    goto invalid;
-            }
-            else if (friendly)
-                scale = 0.6f;
-        }
-        {
-            word flags = *(word const *)(request + 0xa);
-            if ((flags & 8) && actor)
-            {
-                if (!audio_target_is_current(actor, target_index))
-                    goto invalid;
-                scale *= 1.1f;
-            }
-            if ((flags & 0x10) && actor)
-            {
-                if (!audio_target_is_current(actor, source_unit_index))
-                    goto invalid;
-                scale *= 1.1f;
-            }
-            if ((flags & 0x20) && (!source || *(long *)(source + 0x13c) == NONE) &&
-                audio_team_is_hostile(*(short *)(object + 0x138)))
-                goto ineligible;
-            flags = *(word const *)(request + 0xa);
-            if ((flags & 0x40) && (!actor ||
-                (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
-                 actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)))
-                goto ineligible;
-            if (flags & 0x80)
-            {
-                eligible = false;
-                if (!actor || *(long *)(actor + 0x30) == NONE)
-                    goto checked;
-                byte *squad = g_51e9d8->data + (*(long *)(actor + 0x30) & 0xffff) * 0x98;
-                byte *local_b3aa32_2 = (byte *)function_203330((s_squad_definition_view const *)squad);
-                if (local_b3aa32_2)
-                    eligible = (bool)((*(dword *)(local_b3aa32_2 + 0x24) >> 4) & 1);
-            }
-            if (!eligible)
-                goto checked;
-            if (flags & 0x100)
-            {
-                eligible = false;
-                if (!source || *(long *)(source + 0x13c) == NONE)
-                    goto checked;
-                team = *(short *)(object + 0x138);
-                if (team == 1)
-                    eligible = true;
+                dword mask = function_1a7ad0(actor_index);
+                if ((*(dword const *)(request + 0x3c) & mask) != mask)
+                {
+                    type = NONE;
+                    eligible = false;
+                }
                 else
                 {
-                    if (audio_team_is_hostile(team))
-                        goto checked;
-                    byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
-                    switch (team)
+                    long action = *(long *)(actor + 0x858);
+                    if (action != NONE)
+                        eligible = *(bool *)(g_502408->data + (action & 0xffff) * 0xd4 + 0x82);
+                }
+            }
+            if (eligible)
+            {
+                if ((request[0xa] & 1) && object_index != target_index && actor &&
+                    !audio_target_is_known(object, target_index))
+                {
+                    type = NONE;
+                    eligible = false;
+                }
+                else if ((request[0xa] & 2) && object_index != source_unit_index && actor &&
+                    !audio_target_is_known(object, source_unit_index))
+                {
+                    type = NONE;
+                    eligible = false;
+                }
+                else
+                {
+                    bool friendly_required = (bool)((((dword)*(short const *)(request + 0xa)) >> 2) & 1);
+                    bool friendly = false;
+                    if (!team_is_enemy(*(short *)(object + 0x138), 1))
+                        friendly = true;
+                    else if (actor && *(long *)(actor + 0x7c) != NONE &&
+                        element_502420_get(*(long *)(actor + 0x7c))->member_count > 1)
+                        friendly = true;
+                    if (friendly_required)
                     {
-                    case 2: eligible = player[0x88] == 0; break;
-                    case 3: case 7: eligible = player[0x88] == 1; break;
+                        if (!friendly)
+                        {
+                            type = NONE;
+                            eligible = false;
+                        }
+                    }
+                    else if (friendly)
+                        scale = 0.6f;
+                }
+            }
+            if (eligible)
+            {
+                word flags = *(word const *)(request + 0xa);
+                if ((flags & 8) && actor)
+                {
+                    if (!audio_target_is_current(actor, target_index))
+                    {
+                        type = NONE;
+                        eligible = false;
+                    }
+                    else
+                        scale *= 1.1f;
+                }
+                if (eligible && (flags & 0x10) && actor)
+                {
+                    if (!audio_target_is_current(actor, source_unit_index))
+                    {
+                        type = NONE;
+                        eligible = false;
+                    }
+                    else
+                        scale *= 1.1f;
+                }
+                if (eligible && (flags & 0x20) && (!source || *(long *)(source + 0x13c) == NONE) &&
+                    team_is_enemy(*(short *)(object + 0x138), 1))
+                    eligible = false;
+            }
+            if (eligible)
+            {
+                word flags = *(word const *)(request + 0xa);
+                if (flags & 0x40)
+                {
+                    if (actor)
+                    {
+                        if (actor_behavior_find_level(*(long *)(object + 0x12c), 0x22) == NONE &&
+                            actor_behavior_find_level(*(long *)(object + 0x12c), 0x1b) == NONE)
+                            eligible = false;
+                    }
+                    else
+                        eligible = false;
+                }
+                if (eligible && (flags & 0x80))
+                {
+                    eligible = false;
+                    if (actor && *(long *)(actor + 0x30) != NONE)
+                    {
+                        byte *squad = g_51e9d8->data + (*(long *)(actor + 0x30) & 0xffff) * 0x98;
+                        byte *squad_entry = (byte *)function_203330((s_squad_definition_view const *)squad);
+                        if (squad_entry)
+                            eligible = (bool)((*(dword *)(squad_entry + 0x24) >> 4) & 1);
+                    }
+                    else
+                        eligible = false;
+                }
+                if (eligible && (flags & 0x100))
+                {
+                    eligible = false;
+                    if (source && *(long *)(source + 0x13c) != NONE)
+                    {
+                        if (*(short *)(object + 0x138) == 1)
+                            eligible = true;
+                        else if (!team_is_enemy(*(short *)(object + 0x138), 1))
+                        {
+                            byte *player = g_4e8c24->data + (*(long *)(source + 0x13c) & 0xffff) * 0x21c;
+                            switch (*(short *)(object + 0x138))
+                            {
+                            case 2: eligible = player[0x88] == 0; break;
+                            case 3: case 7: eligible = player[0x88] == 1; break;
+                            default: eligible = false; break;
+                            }
+                        }
                     }
                 }
             }
-            if (!eligible)
-                goto checked;
-        }
-        if (*(short const *)(request + 0x18) > 0 &&
-            function_1c9e50(*(short const *)(request + 0x18)) > *(real *)(actor + 0x3d8))
-            goto invalid;
-        if (actor)
-        {
-            short current = function_272ab0(*(long *)(object + 0x12c));
-            short required = *(short const *)(request + 0x1a);
-            if (required != current)
+            if (eligible)
             {
-                if (required)
-                    goto invalid;
-                scale *= 0.6f;
-            }
-        }
-        else if (*(short const *)(request + 0x1a))
-            goto invalid;
-        goto checked;
-invalid:
-        type = NONE;
-ineligible:
-        eligible = false;
-checked:
-        actor_index = *(long *)(object + 0x12c);
-        if (actor_index != NONE &&
-            *(short *)(g_4f55f0->data + (actor_index & 0xffff) * 0x888 + 0x86) > *(short *)(definition + 0x16))
-        {
-            type = NONE;
-            goto failed;
-        }
-        if (eligible)
-        {
-            real result_weight = function_20f1a0(object_index, type) * scale;
-            if (*(long *)(object + 0x13c) != NONE)
-            {
-                type = NONE;
-                goto failed;
-            }
-            real probability = *(real *)(definition + 0x48);
-            if ((target && *(long *)(target + 0x13c) != NONE) ||
-                (source && *(long *)(source + 0x13c) != NONE))
-                probability = *(real *)(definition + 0x44);
-            g_4e7408->unknown0 = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f;
-            dword random = g_4e7408->unknown0 >> 16;
-            if (probability > (real)random * (1.0f / 65535.0f))
-                goto failed;
-            while (type != NONE && definition)
-            {
-                long tag = NONE;
-                if (((long *)queue)[type] <= time && function_1144a0(object_index, type, &tag))
+                if (*(short const *)(request + 0x18) > 0 &&
+                    function_1c9e50(*(short const *)(request + 0x18)) > *(real *)(actor + 0x3d8))
                 {
-                    *weight = result_weight;
-                    *tag_index = tag;
-                    return type;
+                    type = NONE;
+                    eligible = false;
                 }
-                type = *(short *)(definition + 8);
-                result_weight *= 0.8f;
-                if (type != NONE)
-                    definition = (byte *)&table->entries[type];
+                else if (actor)
+                {
+                    short current = function_272ab0(*(long *)(object + 0x12c));
+                    short required = *(short const *)(request + 0x1a);
+                    if (required != current)
+                    {
+                        if (!required)
+                            scale *= 0.6f;
+                        else
+                        {
+                            type = NONE;
+                            eligible = false;
+                        }
+                    }
+                }
+                else if (*(short const *)(request + 0x1a))
+                {
+                    type = NONE;
+                    eligible = false;
+                }
+            }
+            actor_index = *(long *)(object + 0x12c);
+            if (actor_index != NONE &&
+                *(short *)(g_4f55f0->data + (actor_index & 0xffff) * 0x888 + 0x86) > *(short *)(definition + 0x16))
+                type = NONE;
+            else if (eligible)
+            {
+                result_weight = function_20f1a0(object_index, type) * scale;
+                if (*(long *)(object + 0x13c) != NONE)
+                    type = NONE;
+                else
+                {
+                    real probability = *(real *)(definition + 0x48);
+                    if ((target && *(long *)(target + 0x13c) != NONE) ||
+                        (source && *(long *)(source + 0x13c) != NONE))
+                        probability = *(real *)(definition + 0x44);
+                    dword random = random_next(&g_4e7408->unknown0);
+                    if (!(probability > (real)random * (1.0f / 65535.0f)))
+                    {
+                        while (type != NONE && definition)
+                        {
+                            tag = NONE;
+                            if (((long *)queue)[type] <= time && function_1144a0(object_index, type, &tag))
+                            {
+                                found = true;
+                                break;
+                            }
+                            type = *(short *)(definition + 8);
+                            result_weight *= 0.8f;
+                            if (type != NONE)
+                                definition = (byte *)&table->entries[type];
+                        }
+                    }
+                }
             }
         }
     }
     else
         type = NONE;
-failed:
-    *weight = 0.0f;
-    *tag_index = NONE;
+    if (!found)
+    {
+        *weight = 0.0f;
+        *tag_index = NONE;
+        return type;
+    }
+    *weight = result_weight;
+    *tag_index = tag;
     return type;
 }
 
@@ -2233,7 +2237,6 @@ long function_20e580(long ai_index, s_audio_priority_table *table, byte const *r
 
 
 #include "units.h"
-#include "slot_handler.h"
 #include "slot_owner.h"
 long function_1b8c80(long object_index);
 bool function_277790(long actor_index, long other_actor_index);
@@ -2517,7 +2520,15 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 
 // score 3 (was 3): the y value is loaded into XMM1 before the call here and
 // after it in retail, so the load of the z value sits on the other side of
-// the call as well.
+// the call as well. Tried (r169): both positions at function scope 3; the
+// differences at each use 366; no helper, locals y, z, x and an accumulated
+// z, y, x sum 45 (z, x, y 47; selector in the switch 343); locals y, z, x
+// before the helper 430.
+// Round 141 (lane 4): vector3d_from_points3d + length_sq3f with the delta's fields in the cases
+// 365 (x, y, z order, table moves); the helper's differences y, z, x with one-expression and split
+// sums 26/26; a one-expression sum in every difference order (the term order is ignored; only the
+// difference order counts) xyz/xzy 27, yxz 23, yzx 26, zxy 11, zyx 16; the outer x, y, z locals in
+// the other five orders xzy/zxy/zyx 15, yxz/yzx 3 (same code).
 // @retail 0x20c440
 void function_20c440(byte const *request, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2721,14 +2732,18 @@ bool function_1df640(short team_a, short team_b);
 // other way round after the call. Also tried: a const group pointer 6, the
 // count test as if/else 6, the byte view passed as the table 6, the entries
 // read through the table parameter 6, the bound's terms swapped 6 (VC sorts
-// them), a (long) cast on either or both terms 6.
+// them), a (long) cast on either or both terms 6; (r169) the parameter-address
+// statements removed 6 (kept); a long index 148; a named request pointer 6;
+// a while loop 6; (r106) the index read from the group before the count test
+// with `group[0] + group[1]` as the bound 8 (the first word's load moves above
+// the branch, the reload order stays); a named entry pointer 6; the count test
+// in the loop condition 6; the existing object_get/actor_get helpers for both
+// objects 6 (same code); the entries as rows of 0x40 bytes 6.
 // @retail 0x20cbd0
 void function_20cbd0(short group_index, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category,
     s_audio_selection *results, short maximum_count, short *count)
 {
-    (void)&table; (void)&target_index; (void)&source_index; (void)&previous_index; (void)&ai_index;
-    (void)&category; (void)&results; (void)&maximum_count; (void)&count;
     long target_team = NONE;
     long source_team = NONE;
     long relation = 2;
@@ -2789,7 +2804,16 @@ void function_20fda0(long arg_0);
 // here after the call and in retail before it, and the global is read into
 // EDX here and into EAX in retail.
 // Tried (r35): split side or node assignments, a const side or object, a byte owner,
-// an early guard and the object macro 19; an explicitly widened side 39.
+// an early guard and the object macro 19; an explicitly widened side 39;
+// (r169) the node before the queue 24 (pool loads first, node add moves up);
+// the node before the call 49; NODE() 19; a long side 39; the queue written
+// at both calls 62; a `byte *const &` node 19.
+// Round 141 (lane 4): retail loads the pool first and the queue into EAX after the MOVSX, then
+// builds the node as data + offset in EAX before the flag read (the 0x20d570 lookup shape); ours
+// loads the queue into EDX first and folds the node into the flag read. One queue call after the
+// if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
+// first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
+// (all the same code).
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

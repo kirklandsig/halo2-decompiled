@@ -10,6 +10,7 @@
 #include "segment_sphere.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
+#include "vehicle_ray.h"
 
 #define FLAG(bit) (1 << (bit))
 #define TEST_FLAG(flags, bit) (((flags) & FLAG(bit)) != 0)
@@ -739,13 +740,6 @@ struct s_palette_168f40
 	s_material_168f40 *materials;
 };
 
-struct s_vehicle_ray
-{
-	point3f point;
-	vector3f vector;
-	real t;
-};
-
 // @retail 0x168f40
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 	long ignore_object_index, long ignore_object_index2)
@@ -834,6 +828,9 @@ bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray,
 // `return true;` there 25; point/vector read directly in the plane distances 124; the k/j
 // plane terms through `instanced_plane->plane` 177 (both k products then load the plane
 // first, as retail; j does not, and the stepping block grows); the j operands swapped 25.
+// Round 57: plane->n products 25; a typed normal pointer for all/k-only/j-only products
+// 25/25/25; normal k/j with plane i 56; direct entry k-only/j-only 25/25; return the existing
+// result from the successful correction branch 24 (one-point gain and 2168 bytes, restored).
 // @retail 0x1697c0
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
 	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision)
@@ -1559,7 +1556,14 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
+// score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
+// frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
+// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
+// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
+// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
+// not retail's form. Original body kept.
+// Earlier: frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain; the prism cursor is
+// anchored at point_count (retail at plane.j, prism + 0x14: every prism displacement differs by 0x14).
 // Retail keeps the zero in ESI (pushed first, reused as the prism pointer, based at plane.j where
 // ours bases it at the point count) and counts the accepted shapes in 32-bit counters (test/jle,
 // cvtsi2ss). Round 152: separate face/edge sum points 594; long counters 572 (2890 bytes); plane
@@ -1587,6 +1591,88 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // bytes 552 each (2898/2882). Original canonical bools, accepted word counts and geometry restored.
 // Round 226: Plain component loops for paired edge inputs/contact direction/residuals and
 // their pairs/all [672, 594, 556, 680, 674, 594, 682]; all with the three ray scales 660. All restored.
+// Round 174: reconstruction prism/point/output reference contracts in all seven
+// subsets 552; all with the actual point value 712 and frame 0xb970; original helper restored.
+// Frame 0xb964, sum homes and EBX/ESI query zero discrepancy remain.
+// DL167: Existing scaled-add projected/candidate and shared ray-fallback add producers, seven
+// subsets 553/552/553/609/610/609/632; all with in-place vector sums 623. Original
+// producers, real inputs, word counts and helper restored (fast control/full baseline 552).
+// Round 249: shared final accepted-sum pointer with word/short/long/dword count
+// 612/612/612/619; native sum value with those domains 602/602/602/598.
+// Original separate averaging branches, count domains and all geometry restored.
+// Round 225: projected offset/candidate displacement/both/squared lengths/offset-lengths/
+// displacement-lengths/all/all with three shared ray scales 618/555/553/554/618/555/617/553.
+// Original expression producers and all geometry/helper inputs restored.
+// Round 267: query count long/short 577/623; outer prism cursor live/long/short
+// 638/662/662; unsigned ordinal live/long/short 552/581/623. Original
+// query-count observations, signed outer ordinal and complete geometry restored.
+// Round 415: native plane value and staged side/perpendicular crosses, seven subsets
+// 734/553/734/603/707/603/707; all with complete normalization/ray assignments 707.
+// Original plane observations, product producers and complete geometry restored.
+// Round 424: complementary polygon/normal/contact decisions, seven subsets
+// 553/552/553/554/555/554/555; all with full-width polygon 600. Original
+// decision values, geometry and helper calls restored; sum homes and query zero remain.
+// Round 434: nearest-edge/radii/squared-limit scalar lexical homes, all seven
+// subsets 552 each; complete names with accepted radii before accumulator storage 551
+// (one-point gain rejected). Original scalar homes, word counts and geometry restored.
+// Round 238: point-count-owned upper cap with word/face-long/edge-long/both-long
+// accepted counts 605/561/567/587; each with readonly prism 605/561/567/587.
+// Original cap, accepted word counts, prism view and complete geometry restored.
+// Ray-result-owned positive/negative endpoints and shared ray, seven subsets, then original endpoints with one
+// query result: 613/600/638/571/634/619/661/581. Original complete executable source restored.
+// Round 47 (lane 10, fast with 0x120790 listed): long counters each declared beside its radius (edge then face)
+// 572, face then edge 571; word counters beside their radii 552 (same code); the count clamped by `if (count > 8)`
+// 605; the distance through the existing plane_distance_to_point 620; both 614, and a plane pointer local for the
+// distance with the `if` clamp 614: these two give retail's plane.j cursor anchor (compile-only agrees: neither
+// alone does, and no spelling or term order of the distance moves it) but drop the frame to 0xb958 and keep the
+// dot product summed (x*i + z*k) + y*j (all 48 term orders compile the same) where retail has (x*i + y*j) + k*z;
+// retail also keeps the ternary clamp's select (`mov ecx, 8; jg; mov ecx, eax`).
+// J218: Native point setters for paired sum initialization/averages/accumulations, seven subsets, then result before query storage: 646/552/646/553/646/553/646/646. Original complete body restored.
+// Round 53 (lane 10, fast with 0xc2d00/0x17a380/0x16a440/0x2469b0/0x120790): retail keeps the sums apart
+// (face at +0x54, the nearest distance at +0x60, edge at +0x64), counts and radii as dwords at +0x88..+0x94,
+// computes `(edge_index + 1) % point_count` at the top of the edge loop (stored as the next index) and
+// reloads the axis and side for each point reconstruction. Every prism read straight from
+// `shapes.prisms[index]` (no prism pointer) 686 (2956 bytes); only the plane reads that way 587 (2892, cursor
+// still at the point count); the next index named at the top of the edge loop 602 (2909); both
+// reconstructions through the existing 0x120790 (inlined: retail's word loads of the two table indices and the
+// second point's +0x9c home, but the first point's home and the axis register differ) 651 (2925); that with
+// the next index named first 686 (2955).
+// Round 43 (lane 14, fast): long face/edge counts (retail's `test eax, eax; jle; cvtsi2ss`) 572 (2890 bytes,
+// re-measured), as edge count/radius, face count/radius pairs 572, face pair first 571; the edge loop's next
+// index named at the loop top before the first point (retail's early inc/idiv) 602 (2909), with long counts 597.
+// Round 211: existing double-factor scaler for both averages/paired direction rays/normal
+// and combinations 668/651/591/670/660/629/638; all plus count-produced result 661.
+// Complete products reach 2882 bytes at 638 but disturb matched callers. Original word
+// counts, sums, ray producers, result, include and body restored; sum/query-zero homes remain.
+// Round 66 (lane 9, fast): retail's four 4-byte count/radius homes sit together as count, radius, count, radius
+// (frame 0x88-0x94) and the prism cursor is based at plane.j. Tried: the prism fields read as
+// `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through
+// the existing plane_distance_to_point 620 (frame 0xb958); long counters declared count/radius by kind 571 (2890
+// bytes); word counters declared that way 551 (one point); the loop without the `counts[2] > 0` guard 555.
+// Round 298: Independent sums/shared normalization with long counts, point-count-first cap and
+// shared plane distance, masks 0..7: 591/575/593/579/613/605/551/569. One-point gain rejected;
+// original sums, word counts, normalization, cap, plane producer and body restored.
+// Sum/query-zero/cursor homes remain.
+// Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
+// product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
+// the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is
+// not retail's form. Original body kept.
+// Round 55 (lane 10, fast; 0x120790 and 0x16a440 listed, unchanged): both point reconstructions through the
+// existing 0x120790 (retail inlines it here) 651 (2925 bytes); with long counters 640 (2917); with the distance
+// through plane_distance_to_point 644 (2918); with both 634 (2910); long counters and plane_distance_to_point on
+// this body 610 (2887 bytes, frame changes at +0x1).
+// Round 441: shared two-use initial sum pointer/radius-result/edge-first accumulation subsets
+// 553/552/553/552/553/552/553; complete graph with native long accepted counts 572.
+// Original complete body restored; sum homes and query zero ownership remain.
+// Round 445: Native double radius-minimum/nearest-separation/normalization result domains,
+// seven subsets and full-width-count graph: 651/641/678/621/643/681/697/763.
+// Original complete executable body restored.
+// Round 451: Edge-reconstruction endpoint declarations at entry/radius/prism/producer
+// scopes, original and complete endpoint role names: 552/552/552/552/552/552/552/552. Original declarations, names and
+// complete body restored; sum homes, query zero and prism anchor remain.
+// Round 241: Native cross-product/point-difference/edge-query direction storage,
+// singles/pairs/all 580/552/553/580/581/553/581; all with long accepted counts 592.
+// Original vector storage, accepted word counters, helper and complete geometry restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

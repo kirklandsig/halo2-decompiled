@@ -12,6 +12,8 @@
 #include "unknown_1dacb0.h"
 #include "unknown_1cafc0.h"
 
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+
 /* a camera pan's velocity profile: it accelerates from the start rate to
    the peak, holds it, then moves toward the end rate (0x18 bytes) */
 struct s_camera_velocity_profile
@@ -206,24 +208,7 @@ bool camera_velocity_profile_new(s_camera_velocity_profile *profile, real total_
 	return result;
 }
 
-// score 49 (was 49): retail keeps only start and deceleration in xmm registers and reads the
-// peak (twice) and acceleration from their array homes (frame 0x1c); ours keeps all four in
-// registers (frame 0x10). Three-arm first clamp 96; two separate result clamps 49 (same);
-// last term as a separate += 55 (retail's add order and single-exit clamp tail appear);
-// one 2x3 coefficient array 54 (retail's 0x1c frame and tail, but the reads stay in
-// registers); reordered coefficient fills 55; start/deceleration as named locals 59;
-// endpoint field reads in the sum 114 (the homes collapse); pointer-taking fill helper 63;
-// coefficient fill after the clamps 120.
-// retail keeps both arrays in its frame (sub esp, 0x1c)
-// and reads rates[1], rates[2] and accelerations[0] back from it; ours keeps
-// only rates[2] there, so the sum takes other registers, the b * b term
-// moves up (the compiler reorders the sum: the source order of the terms
-// does not matter) and the two clamp exits are not merged. Retail also
-// tests ticks against the acceleration ticks before choosing ticks (an
-// if/else-if/else gives that, 96). Tried: other term orders 49, squares in
-// locals 49, b * (b * accelerations[1]) 99, a loop over the three segments
-// 59-65 (unrolled, factored), aggregate initializers 49, accelerations
-// zero-initialized 101, the arrays filled or declared in another order 49-50.
+/* the profile's value at a tick: per segment ticks * rate + ticks^2 * acceleration, summed, clamped to [0, 1] */
 // @retail 0x16be50
 real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, long ticks)
 {
@@ -231,63 +216,32 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 
 	if (profile->valid)
 	{
-		real rates[3];
-		real accelerations[3];
+		vector3f rates;
+		vector3f accelerations;
 		long acceleration_ticks;
 		long hold_ticks;
 		long deceleration_ticks;
 		real a, b, c;
 
-		rates[0] = profile->start_rate;
-		rates[1] = profile->peak_rate;
-		rates[2] = profile->peak_rate;
-		accelerations[0] = profile->acceleration;
-		accelerations[1] = 0.0f;
-		accelerations[2] = profile->deceleration;
+		rates.i = profile->start_rate;
+		rates.j = profile->peak_rate;
+		rates.k = profile->peak_rate;
+		accelerations.i = profile->acceleration;
+		accelerations.j = 0.0f;
+		accelerations.k = profile->deceleration;
 
-		acceleration_ticks = ticks;
-		if (acceleration_ticks < 0)
-		{
-			acceleration_ticks = 0;
-		}
-		else if (acceleration_ticks > profile->acceleration_ticks)
-		{
-			acceleration_ticks = profile->acceleration_ticks;
-		}
-
+		acceleration_ticks = PIN(ticks, 0, profile->acceleration_ticks);
 		a = (real)acceleration_ticks;
-		if (ticks - profile->acceleration_ticks < 0)
-		{
-			hold_ticks = 0;
-		}
-		else if (ticks - profile->acceleration_ticks >
-			profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks)
-		{
-			hold_ticks = profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks;
-		}
-		else
-		{
-			hold_ticks = ticks - profile->acceleration_ticks;
-		}
-
+		hold_ticks = PIN(ticks - profile->acceleration_ticks, 0,
+			profile->total_ticks - profile->deceleration_ticks - profile->acceleration_ticks);
 		b = (real)hold_ticks;
-		if (ticks - (profile->total_ticks - profile->deceleration_ticks) < 0)
-		{
-			deceleration_ticks = 0;
-		}
-		else if (ticks - (profile->total_ticks - profile->deceleration_ticks) > profile->deceleration_ticks)
-		{
-			deceleration_ticks = profile->deceleration_ticks;
-		}
-		else
-		{
-			deceleration_ticks = ticks - (profile->total_ticks - profile->deceleration_ticks);
-		}
-
+		deceleration_ticks = PIN(ticks - (profile->total_ticks - profile->deceleration_ticks), 0,
+			profile->deceleration_ticks);
 		c = (real)deceleration_ticks;
 		{
-			result = c * c * accelerations[2] + a * a * accelerations[0] + c * rates[2] + b * rates[1] + a * rates[0] +
-				b * b * accelerations[1];
+			vector3f times = { a, b, c };
+			vector3f squares = { a * a, b * b, c * c };
+			result = dot3f(&squares, &accelerations) + dot3f(&times, &rates);
 		}
 		if (0.0f > result)
 		{
@@ -753,24 +707,14 @@ struct s_observer_command
 	real unknowna4;
 };
 
-struct s_unknown_13bf00;
-extern s_unknown_13bf00 *g_510c50;
 extern real g_54e854;
-
-/* the field of view interpolation's switch (g_510c50) */
-struct s_camera_field_of_view_flags
-{
-	byte unknown0[5];
-	bool active;
-};
 
 matrix3x3 *function_142d10(vector3f const *up, vector3f const *forward, matrix3x3 *out);
 void function_11da10(quaternionf const *a, quaternionf const *b, quaternionf *out, real t);
 matrix3x3 *function_141e10(matrix3x3 *out, quaternionf const *q);
 void function_23c0e0(long object_index, s_observer_command *command);
 void function_172520(s_observer_command *command);
-
-#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+bool function_13cb40(void);
 
 PRIVATE inline real game_ticks_to_seconds(long ticks)
 {
@@ -778,7 +722,22 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 }
 
 /* the camera director of scripted cameras: fills the observer's command */
-// score 236 (was 245): frame 72 agrees; the camera mode and the object index are read into
+// score 236 (was 236): frame 72 agrees; the first real difference is the plane block's direction preload
+// (retail d.j, ours d.k) with the normal in XMM3/4/5 for i/j/k (ours XMM5/3/4), then the zero/length roles.
+// Earlier: the first difference was put at the switch's dispatch —
+// frame 72 agrees and the arms are in retail's order at 1696 bytes (aligned
+// difference 123): ours puts the length in xmm0 and the zero in xmm1 where retail has xmm1/xmm0
+// (retail preloads direction j as the length accumulator), the normal's i/j/k in xmm5/xmm3/xmm4
+// against retail's xmm3/xmm4/xmm5, the case 2 and default 0x40 flag updates swapped between the
+// memory `or` and load/or/store forms, and the timer reassociated to (rate / scale) * ticks.
+// Earlier (236): the first difference at the switch's dispatch is the default jump target (the
+// code after the switch), so the case bodies' sizes differ and the switch region shifts with it.
+// Earlier (236): frame 72 agrees; the camera mode and the object index are read into
+// this round found the first difference at the switch's dispatch —
+// the default jump target (the code after the switch) is not where retail puts it, so the
+// four case bodies are laid out differently and the whole switch region differs with it.
+// Earlier: frame 72 agrees; the camera mode and the object index are read into
+// Earlier 236 (was 236): frame 72 agrees; the camera mode and the object index are read into
 // named locals before the switch and the test; direction preload, length/zero XMM roles and
 // flag stores still differ.
 // frame 0x48 agrees; direction preload, length/zero
@@ -860,6 +819,45 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // a named seconds local at the use 384 (lockstep shift); field-of-view fields read at each use 259,
 // with a named start 264, target local with fields elsewhere 254; seconds local plus those fields
 // 380 (retail's instruction count, 462, but zero/value XMM roles swap throughout). Restored.
+// Round 399: Outer native case orders point-animation-pan-first_person / point-animation-first_person-pan
+// / point-first_person-pan-animation / point-first_person-animation-pan /
+// pan-point-first_person-animation / pan-animation-point-first_person / pan-first_person-point-animation
+// / animation-point-first_person-pan: 330/340/356/341/460/464/459/459. Original restored.
+// Round 39: shared native pan rotation matrix, either declaration/conversion order, 243;
+// with fraction before conversion 358 at 1716 bytes. Reusing the existing full pan transform
+// in both conversions, four late-fraction forms, 237. Original native objects and body restored.
+// Round 425: Existing vector setter for the complete plane normal, alone and with
+// projection/offset/pan setters in all combinations, 443/447/443/447/448/456/448/456 fast.
+// Original normal copy, all parallel rows, float groups and complete body restored.
+// Round 434: native pan quaternion/transform/animation output entry lifetimes,
+// seven subsets 236/236/236/236/236/236/236; complete graph with role names 236.
+// Original workspace scopes, projection, helpers and complete body restored.
+// Round 51 (lane 11): a compile-only screen of the plane block (it reproduces this build's preload and
+// XMM numbering exactly) over all six length term orders x product operand orders (48), and over
+// plane.d argument order x length form (six term orders, dot3f(d,n)/(n,d)/(d,d)/(n,n)) x `plane.n =
+// *direction` or `= camera->point.left` x plane.d before/after the length (80): best block 35 against
+// 38; n.i always lands in XMM5. Real builds: length terms i,k,j / k,i,j / j,k,i 243/243/238; direction
+// and length declared at their first assignment 236; the four block declarations reordered 236.
+// Round 19 (lane 18, fast, positional/aligned against 236/123): listed forms re-measured: seconds
+// local in the tick helper 385/128 (retail's ticks * rate / scale, one instruction shorter, the rest
+// shifts), j-first length 238/122 (retail's direction j preload; the k product still the
+// accumulator); new: both 387/127; j-first length with the plane dot's operands reversed 238/122;
+// with the plane declared after the scalars 238/122; one 0x40 flag update after the point-type
+// switch 399 (1704 B); the length zero test first in the if/else 236/127. All restored.
+// Round 68 (lane 12): retail carries 0.0 in XMM0 into the timer test from every inner-switch path (the
+// point-category arm's length test leaves it there), which follows from its d.j preload; the double
+// `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
+// 238; both 246; distance dot with position first 236 (same code), with the j-first sum 238. Unused-local
+// probes +1/+2/+3/+4/+8/+12 236/245/369/236/236/385 (diagnostic). Original body kept.
+// Round 25 (lane 18, fast): the field-of-view switch test is the existing 0x13cb40 test (LTCG inlines it, as
+// retail does), 236 with identical code (kept in place of its body copied through a made-up struct); on it the
+// field-of-view fields read at each use 258 (1704 bytes; retail reads time/duration at each use but keeps the
+// target loaded for `fov = target`); the length as dot3f(direction, &plane.n) 251 (d.j preload, i-first sum);
+// the plane distance as dot3f(&plane.n, offset) - d 236 (same code); the length before the plane offset 241.
+// Retail's plane distance computes the i product first in n.i's register (n.i xmm3 dies first), ours last.
+// Round N284: Projection zero-first, absent-object-first and unfinished-FOV-first branch
+// subsets 1..7 score 236/260/260/236/236/260/260; all with nested FOV guards 260.
+// Original native normal copy, branch graph, captures and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
@@ -1027,7 +1025,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 	camera = camera_scripting_state;
 	field_of_view = g_54e854;
 	camera->active = false;
-	if (g_510c50 && ((s_camera_field_of_view_flags *)g_510c50)->active)
+	if (function_13cb40())
 	{
 		real target = camera->field_of_view_target;
 		if (target != 0.0f)

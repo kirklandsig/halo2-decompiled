@@ -13,7 +13,7 @@ __declspec(noinline) void function_1d4360(s_havok_component *component, transfor
 struct s_havok_transform;
 void function_181f80(s_havok_transform *result, transform4x3f const *matrix);
 bool function_f1320(long object_index);
-bool function_205510(void *buffer, void const *definition_physics, s_havok_component *component);
+bool function_205510(s_havok_component *component, void const *definition_physics, void *buffer);
 
 class c_1d56f0_shape
 {
@@ -74,7 +74,7 @@ void function_1d56f0(s_havok_component *component)
             if (skip || !function_f1320(component->object_index))
             {
                 real bounds[6];
-                if (function_205510(bounds, physics, component))
+                if (function_205510(component, physics, bounds))
                 {
                     c_contact_query_bounds_info info;
                     info.lower.set(bounds[0], bounds[2], bounds[4]);
@@ -87,28 +87,127 @@ void function_1d56f0(s_havok_component *component)
     }
 }
 
-// score 79 (was 79): frame 0x104 and MXCSR homes agree; result/direction/callback homes and setter convention
+// score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
+// and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
+// Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
+// lookup's address operands (ours `[base+index]`, retail `[index+base]`) and the success tail, BLOCKED-BY
+// 0x1d0cf0 (retail passes it the transform in EAX, the component in EBX and the index in ECX, plain ret;
+// ours pushes index and component), which also moves the release path's scratch registers.
+// Tried: rotation value 190; pose value 232; rotation simd 150; info first copy 87; source pose value 216;
+// completed count 149; filter value 119; initial height value 79; inc/dec update alone 90; with the
+// 12-byte callback 80; callback after the direction 80; callback declared at the world add 86; the 12-byte
+// callback with the subtraction update 119; two-use body/motion sources 223/215; output columns
+// 021/102/201/210 78/80/80/79; translation publication/input before rotation 84/83; body pointer local 77;
+// filter first 102; shape before the transform copy 77; direct rigid_bodies indexing 77; transform by
+// assignment 77; count publication after rotation columns 0/1/2, translation construction and pose copy 77
+// each; query-derived success 110; derived success with late count 110; collision-first branch 77;
+// shape/filter/both/reversed fields before lookup 110/109/107/105; shape/filter/both before snapshot
+// 77/102/84; pose before input construction 217; a component-first getter 77; the tail through the
+// existing matrix setter (0x1d0c20, called out of line here) 113; `(data + index)->rigid_body` 77; the
+// body pointer declared at the top 77; a named index local 77; corrected-frame transform/translation/both
+// at loop entry or function entry 77 each; native translation/all-column SIMD construction 77/138; direct
+// `.data[index]` lookup 77; `index[data]` subscript 77; index copied to a local at entry 77; entry
+// reference through the array's operator[] 77; forceinline getter declaration 77; the count parameter
+// declared first 77 (a harness keeps base first for every entry statement order and lookup spelling).
+// A member function of s_havok_component (`this` = the component, as matched 0x1d08e0)
+// gives retail's index-first lookup: 76, with only the 0x1d0cf0 tail left (not kept: one point).
+// body pointer declared at the top 77; a named index local 77.
+// lookup address operands and the success-tail setter transport remain.
+// Earlier frame 0x104 and MXCSR homes agreed; result/direction/callback homes and setter convention
 // differ; tried rotation value 190; pose value 232; rotation simd 150; info first copy 87; source pose value
 // 216; completed count 149; filter value 119; initial height value 79.
 // the success byte's frame home sits eight bytes above
 // retail's and the callback slot four bytes high, and the loop's branch
 // update still takes the signed-subtraction form.
-// score 77 (was 79): with the presence callback's real 12-byte size, its false-initialising
+// with the presence callback's real 12-byte size, its false-initialising
 // constructor, the inc/dec update and the callback declared first, every frame home and the whole
 // body up to the success tail agree; left: the rigid-body lookup's address operand order and the
 // success tail, BLOCKED-BY 0x1d0cf0 (retail passes it the component in EBX, ours pushes it).
 // inc/dec update alone 90; with the 12-byte callback 80; callback after the direction 80; callback
 // declared at the world add 86; the 12-byte callback with the subtraction update 119.
-// score 77 (was 77): rigid-body address operand order and success-tail setter convention remain.
+// rigid-body address operand order and success-tail setter convention remain.
 // Two-use body/motion sources 223/215; output columns 021/102/201/210 78/80/80/79;
 // translation publication/input before rotation 84/83. Frame and callback homes stay correct.
-// score 77 (was 77): first difference is still the lookup's `[base+index]` against retail's `[index+base]`; the tail waits on BLOCKED-BY 0x1d0cf0 (retail passes transform in EAX, component in EBX, index in ECX, plain ret). Body pointer local 77; filter first 102; shape before the transform copy 77; direct rigid_bodies indexing 77; transform by assignment 77; a harness keeps base first for every entry statement order and lookup spelling.
+// first difference is still the lookup's `[base+index]` against retail's `[index+base]`; the tail waits on BLOCKED-BY 0x1d0cf0 (retail passes transform in EAX, component in EBX, index in ECX, plain ret). Body pointer local 77; filter first 102; shape before the transform copy 77; direct rigid_bodies indexing 77; transform by assignment 77; a harness keeps base first for every entry statement order and lookup spelling.
 // lookup address operands and setter input convention remain; count publication after
 // rotation columns 0/1/2, translation construction and pose copy 77 each; query-derived success 110;
 // derived success with late count 110; collision-first branch 77. Correct frame homes preserved on restore.
-// score 77 (was 77): lookup address operands and setter component convention remain;
+// lookup address operands and setter component convention remain;
 // shape/filter/both/reversed fields before lookup 110/109/107/105; shape/filter/both
 // before snapshot 77/102/84; pose before input construction 217.
+// Round 402: corrected-frame transform/translation/both at loop entry 77/77/77;
+// at function entry 77/77/77; native translation/all-column SIMD construction 77/138.
+// All restored; lookup operand order and success-tail setter transport remain.
+// Round 7 (lane 13): the tail's stores match retail apart from the setter's pushed arguments (BLOCKED-BY
+// 0x1d0cf0, whose file is held this round); matched 0x1d08e0 uses the same getter expression and gets
+// retail's index-first `[eax+edx+0x40]`. Direct `.data[index]` 77; array pointer read into a local first
+// 77; index-first subscript 77; the component parameter renamed to sort last 77; the source transform
+// through a const reference 77; the setter call's index replaced by a constant (diagnostic) 87.
+// Round 5: direct `.data[index]` lookup 77; `index[data]` subscript 77; index copied to a local at
+// entry for the lookup and the setter 77; entry reference through the array's operator[] 77;
+// forceinline getter declaration 77 (the SIB order ignores source operand order).
+// ours pushes index and component), which also moves the release path's scratch registers. Retail
+// inlines the matrix setter 0x1d0c20 here (this tail is its body).
+// Round 37: as a member function of s_havok_component (`this` keeps its [ebp+8] home, the caller
+// 0xe0c70 unchanged) the lookup becomes retail's index-first `[edx+eax+0x40]`, as in the matched
+// member 0x1d08e0, and only the tail differs: 76 (not kept, a gain of one; apply it with the 0x1d0cf0
+// fix). On that form: direct `rigid_bodies[index]` 76; result transform declared before the loop 76;
+// count published after the setter call 63 (positional only: retail stores it before the call);
+// translation built straight into the result 63 at 811 bytes (frame moves).
+// Tried: rotation value 190; pose value 232; rotation simd 150; info first copy 87; source pose value
+// 216; completed count 149; filter value 119; initial height value 79; inc/dec update alone 90; with
+// the 12-byte callback 80; callback after the direction 80; callback declared at the world add 86; the
+// 12-byte callback with the subtraction update 119; two-use body/motion sources 223/215; output
+// columns 021/102/201/210 78/80/80/79; translation publication/input before rotation 84/83; body
+// pointer local 77; filter first 102; shape before the transform copy 77; direct rigid_bodies indexing
+// 77; transform by assignment 77; count publication after rotation columns 0/1/2, translation
+// construction and pose copy 77 each; query-derived success 110; derived success with late count 110;
+// collision-first branch 77; shape/filter/both/reversed fields before lookup 110/109/107/105;
+// shape/filter/both before snapshot 77/102/84; pose before input construction 217; a component-first
+// getter 77; the tail through the existing matrix setter (0x1d0c20, called out of line here) 113;
+// `(data + index)->rigid_body` 77; the body pointer declared at the top 77; a named index local 77;
+// corrected-frame transform/translation/both at loop entry 77/77/77 and at function entry 77/77/77;
+// native translation/all-column SIMD construction 77/138; direct `.data[index]` 77; array pointer read
+// into a local first 77; index-first subscript and `index[data]` 77; the component parameter renamed to
+// sort last 77; the source transform through a const reference 77; the setter call's index replaced by a
+// constant (diagnostic) 87; index copied to a local at entry 77; entry reference through the array's
+// operator[] 77; forceinline getter declaration 77.
+// Round 97 (lane 7): BLOCKED-BY 0x1d0cf0 again (its file is held this round); 19 aligned differences, all in
+// that tail but the lookup's SIB order. A byte offset local added first, the component through a const
+// reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
+// 77 each (still `[eax + edx + 0x40]`).
+// A later round: no new source form of this body was found: the 19 aligned differences stay in
+// the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
+// cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
+// The body was left as it is.
+// Round 130 (lane 6, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x1d0ee0; the two stacked notes merged into this one,
+// nothing dropped): BLOCKED-BY 0x1d0cf0, which sits on a long LTCG call cycle (0x1d1260 -> impacts.cpp ->
+// unknown_175bd0.cpp -> damage.cpp -> 0x1d1b60 -> 0x1d0c20 -> 0x1d0cf0, and 0x1d1540 -> 0x1c39c0 -> ...). The
+// translation built straight into the result (no `local_8`) 64 (811 bytes, frame 0xf4: positional only, retail
+// keeps the temporary and its movaps copy); 0x1d0cf0's definition marked `inline` 77; 0x1d0cf0 as a
+// s_havok_component member (`this` = the component, as the rigid_body_* members) 78 (0x1d1b60 lost at 2); the
+// count stored after the setter call 64 (positional only: retail stores it before the call); `local_0 = true`
+// before the setter call 78.
+// Earlier at 77 (from 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 69 (m3 lane 9, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): as a member of s_havok_component 76;
+// that with 0x1d0cf0 a member too (rigid_body_transform_set(index, transform)) 77, losing matched 0x115b10 (4)
+// and 0x1d1b60 (2); 0x1d0cf0 in retail's shape (set copy, body pointer, m_fixed first) 73, and with this body
+// as a member 72: only the component's push for 0x1d0cf0 (retail EBX) and the frame and scratch shifts it
+// causes are left, but 0x1d0cf0 goes 81 -> 88 and 0x1d0c20 38 -> 40, so not kept; that with 0x1d0cf0's
+// fixed arm refetching through a const element pointer 72 (0x1d0cf0 85). Lead: retail's call cycle through
+// 0x1d0cf0 runs 0x1d1260 -> 0x278f00 -> 0xb8540 -> 0x109400 -> 0xe4c10 -> 0xe18d0 -> 0xb75a0 -> 0xb7430 ->
+// 0x1c4a80 -> 0x1d3fc0 -> 0x1d0c20; here 0xb8540 and 0xb7430 are disabled stubs, so LTCG walks another
+// cycle (via 0x2266a0 ... 0xdbc80 -> 0x1d1b60), which may be what keeps the component on the stack
+// (BLOCKED-BY 0xb8540).
+// Earlier: this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 292: complete component/body, query filter/shape and step/count/output parameter
+// identities in seven subsets and alternate complete roles 77/77/77/77/77/77/77/77.
+// Original formal identities restored; lookup operand order and setter transport remain.
+// Round 97 summary (score 77, was 77): no new source form of this body was found: the 19 aligned differences stay in
+// Round 26 (lane 17): 0x1d0cf0 is now machine 3's, but its EBX component parameter still does not come:
+// 0x1d1260/0x1d1540 declared first in its file (call-cycle walk order, plain) 77 (0x1d0cf0 81); that with
+// 0x1d0cf0's 88 body (plain) 73 (0x1d0cf0 88, 0x1d0c20 40, component still loaded from [ebp + 8]); the 88
+// body with flag5 read into a named bool before the body fetch 73, with a member-wise transform copy 73.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

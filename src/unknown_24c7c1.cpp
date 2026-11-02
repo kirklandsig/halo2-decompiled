@@ -441,7 +441,17 @@ void __fastcall function_24cdaf(void)
 // existing player accessor 6; function-scope message/index 6 each; short index 6.
 // Indexed player fields 26; tick address from state and index 16; tick address from global 56;
 // tick pointer name 6; increment result name 6; both role names 6; minimum intrinsic 6;
-// nested countdown guards 6.
+// nested countdown guards 6; messages indexed at each use 6; the field read twice in the
+// saturation 27; a short reference for the ticks 6; nested expiry tests 6; a named elapsed time 6.
+// Round 19: the countdown as a forceinline helper 6; the tick and expiry update as a forceinline
+// helper taking the player 6; early-return guards 6; the tick address from a forceinline accessor 6;
+// the tick locals declared at the function top 6. Diagnostics: one pointer variable for both
+// counters 18 (the pointer takes ECX in both); without the message loop the tick block keeps
+// ECX/EAX; the value variable shared with the countdown 40 (split again, tick block unchanged).
+// Round 57 (m3 lane 1): player from g_5023f4 directly 6; player declared before hud 6; countdown
+// read once into a long 43; saturation on the old value + 1 27; `value += 1` with an if clamp 6;
+// `hud->players + player_index` 6; `!= NULL` / `-= 1` countdown 6. Diagnostics: 1-8 unused locals
+// before the tick block 6 each; no countdown block 84 (tick roles unchanged); no saturation 54.
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {
@@ -561,11 +571,119 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 /* draws a local player's HUD messages: the scripted message at the top,
    the list of messages, then the timed message and the status text at the
    bottom */
-// score 143 (was 142): frame slots differ (the scripted flag packs beside the split-screen
+// score 114 (was 114): frame 0x264 agrees; predicate packing, the left word and color/rectangle/scalar homes differ.
+// frame 0x264 agrees; predicate packing, left-word and color/rectangle/scalar homes differ; both text helpers match.
+// frame 0x264 agrees; predicate packing and color/rectangle/scalar homes still differ.
+// frame 0x264 agrees; predicate packing, color/rectangle/scalar homes and the text-buffer call convention still differ.
+// Round 15 (m3 lane 2, LTCG env harness of this file + depth-4 callee closure, aligned counts; base 123 = plain 115):
+// bool timer 121; long left 129; bool timer with long left 127; every local renamed to sort first or last
+// (view, font, line_height, player, hud, split_screen, height, status_player, origin, the three flags) identical
+// code; 80 orders of the player/count/hud/flag/height declarations, long and bool timer each, 125-219 (none
+// below the current order). The instructions are retail's; only the spill-home permutation differs.
+// Earlier: frame slots differ (the scripted flag packs beside the split-screen
 // byte, shifting colour, view, left and the loop index); BLOCKED-BY 0x15f120, whose text
 // buffer retail passes in esi (our push is the extra byte). Tutorial colour as three calls 233;
 // nested ternary 142; if-assigned pixel 383; byte timer flag 203 (retail length); byte timer
 // with nested ternary 203; named any-message test 523.
+// Phase foreground/background/both identities 142/142/142; rectangle role names 142; initial rectangle memcpy 390; color/rectangle identities together 142; unsigned word count 342; read-only HUD receiver 142 (fast; unchanged preview 142). Restored.
+// Shared aggregate presence on the retained long-timer graph: bool/long with inherited row decrement
+// 526/529; precomputed reserved-row subtraction 561/544 (exact-only); direct conditional bound
+// 512/547; result-first bound 514/522. Original predicates, conditional decrement and body restored.
+// Round 85: byte timer 191; scripted rename/declaration-first 191/191; early left declaration 115;
+// outer fade ticks with byte timer 191; shared flash/fade scalar with byte/long timer 190/109 fast;
+// the long-timer form 107 plain (seven-point gain, restored); long scripted 208; inverted tutorial
+// choice 109; const short left 109; early shared declaration 109; result-first scripted 453.
+// Round 131 (lane 4): the 0x15f120 call now agrees (buffer in esi; that callee matches), so the
+// rest is the frame: retail keeps the timer flag in a byte at -0xf, shares the flash scalar with the
+// loop index (-0x18), gives the message height its own slot (-0x4c) and stores left as a word at
+// -0x3c; ours shares one dword (-0x14) among the timer flag, flash and message height. Bool timer
+// 191 (1888 bytes, aligned 111 against 113); message height declared at the loop top 309 (aligned
+// 118); top/left declared at their first assignment 114 (the reduced image's control, same code);
+// ticks read from the field at each use 115 (same code); scripted flag computed first 205; text_bounds
+// declared before bounds 114 (control, same code).
+// Round 51: retail keeps the three message flags as bytes at -0xf/-0xe/-0xd and `left` as a word memory
+// local at -0x3c; the flags are spill slots (renaming them and split_screen in four sort orders: no
+// change). Bool timer 191 (1888 bytes; structurally closer: flags -0xe/-0xd, scripted still at -2
+// beside split_screen). On the bool timer (LTCG env link, aligned counts against 123 for the base):
+// tutorial colour as if/else 131, tutorial ternary inverted 121, `height` declared before the flags
+// 126 (1901 bytes), scripted tested first 235; long timer with the tutorial if/else 133.
+// Round 35 (lane 11, fast; unchanged source 114 fast): the three message flags declared uninitialised
+// before the font 114 (same code); as bools so declared 191 (aligned 112 -> 111: timer/tutorial at
+// -0xe/-0xd, scripted still at -2 where retail has -0xf/-0xe/-0xd); tutorial colour as `flag ? a4 :
+// (b6 & 1) ? a8 : a4` 114 (same code); count as `split_screen ? 3 : 4` 479; short height 114 (same code).
+// Round 54 (lane 16, fast; base 114): the tutorial colour as `!flag_1384 && (b6 & 1) ? a8 : a4` 114 (same code);
+// `left` declared `short const` at its assignment 114 (same code); both 114; both with a bool timer 191 (1888
+// bytes); the tutorial colour reading g_510c94 at each use (no `globals` local) 114 (same code).
+// Round 62 (lane 12, fast; base 114): the two colour locals declared once at function scope 133; the
+// rectangles declared before origin 115; `field_24` declared before `color` in each phase 115; `color`
+// renamed (diagnostic) 115 with its home unchanged at -0x2c (retail -0x34); the rectangles at function
+// scope 115. The one byte the bool timer loses is `left`: retail stores it as a 16-bit memory local
+// (`mov word ptr [ebp-0x3c], ax`) where ours spills a dword, so the bool timer needs that form too.
+// Round 40 (lane 11, fast; unchanged source 115 fast, 114 plain): retail stores `left` once with a word move
+// (`mov word ptr [ebp-0x3c], ax`), so it is a memory local there, not a spilled register (ours spills it as a
+// dword); with the bool timer that word store is retail's missing byte (the bool form is otherwise retail's
+// flag code, bytes at -0xf/-0xe/-0xd but for the scripted flag at -2). Retail frame from EBP down: split
+// screen, bounds/origin, the three flags, line height, loop index with the flash scalar, height, text bounds,
+// colour, top (spilled in the loop), left, player, view, count, message height, font, field_24. Tried: one
+// colour pair at function scope 133; the message height declared at the block top 115; the bool timer 191
+// (1888 bytes); `(void)&left;` (diagnostic) 115 (optimized away, still a dword spill); the loop index at the
+// block top / first 115/115; bool timer with the loop index at the block top 191.
+// Lane 18 round 16 (fast; unchanged source 114 fast, 115 plain; one-link env with 0x13cb40's file, exact but for the
+// pow calls): the tutorial colour named in a dword local 114; text_bounds declared first 114; left declared before
+// split_screen 114; text_bounds and color renamed to sort first/last (tip #104) 114; the text buffer declared first
+// 114 (all the same code). Env: bounds, field_24 or color renamed, origin/bounds/text_bounds/text in any of three
+// further orders, each alone and on the bool timer: identical code (bool timer: flags -0xe/-0xd/-2, retail
+// -0xf/-0xe/-0xd). Names and declaration order never move these homes; retail places text_bounds (-0x24) above
+// the first colour (-0x34) where ours places it below (-0x38 under -0x2c).
+// Round 142 (lane 4, fast; control 114): with the bool timer (191, 1888 bytes) the flags land at
+// -0xe/-0xd with scripted at -2 beside split_screen (retail -0xf/-0xe/-0xd, -2..-4 unused); there
+// split_screen renamed to sort last 191, scripted renamed to sort first/last 191/191, split_screen declared
+// at function scope 191 (114 with the long timer), the timer or all three flags as `byte` 191/191: names,
+// scope and byte/bool type do not move the byte slots.
+// Round 16 (m3 lane 17, fast; unchanged source 115 fast): `left` renamed to sort first 115 (same code: it
+// is a spill slot, so slot-name ordering does not reach it); `left` declared before `top` 115 (same); the
+// HUD state global read at each use 115 (same); the text buffer declared first 115 (same); `top` as a long
+// 499 (1882 bytes). In the bool-timer form the flags keep retail's relative order (split screen, scripted,
+// tutorial, timer from EBP down); only the scripted flag back-fills the byte beside split screen (-2)
+// where retail starts a new group after origin (-0xd).
+// Lane 9 round 67 (fast, which reproduces 114): `left` computed after the split-screen top adjustment 125; the
+// address-taken rectangles: retail homes text_bounds at -0x24 just below the scalars and the colour at -0x34, ours the
+// colour at -0x2c and text_bounds at -0x38; text_bounds declared in each block that uses it, after/before the colour
+// locals 114/114 (homes unchanged); that with the bool timer 191 (1888 bytes); flash declared at the phase block top
+// 114 plain (fast crashes on that source). Diagnostic: a volatile `left` scrambles the entry (468).
+// Round 287: Shared drawing coefficients across flash/row/status/timed phases,
+// three short-height then five byte-timer subsets: 261/266/259/191/191/190/214/195. Predicate packing,
+// left-word and color/scalar homes remain; all original values and body restored.
+// Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
+// dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
+// statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
+// rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
+// code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
+// Round 490: all returned RGB records by memcpy, long/bool timer, 479/477; with local rectangle
+// memmove 522/516. Native assignments with text/color/both workspace initialization 547/560/598;
+// both initialized with bool timer 598. All copies, defaults, predicates and body restored.
+// Round 48 (m3 lane 11, fast; control 115 fast, 114 plain): a compile-only screen shows VC storing a lone short
+// local's whole register (dword) even when it is volatile or address-taken; only a `left` that shares its dword
+// with another 2-byte member gets retail's `mov word ptr [ebp-0x3c], ax`. Diagnostics with `left` as the first
+// member of an invented two-short struct (not keepable): with the bool timer 109 at retail's 1889 bytes (left and
+// the flags are then bytes/words as retail, only the slot order differs); with the long timer 194 (1890 bytes);
+// with the bool timer and the struct declared first 109, the tutorial choice inverted 109, renamed to sort first
+// 109. The lead: retail's `left` lives in a 4-byte aggregate whose other half this function never touches.
+// Screen only: left/top as x/y of one two-short point struct stores top into it too (retail never writes beside left).
+// Round 128 (m3 lane 6, fast; control 114): on the bool timer (191, 1888 bytes) `left` is still stored as a
+// dword (retail `mov word ptr [ebp-0x3c], ax`) and the scripted flag still packs at -2: `left` assigned in two
+// statements (cast, then `-= g_4b9dd2`) 191; `left` initialised to 0 and reassigned (diagnostic) 191; the two
+// rectangles and the text buffer declared before origin 191; origin declared at function scope 191 (all the same
+// code: a second definition does not give `left` a home). The compile-only harness is far off here (276 aligned).
+// Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
+// (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
+// count` 197 (1883 bytes).
+// J228: rectangle-helper orders bounds/result/top/text/left and top/bounds/result/text/left
+// each 114; swapping the output order each 116; each with shared flash/post-pow row scale
+// 275/276. Every reordered helper loses its match (4/10), so all contracts and bodies restored.
+// Round 328: Carried message pointer with short/long/unsigned-long/word/byte row counters
+// 453/420/420/420/417; ordinary end-pointer for/while and direct active-range traversal
+// 322/322/322. Original indexed traversal restored; scalar, predicate and point homes remain.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {

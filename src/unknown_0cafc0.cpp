@@ -160,7 +160,13 @@ point3f *function_b9ef0(long object_index, point3f *result)
 	return result;
 }
 
-// score 31 (was 55): frame 0xa4, entry, collision block and marker-branch layout agree; the two
+// score 2 (was 2): only constant-one and crouching-height load scheduling remains; frame 0xa4 and all other instructions agree.
+// Round 74: named call result in a ternary/if-else 2/2; immutable crouch 2; immutable/read-only unit 2/2;
+// immutable inner tag pointer 2; shared height-pair pointer alone/with immutable crouch 2/2. Opening graph restored.
+// Round 73: definition-pointer rename 2; direct explicit read-add-store 17; explicit store on the two-local graph 2;
+// standing-only/crouching-only temporaries 2/2; named total with explicit store 2; early constant-one 2;
+// raw crouching-height load before the calls 12. Opening graph restored.
+// Earlier: frame 0xa4, entry, collision block and marker-branch layout agree; the two
 // height loads are swapped, the seated object goes to EDX (retail EBP, so the marker temporaries
 // rotate one register off), and the parent branch loads the tag table before the object table
 // (ours EAX for the object table is a byte shorter, which also keeps a later je short: 5 bytes).
@@ -171,6 +177,13 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // Frame 0xa4 agrees; object-data/tag-table allocation
 // and collision-point scheduling differ.
 // frame 0xa4 and entry allocation agree; height loads, collision products and marker tails differ.
+// only the two height loads differ: retail loads the 1.0 constant before the
+// crouching height, ours the other way round. Round 110: the seated object as a pointer local
+// used for the seat test and the marker index, the default marker call after that branch, took
+// 31 -> 2 (the marker registers and the parent-branch table loads now agree). Height forms on
+// that graph, all 2: standing/crouching products reversed, sum reversed, crouching term first,
+// named complement, raw standing/crouching reads in either order, one named height sum in either
+// term order; the whole height in one statement 17; a long seat index 91.
 // Basis-only/point-only scopes 309/311; collision created at its first query alone/with basis scope
 // 306/306 (three-point gains rejected), with point/both scopes 310/310; complete displacement
 // initialization alone/with all three narrowed lifetimes 309/310. Original body restored.
@@ -219,11 +232,27 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // Round 70: position copy in each marker arm 40 (kept); to-collision vector first 31 (kept);
 // parent branch without its index local 46; parent through a table local / header pointer 31/31;
 // seated lookups through the object macro 31; crouching term named first 31.
+// Round 165: parent-first admission with original/absent-seat/camera/both exits
+// 299/299/299/299; one root admission with the same four parent-exit combinations
+// 306/306/306/306. Both partitions lose the 0xa4 frame; original body restored.
 // Round 68: direct height sum 46; separate same-parent table base 31; parent definition
 // through the existing/new local 31/31; reversed crouching product/sum 31/31;
 // fresh post-call parent table base 31; separate same-parent and parent bases 31.
 // Shared object getter at entry/same-parent/both/parent/entry-parent/same-parent-parent/all
 // 327/31/334/31/327/31/334; all with readonly receiver views 334. Original lookups restored.
+// Round 398: early/reversed weighted declarations; lexical contribution names; readonly terms; height-phase scope with original/named/readonly terms; scoped readonly tag
+// 2/2/2/2/2/2/2/2; all restored.
+// Round 400: If-else crouch, staged complement and complete staged weights in masks 1-7, then
+// complete height scope: 2/2/2/2/2/2/2/2. Original producers and arithmetic restored.
+// Round 41: scale-first product 2; named height sum 2; scale local 2; `z = product + z` 2; crouch declared
+// at function scope 2. Retail's biped copy of this blend (0xe5d50) loads the crouching height before the 1.0
+// constant, as ours does here; 1.0 is used once in 0xcafc0, so it is not a shared value.
+// Round 52: the parentless branch as a force-inline helper with its own lookups 267; heights read through
+// the definition macro at each use 117; the raise through the point 0xb9dd0 returns 265; heights as a
+// two-element field 2; definition local declared after the others 2; a 600 s permuter run, best 2.
+// Compile-only screens of the blend (unused locals, if/else or default-first crouch, sum/product orders,
+// named or array terms, 1.0 as a global, lerp helpers; flag variants only as compile-only screens) all keep the
+// crouching height first.
 // @retail 0xcafc0
 void function_cafc0(long unit_index, point3f *position)
 {
@@ -296,17 +325,19 @@ void function_cafc0(long unit_index, point3f *position)
 	{
 		s_object_marker marker;
 
-		if (unit->unknown24c != NONE && objects[unit->unknown24c & 0xffff].object->seat_index != NONE)
+		if (unit->unknown24c != NONE)
 		{
-			function_b8d30(unit_index, definition->seats[objects[unit->unknown24c & 0xffff].object->seat_index].marker_name,
-				&marker, 1, false);
-			*position = marker.matrix.position;
+			s_unit_eye_object *seated = objects[unit->unknown24c & 0xffff].object;
+
+			if (seated->seat_index != NONE)
+			{
+				function_b8d30(unit_index, definition->seats[seated->seat_index].marker_name, &marker, 1, false);
+				*position = marker.matrix.position;
+				return;
+			}
 		}
-		else
-		{
-			function_b8d30(unit_index, 0x4000095, &marker, 1, false);
-			*position = marker.matrix.position;
-		}
+		function_b8d30(unit_index, 0x4000095, &marker, 1, false);
+		*position = marker.matrix.position;
 	}
 	else
 	{

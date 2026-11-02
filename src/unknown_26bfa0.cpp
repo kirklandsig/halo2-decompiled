@@ -40,11 +40,17 @@ long function_26d100(vector3f const *up, long *unknown, s_collision_result_1697c
 
 /* finds the location of the object's root: a unit's (0), a vehicle's (1),
    otherwise the pathfinding location under its center */
+// The query outputs (the index the query returns, the object and the marker it reports) and the
+// point it finds are shared by both query cases and cleared just before the switch, so each case
+// writes into the same homes; the pathfinding case copies the center as a whole point.
 // @retail 0x26bfa0
 void function_26bfa0(long object_index, long *location_index, s_location_view *location)
 {
-	long result = NONE;
+	long result;
 	long root = NONE;
+	long query_object;
+	long query_marker;
+	point3f query_point;
 
 	while (object_index != NONE)
 	{
@@ -53,57 +59,59 @@ void function_26bfa0(long object_index, long *location_index, s_location_view *l
 	}
 
 	s_location_object *object = LOCATION_OBJECT(root);
-	struct { long index, a, b; point3f point; } query;
- query.index = NONE; query.a = NONE; query.b = NONE;
+
+	result = NONE;
+	query_object = NONE;
+	query_marker = NONE;
 
 	switch (object->type)
 	{
 	case 0:
-		function_dfdb0(root, 0, &query.index, &query.point, &query.a, &query.b);
+	{
+		function_dfdb0(root, 0, &result, &query_point, &query_object, &query_marker);
 		if (location)
 		{
-			if (query.index != NONE)
+			if (result != NONE)
 			{
-				function_210420(&query.point, query.a, query.b, &location->point);
+				function_210420(&query_point, query_object, query_marker, &location->point);
 			}
 			else
 			{
-				location->point.point = query.point;
+				location->point.point = query_point;
 				location->point.output_index = NONE;
 			}
 		}
-		result = query.index;
 		break;
+	}
 	case 1:
-		function_f1070(root, 0, &query.index, &query.point, &query.a, &query.b);
+	{
+		function_f1070(root, 0, &result, &query_point, &query_object, &query_marker);
 		if (location)
 		{
-			if (query.index != NONE)
+			if (result != NONE)
 			{
-				function_210420(&query.point, query.a, query.b, &location->point);
+				function_210420(&query_point, query_object, query_marker, &location->point);
 			}
 			else
 			{
-				location->point.point = query.point;
+				location->point.point = query_point;
 				location->point.output_index = NONE;
 			}
 		}
-		result = query.index;
 		break;
+	}
 	default:
 		{
+			point3f query_point;
 			s_location_structure_view *structure = (s_location_structure_view *)g_4e0348;
 
 			if (structure->pathfinding_count > 0 && structure->pathfinding)
 			{
 				struct { s_collision_result_1697c0 collision; long field_4c, field_50, field_54, field_58; } contact;
 
-				query.point.x = object->center.x;
-				query.point.y = object->center.y;
-				query.point.z = object->center.z;
+				query_point = object->center;
 				contact.collision.unknown24 = NONE;
-				/* read from the argument's stack slot: retail passes the location on the stack */
-				result = function_26d100(g_4687b0, (long *)(*(s_location_view *const volatile *)&location), &contact.collision, &query.point);
+				result = function_26d100(g_4687b0, (long *)location, &contact.collision, &query_point);
 			}
 		}
 		break;

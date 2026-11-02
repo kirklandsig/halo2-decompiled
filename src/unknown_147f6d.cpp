@@ -1200,16 +1200,6 @@ bool __stdcall function_148f36(long controller)
 }
 
 /* whether the user's frontmost screen takes the user's input */
-// score 69 (was 66): retail keeps the user index on the stack (its only caller
-// 0x186ab0 pushes it and the function ends with ret 4, so the standard marker
-// below gives it that convention and lets that caller match, 245 -> 149); the
-// body still differs in the layout of the three fixed windows' blocks and in
-// the empty case of the last window. A call in each arm (as 0x148f36) gives
-// retail's block layout exactly, but then the user index takes EDI and the
-// window index is spilled, the other way round from retail (80). Also tried:
-// that with the user index read volatile at the calls 90 (frame pointer); the
-// window assigned inside the fixed-window tests 73; the index declared before
-// the result 79; the window starting null with no final else 78.
 // @retail 0x148fff standard
 bool __stdcall function_148fff(long user_index)
 {
@@ -1222,25 +1212,31 @@ bool __stdcall function_148fff(long user_index)
 	}
 	for (;;)
 	{
-		c_window_channel *window;
+		c_window_channel *window = 0;
+		bool found = false;
 
 		if (index == 4 && function_1473b6(&g_54d598.window_0))
-			window = &g_54d598.window_0;
+			result = g_54d598.window_0.function_235276(user_index);
 		else if (function_1473b6(&g_54d598.windows_1[index]))
-			window = &g_54d598.windows_1[index];
-		else if (index == 4 && function_1473b6(&g_54d598.window_2))
-			window = &g_54d598.window_2;
-		else if (function_1473b6(&g_54d598.windows_3[index]))
-			window = &g_54d598.windows_3[index];
-		else if (index == 4 && function_1473b6(&g_54d598.window_4))
-			window = &g_54d598.window_4;
-		else if (function_1473b6(&g_54d598.windows_5[index]))
-			window = &g_54d598.windows_5[index];
-		else
 		{
-			window = 0;
+			window = &g_54d598.windows_1[index];
+			found = true;
 		}
-		if (window)
+		else if (index == 4 && function_1473b6(&g_54d598.window_2))
+			result = g_54d598.window_2.function_235276(user_index);
+		else if (function_1473b6(&g_54d598.windows_3[index]))
+		{
+			window = &g_54d598.windows_3[index];
+			found = true;
+		}
+		else if (index == 4 && function_1473b6(&g_54d598.window_4))
+			result = g_54d598.window_4.function_235276(user_index);
+		else if (function_1473b6(&g_54d598.windows_5[index]))
+		{
+			window = &g_54d598.windows_5[index];
+			found = true;
+		}
+		if (found)
 		{
 			result = window->function_235276(user_index);
 		}
@@ -1424,18 +1420,11 @@ done:
 	g_main_menu_campaign_chosen = false;
 }
 
-extern bool g_54d5a0;
 extern char g_54d5a8;
 extern real g_54d5ac, g_54d5b0, g_54d5b4;
-extern bool g_54e7cc;
 extern dword g_54e7fc;
 void player_slots_initialize();
 
-// score 19 (was 19): the globals are cleared in the other order, ours writes
-// the byte flags after the blocks it fills while retail writes them before.
-// Peer value-init 119; first-member peer clear 19; indexed/derived tail clear 19;
-// noinline player-slot call 19; inline depth zero 19; global optimization off 247;
-// manager-byte clear 23.
 // @retail 0x1476c7
 void function_1476c7()
 {
@@ -1444,7 +1433,7 @@ void function_1476c7()
     g_54d598.unknown05[0] = false;
     g_54d598.unknown05[1] = false;
     g_54d598.unknown05[2] = false;
-    g_54d5a0 = false;
+    g_54d598.value08 = false;
     g_54d598.pending_join_type = 0;
     g_54d5a8 = (char)0xff;
     g_54d5ac = 0.f;
@@ -1477,18 +1466,18 @@ void function_1476c7()
     memset(&g_54d598.team_member_details, 0, sizeof(g_54d598.team_member_details));
     memset(g_54d598.unknowne88, 0, sizeof(g_54d598.unknowne88));
     g_54d598.m1220 = false;
-    g_54e7cc = false;
-    g_54e7fc = 0;
+    g_54d598.m1234 = false;
+    g_54d598.m1264 = 0;
     memset(&g_4ee4c4, 0, sizeof(g_4ee4c4));
-    g_54d5a0 = false;
-    g_54e49c = NONE;
-    g_54e5d0.player = NONE;
-    g_54e5d0.profile_index = NONE;
+    g_54d598.value08 = false;
+    g_54d598.mf04 = NONE;
+    g_54d598.profile_edit.player = NONE;
+    g_54d598.profile_edit.profile_index = NONE;
     g_54d598.m1224 = NONE;
     g_54d598.m1228 = NONE;
     g_54d598.m122c = NONE;
     g_54d598.m1230 = NONE;
-    memset(g_54d598.unknown1234 + 2, 0, 0x10);
+    memset(g_54d598.m1236, 0, sizeof(g_54d598.m1236));
 }
 
 

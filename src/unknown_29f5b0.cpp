@@ -942,12 +942,24 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // score 6 (was 6): only the order of the pushes: retail pushes esi and both
 // constant arguments before the x87 work, ours interleaves push esi and the
 // second push 1 with the fld/fcos; four source rewrites all scored 6.
-// score 6 (was 6): direction pointer 6; position before flag 41;
-// position after first/second component 6/6; effect/flag index locals 6/6;
-// flag pointer arithmetic/position reference 6/6. Original body restored.
+// Direction pointer 6; position before flag 41; position after first/second component 6/6;
+// effect/flag index locals 6/6; flag pointer arithmetic/position reference 6/6.
 // Commuted horizontal products 6; all trigonometric factors named 6; position snapshot 65;
 // read-only flag view 6; scenario base reused at each field 74; flag-table lifetime 6;
-// vector component array view 6; angle field references 6.
+// vector component array view 6; angle field references 6. Round 39: the existing
+// direction_from_angles 27 (it keeps the two angles on the x87 stack; retail rereads the
+// fields); double `(real)(cos * cos)` products 6; the position passed inline 6, also with double
+// products 6; forward declared before the flag 6; forward brace-initialised 6.
+// Round 57 (--fast): const position pointer 6; one named pitch cosine 6, written cosine-first 6;
+// the sibling 0x2a06a0's `T *const &flag` reference 6, also with the position passed inline 6.
+// Round 70 (--fast): the vector filled by an inline that returns it, called in the argument list
+// (stack arguments ahead of the x87 code) 6, the same schedule, so statement order does not reach
+// it; `(real)cos(...) * (real)cos(...)` factors 6; the flag table named before the element 6; a
+// named normal 6; the position taken after all three components 6. The caller 0x2a1120 sets ax
+// (flag) before edx (effect), as the declared order implies.
+// Round 112: vector3f_assign 6, with the position inline 6, double products 6 or forward declared
+// first 6; a `T *const` flag 6; only the first or only the second horizontal product commuted 6/6;
+// position as `point3f *const` (rather than a pointer to const) 6. Every form keeps the same schedule.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
@@ -4730,7 +4742,7 @@ void __stdcall function_2a4fd0(short function_index, long thread_index, bool ini
 
 s_type_f4462a const g_44c734 = { _hs_type_void, 0, function_2a4fd0, NULL, 1, { _hs_type_ai } };
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 
 /* 291: void (ai, short_integer) */
 // @retail 0x2a5010
@@ -8924,8 +8936,6 @@ s_type_f4462a const g_44e044 = { _hs_type_void, 0, function_2aa430, NULL, 2, { _
 void function_f0fd0(long vehicle_index, bool set);
 
 /* 621: void (vehicle, boolean) */
-// score 1 (was 1): ours loads the byte into dl, retail into cl; the callee function_f0fd0 lives in another
-// file.
 // @retail 0x2aa480
 void __stdcall function_2aa480(short function_index, long thread_index, bool initialize)
 {

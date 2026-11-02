@@ -108,10 +108,38 @@ point2f *function_13bec0(s_tag_data const *function, byte range_index, byte poin
 	return NULL;
 }
 
-// score 11 (was 364): the remaining differences are in square_root_ratio_approximate, in both
+// score 11 (was 11): the remaining differences are in square_root_ratio_approximate, in both
 // spline2 ranges (7 instructions in the low range, 4 in the high): retail spills the numerator into
 // the slot rsqrtss then reuses for its operand and stores the shifted root before that operand;
 // ours uses other slots and emits the two stores in the opposite order.
+// Tried: the shifted root in its own long/real local (any name or declaration order) 12; a
+// square-root helper and an rsqrtss helper multiplied in C 12, plus the high range's differences
+// x first like the low range 8 (retail's slots and store order, but the multiply is deferred past
+// the input load where retail multiplies in the asm), the same through a pow helper 8; an rsqrtss
+// helper that multiplies by a root parameter 12 (the root copy takes the numerator's slot), its
+// parameters swapped 12, the root as a long parameter 16; the root by an out parameter 12-16; the
+// ratio helper's parameters swapped 12-16; the root as `long bits` read back through a real
+// local that the asm multiplies by 12, with the x-first high range 16.
+// Round 52: a square-root helper with its own result local (as 0x2b9750's) and an rsqrtss asm
+// helper that only stores the reciprocal, multiplied in C, give retail's slots, stores and
+// `fld; fmul`, but pow then loads the input first (no store and reload of the product) 201
+// (1944 bytes); the same with the rsqrtss helper returning by `fld` 12; b copied into an
+// asm-visible local (retail's store order, the root takes the numerator's slot) 12; an rsqrtss
+// helper that multiplies by the estimate passed in 16; the root through a long pointer out
+// parameter 12. Screened: names and declaration orders of the root, the copy and the reciprocal
+// never move the slots; any root the asm reads takes the numerator's slot.
+// Round 62: union root result 221 (1972 bytes); root bits read from the numerator 15; reciprocal declared first 15;
+// denominator after the root 8 (retail's store order and denominator home; low root/reciprocal homes exchanged and
+// the high result home differs), rejected as only three points without a match; implicit x87 return 12; separate
+// result local 46; parameter result 225 (1984); denominator before the root 15. Opening helper restored.
+// Round 127 (lane 6, fast): retail lets the denominator reuse the numerator's slot (in the end length's home)
+// and gives the root its own slot; a compile-only build (/FAs) shows the slots are coloured with the caller's
+// locals, inline temps last. One asm operand holding the numerator, then the denominator after the root 18
+// (retail's sharing and store order, but the shared slot takes the start length's home and the high range's
+// differences flip); a root helper with a result local and an asm helper multiplying by the root, the root
+// named 16, passed straight 16; the denominator copied before the root 12; the shared operand with a real root
+// written through its address 18. Screened only: root/reciprocal/denominator names, `ratio` folded into the
+// pow call, the ratio code written in the caller (the frame grows to four slots).
 // @retail 0x13b390
 real function_13b390(void const *function, real input, real range)
 {

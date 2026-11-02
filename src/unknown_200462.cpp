@@ -48,6 +48,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
     long arg_2, long arg_3, long arg_4);
 
 // score 14 (was 14): draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
+// Round 74: half-height lower/all/upper/early-lower copies 14/20/14/14;
+// half-width right/all/early-right copies 14/14/14; bounds pointer with early-right copy 12
+// (one-use pointer, not kept without a match). Opening graph restored.
 // Earlier at 70 (from 103): frame 0x50 agrees; pulse/entry setup and second-pass
 // the copy source address and occupied-width/height registers still differ.
 // Earlier: frame 0x50 agrees; pulse/entry setup and second-pass
@@ -121,6 +124,20 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // width/height product splits 26/14; final-address pointers with split/const/original dimensions 100 each;
 // record-base pointer 12 (not kept); with const dimensions/height split/width split 12/12/24;
 // height at each use 18.
+// Round 13, all on the bounds-record pointer (12): half-height after the advance 18; corners from
+// a bounds rectangle 37; corner 3 before 1 and 2 16; shared corner values copied from the quad 28;
+// pulse-first products 12; conversion-first extents 12; y before x in each corner 20; pulse query
+// after the extents 53; half-height/half-width written at each use 18/189. The advance product
+// takes XMM4 and the half-height copy XMM3 under every statement order (retail XMM3/XMM4).
+// Round 41, all on the bounds-record pointer (12): pulse/half-width renamed to sort last 12/12; const
+// extents 12; corner stores in a block scope 12; named advance 53; final/both steps as `x = product + x`
+// 12/12; final/both products with swapped operands 12/12. Without the final x step (diagnostic only) the
+// draw block takes retail's XMM3/XMM4, so the advance product's spill across the calls sets the colouring.
+// Round 52: both passes' sequence lookup as one force-inline helper (first bitmap and first sprite's
+// bounds) 244 (868 bytes); that helper in the draw pass only 14 (same code); both advance products as
+// pulse * half width 14; width/height conversions first in the half extents 14; the default bounds
+// set field by field 14. Retail keeps the advance in XMM3 and the half height in XMM4 (ours the reverse)
+// after the 0.5 constant in XMM3 and the converted height in XMM4 both die.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

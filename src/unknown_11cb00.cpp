@@ -453,11 +453,13 @@ long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vect
 	return 0;
 }
 
+/* the direction comes before the center: callers set up register arguments last to first, and retail's
+   0x1a8c30 loads the center before the direction */
 // @retail 0x11e6f0
 real function_11e6f0(
 	point3f const *origin,
-	point3f const *center,
 	vector3f const *direction,
+	point3f const *center,
 	real radius)
 {
 	vector3f delta;
@@ -507,12 +509,12 @@ bool function_11e800(
 	w[0] = p->x - a->x;
 	w[1] = p->y - a->y;
 	w[2] = p->z - a->z;
-	e1[0] = b->x - a->x;
-	e1[1] = b->y - a->y;
-	e1[2] = b->z - a->z;
-	e2[0] = c->x - a->x;
-	e2[1] = c->y - a->y;
-	e2[2] = c->z - a->z;
+	e1[0] = c->x - a->x;
+	e1[1] = c->y - a->y;
+	e1[2] = c->z - a->z;
+	e2[0] = b->x - a->x;
+	e2[1] = b->y - a->y;
+	e2[2] = b->z - a->z;
 	n.i = e1[2] * e2[1] - e1[1] * e2[2];
 	n.j = e2[2] * e1[0] - e1[2] * e2[0];
 	n.k = e1[1] * e2[0] - e2[1] * e1[0];

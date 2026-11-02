@@ -101,7 +101,7 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
    self-aligning functions showed this). Retail holds no reference to its
    address, and its caller 0x12b450 is LTCG code. With the marker 0x12b450 and
    0x12b690 match; without it they don't. The body itself doesn't match yet. */
-// score 501 (was 501): Frame 0x38 versus 0x40; angle homes and snap-work lifetimes still differ.
+// score 474 (was 474): Frame 0x38 versus 0x40; angle homes and snap-work lifetimes still differ.
 // Earlier 501 from 541.
 // Role names 564; four-controller bound 541; ordinary snap inline 1438; short quadrant 564; shared default 548; combined 562.
 // Iteration-wide axes 541; direct double-angle helper 541; offset before magnitude 556;
@@ -138,6 +138,23 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // Round 220: Selected trig magnitude in shared/separate native phase scalars, with long/word/byte/char
 // controller induction, 501/548/539/539 each. Byte/char recover frame 0x40 and first +0x1b but regress;
 // every form retains 2012 bytes and both matched callers. Original body restored.
+// Round 27: retail's instruction order is followed closely, but our frame is 0x38 against retail's
+// 0x40: retail holds one more dword local below the angles, so its dwords sit four bytes higher and
+// its double angle at 0x48 against our 0x40, and every stack reference differs; no form found.
+// MiniMax S (10-31): no new form, no lower score. Our branch condition is retail's; the apparent inversion
+// comes from the constant pool order (our 0x4a7f28 is 2.356194496154785 and 0x4a7f2c is 0.7853981852531433,
+// so the compiler swapped the two against their order in the source). What remains is the frame (0x38
+// against 0x40), the shared quadrant/magnitude preparation and the slot and register rotations.
+// Retained output/preferences declaration order: the per-controller block and the preferences are declared in retail's order,
+// so the block pointer keeps the register retail loads it into. The frame 0x38 versus 0x40, the loop
+// counter's home and the remaining field and register rotations remain.
+// Round 222: first/second/both native coordinate reads at every use 550/474/550;
+// normalized-output/double-angle/both/coordinate-trig/all scalar identities 474 each
+// on the shared-scale, output-first graph. Original body and both helpers restored.
+// Earlier 474 from 501: the per-controller block and the preferences are declared in retail's order,
+// Round 338: native external input axes/channel-word/trigger views in seven subsets,
+// then all with a read-only receiver, 474/474/474/474/474/474/474/474. Original input layout,
+// observations, helper input copies and complete body restored; frame/angle/snap homes remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {
@@ -148,8 +165,8 @@ void function_217c40(void)
             local_1 = g_4e61b9 ? &g_4e630c : &g_4e61dc[(short)local_0];
         if (local_1)
         {
-            s_gamepad_preferences *local_20 = &((s_gamepad_preferences *)g_51ea18)[local_0];
             s_217c40 *local_21 = &((s_217c40 *)(g_51ea18 + 0x70))[local_0];
+            s_gamepad_preferences *local_20 = &((s_gamepad_preferences *)g_51ea18)[local_0];
             real local_3 = (real)*(short *)((byte *)local_1 + 0x42);
             real local_2 = (real)*(short *)((byte *)local_1 + 0x40);
             double local_4 = atan2(local_3, local_2);

@@ -6,18 +6,9 @@
 #include "camera_storage.h"
 #include "frame_storage.h"
 #include "unknown_0259d0.h"
+#include "unknown_033a0b.h"
 #include "globals.h"
-
-struct s_33a0b_view
-{
-	byte unknown00[0x10];
-	vector3f vector10;
-	byte unknown1c[0x14];
-	vector3f vector30;
-	vector3f vector3c;
-	vector3f vector48;
-	vector3f vector54;
-};
+#include "normalize3d.h"
 
 struct s_33a0b_default
 {
@@ -66,6 +57,28 @@ struct s_4e6950
 };
 extern s_4e6950 g_4e6950;
 
+// score 0 (was 342): MATCH. The scale coefficients are read through their own address in the
+// three scaled cases (23, 35, 24), as retail re-reads them from memory after every store
+// through out; the aggregate copies and the common switch exit stay as they were.
+// score 342 (was 342): Retail length recovered; scaled cases still hoist coefficients rather than reload after stores.
+// Round 291: Native component loops for case subsets 23/35/23+35/24/23+24/35+24/all:
+// 351/351/381/351/381/381/381; all with four global-scale loops 381 (fast control 351).
+// Round 300: Existing clamp upper-first branches, independent lower/upper and upper/lower stores,
+// lower/upper-first returns, lower/upper-first conditionals and upper-first result exit:
+// 390/351/390/351/390/351/390/351 (fast control 351). Original clamp and body restored.
+// Round 435: Existing scaler then clamps in cases 23/35/24/all 342/384/343/413;
+// case 23 kept, plain 342 at 1756 bytes. Multi-use coefficients in 23/35/24/all
+// 351/351/386/386. Original clamp, other cases and all game-call tuples retained.
+// Round 443: Native publication then existing scaler in cases 26/28/30/32, paired 26+28/30+32
+// and all four 418/414/411/385/416/411/445; retained case-23 scaler from selected input 360.
+// All regress; original body restored at retail length, coefficient reload/clamp scheduling
+// remains.
+// Round 445: Clamp-only component walk after retained scaler 367; symmetric first-product
+// lifetimes 342; both 367; symmetric biased-product lifetimes 342; walk/biased 367;
+// first/biased 342; all 357; all with forced existing clamp 357. Original body/helper restored.
+// Round 451: Existing complete-vector setter for clamped case subsets
+// 23/35/23+35/24/23+24/35+24/all, then forced clamp on all: 360/343/337/344/389/388/352/352.
+// Five-point form rejected; original publications restored.
 // @retail 0x33980
 void function_33980(long selector, vector3f *out)
 {
@@ -136,27 +149,30 @@ void function_33980(long selector, vector3f *out)
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		out->i = pin_unit(out->i * g_485a6c);
-		out->j = pin_unit(out->j * g_485a6c);
-		out->k = pin_unit(out->k * g_485a6c);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit(out->i * *(real const *)&g_485a6c);
+		out->j = pin_unit(out->j * *(real const *)&g_485a6c);
+		out->k = pin_unit(out->k * *(real const *)&g_485a6c);
 		break;
 	}
 	case 35:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector30;
 		*out = *vector;
-		out->i = pin_unit(out->i * g_485a6c * 0.5f);
-		out->j = pin_unit(out->j * g_485a6c * 0.5f);
-		out->k = pin_unit(out->k * g_485a6c * 0.5f);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit(out->i * *(real const *)&g_485a6c * 0.5f);
+		out->j = pin_unit(out->j * *(real const *)&g_485a6c * 0.5f);
+		out->k = pin_unit(out->k * *(real const *)&g_485a6c * 0.5f);
 		break;
 	}
 	case 24:
 	{
 		vector3f *vector = !g_485a58 ? &g_4686d4->vector : &g_485a58->vector10;
 		*out = *vector;
-		out->i = pin_unit((g_485a70 + 1.0f) * out->i);
-		out->j = pin_unit((g_485a70 + 1.0f) * out->j);
-		out->k = pin_unit((g_485a70 + 1.0f) * out->k);
+		/* retail re-reads the scale from memory after every store through out */
+		out->i = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->i);
+		out->j = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->j);
+		out->k = pin_unit((*(real const *)&g_485a70 + 1.0f) * out->k);
 		break;
 	}
 	case 25:

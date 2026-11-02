@@ -79,7 +79,59 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
-// score 367 (was 367): Aligned frame 0x110 agrees; request-source reuse, dependency bound and write-option scheduling remain.
+// score 37 (was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
+// and completed/limit registers, and state 16/19 store scheduling still differ.
+// Earlier (37, was 37): state 0 is blocked by 0x214db0 (map_file_path_get, src/unknown_213d20.cpp):
+// ours keeps EDI across the call, so the compiler folds the address of the pending request into
+// one register and the block is three bytes short, while retail's callee clobbers EDI. Left:
+// state 0 copies the request before the path call, states 7 and 9 keep the handle in another
+// register, state 11 swaps the completed and limit registers, state 16 sets the state before the
+// memset, and state 19 clears the slot before the buffer release.
+// Earlier, 37 (was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
+// Earlier (37, was 39): state 11 writes the chunk size to g_55bcf4 before the positioned-copy call
+// and reads the slot into a named local, which puts the buffer in ESI as retail has it. Left:
+// state 0 copies the request before the path call, states 7 and 9 keep the handle in another
+// register, state 11 swaps the completed and limit registers, state 16 sets the state before the
+// memset, and state 19 clears the slot before the buffer release.
+// Earlier, 39 (was 47): state 14 reads the slot's file handle into a named local before the write
+// Earlier (39, was 47): state 14 reads the slot's file handle into a named local before the write
+// call, which puts that load right after the clock call where retail has it; states 13 and 14
+// now match retail exactly. Left: state 0 still copies the request before the path call, states 7
+// and 9 keep the handle in another register, state 11's registers differ (buffer in EDX, limit in
+// ESI, chunk in ESI, slot in EAX), state 16 sets the state before the memset, and state 19 clears
+// the slot before the buffer release.
+// Earlier, 47 (was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
+// Earlier (47, was 114): state 11 keeps the chunk size in a local and writes it to g_55bcf4 after the
+// positioned-copy call, which makes that block exactly retail's length (99 bytes) so every later
+// block lines up again. Left: state 11's registers differ (buffer in EDX, slot in EAX, file in ECX,
+// handle in EDX), state 0 still copies the request before the path call, and states 7/9/13/14/19
+// differ in register choice and statement order.
+// Earlier, 114 (was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
+// Earlier (114, was 161): state 11's no-buffer path now assigns state = 11 explicitly, so the compiler
+// materialises `mov esi, 0xb` and merges the exit into state 10's tail (retail's short je); the body is
+// retail's length (1720) again and every case offset, the jump table and its entries match. Left:
+// state 0 still copies the request before the path call (retail calls 0x214db0 first and re-forms
+// 0x55bf28), and states 7/9/11/12/14/16/19 still differ in register choice and statement order.
+// Earlier, 161 (was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
+// Earlier (161, was 367): state 0 copies the request before the path call (retail calls 0x214db0 first and
+// re-forms 0x55bf28 after it, BLOCKED-BY 0x214db0: ours keeps the constant in EDI, 3 bytes short; copying first is
+// the only order whose block has retail's length, which lets round 85's retail forms below count). Left: state 7/9/14
+// file-handle registers (ECX/EDX), state 11's buffer in EDI (retail ESI) and argument order, state 10/16/19 constant
+// scheduling, 1724 bytes against 1720.
+// Round 122 (fast/plain): copy-first alone 335; with round 85's split states 8/15, explicit write-flag temporaries,
+// named size_known and indexed dependency time 161 (kept; the four without copy-first 430). On that: state 10/16
+// statement orders 161/161/161; state 7 without the file local 341; state 9 without it 203; slot published after
+// the memset 520; state 11 file local before/after the clamp 290/274; state 1 after the copy 382; pending pointer 367.
+// Earlier: aligned frame 0x110 agrees; request-source reuse, dependency bound and write-option scheduling remain.
+// Round 74, case-block sizes against retail's jump table: the two 0x1a1050 writes with explicit
+// `s_file_write_flags(0)` temporaries (retail pushes the zero from EAX; the conversion builds it in place)
+// fix states 7 and 14; states 8 and 15 split with case 15 written after case 14 (retail's block order)
+// and state 6 through a named size_known bool give retail's length (1720) and every case offset from
+// state 12 on: 432 (fast). Still off: state 0's `mov esi, edi` after 0x214db0 (retail re-forms
+// 0x55bf28, 3 bytes; a pending-request pointer and a memcpy copy change nothing) and state 11, 3 bytes
+// long, whose no-buffer exit retail merges into state 10's `state = 11` tail. Flags temporaries alone
+// 465 (1688 bytes); split alone 468; split + temporaries 430 (case 15 after case 8); memcpy request
+// copy 367. All restored: the lockstep count only falls once state 0 is fixed.
 // Round 85: retail keeps states 8 and 15 as separate cases (`state = 9;` / `state = 16;`); with them split, the
 // writes' flags as `s_file_write_flags(0)` temporaries, state 6's first test through a named `size_known` bool
 // and the dependency time indexed (`&g_55b4f0.dependency_times[type]`, retail's pointer exit test) the body is
@@ -154,6 +206,66 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 162: State-arm success results bool/byte/short/long 531/559/627/637; the same declarations
 // first 531/559/627/637. All shrink the aligned frame to 0x108 versus 0x110. Original success
 // lifetime, all state arms and observations restored.
+// Round 38: Native pending request reused by path/copy, conditional value/assignment/const/memcpy
+// and case assignment/memcpy 511 each fast at 1728 bytes; entry assignment/memcpy 507 each
+// at 1732 bytes. Original request flow, descriptor lifetimes and complete body restored.
+// Round 50: pending request as path input 161; call-first pending input 430; transfer buffer local
+// after/before resize 165/519; one-use handle locals in states 7/9/14 151/317/153 and states 7+14
+// 143 (one-use field copies, not kept without a match). Opening body restored.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
+// Round 25 (lane 17, fast): state 19's buffer release before the slot clear 43 (the -1 store then sinks to the
+// handle store); state 0 call-first 432, with a memcpy copy 432, and with 0x214db0's file name as a ternary
+// (still matching) 432: `mov esi, edi` stays; state 11's clamp as min-ternaries in three operand orders 37/37/37,
+// `chunk = limit; if (chunk > remaining)` 37, `chunk = remaining; if (remaining > limit)` 38 and `if (limit < chunk)`
+// 38 (chunk shares remaining's register as in retail, the scratch registers rotate by one); a state 7 header
+// pointer local 37, without the file local 334; state 16's copy as a struct assignment 37. Lead: with the header
+// and the slot as members of one struct (diagnostic) and the release first, 35: the slot store stays ahead of
+// the header clear as in retail, so 0x55b4f0..0x55c02c look like one struct (its users span five files).
+// Single-variable clamps `chunk = total - completed; if (...) chunk = limit;` with `chunk > limit` 38,
+// `limit <= chunk` 37 (retail's `cmp limit, chunk; jg` shape, registers still rotated: ours colours the limit
+// first) and `limit < chunk` 38.
+// Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
+// (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
+// after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
+// that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
+// chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
+// EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
+// Round 131 (lane 5, fast): state 11's clamp `remaining < g_55bd1c ? remaining : g_55bd1c` 37 (same
+// registers); the size computed into chunk and clamped by `if (chunk > g_55bd1c)` 38, `if (chunk >= g_55bd1c)`
+// 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to
+// ecx/edx/eax against retail's eax/ecx/edx); `g_55bd1c <= remaining ? g_55bd1c : remaining` 37 (same code as
+// the opening ternary). Retail's 0x214db0 takes the map name in EDI and the path in EBX.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
+// Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
+// (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
+// after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
+// that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
+// chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
+// EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
+// Round 131 (lane 5, fast): state 11's clamp `remaining < g_55bd1c ? remaining : g_55bd1c` 37 (same
+// registers); the size computed into chunk and clamped by `if (chunk > g_55bd1c)` 38, `if (chunk >= g_55bd1c)`
+// 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to
+// ecx/edx/eax against retail's eax/ecx/edx); `g_55bd1c <= remaining ? g_55bd1c : remaining` 37 (same code as
+// the opening ternary). Retail's 0x214db0 takes the map name in EDI and the path in EBX.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
+// Round 71 (lane 9, fast), state 11 (retail: chunk shares EAX with the remaining bytes, completed ECX, limit EDX,
+// slot EDX early, file EAX late): `long chunk = remaining; if (g_55bd1c <= remaining) chunk = g_55bd1c;` 37
+// (retail's `cmp limit, remaining; jg` shape, registers rotated); `g_55bd1c <= remaining ? g_55bd1c : remaining`
+// 37 (same code); the chunk as the difference clamped in place 38; the if-clamp with the slot local first 38,
+// between clamp and store 38, after the store 37; the if-clamp or difference clamp without the slot local 115
+// each (chunk EAX and completed ECX as retail, but buffer and limit swapped and the slot read late, which
+// breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
+// the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
+// (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {
@@ -168,8 +280,8 @@ bool function_2141f0(void)
 			!cache_copy_complete(g_55be24[1].map_name) &&
 			map_location_get(g_55be24[1].map_name) != 3)
 		{
-			map_file_path_get(g_55be24[1].map_name, g_55bd21);
 			g_55be24[0] = g_55be24[1];
+			map_file_path_get(g_55be24[0].map_name, g_55bd21);
 			state = 1;
 		}
 		memset(&g_55be24[1], 0, sizeof(g_55be24[1]));
@@ -196,7 +308,6 @@ bool function_2141f0(void)
 			success = g_55bcf0 == 0x800 && cache_header_verify((s_cache_header const *)&g_55b4f0);
 			if (success)
 			{
-				FILETIME const *dependency_time = g_55b4f0.dependency_times;
 				for (long type = 0; type < 3; type++)
 				{
 					if (g_55b4f0.dependencies_required[type])
@@ -204,12 +315,11 @@ bool function_2141f0(void)
 						long slot = cache_file_slot_from_type(type);
 
 						if (!g_557c90[slot].header.path[0] ||
-							CompareFileTime(&g_557c90[slot].header.source_time, dependency_time) != 0)
+							CompareFileTime(&g_557c90[slot].header.source_time, &g_55b4f0.dependency_times[type]) != 0)
 						{
 							success = false;
 						}
 					}
-					++dependency_time;
 				}
 			}
 			state = 5;
@@ -221,7 +331,8 @@ bool function_2141f0(void)
 		break;
 	case 6:
 		{
-			success = g_55bcf8.total != (dword)NONE && g_55bcf8.total > 0x800;
+			bool size_known = g_55bcf8.total != (dword)NONE;
+			success = size_known && g_55bcf8.total > 0x800;
 		}
 		g_55c02c = 0;
 		state = 7;
@@ -235,15 +346,14 @@ bool function_2141f0(void)
 
 				g_55bd10 = slot;
 				memset(&file->header, 0, sizeof(file->header));
-				g_55bd00 = function_1a1050(file->file, &file->header, 0x800, 0, 0, 1, priority, &g_55bcf0, &g_55bd0c);
+				g_55bd00 = function_1a1050(file->file, &file->header, 0x800, 0, s_file_write_flags(0), 1, priority, &g_55bcf0, &g_55bd0c);
 				state = 8;
 			}
 		}
 		break;
 	case 8:
-	case 15:
 		success = g_55bcf0 == 0x800;
-		++state;
+		state = 9;
 		break;
 	case 9:
 		{
@@ -263,10 +373,16 @@ bool function_2141f0(void)
 		if (g_55bd18)
 		{
 			long remaining = g_55bcf8.total - g_55bcf8.completed;
-			g_55bcf4 = g_55bd1c > remaining ? remaining : g_55bd1c;
-			g_55bd00 = async_copy_position(g_55bd14, g_557c90[g_55bd10].file, (void *)g_55bd18,
-				g_55bcf4, g_55bcf8.completed, g_55bcf8.completed, 1, priority, &g_55bcf0, &g_55bd0c);
+			long chunk = g_55bd1c > remaining ? remaining : g_55bd1c;
+			long slot = g_55bd10;
+			g_55bcf4 = chunk;
+			g_55bd00 = async_copy_position(g_55bd14, g_557c90[slot].file, (void *)g_55bd18,
+				chunk, g_55bcf8.completed, g_55bcf8.completed, 1, priority, &g_55bcf0, &g_55bd0c);
 			state = 12;
+		}
+		else
+		{
+			state = 11;
 		}
 		break;
 	case 12:
@@ -303,9 +419,14 @@ bool function_2141f0(void)
 		{
 			s_cache_file *file = &g_557c90[g_55bd10];
 			file_ref_clock_time(&g_55b4f0.last_used);
-			g_55bd00 = function_1a1050(file->file, &g_55b4f0, 0x800, 0, 0, 1, 0, &g_55bcf0, &g_55bd0c);
+			s_file_handle handle = file->file;
+			g_55bd00 = function_1a1050(handle, &g_55b4f0, 0x800, 0, s_file_write_flags(0), 1, 0, &g_55bcf0, &g_55bd0c);
 			state = 15;
 		}
+		break;
+	case 15:
+		success = g_55bcf0 == 0x800;
+		state = 16;
 		break;
 	case 16:
 		memcpy(&g_557c90[g_55bd10].header, &g_55b4f0, sizeof(g_55b4f0));
@@ -327,8 +448,8 @@ bool function_2141f0(void)
 		{
 			s_cache_copy_request request = g_55be24[0];
 
-			cache_copy_buffer_release();
 			g_55bd10 = NONE;
+			cache_copy_buffer_release();
 			memset(&g_55b4f0, 0, sizeof(g_55b4f0));
 			memset(&g_55be24[0], 0, sizeof(g_55be24[0]));
 			g_55bd21[0] = 0;

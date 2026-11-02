@@ -417,49 +417,7 @@ void function_2bdd70(s_spline_2bd *spline, point3f *points, long n, point3f *out
 	last_output.z *= 0.5f;
 }
 
-// score 6 (was 6): the coefficient loop sums its products in another order (retail: t3, t, then
-// the t2 product folded, row pointer based on m[i][1]); prologue, frame and weighted sums agree.
-// direct output and four reused weights 110 fast;
-// original output and four reused weights 84 fast;
-// direct output with uniform polynomial products 109 fast;
-// original output with polynomial products 86 fast;
-// direct output, weights and products 111 fast;
-// original output, weights and products 85 fast;
-// direct output, weights/products and row cursor 110 fast;
-// original output, weights/products and row cursor 87 fast;
-// frame 0x54/0x50, incoming fraction XMM3/XMM2 and coefficient homes remain.
-// Flat coefficient table 87; flat/direct output 109; flat row for 200; component
-// output alone/flat/direct 170/170/110; coefficient accumulation 89; flat row accumulation 185. All restored.
-// frame 0x54 versus 0x50, float input and coefficient/
-// weighted-sum registers differ. Immutable coefficients/powers 87/87;
-// table/power/all role names 87/87/87; direct output with immutable
-// storage/role names 109/109; complete symmetric channel products 94.
-// Round 318: delayed output home/scoped output phase 97/97 (438 bytes);
-// native initial copy 106, delayed copy 98, delayed point setter 109, delayed immutable table 97,
-// delayed weights 100, scoped weights with copy 81 (449 bytes, frame 0x50; parameter alias, not kept).
-// Direct weights/copy and coefficient phase with copy/assignment 110/110/110 (425 bytes). All restored.
-// Round 74 (kept): no volatile output, t3 = t * t * t computed before t2 = t * t, weighted sums
-// from points[0] up: 10. t2 first (t3 = t2 * t, t * t2 or t * t * t) 109/109/109; powers written in
-// the loop 117-119; table before the powers 99; one or both powers after the table 109/110/100;
-// t2 declared first, t3 computed first 31; any term order in the loop 31; power names 31;
-// weighted sums reversed/r-first/parenthesised 31/31/29. Then (kept) row pointer in the loop 6;
-// sum groupings 9/12/9; const table 10; all product orders x three groupings, with and without the
-// row pointer, 6-13; row cursor 9; flat table 10, with the row pointer 6; parameter reorders 10
-// (before the row pointer).
-// Round 42: quadratic-origin row pointer, reordered chain and sequential accumulation 6/6/6;
-// named cubic-linear with plain/swapped/mutable quadratic 9/9/9; native plane row 6; split accumulation 10.
-// Power triple/product helper with shifted row, direct powers and reversed inputs 5/5/5 (439 bytes;
-// one-point grouped-power forms, not kept); scalar SSE multiply 109; scalar conversion form did not compile.
-// Shared square with const/products/early weights 110; early product-helper
-// input 5, late input 99; row/table/const/accumulation variants 5. All restored.
-// Native coefficient/plane rows with the shared product, either input order
-// and early/late weights 5 (439 bytes); quadratic coefficient still loads
-// separately. Grouped input and one-point reduction discarded.
-// Explicit shared square, immutable square, uniform named products and earlier weight-array
-// declaration: eight forms 110 each (425 bytes). Existing three-component product with powers
-// before the table 5/5 (439 bytes); after the table 99/99. Native row/direct table, immutable
-// powers, coefficient-slot accumulation and component initialization: eight forms 5 each.
-// The helper recovers the row base and first two terms but not the folded multiply; all restored.
+/* the point at fraction t on the cubic Bezier segment through four control points */
 // The parameters are listed as time, control points and output point so that the caller's
 // arguments are written in the order retail evaluates them.
 // @retail 0x2bde90
@@ -467,6 +425,7 @@ void function_2bde90(real t, point3f *points, point3f *out)
 {
 	real t3 = t * t * t;
 	real t2 = t * t;
+	real t1 = t;
 	real m[4][4] =
 	{
 		{ -1.0f, 3.0f, -3.0f, 1.0f },
@@ -479,9 +438,7 @@ void function_2bde90(real t, point3f *points, point3f *out)
 
 	do
 	{
-		real const *row = m[i];
-
-		r[i] = row[0] * t3 + row[1] * t2 + row[2] * t + row[3];
+		r[i] = m[i][0] * t3 + m[i][1] * t2 + m[i][2] * t1 + m[i][3];
 		i++;
 	}
 	while (i < 4);
@@ -688,6 +645,20 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Consumed count 9 fast; initialized divisor 61; shared start numerator 9;
 // compound step 9; nested validation 9; division normalization 56;
 // common exit 9; parallel endpoint numerators 9. Fast baseline 9, full 2.
+// Parameter names in either sort order 2; polygon test nested 9 fast; loop index
+// declared at the top 9 fast; count stored as one expression and halved from the
+// field 9 fast; while loop 9 fast (the restore pair unchanged in each).
+// Round 117 (fast, the restore pair read in each): loop bound `i != half` 9; step products as
+// `32 * (i + 1)` and `32 * i` 9; hill copied into a local at entry 9; `(short)index + 11` 9; a
+// test of index ahead of the count test (diagnostic) 33 with the pair unchanged, so the pair does
+// not follow the next use; const-qualified parameters 9; a 600 s permuter run, 54 variants, none below 9.
+// Round 98: an unsigned index parameter 9 fast; a zero-initialized divisor 9 fast;
+// an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
+// 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
+// the function placed before its callee 9 fast. Full baseline 2; all restored.
+// Round 133 (plain): loop index declared at the top 2; const-qualified parameters 2; half declared
+// before the count test 2; a field pointer for the steps 93 (136 bytes); the polygon test after the
+// if/else 27 (the restore pair unchanged in each).
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {
@@ -1106,15 +1077,18 @@ void c_game_engine_a::v32(long team)
 	}
 }
 
+/* a point in the list below, with the values it is shown with */
+struct s_point_list_item_2bf
+{
+	point3f position;
+	real values[5];
+};
+
 /* a list of points to show (0x1004 bytes) */
 struct s_point_list_2bf
 {
 	long count;
-	struct
-	{
-		point3f position;
-		real values[5];
-	} items[0x80];
+	s_point_list_item_2bf items[0x80];
 };
 
 /* the values the points get (unknown_157450.cpp) */
@@ -1125,35 +1099,19 @@ static __forceinline void point_list_add_2bf(s_point_list_2bf *list, point3f pos
 {
 	if (list->count < 0x80)
 	{
-		long index = list->count++;
+		s_point_list_item_2bf *item = &list->items[list->count++];
 
-		list->items[index].position = position;
-		list->items[index].values[0] = a;
-		list->items[index].values[1] = b;
-		list->items[index].values[2] = c;
-		list->items[index].values[3] = d;
-		list->items[index].values[4] = e;
+		item->position = position;
+		item->values[0] = a;
+		item->values[1] = b;
+		item->values[2] = c;
+		item->values[3] = d;
+		item->values[4] = e;
 	}
 }
 
-/* adds the territories the player's team holds to the list */
-PRIVATE __forceinline bool territory_holder_matches_player(long holder, long player_index, s_record_pool *data)
-{
-    if (holder == player_index)
-        return true;
-    if (holder == NONE || !datum_get_inlined(data, holder))
-        return false;
-    s_player_2be *players = (s_player_2be *)data->data;
-    return players[holder & 0xffff].team == players[player_index & 0xffff].team;
-}
-
-// score 88 (was 88): holder/marker carriers and predicate join differ;
-// inline depths one/two, state per use, early team-array lifetime, invalid
-// marker continue, point memcpy and nested holder test 88; marker-first 90.
-// holder and marker registers plus append carriers remain; append output last 88; point last 88; full-list guard 88; short ordinal 153; word ordinal 151; player team first 88; team failure exit 92; short ordinal with output last 153.
-// score 88 (was 88): the team test branches directly with the holder predicate as one condition,
-// but the players base hoists 92; read through the pool in the test 96; helper as one expression 96;
-// position passed directly 92; position copied as a struct through its pointer 88 (same code, kept).
+/* adds the markers of the territories that the player or the player's team
+   holds to the list */
 // @retail 0x2bf740
 void c_game_engine_45c948::v32(long player_index, long list_pointer)
 {
@@ -1162,14 +1120,13 @@ void c_game_engine_45c948::v32(long player_index, long list_pointer)
 
 	for (long i = 0; i < (short)g_51eccc->w114; i++)
 	{
-		long holder = state->l70[i];
-		short marker = (short)state->w60[i];
-
-		if (marker != NONE)
+		if ((short)state->w60[i] != NONE)
 		{
-			if (territory_holder_matches_player(holder, player_index, g_4e8c24))
+			if (state->l70[i] == player_index ||
+				(state->l70[i] != NONE && datum_get_inlined(g_4e8c24, state->l70[i]) &&
+				 player_get_2be(state->l70[i])->team == player_get_2be(player_index)->team))
 			{
-				point3f const *source = &g_4e0350->marker_entries[marker].position;
+				point3f const *source = &g_4e0350->marker_entries[(short)state->w60[i]].position;
 				point_list_add_2bf(list, *source,
 					*(real *)&g_502258[35], *(real *)&g_502258[36], *(real *)&g_502258[0], *(real *)&g_502258[1], *(real *)&g_502258[37]);
 			}
@@ -1229,30 +1186,22 @@ void c_game_engine_45c948::v12()
 	}
 }
 
-// score 14 (was 14): retail loads the engine global g_4e6948 into edx at the
-// top of the function, ours loads it into ecx just before the mode test (as retail
-// compiles the identical matched 0x2bd260), so the load and the compare come in the
-// other order. Direct final-field initialization 6.
-// top of the function, ours loads it just before the mode test, so the load
-// and the compare come in the other order.
-// The early global and compare schedule remains; direct final-field initialization 6.
-// Split sentinel/mode guard 17; middle/early predicates and direct options tests 13;
-// payload between zero stores 8; both zeros first 13; partial aggregate 56/119;
-// type before payload 6; middle predicate with that order 6; subtype readback 6;
-// parameter address 6; shared send 6; void-return send 6; force-inline send 6.
-// Round 107: options pointer read first, mode test read first, parameter read first: 14 each with
-// identical code (statement order does not move the allocation); dword parameter 14; definition
-// placed after the class 14.
-// Marked initializer/returned receiver/dispatcher/both/receiver plus dispatcher 49/53/47/73/77;
-// early mode exit 27; marked initializer/returned receiver in mode scope 40/45;
-// visible initializer/dispatcher/both forced inline 14/14/14. Frame 0x24 still agrees.
+/* retail fills this event field by field, as the other engines' event
+   senders do, not through the shared initializer */
 // @retail 0x2bf480
 void c_game_engine_45c948::v6(long a)
 {
 	s_event event;
 
-	game_engine_event_initialize_inline(&event, 9, 0);
+	event.type = 9;
+	event.subtype = 0;
+	event.cause_player_index = NONE;
+	event.cause_team = NONE;
+	event.effect_player_index = NONE;
+	event.effect_team = NONE;
+	event.f = 0;
 	event.a = a;
+	event.g = NONE;
 	game_engine_event_send_inline(&event);
 }
 
@@ -1565,6 +1514,19 @@ struct s_territory_tag
 // Tried: the player lookup before the position copy 29; the mask update first
 // 50, or between the copy and the player lookup 32; the tag chain as byte
 // offsets 24; a const player pointer 24; a 600 s permuter run, none below 24.
+// Round 16: the existing position-copy helper 43; game_engine_get() 24; the tag index as
+// a ternary 41; placement declared first 24; tag index at function scope 48; placement at
+// function scope 24; the test without the short cast 51; player declared at the block top
+// 24; the created object in its own local 24; an early NONE return 62.
+// Round 56: inline definition 24; copy helper with masked player index 43, with
+// marker-globals/tag-table/tag-header locals 43/43/43; direct copy with masked player
+// index 24; helper with tag reference 43; helper/else/tag reference 65 (271 bytes).
+// Round 11 (lane 18), fast: the copy helper with the tag index set per arm 65 (271 bytes; every line
+// after the 0xb7930 call is retail's, the NONE lands after the test); the helper with the initialised
+// index 43 (the chain's middle pointer takes ECX and every later scratch register rotates by one); the
+// chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
+// walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
+// marker index read once into a short local for the test and the copy 84 (281 bytes).
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

@@ -162,7 +162,7 @@ bool function_01dd60(long index, long *width, long *height)
 	return result;
 }
 
-// score 21 (was 21): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
+// score 24 (was 21): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
 // width/height/both unit subtraction before shifts 25/28/30; native packed words 30;
 // row-byte part 30; selected/masked new packed word 27/28; early dimensions 30.
 // width/height input registers and byte-gate normalization differ.
@@ -173,7 +173,7 @@ bool function_01dd60(long index, long *width, long *height)
 // inputs; the unsigned packing and Boolean gate still lower differently; height expression 21;
 // width expression 21; packed expression 21; direct width height expression 24; direct packed
 // expression 24; late entry 21; shared publication 21; separate gated result 21.
-// score 21 (was 21): selecting the size by the flag before the width/height stores, with no
+// Selecting the size by the flag before the width/height stores, with no
 // width reference, gives retail's ESI/EDI inputs, ret 0 and retail's tail, but the compiler
 // folds the shifts ((w*4/64)<<24 to (w<<20)&mask, (h<<12)-0x1000 to (h+0xfffff)<<12) where
 // retail keeps shr/shl/sub: (p-1)<<24 form 28; shift-then-subtract 24; reversed or order 28;
@@ -183,17 +183,35 @@ bool function_01dd60(long index, long *width, long *height)
 // Width/height input registers and flag normalization still differ. Native
 // index/width/height parameter-type sets 24 in all seven forms; native contract with separate
 // noinline declaration 24, all at 79 bytes.
+// The XDK D3DSIZE_* shifts with `flag94 ? size : 0` 28 (shifts merged and Horner-factored);
+// `(p * 0x1000000 - 0x1000000) | (h * 0x1000 - 0x1000)` with the ternary after the stores 22
+// (79 bytes, ret 0, retail's neg/sbb/and select), before the stores 22 (retail's ESI/EDI
+// inputs; index EAX/size ECX where retail has ECX/EAX, and the -1 folded into the shifts),
+// with the size computed before the entry pointer 22; a forced-inline size helper 27; favour
+// size (diagnostic) 21. A compile-only build folds the -1 inside every shift/multiply spelling.
+// Round 60 (no width reference, all 79 bytes and ret 0 unless noted): the one-expression multiply
+// packing with a select after the stores 22 (index in EAX); the packed word as one shift
+// expression with a named select 23; 0x1df20's three-statement packing with the select stored
+// directly and copied to the element 23 (width EDX, height ESI); that with an if/else store 40
+// (91 bytes); packing from the stored width/height fields 25. The shifts fold in every form.
+// Round 44 (lane 14): no width reference, with `value = e->flag94 ? value : 0;` before the width/height
+// stores, gives retail's exact convention (index ECX, width ESI, height EDI, plain ret) 24: only the
+// folded shifts differ. Callers then: 0x48ee0 226 (189 with its width rounded first and a long mode),
+// 0x2d140 637 -> 686 at retail's 2652 bytes (aligned 593 -> 543), 0x335e0 42. Not kept (score rises).
+// Round 109: now the select before the stores with no width reference (index/width/height in ECX/ESI/EDI, plain
+// ret, retail's tail): 21 -> 24 positional, LCS-aligned 17 -> 10, and caller 0x335e0 matches with it. Left: the
+// folded shifts (`shl 0x14; and` for retail's `lea [esi*4]; shr 6; shl 0x18`, `lea [edi+0xfffff]; shl 0xc` for
+// `mov; shl 0xc; sub 0x1000`), which the notes above tie to retail building without global optimisation.
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
 	s_unknown_01dcc0 *e = &g_4b4b58[index];
-	dword const *width_reference = &width;
-	dword x = ((*width_reference * 4) / 64) << 24;
+	dword x = ((width * 4) / 64) << 24;
 	dword y = height << 12;
 	dword value = (x - 0x1000000) | (y - 0x1000) | (width - 1);
+	value = e->flag94 ? value : 0;
 	e->width = width;
 	e->height = height;
-	value *= (dword)(bool)e->flag94;
 	e->sub_header[4] = value;
 	e->elements[0][4] = value;
 }
@@ -238,6 +256,20 @@ long g_55e6c0;
 // named byte pitch 87; all packing parts early 47; unsigned-int packing 29; shared clamped
 // count 154; selected packed result 119; linear-only packing 145. A compile-only screen folds
 // every shape of the packing (casts, 64-bit, helpers, multiplies) under /Og.
+// The D3D-style ((w*4/64 - 1) << 24) | ((h - 1) << 12) | (w - 1) keeps the pitch shr but factors
+// the shifts: 97 as one expression, three statements, height first or a dword width; minus-one
+// multiplies 97 again; plain multiplies with separate subtractions 28 (subtraction folded in);
+// the width term between or before the shift terms 97 (the ORs are reassociated).
+// Round 183 (lane 3, fast): element count stored before the data pointer 41; kind stored after the
+// dimensions 29 (same code); height stored before width with kind first 30; the lock word cleared after
+// the element count 33; the clamp testing the upper bound first 151 (495 bytes). The loop and tail
+// match; the differing call and global lines are positional knock-ons of the folded packing block.
+// Round 93: destination-field accumulator 153; typed resource pointer 167; size macros 29;
+// parameter-address reads 29; unsigned packing dimension copies 29; direct typed Size publication 29;
+// signed packed carrier 29; named height part 29. Original packing restored.
+// Round 72 (lane 9, fast): packing after the linear-flag store 44; pitch as `width * sizeof(dword) / 64` 29;
+// the height part in its own local ahead of the pitch 29; the whole packing inside the linear select 175
+// (451 bytes, 0x1dc40 10); pitch as `(width * 4 >> 6) * 0x1000000` 28 (484 bytes). The fold stays in all.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

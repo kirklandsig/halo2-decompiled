@@ -385,8 +385,28 @@ struct s_surface_object_header
 };
 
 // score 8 (was 8): the record address is computed in ECX; retail computes it in EDX and reads
-// the flags from it. Tried: a byte flags local 8; a dword index 8; the object as bytes 8;
-// `case 4: case 3:` 8; the value read as one sum 8; the parameters as (key, owner) 8.
+// the flags from it (then the object in ESI, the masked index in ECX: ours object ECX, index ESI).
+// Tried: a byte flags local 8; a dword index 8; the object as bytes 8;
+// `case 4: case 3:` 8; the value read as one sum 8; the parameters as (key, owner) 8;
+// the byte read as `object[offset + (index & 31)]` 8; the masked index named first 8; no object
+// or values locals 8; the comparison reversed 9; the object read before the flags test 58.
+// The compile-only build reproduces this block and keeps it for every spelling of the case.
+// Round 19: the record address as byte arithmetic on the data 8; the record written in full at
+// both uses 8; a named region index with the object left a common subexpression 8; the
+// permutation read through a forceinline helper 8; the two index locals declared surface first 10.
+// Round 98: one surface pointer shared by the first two cases 8; result assigned from the mapped
+// index 52; an early return for the value mismatch 69; all three failure guards as early returns 69;
+// a read-only object pointer 8; a read-only values pointer 8; a bit-field discriminator 8;
+// bit-field views for all three key fields 8. All restored.
+// Round 99: a table pointer local in the object-backed case 8; the table pointer at function scope 83;
+// a const globals pointer in case 5 8; a const bit number in case 1 8; the header flag as a one-bit
+// boolean 8; a byte-width slot 43; result declaration and initialization split 8; result declared
+// after the key fields 102. All restored.
+// Round 69 (lane 16, fast): the header address written index first (`index * size + data`) 8 (same
+// code); the three guards positive with `else result = false;` arms 8 (same code); the choice as
+// `(byte)(surface_index >> 5)` 62 (the key moves to EAX); named region and choice indices beside a
+// `choices` pointer 8 (same code); the object read through the file's header view while the header
+// local serves the flags 8 (same code). A permuter run (codex AC88) found nothing either.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0

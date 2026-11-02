@@ -8,6 +8,7 @@
 #include <xtl.h>
 #include <xonline.h>
 #include <wchar.h>
+#include "online_result_cache.h"
 
 struct s_http_connection_ab;
 extern s_http_connection_ab g_546a8c;
@@ -17,7 +18,6 @@ void online_result_registration_clear(void);
 void function_6b640(long task_index);
 extern bool g_510580;
 extern long g_510584;
-extern dword g_5107d8;
 
 // @retail 0xb3d30
 void __stdcall function_b3d30(long stage)
@@ -89,21 +89,14 @@ extern bool g_50944e;
 wchar_t const *g_4672dc = L"test";
 void unicode_string_snprintf(word *buffer, long maximum_count, word const *format, ...);
 
-// score 88 (was 88): retail puts the three case values in ebp and starts from
-// a value of three, ours puts them in ebx and clears ebp first, and the stack
-// slots of the locals are in another order. With the prefix length started at
-// its scan (eax, facility in ebp as retail) the user id's zero low half takes
-// ebx and doubles as the zero constant, where retail zeroes ebx after the switch
-// and keeps the constant in esi; retail also returns through jge with two exits.
-// Round 69: length at the scan with XUID locals 118; the comparison returned as an
-// expression 89 (403 bytes); both 113; length at the scan with chained zero
-// initialisation 121 (384 bytes); SUCCEEDED test returning true first 88. With the
-// length at the scan, chained/ULONGLONG/qwTeamID/owner-copy spellings compile identically.
+/* builds the server path of a file: the facility from the kind, then the title prefix, and the
+   owner's id passed as the user or team id */
 // @retail 0xb4120
 bool function_b4120(long kind, struct _XUID owner, wchar_t const *filename, wchar_t *arg_d4faef, dword *path_size)
 {
+    bool result = true;
     long facility;
-    unsigned long length = 0;
+    unsigned long length;
     switch (kind)
     {
     case 0: facility = 4; break;
@@ -129,7 +122,7 @@ bool function_b4120(long kind, struct _XUID owner, wchar_t const *filename, wcha
         wcsncpy(prefix, L"", 0xff);
         prefix[0xff] = 0;
     }
-    for (; length < 0x100; length++)
+    for (length = 0; length < 0x100; length++)
         if (!prefix[length]) break;
     if (length > 0)
         unicode_string_snprintf((word *)path, 0x100, (word const *)L"%s/%s", prefix, filename);
@@ -141,8 +134,8 @@ bool function_b4120(long kind, struct _XUID owner, wchar_t const *filename, wcha
     if (facility == 3) team_id = owner.qwUserID;
     else user_id = owner.qwUserID;
     if (XOnlineStorageCreateServerPath(facility, user_id, team_id, path, arg_d4faef, path_size) < 0)
-        return false;
-    return true;
+        result = false;
+    return result;
 }
 
 #include "unknown_0b4da0.h"
@@ -184,7 +177,7 @@ bool online_result_get_address(long index, IN_ADDR *address);
 // @retail 0xb40b0
 bool function_b40b0()
 {
-    long index = (dword)g_547620 % g_5107d8;
+    long index = (dword)g_547620 % g_510588.count;
     bool result = false;
     IN_ADDR address;
     if (online_result_get_address(index, &address))

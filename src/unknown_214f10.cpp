@@ -36,28 +36,92 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 	return memory;
 }
 
-long __stdcall function_1a08f0(s_async_task *task);
-
-PRIVATE __forceinline long function_214f83(char const *arg_0, s_file_handle *arg_1, bool volatile *arg_2)
-{
-    s_async_task local_0;
-    memset(&local_0, 0, sizeof(local_0));
-    local_0.create_file.path = arg_0;
-    local_0.create_file.access = GENERIC_READ | GENERIC_WRITE;
-    local_0.create_file.share_mode = 0;
-    local_0.create_file.creation_disposition = OPEN_ALWAYS;
-    local_0.create_file.flags = 0;
-    local_0.create_file.file = arg_1;
-    local_0.create_file.create_path = false;
-    return function_120ba0(6, &local_0, 8, function_1a08f0, arg_2);
-}
-
-// score 42 (was 55): handle ECX and the success-byte store and memory re-test differ; retail
+// score 42 (was 42): retail tests the handle in ECX and copies it to EAX for the by-value
+// argument, builds the success byte with `xor edx, edx; setne dl`, stores it and re-reads it from
+// memory before the test, as a volatile flag would; ours tests a register copy. Only a volatile
+// success byte (not kept) gives the store and re-read: with the array element passed directly and
+// the handle test in an inline helper returning bool (or a long cast) it then matches; without
+// it every form forwards the stored value. Forms tried: full-width open result 42; first/second/
+// both waits and shared opener/combined helpers 55; branched success 50; local role names 55;
+// native/early/named result and late success 42; typed open outcome 42; typed success
+// update/complete outcomes 44/42; early outcome home 42; positive outcome/byte admission 43/55;
+// initialized success output/byte declaration order 83/42; long ordinal 111; word/byte ordinals
+// 42/42; path/status lifetimes 42/42; long ordinal with all workspaces/failure continue 111/111;
+// short endpoint equality 42; handle test and call on the array element with the long result 44;
+// element copy inside the branch 42; element pointer for open/test/call with the long result 44,
+// with a bool result 55; handle tested again at the branch 53; resize inline/outline/both
+// 42/42/42; single open/resize/both wait admission 60/52/63; native handle value and branch-set
+// full-width open result 42/42; opener void/native result 42/42; ordinary inline 229; task
+// aggregate 84; const/early file 42/42; unsigned/word status 42/42; existing wait helper for both
+// waits 42 (kept); plain bool success 55; success set inside a test 53; ternary/initialized
+// declaration/array element 55/55/55; the plain `success = handle != INVALID; if (success)` 55;
+// success at function scope 55; `if (!success) continue;` 55; long result tested through success
+// 55; success cleared then set inside the open branch 53; memset-owned share/flags/both/
+// create-path/share+path/flags+path/all zeros 40/38/107/36/105/107/112; 64-bit outcome 50;
+// signed-byte/word/unsigned/64-bit outcomes on omitted flags 69/38/38/71, on omitted create-path
+// 67/36/36/69. Round 96: success from the array element 55, through an inline bool helper 55,
+// tested through a resize helper's pointer parameter 55; `success = false; if (valid) success =
+// true;` 50 (store sunk into the branch) or with the file copy 53; `success = opened` from a
+// long or a long cast 55/55.
+// Round 158 (all 55 at 351 bytes, register test): an inline bool handle helper by pointer/by
+// value; char success with a bool pointer argument; a long result stored with a bool cast.
+// Diagnostic only: with a volatile success flag everything after the open matches but retail's
+// `xor edx, edx` (48).
+// Round 100: the opener helper also waiting and writing success through a pointer parameter 49
+// (still forwarded); success from the array element before the file copy 55; `!(handle ==
+// INVALID)` 55; `if (opened != 0)` 42 (identical); the handle compared again at the branch 53.
+// the handle test in an inline helper returning bool (or a long cast) it then matches; without it
+// every form forwards the stored value. A byte scan finds a setcc byte store re-tested from memory
+// nowhere else in the image, and no matched function re-tests a stored byte local. Forms tried:
+// full-width open result 42; first/second/both waits and shared opener/combined helpers 55; branched
+// success 50; local role names 55; native/early/named result and late success 42; typed open outcome
+// 42; typed success update/complete outcomes 44/42; early outcome home 42; positive outcome/byte
+// admission 43/55; initialized success output/byte declaration order 83/42; long ordinal 111;
+// word/byte ordinals 42/42; path/status lifetimes 42/42; long ordinal with all workspaces/failure
+// continue 111/111; short endpoint equality 42; handle test and call on the array element with
+// the long result 44; element copy inside the branch 42; element pointer for open/test/call with
+// the long result 44, with a bool result 55; handle tested again at the branch 53; resize
+// inline/outline/both 42/42/42; single open/resize/both wait admission 60/52/63; native handle
+// value and branch-set full-width open result 42/42; opener void/native result 42/42; ordinary
+// inline 229; task aggregate 84; const/early file 42/42; unsigned/word status 42/42; existing
+// wait helper for both waits 42 (kept); plain bool success 55; success set inside a test 53;
+// ternary/initialized declaration/array element 55/55/55; success at function scope 55; `if
+// (!success) continue;` 55; long result tested through success 55; success cleared then set
+// inside the open branch 53; inline bool handle helper by pointer/by value 55; char success with
+// a bool pointer argument 55; long result stored with a bool cast 55; memset-owned share/flags/
+// create-path zeros 40/38/36 (but retail stores those zeros after its memset: not retail's code);
+// 64-bit outcome 50; done and success as one struct with a volatile done member 47; the success
+// stored through a pointer by an inline handle-test helper 55; a byte success from the widened
+// comparison 55; the handle copy as a const reference 44; the open result read from the array
+// element before the copy 42. Diagnostic only: a volatile success flag 48-50; with the array
+// element passed directly and the handle test in an inline helper returning bool (or a long
+// cast) it matches; without the volatile flag no form re-reads it (a compile-only screen also
+// forwards the stored byte through a struct with a volatile member and through a pointer store).
+// ternary/initialized declaration/array element 55/55/55. Diagnostic only: a volatile success
+// flag 48-50; with the array element passed directly and the handle test in an inline helper
+// returning bool (or a long cast) it matches; without the volatile flag no form re-reads it.
+// handle ECX and the success-byte store and memory re-test differ; retail re-tests the
+// byte the way a volatile flag would (with one, everything after the open matches but retail's `xor edx,
+// edx`: 48, not kept). Full-width open result 42; first/second/both waits and shared opener/combined
+// helpers 55; branched success 50; local role names 55; native/early/named result and late success 42;
+// typed open outcome 42; typed success update/complete outcomes 44/42; early outcome home 42; positive
+// outcome/byte admission 43/55; initialized success output/byte declaration order 83/42; long ordinal 111;
+// word/byte ordinals 42/42; path/status lifetimes 42/42; long ordinal with all workspaces/failure continue
+// 111/111; short endpoint equality 42; handle test and call on the array element with the long result 44;
+// element copy inside the branch 42; element pointer for open/test/call with the long result 44, with a
+// bool result 55; handle tested again at the branch 53. native/early/named result and late success 42.
+// Resize inline/outline/both 42/42/42; single open/resize/both wait admission 60/52/63; native handle value
+// and branch-set full-width open result 42/42. Opener void/native result 42/42; ordinary inline 229; task
+// aggregate 84; const/early file 42/42; unsigned/word status 42/42. initialized success output/byte
+// declaration order 83/42. Long ordinal 111; short endpoint equality 42. Round 74 (all 351 bytes): the
+// plain `success = handle != INVALID; if (success)` 55; success at function scope 55; `if (!success)
+// continue;` 55; long result tested through success 55; success cleared then set inside the open branch 53.
+// Only a volatile success byte (not kept) gives retail's store-and-reload.
+// handle ECX and the success-byte store and memory re-test differ; retail
 // re-tests the byte the way a volatile flag would (with one, everything after the open
 // matches but retail's `xor edx, edx`: 48, not kept). Full-width open result 42;
 // first/second/both waits and shared opener/combined helpers 55; branched success 50;
 // local role names 55; native/early/named result and late success 42; typed open outcome 42;
-// typed success update/complete outcomes 44/42; early outcome home 42; positive outcome/byte
 // admission 43/55; initialized success output/byte declaration order 83/42; long ordinal
 // 111; word/byte ordinals 42/42; path/status lifetimes 42/42; long ordinal with all
 // workspaces/failure continue 111/111; short endpoint equality 42; handle test and call on
@@ -67,7 +131,7 @@ PRIVATE __forceinline long function_214f83(char const *arg_0, s_file_handle *arg
 // handle register, success-byte reload and resize/wait scheduling differ.
 // Full-width open result 42; first/second/both waits and shared opener/combined helpers 55;
 // branched success 50; local role names 55; native/early/named result and late success 42.
-// score 42 (was 42): handle ECX and published success-byte reload remain.
+// Earlier: handle ECX and published success-byte reload remain.
 // Resize inline/outline/both 42/42/42; single open/resize/both wait admission 60/52/63;
 // native handle value and branch-set full-width open result 42/42.
 // handle/status publication and the second wait still differ.
@@ -76,9 +140,150 @@ PRIVATE __forceinline long function_214f83(char const *arg_0, s_file_handle *arg
 // typed open outcome 42; typed success update/complete outcomes 44/42;
 // early outcome home 42; positive outcome/byte admission 43/55;
 // initialized success output/byte declaration order 83/42.
-// score 42 (was 42): Handle ECX and success-byte reload remain unresolved. Long ordinal 111;
+// Earlier: Handle ECX and success-byte reload remain unresolved. Long ordinal 111;
 // word/byte ordinals 42/42; path/status lifetimes 42/42; long ordinal with all
 // workspaces/failure continue 111/111; short endpoint equality 42.
+// Round 181: memset-owned share/flags/both/create-path/share+path/flags+path/all zeros
+// 40/38/107/36/105/107/112; 64-bit outcome 50. Signed-byte/word/unsigned/64-bit outcomes on omitted
+// flags 69/38/38/71, on omitted create-path 67/36/36/69. Six-point best rejected; original initializer
+// and handle/status flow restored.
+// Only a volatile success byte (not kept) gives retail's store-and-reload. Round 158 (all 55 at 351
+// bytes, register test): inline bool handle helper by pointer/by value; char success with a bool
+// pointer argument; long result stored with a bool cast.
+// Round 158 (all 55 at 351 bytes): char success with a bool pointer argument; long result stored
+// with a bool cast. Round 10: success from the array element with the element passed by value
+// 55, through an element pointer 55; success stored before the handle copy 55, the long result
+// stored before it 42; success from a `? true : false` 55.
+// continue 111/111; short endpoint equality 42; handle test and call on the array element with the
+// long result 44; element copy inside the branch 42; element pointer for open/test/call with the long
+// result 44, with a bool result 55; handle tested again at the branch 53; resize inline/outline/both
+// full-width open result 42/42; opener void/native result 42/42; ordinary inline 229; task aggregate
+// 84; const/early file 42/42; unsigned/word status 42/42; existing wait helper for both waits 42
+// (kept); plain bool success 55; success set inside a test 53; ternary/initialized declaration/array
+// element 55/55/55; the plain `success = handle != INVALID; if (success)` 55; success at function
+// scope 55; `if (!success) continue;` 55; long result tested through success 55; success cleared then
+// set inside the open branch 53; memset-owned share/flags/both/create-path/share+path/flags+path/all
+// zeros 40/38/107/36/105/107/112; 64-bit outcome 50; signed-byte/word/unsigned/64-bit outcomes on
+// omitted flags 69/38/38/71, on omitted create-path 67/36/36/69; success from the array element 55,
+// through an inline bool helper 55, tested through a resize helper's pointer parameter 55; `success =
+// false; if (valid) success = true;` 50 (store sunk into the branch) or with the file copy 53;
+// `success = opened` from a long or a long cast 55/55; inline bool handle helper by pointer/by value;
+// char success with a bool pointer argument; long result stored with a bool cast (all 55, 351 bytes,
+// register test). Diagnostic only: a volatile success flag 48-50. Round 120: `success = (bool)opened;
+// if (success)` 55; the array element tested and passed directly 55; done and success as the two
+// fields of a status struct 60 (still forwarded); success declared at its assignment 55.
+// DL200: Policy-before-receivers, receivers-first, receivers-last and output-file-first task field
+// ownership 48/47/49/48; those new graphs with memset-owned share/flags/create-path/share zeros
+// 41/41/41/40. Two-point best rejected; original initializer, long outcome, success store,
+// existing completion qualifier and both waits restored. Handle ECX and memory success-byte test
+// remain.
+// Round 108 (lane 6): `success = INVALID != handle; if (success)` 55; success set by an if/else
+// on the handle test 50 (fully threaded); success through a bool reference 55, as a one-element
+// array 55, as a union member 80. A compile-only screen of further shapes (status struct member,
+// byte flag from a long, const reference to the array element, int-returning inline test) forwards
+// the stored byte in every case: only a volatile flag gives retail's store and re-read.
+// Round 50: the handle read into a HANDLE local with the element passed to the write 44; success
+// declared before done 42; `INVALID_HANDLE_VALUE != handle` 42; `success = !!opened` 42; the
+// comparison cast to long 42. Original body restored.
+// Round 23 (lane 15): the create-file task built by a hand-written copy of 0x1a0b40 replaced by a call to
+// 0x1a0b40 itself with its constant arguments (LTCG inlines it) 42, identical code, kept; on it (fast):
+// `success = handle != INVALID; if (success)` from the copy/from the array element 55/55; a bool
+// `opened` copied into success and success tested 55; the long `opened` with success tested 55.
+// Round 7 (m3 lane 18, fast): success stored first and the long copied from it 55 (351 bytes); the long
+// from `? 1 : 0` 42 (same code); `success = opened == 1` 44; a bool `opened` copied into success with
+// the branch on `opened` 55. Diagnostic only: done and success as one non-volatile two-element array
+// (done read through the helpers' volatile pointers) 60, the byte still forwarded.
+// Round 102 (m3 lane 8, fast): done and success in a struct with a `succeeded()` accessor 60 (351 bytes), with a
+// `set_success()` member 60, with a constructor clearing both 88 (365 bytes), without members on the long-opened flow 47
+// (364 bytes); `if (success != false)` 55. Compile-only: member accessors still forward the stored byte.
+// Round 9 (m3 lane 18, fast): success written through `*(byte *)&success` 55 (351 bytes); success read back
+// through `*(bool const *)&success` 55 (351 bytes); the long tested through `*(long const *)&opened` 42 (same
+// code); success declared before the path buffer 42; done and success at function scope 42. Compile-only, a
+// char-cast write and byte/bool-cast reads all forward the stored byte too.
+// Round 105 (m3 lane 8, fast): retail computes the handle test as a 32-bit value (`xor edx, edx; setne
+// dl`), stores its low byte and re-tests the flag in memory, with the handle in ECX copied to EAX for
+// the push (the shape an int result assigned to a char flag would give; no C++ spelling tried keeps
+// it). A `char` flag assigned `(char)opened` and passed as `(bool *)` 55 (folded to a byte setne,
+// forwarded); the long stored through a byte cast of the flag 55; the by-value argument as an explicit
+// `s_file_handle(file)` temporary 42 (same code), with the bool flag 55; `success = opened != 0; if
+// (success)` 55; a long `failed = handle == INVALID` with `success = !failed; if (!failed)` 43;
+// `opened` declared before the file copy 42 (same code); the long test from the array element with the
+// file copied between the flag store and the test 42 (same code). Diagnostic only (volatile, reverted):
+// a volatile flag access, bool or char store of the long, 50/50 (memory test, but a byte setne without
+// the xor and the handle pushed from EAX).
+// Round 22 (m3 lane 2, fast): `_ReadWriteBarrier()` between the success store and its test gives retail's store
+// and memory re-test, but the array element then reloads after it and the handle stays in EAX without the xor:
+// on the long flow branching on success 50; `success = handle != INVALID` 50; branching on the long 42 (same
+// code); the element tested and passed directly as bool / long `!= 0` / long cast to bool / long compare
+// 49/49/49/49; the copy with `success = (bool)opened` 50; a new inline handle-valid helper by value or pointer, on
+// the element or the copy 49/50/50/49.
+// Round 125 (lane 6, fast): with the handle read into a scalar (`void *handle = g_5020f8[i].handle;`) or
+// kept in the struct copy, `success = handle != INVALID; _ReadWriteBarrier(); if (success)` no longer
+// reloads the element: the store and memory re-test are retail's (aligned 3 real instructions left: the
+// `xor edx, edx` widening, the handle in EAX for retail's ECX and retail's `mov eax, ecx` before the push),
+// but 50 positional (alignment padding moves); the same with the struct built in the branch by member or
+// `{ handle }`, built before the barrier, the copy with the long `opened`, `success = (bool)opened`,
+// `(long)(...) != 0` and a forceinline bool handle test 50 each (one code).
+// Round 122 (lane 5): a compile-only build of this loop forwards the stored byte to a register test
+// for a volatile read of `done` between the store and the test, a volatile store of `done` there,
+// and a store through `bool *result = &success`; only a volatile success re-reads it. Real builds
+// (fast): `(long)file.handle != NONE` 42 (same code); a long loop index 111 (345 bytes); the long
+// result from the array element with the file copied inside the branch 42; success declared at its
+// assignment 42; `success = opened > 0; if (opened > 0)` 42.
+// Round 106 (lane 7, fast): the handle read into a HANDLE local with the element passed to the call
+// and the long result 44; the long result with the branch on success 55 (351 bytes); the result as
+// dword 42; the comparisons written constant-first 42; the file copy assigned after its declaration
+// 42 (same code each).
+// Lane 12 r66 (fast, 0x2150f0 matched): 0x1a1310 clears `*success` itself before queuing the task, and the store
+// and re-test sit back to back with no join or call between them, so only a volatile success byte (as one
+// `bool volatile done, success;` declaration would give) explains retail's re-read. Tried: `if (success == true)`
+// on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
+// 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
+// opened test on the array element 42.
+// Round 130 (lane 6, fast): `success = true;` cleared by `if (handle == INVALID) success = false;` then tested
+// 50 (threaded into two stores); the resize step as a forceinline helper taking success by value and passing its
+// address 83 (351 bytes, frame 0x100, the parameter's copy still forwarded); done without `volatile` (the waits
+// read it through their volatile pointer) 42 (same code); `if (!opened) continue;` 42; success set only inside
+// the open branch 58 (348 bytes).
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
+// Round 48 (lane 10, fast): no file copy, the long tested from the array element and the element passed to
+// 0x1a1310 directly 44 (the element's handle is then copied to EAX for the push, as retail, but held in ESI,
+// not ECX); `if (!opened) continue;` 42; on the no-copy form `success = (long)(element handle test); if
+// (success)` 55, `success = (bool)opened; if (success)` 55, `success = !(handle == INVALID); if (success)` 55
+// (351 bytes, the stored byte forwarded each time). BLOCKED by the no-volatile rule: diagnostic only (reverted
+// at once), `bool volatile success;` with `success = (long)(g_5020f8[i].handle != INVALID_HANDLE_VALUE); if
+// (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
+// comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
+// `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
+// Round 440: plain fixed-two-file do-while with short/word/byte ordinals and <2/!=2 latches, then while
+// with short/word ordinals 42/42/42/42/42/42/42/42. Every graph executes indices 0 and 1; all tie.
+// Original for loop, both waits, wide outcome, success store and completion qualification restored.
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
+// Round 70 (lane 12, fast): the long result from the array element with the copy passed 42 (same code); the
+// long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
+// declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
+// retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
+// Round 194 (fast): a `bool const valid` copied into success with the branch on valid 55 (351 bytes);
+// `success = opened & 1` with the branch on the long 41 (one point, not kept); `success = opened ?
+// true : false` 42; `success = 0 != opened` with the branch on success 55 (351 bytes); the long from
+// the array element with a const file copy declared after the success store 42. The memory re-test
+// still needs a volatile success byte (not allowed).
+// Round 113 (m3 lane 7, fast): `bool const valid = handle test; success = valid; if (success)` 55 (351 bytes); the
+// file copy and success declared at function scope 42; the long open result declared at function scope 42; the handle
+// read into a `void *` local with the by-value file built from it in the branch 42 (same code each); a dword result
+// with `success = (byte)opened; if (opened != 0)` 43.
+// DL218: Advancing file cursor with short ordinal and pointer-extent less/equality bounds, each
+// wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
+// Handle ECX and stored-success memory test remain; original task values, waits, completion
+// qualifier and complete executable body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
@@ -89,14 +294,8 @@ void game_state_cache_files_open(void)
 		bool success;
 
 		function_11c9c0(path, sizeof(path), g_470050, i);
-		function_214f83(path, &g_5020f8[i], &done);
-		if (!done)
-		{
-			while (!done)
-			{
-				SwitchToThread();
-			}
-		}
+		function_1a0b40(path, 3, 3, 0, 8, 6, &g_5020f8[i], &done);
+		function_120d50(&done, false);
 		s_file_handle file = g_5020f8[i];
 
 		long opened = file.handle != INVALID_HANDLE_VALUE;
@@ -104,13 +303,7 @@ void game_state_cache_files_open(void)
 		if (opened)
 		{
 			function_1a1310(file, 0x40b000, 8, 6, &success, &done);
-			if (!done)
-			{
-				while (!done)
-				{
-					SwitchToThread();
-				}
-			}
+			function_120d50(&done, false);
 		}
 	}
 	g_5020f4 = true;

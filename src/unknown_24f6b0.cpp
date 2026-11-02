@@ -32,7 +32,24 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // top as retail but in xmm2 and stored first); reading z first (47) or z
 // multiplied first (39); x*= vs scale*x forms (19); a plain inline helper (not
 // inlined, 217); a vector3f local copied to the direction (125); a set helper
-// for the three stores (68); /O2 /Ob1 flags (60).
+// for the three stores (68); /O2 /Ob1 flags (60). Round 89: a long low coordinate with the scale read
+// from the face at each use is retail's code with the zero and z in xmm2/xmm3 swapped (37); on it, z
+// read first 47, z/y/x reads 43, `z *= scale` 37, z scaled first 39, `x * (2/63)` or `x * (1/63) * 2`
+// products 37; scale local after the reads 64/65 or inside the test 63; the point read into a vector3f
+// local 102 (copy) or 37 (member-wise); `x * (2/63)` products here 19.
+// Round 60 (an LTCG link of this file reproduces the full listing): a long coordinate with the scale
+// read at each use is retail except that the zero is made after the products, in the constant's freed
+// xmm2 (retail makes it first, in xmm3, and z takes xmm2); k stored first, or between i and j, makes the
+// zero first but in xmm2 with the constant in xmm3. A grid local copied to the direction 109; stores
+// i, k, j 28 (with a long coordinate and the scale read at each use 29, with the scale local 49); the
+// existing vector3f_assign for the grid stores 19 (same code). Link-harness counts (about 2 below the check):
+// a point3f grid read back as in 0x194d30's decoder 61, with the scale read at each use 55; named i, j, k
+// locals 55; a face pointer local first 60; the point copied member-wise into a local 37; dead earlier
+// zero stores 37 (removed before allocation); k stored first 30.
+// Round 68: independent original/scaled z with long x and direct scale 37 (242 bytes), with short x
+// and the scale local 19, with short x and direct scale 53; mixed long x/short y 57; staged outputs 53;
+// existing in-place scale helper 87; scale as a helper parameter 27; staged outputs with long x and
+// direct scale 50 (242 bytes). Original helper and coordinates restored.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

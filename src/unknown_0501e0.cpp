@@ -35,7 +35,21 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
         ++output;
     }
 }
-// score 221 (was 221): frame 0x18 versus 0x14; retail keeps both transformed points in
+// score 221 (was 221): first transform sum/product order and register numbering (retail: forward*depth +
+// up*height first, coefficients loaded into registers, right.i kept in xmm7 for both views), frame 0x18 versus
+// 0x14 (retail spills the blend scale at [esp] where it is computed). Earlier: transform term order
+// right/up/forward written point first and
+// frame 0x18 versus 0x14; coefficient/input/result overlap remains.
+// Earlier: transform term order right/up/forward written point first and
+// coefficient first 221 each; the transform as three statements 304, which does use retail's
+// sum tree (forward*depth + up*height) + right*width; blend term order and squared-sum order
+// 221 each; depth limits written at their uses 230; orthographic dot product in point and
+// coefficient order 221 each and depth first 220. What still differs: the loop form keeps the
+// sum tree (right*width + up*height) + forward*depth while retail has forward*depth +
+// up*height + right*width; retail materialises the coefficients of the first view in registers
+// and keeps the second point's offsets in the frame, ours folds the coefficients into the
+// products and keeps the second point's width in a register; frame 0x18 versus 0x14.
+// Earlier note: frame 0x18 versus 0x14; retail keeps both transformed points in
 // registers and the second point's offset (with its scaled copy) in the frame, ours gives
 // the second view's x a frame slot of its own at [esp+8].
 // both inlined transforms, keeps the second point's offset in the frame and the first in
@@ -141,10 +155,98 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 241: orthographic segment in first raw offset/first view/second view 272/220/220;
 // with complete k/j/i input/scale order 284/257/257; first-offset/first-view reuse with
 // shared segment difference 221/220. One-point gains rejected; original body/helper restored.
+// DL175: Helper axis homes, displacement/view homes and early uninitialized tail scratch in seven
+// subsets [221, 221, 221, 221, 221, 221, 221]; helper horizontal/vertical/depth homes 221. Original
+// helper and body restored.
+// Round 205: scale-output-input and output-scale-input helper orders, each
+// void/returned-output/output-reference/both-reference contracts, all eight 221.
+// All existing helper formals and both real calls restored; extra frame dword remains.
+// Round 304: complete camera ownership, separate/camera-owned scale: helper-local 334/375;
+// by-value 334/375; caller pointer 361/344; caller reference 361/344.
+// Original camera observations, helper and body restored; extra frame dword remains.
+// Independent scale overwrite orders ikj/jik/jki/kij with original ijk captures 244/222/222/244;
+// with live forward coefficient stream 250/241/250/250. Extra frame word and coefficient/result
+// overlap remain; original helper/body restored.
+// Round 452: shared vector scale copied/in-place, branch-owned, copied/source and library-copy
+// inputs 309/327/330/309; with live forward coefficients 298/314/318/298. Native
+// scalar consolidation does not match; original scalar helper and body restored.
+// T47: Plain weighted-point blend loop on retained separate-offset/depth-limit graph,
+// long/dword/short/word counters: view cursor 222/222/271/271; indexed view output
+// 226/226/271/271. Original complete helper and body restored.
+// Round 27 (lane 14): scaled copy + the existing matrix_transform_vector 309 (1179 bytes, copies in memory);
+// weights as `local_4 = local_5 = 1.f` 221 (same code); orthographic clamp written inside the sqrt argument
+// 215 (retail clamps into a fresh value: input stays in xmm0, the result is written per arm; six points, not
+// kept); with the dot through the existing dot3f either argument order 215/215; with the zero local dropped
+// 215 (aligned 230). Kept: dot3f for the hand-accumulated dot and 0.f in place of the zero-only local 221
+// (aligned 238 -> 232).
+// Round 9 (lane 17): a compile-only /O2 screen reproduces this body op for op; in it, every definition order,
+// written sum order and product operand order of the helper scores within 181-190 aligned (current 184), so
+// sum and product order are canonicalised. Retail's first view copies each raw offset to a second register
+// before the scale test and computes `scale * raw` into that copy (the raw value stays live); no screened
+// form keeps the copy apart. Real (fast): the explicit if/else arms again 305 (1078 bytes, aligned 162);
+// arms with the camera passed by pointer 302 (1081 bytes); arms with i, k, j definitions 305; arms with
+// three-statement rows and the camera pointer 310; a scaled copy through the existing vector3f_scale (in
+// place) and the existing matrix_transform_vector 285 (1160 bytes).
+// Round 460: Complete mutable/immutable view-depth carriers with original/branch/conditional/
+// immutable-conditional weight producers, 221/221/249/249/221/221/249/249. Original helper and body restored;
+// extra frame word and coefficient/result homes remain.
+// Round 49 (m3 lane 1, fast): the view helper `static inline` 221 (same code); the two view calls swapped
+// 262 (1154 bytes); the helper rows written to `arg_2->n[component]` 226 (1148 bytes); the orthographic
+// clamp into a fresh named value 215 (retail's per-arm tail; six points, not kept), as an if/else-if
+// clamp 221. On the 215 form the tail differs mostly by the frame's extra dword (every [esp+N] off by 4),
+// which comes from the view region (ours uses six slots there, retail five).
+// Round 468: Pure cone-test schedules 102345/013245/012354/014523/023145/145023/032154/105432
+// 221/223/221/266/261/261/261/264. Depths 0/1, first x/y 2/3, second x/y 4/5; original bounds
+// and comparison order restored. Extra frame word and coefficient/result overlap remain.
+// Round 471: Uniform weighted-point second/first product and sum producers, seven
+// nonempty combinations 222/222/224/221/222/222/224; complete producers with earlier
+// blend-scale storage 224. Original expression producers, helper and full body restored.
+// Round 35 (m3 lane 2, fast): both camera offsets through the existing vector3d_from_points3d 221 (1147 bytes),
+// with the orthographic segment through it too 224 (1148 bytes); the segment alone through it 221 (1145 bytes);
+// both offsets through it with the depth limits written in the condition 233 (1153 bytes); the first offset alone
+// through it 222 (1146 bytes). Retail computes each depth limit lazily after the two `k < 0` tests (`mulss` by the
+// 4.0 in memory); ours hoists both limits and the 4.0 into registers ahead of the tests.
+// Round 111 (lane 7, fast; a one-file LTCG harness with src/unknown_01cf50.cpp and src/unknown_030290.cpp
+// reproduces the build, 221 at 1145 bytes): retail scales with the scale as destination (`movaps xmm0,xmm6;
+// mulss xmm0,xmm1`, the unscaled copies made before the test) where ours scales in place. A camera-pointer
+// helper with `i *= camera->scale` and the component loop 224 (1148 bytes), with an explicit three-row body 306;
+// the scaled locals set in an if/else 305 (1078); a caller `real scale = g_4b9e14.scale;` declared first 253
+// (1136 bytes), declared at the calls 252; a scaled vector copy through vector3f_scale in place 283 (1160), from
+// the input 309; explicit rows with (real) product casts 306 (1081), grouped 301; locals declared k-first
+// 258, scaled k-first 245; the per-component ternary scale 256 (1136, three tests).
+// Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
+// with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
+// offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
+// grouped `k * (k * 4.f)` 226 (1148 bytes).
+// Round 477: Native input-vector scale induction long/dword/short/word with cursor 312/312/355/355; indexed rows 309/309/358/358.
+// Original scalar snapshots, scale producers, separate offset loops, output cursor and entire body restored; frame and coefficient/input/result homes remain.
+// Round 483: coherent radius from output/producer, branch/common publication
+// and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
+// All regress; initial stores, alias-sensitive reads, original helper/body restored.
+// Round 497: Real coefficient-array termination !=/< with forward/up/right owners
+// 379/379/379/379/378/378; all three streams without an ordinal 375/375. Original helper and body
+// restored; frame and coefficient/input/result homes remain.
+// Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
+// with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
+// offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
+// grouped `k * (k * 4.f)` 226 (1148 bytes).
+// Round 47 (m3 lane 14, fast): retail's extra frame word is not a view temporary: retail keeps all three second
+// offsets in [esp+8]/[esp+0xc]/[esp+0x10] from the start (the orthographic segment reuses those same slots) and
+// spills nothing in the second view, ours keeps the second offset's i in xmm7 and spills a second-view partial
+// sum at [esp+8]. Segment vector declared at function scope after the offsets 221, before them 221, after the
+// views 221, at the top of the projection block 221; view vectors declared with the offsets 221 (same code).
+// Round 499: First/second/both source-coordinate cursors with long/dword ordinals
+// 222/222/223/222/222/223; both source-end !=/< forms 276/582. Original input walks and body
+// restored; extra frame word and coefficient/result homes remain.
+// Round 500: native ordinal !=3/<=2 with long/dword/short/word domains
+// 409/221/401/221/400/399/400/399. Equality bounds change unrolling but regress;
+// extra frame word and coefficient/input/result homes remain. Original helper/body restored.
+// Round 502 (reduced): identity-conditional native/memcpy input protection, alias/scale-first
+// ownership 287/289/287/289; indexed outputs 290/305/290/305. Complete alias-safe scalar
+// helper and original body restored; extra frame dword and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
-    real local_14 = 0.f;
     vector3f local_0;
     vector3f local_1;
     for (long component = 0; component < 3; ++component)
@@ -163,8 +265,8 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
         second_depth_limit > local_3.i * local_3.i &&
         second_depth_limit > local_3.j * local_3.j)
     {
-        real local_4 = local_14 - local_2.k;
-        real local_5 = local_14 - local_3.k;
+        real local_4 = 0.f - local_2.k;
+        real local_5 = 0.f - local_3.k;
         real local_6;
         if (arg_1)
             local_6 = 1.f / (local_5 + local_4);
@@ -195,9 +297,7 @@ void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
             local_10.j = arg_0[1].field_0.y - arg_0[0].field_0.y;
             local_10.k = arg_0[1].field_0.z - arg_0[0].field_0.z;
             real local_11 = function_30bf0(&local_10);
-            real local_12 = g_4b9dac.j * local_10.j;
-            local_12 = g_4b9dac.k * local_10.k + local_12;
-            local_12 += local_10.i * g_4b9dac.i;
+            real local_12 = dot3f(&g_4b9dac, &local_10);
             real local_13 = 1.f - local_12 * local_12;
             local_13 = local_13 < 0.f ? 0.f : local_13 > 1.f ? 1.f : local_13;
             arg_2->field_c = (real)(sqrt(local_13) * arg_2->field_c * local_11);

@@ -74,11 +74,22 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
-// score 47 (was 47): restore entry-load order and the protected sampler convention differ.
+// score 47 (was 47): BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
+// in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
+// by one instruction) and the restore block's schedule: retail reloads the table field before the entry
+// store and loads `second` after the two table loads, ours loads `second` right after the entry `lea`.
+// Frame, entry and logarithm agree. Forms (the history ran 167 -> 162 -> 153 -> 132 -> 95 -> 47):
+// restore entry-load order (retail reloads the table field before the entry store) and
+// BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state in ebx, ours
+// pushes it; that tail is about 42 of the 47 lines and the extra byte).
+// BLOCKED-BY 0x18a90 (retail passes the state in EBX, ours pushes it; the later calls
+// then shift by one instruction) and the `second` load of the restore block, scheduled after the table
+// loads in retail and right after the entry `lea` here; frame, entry and logarithm agree.
+// Direct entry publication with staged chain index/subscript/pointer/table-reload/accessor/parameter-address
+// forms 47 each; original reference with staged index 47; separate restored-entry local 183. Original body restored.
 // Earlier 95 from 132: frame four, the logarithm and the tail agree; left are the restore block (retail reloads
 // the range field before each call; ours keeps it in a register) and BLOCKED-BY 0x18a90, which retail passes
 // the state in ebx (ours pushes it).
-// Earlier: Frame and numeric/reset sequence agree; logarithm width and restore allocation remain.
 // Earlier: Frame and numeric/reset sequence agree; logarithm width and restore allocation remain.
 // Earlier 167 from 167: logarithm width/reset schedule and restore/final pointer allocation;
 // logarithm factor width and restore allocation remain; frame and numeric/reset sequence agree.
@@ -89,37 +100,25 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Typed numeric state fields 167; typed pointer fields 181; full state view 181;
 // force-inline material lookup 167; global-first mask unions on full view 181.
 // Factor first 167; inline depth one 167; scoped size 483; dirty-mask order 167; packed-range view 167.
-// Logarithm width and reset/restore scheduling remain;
-// rounded logarithmic value before stores 167; late tag publication 295; both published restore ranges 279;
+// Rounded logarithmic value before stores 167; late tag publication 295; both published restore ranges 279;
 // record reload after render call 192; raw global-first unions 167.
-// Earlier 167 from 167: Frame and entry agree; logarithm operand width/reset and restore allocation
-// Frame and entry agree; logarithm operand width/reset and restore allocation
-// differ. Pending-mask snapshot 188; late record predicate 297; late tag predicate 287; direct old
 // Pending-mask snapshot 188; late record predicate 297; late tag predicate 287; direct old
 // record 167; conditional reciprocal 167 (fast).
 // early dirty mask, update byte or late counter pair each 296; first published range 167;
 // second published range 187.
-// Earlier 162 from 167: logarithm width/reset and restore allocation remain;
-// final consumers read the actual published record field. Entry-only read 169; pass-only read 167;
+// Final consumers read the actual published record field: entry-only read 169; pass-only read 167;
 // early saved-tag predicate 298; published-record field reference 162 (plain); equality arms 167.
-// Earlier 162 from 162: logarithm/reset schedule and restore/final allocation remain.
 // Record-field pointer 162; signed entry/pass/both carriers 163/163/164;
 // negated equalities 162; saved tag at both tests 246; dirty-mask cursor 161; both cursors 161 (one-point gains dropped).
-// Earlier 153 from 162: dirty-word library clear recovers numeric/reset scheduling;
-// logarithm width and restore allocation remain. Native entry/chain/both descriptors,
+// Dirty-word library clear 153 (recovers the numeric/reset scheduling). Native entry/chain/both descriptors,
 // const record and signed change forms 162; update/counter/all/reset-last clears 287/258/307/157.
 // Actual entry offset, chain index, pass index, range index, offset/chain, offset/pass,
 // chain/pass/range and all four named computations each 153.
-// logarithm width/reset and restore allocation remain;
-// logarithm/reset schedule and restore/final allocation remain.
-// dirty-word library clear recovers numeric/reset scheduling;
 // Native entry/pass/range/all word pointers 153/153/153/153;
 // readonly entry words 153; chained counter resets 155;
 // unqualified float-input logarithm 152; reciprocal default first 157.
 // Float-input logarithm with native descriptors/first range/second range 152/152/184;
 // with first mask pair/mask cursor/both 151/151/151 (two-point gains excluded).
-// Dirty-word library clear 153 recovers numeric/reset scheduling;
-// Native entry/chain/both descriptors,
 // First/second/both native mask loops 152/180/180; published table/record/both field lifetimes
 // 289/283/307; native signed packed carriers 153; signed carriers with table field 289.
 // Early changed/tag/both declaration homes 153/153/153; separate record publication 153;
@@ -165,6 +164,43 @@ PRIVATE inline byte const *material_parameters(long tag)
 // direct first updater 149; direct second updater 47; entry word at chain 47;
 // direct published entry 294. Original body restored.
 // Round 235: published table snapshot after entry/before entry/after packed 151/231/151; after-entry with distinct packed/chain/both/pass/all restore receivers 151/151/151/151/151.
+// Round 76: entry stored directly into its field, no reference, 47 (the table reload now hoists as in
+// retail; first difference +0x19e -> +0x1a7; restored, same count); entry through the existing entry local 183; packed word read
+// inside the chain index 47; tables re-read once into its local 47; named chain/pass bases 47.
+// Round 155: entry table from the local 151; entry stored to its field directly 47 (table reload in place,
+// the second index load hoists instead); plus range stored directly 163; entry local reused 183;
+// direct entry store with swapped index sum 47.
+// Round 34: table field through a reference for all three reads 47; entry word read inside the index 47;
+// direct entry store 47 (table reload as retail; the second-index load then hoists above the store);
+// direct store with `second + (packed & 0x1ff)` 47; direct store read back through a const reference 293.
+// Round 118 (all keep the second-index load above the entry store): direct store with the entry read back
+// from its field 47; that with `second + (packed & 0x1ff)` 47; next folded into the pass expression 47; that
+// with the entry read from its field inside it 47; the reference form with the swapped sum 47; `second`
+// read through its address (diagnostic) 47, so the order is not an aliasing effect.
+// Round 83, all on the direct entry store (aligned 3: only `second` loads before the entry store, retail
+// after both table bases): chain lookup folded into the pass expression 47; tables re-read into its
+// local after the store 47; `second` read through its address 47; named chain index 47.
+// Round 115 (after 0x17170 matched; the tail is still BLOCKED-BY 0x18a90): chain table read into a pointer
+// before the entry word 47; `second + index` and `third + index` sums 47; entry base from the `tables` local 151;
+// `first * 10 +` base 47; pass table read before the entry store 119. Original body restored.
+// MiniMax R (10-31): no new form, no lower score.
+// Round 54 (lane 10, fast): restore table pointer published in a chained assignment 47; range reference
+// declared beside the entry reference 47; definition derived from the just-published parameters field 47;
+// the entry byte offset named once for both walks 47; parameters published after the definition lookup 193;
+// the pending masks ORed in right after the tables are published 191 (978 bytes); the pass published after
+// the range is computed 118 (974 bytes).
+// Round 38 (lane 15, fast): entry computed into the entry local and stored to its field after the chain
+// lookup 187; tables field read into a restore-tables local before the entry store and used for all
+// three bases 284; `10 * first` 47; the entry as `&base[first * 10]` 47; packed read through a word
+// const view 47. The tail is still BLOCKED-BY 0x18a90 (contributor file). Original body restored.
+// Round 23 (lane 17, fast): the restore block's packed word read inside the chain index 47; the pass
+// pointer stored to its field and read back 47; the parameters and tables stores as chained
+// assignments 47; the pass store chained 47; the restore guard as `different_tag || changed` 49.
+// Round 281: multi-use addresses of the actual table/entry/range pointer fields, each alone,
+// table-entry/table-range/entry-range pairs and all three, 47 each; early table-field address 47.
+// Restore-load order and the sampler state convention remain; original body restored.
+// MiniMax I (11-01): no new form, no lower score; the restore block still loads `second` before the table bases
+// where retail loads it after them, and the 0x18a90 tail is still blocked by that file's call convention.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -385,47 +421,22 @@ struct s_2f6b0_point
 	short x, y;
 };
 
-// score 29 (was 29): frame 0x18 and the incoming contract agree; retail loads the
-// rectangles' high halves first, reads the horizontal origin back from the copied
-// bounds (EDI) and keeps the copy's low dword (ECX) for the vertical origin; ours
-// shifts the horizontal origin out of the bounds register and adds the vertical
-// one in 16 bits. Earlier at 94: frame 0x1c versus 0x18; position/output argument
-// homes and rectangle loads differ. Rectangle/origin names 94/94;
-// horizontal/vertical/both origins in place 100/92/115; native step initializer 94;
-// shared output assignment 94; workspace names plus short origin 113; native frame
-// with scalar steps 118, short origin 91. At 29: direct horizontal/vertical/both
-// origins 99/29/102; output readback/native 94/94. Both direct origins with
-// readback/native/late full 102/102/102; on vertical-direct, rectangles swapped/late
-// full/global vertical value/global horizontal value 101/102/67/101. Separate short
-// steps 109; const short steps 109; early/late step names 29/29; const full snapshot
-// 29; const native step 29; both const 29; early horizontal origin 29. Horizontal
-// pipeline 102; vertical step first 102; vertical coordinates first 38; shared
-// column/row/both 29/29/29; horizontal origin consumed 78; vertical pipeline 100.
-// Full/bounds/both library copies 29/29/29; native edge construction 129; snapshot
-// vertical origin 105; recovered-frame rectangle names 29; short horizontal origin
-// 113; native step construction 29. Both origins as long/short/word locals from the
-// bounds 105/113/113; both origins read before the steps and used by them, short or
-// long, 106/102. Product operand order, sum order, step declared first, const
-// origins and the edge sums swapped make no difference.
 // @retail 0x2f6b0
 void function_2f6b0(s_2f6b0_point const *position, s_2f6b0_point const *grid,
 	s_2f6b0_point const *span, short_rect *outer, short_rect *inner)
 {
-	(void)&grid;
-	(void)&span;
-	(void)&outer;
 	short_rect full = g_485a8a.a;
 	short_rect bounds = g_485a8a.b;
 	s_2f6b0_point step;
 	step.x = (bounds.v3 - bounds.v1) / grid->x;
 	step.y = (bounds.v2 - bounds.v0) / grid->y;
-	long x = bounds.v1;
-	bounds.v1 = x + (word)position->x * step.x;
-	bounds.v3 = x + (word)(span->x + position->x) * step.x;
-	bounds.v0 = g_485a8a.b.v0 + (word)position->y * step.y;
-	bounds.v2 = g_485a8a.b.v0 + (word)(span->y + position->y) * step.y;
-	*outer = bounds;
-	*inner = bounds;
+	short_rect cell;
+	cell.v1 = bounds.v1 + position->x * step.x;
+	cell.v3 = bounds.v1 + (span->x + position->x) * step.x;
+	cell.v0 = bounds.v0 + position->y * step.y;
+	cell.v2 = bounds.v0 + (span->y + position->y) * step.y;
+	*outer = cell;
+	*inner = cell;
 	if (position->x == 0)
 		outer->v1 = full.v1;
 	else
@@ -707,38 +718,32 @@ struct s_tag_data;
 dword function_13bc00(s_tag_data const *function, real input);
 color3f *unpack_color3f(dword pixel, color3f *color);
 
-// score 22 (was 22): Frame and calls agree; zero/one/bound registers and remap spill remain.
-// Earlier: Frame and calls agree; zero/one/bound registers and remap spill differ.
-// Interpolation arms 76; lower/both field observations 136/136; trig/all arms 203/203;
-// shared trig clamp/arms 219/219; named clamped input 66.
-// zero/one and interval SSE carriers, then remap-spill scheduling differ;
-// bound declaration order 22; lower/upper names 22; sample name 22; named span 22;
-// bounds after clamp 25; reversed remap cases 231; separate remap result 22; color first 154.
-// Native color library/record copies 109/109; remap case orders 23451/12435/24135/35124
-// 229/30/81/81; shared data-field reference 22; data before component dispatch 70.
-// Existing shared interpolation/trig/all clamps 66/203/195; staged interpolation 22;
-// native bound record 136; readonly data 22; upper-first endpoints 22; sequential endpoints 22.
-// Entry color/interval/data declarations, paired/all scopes and entry sample: eight forms 22 each.
-// Inline range-map helper modifying/returning its value 146/149; switch in a shared inline
-// helper with 0x1b2c0 22; sibling statement clamp 76; sibling named clamp 66.
+/* a shader curve's value mapped into the curve's [low, high] range, unless the
+   curve's flags say it is already in range */
+PRIVATE __forceinline real shader_curve_remap(s_1b230_function const *curve, real value)
+{
+    byte const *data = curve->data;
+    if (!(data[1] & 0xf0))
+    {
+        real low = *(real const *)(data + 4);
+        real high = *(real const *)(data + 8);
+        value = PIN(value, 0.0f, 1.0f);
+        return (high - low) * value + low;
+    }
+    return value;
+}
+
 // @retail 0x1b580
 bool function_1b580(long unused, byte const *definition, long component, long mode, real *out)
 {
     long const *unused_reference = &unused;
     (void)unused_reference;
     s_1b230_function const *curve = (s_1b230_function const *)(definition + 0xc);
-    real value = function_1b230(curve, *(long const *)definition,
+    real sample = function_1b230(curve, *(long const *)definition,
         *(long const *)(definition + 4), *(real const *)(definition + 8));
     if (component != 4)
     {
-        byte *data = curve->data;
-        if (!(data[1] & 0xf0))
-        {
-            real low = *(real *)(data + 4);
-            real high = *(real *)(data + 8);
-            value = PIN(value, 0.0f, 1.0f);
-            value = (high - low) * value + low;
-        }
+        real value = shader_curve_remap(curve, sample);
         switch (mode)
         {
         case 1: value = 1.0f - value; break;
@@ -761,7 +766,7 @@ bool function_1b580(long unused, byte const *definition, long component, long mo
     {
         color3f color;
         if (curve->data && curve->size > 0)
-            unpack_color3f(function_13bc00((s_tag_data const *)curve, value), &color);
+            unpack_color3f(function_13bc00((s_tag_data const *)curve, sample), &color);
         else
             color = *(color3f const *)&g_4686cc->red;
         out[0] = color.red;
@@ -809,15 +814,7 @@ void __stdcall function_17960(byte *state, word const *range)
                     *(long const *)(parameter + 4), *(real const *)(parameter + 8));
                 if (mode != 4)
                 {
-                    byte const *data = curve->data;
-                    if (!(data[1] & 0xf0))
-                    {
-                        real low = *(real const *)(data + 4);
-                        real high = *(real const *)(data + 8);
-                        real clamped = 0.0f > value ? 0.0f : value > 1.0f ? 1.0f : value;
-                        value = (high - low) * clamped + low;
-                    }
-                    out[mode] = value;
+                    out[mode] = shader_curve_remap(curve, value);
                 }
                 else
                 {
@@ -875,52 +872,34 @@ PRIVATE __forceinline void store_shader_mask(byte *state, word packed, long inde
     }
 }
 
-// score 157 (was 157): frame 0xc versus retail 0x10; entry/value homes and deferred descriptor observations remain.
-// frame 0xc versus 0x10, value/entry homes and delayed selector reads differ.
-// Distinct branch-counter homes 157; shared writer input mask alone/with counters 185; common store
-// alone/with counters 294; shared bank result alone/with body entry steps 311; decoded register test 177.
-// frame 0xc versus 0x10; table/entry homes and selector rereads differ.
-// Ordinary writer inline 513; packed/index formal domains 189/181; shared complement 214;
-// global optimization off 621; frame pointer 207; branch table lifetimes 184; inline depth two 157.
-// selector observation and table/entry frame homes still differ.
-// selector-storage writer 177f; writer offset input 188f.
-// selector-use output indices 230f; signed byte cursors 163f.
-// byte cursors 190f; byte mapping slot 189f.
-// word source-kind 157f; special-slot result 180f.
-// Frame 0xc versus 0x10 and selector reloads remain; mapped rejection/body step 155; bank-first writer 196; XOR masked store 201; separate clear/merge 157; empty-range exit 210 (fast).
-// Branch entry lifetimes 234; actual remapping-field reference 161; direct completion 155;
-// early mapped index 206; signed value table 155 (fast, with body entry steps). Two-point gains dropped.
-// Round 122: Direct/mapped native dword selector 189/202; unsigned slot 155; middle remap observation
-// 158; source-kind memory first 155; all with body entry steps.
-// Direct/mapped signed selector 157/157; special category first 170;
-// ordinary/special bank-one-first arms 159/167.
-// Actual value/entry/remap table fields singly, all three pairs and all together 157 each;
-// all native table fields with native entry bits and body cursor steps 155; two-point gain dropped.
-// Round 226: ordinary bank-zero output pointer 157; ordinary bank-one output pointer 157; special
-// bank-zero output pointer 157; special bank-one output pointer 157; both ordinary destinations
-// 157; both special destinations 157; all four destinations 157; all destinations with named
-// masked value 202.
-// Complete mapping-root observation alone/with value table/with remapping word/both 159/197/160/212;
-// the same four graphs with native unsigned slot 159/197/160/212 (all with ordinary body steps).
-// Direct/mapped/both word-field observations 199/177/185; each with consistent value-table fields 208/192/186; both with remapping-root observations alone/with value fields 185/186. Original body, dynamic bounds and shared writer restored.
-// Round 249: signed writer mask/value/both 155 each with body cursor steps;
-// each with a shared complement 201; both signed inputs with a shared masked
-// value 185, with both computed parts 187. Two-point forms dropped; helper/body restored.
-// Round 201: Native packed-range parameter and entry record: direct/count accessor/selector
-// fields/both 155/189/185/199; the same four with complete remapping fields 155/189/185/199. Two-point
-// body-step lead rejected; complete source restored.
-// DL159: actual direct/mapped/both selector field references 199/177/185; signed source field reference 157, with direct/mapped/both selectors 199/177/185; complete field graph with body cursor steps 185. Original copied fields, dynamic bounds and writer retained.
-// Round 206: Native ordinary/special/dirty output fields, individually, all three pairs and all
-// together 157 each; complete output fields with body cursor steps 155. Two-point gain rejected.
-// Round 30 (fast): retail's direct loop re-reads the entry word after the output store (for the dirty bit),
-// stores through a computed address (lea) and keeps the value table in EBX: that is a store written with
-// the index derived inside from a reference to the entry word, not a precomputed index. A file-local
-// forceinline store taking `word const &packed` for the direct loop alone gives that loop retail's shape
-// 191 (695 bytes; the mapped loop then tests 0x200 twice); with the value masked at the top of it 183, the
-// masked value passed by the caller 183 (both move the state parameter from EAX to EDX); plus the mapped
-// loop in 0x176a0's shape (value/mask locals, the call in both arms, remap byte added first) 226 at frame
-// 0x10 as retail (the direct loop's counter then takes EBX); one counter declared for both loops 226.
-// Match-only (a one-caller helper); original body restored.
+/* the same store, reading the output index from the descriptor word at each use */
+PRIVATE __forceinline void store_descriptor_mask(byte *state, word const &packed, dword mask, dword value)
+{
+    if ((packed & 0x3c0) != 0x200)
+    {
+        if (!(packed & 0x400))
+        {
+            *(dword *)(state + 0x144c + ((packed >> 6) & 15) * 4) = (*(dword *)(state + 0x144c + ((packed >> 6) & 15) * 4) & ~mask) | (value & mask);
+            *(dword *)(state + 0x1518) |= 1 << ((packed >> 6) & 15);
+        }
+        else
+        {
+            *(dword *)(state + 0x146c + ((packed >> 6) & 15) * 4) = (*(dword *)(state + 0x146c + ((packed >> 6) & 15) * 4) & ~mask) | (value & mask);
+            *(dword *)(state + 0x151c) |= 1 << ((packed >> 6) & 15);
+        }
+    }
+    else if (!(packed & 0x400))
+    {
+        *(dword *)(state + 0x14d0) = (*(dword *)(state + 0x14d0) & ~mask) | (value & mask);
+        *(dword *)(state + 0x1518) |= 0x100;
+    }
+    else
+    {
+        *(dword *)(state + 0x14d4) = (*(dword *)(state + 0x14d4) & ~mask) | (value & mask);
+        *(dword *)(state + 0x151c) |= 0x100;
+    }
+}
+
 // @retail 0x17170
 void function_17170(byte *state, word const *range)
 {
@@ -929,26 +908,33 @@ void function_17170(byte *state, word const *range)
     word remapping = shader_remapping(state)->packed;
     if (!(remapping & 0xfe00))
     {
-        for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+        for (long i = 0; i < (*range >> 9); entry += 4, ++i)
         {
-            word packed = *(word const *)entry;
-            store_shader_mask(state, packed, (packed >> 6) & 15, g_467068[entry[2] & 7], values[entry[3]]);
+            dword mask = g_467068[entry[2] & 7];
+            dword value = values[entry[3]];
+            store_descriptor_mask(state, *(word const *)entry, mask, value);
         }
     }
     else
     {
         byte const *mapping = *(byte **)(*(byte **)(state + 0x20) + 0x24) + (remapping & 0x1ff) * 4;
-        for (long i = 0; i < (*range >> 9); ++i, entry += 4)
+        for (long i = 0; i < (*range >> 9); entry += 4, ++i)
         {
             word packed = *(word const *)entry;
-            long slot = packed & 7;
-            short source = *(short const *)(mapping + slot * 4);
-            if (source == NONE || ((packed >> 3) & 7) == *(long *)(state + 0x300 + source * 4))
+            short const *source = (short const *)(mapping + (packed & 7) * 4);
+            if (*source == NONE || ((packed >> 3) & 7) == *(long *)(state + 0x300 + *source * 4))
             {
-                long index = (packed >> 6) & 15;
+                dword mask = g_467068[entry[2] & 7];
+                dword value = values[entry[3]];
                 if ((packed & 0x3c0) != 0x200)
-                    index += *(signed char *)(state + 0x1520 + slot);
-                store_shader_mask(state, packed, index, g_467068[entry[2] & 7], values[entry[3]]);
+                {
+                    long index = *(signed char *)(state + 0x1520 + (packed & 7)) + ((packed >> 6) & 15);
+                    store_shader_mask(state, packed, index, mask, value);
+                }
+                else
+                {
+                    store_shader_mask(state, packed, (packed >> 6) & 15, mask, value);
+                }
             }
         }
     }
@@ -1011,7 +997,7 @@ void function_176a0(byte *state, s_packed_shader_range const *range)
 }
 
 // @retail 0x1b2c0
-bool function_1b2c0(byte const *state, long index, long component, long texture, long mode, real *out)
+bool function_1b2c0(byte const *state, real *out, long index, long component, long texture, long mode)
 {
     if (component < 4)
     {
@@ -1277,31 +1263,17 @@ void __stdcall function_1ab50(byte *state, s_packed_shader_range const *range)
 }
 
 
-// score 54 (was 54): the two arguments land in different registers (retail uses ebp for the
-// second and ecx for the first) and the bit-field extraction order differs.
-// Frame 0x10 agrees; state EBP/range-slot reload and the stacked evaluator component still differ.
-// score 54 (was 54): external packed-word reference 54; explicit output/mask/both banks 72/78/91;
-// input count once 60; inline depth one/two 54/54; plain while scan 54.
-// Frame 0x10 agrees; state/range and evaluator component registers still differ.
-// Unsigned range accessors 54; output/mask/both bank predicates 54;
-// byte component 51 (193 bytes), byte kind 73, both byte inputs 60; output fields 54.
-// state stays in EBX and range in EBP; retail keeps state in EBP
-// and reloads range. The evaluator component is stacked instead of EDI;
-// packed-field extraction order still differs.
-// const pointer tables 54; vector bank elements 54; packed record fields 54.
-// byte record fields 75; frame pointer 71; global optimization 153.
-// size preference 77; float consistency 54.
-// @retail 0x19be0 standard
+// @retail 0x19be0
 void __stdcall function_19be0(byte *state, word const *range)
 {
     real *values[2] = { (real *)(state + 0x1530), (real *)(state + 0x1630) };
     dword *masks[2] = { (dword *)(state + 0x1730), (dword *)(state + 0x1734) };
     byte const *entry = *(byte **)(*(byte **)(state + 0x20) + 0x3c) + (*range & 0x1ff) * 4;
-    for (unsigned long i = 0; i < (*range >> 9); ++i)
+    for (long i = 0; i < (*range >> 9); ++i)
     {
         word packed = *(word const *)entry;
-        function_1b2c0(state, entry[3], (packed >> 5) & 31, packed >> 13, 0,
-            values[(packed >> 4) & 1] + (packed & 15) * 4);
+        function_1b2c0(state, values[(packed >> 4) & 1] + (packed & 15) * 4, entry[3],
+            (packed >> 5) & 31, packed >> 13, 0);
         packed = *(word const *)entry;
         *masks[(packed >> 4) & 1] |= 1 << (packed & 15);
         entry += 4;
@@ -1366,7 +1338,9 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
     }
 }
 
-// score 267 (was 267): frame and sampler agree; mapped flag width, deferred indices and post-store descriptor reads remain.
+// score 130 (was 130): BLOCKED-BY 0x1b2c0 (round 32 below). Only the mapped loop's rescale test after 0x1b2c0 differs: retail reloads the word
+// (`mov ax,[ebx]; test ah,8`), ours tests memory (`test byte [ebx+1],8`). Earlier: frame 0x28 and sampler agree;
+// deferred index and post-store descriptor rereads remain.
 // Earlier: frame and sampler agree; deferred index and post-store descriptor rereads remain.
 // Frame and sampler agree; deferred index and post-store descriptor rereads remain.
 // Direct descriptor pointer/reference 267/267; mapped pre-rescale reload 267; mapped descriptor across pack 263 (not kept: a gain under 8);
@@ -1439,6 +1413,118 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // Round 222: External destination references, indexed pair/constant-zero/constant-one
 // subsets 267/287/287/287/287/296/296; all with reused preserved mask 274. Constant-one
 // forms lose a matched writer sibling; complete original helper and body restored.
+// Mapped source/index/descriptor-slot uninitialized declarations at branch entry,
+// seven subsets, then all at function entry, 267 each. Original producer points,
+// scopes, shared writer and complete body restored; descriptor/index schedule remains.
+// Round 293: Shared writer common output/dirty completion, category/bank branch-or-conditional trees with bit/ordinal results: 444/471/438/447/465/475/456/457. Exact-only pointer forms all regress and lose a matched writer sibling; complete original helper and body restored.
+// Round 428: actual mapping rows as signed-word pairs, long/short slot and mapped ordinal,
+// rejection-first 267/267/266/266; positive admission 267/267/266/266. One-point
+// bounded-ordinal forms rejected; original byte cursor, source, guard, writer and body restored.
+// Round 42 (lane 16): the direct loop's store is the structural cause. A forceinline store taking the
+// descriptor as `word const &` and reading the output index from it at each use gives retail's direct loop
+// exactly (re-read after the store, lea address) 154 (1228 bytes); with the mapped loop's `packed` a word,
+// the store called in both arms of the category test with index `remap + field` 152 (1225 bytes, mapped
+// store exact); plus the mapping element through a `short const *source` read twice 130 (1225 bytes): only
+// retail's rescale test after 0x1b2c0 (`mov ax,[ebx]; test ah,8`, ours `test byte [ebx+1],8`) differs.
+// That needs a word value tested for two different bits (as in matched 0x12c770 and 0x1ab770); not found.
+// On the 130 form: `packed` re-read for the rescale test 130; loop-top `packed` for the test only/for test
+// and store 193/239 (spilled); re-read moved from after the pack call to after 0x1b2c0 126; rescale test
+// inside the component loop 150. Same mapped forms without the direct-loop store 272; mapped index
+// unconditional 163; mapped arms with a dword `packed` 227. The store as a function-like macro (index
+// re-evaluated) gives the same 130 but 0x17170 291 (198 with mask/value locals); evaluating mask/value
+// once in it 254 and loses 0x176a0. Not kept: the reference store has one caller, 0x17170 rises with it.
+// Round 445: Native short/word/byte/signed-char four-channel rescale ordinals with
+// long outer ordinals 356 each, with bounded short outer ordinals 355 each.
+// Bodies shrink to 1166/1167 versus 1196/1225; original complete body and writer restored.
+// Round 115: the direct loop through store_descriptor_mask (index read from the descriptor at each use; also
+// 0x17170's direct loop) and the mapped loop in 0x176a0's shape (word `packed`, `short const *source`, store in
+// both category arms, index `remap + field`) 130, kept. On it: `slot`/`component` locals dropped 130; the
+// re-read moved from after the pack call to after 0x1b2c0 126 (one word kept in EDI; retail reloads it twice);
+// loop-top `packed` for the test only 193 (spilled; retail reloads it from the entry, as if 0x1b2c0 kept memory)
+// and for the test and store 239; that as a dword 305; `word const &packed` to the entry 254. Compile-only
+// (not counted): word/short/bitfield/struct-copy locals, `!= 0`, `(x >> 8) & 8` and casts all fold to the
+// memory test.
+// Review: the remapped arm's one-use `index` local written at the call instead, 130 (same).
+// Round 138 (lane 4; a one-file LTCG harness of this file plus unknown_131e50.cpp reproduces it): the rescale
+// test through an inline rescale helper taking the descriptor 130; through an inline descriptor getter 130; a
+// named masked word `word rescale = *(word const *)entry & 0x800;` 130; the word read before the 0x1b2c0 call
+// and tested after it 193 (spilled); a bool read before the call 247. Harness only: `!= 0`/`== 0x800` tests,
+// a short read, a word cast, the call result kept 130 each. Every live-across-call form spills to the stack;
+// retail's unfolded `mov ax` needs a second use of the reloaded word between the two calls (not found).
+// Round 27 (m3 lane 15, plain; `--fast` fails on this file; 130 since round 115, 267 before): retail's
+// AX is dead after its test and its store reloads the word after the pack call, so the test's load must
+// have a second use the optimizer drops (retail's entry shows the same unfolded form for `remapping`, which has two real uses).
+// `(bool)((word >> 11) & 1)` 135; `bool rescale = (word & 0x800) != 0` 135; the word read once after
+// 0x1b2c0 into a local used for the test and as the store's packed 126 (`test edi, 0x800`, kept in EDI
+// across the pack call where retail reloads); the test in the loop condition, flag first/count first
+// 170/171 (rolled loop, 1203/1202 bytes). Compile-only: short/indexed spellings, a word reference at the
+// loop top or after the call, four rescale statements and a do/while all fold to the memory test; the
+// test inside the component loop gives `mov ax, [..]; and ax, 0x800` and one test per component.
+// Round 32 (m3 lane 14): rescale test inside the component loop 150 (retail's `mov ax, [ebx]` load, but
+// `and ax, 0x800` and four tests); four per-component tests of a word local 151 (not threaded);
+// `(word & 0x800) == 0x800` 130; the entry word read at each use with no loop-top local 130 (same code).
+// Cause: retail's test load is the loop-top word CSE'd across the 0x1b2c0 call and reloaded from [ebx]
+// (not spilled), which LTCG allows only when 0x1b2c0 writes through its `out` parameter alone. Our
+// 0x1b2c0 writes cases 14/18 through a pointer copy (`real *zero = out + 1`), which makes callers assume
+// it writes any memory. 0x1b2c0 forms (0x19ca0/0x1b2c0): cases 14/18 stored through `out` directly
+// MATCH/6 (plain; VC then sinks the trailing out[2]/out[3] stores of cases 10, 12/13 and 14 and flips all
+// three pairs); best direct spellings (`out[1] = out[2] = out[3] = 0.0f`, or cases 12/13 written out[3]
+// first) MATCH/2; `real *const zero` 130/MATCH; a pointer to `&out[1]` 130/MATCH; existing
+// vector3f_assign/real_point3d_set on `(vector3f *)(out + 1)` 130/MATCH each; a plain `for (long i = 1;
+// i < 4; i++) out[i] = 0.0f;` MATCH/78 (any loop in 0x1b2c0 moves its first switch's shared clamp tail
+// from case 2 to case 4). Compile-only (reproduces 0x1b2c0 exactly): ~400 direct spellings of cases
+// 10-20, merged 14/18 labels, `return true` in the case, fall-through into case 12, `(out + 1)[k]`, cast
+// fields and `out++` all floor at 2 or worse. Next: a 0x1b2c0 form that hides case 14's stores from the
+// sinking without a pointer copy or a loop.
+// MiniMax S (10-31): confirmed the cause and its price. Writing cases 14/18 of 0x1b2c0 straight through `out`
+// (no `real *zero = out + 1` copy) makes LTCG lose the knowledge that the call leaves the entry table alone, so
+// 0x19ca0 matches retail byte for byte (MATCH, 0). The price: VC then emits case 14/18's three zero stores as
+// out[1], out[3], out[2] where retail has out[1], out[2], out[3], so 0x1b2c0 goes from MATCH to 2. Every direct
+// spelling tried (~60: all six store orders, chains, `out` and `out + 1` pointer copies, dependency chains, the
+// width store in each of the four positions, the zeros before the width) floors at 2; the pointer copy keeps
+// 0x1b2c0 exact but leaves 0x19ca0 at 130, so the direct form is not kept (it raises another function's score here).
+// Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
+// native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
+// sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
+// writers and entire body restored.
+// Round 23 (lane 17, fast; scores as 0x1b2c0/0x19ca0): the reorder comes from the later of the two identical
+// case 14/18 bodies in source order. When it stores straight through `out` (array, a struct cast of `out`, or a
+// plain `real *p = out` copy) and ends with the out[2], out[3] stores of cases 10 and 12/13, VC emits out[3]
+// before out[2] in cases 10, 13 and 14/18; when the later body goes through `out + 1` nothing reorders, but the
+// copy costs 0x19ca0 its match. Case 14 direct with 18 through `out + 1` MATCH/130; 14 through `out + 1` with
+// 18 direct 6/130; 14 direct moved after case 17 (18 still through `out + 1`) MATCH/130; 18 direct moved before
+// 14 21/130 (layout); both through a struct cast of `out` 6/MATCH; `case 14: case 18:` direct at 18's / 14's
+// place 6/MATCH, 25/MATCH; direct bodies ending `return true;` in 14/18/both 25/6/6 (MATCH each); cases 10, 12,
+// 13, 14, 18 all written out[3] first 6/MATCH (source order kept); case 13 falling through into 12 with
+// direct/pointer bodies 6/MATCH, MATCH/130; case 18 as a chain from out[1], four statements, values copied
+// from out[1], both chained 6/MATCH each; array/struct-cast mixes 6/MATCH; `real *zero = out;` in 18 or both
+// 6/MATCH; cases 12/13 written out[3] first with direct bodies 2/MATCH (case 13 left in source order), case 10
+// so 6, both 6; the bodies storing width last 5/MATCH (no reorder, but they zero xmm1). Diagnostics: dead
+// long/real temps 1-7 change nothing; case 18 with another value (no identical pair) does not reorder.
+// Round 279: Existing native four-vector persistent sample output, indexed/field consumers
+// with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
+// exact-only storage forms restored, including the temporary include; sampler and writers
+// unchanged. The mapped rescale word load remains.
+// Round 230: parallel named rescale additions, plain native channel clamps and complete color
+// initializers, seven subsets; all with short outer ordinals, scores [130, 350, 350, 131, 131, 350,
+// 350, 351].
+// Original executable source restored. The mapped post-sampler word-load form remains.
+// Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
+// native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
+// sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
+// writers and entire body restored.
+// Round 279: Existing native four-vector persistent sample output, indexed/field consumers
+// with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
+// exact-only storage forms restored, including the temporary include; sampler and writers
+// unchanged. The mapped rescale word load remains.
+// Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
+// native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
+// sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
+// writers and entire body restored.
+// Round 230: parallel named rescale additions, plain native channel clamps and complete color
+// initializers, seven subsets; all with short outer ordinals, scores [130, 350, 350, 131, 131, 350,
+// 350, 351].
+// Original executable source restored. The mapped post-sampler word-load form remains.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
@@ -1452,7 +1538,7 @@ void function_19ca0(byte *state, word const *range)
         {
             long component = entry[2] & 7;
             dword mask = g_467068[component];
-            function_1b2c0(state, entry[3], entry[2] & 7, 0, (entry[2] >> 3) & 7, values);
+            function_1b2c0(state, values, entry[3], entry[2] & 7, 0, (entry[2] >> 3) & 7);
             if (*(word const *)entry & 0x800)
                 for (long j = 0; j < 4; ++j) values[j] = (values[j] + 1.0f) * 0.5f;
             values[0] = values[0] < 0.0f ? 0.0f : values[0] > 1.0f ? 1.0f : values[0];
@@ -1462,7 +1548,7 @@ void function_19ca0(byte *state, word const *range)
             color4f color;
             color.red = values[0]; color.green = values[1]; color.blue = values[2]; color.alpha = values[3];
             dword value = pack_color4f(&color);
-            store_shader_mask(state, *(word const *)entry, (*(word const *)entry >> 6) & 15, mask, value);
+            store_descriptor_mask(state, *(word const *)entry, mask, value);
             entry += 4;
         }
     }
@@ -1471,17 +1557,17 @@ void function_19ca0(byte *state, word const *range)
         byte const *mapping = *(byte **)(definition + 0x24) + (remapping & 0x1ff) * 4;
         for (long i = 0; i < (*range >> 9); ++i)
         {
-            dword packed = *(word const *)entry;
+            word packed = *(word const *)entry;
             long slot = packed & 7;
-            short source = *(short const *)(mapping + slot * 4);
-            if (source != NONE && ((packed >> 3) & 7) != *(long *)(state + 0x300 + source * 4))
+            short const *source = (short const *)(mapping + slot * 4);
+            if (*source != NONE && ((packed >> 3) & 7) != *(long *)(state + 0x300 + *source * 4))
             {
                 entry += 4;
                 continue;
             }
             long component = entry[2] & 7;
             dword mask = g_467068[component];
-            function_1b2c0(state, entry[3], entry[2] & 7, 0, (entry[2] >> 3) & 7, values);
+            function_1b2c0(state, values, entry[3], entry[2] & 7, 0, (entry[2] >> 3) & 7);
             if (*(word const *)entry & 0x800)
                 for (long j = 0; j < 4; ++j) values[j] = (values[j] + 1.0f) * 0.5f;
             values[0] = values[0] < 0.0f ? 0.0f : values[0] > 1.0f ? 1.0f : values[0];
@@ -1492,9 +1578,14 @@ void function_19ca0(byte *state, word const *range)
             color.red = values[0]; color.green = values[1]; color.blue = values[2]; color.alpha = values[3];
             dword value = pack_color4f(&color);
             packed = *(word const *)entry;
-            long index = (packed >> 6) & 15;
-            if ((packed & 0x3c0) != 0x200) index += *(signed char *)(state + 0x1520 + (packed & 7));
-            store_shader_mask(state, packed, index, mask, value);
+            if ((packed & 0x3c0) != 0x200)
+            {
+                store_shader_mask(state, packed, *(signed char *)(state + 0x1520 + (packed & 7)) + ((packed >> 6) & 15), mask, value);
+            }
+            else
+            {
+                store_shader_mask(state, packed, (packed >> 6) & 15, mask, value);
+            }
             entry += 4;
         }
     }

@@ -30,10 +30,8 @@ struct s_part_table
 long function_122c70(s_tag_iterator *arg_0);
 void function_2122b0(long arg_0);
 void function_205550(void *arg_0);
-void function_1ea9c0(long arg_0, long arg_1);
+void function_1ea9c0(long arg_0, bool arg_1);
 
-// score 19 (was 19): retail passes function_1ea9c0's second argument as a stack byte, ours
-// passes it in ECX; the callee's convention is set by its own (stubbed) file.
 // @retail 0x11c840
 void function_11c840()
 {
@@ -55,7 +53,7 @@ void function_11c840()
             ((s_part_table *)(g_4e3b44[local_1 & 0xffff].bytes + 0xd4))->construct_shapes();
             break;
         case 0x70686d6f:
-            function_1ea9c0(local_1, 0);
+            function_1ea9c0(local_1, false);
             break;
         case 0x76656869:
             function_205550(g_4e3b44[local_1 & 0xffff].bytes + 0x2ac);

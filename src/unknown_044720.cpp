@@ -161,16 +161,108 @@ void function_44720(void)
         ++index;
     }
 }
-// @retail 0x44c90
-// score 107 (was 107): retail keeps the entry index in eax and the table base
-// in ebp with a frame four bytes smaller, ours puts the index in ebp and the
-// frame four bytes larger, so every local sits four bytes higher
-// score 107 (was 107): level != 31 at the call (no cached byte) gives retail's 0x40 frame
+// score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
+// through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
+// the flags word; this round's variants all scored worse, so the body is unchanged.
+// Earlier: frame 0x44 versus retail 0x40; entry-offset construction
+// and the geometry flag reloads differ.
+// Round 125 (one-link LTCG harness with the callers' and callees' files, exact for this function):
+// level != 31 at the call gives retail's frame (harness aligned 70 -> 50) but 135; on it the
+// lookup taking the short index and addressing the entry itself gives retail's entry offset, the
+// in-place transform and the flags re-read, but hoists the structure pointer and re-reads the
+// first word 136 (0x45560 228); transform before weight 136; the lookup with one result variable
+// 132; the parts under `if (geometry)` 135; split continue tests, material order and the selected
+// ternary's parentheses compile the same.
+// Earlier: level != 31 at the call (no cached byte) gives retail's 0x40 frame
 // and call setup, 135 (487 bytes, aligned 42 against 59); retail also re-reads the flags
 // word in the inlined geometry lookup where ours keeps it. On that form: short transform
 // 141; material index read first 135; transform first 136; the lookup given
 // &g_4ba138[(short)index] 136 (503 bytes, flags re-read, but the scenario structure
 // pointer hoisted into ebx).
+// Native context at part/entry/function scope with cached/live level 107/135 each;
+// native context with byte/word level 133/138. Original storage restored; frame and geometry reloads remain.
+// Round 420: global each-use 107; global each-use/live level 135; global each-use/indexed receiver 140;
+// global each-use/live level/indexed receiver 136; global each-use/single result 132; global
+// each-use/single result/live level 132; global each-use/single result/indexed receiver 143; global
+// each-use/single result/live level/indexed receiver 128. Original body restored.
+// Round 36 (one-file harness, this file plus both callees' files: identical to the full build): on the
+// level-at-call form the structural difference is 23 instructions (entry pointer built before its
+// first load, the flags kept in EAX through the lookup, no reload at the geometry join). On it every
+// subset of: weight read at the call, short transform, ternary material, fallback masks swapped,
+// material index by the long index, `geometry == NULL` (63 forms) none closer; a `dword` selector
+// local read first (the 0x44720 form) or a `flags` local for the level and transform tests none
+// closer; the lookup as an ordinary or forceinline function in another file stays a call.
+// Round 33 (fast, agreeing with the full count on the unchanged source): with the level at the call
+// and the lookup given `&g_4ba138[(short)index]` (136, 503 bytes) the entry address and the transform
+// (`and eax, 0xf`, flags re-read in each lookup path) are retail's, but g_4e0348 is hoisted into EBX,
+// the index and entry swap EDI/EBP, the level (not the weight) takes EBX in the inner loop and the
+// non-tag path re-reads the first word. On that: the 0x44720 selector local (`dword entry_flags`) 136;
+// the selector local alone with the level at the call 146; the expression argument on the cached-byte
+// form 140; the lookup taking the entry index (both callers) 136 / 140 on the cached form, and
+// 0x45560 190 -> 228.
+// Round 44: lookup given `&g_4ba138[index]` (long index) 177, with level at the call 169; first test read through
+// `g_4ba138[(short)index]` with the entry pointer after it and level at the call 139 (508 bytes), plus the indexed
+// lookup 150; indexed lookup with the weight read at the call and level at the call 140 (503 bytes). Original kept.
+// Round 453: Ordinary inline query/submission/both contracts 107/107/107;
+// with live level 135 each. Both inline contracts with native context, cached/live level 107/135.
+// Original contracts and context storage restored; frame, entry offset and geometry reloads remain.
+// Round 45 (lane 10; one-link harness exact for this function, fast agreeing): 1..32 unused locals before the
+// loop leave the current form and the level-at-call form unchanged (no numbering ties). On the level-at-call form
+// (135): transform index before the weight 136, after the geometry lookup 150; weight after the material 161;
+// transform index after the material 146; weight, transform and material after the lookup 145. Retail's lookup
+// re-reads the flags word after `and eax, 0xf` and keeps tag/definition in EAX/EDX, so its geometry joins through
+// the stack slot (store, then `mov eax, [esp + 0x10]`); ours keeps the flags in EAX and copies them for the mask.
+// Round 47 (lane 10, fast with 0x45560 listed): on the level-at-call form (135, 487 bytes) the structure global
+// read in each lookup branch 135 (0x45560 190 -> 246); the transform index written at the 0x45ce0 call 163; the
+// material as a ternary 140; the selected material written at the 0x41040 call 135. On the current form: the
+// structure global in each branch 107 (same code; 0x45560 246); the material as a ternary 127. Retail's 0x45560
+// reads the structure global and the flags above the instance test, its 0x44c90 inside each branch.
+// Round 32: 0x458d0's matched lookup loads the structure global once above its branch, so the per-branch
+// reloads are this function's own; retail's loop callees reach none of the global's writers. Level test at
+// the call 135 (frame, slots and EDI/EBP/EBX roles retail's); with the lookup given `&g_4ba138[(short)index]`
+// 136 (global hoisted out of the loop into EBX); plus the global read in each lookup branch 136 (still
+// hoisted; 0x45560 246); level test at the call with the transform after the lookup 150; `use_level` once
+// before the outer loop 158.
+// Round 467: Accepted entry level named at its original read in long/short/word/byte,
+// used by admission and cached submission predicate 155/151/151/152; predicate at its
+// submission use 152/151/151/149. Original level/Boolean ownership and full body restored.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
+// Round 326: material selector at each table use, cached/live level and pointer/indexed geometry
+// inputs 107/135/140/136; the same four with conditional material production 127/140/150/119.
+// Original selector, predicate and complete body restored; frame and geometry reloads remain.
+// Round 52 (lane 1, fast with 0x44720): on the level-at-call form (re-measured 135, 487 bytes) the material
+// index as a long 132; that with the lookup given `&g_4ba138[(short)index]` 130 (510 bytes); with the weight
+// also a long 145; the entry as `g_4ba138 + (short)index` 135. On the current form the material index as a
+// long 126. Retail's material index takes EAX after the in-place `and eax, 0xf` (the lookup re-reads the
+// flags); ours loads it into ECX and keeps the flags in EAX through the lookup.
+// Round 113 (lane 8, fast with 0x44720/0x45560): retail's helper flags reads do not share the level
+// test's read (diagnostic only, a volatile flags read in the helper with the level at the call: 121, 494
+// bytes, with retail's in-place `and eax, 0xf`, per-path flags reloads and per-arm g_4e0348 loads), while
+// its first-word read does (the non-tag path tests the top's EDX). Forms: the helper reading g_4e0348 in
+// each arm 107 (still loaded once above the branch; 0x45560 246); level at the call with the first word read
+// as `g_4ba138[(short)index].unknown00` in both tests and the helper given `&g_4ba138[(short)index]` 136
+// (retail's entry formation and transform, but g_4e0348 hoisted out of the loop into EBX), with the helper's
+// per-arm global reads 136 (still hoisted; 0x45560 246), with the first test ahead of the entry pointer
+// 136; the flags read through `g_4ba138[(short)index]` at the top 140 (506 bytes, entry folded away).
+// BLOCKED-BY 0x45ce0 / 0x41040: both loop callees are unmatched in other owners' files, and our LTCG
+// hoists g_4e0348 across them where retail reloads it per arm.
+// Round 330: Native entry level/transform/both 107/107/107; complete geometry field
+// views with live level 135; with native level/transform/both 107/107/107; all views
+// with live level 135. Original entry type, selector and body restored; frame and reloads remain.
+// Round 19 (lane 17, fast with 0x44720/0x45560/0x458d0/0x44e90/0x44690): BLOCKED-BY 0x41040 and
+// 0x45ce0 (todo, outside this machine's files): the inner loop's call setup and the hoisting around it
+// follow those callees. Level at the call re-measured 135 (487 bytes); with the entry as `g_4ba138 +
+// (short)index` 135 (same code). Diagnostics (mixed entry/global reads): level at the call with the
+// transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
+// transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
+// 157 (515).
+// @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)
 {
@@ -207,7 +299,8 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         }
     }
 }
-// score 190 (was 190): Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
+// score 182 (was 182): Frame 0x1094 agrees; entry/index spill and center/query/bound homes remain.
+// Earlier: Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking
 // site after the bound branch with `if (!(r * r >= d)) continue;` 210 (the marks become retail's single
@@ -309,6 +402,64 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 63: aligned query/position union with separate center 202 (frame 0x10a4); original-name and
 // reversed-declaration forms 202/202, with long index 203; center lexical rename 202; long index with
 // const entry 191; entry/index declarations swapped 191; short index local 190. Original body restored.
+// Round 180: Large query declared after both list headers with separate center; bound
+// alignment/library center capture subsets 199/199/199/199. Complete native query copy on the same
+// four graphs 207/207/207/207. Separate storage grows frame to 0x10a4; all original alignments,
+// copies, calls and full body restored.
+// Round 302: Nested node-cache guards NONE-first/cache-first with original/filled count
+// and original/radius-first scheduling 190/190/191/191/190/190/191/191. Original guards,
+// count initializer and complete executable body restored; entry/index and point homes remain.
+// Round 437: One intersection result and a single marking block, crossed with read-only
+// geometry/native bound sphere/uniform node reads, 223/223/223/223/234/234/242/242. All
+// conditional-result forms restored; all matched controls survived.
+// Round 446: Native center reference/own inline declaration/both 190/190/190;
+// each with the full table/dispatch ordinal 191/191/191; explicit stdcall with
+// original/reference center 190/190. Original definition, declaration and sole caller restored.
+// Round 453: Library entry/query/both center copies 190/202/202; bound position alone,
+// with entry/query/both 190/190/202/202; complete point-producer memmove 246 (caller 37).
+// All original native and component copies restored; entry/index and point homes remain.
+// Round 467: Displacement/combined-radius declaration orders ZYXR/ZYRX/ZRYX/RZYX,
+// YZXR/YZRX/YRZX/RYZX, all 190 at 874 bytes. All expression trees, original declaration
+// order, query/position storage and the complete body restored; entry spill remains.
+// Round 324: positive node-count admission with byte-sentinel removal,
+// provider-filled count and read-only node-array subsets 0-7,
+// 190/182/191/192/190/182/191/192. Positive count and removal of the
+// impossible byte sentinel retained; entry/index spill and point/query homes remain.
+// Round 326: whole-traversal tag snapshot before/after geometry or at the small branch 218/218/218;
+// the same inputs with separate center/query 219/219/219; branch count output on the first/third
+// snapshot 218/218. Entry/index spill and point/query homes remain; complete original body restored.
+// Round 113 (lane 8, fast with 0x44720/0x44c90): retail's frame is query +0x20 (shared with the loop's bound
+// position), a function-scope center copy +0x30 that the node transform writes and the distances read, then
+// the bit/visible/entry/word spills +0x3c..+0x48 and the transform +0x4c. That shape (`point3f point = *center`
+// in place of `query.center = *center`, the transform into `&point`, the bound position copied into
+// `query.center`, distances `point - query.center`) 198 (frame 0x10a4: our spills go ahead of the aligned
+// query); with a long index local 199; `point` declared ahead of the query 198; the copy as the first
+// statement 202 (875 bytes); the query without `__declspec(align(16))` 191 (frame 0x1094 again, but query
+// +0x2c and point +0x3c).
+// Round 328: Small-branch-only initial center, crossed with existing vector difference,
+// provider-filled count and success-local transform homes, subsets 0-7:
+// 219/221/229/233/219/221/229/233. Original center producer, helper boundary, count initialization and
+// matrix lifetime restored; entry/index spill and point/query homes remain.
+// Round 330: Native entry section/instance-ordinal/instance-bit views in seven nonempty
+// subsets all 182; complete views with read-only selector input 182. Actual entry type,
+// helper and complete body restored; entry/index spill and point/query homes remain.
+// Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
+// 0-7: 215/226/202/217/215/226/202/217.
+// Original executable source restored; no eligible gain.
+// DH269: Native bound-point/mask/bound-ordinal declarations before traversal,
+// subsets 1/2/4/3/5/6/7 182,182,182,182,182,182,182; all with coherent role names 182.
+// Every guarded initialization stays in place; original whole body restored. Entry/index
+// spill and query/point homes remain; frame and retail length agree.
+// Round 499: All three squared-displacement products named, with completed distance/radius and
+// reversed ordered comparison subsets: 182/184/182/184/182/184/182/184. Original products, frame
+// and body restored; entry spill and point homes remain.
+// Round 223: Existing node-cache publication before tag/after tag/after matrix
+// 182/182/182; with provider-filled count 194/194/192; before-tag short/dword
+// cache 209/182. Original cache timing, count storage and complete body restored.
+// Round 335: Three-use bitmap word ordinal long/dword, shift with unsigned/original mask,
+// 216/216/216/216; division with masked bit 218/218; division/remainder 251/251.
+// Original word addressing, query storage and body restored; entry/index spill
+// and center/query/bound homes remain at the correct 0x1094 frame.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
@@ -361,11 +512,11 @@ void function_45560(short entry_index, point3f const *center, real radius)
                             if (object_index != NONE)
                             {
                                 long node = bound[0x10];
-                                if (node != NONE && node != cached_node)
+                                if (node != cached_node)
                                 {
                                     long count = 0;
                                     transform4x3f *nodes = function_b8c00(object_index, &count);
-                                    if (count)
+                                    if (count > 0)
                                     {
                                         byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                                         function_142a60(&nodes[node], (transform4x3f *)(*(byte **)(tag + 0x4c) + node * 0x60 + 0x28), &transform);

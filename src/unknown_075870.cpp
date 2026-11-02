@@ -223,7 +223,7 @@ void network_observer_send_message(s_network_observer *observer, long owner, lon
 }
 
 // @retail 0x768b0
-bool network_observer_channel_ready(s_network_observer *observer, long channel_index, long message_type)
+bool network_observer_channel_ready(s_network_observer *observer, long owner, long channel_index, long message_type)
 {
 	s_network_observer_channel *channel = &observer->channels[channel_index];
 	bool result = false;
@@ -243,7 +243,7 @@ bool network_observer_channel_ready(s_network_observer *observer, long channel_i
 }
 
 // @retail 0x76930
-void network_observer_mark_message(s_network_observer *observer, long channel_index, long message_type)
+void network_observer_mark_message(s_network_observer *observer, long owner, long channel_index, long message_type)
 {
 	s_network_observer_channel *channel = &observer->channels[channel_index];
 

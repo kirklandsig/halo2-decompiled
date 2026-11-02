@@ -3,6 +3,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "online_tasks.h"
+#include "online_result_cache.h"
 #include <xtl.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -25,34 +26,25 @@ struct s_online_service
 };
 extern s_online_service g_467178[13];
 
-#pragma pack(push, 2)
-struct s_online_cached_result
+/* A diagnostic text buffer, filled by the format and append helpers. */
+struct s_online_result_text
 {
-    unsigned __int64 entity;
-    word unknown08;
-    XNADDR address;
-    word unknown2e;
-    XNKID key_id;
-    word unknown38;
-    XNKEY key;
+    char buffer[4096];
+
+    __forceinline void clear(void) { buffer[0] = 0; }
+    __forceinline char *text_start(void) { return buffer; }
 };
-#pragma pack(pop)
-typedef char online_cached_result_size[sizeof(s_online_cached_result) == 0x4a ? 1 : -1];
 
 bool g_510580;
 long g_510584;
-s_online_cached_result g_510588[8];
-dword g_5107d8;
-long g_5107dc;
-IN_ADDR g_5107e0;
-long g_5107e4;
+s_online_result_list g_510588;
 
 long online_result_query_start(void);
 void online_result_registration_clear(void);
 void online_result_query_finish(s_type_9df9da *task);
 bool online_result_register(s_online_cached_result *record, IN_ADDR *address);
 void online_result_shuffle(dword count, s_online_cached_result *records);
-void online_result_describe(char *text, const s_online_cached_result *record);
+void online_result_describe(s_online_result_text *text, const s_online_cached_result *record);
 long sound_random_range(short lower, short upper);
 char *online_result_format(char *text, const char *format, ...);
 char *online_result_append(char *text, const char *format, ...);
@@ -101,26 +93,26 @@ void online_result_cache_update(void)
         online_result_query_finish(task);
 }
 
-// score 18 (was 18): retail re-reads `*address` after storing the registered index (ours forwards the value) and leaves the registered arm through its own `mov al, 1` exit; tried: an early `return true` from the registered arm 64, one exit with `result = true` in the cached arm (as an `else`) and the registered arm 16; that exit plus the block 0x510588..0x5107e8 as one address-taken struct (retail clears 0x510580..+0x268 with one memset) matches, but the full link then loses 0x73360 (BLOCKED-BY 0x73360).
-// Round 25: actual registration result 69; comparison-initialized result 25; scalar local initialization 49; complete output memcpy 18; scalar member transfers 18; local memset 49; conversion local at entry 39; registration-first call-result single exit 68. Original body restored.
-// retail re-reads `*address` after storing the registered index (ours forwards the value) and leaves the registered arm through its own `mov al, 1` exit; tried: an early `return true` from the registered arm 64, one exit with `result = true` in the cached arm (as an `else`) and the registered arm 16; that exit plus the block 0x510588..0x5107e8 as one address-taken struct (retail clears 0x510580..+0x268 with one memset) matches, but the full link then loses 0x73360 (BLOCKED-BY 0x73360). 0x73360's loss is accepted since #763; lane 9 round 24 matched this way (with 0xb3970), but the struct changes 0xb3b10's and 0xb3b70's bodies, which are a contributor's finished code (#9), so it is held.
 // @retail 0xb3770
 bool online_result_get_address(long index, IN_ADDR *address)
 {
     bool result = false;
-    if (g_5107dc == index)
+    if (g_510588.registered_index == index)
     {
-        *address = g_5107e0;
-        return true;
-    }
-    IN_ADDR converted = { 0 };
-    online_result_registration_clear();
-    if (online_result_register(&g_510588[index], &converted))
-    {
-        *address = converted;
-        g_5107dc = index;
-        g_5107e0 = *address;
+        *address = g_510588.registered_address;
         result = true;
+    }
+    else
+    {
+        IN_ADDR converted = { 0 };
+        online_result_registration_clear();
+        if (online_result_register(&g_510588.results[index], &converted))
+        {
+            *address = converted;
+            g_510588.registered_index = index;
+            g_510588.registered_address = *address;
+            result = true;
+        }
     }
     return result;
 }
@@ -165,35 +157,32 @@ void online_result_shuffle(dword count, s_online_cached_result *records)
     }
 }
 
-// score 14 (was 14): describe's text argument: retail recomputes `lea eax, [esp+0x14]`, ours copies edi; tried: describe's parameters as (record, text) 14, `(char *)&text` 14, a text struct with format/append and describe on its member and address 14, all calls through a force-inline accessor 14; a text struct whose force-inline accessor feeds format/append while describe gets the plain buffer matches, but every such form makes the full link lose 0x73360 (BLOCKED-BY 0x73360).
-// Round 25: format return for both appends 33; first append return for describe and append 14; native record cursor 17; success-scope array 14; failure-initialized result 72; one-byte memset 14; query output names reversed 14; ordinary while 14. Original body restored.
-// describe's text argument: retail recomputes `lea eax, [esp+0x14]`, ours copies edi; tried: describe's parameters as (record, text) 14, `(char *)&text` 14, a text struct with format/append and describe on its member and address 14, all calls through a force-inline accessor 14; a text struct whose force-inline accessor feeds format/append while describe gets the plain buffer matches, but every such form makes the full link lose 0x73360 (BLOCKED-BY 0x73360). 0x73360's loss is accepted since #763; lane 9 round 24 matched this way (the shared text type and the 0x510588 block struct), but that changes 0xb3b10's and 0xb3b70's bodies, which are a contributor's finished code (#9), so it is held.
 // @retail 0xb3970
 void online_result_query_finish(s_type_9df9da *task)
 {
     dword returned_size = 0;
-    dword buffer_size = sizeof(g_510588);
-    char text[4096];
+    dword buffer_size = sizeof(g_510588.results);
+    s_online_result_text text;
     long result;
     if (online_result_service_connected())
         result = XOnlineQuerySearchGetResults(task->handle, &returned_size,
-            &g_5107d8, &buffer_size, g_510588);
+            &g_510588.count, &buffer_size, g_510588.results);
     else
         result = (long)0x80004005;
     function_6b640(g_510584);
     g_510584 = NONE;
-    if (result >= 0 && g_5107d8 > 0)
+    if (result >= 0 && g_510588.count > 0)
     {
-        text[0] = 0;
-        online_result_format(text, "online:stats: XOnlineQuerySearchGetResults succeeded with %d servers: ", g_5107d8);
-        for (dword i = 0; i < g_5107d8; i++)
+        text.clear();
+        online_result_format(text.text_start(), "online:stats: XOnlineQuerySearchGetResults succeeded with %d servers: ", g_510588.count);
+        for (dword i = 0; i < g_510588.count; i++)
         {
-            online_result_append(text, "|Server %d)  ", i);
-            online_result_describe(text, &g_510588[i]);
-            online_result_append(text, "|  ");
+            online_result_append(text.text_start(), "|Server %d)  ", i);
+            online_result_describe(&text, &g_510588.results[i]);
+            online_result_append(text.text_start(), "|  ");
         }
         g_510580 = true;
-        online_result_shuffle(g_5107d8, g_510588);
+        online_result_shuffle(g_510588.count, g_510588.results);
     }
 }
 
@@ -201,10 +190,10 @@ void online_result_query_finish(s_type_9df9da *task)
 bool online_result_register(s_online_cached_result *record, IN_ADDR *address)
 {
     bool result = false;
-    char text[4096];
+    s_online_result_text text;
     if (XNetRegisterKey(&record->key_id, &record->key) == 0)
     {
-        g_5107e4++;
+        g_510588.key_count++;
         if (XNetTsAddrToInAddr((TSADDR *)&record->address, 0x4d530064,
             &record->key_id, address) == 0)
         {
@@ -212,16 +201,16 @@ bool online_result_register(s_online_cached_result *record, IN_ADDR *address)
         }
         else
         {
-            text[0] = 0;
-            if (g_5107e0.s_addr)
+            text.clear();
+            if (g_510588.registered_address.s_addr)
             {
-                XNetConnect(g_5107e0);
-                g_5107e0.s_addr = 0;
+                XNetConnect(g_510588.registered_address);
+                g_510588.registered_address.s_addr = 0;
             }
             XNetUnregisterKey(&record->key_id);
-            g_5107e4--;
-            online_result_format(text, "XNetTsAddrToInAddr() failed in register_ip_and_key() with error code %s.  ", 0);
-            online_result_describe(text, record);
+            g_510588.key_count--;
+            online_result_format(text.text_start(), "XNetTsAddrToInAddr() failed in register_ip_and_key() with error code %s.  ", 0);
+            online_result_describe(&text, record);
         }
     }
     return result;
@@ -230,41 +219,41 @@ bool online_result_register(s_online_cached_result *record, IN_ADDR *address)
 // @retail 0xb3b10
 void online_result_registration_clear(void)
 {
-    if (g_5107dc != NONE)
+    if (g_510588.registered_index != NONE)
     {
-        s_online_cached_result *record = &g_510588[g_5107dc];
-        if (g_5107e0.s_addr)
+        s_online_cached_result *record = &g_510588.results[g_510588.registered_index];
+        if (g_510588.registered_address.s_addr)
         {
-            XNetConnect(g_5107e0);
-            g_5107e0.s_addr = 0;
+            XNetConnect(g_510588.registered_address);
+            g_510588.registered_address.s_addr = 0;
         }
         XNetUnregisterKey(&record->key_id);
-        g_5107e4--;
-        g_5107dc = NONE;
-        g_5107e0.s_addr = 0;
+        g_510588.key_count--;
+        g_510588.registered_index = NONE;
+        g_510588.registered_address.s_addr = 0;
     }
 }
 
 // @retail 0xb3b70
-void online_result_describe(char *text, const s_online_cached_result *record)
+void online_result_describe(s_online_result_text *text, const s_online_cached_result *record)
 {
-    online_result_append(text, "SessionID: ");
+    online_result_append(text->text_start(), "SessionID: ");
     for (dword i = 0; i < 8; i++)
-        online_result_append(text, "%02X", record->key_id.ab[i]);
-    online_result_append(text, ".  TsAddr: ina %08X, inaOnline %08X, wPortOnline %08X, abEnet ",
+        online_result_append(text->text_start(), "%02X", record->key_id.ab[i]);
+    online_result_append(text->text_start(), ".  TsAddr: ina %08X, inaOnline %08X, wPortOnline %08X, abEnet ",
         record->address.ina.s_addr, record->address.inaOnline.s_addr, record->address.wPortOnline);
     for (dword j = 0; j < 6; j++)
-        online_result_append(text, "%02X", record->address.abEnet[j]);
-    online_result_append(text, ", abOnline ");
+        online_result_append(text->text_start(), "%02X", record->address.abEnet[j]);
+    online_result_append(text->text_start(), ", abOnline ");
     for (dword k = 0; k < 20; k++)
-        online_result_append(text, "%02X", record->address.abOnline[k]);
-    online_result_append(text, ".  KEK: ");
+        online_result_append(text->text_start(), "%02X", record->address.abOnline[k]);
+    online_result_append(text->text_start(), ".  KEK: ");
     for (dword l = 0; l < 16; l++)
-        online_result_append(text, "%02X", record->key.ab[l]);
-    online_result_append(text, ".  EntitiyID: ");
+        online_result_append(text->text_start(), "%02X", record->key.ab[l]);
+    online_result_append(text->text_start(), ".  EntitiyID: ");
     for (dword m = 0; m < 8; m++)
-        online_result_append(text, "%02X", ((const byte *)&record->entity)[m]);
-    online_result_append(text, ".");
+        online_result_append(text->text_start(), "%02X", ((const byte *)&record->entity)[m]);
+    online_result_append(text->text_start(), ".");
 }
 
 // @retail 0xb3c80

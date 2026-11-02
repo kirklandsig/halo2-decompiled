@@ -16,8 +16,12 @@ The handlers of the unit request table at 0x467564
 #include "unit_requests.h"
 #include "units.h"
 #include "matrix_transform.h"
+#include "vector_products.h"
+#include "normalize3d.h"
 #include "unknown_1cec30.h"
 #include "bit_vector.h"
+#include "local_players.h"
+#include "game_engine_events.h"
 #include <math.h>
 #include <string.h>
 
@@ -53,7 +57,7 @@ struct s_unit_actions
 	short unknown36;
 	short surprise_ticks;
 	short surprise_value;
-	word surprise_type;
+	short surprise_type;
 	short flinch_ticks;
 	bool weapon_planted;
 };
@@ -74,12 +78,12 @@ struct s_unit_action_unit
 	byte unknown0ab[0xb4 - 0xab];
 	long havok_component_index;
 	byte unknown0b8[0xc0 - 0xb8];
-	byte flags_c0;
-	byte unknown0c1[0xd4 - 0xc1];
+	word flags_c0;
+	byte unknown0c2[0xd4 - 0xc2];
 	long unknown0d4;
 	byte unknown0d8[0x10a - 0xd8];
-	byte flags_10a;
-	byte unknown10b[0x12a - 0x10b];
+	word flags_10a;
+	byte unknown10c[0x12a - 0x10c];
 	short animation_state_offset;
 	long unknown12c;
 	byte unknown130[0x134 - 0x130];
@@ -102,7 +106,9 @@ struct s_unit_action_unit
 	char current_grenade_index;
 	byte unknown23d;
 	char grenade_counts[4];
-	byte unknown242[0x344 - 0x242];
+	byte unknown242[0x33e - 0x242];
+	short unknown33e;
+	byte unknown340[0x344 - 0x340];
 	short actions_size;
 	short actions_offset;
 };
@@ -262,6 +268,14 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
+// score 271 (was 279): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
+// takes unit_index in esi and keeps name in edi, which function_e6960's type argument clobbers, so name is
+// reloaded at the join and VC cannot thread the switch's two function_e68c0 cases into retail's single
+// shared call; the c7070 chain's calls also merge differently.
+// Round 46: the existing unit_action_hand_weapon_get(unit, 0/1) for both weapon tests (retail's short
+// index) 271; actions read at each use 337; no unit local 344; next_state/next_action declared first 278;
+// the e70b0 count arms the other way round 278 (fewer structural differences, positional worse); count
+// declared at function scope 277.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -406,7 +420,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 
 	if (name == 0x6000007)
 	{
-		long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
 
 		if (weapon_index != NONE &&
 			*(short *)(g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes + 0x292) == 3)
@@ -416,7 +430,7 @@ void function_e6b00(long unit_index, long name, long *state_name, long *action_n
 	}
 	else if (name == 0xb00053f)
 	{
-		long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), true);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 1);
 
 		if (weapon_index != NONE &&
 			*(short *)(g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes + 0x292) == 3)
@@ -445,17 +459,22 @@ void function_e6f90(long unit_index)
 
 /* whether a unit can play an animation, from its idle state or (when it
    asks) its alternate one */
-// score 156 (was 156): ours inlines function_10f3b0 at both of its calls, where retail calls it
-// (this is its only caller in retail too), and the alternate pointer then stays on the stack
-// where retail has it in ebx. Adding /Ob1 to this file's flags leaves it at 156.
 // @retail 0xe7020
 bool function_e7020(long unit_index, bool *alternate, long name)
 {
+	bool result = false;
+
 	if (alternate)
 		*alternate = false;
-	if (function_10f3b0(unit_index, 0x7000101, name) || function_10f340(unit_index, 0x7000101, name))
-		return true;
-	if (alternate)
+	if (function_10f3b0(unit_index, 0x7000101, name))
+	{
+		result = true;
+	}
+	else if (function_10f340(unit_index, 0x7000101, name))
+	{
+		result = true;
+	}
+	else if (alternate)
 	{
 		long first;
 		long second;
@@ -463,11 +482,11 @@ bool function_e7020(long unit_index, bool *alternate, long name)
 		if (function_10f630(unit_index, &first, &second) && first == 0x6000085 &&
 			(function_10f3b0(unit_index, 0x6000086, name) || function_10f340(unit_index, 0x6000086, name)))
 		{
+			result = true;
 			*alternate = true;
-			return true;
 		}
 	}
-	return false;
+	return result;
 }
 
 /* the unit's action state (its actions' +0x36): stores it and returns where
@@ -484,6 +503,7 @@ PRIVATE short *function_e70b0(long unit_index, short *state)
 // @retail 0xe7110
 bool function_e7110(long unit_index, long secondary, long magazine_index)
 {
+	bool result = false;
 	long action_type;
 	long mode;
 	long name;
@@ -501,29 +521,33 @@ bool function_e7110(long unit_index, long secondary, long magazine_index)
 		name = 0xd00053a + (magazine_index != 0);
 	}
 
-	if (function_110ab0(unit_index))
-		return false;
-
-	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-
-	if (TEST_FIELD_BIT((unit->flags_134 >> 25) & 1) || TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(unit), 0x16)))
-		return false;
-	if (unit_action_active(unit_index, action_type) &&
-		function_cbd50(unit_index, unit->weapon_slots[secondary]) != NONE)
+	if (!function_110ab0(unit_index))
 	{
-		function_e69c0(unit_index, action_type);
+		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+
+		if (!(TEST_FIELD_BIT((unit->flags_134 >> 25) & 1) ||
+			TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(unit), 0x16))))
+		{
+			if (unit_action_active(unit_index, action_type) &&
+				function_cbd50(unit_index, unit->weapon_slots[secondary]) != NONE)
+			{
+				function_e69c0(unit_index, action_type);
+			}
+			function_e69c0(unit_index, 0x1a);
+			function_e69c0(unit_index, 0x1b);
+
+			long weapon_index = function_cbd50(unit_index, (&UNIT_ACTION_UNIT_GET(unit_index)->current_weapon_index)[secondary]);
+
+			if (weapon_index != NONE && function_101490(weapon_index, magazine_index))
+			{
+				function_c86e0(unit_index, 0);
+				if (!function_1029d0(weapon_index, (short)magazine_index))
+					function_113e90(unit_index, name, 0.267f, NULL, mode);
+				result = true;
+			}
+		}
 	}
-	function_e69c0(unit_index, 0x1a);
-	function_e69c0(unit_index, 0x1b);
-
-	long weapon_index = function_cbd50(unit_index, (&UNIT_ACTION_UNIT_GET(unit_index)->current_weapon_index)[secondary]);
-
-	if (weapon_index == NONE || !function_101490(weapon_index, magazine_index))
-		return false;
-	function_c86e0(unit_index, 0);
-	if (!function_1029d0(weapon_index, (short)magazine_index))
-		function_113e90(unit_index, name, 0.267f, NULL, mode);
-	return true;
+	return result;
 }
 
 /* readies a weapon (types 0, 1, 10 and 11: a hand's first or second
@@ -607,11 +631,10 @@ bool __stdcall function_e7440(long unit_index, s_unit_request *request)
 {
 	real blend = 0.06675f;
 	long mode;
+	long name;
 
 	switch (request->type)
 	{
-	case 0:
-	case 1:
 	case 2:
 	case 3:
 	case 12:
@@ -641,47 +664,64 @@ bool __stdcall function_e7440(long unit_index, s_unit_request *request)
 
 	switch (request->type)
 	{
-	case 0:
-	case 1:
 	case 2:
-		return function_113e90(unit_index, 0x6000006, blend, NULL, mode);
+		name = 0x6000006;
+		break;
 	case 3:
-		return function_113e90(unit_index, 0x6000007, blend, NULL, mode);
+		name = 0x6000007;
+		break;
 	case 4:
-		return function_113e90(unit_index, 0x9000004, blend, NULL, mode);
+		name = 0x9000004;
+		break;
 	case 5:
-		return function_113e90(unit_index, 0x9000005, blend, NULL, mode);
+		name = 0x9000005;
+		break;
 	case 6:
-		return function_113e90(unit_index, 0x9000008, blend, NULL, mode);
+		name = 0x9000008;
+		break;
 	case 7:
-		return function_113e90(unit_index, 0x9000009, blend, NULL, mode);
+		name = 0x9000009;
+		break;
 	case 12:
-		return function_113e90(unit_index, 0xb00053e, blend, NULL, mode);
+		name = 0xb00053e;
+		break;
 	case 13:
-		return function_113e90(unit_index, 0xb00053f, blend, NULL, mode);
+		name = 0xb00053f;
+		break;
 	case 14:
-		return function_113e90(unit_index, 0xe00053c, blend, NULL, mode);
+		name = 0xe00053c;
+		break;
 	case 15:
-		return function_113e90(unit_index, 0xe00053d, blend, NULL, mode);
+		name = 0xe00053d;
+		break;
 	case 16:
-		return function_113e90(unit_index, 0xe000540, blend, NULL, mode);
+		name = 0xe000540;
+		break;
 	case 17:
-		return function_113e90(unit_index, 0xe000541, blend, NULL, mode);
+		name = 0xe000541;
+		break;
 	case 54:
-		return function_113e90(unit_index, 0xb00006d, blend, NULL, mode);
+		name = 0xb00006d;
+		break;
 	case 55:
-		return function_113e90(unit_index, 0xa000066, blend, NULL, mode);
+		name = 0xa000066;
+		break;
 	case 56:
-		return function_113e90(unit_index, 0x8000071, blend, NULL, mode);
+		name = 0x8000071;
+		break;
 	case 57:
-		return function_113e90(unit_index, 0x1000067e, blend, NULL, mode);
+		name = 0x1000067e;
+		break;
 	case 58:
-		return function_113e90(unit_index, 0xf00067f, blend, NULL, mode);
+		name = 0xf00067f;
+		break;
 	case 59:
-		return function_113e90(unit_index, 0xd000680, blend, NULL, mode);
+		name = 0xd000680;
+		break;
 	default:
 		__assume(0);
 	}
+	return function_113e90(unit_index, name, blend, NULL, mode);
 }
 
 /* the object placement data of 0xb7930/0xb7b40 (the fields set here) */
@@ -779,7 +819,7 @@ struct s_unit_action_grenade_throw
 void function_b9a90(long object_index);
 bool function_a76b0(long unit_index, long flag);
 void function_cafc0(long unit_index, point3f *position);
-void function_a91c0(long unit_index, long projectile_index, point3f const *origin, vector3f const *forward);
+void function_a91c0(long unit_index, short grenade_type, point3f const *origin, vector3f const *forward);
 void __stdcall function_b8540(long object_index);
 void function_d0e60(long unit_index, real amount, real limit);
 point3f *function_b9dd0(long object_index, point3f *result);
@@ -796,6 +836,29 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
+// score 318 (was 392): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
+// `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
+// slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
+// copy of the throw direction inside the player block (copied with integer moves before both crosses and
+// the offset sum, which retail builds in three phases), and the spread blend (velocity*ratio products first).
+// Earlier (392): retail keeps the unit pointer in esi from entry (ours keeps the projectile's pool
+// offset there and reloads the unit), works on a second copy of the throw direction inside the player
+// block (copied with integer moves before both crosses and the offset sum), and blends the spread with
+// the velocity*ratio products first.
+// Round 46: the grenade type saved before it is cleared and passed to function_a91c0 (retail's argument;
+// ours passed the projectile index) 395; with function_a91c0's value parameter a short (retail pushes the
+// short slot raw) 392, retail's length; both crosses through cross3f 393; the offset sum through three
+// vector3f_add_scaled 396 (frame 0xc0); with the speed scale and parent velocity through vector3f_scale /
+// vector3f_add 428; the scaled aim vector through vector3f_scale before the blend 389, with cross3f 390.
+// Round 68 (m3 lane 16, fast; 0xe8420/0xa91c0 MATCH each time): the offset sum in three phases by hand 394
+// (frame 0xc0), through vector3f_add_scaled 406 (1687 bytes); diagnostics (not kept: a copy of a local) a
+// `forward = direction` copy in the player block with the phased sum 395 (frame 0xcc, aligned 275 -> 261),
+// with both crosses through cross3f 395; projectile index declared before the definition 392 (same code);
+// flag 17 cleared/restored through bit_vector_set 327 (kept); on it the empty slot as an early return 321,
+// the 0x400 set through bit_vector_set 324 (1702 bytes), both 318 (kept, plain confirmed). On 318: the
+// spread blend on a vector3f_scale'd aim 312 (aligned 227 -> 232), operands swapped 312; velocity before
+// origin, both vectors first, attach/flag17 first 318 (same code each).
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -805,158 +868,159 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
 	long projectile_index = actions->grenade_projectile_index;
 
-	if (projectile_index != NONE)
+	if (projectile_index == NONE)
 	{
-		s_unit_action_unit *projectile = UNIT_ACTION_UNIT_GET(projectile_index);
-		long marker_name = NONE;
-		bool attach = false;
-		bool flag17;
-		point3f origin;
-		vector3f velocity;
+		actions->grenade_state = 3;
+		return;
+	}
 
-		actions->grenade_projectile_index = NONE;
-		actions->grenade_type = NONE;
-		flag17 = TEST_FIELD_BIT((projectile->object_flags >> 17) & 1);
-		projectile->object_flags &= ~0x20000;
-		projectile->flags_c0 &= ~2;
-		function_b9a90(projectile_index);
-		if (flag17)
-			projectile->object_flags |= 0x20000;
-		else
-			projectile->object_flags &= ~0x20000;
+	short grenade_type = actions->grenade_type;
+	s_unit_action_unit *projectile = UNIT_ACTION_UNIT_GET(projectile_index);
+	long marker_name = NONE;
+	bool attach = false;
+	bool flag17;
+	point3f origin;
+	vector3f velocity;
 
-		if (unit->parent_object_index != NONE && unit->seat_index != NONE)
+	actions->grenade_projectile_index = NONE;
+	actions->grenade_type = NONE;
+	flag17 = TEST_FIELD_BIT((projectile->object_flags >> 17) & 1);
+	bit_vector_set(&projectile->object_flags, 17, false);
+	projectile->flags_c0 &= ~2;
+	function_b9a90(projectile_index);
+	bit_vector_set(&projectile->object_flags, 17, flag17);
+
+	if (unit->parent_object_index != NONE && unit->seat_index != NONE)
+	{
+		byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
+		byte *seat = *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+
+		if (TEST_FIELD_BIT((*(dword *)seat >> 11) & 1))
 		{
-			byte *parent_definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit->parent_object_index)->definition_index & 0xffff].bytes;
-			byte *seat = *(byte **)(parent_definition + 0x1cc) + unit->seat_index * 0xb0;
+			attach = true;
+			marker_name = *(long *)(seat + 0x10);
+		}
+	}
 
-			if (TEST_FIELD_BIT((*(dword *)seat >> 11) & 1))
+	if (function_a76b0(unit_index, 1))
+	{
+		vector3f forward;
+
+		function_cafc0(unit_index, &origin);
+		forward = unit->field_xe66477;
+		function_a91c0(unit_index, grenade_type, &origin, &forward);
+	}
+	else if (!actions->grenade_cancelled)
+	{
+		if (!attach)
+		{
+			if (unit->unknown12c != NONE)
 			{
-				attach = true;
-				marker_name = *(long *)(seat + 0x10);
+				point3f center;
+
+				function_b9dd0(projectile_index, &center);
+				function_1ff360(unit->unknown12c, &center, &velocity);
 			}
-		}
-
-		if (function_a76b0(unit_index, 1))
-		{
-			vector3f forward;
-
-			function_cafc0(unit_index, &origin);
-			forward = unit->field_xe66477;
-			function_a91c0(unit_index, projectile_index, &origin, &forward);
-		}
-		else if (!actions->grenade_cancelled)
-		{
-			if (!attach)
+			else
 			{
-				if (unit->unknown12c != NONE)
-				{
-					point3f center;
+				vector3f direction;
 
-					function_b9dd0(projectile_index, &center);
-					function_1ff360(unit->unknown12c, &center, &velocity);
+				if (origin_override && direction_override)
+				{
+					origin = *origin_override;
+					direction = *direction_override;
 				}
 				else
 				{
-					vector3f direction;
-
-					if (origin_override && direction_override)
-					{
-						origin = *origin_override;
-						direction = *direction_override;
-					}
-					else
-					{
-						function_cafc0(unit_index, &origin);
-						direction = unit->field_xe66477;
-					}
-
-					if (unit->unknown13c != NONE)
-					{
-						s_unit_action_grenade_throw *throw_globals = *(s_unit_action_grenade_throw **)((byte *)g_4e034c + 0x134);
-						vector3f const *up = g_4687b0;
-						vector3f left;
-						vector3f normal;
-						point3f position;
-
-						left.i = up->j * direction.k - up->k * direction.j;
-						left.j = up->k * direction.i - up->i * direction.k;
-						left.k = up->i * direction.j - up->j * direction.i;
-						if (function_30bf0(&left) == 0.0f)
-							left = *up;
-						normal.i = left.k * direction.j - left.j * direction.k;
-						normal.j = direction.k * left.i - left.k * direction.i;
-						normal.k = left.j * direction.i - direction.j * left.i;
-						function_30bf0(&normal);
-						position.x = normal.i * throw_globals->up_offset +
-							(left.i * throw_globals->left_offset + (direction.i * throw_globals->forward_offset + origin.x));
-						position.y = normal.j * throw_globals->up_offset +
-							(left.j * throw_globals->left_offset + (direction.j * throw_globals->forward_offset + origin.y));
-						position.z = normal.k * throw_globals->up_offset +
-							(left.k * throw_globals->left_offset + (direction.k * throw_globals->forward_offset + origin.z));
-						function_b75a0(projectile_index, &position, NULL, NULL, NULL, false);
-						spread = false;
-					}
-
-					real speed = *(real *)(local_98b918 + 0x1b0);
-
-					velocity.i = speed * direction.i;
-					velocity.j = direction.j * speed;
-					velocity.k = direction.k * speed;
+					function_cafc0(unit_index, &origin);
+					direction = unit->field_xe66477;
 				}
 
-				if (spread && actions->grenade_throw_maximum > 0)
+				if (unit->unknown13c != NONE)
 				{
-					real ratio = (real)actions->grenade_throw_count / (real)actions->grenade_throw_maximum;
+					s_unit_action_grenade_throw *throw_globals = *(s_unit_action_grenade_throw **)((byte *)g_4e034c + 0x134);
+					vector3f const *up = g_4687b0;
+					vector3f left;
+					vector3f normal;
+					point3f position;
 
-					if (1.0f > ratio)
-					{
-						real scale = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f);
-
-						velocity.i = unit->field_xe66477.i * scale * (1.0f - ratio) + velocity.i * ratio;
-						velocity.j = unit->field_xe66477.j * scale * (1.0f - ratio) + velocity.j * ratio;
-						velocity.k = unit->field_xe66477.k * scale * (1.0f - ratio) + velocity.k * ratio;
-					}
+					left.i = up->j * direction.k - up->k * direction.j;
+					left.j = up->k * direction.i - up->i * direction.k;
+					left.k = up->i * direction.j - up->j * direction.i;
+					if (function_30bf0(&left) == 0.0f)
+						left = *up;
+					normal.i = left.k * direction.j - left.j * direction.k;
+					normal.j = direction.k * left.i - left.k * direction.i;
+					normal.k = left.j * direction.i - direction.j * left.i;
+					function_30bf0(&normal);
+					position.x = normal.i * throw_globals->up_offset +
+						(left.i * throw_globals->left_offset + (direction.i * throw_globals->forward_offset + origin.x));
+					position.y = normal.j * throw_globals->up_offset +
+						(left.j * throw_globals->left_offset + (direction.j * throw_globals->forward_offset + origin.y));
+					position.z = normal.k * throw_globals->up_offset +
+						(left.k * throw_globals->left_offset + (direction.k * throw_globals->forward_offset + origin.z));
+					function_b75a0(projectile_index, &position, NULL, NULL, NULL, false);
+					spread = false;
 				}
 
-				vector3f parent_velocity;
+				real speed = *(real *)(local_98b918 + 0x1b0);
 
-				if (function_109e00(unit_index, &parent_velocity, true))
-				{
-					velocity.i += parent_velocity.i;
-					velocity.j += parent_velocity.j;
-					velocity.k += parent_velocity.k;
-				}
-				velocity.i -= projectile->linear_velocity.i;
-				velocity.j -= projectile->linear_velocity.j;
-				velocity.k -= projectile->linear_velocity.k;
-				function_fa820(projectile_index, &velocity);
-				function_cafc0(unit_index, &origin);
-				if (!function_bc1d0(projectile_index, &origin, unit_index))
-				{
-					function_b8540(projectile_index);
-					function_d0e60(unit_index, 0, 0);
-					actions->grenade_state = 3;
-					return;
-				}
+				velocity.i = speed * direction.i;
+				velocity.j = direction.j * speed;
+				velocity.k = direction.k * speed;
 			}
 
-			function_a7870(projectile_index);
-			if (attach)
+			if (spread && actions->grenade_throw_maximum > 0)
 			{
-				s_object_marker marker;
+				real ratio = (real)actions->grenade_throw_count / (real)actions->grenade_throw_maximum;
 
-				function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
-				*(dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c) |= 0x400;
-				function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+				if (1.0f > ratio)
+				{
+					real scale = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f);
+
+					velocity.i = unit->field_xe66477.i * scale * (1.0f - ratio) + velocity.i * ratio;
+					velocity.j = unit->field_xe66477.j * scale * (1.0f - ratio) + velocity.j * ratio;
+					velocity.k = unit->field_xe66477.k * scale * (1.0f - ratio) + velocity.k * ratio;
+				}
 			}
-			function_d0e60(unit_index, 0, 0);
-			actions->grenade_state = 3;
-			return;
+
+			vector3f parent_velocity;
+
+			if (function_109e00(unit_index, &parent_velocity, true))
+			{
+				velocity.i += parent_velocity.i;
+				velocity.j += parent_velocity.j;
+				velocity.k += parent_velocity.k;
+			}
+			velocity.i -= projectile->linear_velocity.i;
+			velocity.j -= projectile->linear_velocity.j;
+			velocity.k -= projectile->linear_velocity.k;
+			function_fa820(projectile_index, &velocity);
+			function_cafc0(unit_index, &origin);
+			if (!function_bc1d0(projectile_index, &origin, unit_index))
+			{
+				function_b8540(projectile_index);
+				function_d0e60(unit_index, 0, 0);
+				actions->grenade_state = 3;
+				return;
+			}
 		}
-		function_b8540(projectile_index);
+
+		function_a7870(projectile_index);
+		if (attach)
+		{
+			s_object_marker marker;
+
+			function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false);
+			bit_vector_set((dword *)((byte *)UNIT_ACTION_UNIT_GET(projectile_index) + 0x12c), 10, true);
+			function_fd560(projectile_index, unit->parent_object_index, marker.node_index, &marker.matrix.position, NULL);
+		}
 		function_d0e60(unit_index, 0, 0);
+		actions->grenade_state = 3;
+		return;
 	}
+	function_b8540(projectile_index);
+	function_d0e60(unit_index, 0, 0);
 	actions->grenade_state = 3;
 }
 
@@ -1002,110 +1066,139 @@ PRIVATE __forceinline byte *unit_action_seat_get(s_unit_action_unit *unit)
 }
 
 /* starts throwing a grenade (type 22) */
+// MiniMax E (11-01): 16 with the unit's ordinal masked once into a local and the table entry read
+// through it as a raw address cast (`*(s_unit_action_unit **)(g_4e0300->data + ordinal * 12 + 8)`) in all
+// three lookups, so they use retail's address operand order, and the result stored before the action's
+// flag store; not kept (an address-cast read stays only with a byte match). The exit block still follows
+// the notice block; retail has it before the notice block, which ends with its own copy of it.
+// score 19 (was 272): Frame, setup and width domains agree; success pop/store/result schedule and
+// failure-branch spans remain. The slot index masked once into a local and the macro's lookup
+// written out by hand at its three uses gave 16 (not kept: a hand copy of UNIT_ACTION_UNIT_GET).
+// Hand getter/result-first/both/split/all-ordinal setup 266/272/266/272/266/272/266/265; common
+// exit 185, plus word hand 174, Boolean active field 39, native player selector 22; ordinal 19
+// (three-point form dropped), without final domains 171; one scope/late false 19/22; success before
+// commit 19/22; paired NULL/false setup 16, result after selection 29. Keep real common result,
+// existing word hand getter, Boolean active field and long player value; only constant setup
+// reordered. Every field read, call tuple and success commit is
+// unchanged.
+// Round 21 (lane 13): the first lookup through UNIT_ACTION_HEADER_GET 19; the grenade test as
+// if/else with the player notice in the else 19; the player notice ending in `return result` 45
+// (958 bytes); immediate and animated throws as one if/else chain 19; animate and player-index
+// tests nested 19. A compile-only model keeps the exit block last for every structured, goto and
+// inline-helper shape; retail's failure jumps reach the success path's exit copy instead.
+// Round 50: `animate` declared with the entry locals 50; the channel declared with them 266
+// (958 bytes); the grenade pointer from one ternary 269 (974 bytes); the immediate throw ending in
+// `return result` 43; `result = true` before function_a8c10 21. The three `[edi + ecx + 8]` unit
+// lookups stay data-first in a compile-only screen for every order of the entry declarations, an
+// unused header pointer and a header pointer for the first lookup.
 // @retail 0xe7fb0
 bool __stdcall function_e7fb0(long unit_index, s_unit_request *request)
 {
-	s_unit_request_throw_grenade *throw_request = (s_unit_request_throw_grenade *)request;
-	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	long weapon_index = unit_action_weapon_get(unit, false);
-	s_unit_action_grenade *grenade = NULL;
-	bool result = false;
-
-	if (unit->current_grenade_index != NONE)
-		grenade = unit_action_grenade_get(unit);
-
-	if (unit->object_type != 0 || function_101440(weapon_index))
-		return result;
-	if ((function_110ab0(unit_index) || (TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1))) &&
-		!throw_request->immediate)
+	bool result;
 	{
-		return result;
-	}
+		s_unit_request_throw_grenade *throw_request = (s_unit_request_throw_grenade *)request;
+		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+		s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
+		s_unit_action_grenade *grenade = NULL;
+		long weapon_index = unit_action_hand_weapon_get(unit, 0);
+		result = false;
 
-	bool animate = true;
+		if (unit->current_grenade_index != NONE)
+			grenade = unit_action_grenade_get(unit);
 
-	if (unit->parent_object_index != NONE && unit->seat_index != NONE)
-	{
-		byte *seat = unit_action_seat_get(unit);
-		dword seat_flags = *(dword *)seat;
-
-		if (!(TEST_FIELD_BIT((seat_flags >> 5) & 1)))
-			animate = false;
-		if (TEST_FIELD_BIT((seat_flags >> 11) & 1))
+		if (unit->object_type != 0 || function_101440(weapon_index))
+			goto done;
+		if ((function_110ab0(unit_index) || (TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1))) &&
+			!throw_request->immediate)
 		{
-			long marker_name = *(long *)(seat + 0x10);
-			s_object_marker marker;
-
-			if (!marker_name || function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false) != 1)
-				return result;
+			goto done;
 		}
-	}
 
-	if (!grenade || function_cdff0(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->current_grenade_index) <= 0)
-	{
-		if (animate && unit_get_player_index(unit_index) != NONE)
+		bool animate = true;
+
+		if (unit->parent_object_index != NONE && unit->seat_index != NONE)
 		{
-			short player_value = *(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28);
+			byte *seat = unit_action_seat_get(unit);
+			dword seat_flags = *(dword *)seat;
 
-			if (player_value != NONE)
-				function_2007b3(player_value, 0, 1, NONE);
+			if (!(TEST_FIELD_BIT((seat_flags >> 5) & 1)))
+				animate = false;
+			if (TEST_FIELD_BIT((seat_flags >> 11) & 1))
+			{
+				long marker_name = *(long *)(seat + 0x10);
+				s_object_marker marker;
+
+				if (!marker_name || function_b8d30(unit->parent_object_index, marker_name, &marker, 1, false) != 1)
+					goto done;
+			}
 		}
-		return result;
-	}
 
-	if (!throw_request->immediate && UNIT_ACTION_ACTIVE(actions, 0x16))
-		return result;
+		if (!grenade || function_cdff0(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->current_grenade_index) <= 0)
+		{
+			if (animate && unit_get_player_index(unit_index) != NONE)
+			{
+				long player_value = *(short *)(g_4e8c24->data + (unit_get_player_index(unit_index) & 0xffff) * 0x21c + 0x28);
 
-	c_animation_channel *channel = NULL;
+				if (player_value != NONE)
+					function_2007b3(player_value, 0, 1, NONE);
+			}
+			goto done;
+		}
 
-	animate = function_ee8a0(unit_index, 0);
-	function_e69c0(unit_index, 0x16);
-	function_e69c0(unit_index, 8);
-	function_e69c0(unit_index, 0x12);
-	function_e69c0(unit_index, 0);
-	function_e69c0(unit_index, 0xa);
-	function_e69c0(unit_index, 0x1b);
-	function_e68c0(0x13, unit_index);
+		if (!throw_request->immediate && TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(actions, 0x16)))
+			goto done;
 
-	if (throw_request->immediate)
-	{
+		c_animation_channel *channel = NULL;
+
+		animate = function_ee8a0(unit_index, 0);
+		function_e69c0(unit_index, 0x16);
+		function_e69c0(unit_index, 8);
+		function_e69c0(unit_index, 0x12);
+		function_e69c0(unit_index, 0);
+		function_e69c0(unit_index, 0xa);
+		function_e69c0(unit_index, 0x1b);
+		function_e68c0(0x13, unit_index);
+
+		if (throw_request->immediate)
+		{
+			actions->grenade_state = 1;
+			actions->grenade_throw_count = 0;
+			actions->grenade_cancelled = false;
+			function_e7730(unit_index);
+			function_e7900(unit_index, false, &throw_request->origin, &throw_request->direction);
+			goto done;
+		}
+
+		if (!(animate && function_113e90(unit_index, 0x1000006c, 0.1335f, &channel, 0)) &&
+			!function_113e90(unit_index, 0xd000021, 0.1335f, &channel, 0))
+		{
+			goto done;
+		}
+
 		actions->grenade_state = 1;
 		actions->grenade_throw_count = 0;
-		actions->grenade_cancelled = false;
-		function_e7730(unit_index);
-		function_e7900(unit_index, false, &throw_request->origin, &throw_request->direction);
-		return result;
+		actions->grenade_throw_maximum = 0;
+		actions->grenade_cancelled = throw_request->cancel;
+
+		real event_time = channel->get_event_time();
+
+		if (event_time >= 0.0f)
+			actions->grenade_throw_maximum = (char)function_1469f0(event_time);
+		if (unit->parent_object_index == NONE)
+		{
+			function_edff0(unit_index);
+			function_ee7f0(unit_index, 0x1a + (animate != false));
+			function_c86e0(unit_index, 0);
+		}
+		if (*(long *)((byte *)grenade + 8) != NONE)
+			function_176780(unit_index, NULL, 0.0f, *(long *)((byte *)grenade + 8), 0.0f, NULL, NULL);
+		if (*(long *)((byte *)grenade + 0x20) != NONE)
+			function_bbe90(*(long *)((byte *)grenade + 0x20));
+		function_a8c10(unit_index);
+		actions->active[0] |= 0x400000;
+		result = true;
 	}
-
-	if (!(animate && function_113e90(unit_index, 0x1000006c, 0.1335f, &channel, 0)) &&
-		!function_113e90(unit_index, 0xd000021, 0.1335f, &channel, 0))
-	{
-		return result;
-	}
-
-	actions->grenade_state = 1;
-	actions->grenade_throw_count = 0;
-	actions->grenade_throw_maximum = 0;
-	actions->grenade_cancelled = throw_request->cancel;
-
-	real event_time = channel->get_event_time();
-
-	if (event_time >= 0.0f)
-		actions->grenade_throw_maximum = (char)function_1469f0(event_time);
-	if (unit->parent_object_index == NONE)
-	{
-		function_edff0(unit_index);
-		function_ee7f0(unit_index, 0x1a + (animate != false));
-		function_c86e0(unit_index, 0);
-	}
-	if (*(long *)((byte *)grenade + 8) != NONE)
-		function_176780(unit_index, NULL, 0.0f, *(long *)((byte *)grenade + 8), 0.0f, NULL, NULL);
-	if (*(long *)((byte *)grenade + 0x20) != NONE)
-		function_bbe90(*(long *)((byte *)grenade + 0x20));
-	function_a8c10(unit_index);
-	actions->active[0] |= 0x400000;
-	result = true;
+done:
 	return result;
 }
 
@@ -1155,25 +1248,23 @@ void __stdcall unit_action_throw_grenade_interrupted(long unit_index, long type)
 }
 
 /* puts away the weapon in a unit's hand */
-// score 55 (was 66): pool/hand allocation, slot comparison width and repeated receiver lookup differ.
-// Short/long slot domains 59/66; long hand with char/short/long slot 67/60/67;
-// short hand and slot 58; existing ordinal/boolean hand getters 60/55.
-// Ordinary boolean hand getter 55; retained.
 // @retail 0xe8460
 void function_e8460(long unit_index, bool primary)
 {
-	long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), !primary);
+	s_record_pool *objects = g_4e0300;
+	long hand = !primary;
+	long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), hand);
 
 	if (weapon_index != NONE)
 	{
-		s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
+		s_unit_action_unit *current = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit;
 
 		function_1015a0(weapon_index);
 		function_100130(weapon_index, true);
 		*(short *)((byte *)UNIT_ACTION_UNIT_GET(weapon_index) + 0x16e) = 0;
 		function_104080(weapon_index);
 		function_10cd50(weapon_index);
-		(&current->current_weapon_index)[!primary] = NONE;
+		(&current->current_weapon_index)[hand] = NONE;
 		function_ee7f0(unit_index, primary ? 0x18 : 0x19);
 	}
 }
@@ -1191,39 +1282,33 @@ bool function_e8510(long unit_index, bool immediate, bool silent, bool primary)
 		long name = primary ? 0x8000025 : 0xd000539;
 
 		if (function_114040(unit_index, name) && !immediate)
-			return false;
-		if (!(silent && immediate))
 		{
-			if (function_100130(weapon_index, immediate))
-			{
-				function_c86e0(unit_index, 0);
-				if (!silent)
-					function_ee7f0(unit_index, primary ? 0x12 : 0x13);
-				if (function_113e90(unit_index, name, 0.267f, NULL, primary ? 0 : 3))
-				{
-					result = immediate;
-					if (!immediate)
-						return result;
-				}
-			}
+			result = false;
 		}
-		function_e8460(unit_index, primary);
+		else if (silent && immediate)
+		{
+			result = true;
+		}
+		else if (function_100130(weapon_index, immediate))
+		{
+			function_c86e0(unit_index, 0);
+			if (!silent)
+				function_ee7f0(unit_index, primary ? 0x12 : 0x13);
+			result = function_113e90(unit_index, name, 0.267f, NULL, primary ? 0 : 3) ? immediate : true;
+		}
+		if (result)
+			function_e8460(unit_index, primary);
 	}
 	return result;
 }
 
 bool function_10fd40(long unit_index, long action_name, long state_name, bool flag);
 byte function_10fcd0(long unit_index, long unknown, long state_name, long action_name);
-void __stdcall function_d0870(long weapon_index, long unit_index, bool secondary);
+void __stdcall function_d0870(long weapon_index, long unit_index, long secondary);
 void __stdcall function_fff40(long weapon_index, bool silent, bool immediate);
 
 /* a unit's weapon animations: its vehicle seat's weapon's, or the
    default */
-// score 73 (was 75): same length as retail now; registers differ. Retail keeps the object array
-// in ebx, the tag table in ebp and the seat index in di, and keeps both names on the stack where
-// ours keeps the default name in ebp. The seat flags as the seat definition's bitfields give
-// retail's shift-and-test reads after the weapon lookup, and the hand helper's short slot index
-// gives retail's movsx; the seat flags read as a dword after the weapon 88, with the hand helper 85.
 // @retail 0xe8620
 void __stdcall function_e8620(long unit_index, bool flag)
 {
@@ -1233,17 +1318,15 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 	if (unit->parent_object_index != NONE && unit->seat_index != NONE)
 	{
-		s_unit_action_unit *parent = UNIT_ACTION_UNIT_GET(unit->parent_object_index);
-		s_unit_seat_definition *seat = (s_unit_seat_definition *)(*(byte **)(g_4e3b44[parent->definition_index & 0xffff].bytes + 0x1cc) +
-			unit->seat_index * 0xb0);
-		long weapon_index = unit_action_hand_weapon_get(parent, 0);
+		s_unit_seat_definition *seat = (s_unit_seat_definition *)unit_action_seat_get(unit);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit->parent_object_index), 0);
 
 		if (TEST_FIELD_BIT(seat->flags.bit3) && !TEST_FIELD_BIT(seat->flags.bit2) && weapon_index != NONE)
 		{
 			byte *s_type_67e06b = g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes;
 
-			action_name = *(long *)(s_type_67e06b + 0x28c);
 			state_name = *(long *)(s_type_67e06b + 0x288);
+			action_name = *(long *)(s_type_67e06b + 0x28c);
 		}
 	}
 	function_10fd40(unit_index, action_name, state_name, flag);
@@ -1251,18 +1334,49 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
+// score 136 (was 148): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
+// Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
+// Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
+// with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
+// primary 148, both 203; hand before unit lookup 203, with scan 198, with state and scan 201.
+// Round 116: retail loads the unit twice at entry (the second load, for the other hand's slot and
+// weapon, from a copy of the same data register with the index times 12 shared), spills the hand
+// at once and keeps the other weapon in EDI; ours uses one lookup (592 bytes). Retail also picks
+// 0x14/0x15 with a branch (`mov eax, 0x14; jne; mov eax, 0x15`). The other weapon through
+// function_cbd50 148 (kept: the existing function in place of its body written out); the other
+// hand as `!hand` 166; the type as an if/else 148 (same code), `type = 0x15; if (primary)` 189,
+// `type = 0x14; if (!primary)` 190 (retail's branch, the tail one instruction later). Locate-only:
+// an unused header element after or before the first lookup 170/161.
+// Round 187: the hand straight to 0xd0870 (its third parameter is a long; retail pushes the slot
+// value) 203; a pool local for the unit/slot lookup/both 148/148/198; a header pointer for both reads
+// 157, with the direct hand 145, and with `type = 0x14; if (!primary) type = 0x15;` too 96 (606 bytes;
+// reads header->unit at one use while `unit` copies it: not kept); direct hand + that type 198; the slot
+// lookup through UNIT_ACTION_HEADER_GET 148; orders other-first/hand-first/other-mid 194/196/149; inline
+// getter functions 198; header->unit at every use 218; a data-pointer local for the slot lookup 198/188.
+// Retail's `mov ecx, edx` copy of the data register before the second unit load is in no other retail
+// function (byte search).
+// Round 46 (lane 13): the 0xcbd50 argument through a header-array local 148, through the `unit` local 148,
+// `long has_other = function_cbd50(...) != NONE` 148, the slot read through a fresh lookup 148 (all the same
+// code: locals are copy-propagated and every lookup shares one load); is_vehicle before has_other 189 (608 B,
+// loop padding). The hand straight to 0xd0870 (203) is retail's code at that call, but the body is then 585 B
+// and the positional score rises; the entry's second unit load is the structural cause (a compile-only
+// harness also merges it for inline getters taking the pool, the data pointer or the index);
+// `function_ee8a0(unit_index, primary)` 197 (591 B); the state name as a ternary 188 (604 B, but a branch
+// and jump where retail stores the 0x288 field and then overwrites it).
+// Round 324: lexical receiver/hand/paired-weapon home subsets 1-7, then all with
+// the companion-weapon test named by its role, 148/148/148/148/148/148/148/148. Original body
+// restored; early pool load, second unit lookup and hand lifetime remain.
+// M291: native bool/long companion predicates with short/char hands and long/short slots
+// 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	long hand = !primary;
-	long other_weapon_index = NONE;
-	short other_slot = UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false];
+	short hand = !primary;
+	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
 	long has_other;
 	bool is_vehicle;
 
-	if (other_slot != NONE)
-		other_weapon_index = UNIT_ACTION_UNIT_GET(unit_index)->weapon_object_indices[other_slot];
 	has_other = other_weapon_index != NONE;
 	is_vehicle = ((dword)(1 << unit->object_type) >> 1) & 1;
 
@@ -1275,55 +1389,55 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 		for (i = 0; i < 2; i++)
 		{
 			if ((&unit->current_weapon_index)[i] == slot)
-				break;
-		}
-		if (i == 2)
-		{
-			long weapon_index = unit->weapon_object_indices[slot];
-
-			if (weapon_index != NONE)
 			{
-				byte *s_type_67e06b = g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes;
-				long state_name = *(long *)(s_type_67e06b + 0x288);
-
-				if (has_other)
-					state_name = 0x400054b;
-				if (function_10fcd0(unit_index, unknown, state_name, *(long *)(s_type_67e06b + 0x28c)) || is_vehicle)
-				{
-					function_10fd40(unit_index, *(long *)(s_type_67e06b + 0x28c), state_name, primary);
-				}
-				else if (unit->seat_index == NONE)
-				{
-					function_e8620(unit_index, primary);
-					return;
-				}
-
-				function_d0870(weapon_index, unit_index, hand != 0);
-				(&unit->current_weapon_index)[hand] = (char)slot;
-				unit->weapon_ready_times[slot] = g_510c54->game_time;
-
-				bool animate = function_ee8a0(unit_index, primary != false);
-
-				function_fff40(weapon_index, silent, immediate);
-				if (!silent)
-				{
-					long type = primary ? 0x14 : 0x15;
-
-					if (animate)
-						type = 0x16;
-					function_ee7f0(unit_index, type);
-				}
-				function_c86e0(unit_index, 0);
-				if (immediate || has_other && primary)
-					return;
-				if (animate &&
-					function_113e90(unit_index, primary ? 0x1000006e : 0x15000538, 0.267f, NULL, primary ? 0 : 3))
-				{
-					return;
-				}
-				function_113e90(unit_index, primary ? 0x5000024 : 0xa000537, 0.267f, NULL, primary ? 0 : 3);
+				function_e8620(unit_index, primary);
 				return;
 			}
+		}
+		long weapon_index = unit->weapon_object_indices[slot];
+
+		if (weapon_index != NONE)
+		{
+			byte *s_type_67e06b = g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes;
+			long state_name = *(long *)(s_type_67e06b + 0x288);
+
+			if (has_other)
+				state_name = 0x400054b;
+			if (function_10fcd0(unit_index, unknown, state_name, *(long *)(s_type_67e06b + 0x28c)) || is_vehicle)
+			{
+				function_10fd40(unit_index, *(long *)(s_type_67e06b + 0x28c), state_name, primary);
+			}
+			else if (unit->seat_index == NONE)
+			{
+				function_e8620(unit_index, primary);
+				return;
+			}
+
+			function_d0870(weapon_index, unit_index, hand != 0);
+			(&unit->current_weapon_index)[hand] = (char)slot;
+			unit->weapon_ready_times[slot] = g_510c54->game_time;
+
+			bool animate = function_ee8a0(unit_index, primary != false);
+
+			function_fff40(weapon_index, silent, immediate);
+			if (!silent)
+			{
+				long type = primary ? 0x14 : 0x15;
+
+				if (animate)
+					type = 0x16;
+				function_ee7f0(unit_index, type);
+			}
+			function_c86e0(unit_index, 0);
+			if (immediate || has_other && primary)
+				return;
+			if (animate &&
+				function_113e90(unit_index, primary ? 0x1000006e : 0x15000538, 0.267f, NULL, primary ? 0 : 3))
+			{
+				return;
+			}
+			function_113e90(unit_index, primary ? 0x5000024 : 0xa000537, 0.267f, NULL, primary ? 0 : 3);
+			return;
 		}
 	}
 	function_e8620(unit_index, primary);
@@ -1350,50 +1464,40 @@ bool __stdcall unit_action_weapon_switch(long unit_index, s_unit_request *reques
 {
 	s_unit_request_weapon_switch *switch_request = (s_unit_request_weapon_switch *)request;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
+	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
 	bool primary = request->type == 8;
 	long hand = !primary;
+	bool result = false;
 
-	if (!switch_request->immediate)
+	if (switch_request->immediate ||
+		unit->weapon_slots[hand] != (&unit->current_weapon_index)[hand] && !function_110ab0(unit_index) &&
+		!TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1) && !unit_action_active(unit_index, 0x16))
 	{
-		if (unit->weapon_slots[hand] == (&unit->current_weapon_index)[hand])
-			return false;
-		if (function_110ab0(unit_index) || (TEST_FIELD_BIT((UNIT_ACTION_UNIT_GET(unit_index)->flags_134 >> 25) & 1)) ||
-			unit_action_active(unit_index, 0x16))
+		long weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[hand]);
+
+		if (unit->weapon_slots[hand] == NONE || weapon_index != NONE && function_cd6a0(unit_index, NONE, weapon_index))
 		{
-			return false;
+			function_e69c0(unit_index, 0);
+			function_e69c0(unit_index, 0xa);
+			function_e69c0(unit_index, 0x1b);
+			function_e69c0(unit_index, 0x16);
+			if (function_e8510(unit_index, switch_request->immediate, switch_request->silent, primary))
+			{
+				function_e8720(unit_index, 0x7000101, switch_request->silent, switch_request->silent, primary);
+			}
+			else
+			{
+				long type = primary ? 8 : 0x12;
+
+				actions->active[type >> 5] |= 1 << (type & 0x1f);
+			}
+			result = true;
 		}
 	}
-
-	s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
-	long weapon_index = NONE;
-
-	if (current->weapon_slots[hand] != NONE)
-		weapon_index = current->weapon_object_indices[current->weapon_slots[hand]];
-	if (unit->weapon_slots[hand] != NONE && (weapon_index == NONE || !function_cd6a0(unit_index, NONE, weapon_index)))
-		return false;
-
-	function_e69c0(unit_index, 0);
-	function_e69c0(unit_index, 0xa);
-	function_e69c0(unit_index, 0x1b);
-	function_e69c0(unit_index, 0x16);
-	if (function_e8510(unit_index, switch_request->immediate, switch_request->silent, primary))
-	{
-		function_e8720(unit_index, 0x7000101, switch_request->silent, switch_request->silent, primary);
-		return true;
-	}
-
-	long type = primary ? 8 : 0x12;
-
-	actions->active[type >> 5] |= 1 << (type & 0x1f);
-	return true;
+	return result;
 }
 
 /* a weapon switch waiting for the old weapon to be put away */
-// score 47 (was 76): type preload, hand/table homes and put-away call convention differ.
-// Numeric-hand helper 70; helper with single result 47 (kept); result/primary first
-// 70/71; short/bool hand 71/83; direct fields 57; hand name 70; direct/result 82;
-// short/result 45 (-2, restored); five coherent callee orders 47, all restored.
 // @retail 0xe8b20
 bool __stdcall function_e8b20(long unit_index, long type)
 {
@@ -1426,12 +1530,19 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax E (11-01): no new form, no lower score; the entry block keeps the same eleven
+// instructions in a different order in every form tried.
 // score 11 (was 29): only the entry block's order differs (retail loads the global and the
 // actions pointer before `cmp ecx, 8; sete bl`). Tried: unit_action_active() 95; primary
 // declared first 11; primary inside the block 82; a unit local 90; an early-return guard 11;
 // actions read inside the test with primary first 11; the bit test as its expression 11; the test
 // result named first 11; `type == 8` in each call argument 82; the then-block as a call of the
 // switch-finished action 252, with that action inline 252 (not inlined).
+// Round 31: direct header lookup 11; named header 77; separate actions/primary assignments 11 each;
+// primary branch 87; zero/one ternary 11; long primary 96; active pointer 11;
+// force-inlined switch-finished action 82.
+// Round 187: a function-top pool local (`s_record_pool *objects = g_4e0300;`) for the lookup 11 (same
+// entry order); with a unit pointer from it 90.
 // @retail 0xe8c10
 void __stdcall unit_action_weapon_switch_interrupted(long unit_index, long type)
 {
@@ -1469,63 +1580,93 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 }
 
 /* drops the weapon in a hand (types 9 and 19) */
+// score 138 (was 138): frame and entry homes agree through +0x34; pool reload, weapon/result
+// and mode/flag homes remain. Numeric-hand lookup selected/other/both 142/141/142;
+// both with success admission 138, persistent result 154, common primary mode 171,
+// full player value 145, persistent result/full player value 157.
+// Round 116: retail reads the pool data again for the hand getter in the same block as the slot
+// read (no store between), homes the weapon in the dead unit_index argument slot (NONE stored
+// first) and mode in a local (ours the reverse), hoists the false result into AL before the weapon
+// test and forms the other hand with setne. The player value through unit_get_player_index (kept,
+// 138, retail inlines that function), with a long value 143 (retail's movsx/cmp tail); a single
+// false result with either 174/171; mode and flag declared first 138 (same code); the other hand
+// as `!hand` 141, as `primary != false` 136.
+// Round 58: the weapon getter before the slot read 173 (520 bytes); `if (primary) { mode = cd660 ? 2 : 0;
+// flag = ...; } else { mode = 3; flag = primary; }` 168 (506 bytes; the weapon then takes the dead unit_index
+// home and mode a local as retail, but mode becomes neg/sbb/and with one store), the same with an if/else
+// for the mode 168, the original arm order with the cd660 test nested and one flag store 169 (505 bytes):
+// the homes follow the reference counts, and with retail's three mode stores ours keeps the weapon in a
+// register first (retail stores NONE and the getter's value straight to memory); one unit pointer for the
+// slot and the first getter 167 (515 bytes). An unused pool data read at the top changes nothing here
+// (harness), unlike 0xe9190.
+// Round 187: a pool local for the hand getter's lookup (function top, after the hand, after the slot
+// read) 167 each (517 bytes: ours then shares one lookup and keeps the request in EBP); for the slot
+// read's lookup instead 167.
+// Round 46 (lane 13): the hand weapon through the existing 0xcbd50 with the slot read as its argument 157
+// (527 B); weapon_index renamed to sort before mode 138 (same code: the homes do not follow names here);
+// `result = false;` right after the getter with one `return result` 171 (517 B: the NONE path is no longer
+// jump-threaded, as in retail, but the weapon takes EBP and the pool is not kept); `if (weapon_index == NONE)
+// return false;` 142 (524 B); a typed request struct for the byte at +4 138 (same code).
+// Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
+// flag named by its animation role, 138 each. Complete original body restored;
+// same-block pool reload and weapon/mode homes remain.
+// M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
+// 165/158/172/151/150/155/151/144. Original executable body restored.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
 	bool primary = request->type == 9;
 	long hand = !primary;
 	long slot = (&UNIT_ACTION_UNIT_GET(unit_index)->current_weapon_index)[hand];
-	long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), hand != 0);
+	long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), hand);
 	long mode;
 	bool flag;
 
-	if (weapon_index == NONE)
-		return false;
-	if (!primary)
+	if (weapon_index != NONE)
 	{
-		mode = 3;
-		flag = primary;
-	}
-	else if (function_cd660(unit_index))
-	{
-		mode = 2;
-		flag = !*((bool *)request + 4);
-	}
-	else
-	{
-		mode = 0;
-		flag = !*((bool *)request + 4);
-	}
+		if (!primary)
+		{
+			mode = 3;
+			flag = primary;
+		}
+		else if (function_cd660(unit_index))
+		{
+			mode = 2;
+			flag = !*((bool *)request + 4);
+		}
+		else
+		{
+			mode = 0;
+			flag = !*((bool *)request + 4);
+		}
 
-	long other_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), primary != false);
+		long other_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), primary);
 
-	if (other_index != NONE &&
-		UNIT_ACTION_UNIT_GET(weapon_index)->definition_index == UNIT_ACTION_UNIT_GET(other_index)->definition_index)
-	{
-		function_101740(weapon_index, other_index);
+		if (other_index != NONE &&
+			UNIT_ACTION_UNIT_GET(weapon_index)->definition_index == UNIT_ACTION_UNIT_GET(other_index)->definition_index)
+		{
+			function_101740(weapon_index, other_index);
+		}
+		function_e69c0(unit_index, 8);
+		function_e69c0(unit_index, 0x12);
+		function_e69c0(unit_index, 0);
+		function_e69c0(unit_index, 0xa);
+		function_e69c0(unit_index, 0x1b);
+		function_e69c0(unit_index, 0x16);
+		function_e8460(unit_index, primary);
+		function_ce920(unit_index, slot, mode, flag);
+		function_e8720(unit_index, 0x7000101, false, false, primary);
+
+		if (unit_get_player_index(unit_index) != NONE)
+		{
+			short value = unit_action_player_value28_get(unit_get_player_index(unit_index));
+
+			if (value != NONE)
+				function_191f3a(UNIT_ACTION_UNIT_GET(weapon_index)->definition_index, value);
+		}
+		return true;
 	}
-	function_e69c0(unit_index, 8);
-	function_e69c0(unit_index, 0x12);
-	function_e69c0(unit_index, 0);
-	function_e69c0(unit_index, 0xa);
-	function_e69c0(unit_index, 0x1b);
-	function_e69c0(unit_index, 0x16);
-	function_e8460(unit_index, primary);
-	function_ce920(unit_index, slot, mode, flag);
-	function_e8720(unit_index, 0x7000101, false, false, primary);
-
-	byte *object = (byte *)function_badc0(unit_index, 3);
-
-	if (object && *(long *)(object + 0x13c) != NONE)
-	{
-		byte *current = (byte *)function_badc0(unit_index, 3);
-		long player_index = current ? *(long *)(current + 0x13c) : NONE;
-		short value = unit_action_player_value28_get(player_index);
-
-		if (value != NONE)
-			function_191f3a(UNIT_ACTION_UNIT_GET(weapon_index)->definition_index, value);
-	}
-	return true;
+	return false;
 }
 
 /* the request to pick up a weapon (type 20) */
@@ -1540,13 +1681,36 @@ struct s_unit_request_pickup_weapon
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 void __stdcall function_191fab(long definition_index, long value);
-void __stdcall function_1ca260(long actor_index, long player_index, long weapon_index, long other_weapon_index);
+void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 68 (was 68): request/weapon EBX/EBP homes and getter expansion differ.
+// score 72 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
+// Round 23 (72): the six interrupt calls through a shared inline helper 178 (left out of line),
+// forceinline 72; modes declared before the weapon 72; the request cast at each use 72; weapon
+// declared after result and modes 135; weapon from the request before the alias 72; the player
+// value as an if/else 72. Locate-only: both getter calls replaced by an out-of-line call keep the
+// EBX/EBP swap (76), so the swap is not caused by the inlined getter; dead statements or an inline
+// unit getter do not stop the first getter call inlining (72 each). Retail calls the getter twice
+// here and in 0xe7fb0 (964 bytes); 0xccba0 (297) inlines the first, 0xee7f0 (171) both.
+// Round 39 (env link of this file and its callees; ~ = differing instructions plus bytes): a mode local ~143, a
+// weapon_index local ~133, the definition read at the top ~137, the value ternary inverted ~72 (as the body), no weapon
+// local (lookups at each use) ~149; an unused header at the top changes nothing (locate-only). The first
+// unit_get_player_index call still inlines (retail calls 0x14de90 twice) and the request/weapon EBX/EBP homes stay swapped.
+// Round 58 (72): the value as 0x191fab's argument 72 (same code); `bool modes[4]` scoped inside the weapon test
+// 72; `allowed` initialised false with no default 72; the weapon pointer before the request alias 72; the
+// admission as an early `return result` 130 (412 bytes). Retail inlines 0x14de90 at both calls in 0xe8de0 and
+// 0xee7f0, the first in 0xccba0, none here or in 0xe7fb0 (and none in /O1 and /Ob1 callers), so the caller's
+// size alone does not decide it.
+// Round 69 (lane 12, fast): the mode read into a named local for the switch and the call 140 (408 bytes); the
+// admission split into a weapon test and an early `return result` after 0xcd7b0 133 (404); the modes array after the
+// result or before the request alias 72 each; the mode-0/1 admission as `allowed = false; if (...) allowed = true;`
+// 72. Diagnostics (not kept): the weapon lookup and the current slot through two throwaway inline getters 114 (376
+// bytes; the first 0x14de90 call still inlines); with the weapon dead before the end (0x191fab given 0) the request
+// still takes EBP and the result moves to BL (123), so the request is outranked by the result as well as the weapon.
+// Retail's NONE arm after the out-of-line call is `or eax, eax` (0b c0).
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -1605,6 +1769,36 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 
 /* gives a unit's weapon to a player's unit, taking the player's weapon
    in exchange (type 21) */
+// score 97 (was 97): frame 0x24 versus 0x20 (given in a stack byte, retail BL); unit/weapon allocation and
+// the inline unknown13c exit differ (retail hoists `xor al, al` and jumps into the epilogue tail).
+// Earlier: score 100 (was 127): frame 0x24 versus 0x20; unit/weapon allocation and transfer-call convention differ.
+// Both ordinal-hand reads 122; result first 118; entry drop workspace/live request/single receiver 122 each;
+// long results 127; early admission return 100 (plain, kept); failed-give arm first 145.
+// Round 58 (107 at the start): 0x1ca260 takes the weapon second and the player index third (EDX, its third
+// parameter, from its body and retail's call): a value fix, 97 (kept). On it: the nested admission 122 (314
+// bytes; aligned it is retail's code except that the unit pointer takes EBP, retail unit_index, and the first
+// getter reuses it where retail reloads the pool data); one 0x1ca260 call with a `taken` ternary 131; `taken`
+// as one `&&` 114; `return false` with given declared in the block 110; the drop request at the top 97 (same
+// code). Harness: 128 nested forms (declaration orders, a player index local, drop at the top, getter order,
+// `taken` as one expression, an actor local), a pool pointer local and the header read for the unit or the
+// getter keep the unit in EBP. Locate-only: an unused read of g_4e0300->data at the top gives retail's reload
+// and unit_index in EBP (harness signature-aligned 22 against 64), as 0xe5040's unused header does.
+// Round 69 (lane 12, fast): both weapon lookups through the existing header getter unit_get_current_weapon 97 (same
+// code); a function-top pool local (`objects = g_4e0300`) for all three lookups 100; for the weapon and other-weapon
+// lookups with the unit by the macro 125 (339 bytes), and that with the nested single exit 85 (retail length, the
+// prologue and everything after the lookups retail's: only retail's second reload of the pool data for the other
+// weapon is missing; not kept, it mixes the global with its local copy); on that the other lookup by the macro 122
+// (314), the weapon by the macro 118 (318), the unit through the local and the weapon by the macro 100, the unit and
+// weapon through the local 118 (318); the local declared in the block or the player index read at the top 85 each;
+// every lookup through the local with the nested exit 123 (314). A throwaway inline helper with its own pool copy
+// (diagnostic) 122: its copy is propagated and all lookups merge.
+// Round 114 (m3 lane 7, fast): a single-exit `result = false` at the top with `given` declared in the weapon block
+// and `result = given;` at its end 121 (314 bytes: frame 0x20, retail's hoisted `xor al, al` and given in BL with
+// `mov al, bl` exits, but the unit stays in ESI and the second lookup reuses it, so unit_index never gets EBP); on
+// it the unit through a header pointer local 121, `return given;` inside the block 107 (328, loses the hoist), the
+// weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
+// data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
+// player unit 96, inside the weapon block 121, with the player index read in place 87.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -1612,11 +1806,12 @@ bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 	long player_index = *(long *)((byte *)request + 4);
 	bool given = false;
 
-	if (unit->unknown13c == NONE)
+	if (unit->unknown13c != NONE)
+		return given;
 	{
 		long player_unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
-		long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
-		long other_weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(player_unit_index), false);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
+		long other_weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(player_unit_index), 0);
 
 		if (weapon_index != NONE)
 		{
@@ -1635,9 +1830,9 @@ bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 				if (unit->unknown12c != NONE)
 				{
 					if (taken)
-						function_1ca260(unit->unknown12c, *(long *)((byte *)request + 4), weapon_index, other_weapon_index);
+						function_1ca260(unit->unknown12c, weapon_index, *(long *)((byte *)request + 4), other_weapon_index);
 					else
-						function_1ca260(unit->unknown12c, *(long *)((byte *)request + 4), weapon_index, NONE);
+						function_1ca260(unit->unknown12c, weapon_index, *(long *)((byte *)request + 4), NONE);
 				}
 			}
 			else
@@ -1706,38 +1901,35 @@ PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *re
 				child_index = *(long *)((byte *)UNIT_ACTION_UNIT_GET(child_index) + 0xc);
 			}
 		}
+		else if (*((byte *)request + 5) == 1)
+		{
+			s_animation_state *state = unit_action_state_get(unit_index);
+
+			if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
+				state->channels[2].unknown11 |= 1;
+			if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
+				state->channels[0].unknown11 |= 1;
+			if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
+				state->channels[1].unknown11 |= 1;
+		}
 		else
 		{
 			s_animation_state *state = unit_action_state_get(unit_index);
 
-			if (*((byte *)request + 5) == 1)
+			if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
+				state->channels[2].unknown11 &= ~1;
+			if (!unit_action_channel_valid(&state->channels[2]))
 			{
-				if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
-					state->channels[2].unknown11 |= 1;
 				if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
-					state->channels[0].unknown11 |= 1;
+					state->channels[0].unknown11 &= ~1;
 				if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
-					state->channels[1].unknown11 |= 1;
-			}
-			else
-			{
-				if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
-					state->channels[2].unknown11 &= ~1;
-				if (!unit_action_channel_valid(&state->channels[2]))
-				{
-					if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
-						state->channels[0].unknown11 &= ~1;
-					if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
-						state->channels[1].unknown11 &= ~1;
-				}
+					state->channels[1].unknown11 &= ~1;
 			}
 		}
 	}
 	return result;
 }
 
-// 0xe9370 and 0xe9500 (score 139 each) are 17 bytes short through unit_action_pause, which
-// reaches function_e7020; see the note there.
 /* pauses a unit's animation (type 23) */
 // @retail 0xe9370
 bool __stdcall function_e9370(long unit_index, s_unit_request *request)
@@ -1771,12 +1963,6 @@ struct s_unit_request_impulse
 
 /* plays an animation impulse (type 25), from the unit's idle state (or its
    alternate one) */
-// score 17 (was 82): admission name/alternate convention, zero scheduling and
-// active-bit address materialization remain.
-// Round 256: provider noinline alone 82; false-first bool/byte/short/long
-// completions 17/32/45/46; true-first 75/88/86/84. Provider declaration restored.
-// Clean bool completion 17; initialization order 16; completion/request names
-// 17/17; combined names/order 16. One-point forms restored; clean completion kept.
 // @retail 0xe9690
 bool __stdcall function_e9690(long unit_index, s_unit_request *request)
 {
@@ -1802,8 +1988,9 @@ bool __stdcall function_e9690(long unit_index, s_unit_request *request)
 		if (function_113e90(unit_index, impulse->name, blend, NULL, 0))
 		{
 			s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+			word *animation_flags = (word *)((byte *)unit + unit->unknown33e);
 
-			*((byte *)unit + *(short *)((byte *)unit + 0x33e)) |= 1;
+			*animation_flags |= 1;
 			if (impulse->face && unit->parent_object_index == NONE)
 				function_edfa0(unit_index, (point2f const *)&impulse->facing);
 			result = true;
@@ -1906,12 +2093,13 @@ bool __stdcall unit_action_melee(long unit_index, s_unit_request *request)
 				}
 			}
 
-			if (!function_e9780(unit_index, name, true, melee->face ? &melee->facing : NULL, NULL))
-				return false;
-			if (TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 8) & 1))
-				function_10f430(unit_index, 0x7000101, 0x7000101, 0x7000101, 0xc000043, 0.0f, 0, 2);
-			actions->active[0] |= 0x4000000;
-			result = true;
+			if (function_e9780(unit_index, name, true, melee->face ? &melee->facing : NULL, NULL))
+			{
+				if (TEST_FIELD_BIT((*(dword *)(definition + 0xbc) >> 8) & 1))
+					function_10f430(unit_index, 0x7000101, 0x7000101, 0x7000101, 0xc000043, 0.0f, 0, 2);
+				actions->active[0] |= 0x4000000;
+				result = true;
+			}
 		}
 	}
 	return result;
@@ -1976,6 +2164,37 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
+// score 235 (was 235): Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// Frame 0x14 agrees; pool/index/type/name homes remain.
+// Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
+// single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
+// Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
+// shared actions receiver 328; single exit with hand/bit 315; per-use speed with hand/bit 302.
+// Entry name default/or hand/or bit/or both 312/314/299/299; with single exit 362;
+// original-graph single exit 241; per-use speed 235; entry name/single exit/per-use speed 362.
+// Round 187: the fallback-name tests as a switch (retail's `sub eax, 0xc000073; je; sub eax, 2; je`
+// and `cmp 0xe000607; je; jle; cmp 0xe00060a; jg` are switch code) 238; with the 0x1b test through
+// unit_action_active 256, + single exit 244, + per-use speed 256/341 (0xea090 broke); a pool local for
+// the 0x1b lookup 312. First-person default first + hand getter + Boolean 0x1b bit + switch 305, + single
+// exit 110 (not kept, see above; the bit through a pool lookup 110, through unit_action_active the convention changes
+// and 0xe9ed0/0xea090 break). Without the default/hand getter/Boolean bit/switch/single exit
+// 317/116/361/252/305; fewer `goto done` (default+else, animation, default, else, default+animation,
+// else+animation) 222/157/198/300/128/300; + per-use speed 357; declaration orders 110 (result before
+// the unit 362); is_biped renamed 110; switch on the field 110. Left: retail rotates pool/index/
+// first-person name through EBP/EDI/EBX (ours EDI/EBX/EBP, then type EBP vs EBX), the is_biped/result
+// stack bytes swap (0x13/0x12), `current` in ESI vs EAX, the frame-count products' order and the
+// lunge-speed division from memory.
+// Round 46 (lane 13): `real seconds = frame_count * 0.033333335f;` then `seconds * (real)field_2_3` 234 (retail's
+// product order; in one expression VC reassociates to field*frames*k); with the lunge speed read at each use too
+// 234 (both blocks are then retail's code, one line off for retail's result byte store); with first_person_name
+// = NONE declared first and the short-slot hand getter 314 (1195 B; the entry is retail's except pool/offset/NONE
+// in EDI/EBX/EBP where retail has EBP/EDI/EBX); with a function-top pool local as well 314; is_biped renamed to
+// sort after result 235 (same code: ours keeps result in a register, retail in the stack byte at 0x12).
+// On the seconds and per-use speed form: the two animation exits merged into one `goto done` 277 (1213 B);
+// TEST_FIELD_BIT on the 0x1b test 249 (1193 B).
+// J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
+// Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
+// all with success at the final return 278. Sub-eight forms and all other trials restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2185,7 +2404,7 @@ struct s_unit_request_melee_attack
 };
 
 void __stdcall function_a8cf0(long unit_index, long target_index, long mode);
-void __stdcall function_cf3d0(long unit_index, long name, long flags, real scale);
+void __stdcall function_cf3d0(long unit_index, long name, byte flags, real scale);
 
 /* a melee attack (type 27): its animation, once any earlier one has
    passed its end frame */
@@ -2195,47 +2414,44 @@ bool __stdcall unit_action_melee_attack(long unit_index, s_unit_request *request
 	s_unit_request_melee_attack *melee = (s_unit_request_melee_attack *)request;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	long weapon_index = unit_action_weapon_get(unit, false);
+	long weapon_index = unit_action_hand_weapon_get(unit, 0);
+	s_record_pool *objects = g_4e0300;
 	bool can_melee = true;
 	bool result = false;
 
 	if (weapon_index != NONE)
 	{
-		s_unit_action_unit *weapon = UNIT_ACTION_UNIT_GET(weapon_index);
+		s_unit_action_unit *weapon = ((s_unit_action_header *)objects->data)[weapon_index & 0xffff].unit;
 		byte *s_type_67e06b = g_4e3b44[weapon->definition_index & 0xffff].bytes;
-		byte state = *((byte *)weapon + 0x20c);
 
-		if ((TEST_FIELD_BIT((*(dword *)(s_type_67e06b + 0x12c) >> 9) & 1)) || state == 1 || state == 2)
+		if ((TEST_FIELD_BIT((*(dword *)(s_type_67e06b + 0x12c) >> 9) & 1)) ||
+			*((byte *)weapon + 0x20c) == 1 || *((byte *)weapon + 0x20c) == 2)
 			can_melee = false;
 	}
 
-	s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
+	s_unit_action_unit *current = ((s_unit_action_header *)objects->data)[unit_index & 0xffff].unit;
 
-	if ((TEST_FIELD_BIT((current->flags_134 >> 25) & 1)) || UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(current), 0x16))
+	if ((TEST_FIELD_BIT((current->flags_134 >> 25) & 1)) || TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(current), 0x16)))
 		can_melee = false;
-	if (UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(current), 0x1b) &&
-		(actions->melee_end_ticks == NONE || actions->melee_counter < actions->melee_end_ticks))
+	if (!(TEST_FIELD_BIT(UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(current), 0x1b)) &&
+		(actions->melee_end_ticks == NONE || actions->melee_counter < actions->melee_end_ticks)) && can_melee)
 	{
-		return result;
-	}
-	if (!can_melee)
-		return result;
+		function_e69c0(unit_index, 8);
+		function_e69c0(unit_index, 0x12);
+		function_e69c0(unit_index, 0);
+		function_e69c0(unit_index, 0xa);
 
-	function_e69c0(unit_index, 8);
-	function_e69c0(unit_index, 0x12);
-	function_e69c0(unit_index, 0);
-	function_e69c0(unit_index, 0xa);
+		s_unit_request stop;
 
-	s_unit_request stop;
-
-	memset(&stop, 0, sizeof(stop));
-	stop.type = 0x13;
-	function_e6900(unit_index, &stop);
-	function_c86e0(unit_index, 0);
-	if (function_e9a20(unit_index, melee->mode, melee->target_index, melee->flags))
-	{
-		function_a8cf0(unit_index, melee->target_index, melee->mode);
-		return true;
+		memset(&stop, 0, sizeof(stop));
+		stop.type = 0x13;
+		function_e6900(unit_index, &stop);
+		function_c86e0(unit_index, 0);
+		if (function_e9a20(unit_index, melee->mode, melee->target_index, melee->flags))
+		{
+			function_a8cf0(unit_index, melee->target_index, melee->mode);
+			result = true;
+		}
 	}
 	return result;
 }
@@ -2246,6 +2462,7 @@ bool __stdcall unit_action_melee_attack(long unit_index, s_unit_request *request
 bool __stdcall unit_action_melee_attack_update(long unit_index, long type)
 {
 	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
+	bool result = false;
 
 	if (actions->melee_name != NONE)
 	{
@@ -2259,21 +2476,25 @@ bool __stdcall unit_action_melee_attack_update(long unit_index, long type)
 		if (actions->melee_name == 0xa0005bb || actions->melee_name == 0x130005bc)
 		{
 			real seconds = actions->melee_name == 0x130005bc ? 0.22f : 0.15f;
-			long ticks = unit_action_round((real)g_510c54->field_2_3 * seconds);
+			long ticks = unit_action_round_long((real)g_510c54->field_2_3 * seconds);
 			s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-			long lunge_ticks = *(long *)((byte *)unit + 0x3ec);
 
-			if (*((byte *)unit + 0x3dc) != 6 || lunge_ticks < 0 || lunge_ticks <= ticks)
+			if (*((byte *)unit + 0x3dc) != 6 || *(long *)((byte *)unit + 0x3ec) < 0 ||
+				*(long *)((byte *)unit + 0x3ec) <= ticks)
+			{
 				finished = true;
+			}
 		}
 		if (++actions->melee_counter < actions->melee_ticks && !finished)
 			return true;
-		if (function_e9a20(unit_index, 0, NONE, actions->melee_flags))
-			return true;
+		result = function_e9a20(unit_index, 0, NONE, actions->melee_flags);
 	}
-	actions->active[0] &= ~0x8000000;
-	actions->melee_name = NONE;
-	return false;
+	if (!result)
+	{
+		actions->active[0] &= ~0x8000000;
+		actions->melee_name = NONE;
+	}
+	return result;
 }
 
 // @retail 0xea1c0
@@ -2305,6 +2526,20 @@ long function_c8f60(long unit_index, short seat_index);
 /* puts a unit in a vehicle's seat: attached to the seat's marker, its
    weapon put away (or dropped), its seat animations, and the seat's
    occupant asked to leave */
+// score 306 (was 306): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
+// the unit pointer (ours keeps the unit in ebp and spills the offset to the same slot), so the constant-1
+// stores and most reloads differ; retail also tests the 0x3dc state as a zero-extended long and has a dead
+// `lea` of the header's unit field. Earlier: score 306 (was 321).
+// Round 46: inverse in its own block (retail shares its slot with the drop/exit requests and the
+// orientation) 310, retail's frame 0xf0 and length; node matrix through function_b8bd0 348 (stays a call
+// from the /Ob1 file); both 340; is_vehicle through a dword shift 310; the existing
+// unit_action_hand_weapon_get(unit, 0) (retail's short index) 306; the 0x3dc state read once into a long
+// 307 (with the getter 304); all three 304; result/reset declared the other way 306; unit declared at
+// function scope 306; unit read through a header pointer 306.
+// Round 68 (m3 lane 16, fast): the two `goto done` exits as nested ifs 306 (identical code, kept as the
+// goto-free form); on it the 0x3dc state in a named long tested twice 304 (aligned 156 -> 151); the vehicle
+// lookup before is_vehicle 308; unit declared at function scope, assigned after the test, 306; is_vehicle
+// with the file's `1u <<` flag (retail's shr) 306 (aligned 155).
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2312,158 +2547,153 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 	bool result = false;
 	bool reset = false;
 
-	if (!force && !function_c92c0(unit_index, vehicle_index, seat_index, NULL, NULL))
-		goto done;
-
+	if (force || function_c92c0(unit_index, vehicle_index, seat_index, NULL, NULL))
 	{
 		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 
-		if (unit->parent_object_index != NONE)
-			goto done;
-		if (UNIT_ACTIONS_GET(unit)->unknown36 != 0)
-			function_e6f90(unit_index);
-
-		s_unit_action_header *header = UNIT_ACTION_HEADER_GET(unit_index);
-
-		if (((1 << header->type) & 1) && (*((byte *)header->unit + 0x3dc) == 4 || *((byte *)header->unit + 0x3dc) == 5))
-			function_e5930(unit_index);
-		function_e69c0(unit_index, 0x1d);
-		function_e69c0(unit_index, 0x1c);
-		function_e69c0(unit_index, 0x20);
-		if (type != 0x1f)
-			function_e69c0(unit_index, 0x1f);
-
-		long state_name = NONE;
-
-		if (!keep_animation)
-			state_name = function_c7160(unit_index, seat_index, 0, vehicle_index, 0);
-
-		bool is_vehicle = TEST_FIELD_BIT(((1 << UNIT_ACTION_HEADER_GET(unit_index)->type) >> 1) & 1);
-		s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
-		byte *seat = *(byte **)(g_4e3b44[vehicle->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
-
-		if (unit->unknown13c != NONE)
-			function_bbe60(unit->definition_index);
-		function_ce040(unit_index);
-
-		s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
-		transform4x3f const *field_50 =
-			(transform4x3f const *)((byte *)current + *(short *)((byte *)current + 0x116));
-		s_object_marker marker;
-		transform4x3f inverse;
-		transform4x3f relative;
-
-		function_b8d30(vehicle_index, *(long *)(seat + 8), &marker, 1, false);
-		function_141590(&marker.matrix, &inverse);
-		function_142a60(&inverse, field_50, &relative);
-		function_b8ee0(vehicle_index, *(long *)(seat + 8), unit_index, 0);
-		unit->seat_index = seat_index;
-		if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)
-			function_b58c0(UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4, 0x800);
-		function_cc810(vehicle_index);
-
-		if (!is_vehicle)
+		if (unit->parent_object_index == NONE)
 		{
-			function_e68c0(0x13, unit_index);
+			if (UNIT_ACTIONS_GET(unit)->unknown36 != 0)
+				function_e6f90(unit_index);
 
-			long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
+			s_unit_action_header *header = UNIT_ACTION_HEADER_GET(unit_index);
 
-			if (weapon_index == NONE)
+			if (((1 << header->type) & 1) && (*((byte *)header->unit + 0x3dc) == 4 || *((byte *)header->unit + 0x3dc) == 5))
+				function_e5930(unit_index);
+			function_e69c0(unit_index, 0x1d);
+			function_e69c0(unit_index, 0x1c);
+			function_e69c0(unit_index, 0x20);
+			if (type != 0x1f)
+				function_e69c0(unit_index, 0x1f);
+
+			long state_name = NONE;
+
+			if (!keep_animation)
+				state_name = function_c7160(unit_index, seat_index, 0, vehicle_index, 0);
+
+			bool is_vehicle = TEST_FIELD_BIT(((1 << UNIT_ACTION_HEADER_GET(unit_index)->type) >> 1) & 1);
+			s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
+			byte *seat = *(byte **)(g_4e3b44[vehicle->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
+
+			if (unit->unknown13c != NONE)
+				function_bbe60(unit->definition_index);
+			function_ce040(unit_index);
+
+			s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
+			transform4x3f const *field_50 =
+				(transform4x3f const *)((byte *)current + *(short *)((byte *)current + 0x116));
+			s_object_marker marker;
+			transform4x3f relative;
+
+			function_b8d30(vehicle_index, *(long *)(seat + 8), &marker, 1, false);
 			{
-				function_e8620(unit_index, true);
+				transform4x3f inverse;
+
+				function_141590(&marker.matrix, &inverse);
+				function_142a60(&inverse, field_50, &relative);
 			}
-			else if (!function_cd6a0(unit_index, NONE, weapon_index))
-			{
-				if (function_101240(weapon_index) && !(g_4e6948->state == 2 && function_159d80()))
-				{
-					s_unit_request drop;
+			function_b8ee0(vehicle_index, *(long *)(seat + 8), unit_index, 0);
+			unit->seat_index = seat_index;
+			if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)
+				function_b58c0(UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4, 0x800);
+			function_cc810(vehicle_index);
 
-					drop.type = 9;
-					*((bool *)&drop + 4) = true;
-					unit_action_drop_weapon(unit_index, &drop);
-				}
-				else
+			if (!is_vehicle)
+			{
+				function_e68c0(0x13, unit_index);
+
+				long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
+
+				if (weapon_index == NONE)
 				{
-					function_e8460(unit_index, true);
+					function_e8620(unit_index, true);
 				}
-				function_e8620(unit_index, true);
+				else if (!function_cd6a0(unit_index, NONE, weapon_index))
+				{
+					if (function_101240(weapon_index) && !(g_4e6948->state == 2 && function_159d80()))
+					{
+						s_unit_request drop;
+
+						drop.type = 9;
+						*((bool *)&drop + 4) = true;
+						unit_action_drop_weapon(unit_index, &drop);
+					}
+					else
+					{
+						function_e8460(unit_index, true);
+					}
+					function_e8620(unit_index, true);
+				}
+				function_10f430(unit_index, *(long *)(seat + 4), 0x7000101, 0x7000101,
+					state_name == NONE ? 0x400000c : state_name, 0.0f, 0, 2);
 			}
-			function_10f430(unit_index, *(long *)(seat + 4), 0x7000101, 0x7000101,
-				state_name == NONE ? 0x400000c : state_name, 0.0f, 0, 2);
-		}
 
-		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
-		quaternionf orientation;
+			byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
+			quaternionf orientation;
 
-		function_141f60(&relative.rotation, &orientation);
-		*(point3f *)(seat_transform + 0x10) = relative.position;
-		*(quaternionf *)seat_transform = orientation;
-		if (state_name == NONE)
-		{
-			function_ba3d0(unit_index);
-			vector3f *seat_velocity = (vector3f *)((byte *)unit + 0x288);
-			vector3f *seat_angular_velocity = (vector3f *)((byte *)unit + 0x294);
-
-			seat_velocity->i = 0.0f;
-			seat_angular_velocity->i = 0.0f;
-			seat_velocity->j = 0.0f;
-			seat_angular_velocity->j = 0.0f;
-			seat_velocity->k = 0.0f;
-			seat_angular_velocity->k = 0.0f;
-			reset = true;
-		}
-		function_bd020(unit_index);
-		function_15e7f0(unit_index, vehicle_index);
-		function_c86e0(unit_index, 0);
-		function_d1000(unit_index);
-		*((byte *)unit + 0x258) = 0;
-		if (unit->unknown12c != NONE)
-			function_1bb570(unit->parent_object_index, unit->unknown12c);
-		if (unit->unknown13c != NONE)
-			function_1bbc00(unit->unknown13c, unit->parent_object_index);
-		if (unit->unknown13c != NONE && (TEST_FIELD_BIT((*(dword *)seat >> 2) & 1)))
-		{
-			short user_index = unit_action_player_value28_get(unit->unknown13c);
-
-			if (user_index != NONE)
-				function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
-		}
-		result = true;
-		if (force)
-		{
-			long occupant_index = function_c8f60(vehicle_index, seat_index);
-
-			if (occupant_index != unit_index && occupant_index != NONE)
+			function_141f60(&relative.rotation, &orientation);
+			*(point3f *)(seat_transform + 0x10) = relative.position;
+			*(quaternionf *)seat_transform = orientation;
+			if (state_name == NONE)
 			{
-				s_unit_request exit;
+				function_ba3d0(unit_index);
+				vector3f *seat_velocity = (vector3f *)((byte *)unit + 0x288);
+				vector3f *seat_angular_velocity = (vector3f *)((byte *)unit + 0x294);
 
-				exit.type = 0x20;
-				*((bool *)&exit + 4) = false;
-				*((bool *)&exit + 5) = true;
-				result = function_e6900(occupant_index, &exit);
+				seat_velocity->i = 0.0f;
+				seat_angular_velocity->i = 0.0f;
+				seat_velocity->j = 0.0f;
+				seat_angular_velocity->j = 0.0f;
+				seat_velocity->k = 0.0f;
+				seat_angular_velocity->k = 0.0f;
+				reset = true;
+			}
+			function_bd020(unit_index);
+			function_15e7f0(unit_index, vehicle_index);
+			function_c86e0(unit_index, 0);
+			function_d1000(unit_index);
+			*((byte *)unit + 0x258) = 0;
+			if (unit->unknown12c != NONE)
+				function_1bb570(unit->parent_object_index, unit->unknown12c);
+			if (unit->unknown13c != NONE)
+				function_1bbc00(unit->unknown13c, unit->parent_object_index);
+			if (unit->unknown13c != NONE && (TEST_FIELD_BIT((*(dword *)seat >> 2) & 1)))
+			{
+				short user_index = unit_action_player_value28_get(unit->unknown13c);
+
+				if (user_index != NONE)
+					function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
+			}
+			result = true;
+			if (force)
+			{
+				long occupant_index = function_c8f60(vehicle_index, seat_index);
+
+				if (occupant_index != unit_index && occupant_index != NONE)
+				{
+					s_unit_request exit;
+
+					exit.type = 0x20;
+					*((bool *)&exit + 4) = false;
+					*((bool *)&exit + 5) = true;
+					result = function_e6900(occupant_index, &exit);
+				}
 			}
 		}
 	}
 
-done:
 	if (animation_reset)
 		*animation_reset = reset;
 	return result;
 }
 
 void function_b9c60(long object_index, bool flag);
-void function_ba690(long object_index, unsigned char **states, long *state_count, long *a, long *b);
+void function_ba690(long object_index, long *state_count, unsigned char **states, long *a, long *b);
 void __stdcall function_d1360(long vehicle_index, long seat_index, bool a, bool b);
 void function_e5300(long unit_index, long a);
 
 /* entering a vehicle's seat finished: the unit's visibility in the seat,
    and the seat's state */
-// score 77 (was 77): region-output routine inlines; pool/unit/output homes
-// and unsigned state test differ.
-// Round 256: caller-only noinline/direct hidden/entry storage subsets and early
-// zero 73 each in reduced image (unchanged preview 73); defining-TU noinline
-// with original/direct/entry/early-zero forms 40 each, confirmed full 40.
-// Defining noinline restored after it lost an existing match; original body kept.
 // @retail 0xea6b0
 void __stdcall function_ea6b0(long unit_index, long type)
 {
@@ -2478,11 +2708,12 @@ void __stdcall function_ea6b0(long unit_index, long type)
 		{
 			unsigned char *states;
 			long state_count;
+			long choices;
 			bool hidden = false;
 
-			function_ba690(unit->parent_object_index, &states, &state_count, NULL, NULL);
+			function_ba690(unit->parent_object_index, &state_count, &states, NULL, &choices);
 			if (*(long *)(seat + 0xac) < state_count)
-				hidden = states[*(long *)(seat + 0xac) * 8 + 1] < 3;
+				hidden = ((char *)choices)[*(long *)(seat + 0xac) * 8 + 1] < 3;
 			function_b9c60(unit_index, hidden);
 		}
 		function_d1360(unit->parent_object_index, unit->seat_index, 0, 0);
@@ -2544,9 +2775,6 @@ bool __stdcall unit_action_vehicle_entry(long unit_index, s_unit_request *reques
 
 long function_10eef0(long object_index, bool alternate, bool no_request);
 void function_d12b0(long vehicle_index, long seat_index, bool a, bool b);
-bool function_b9d20(long object_index);
-void __stdcall function_bef30(long object_index, long a, long b, long c, bool d);
-void function_b8b70(long object_index);
 short __stdcall function_cdeb0(long unit_index, long state_name, short slot, short direction);
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name);
 void function_e0070(long unit_index, long vehicle_index);
@@ -2557,11 +2785,44 @@ void function_a8b10(long unit_index);
 
 /* takes a unit out of its vehicle seat: detached, its weapon back in hand,
    its exit animations */
+// MiniMax E (11-01): no new form, no lower score; the reduced image builds this one
+// differently (88 there, 9 in the full build), so only a plain check can score it.
+// score 9 (was 68): 483 bytes as retail. Earlier: score 68 (477 bytes, retail 483). With 0xe0070's loop written with a found flag (lane 14 round 12;
+// not kept, a test-set flag is kept only with a match) it scored 9 and only scratch registers differed:
+// retail eax/ecx for the 0xcbd50 slot read, edx for the 0xee460 push and eax/ecx for the two seat pushes;
+// ours one step on (ecx/edx, eax, ecx/edx).
+// Pointer names 116; widened seat 109; Boolean object flag 104; both 93; unsigned mask 115;
+// unsigned with widened seat 108, with Boolean flag 103, with both 92 (fast); last form 68 plain.
+// Round 12 (lane 14), all with the found-flag 0xe0070 (unit in EDI as retail) 9: the existing 0xb9c60
+// for the flag clear 9 (same code; kept, 68 without the flag); the 0xb58c0 owner in a local 9; the
+// action name as if/else 9; the 0xcbd50 result passed as the slot 9; action/state declarations swapped 11; vehicle read first 9 (all plain;
+// --fast adds a pool reload after 0xbef30 the full build lacks).
+// Round 21 (lane 13): BLOCKED-BY 0xe0070: ours takes the unit index in ESI with a 0x1c frame,
+// retail in EDI with 0x20 (retail's `mov edi, esi` and reload around that call are the 6 missing
+// bytes, and the EBP/EDI unit/index swap follows). Vehicle index read before the type flag 68
+// (plain; fast 92 from the reload); type flag after the early return 154 (and 0xeaad0 lost its match);
+// the unit through UNIT_ACTION_HEADER_GET 68; vehicle index read after the early return 68;
+// `!unit->object_type` at the 0xe0070 call 68 (all plain).
+// Round 51 (score 9, 0xe0070 matched): only scratch registers differ, retail EAX/ECX for the 0xcbd50
+// slot read, EDX for the 0xee460 push, EAX then ECX for the two seat pushes; ours ECX/EDX, EAX, ECX,
+// EDX (one allocation behind). An LTCG env link (this file + the callee closure) gives the full
+// listing; there: an unused local 9 (plain); the 0xb58c0 owner in a local, the 0xcbd50 result in a
+// local passed on, tail actor/player locals, the 0xcdeb0 result in a short local, the 0xe0070 test
+// nested, the flag after the vehicle index, the flag as byte/char/dword cast, an inline unit getter
+// (plain/forceinline/with a local) or weapon-of-unit helper at the 0xcbd50 argument, header-based
+// reads, `is_vehicle == false`, `!TEST_FIELD_BIT(is_vehicle)`, an empty then-arm, `== -1`, the
+// 0xcbd50 test joined to the flag with `&&` and 0xee460 under its own test, `(void)&is_vehicle` 9 each
+// (identical); action name at the call 39; header pointer for the unit 10; state/action before the
+// early return 23; action declared first 11; seat as a short local 24; seat cleared first 11;
+// `not_vehicle` 13; flag as long 23, TEST_FIELD_BIT 10; 0xcc810 in both arms 27. Diagnostics: two
+// extra temps (a load and store) just before or inside the second `!is_vehicle` block give retail's
+// registers (one extra temp does not; two before the 0xd4 test rotate that chain instead), so retail
+// makes two more free-choice allocations (or one fewer) between the 0xd4 chain and the slot read.
 // @retail 0xea8e0
 void __stdcall function_ea8e0(long unit_index, bool hurried)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	bool is_vehicle = ((1 << unit->object_type) >> 1) & 1;
+	bool is_vehicle = ((1u << unit->object_type) >> 1) & 1;
 	long vehicle_index = unit->parent_object_index;
 
 	if (vehicle_index == NONE || unit->seat_index == NONE)
@@ -2576,22 +2837,14 @@ void __stdcall function_ea8e0(long unit_index, bool hurried)
 		state_name = function_10eef0(unit_index, false, true);
 		action_name = hurried ? 0x400000c : 0x800001e;
 	}
-	function_d12b0(vehicle_index, (short)seat_index, 0, 0);
+	function_d12b0(vehicle_index, seat_index, 0, 0);
 	*(long *)((byte *)unit + 0x250) = vehicle_index;
 	*(long *)((byte *)unit + 0x254) = g_510c54->game_time;
 	unit->seat_index = NONE;
 	function_b9a90(unit_index);
 	function_b9b90(unit_index, false);
 
-	s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
-
-	if (current->object_flags & 1)
-	{
-		current->object_flags &= ~1;
-		if (function_b9d20(unit_index))
-			function_bef30(unit_index, 0, 1, 0, false);
-		function_b8b70(unit_index);
-	}
+	function_b9c60(unit_index, false);
 	if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)
 		function_b58c0(UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4, 0x800);
 	if (!is_vehicle)
@@ -2657,33 +2910,52 @@ bool __stdcall unit_action_vehicle_exit(long unit_index, s_unit_request *request
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 	bool result = false;
 
-	if (UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(unit), 0x1d) ||
-		UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x1f) ||
-		UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x20))
+	if (!unit_action_active(unit_index, 0x1d) && !unit_action_active(unit_index, 0x1f) &&
+		!unit_action_active(unit_index, 0x20))
 	{
-		return result;
+		function_e69c0(unit_index, 0x1d);
+		function_e69c0(unit_index, 0x1c);
+		function_e69c0(unit_index, 0x1f);
+		function_e69c0(unit_index, 0x20);
+		*((byte *)unit + 0x258) = 0;
+		if (function_eaad0(unit_index))
+		{
+			actions->active[0] |= 0x20000000;
+			if (*((bool *)request + 4))
+				actions->unknown00 |= 1;
+			else
+				actions->unknown00 &= ~1;
+			if (unit->unknown12c != NONE)
+				function_1bba20(unit->unknown12c);
+			result = true;
+		}
 	}
-	function_e69c0(unit_index, 0x1d);
-	function_e69c0(unit_index, 0x1c);
-	function_e69c0(unit_index, 0x1f);
-	function_e69c0(unit_index, 0x20);
-	*((byte *)unit + 0x258) = 0;
-	if (!function_eaad0(unit_index))
-		return false;
-	actions->active[0] |= 0x20000000;
-	if (*((bool *)request + 4))
-		actions->unknown00 |= 1;
-	else
-		actions->unknown00 &= ~1;
-	if (unit->unknown12c != NONE)
-		function_1bba20(unit->unknown12c);
-	return true;
+	return result;
 }
 
 transform4x3f *function_ba160(long object_index, transform4x3f *matrix);
 
 /* the end of a vehicle exit: the unit leaves the seat with its exit
    animation's velocity */
+// MiniMax E (11-01): matched (was 35, plain-confirmed): the channel's animation id read into a local
+// before the call, the velocity components as named reals scaled in place, and the sums
+// up * z + left * y + forward * x.
+// score 35 (was 103): Frame 0x40 and retail length agree; the graph chain is in EDX (retail EBX, the
+// animation id loaded early into EDX) and the velocity loads run k, j, i (retail i, j, k; the sums
+// then start with up * k). Graph at call 103; complete component preload
+// 102; both 102; result reuse 131; graph/result reuse 131; preload/result reuse 135; all 135;
+// matrix declaration first 103; scale once 55 (plain kept), with complete component preload 97.
+// vector3f_scale for the scale 50, with the word flag through word_flags_set 35 (kept);
+// matrix_transform_vector 55/46; scale statements k, j, i 58; `scale * v` 55; sums written
+// forward first 55/40; scale read per use 103; vector3f_assign 35; graph at the call, the
+// model local only, a channel pointer 35; scalar copies 97/102; a byte OR through the helper 48.
+// Round 21 (lane 13): the existing 0x142640 called for the scale and rotation 254 (296 bytes: LTCG
+// keeps the call, its file is /Ob1 and it is not inline), with a __forceinline declaration 254;
+// state declared before the definition chain 35; the channel's animation id read into a local
+// before the call 10 (fixes the whole EBX/EDX chain; a one-use local, kept only with a match);
+// `real scale` then x/y/z copies of the velocity scaled in place and up*z + left*y + forward*x
+// rows 25; both together MATCH (not kept: the scaled copies write the helper body out by hand).
+// BLOCKED-BY 0x142640: retail inlines it here; once it is inline its call plus the id local should match.
 // @retail 0xeac90
 void __stdcall function_eac90(long unit_index, bool hurried, bool push)
 {
@@ -2695,28 +2967,35 @@ void __stdcall function_eac90(long unit_index, bool hurried, bool push)
 	vector3f velocity;
 	transform4x3f matrix_storage;
 
-	state->animation_velocity_get(state->channels[0].animation_id, state->channels[0].frame_position * 0.033333335f,
+	c_type_709360 animation_id = state->channels[0].animation_id;
+
+	state->animation_velocity_get(animation_id, state->channels[0].frame_position * 0.033333335f,
 		state->channels[0].rate, (long)graph, &velocity);
 
 	transform4x3f *matrix = function_ba160(unit_index, &matrix_storage);
 	vector3f world;
 
-	if (matrix->scale != 1.0f)
+	real scale = matrix->scale;
+	real velocity_x = velocity.i;
+	real velocity_y = velocity.j;
+	real velocity_z = velocity.k;
+
+	if (scale != 1.0f)
 	{
-		velocity.i *= matrix->scale;
-		velocity.j *= matrix->scale;
-		velocity.k *= matrix->scale;
+		velocity_x *= scale;
+		velocity_y *= scale;
+		velocity_z *= scale;
 	}
-	world.i = matrix->up.i * velocity.k + matrix->left.i * velocity.j + matrix->forward.i * velocity.i;
-	world.j = matrix->up.j * velocity.k + matrix->left.j * velocity.j + matrix->forward.j * velocity.i;
-	world.k = matrix->up.k * velocity.k + matrix->left.k * velocity.j + matrix->forward.k * velocity.i;
+	world.i = matrix->up.i * velocity_z + matrix->left.i * velocity_y + matrix->forward.i * velocity_x;
+	world.j = matrix->up.j * velocity_z + matrix->left.j * velocity_y + matrix->forward.j * velocity_x;
+	world.k = matrix->up.k * velocity_z + matrix->left.k * velocity_y + matrix->forward.k * velocity_x;
 	function_ea8e0(unit_index, hurried);
 	unit->linear_velocity.i += world.i;
 	unit->linear_velocity.j += world.j;
 	unit->linear_velocity.k += world.k;
 	if (push && unit_index != NONE)
 	{
-		*((byte *)UNIT_ACTION_UNIT_GET(unit_index) + 0x10a) |= 0x20;
+		word_flags_set(&UNIT_ACTION_UNIT_GET(unit_index)->flags_10a, 5, true);
 		function_b7360(unit_index);
 	}
 }
@@ -2775,44 +3054,53 @@ bool function_1df560(short team_a, short team_b);
 // @retail 0xeaf50
 bool function_eaf50(long unit_index, long vehicle_index, short seat_index)
 {
-	if (UNIT_ACTION_UNIT_GET(unit_index)->unknown12c == NONE)
-		return true;
+	bool result = true;
 
-	s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
-	byte *local_a2a045 = g_4e3b44[vehicle->definition_index & 0xffff].bytes;
-	byte *unit_object = (byte *)function_badc0(unit_index, 3);
-	short team = NONE;
-	s_unit_child_iterator iterator;
-	byte *occupant;
-
-	if (unit_object)
-		team = *(short *)(unit_object + 0x138);
-	iterator.object_index = vehicle_index;
-	iterator.unit_index = NONE;
-	iterator.seat_index = NONE;
-	iterator.next_index = *(long *)((byte *)vehicle + 0x10);
-	while (occupant = (byte *)function_d05c0(&iterator))
+	if (UNIT_ACTION_UNIT_GET(unit_index)->unknown12c != NONE)
 	{
-		if (iterator.seat_index == seat_index)
-		{
-			byte *other = (byte *)function_badc0(iterator.unit_index, 3);
-			short other_team = other ? *(short *)(other + 0x138) : NONE;
+		s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
+		byte *local_a2a045 = g_4e3b44[vehicle->definition_index & 0xffff].bytes;
+		byte *unit_object = (byte *)function_badc0(unit_index, 3);
+		short team = NONE;
+		s_unit_child_iterator iterator;
+		byte *occupant;
 
-			if (!function_1df560(team, other_team))
-				return false;
-		}
-		else if (iterator.seat_index != NONE)
+		if (unit_object)
+			team = *(short *)(unit_object + 0x138);
+		iterator.object_index = vehicle_index;
+		iterator.unit_index = NONE;
+		iterator.seat_index = NONE;
+		iterator.next_index = *(long *)((byte *)vehicle + 0x10);
+		for (occupant = (byte *)function_d05c0(&iterator); occupant; occupant = (byte *)function_d05c0(&iterator))
 		{
-			byte *seat = *(byte **)(local_a2a045 + 0x1cc) + iterator.seat_index * 0xb0;
-
-			if (((*(dword *)seat >> 11) & 1) && *(short *)(seat + 0x3e) == seat_index &&
-				(*(long *)(occupant + 0x13c) != NONE || unit_action_active(iterator.unit_index, 0x1f)))
+			if (iterator.seat_index == seat_index)
 			{
-				return false;
+				byte *other = (byte *)function_badc0(iterator.unit_index, 3);
+				short other_team = NONE;
+
+				if (other)
+					other_team = *(short *)(other + 0x138);
+
+				if (!function_1df560(team, other_team))
+				{
+					result = false;
+					break;
+				}
+			}
+			else if (iterator.seat_index != NONE)
+			{
+				byte *seat = *(byte **)(local_a2a045 + 0x1cc) + iterator.seat_index * 0xb0;
+
+				if (TEST_FIELD_BIT((*(dword *)seat >> 11) & 1) && *(short *)(seat + 0x3e) == seat_index &&
+					(*(long *)(occupant + 0x13c) != NONE || unit_action_active(iterator.unit_index, 0x1f)))
+				{
+					result = false;
+					break;
+				}
 			}
 		}
 	}
-	return true;
+	return result;
 }
 
 void __stdcall function_a8b90(long unit_index);
@@ -2843,31 +3131,33 @@ bool __stdcall unit_action_vehicle_board(long unit_index, s_unit_request *reques
 
 				if (board_seat_index != NONE)
 				{
-					if (!function_eaf50(unit_index, vehicle_index, board_seat_index))
-						return false;
-					function_e69c0(unit_index, 0x1d);
-					function_e69c0(unit_index, 0x1c);
-					function_e69c0(unit_index, 0x1f);
-					function_e69c0(unit_index, 0x20);
-					if (!function_113e90(unit_index, 0x50000c3, 0.0f, NULL, 0))
-						return false;
-					actions->active[0] |= 0x80000000;
-					*((byte *)unit + 0x258) = 0;
-					function_a8b90(unit_index);
-					if ((TEST_FIELD_BIT((*(dword *)seat >> 13) & 1)) &&
-						(TEST_FIELD_BIT((*(dword *)(*(byte **)(local_a2a045 + 0x1cc) + *(short *)(seat + 0x3e) * 0xb0) >> 2) & 1)))
+					if (function_eaf50(unit_index, vehicle_index, board_seat_index))
 					{
-						function_d12b0(vehicle_index, *(short *)(seat + 0x3e), 0, 0);
-						if (unit->unknown13c != NONE)
+						function_e69c0(unit_index, 0x1d);
+						function_e69c0(unit_index, 0x1c);
+						function_e69c0(unit_index, 0x1f);
+						function_e69c0(unit_index, 0x20);
+						if (function_113e90(unit_index, 0x50000c3, 0.0f, NULL, 0))
 						{
-							short user_index = unit_action_player_value28_get(unit->unknown13c);
+							actions->active[0] |= 0x80000000;
+							*((byte *)unit + 0x258) = 0;
+							function_a8b90(unit_index);
+							if ((TEST_FIELD_BIT((*(dword *)seat >> 13) & 1)) &&
+								(TEST_FIELD_BIT((*(dword *)(*(byte **)(local_a2a045 + 0x1cc) + *(short *)(seat + 0x3e) * 0xb0) >> 2) & 1)))
+							{
+								function_d12b0(vehicle_index, *(short *)(seat + 0x3e), 0, 0);
+								if (unit->unknown13c != NONE)
+								{
+									s_event_player *player = event_player_get(unit->unknown13c);
 
-							if (user_index != NONE)
-								function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
+									if (player->local_index != NONE)
+										function_1874b0(player->local_index, (vector3f const *)((byte *)vehicle + 0x150));
+								}
+							}
+							result = true;
+							function_cc810(vehicle_index);
 						}
 					}
-					result = true;
-					function_cc810(vehicle_index);
 				}
 			}
 		}
@@ -2928,38 +3218,41 @@ bool __stdcall unit_action_vehicle_board_update(long unit_index, long type)
 // @retail 0xeb3c0
 bool __stdcall unit_action_vehicle_ejection(long unit_index, s_unit_request *request)
 {
+	bool result = false;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 	long vehicle_index = unit->parent_object_index;
-	bool result = false;
-
 	if (vehicle_index == NONE || unit->seat_index == NONE)
-		return result;
+		goto done;
 	if (*((bool *)request + 5))
 		function_e69c0(unit_index, 0x20);
-	if (UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x20))
-		return false;
-	function_e69c0(unit_index, 0x1d);
-	function_e69c0(unit_index, 0x1c);
-	function_e69c0(unit_index, 0x1f);
-	function_e69c0(unit_index, 0x1b);
-	function_e69c0(unit_index, 0x1a);
-	function_e69c0(unit_index, 0x16);
-	if (*((bool *)request + 5))
+	if (!UNIT_ACTION_ACTIVE(UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index)), 0x20))
 	{
-		function_e6960(unit_index, 0x20);
-		function_cc810(vehicle_index);
-		return true;
+		function_e69c0(unit_index, 0x1d);
+		function_e69c0(unit_index, 0x1c);
+		function_e69c0(unit_index, 0x1f);
+		function_e69c0(unit_index, 0x1b);
+		function_e69c0(unit_index, 0x1a);
+		function_e69c0(unit_index, 0x16);
+		if (*((bool *)request + 5))
+		{
+			function_e6960(unit_index, 0x20);
+			result = true;
+		}
+		else if (function_10f430(unit_index, 0x7000101, 0x7000101, 0x7000101, 0x80000c4, 0.0f, 0, 2))
+		{
+			if (*((bool *)request + 4))
+				actions->unknown00 |= 2;
+			else
+				actions->unknown00 &= ~2;
+			bit_vector_set(actions->active, 0x20, true);
+			result = true;
+		}
+		if (result)
+			function_cc810(vehicle_index);
 	}
-	if (!function_10f430(unit_index, 0x7000101, 0x7000101, 0x7000101, 0x80000c4, 0.0f, 0, 2))
-		return false;
-	if (*((bool *)request + 4))
-		actions->unknown00 |= 2;
-	else
-		actions->unknown00 &= ~2;
-	actions->active[1] |= 1;
-	function_cc810(vehicle_index);
-	return true;
+done:
+	return result;
 }
 
 void function_152140(long player_index);
@@ -2991,6 +3284,12 @@ bool __stdcall unit_action_vehicle_ejection_update(long unit_index, long type)
 	return result;
 }
 
+struct s_unit_request_vehicle_flip
+{
+	long type;
+	long flipper_index;
+};
+
 struct s_damage_owner
 {
 	long player_index;
@@ -3006,62 +3305,61 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // @retail 0xeb5d0
 bool __stdcall unit_action_vehicle_flip(long unit_index, s_unit_request *request)
 {
+	bool result = false;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 
-	if (unit->object_type != 1)
-		return false;
-	if (!function_f5dc0(unit_index))
-		return false;
-
-	long flipper_index = *(long *)((byte *)request + 4);
-
-	if (flipper_index != NONE)
+	if (unit->object_type == 1)
 	{
-		byte *flipper = (byte *)UNIT_ACTION_UNIT_GET(flipper_index);
+		if (function_f5dc0(unit_index))
+		{
+			s_unit_request_vehicle_flip *flip = (s_unit_request_vehicle_flip *)request;
+			s_damage_owner owner;
+			long flipper_index = flip->flipper_index;
 
-		*(long *)(flipper + 0x250) = unit_index;
-		*(long *)(flipper + 0x254) = g_510c54->game_time;
+			if (flipper_index != NONE)
+			{
+				byte *flipper = (byte *)UNIT_ACTION_UNIT_GET(flipper_index);
+
+				*(long *)(flipper + 0x250) = unit_index;
+				*(long *)(flipper + 0x254) = g_510c54->game_time;
+			}
+			if ((real)fabs(unit->forward.k) > 0.70710677f)
+			{
+				*((byte *)unit + 0x34d) = (byte)((0.0f > unit->forward.k) + 3);
+			}
+			else if (flipper_index != NONE)
+			{
+				transform4x3f unit_matrix_storage;
+				transform4x3f flipper_matrix_storage;
+				vector3f offset;
+				vector3f side;
+
+				vector3d_from_points3d(&function_ba160(flipper_index, &flipper_matrix_storage)->position,
+					&function_ba160(unit_index, &unit_matrix_storage)->position, &offset);
+				side.k = g_4687b0->i * offset.j - g_4687b0->j * offset.i;
+				side.j = g_4687b0->k * offset.i - g_4687b0->i * offset.k;
+				side.i = g_4687b0->j * offset.k - g_4687b0->k * offset.j;
+				*((byte *)unit + 0x34d) = (byte)((dot3f(&side, &unit->forward) > 0.0f) + 1);
+			}
+			else
+			{
+				*((byte *)unit + 0x34d) = 1;
+			}
+			word *flags = (word *)((byte *)unit + 0x348);
+			*flags |= 0x40;
+			*((byte *)unit + 0x34e) = 0;
+
+			object_get_damage_owner(flip->flipper_index, &owner);
+
+			byte *current = (byte *)UNIT_ACTION_UNIT_GET(unit_index);
+
+			*(long *)(current + 0xc8) = owner.object_index;
+			*(long *)(current + 0xc4) = owner.player_index;
+			*(short *)(current + 0xc2) = owner.team;
+			result = true;
+		}
 	}
-	if ((real)fabs(unit->forward.k) > 0.70710677f)
-	{
-		*((byte *)unit + 0x34d) = (byte)((0.0f > unit->forward.k) + 3);
-	}
-	else if (flipper_index != NONE)
-	{
-		transform4x3f unit_matrix_storage;
-		transform4x3f flipper_matrix_storage;
-		transform4x3f *unit_matrix = function_ba160(unit_index, &unit_matrix_storage);
-		transform4x3f *flipper_matrix = function_ba160(flipper_index, &flipper_matrix_storage);
-		vector3f offset;
-		vector3f const *up = g_4687b0;
-		vector3f side;
-
-		offset.i = unit_matrix->position.x - flipper_matrix->position.x;
-		offset.j = unit_matrix->position.y - flipper_matrix->position.y;
-		offset.k = unit_matrix->position.z - flipper_matrix->position.z;
-		side.k = up->i * offset.j - up->j * offset.i;
-		side.j = up->k * offset.i - up->i * offset.k;
-		side.i = up->j * offset.k - up->k * offset.j;
-		*((byte *)unit + 0x34d) = (byte)((unit->forward.j * side.j + unit->forward.k * side.k + unit->forward.i * side.i >
-			0.0f) + 1);
-	}
-	else
-	{
-		*((byte *)unit + 0x34d) = 1;
-	}
-	*((byte *)unit + 0x348) |= 0x40;
-	*((byte *)unit + 0x34e) = 0;
-
-	s_damage_owner owner;
-
-	object_get_damage_owner(*(long *)((byte *)request + 4), &owner);
-
-	byte *current = (byte *)UNIT_ACTION_UNIT_GET(unit_index);
-
-	*(long *)(current + 0xc8) = owner.object_index;
-	*(long *)(current + 0xc4) = owner.player_index;
-	*(short *)(current + 0xc2) = owner.team;
-	return true;
+	return result;
 }
 // @retail 0xe5670
 long function_e5670(long unit_index)
@@ -3089,44 +3387,42 @@ struct s_unit_request_move
 // @retail 0xeb7e0
 bool __stdcall function_eb7e0(long unit_index, s_unit_request *request)
 {
+	bool result = false;
 	s_unit_request_move *move = (s_unit_request_move *)request;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	bool result = false;
 
-	if (unit->parent_object_index != NONE)
-		return result;
-	if (move->immediate)
+	if (unit->parent_object_index == NONE)
 	{
-		vector3f facing;
+		if (move->immediate)
+		{
+			vector3f facing;
 
-		facing.i = move->facing.x;
-		facing.j = move->facing.y;
-		facing.k = 0.0f;
-		function_b9a50(unit_index);
-		if (function_30bf0(&facing) > 0.0f)
-			function_b75a0(unit_index, NULL, &facing, g_4687b0, NULL, false);
-		function_e56f0(unit_index, &move->point);
+			vector3f_assign(&facing, move->facing.x, move->facing.y, 0.0f);
+			function_b9a50(unit_index);
+			if (function_30bf0(&facing) > 0.0f)
+				function_b75a0(unit_index, NULL, &facing, g_4687b0, NULL, false);
+			function_e56f0(unit_index, &move->point);
 
-		s_unit_actions *current = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
+			s_unit_actions *current = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
 
-		current->active[0] = 0;
-		current->active[1] = 0;
-		current->unknown36 = 0;
-		return true;
+			memset(current->active, 0, sizeof(current->active));
+			current->unknown36 = 0;
+			result = true;
+		}
+		else if (!(bit_vector_test(actions->active, move->type)))
+		{
+			vector3f facing;
+
+			vector3f_assign(&facing, move->facing.x, move->facing.y, 0.0f);
+			if (function_ee090(unit_index, 0x50000cb, 1, 0x60000cc, &move->point, &facing))
+			{
+				bit_vector_set(actions->active, move->type, true);
+				result = true;
+			}
+		}
 	}
-	if (UNIT_ACTION_ACTIVE(actions, move->type))
-		return result;
-
-	vector3f facing;
-
-	facing.i = move->facing.x;
-	facing.j = move->facing.y;
-	facing.k = 0.0f;
-	if (!function_ee090(unit_index, 0x50000cb, 1, 0x60000cc, &move->point, &facing))
-		return false;
-	actions->active[move->type >> 5] |= 1 << (move->type & 0x1f);
-	return true;
+	return result;
 }
 
 bool function_10f9b0(long unit_index, long state_name, long action_name, long a, transform4x3f *matrix, bool flag);
@@ -3209,118 +3505,172 @@ struct s_unit_request_seat_animation
 
 /* plays a seat animation (type 36): the request's, or the one following
    the unit's current animation */
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
 // @retail 0xebb40
 bool __stdcall function_ebb40(long unit_index, s_unit_request *request)
 {
-	s_unit_request_seat_animation *seat_request = (s_unit_request_seat_animation *)request;
-	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	short mode = seat_request->mode;
-	point3f point;
-	vector3f facing;
-	long state_name;
-
-	if (mode != 0 && UNIT_ACTIONS_GET(unit)->unknown36 != 7)
+	bool result = false;
 	{
-		point = seat_request->point;
-		facing = seat_request->facing;
-		switch (mode)
+		s_unit_request_seat_animation *seat_request = (s_unit_request_seat_animation *)request;
+		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+		short mode = seat_request->mode;
+		point3f point;
+		vector3f facing;
+		long state_name;
+		long context;
+
+		if (mode != 0 && UNIT_ACTIONS_GET(unit)->unknown36 != 7)
 		{
-		case 1:
-			state_name = 0x110001b4;
-			break;
-		case 2:
-			state_name = 0x120001b5;
-			break;
-		case 3:
-			state_name = 0xc0006c3;
-			break;
-		default:
-			return false;
+			point = seat_request->point;
+			facing = seat_request->facing;
+			context = 0x5000049;
+			switch (mode)
+			{
+			case 1:
+				state_name = 0x110001b4;
+				break;
+			case 2:
+				state_name = 0x120001b5;
+				break;
+			case 3:
+				state_name = 0xc0006c3;
+				break;
+			default:
+				goto done;
+			}
 		}
-		return function_ee090(unit_index, state_name, 6, 0x5000049, &point, &facing);
+		else
+		{
+			function_b9dd0(unit_index, &point);
+			unit_action_seat_facing_get(unit, &facing);
+			context = 0x400000c;
+
+			long field_c_4;
+			long current_action;
+
+			if (!function_10f630(unit_index, &current_action, &field_c_4))
+				goto done;
+			switch (current_action)
+			{
+			case 0xb0006c4:
+				state_name = 0xc0006c3;
+				break;
+			case 0x10000229:
+				state_name = 0x110001b4;
+				break;
+			case 0x1100022a:
+				state_name = 0x120001b5;
+				break;
+			default:
+				state_name = NONE;
+				break;
+			}
+			if (state_name == NONE)
+				goto done;
+		}
+		result = function_ee090(unit_index, state_name, 6, context, &point, &facing);
 	}
-
-	function_b9dd0(unit_index, &point);
-	unit_action_seat_facing_get(unit, &facing);
-
-	long field_c_4;
-	long current_action;
-
-	if (!function_10f630(unit_index, &current_action, &field_c_4))
-		return false;
-	switch (field_c_4)
-	{
-	case 0xb0006c4:
-		state_name = 0xc0006c3;
-		break;
-	case 0x10000229:
-		state_name = 0x110001b4;
-		break;
-	case 0x1100022a:
-		state_name = 0x120001b5;
-		break;
-	default:
-		return false;
-	}
-	return function_ee090(unit_index, state_name, 6, 0x400000c, &point, &facing);
+done:
+	return result;
 }
 
 /* plays the return from a seat animation (type 37): the request's, or the
    one following the unit's current animation */
+// The NONE state for the action switch's default and the test after the switch (instead of a goto from the
+// default) give retail's layout; kept only with this byte match.
+// score 76 (was 76): Frame and entry carriers agree; one extra byte, provider output role and
+// selector tail blocks remain. All original values retained.
+// Related common result and precise contexts 76; reverse/third-first case orders 76/76; initially
+// selected request context 113; isolated common exit 109; precise contexts without common result
+// 133; shared dispatch 134; selected-name result 159. Keep original case order, one dispatch,
+// genuine contexts and one Boolean completion exit; selected provider output unchanged.
+// Round 34: switching on 0x10f630's first output, as retail does (a value fix, as in 0xebb40),
+// 76 with retail's output slots; the same merged case block (0x10000229) is placed after the call.
+// Round 50: a compile-only screen reproduces the layout: VC sorts each switch's cases by value, so
+// no case order changes it, and the merged mode-1/0x110001b4 block always stays in the request
+// branch (retail: after the query's 0x120001b5 block); swapping the if/else branches gives the same
+// code. The mode mapped to the current-animation name and one shared name switch 103 (477 bytes,
+// the request cases threaded, 0x1100022a duplicated); the query switch as an if/else chain 89;
+// `return result` for the mode default 121; the name switch inside `if (query)` 76; default first
+// 76. A brute-force screen of switch/if dispatch, the three exits as goto/return result/return
+// false and two declaration orders (144 forms) never placed that block in the query branch.
+// Round 29: one mode switch after the if/else (the query maps the animation to a mode) 139
+// (475 bytes, not threaded); the call returned with `return false` at done 145; the query
+// branch first through a named bool 123; the mode default `return false` 121 (487 bytes, the
+// result on the stack); the call in each branch 155 (520 bytes). Compile-only screens: the
+// context assigned after either switch, or the copies after the switch, stop the case blocks
+// merging; the context in every case keeps our placement.
+// Round 58: no `mode` local 76; the request context before the copies 83; the query context after the
+// 0x10f630 test 83; the query outputs declared before the b9dd0/facing calls 76; no unit local (the lookup
+// at each use) 137 (494 bytes). Harness: all 36 orders of the two branches' copy/context statements keep
+// our layout.
 // @retail 0xebd30
 bool __stdcall function_ebd30(long unit_index, s_unit_request *request)
 {
-	s_unit_request_seat_animation *seat_request = (s_unit_request_seat_animation *)request;
-	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	short mode = seat_request->mode;
-	point3f point;
-	vector3f facing;
-	long state_name;
-
-	if (mode != 0 && UNIT_ACTIONS_GET(unit)->unknown36 != 6)
+	bool result = false;
 	{
-		point = seat_request->point;
-		facing = seat_request->facing;
-		switch (mode)
+		s_unit_request_seat_animation *seat_request = (s_unit_request_seat_animation *)request;
+		s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
+		short mode = seat_request->mode;
+		point3f point;
+		vector3f facing;
+		long state_name;
+		long context;
+
+		if (mode != 0 && UNIT_ACTIONS_GET(unit)->unknown36 != 6)
 		{
-		case 1:
-			state_name = 0x10000229;
-			break;
-		case 2:
-			state_name = 0x1100022a;
-			break;
-		case 3:
-			state_name = 0xb0006c4;
-			break;
-		default:
-			return false;
+			point = seat_request->point;
+			facing = seat_request->facing;
+			context = 0x5000049;
+			switch (mode)
+			{
+			case 1:
+				state_name = 0x10000229;
+				break;
+			case 2:
+				state_name = 0x1100022a;
+				break;
+			case 3:
+				state_name = 0xb0006c4;
+				break;
+			default:
+				goto done;
+			}
 		}
-		return function_ee090(unit_index, state_name, 7, 0x5000049, &point, &facing);
+		else
+		{
+			function_b9dd0(unit_index, &point);
+			unit_action_seat_facing_get(unit, &facing);
+			context = 0x400000c;
+
+			long field_c_4;
+			long current_action;
+
+			if (!function_10f630(unit_index, &current_action, &field_c_4))
+				goto done;
+			switch (current_action)
+			{
+			case 0xc0006c3:
+				state_name = 0xb0006c4;
+				break;
+			case 0x110001b4:
+				state_name = 0x10000229;
+				break;
+			case 0x120001b5:
+				state_name = 0x1100022a;
+				break;
+			default:
+				state_name = NONE;
+				break;
+			}
+			if (state_name == NONE)
+				goto done;
+		}
+		result = function_ee090(unit_index, state_name, 7, context, &point, &facing);
 	}
-
-	function_b9dd0(unit_index, &point);
-	unit_action_seat_facing_get(unit, &facing);
-
-	long field_c_4;
-	long current_action;
-
-	if (!function_10f630(unit_index, &current_action, &field_c_4))
-		return false;
-	switch (field_c_4)
-	{
-	case 0xc0006c3:
-		state_name = 0xb0006c4;
-		break;
-	case 0x110001b4:
-		state_name = 0x10000229;
-		break;
-	case 0x120001b5:
-		state_name = 0x1100022a;
-		break;
-	default:
-		return false;
-	}
-	return function_ee090(unit_index, state_name, 7, 0x400000c, &point, &facing);
+done:
+	return result;
 }
 
 /* plays a named seat animation where the unit is (type 38) */
@@ -3362,30 +3712,23 @@ void __stdcall function_b8890(long unit_index);
 // @retail 0xec0d0
 void __stdcall function_ec0d0(long unit_index, long state_name, long action_name)
 {
-	/* retail keeps these three arguments on the stack */
-	long const *unit_reference = &unit_index;
-	long const *state_reference = &state_name;
-	long const *action_reference = &action_name;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
 
 	if (unit->object_type == 0)
 	{
-		transform4x3f nodes = *(transform4x3f *)((byte *)unit + *(short *)((byte *)unit + 0x116));
+		s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
+		transform4x3f nodes = *(transform4x3f *)((byte *)current + *(short *)((byte *)current + 0x116));
 		transform4x3f matrix;
-		transform4x3f inverse;
-		transform4x3f object_matrix;
-		transform4x3f object_inverse;
-		quaternionf orientation;
 
 		if (function_10f9b0(unit_index, state_name, action_name, 3, &matrix, false))
 		{
+			transform4x3f inverse;
 			vector3f facing;
 
 			function_141590(&matrix, &inverse);
 			function_142a60(&nodes, &inverse, &matrix);
-			facing.i = matrix.forward.i;
-			facing.j = matrix.forward.j;
+			facing = matrix.forward;
 			facing.k = 0.0f;
 			if (function_30bf0(&facing) > 0.0f)
 				function_b75a0(unit_index, NULL, &facing, g_4687b0, NULL, false);
@@ -3393,20 +3736,25 @@ void __stdcall function_ec0d0(long unit_index, long state_name, long action_name
 		function_e5930(unit_index);
 		function_10f430(unit_index, state_name, 0x7000101, 0x7000101, action_name, 0.0f, 0, 2);
 
-		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
+		{
+			byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
+			transform4x3f object_matrix;
+			transform4x3f object_inverse;
+			quaternionf orientation;
 
-		function_ba160(unit_index, &object_matrix);
-		function_141590(&object_matrix, &object_inverse);
-		function_142a60(&object_inverse, &nodes, &matrix);
-		function_141f60(&matrix.rotation, &orientation);
-		*(point3f *)(seat_transform + 0x10) = matrix.position;
-		*(quaternionf *)seat_transform = orientation;
-		function_bd020(unit_index);
+			function_ba160(unit_index, &object_matrix);
+			function_141590(&object_matrix, &object_inverse);
+			function_142a60(&object_inverse, &nodes, &matrix);
+			function_141f60(&matrix.rotation, &orientation);
+			*(point3f *)(seat_transform + 0x10) = matrix.position;
+			*(quaternionf *)seat_transform = orientation;
+			function_bd020(unit_index);
+		}
 		actions->unknown36 = 0;
 	}
 	else
 	{
-		if (!((unit->flags_c0 >> 6) & 1))
+		if (!TEST_FIELD_BIT((unit->flags_c0 >> 6) & 1))
 			function_b8890(unit_index);
 		function_ee460(unit_index, 0x6000086, 0x400000c);
 		actions->unknown36 = 0;
@@ -3437,9 +3785,17 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
+// build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
 // score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67).
 // Early guard, comparison local, byte/long/short type, const pointer and header lookup
 // all 72; direct post-call unit lookup 52.
+// Lane 16 r31: the unit pointer read before the 0xec0d0 call matches with __declspec(noinline) on
+// function_e5750's declaration (not allowed, docs/DECOMPILING.md); without it 0xe5750 inlines here: 72.
+// Round 10 (lane 14): BLOCKED-BY 0xe5750 (finished contributor code): a compile-only screen inlines it
+// under one `if` from /d2inlT70 up, unconditionally from 62 and under 0xec9a0's two tests from 90, and
+// every source form here stays under the build's threshold. Pointer before the call with `!type` 72,
+// with an early return 72, a bool local before the call 83; after the call an early return 52, `!type` 52.
 // @retail 0xec330
 void __stdcall function_ec330(long unit_index, long type)
 {
@@ -3453,16 +3809,20 @@ void __stdcall function_ec330(long unit_index, long type)
 bool __stdcall function_ec380(long unit_index, s_unit_request *request)
 {
 	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
-	short mode = *(short *)((byte *)request + 4);
-	long name;
+	long mode = *(short *)((byte *)request + 4);
+	long name = NONE;
 
-	if (mode < 0)
-		return false;
-	if (mode <= 1)
-		name = 0xa00022d;
-	else if (mode == 2)
-		name = 0xb00022e;
-	else
+	if (mode >= 0)
+	{
+		if (mode > 1)
+		{
+			if (mode == 2)
+				name = 0xb00022e;
+		}
+		else
+			name = 0xa00022d;
+	}
+	if (name == NONE)
 		return false;
 
 	c_animation_channel *channel = NULL;
@@ -3481,14 +3841,14 @@ bool __stdcall function_ec380(long unit_index, s_unit_request *request)
 			actions->point_ticks = (short)unit_action_round_long((real)g_510c54->field_2_3 * event_time);
 		else
 			actions->point_ticks = (short)unit_action_round_long((real)g_510c54->field_2_3 * 0.8f);
-		actions->active[1] |= 0x200;
+		bit_vector_set(actions->active, 41, true);
 		return true;
 	}
 	function_edff0(unit_index);
 	actions->point_mode = *((byte *)request + 4);
 	actions->point_target = *(long *)((byte *)request + 8);
 	actions->point_ticks = 2;
-	actions->active[1] |= 0x200;
+	bit_vector_set(actions->active, 41, true);
 	return true;
 }
 
@@ -3528,9 +3888,24 @@ extern vector3f *g_4687bc;
 /* a raised weapon's point (type 41 update): when its time is up, it
    shoves the target in front of the unit, with damage and an impact
    effect */
+// score 45 (was 277): g_54e898 is copied with a dword load (retail `mov cx, word`), the rigid body's
+// data and offset registers swap in its address add, and the 0x188180 call setup differs
+// (BLOCKED-BY 0x188180: ours takes the effect value in ecx and forward in edx; retail passes the point
+// in eax, forward in ecx and pushes the short material slot raw).
+// Round 236: complete initial vector copy with entry damage lifetime and center/shove/impact names, all subsets 277/277/277/277/277/277/277/277.
+// Keep only the whole forward-vector initialization; all workspace and name changes restored.
+// Round 46: result false at entry 310; result per exit 277; result true, cleared on failure 220; material
+// NONE before function_d6660 222; long rigid body index 221; long node index (nested) 202; dot through
+// vector3d_from_points3d + dot3f 203; perpendicular scaled/added in place 227; side cases scaled into a
+// fresh vector 99; add operands swapped 227; dot term orders xzy 97, xyz 94, zyx 99, zxy 97, yxz 99;
+// dot3f either way 100/100; rigid_bodies.data 94; material read before the component 93; rigid body
+// pointer 90; both 89; result declared first 54; unknown14 stored first/second/last 51/51/56;
+// x + (y + z) 54; x + (z + y) 48; with unknown14 second 45; rigid body by pointer arithmetic 45;
+// the material NONE store back after function_d6660 148 (retail stores it first; d6660 then overwrites it).
 // @retail 0xec4f0
 bool __stdcall function_ec4f0(long unit_index, long type)
 {
+	bool result = true;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	byte *local_98b918 = g_4e3b44[unit->definition_index & 0xffff].bytes;
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
@@ -3538,116 +3913,129 @@ bool __stdcall function_ec4f0(long unit_index, long type)
 
 	actions->point_ticks--;
 	if (target_index == NONE)
-		return false;
-	if (actions->point_ticks > 0)
-		return true;
-
-	byte *target = (byte *)function_badc0(target_index, NONE);
-
-	if (!target)
-		return false;
-
-	byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
-	s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
-	vector3f direction;
-	point3f target_center;
-	point3f unit_center;
-
-	direction.i = unit->forward.i;
-	direction.j = unit->forward.j;
-	direction.k = 0.0f;
-	if (function_30bf0(&direction) == 0.0f)
-		return false;
-
-	real negative_j = 0.0f - direction.j;
-
-	function_b9dd0(target_index, &target_center);
-	function_b9dd0(unit_index, &unit_center);
-	if (!((target_center.y - unit_center.y) * direction.j + (target_center.z - unit_center.z) * direction.k +
-		(target_center.x - unit_center.x) * direction.i > 0.0f))
 	{
-		return false;
+		result = false;
 	}
-
-	switch (actions->point_mode)
+	else if (actions->point_ticks <= 0)
 	{
-	case 0:
-		direction.i *= 3.0f;
-		direction.j *= 3.0f;
-		break;
-	case 1:
-	{
-		real i = direction.i;
+		byte *target = (byte *)function_badc0(target_index, NONE);
 
-		direction.i = i * 0.3f + negative_j * 3.0f;
-		direction.j = direction.j * 0.3f + i * 3.0f;
-		break;
-	}
-	case 2:
-	{
-		real i = direction.i;
-
-		direction.i = i * 0.3f + negative_j * -3.0f;
-		direction.j = direction.j * 0.3f + i * -3.0f;
-		break;
-	}
-	}
-	direction.k = 1.5f;
-
-	vector3f shove = direction;
-
-	if (function_30bf0(&shove) == 0.0f)
-		return false;
-
-	if (*(long *)(local_98b918 + 0x190) != NONE)
-	{
-		s_type_1e6529 damage;
-
-		function_d6660(&damage, unit_index);
-		damage.material_index = NONE;
-		damage.unknown84 = 3;
-		damage.scale = 1.0f;
-		object_get_damage_owner(unit_index, &damage.owner);
-		damage.definition_index = *(long *)(local_98b918 + 0x190);
-		damage.position = unit_center;
-		damage.origin = unit_center;
-		damage.unknown14 = unit_index;
-		damage.direction = direction;
-		function_30bf0(&damage.direction);
-		damage.node_direction = damage.direction;
-		function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
-	}
-
-	if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
-	{
-		byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
-		long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
-
-		if (effect_tag_index != NONE)
+		if (target)
 		{
-			s_havok_component *component = havok_component_get(root->havok_component_index);
-			short material_index = g_54e898;
-			short rigid_body_index = function_0b67a0((s_small_index const *)component);
+			byte *target_definition = g_4e3b44[*(long *)target & 0xffff].bytes;
+			s_unit_action_unit *root = UNIT_ACTION_UNIT_GET(function_baf80(target_index));
+			vector3f direction = unit->forward;
+			point3f target_center;
+			point3f unit_center;
 
-			if (rigid_body_index != NONE && component->rigid_bodies[rigid_body_index].node_count > 0 &&
-				*component->rigid_bodies[rigid_body_index].nodes != NONE)
+			direction.k = 0.0f;
+			if (function_30bf0(&direction) != 0.0f)
 			{
-				vector3f impulse;
-				byte strength;
+				vector3f perpendicular;
 
-				impulse.i = shove.i * -1.0f;
-				impulse.j = shove.j * -1.0f;
-				impulse.k = shove.k * -1.0f;
-				function_1eb020(effect_tag_index, (long)*component->rigid_bodies[rigid_body_index].nodes, &material_index);
-				strength = target_definition[0x1a];
-				if (strength > definition[0x1a])
-					strength = definition[0x1a];
-				function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
-					material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+				perpendicular.i = 0.0f - direction.j;
+				perpendicular.j = direction.i;
+				perpendicular.k = 0.0f;
+
+				function_b9dd0(target_index, &target_center);
+				function_b9dd0(unit_index, &unit_center);
+				if ((target_center.x - unit_center.x) * direction.i + ((target_center.z - unit_center.z) * direction.k +
+					(target_center.y - unit_center.y) * direction.j) > 0.0f)
+				{
+					switch (actions->point_mode)
+					{
+					case 0:
+						vector3f_scale(&direction, 3.0f, &direction);
+						break;
+					case 1:
+					{
+						vector3f ahead;
+
+						vector3f_scale(&perpendicular, 3.0f, &perpendicular);
+						vector3f_scale(&direction, 0.3f, &ahead);
+						vector3f_add(&ahead, &perpendicular, &direction);
+						break;
+					}
+					case 2:
+					{
+						vector3f ahead;
+
+						vector3f_scale(&perpendicular, -3.0f, &perpendicular);
+						vector3f_scale(&direction, 0.3f, &ahead);
+						vector3f_add(&ahead, &perpendicular, &direction);
+						break;
+					}
+					}
+					direction.k = 1.5f;
+
+					vector3f shove = direction;
+
+					if (function_30bf0(&shove) != 0.0f)
+					{
+						if (*(long *)(local_98b918 + 0x190) != NONE)
+						{
+							s_type_1e6529 damage;
+
+							damage.material_index = NONE;
+							function_d6660(&damage, unit_index);
+							damage.unknown84 = 3;
+							damage.scale = 1.0f;
+							object_get_damage_owner(unit_index, &damage.owner);
+							damage.definition_index = *(long *)(local_98b918 + 0x190);
+							damage.unknown14 = unit_index;
+							damage.position = unit_center;
+							damage.origin = unit_center;
+							damage.direction = direction;
+							function_30bf0(&damage.direction);
+							damage.node_direction = damage.direction;
+							function_d7b80(&damage, actions->point_target, NONE, NONE, NONE, NULL);
+						}
+
+						if (((1 << *local_98b918) & 1) && root->havok_component_index != NONE)
+						{
+							byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
+							long effect_tag_index = *(long *)(g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes + 0x24);
+
+							if (effect_tag_index != NONE)
+							{
+								short material_index = g_54e898;
+								s_havok_component *component = havok_component_get(root->havok_component_index);
+								long rigid_body_index = function_0b67a0((s_small_index const *)component);
+
+								if (rigid_body_index != NONE)
+								{
+									s_havok_component_rigid_body const *rigid_body = &component->rigid_bodies[rigid_body_index];
+
+									if (rigid_body->node_count > 0)
+									{
+										long node_index = rigid_body->nodes[0];
+
+										if (node_index != NONE)
+										{
+											vector3f impulse;
+											byte strength;
+
+											impulse.i = shove.i * -1.0f;
+											impulse.j = shove.j * -1.0f;
+											impulse.k = shove.k * -1.0f;
+											function_1eb020(effect_tag_index, node_index, &material_index);
+											strength = target_definition[0x1a];
+											if (strength > definition[0x1a])
+												strength = definition[0x1a];
+											function_188180(&unit_center, &impulse, *(long *)(definition + 0x58), unit_index, 0xb, strength,
+												material_index, (long)g_4687bc, (s_location const *)((byte *)unit + 0x28), 1.0f);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
+		result = false;
 	}
-	return false;
+	return result;
 }
 
 /* plays a pose animation at a point (type 42) */
@@ -3687,7 +4075,7 @@ bool __stdcall function_ec9a0(long unit_index, s_unit_request *request)
 
 		function_b9dd0(unit_index, &point);
 		unit_action_seat_facing_get(UNIT_ACTION_UNIT_GET(unit_index), &facing);
-		return function_ee090(unit_index, 0x6000542, 3, 0x7000543, &point, &facing);
+		result = function_ee090(unit_index, 0x6000542, 3, 0x7000543, &point, &facing);
 	}
 	return result;
 }
@@ -3853,10 +4241,6 @@ void function_1c4b00(long object_index, void *a, void *b, long c);
 
 /* the pose sat down from finished: the unit leaps to the kept point on a
    ballistic arc */
-// score 66 (was 66): frame 0x1c agrees; scalar output homes and x87/SSE speed transport differ.
-// Minimum/selected/both scalar output names 66/66/66; existing scaler 66;
-// scaler with those three name sets 66/66/66; both names, scaler and
-// reversed scalar declarations 66. Original body and includes restored.
 // @retail 0xecdc0
 void __stdcall function_ecdc0(long unit_index, long type)
 {
@@ -3864,22 +4248,21 @@ void __stdcall function_ecdc0(long unit_index, long type)
 
 	s_unit_actions *actions = UNIT_ACTIONS_GET(UNIT_ACTION_UNIT_GET(unit_index));
 	point3f center;
-	real minimum_speed;
+	real launch_speed;
 	real speed;
 	vector3f velocity;
 
 	function_b9dd0(unit_index, &center);
-	function_fa1a0(1.0f, 1.0f, &center, (point3f const *)&actions->unknown20, &minimum_speed, NULL, NULL,
+	function_fa1a0(1.0f, 1.0f, &center, (point3f const *)&actions->unknown20, &launch_speed, NULL, NULL,
 		false, &velocity, &speed, NULL, NULL, NULL, NULL);
-	if (function_fa1a0(minimum_speed + 0.01f, 1.0f, &center, (point3f const *)&actions->unknown20,
+	launch_speed += 0.01f;
+	if (function_fa1a0(launch_speed, 1.0f, &center, (point3f const *)&actions->unknown20,
 		NULL, NULL, NULL, false, &velocity, &speed, NULL, NULL, NULL, NULL))
 	{
-		velocity.i *= speed;
-		velocity.j *= speed;
-		velocity.k *= speed;
+		vector3f_scale(&velocity, speed, &velocity);
 		function_b7740(unit_index, &velocity, NULL, false);
 		function_1c4b00(unit_index, &velocity, NULL, 1);
-		if (velocity.k * velocity.k + velocity.j * velocity.j + velocity.i * velocity.i > 0.0001f)
+		if (length_sq3f(&velocity) > 0.0001f)
 		{
 			function_b9b90(unit_index, false);
 			function_b7360(unit_index);
@@ -3916,10 +4299,41 @@ void __stdcall function_ecfc0(long unit_index, long type)
 
 void function_11d820(quaternionf const *a, quaternionf const *b, quaternionf *out);
 extern vector3f *g_4687ac;
+PRIVATE __forceinline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out);
+PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out);
 
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
+// score 201 (was 201): the result is now retail's (per-case `result = b8d30 > 0 && f10f430`, body under
+// `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
+// away/left and frame-left xmm colouring (retail loads up before forward), the seat offset scaled with the
+// component as destination (1406 bytes against 1388) and the transform rows' sum order.
+// Earlier (268): the animation result is stored as the call's al before the test (retail stores
+// a constant 1 after it and has no early epilogue), the away and seat-offset xmm registers differ
+// (retail scales the offset with the component as destination), and a few float schedules.
+// Round 236: actual animation result with existing basis cross products, all eight subsets 317/316/317/315/309/307/310/326.
+// Keep actual animation result and shared frame-left cross; other basis helpers restored (extra first cross 307, only two points).
+// Round 39 lead: 0x11d820 takes `a` in ECX and `b` in EAX (its own retail bytes), so the two calls here likely pass the
+// quaternions the other way round, as 0xee090's did (fixed there); the swap alone leaves this listing's count unchanged
+// (positional 286 in a link of this file and its callees), and the offset/frame math through 0xee090's two point helpers
+// is 160 bytes short of retail (1228), so neither is kept yet.
+// Round 46: per-case b8d30 tests with the flag set in an && test, body under if (result) 320; per-case early
+// returns + result = true 316; per-case calls with the constant names 301; body under if (result) 322; up
+// copied inside the no-parent block 309; renamed up 309; both crosses through cross3f 286; away through
+// vector3f_scale 291; seat offset through the transform/untransform helpers 373 (untransform out of line);
+// quaternion order as 0xee090 291; both 373; helpers declared __forceinline 268; x *= scale in the helper 268;
+// result = b8d30 > 0 && f() per case 354/275 (folded)/313/275; early returns + result = true 294; body under
+// if (result) 293; flag form 300 (retail's exit layout, but false stored at entry); per-case result = true 289/294;
+// up initialised before the no-parent test again 272 (retail never stores up on the parent path, 0xed273).
+// Round 68 (m3 lane 16, fast; 0xee090 MATCH each time): a pool local for both unit lookups 268 (same code);
+// the flag form re-measured 300, with `default: return false` 320, with `if (!result) return false` 310;
+// b8d30 early return then `if (f10f430) result = true` 312; `result = b8d30 > 0 && f10f430` per case with
+// `default: result = false` 313, with no default 201 (kept, plain confirmed). On 201: the transform scale as
+// `x *= scale` 201 (same code); away scaled before the up copy 201; frame stores up, forward, cross 206; the
+// cross first 204; up declared before forward 201.
+// M291: Existing staged crosses at all seven basis subsets, then all with entry frame lifetime:
+// 201/201/201/201/201/201/201/201. Original executable body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
@@ -3933,95 +4347,67 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 	if (unit->object_type == 0)
 		function_1e54d0((byte *)UNIT_ACTION_UNIT_GET(unit_index) + 0x3dc, 1);
 
-	long name;
-
 	switch (*(short *)((byte *)request + 6))
 	{
 	case 0:
-		if (function_b8d30(unit_index, 0xf0005b4, &marker, 1, false) <= 0)
-			return false;
-		name = 0xc0005b7;
+		result = function_b8d30(unit_index, 0xf0005b4, &marker, 1, false) > 0 &&
+			function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, 0xc0005b7, 0.1f, 0, 0);
 		break;
 	case 1:
-		if (function_b8d30(unit_index, 0xe0005b5, &marker, 1, false) <= 0)
-			return false;
-		name = 0xb0005b8;
+		result = function_b8d30(unit_index, 0xe0005b5, &marker, 1, false) > 0 &&
+			function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, 0xb0005b8, 0.1f, 0, 0);
 		break;
-	default:
-		return false;
 	}
-	if (!function_10f430(unit_index, 0x6000086, 0x7000101, 0x7000101, name, 0.1f, 0, 0))
-		return false;
-	result = true;
-
-	vector3f forward;
-	vector3f up = object_matrix.up;
-
-	if (unit->parent_object_index == NONE)
+	if (result)
 	{
-		vector3f away;
-		vector3f left;
+		vector3f forward;
+		vector3f up;
 
-		away.i = marker.matrix.up.i * -1.0f;
-		away.j = marker.matrix.up.j * -1.0f;
-		away.k = marker.matrix.up.k * -1.0f;
-		left.i = up.j * away.k - up.k * away.j;
-		left.j = up.k * away.i - up.i * away.k;
-		left.k = up.i * away.j - up.j * away.i;
-		if (0.0f >= function_30bf0(&left))
+		if (unit->parent_object_index == NONE)
 		{
-			up = *g_4687b0;
-			left = *g_4687ac;
+			vector3f away;
+			vector3f left;
+
+			up = object_matrix.up;
+			vector3f_scale(&marker.matrix.up, -1.0f, &away);
+			cross3f(&up, &away, &left);
+			if (0.0f >= function_30bf0(&left))
+			{
+				up = *g_4687b0;
+				left = *g_4687ac;
+			}
+			cross3f(&left, &up, &forward);
+			function_b75a0(unit_index, NULL, &forward, &up, NULL, false);
 		}
-		forward.i = left.j * up.k - left.k * up.j;
-		forward.j = left.k * up.i - up.k * left.i;
-		forward.k = up.j * left.i - left.j * up.i;
-		function_b75a0(unit_index, NULL, &forward, &up, NULL, false);
+
+		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
+		transform4x3f frame;
+		point3f world;
+		point3f local;
+		quaternionf object_orientation;
+		quaternionf inverse_rotation;
+		quaternionf orientation;
+
+		frame.scale = 1.0f;
+		frame.forward = forward;
+		cross3f(&up, &forward, &frame.left);
+		frame.up = up;
+		frame.position = object_matrix.position;
+		unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
+		unit_action_untransform_point(&frame, &world, &local);
+		function_141f60(&object_matrix.rotation, &object_orientation);
+		function_141f60(&frame.rotation, &inverse_rotation);
+		inverse_rotation.w *= -1.0f;
+		function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
+		function_11d820(&inverse_rotation, &orientation, &orientation);
+		*(point3f *)(seat_transform + 0x10) = local;
+		*(quaternionf *)seat_transform = orientation;
+
+		actions->hoist_ticks = *(short *)((byte *)request + 4);
+		if (actions->hoist_ticks <= 0)
+			actions->hoist_ticks = g_510c54->field_2_3 << 1;
+		actions->active[1] |= 0x20000;
 	}
-
-	byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
-	transform4x3f frame;
-	vector3f offset = *(vector3f *)(seat_transform + 0x10);
-	vector3f world;
-	vector3f local;
-	quaternionf object_orientation;
-	quaternionf local_2e3e32;
-	quaternionf orientation;
-
-	frame.scale = 1.0f;
-	frame.forward = forward;
-	frame.left.i = up.j * forward.k - up.k * forward.j;
-	frame.left.j = up.k * forward.i - forward.k * up.i;
-	frame.left.k = forward.j * up.i - up.j * forward.i;
-	frame.up = up;
-	frame.position = object_matrix.position;
-	if (object_matrix.scale != 1.0f)
-	{
-		offset.i *= object_matrix.scale;
-		offset.j *= object_matrix.scale;
-		offset.k *= object_matrix.scale;
-	}
-	world.i = object_matrix.left.i * offset.j + object_matrix.up.i * offset.k + object_matrix.forward.i * offset.i +
-		object_matrix.position.x - frame.position.x;
-	world.j = object_matrix.left.j * offset.j + object_matrix.up.j * offset.k + object_matrix.forward.j * offset.i +
-		object_matrix.position.y - frame.position.y;
-	world.k = object_matrix.left.k * offset.j + object_matrix.up.k * offset.k + object_matrix.forward.k * offset.i +
-		object_matrix.position.z - frame.position.z;
-	local.i = frame.forward.k * world.k + frame.forward.j * world.j + frame.forward.i * world.i;
-	local.j = frame.left.k * world.k + frame.left.j * world.j + frame.left.i * world.i;
-	local.k = frame.up.k * world.k + frame.up.j * world.j + frame.up.i * world.i;
-	function_141f60(&object_matrix.rotation, &object_orientation);
-	function_141f60(&frame.rotation, &local_2e3e32);
-	local_2e3e32.w *= -1.0f;
-	function_11d820((quaternionf const *)seat_transform, &object_orientation, &orientation);
-	function_11d820(&orientation, &local_2e3e32, &orientation);
-	*(vector3f *)(seat_transform + 0x10) = local;
-	*(quaternionf *)seat_transform = orientation;
-
-	actions->hoist_ticks = *(short *)((byte *)request + 4);
-	if (actions->hoist_ticks <= 0)
-		actions->hoist_ticks = g_510c54->field_2_3 << 1;
-	actions->active[1] |= 0x20000;
 	return result;
 }
 
@@ -4088,7 +4474,7 @@ bool __stdcall function_ed680(long unit_index, s_unit_request *request)
 	return result;
 }
 
-void function_201520(short value, long type, long a, long b, long c);
+void function_201520(short value, long type, short a, bool b, bool c);
 
 /* a surprise: waiting out a paused animation, then its time, then what
    follows it */
@@ -4096,42 +4482,33 @@ void function_201520(short value, long type, long a, long b, long c);
 bool __stdcall function_ed710(long unit_index, long type)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	s_animation_state *state = (s_animation_state *)((byte *)unit + unit->animation_state_offset);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
+	s_animation_state *state = (s_animation_state *)((byte *)unit + unit->animation_state_offset);
 	long state_name;
 	long action_name;
+	bool result = true;
 
 	function_10f630(unit_index, &action_name, &state_name);
-	if (state_name == 0x700005c)
+	if (state_name != 0x700005c || (*((byte *)state + 0x6c) & 1) || !TEST_FIELD_BIT(state->channels[0].flag0) ||
+		(state->channels[0].unknown11 & 1) || (state->channels[0].unknown11 & 8))
 	{
-		if (!(*((byte *)state + 0x6c) & 1) && TEST_FIELD_BIT(state->channels[0].flag0) &&
-			!(state->channels[0].unknown11 & 1) && !(state->channels[0].unknown11 & 8))
+		if (state_name != 0x800061e && actions->surprise_ticks <= 0)
 		{
-			return true;
+			result = function_ed600(unit_index, actions);
+		}
+		else if (actions->surprise_ticks > 0 && --actions->surprise_ticks <= 0)
+		{
+			if (!TEST_FIELD_BIT((unit->flags_10a >> 2) & 1))
+				function_201520(1, actions->surprise_value, actions->surprise_type, 1, 0);
+			actions->surprise_value = NONE;
+			actions->surprise_type = NONE;
+			result = false;
 		}
 	}
-	else if (state_name == 0x800061e)
-	{
-		goto tick;
-	}
-	if (actions->surprise_ticks <= 0)
-		return function_ed600(unit_index, actions);
-
-tick:
-	if (actions->surprise_ticks <= 0)
-		return true;
-	if (--actions->surprise_ticks > 0)
-		return true;
-	if (!((unit->flags_10a >> 2) & 1))
-		function_201520(actions->surprise_value, actions->surprise_type, 1, 0, 1);
-	actions->surprise_value = NONE;
-	actions->surprise_type = NONE;
-	return false;
+	return result;
 }
 
 /* a unit's flinch (type 51): its animation, and its time */
-// score 136 (was 136): ours inlines c_animation_channel::get_duration (0x1c6ea0), which retail
-// calls; that accounts for most of the 79 extra bytes. The rest of the body lines up.
 // @retail 0xed800
 bool __stdcall function_ed800(long unit_index, s_unit_request *request)
 {
@@ -4151,8 +4528,8 @@ bool __stdcall function_ed800(long unit_index, s_unit_request *request)
 		}
 		else
 		{
-			actions->flinch_ticks = (short)unit_action_round_long((real)g_510c54->field_2_3 *
-				(state->channels[0].get_duration() * 0.33333334f));
+			real fallback_time = state->channels[0].get_duration() * 0.33333334f;
+			actions->flinch_ticks = (short)unit_action_round_long((real)g_510c54->field_2_3 * fallback_time);
 		}
 	}
 	actions->active[1] |= 0x80000;
@@ -4163,56 +4540,51 @@ void *function_1e4f90(long actor_index);
 
 /* a flinch: its time, then the weapon dropped (or swapped for the actor's
    spare weapon) */
-// score 65 (was 82): retail keeps no result local (ours puts it in bl and a stack byte) and still
-// leaves through two exits. A single exit through a result local 65-68; the hand helper's short slot
-// index gives retail's movsx (80); gotos to a final return false for some or all paths 80.
 // @retail 0xed910
 bool __stdcall function_ed910(long unit_index, long type)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-
+	s_record_pool *objects = g_4e0300;
 	bool result = true;
 
-	if (--actions->flinch_ticks > 0)
-		goto done;
-	result = false;
-
-	long weapon_index = unit_action_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), false);
-
-	if (weapon_index == NONE)
-		goto done;
-	if (g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes[0x12f] & 1)
-		goto done;
-
-	long actor_index = unit->unknown12c;
-
-	if (actor_index != NONE)
+	if (--actions->flinch_ticks <= 0)
 	{
-		byte *actor_definition = (byte *)function_1e4f90(actor_index);
+		long weapon_index = unit_action_hand_weapon_get(UNIT_ACTION_UNIT_GET(unit_index), 0);
 
-		if (actor_definition && *(long *)(actor_definition + 0x3c) != NONE)
+		if (weapon_index != NONE &&
+			!(g_4e3b44[((s_unit_action_header *)objects->data)[weapon_index & 0xffff].unit->definition_index & 0xffff].bytes[0x12f] & 1))
 		{
-			s_unit_action_object_placement data;
+			long actor_index = unit->unknown12c;
 
-			function_b7930(&data, *(long *)(actor_definition + 0x3c), unit_index, NULL);
-
-			long new_weapon_index = function_b7b40(&data);
-
-			if (new_weapon_index != NONE)
+			if (actor_index != NONE)
 			{
-				function_cd0c0(unit_index, new_weapon_index, 4);
-				goto done;
+				byte *actor_definition = (byte *)function_1e4f90(actor_index);
+
+				if (actor_definition && *(long *)(actor_definition + 0x3c) != NONE)
+				{
+					s_unit_action_object_placement data;
+
+					function_b7930(&data, *(long *)(actor_definition + 0x3c), unit_index, NULL);
+
+					long new_weapon_index = function_b7b40(&data);
+
+					if (new_weapon_index != NONE)
+					{
+						function_cd0c0(unit_index, new_weapon_index, 4);
+						return false;
+					}
+				}
 			}
+
+			s_unit_request drop;
+
+			drop.type = 9;
+			*((bool *)&drop + 4) = true;
+			unit_action_drop_weapon(unit_index, &drop);
 		}
+		result = false;
 	}
-
-	s_unit_request drop;
-
-	drop.type = 9;
-	*((bool *)&drop + 4) = true;
-	unit_action_drop_weapon(unit_index, &drop);
-done:
 	return result;
 }
 
@@ -4248,13 +4620,14 @@ extern vector3f *g_4687a8;
 // @retail 0xeda70
 void __stdcall function_eda70(long unit_index)
 {
+	s_record_pool *objects = g_4e0300;
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
 	s_unit_actions *actions = UNIT_ACTIONS_GET(unit);
-	long weapon_index = unit_action_weapon_get(unit, false);
+	long weapon_index = unit_action_hand_weapon_get(unit, 0);
 
 	if (weapon_index != NONE)
 	{
-		byte *s_type_67e06b = g_4e3b44[UNIT_ACTION_UNIT_GET(weapon_index)->definition_index & 0xffff].bytes;
+		byte *s_type_67e06b = g_4e3b44[((s_unit_action_header *)objects->data)[weapon_index & 0xffff].unit->definition_index & 0xffff].bytes;
 
 		if (*(long *)(s_type_67e06b + 0x2f4) != NONE)
 		{
@@ -4270,15 +4643,16 @@ void __stdcall function_eda70(long unit_index)
 				vector3f probe;
 				s_collision_result_1697c0 collision;
 
-				start.x = g_4687b0->i * 0.2f + marker.matrix.position.x;
-				start.y = g_4687b0->j * 0.2f + marker.matrix.position.y;
-				start.z = g_4687b0->k * 0.2f + marker.matrix.position.z;
+				collision.unknown24 = NONE;
+				position = marker.matrix.position;
+				forward = marker.matrix.forward;
+				up = marker.matrix.up;
+				start.x = g_4687b0->i * 0.2f + position.x;
+				start.y = g_4687b0->j * 0.2f + position.y;
+				start.z = g_4687b0->k * 0.2f + position.z;
 				probe.i = g_4687b0->i * -1.0f;
 				probe.j = g_4687b0->j * -1.0f;
 				probe.k = g_4687b0->k * -1.0f;
-				forward = marker.matrix.forward;
-				up = marker.matrix.up;
-				collision.unknown24 = NONE;
 				if (function_1697c0(0x84000d, &start, &probe, NONE, NONE, &collision))
 				{
 					position = collision.point;
@@ -4297,12 +4671,9 @@ void __stdcall function_eda70(long unit_index)
 			}
 			else
 			{
-				point3f weapon_center;
-
-				function_b9dd0(weapon_index, &weapon_center);
+				function_b9dd0(weapon_index, &position);
 				function_b9dd0(unit_index, &center);
 				function_b9fc0(unit_index, &forward, &up);
-				position = weapon_center;
 				position.z = center.z;
 			}
 
@@ -4411,6 +4782,8 @@ void function_edfa0(long unit_index, point2f const *facing)
 }
 
 /* faces a unit along its aiming direction */
+// MiniMax E (11-01): no new form, no lower score; the same helper without the zeroed
+// length (26) and the symmetric operand order (13) keep the commuted multiply.
 // score 13 (was 24): retail stores x before it loads y (`movss xmm2, y; mulss xmm2, xmm0`); ours
 // multiplies y into the inverse's register and stores both after. Tried: the products as `*=` or
 // in any operand order 13; normalize2d_fast 13; `else length = 0.0f;` before the test, either arm
@@ -4450,6 +4823,57 @@ void __stdcall function_e5690(long unit_index, point3f const *point);
 void function_1420f0(transform4x3f *out, point3f const *position, vector3f const *forward,
 	vector3f const *up);
 
+/* a point carried from a matrix's frame into world space, and back into a
+   matrix's frame (0 for a matrix with no scale): the bodies of 0x142570 and
+   0x142700, which retail inlines here (unknown_141590.cpp is /Ob1, which
+   keeps its own out of line) */
+PRIVATE __forceinline point3f *unit_action_transform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	real x = point->x;
+	real y = point->y;
+	real z = point->z;
+
+	if (matrix->scale != 1.0f)
+	{
+		x = matrix->scale * x;
+		y = matrix->scale * y;
+		z = matrix->scale * z;
+	}
+	out->x = matrix->up.i * z + matrix->left.i * y + matrix->forward.i * x + matrix->position.x;
+	out->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+	out->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+	return out;
+}
+
+PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const *matrix, point3f const *point, point3f *out)
+{
+	if (matrix->scale != 0.0f)
+	{
+		real x = point->x - matrix->position.x;
+		real y = point->y - matrix->position.y;
+		real z = point->z - matrix->position.z;
+
+		if (matrix->scale != 1.0f)
+		{
+			real inverse = 1.0f / matrix->scale;
+
+			x = inverse * x;
+			y = inverse * y;
+			z = inverse * z;
+		}
+		out->x = matrix->forward.k * z + matrix->forward.j * y + matrix->forward.i * x;
+		out->y = matrix->left.k * z + matrix->left.j * y + matrix->left.i * x;
+		out->z = matrix->up.k * z + matrix->up.j * y + matrix->up.i * x;
+	}
+	else
+	{
+		out->x = 0.0f;
+		out->y = 0.0f;
+		out->z = 0.0f;
+	}
+	return out;
+}
+
 /* plays a state animation at a point and facing: a biped keeps its seat
    transform relative to the new frame, anything else is moved there */
 // @retail 0xee090
@@ -4463,88 +4887,52 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 	if (!result)
 	{
 		result = function_10f430(unit_index, state_name, 0x7000101, 0x7000101, 0x400000c, 0.1f, 0, 0);
-		if (!result)
-			return result;
 	}
-	function_b9a50(unit_index);
-	if (unit->object_type != 0)
+	if (result)
 	{
-		if ((unit->flags_c0 >> 6) & 1)
+		function_b9a50(unit_index);
+		if (unit->object_type != 0)
 		{
-			function_b8840(unit_index);
-			function_b77d0(unit_index, g_4687a4, g_4687a4);
-		}
-		function_b75a0(unit_index, point, facing, g_4687b0, NULL, false);
-	}
-	else
-	{
-		vector3f flat;
-		transform4x3f object_matrix;
-		transform4x3f target;
-		vector3f local;
-		quaternionf object_orientation;
-		quaternionf target_orientation;
-		quaternionf orientation;
-
-		flat.i = facing->i;
-		flat.j = facing->j;
-		flat.k = 0.0f;
-		function_ba160(unit_index, &object_matrix);
-		function_e5690(unit_index, point);
-		if (function_30bf0(&flat) > 0.0f)
-			function_b75a0(unit_index, NULL, &flat, g_4687b0, NULL, false);
-
-		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
-		vector3f offset = *(vector3f *)(seat_transform + 0x10);
-		point3f world;
-
-		function_1420f0(&target, point, facing, g_4687b0);
-		if (object_matrix.scale != 1.0f)
-		{
-			offset.i = object_matrix.scale * offset.i;
-			offset.j = object_matrix.scale * offset.j;
-			offset.k = object_matrix.scale * offset.k;
-		}
-		world.x = object_matrix.up.i * offset.k + object_matrix.left.i * offset.j + object_matrix.forward.i * offset.i +
-			object_matrix.position.x;
-		world.y = object_matrix.up.j * offset.k + object_matrix.left.j * offset.j + object_matrix.forward.j * offset.i +
-			object_matrix.position.y;
-		world.z = object_matrix.up.k * offset.k + object_matrix.left.k * offset.j + object_matrix.forward.k * offset.i +
-			object_matrix.position.z;
-		if (target.scale != 0.0f)
-		{
-			vector3f delta;
-
-			delta.i = world.x - target.position.x;
-			delta.j = world.y - target.position.y;
-			delta.k = world.z - target.position.z;
-			if (target.scale != 1.0f)
+			if (TEST_FIELD_BIT((unit->flags_c0 >> 6) & 1))
 			{
-				real inverse = 1.0f / target.scale;
-
-				delta.i = inverse * delta.i;
-				delta.j = inverse * delta.j;
-				delta.k = inverse * delta.k;
+				function_b8840(unit_index);
+				function_b77d0(unit_index, g_4687a4, g_4687a4);
 			}
-			local.i = target.forward.k * delta.k + target.forward.j * delta.j + target.forward.i * delta.i;
-			local.j = target.left.k * delta.k + target.left.j * delta.j + target.left.i * delta.i;
-			local.k = target.up.k * delta.k + target.up.j * delta.j + target.up.i * delta.i;
+			function_b75a0(unit_index, point, facing, g_4687b0, NULL, false);
 		}
 		else
 		{
-			local.i = 0.0f;
-			local.j = 0.0f;
-			local.k = 0.0f;
+			vector3f flat;
+			transform4x3f object_matrix;
+			transform4x3f target;
+			point3f local;
+			quaternionf object_orientation;
+			quaternionf target_orientation;
+			quaternionf orientation;
+
+			flat = *facing;
+			flat.k = 0.0f;
+			function_ba160(unit_index, &object_matrix);
+			function_e5690(unit_index, point);
+			if (function_30bf0(&flat) > 0.0f)
+				function_b75a0(unit_index, NULL, &flat, g_4687b0, NULL, false);
+
+			byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
+			point3f world;
+
+			function_1420f0(&target, point, facing, g_4687b0);
+			unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
+			unit_action_untransform_point(&target, &world, &local);
+			function_141f60(&object_matrix.rotation, &object_orientation);
+			function_141f60(&target.rotation, &target_orientation);
+			target_orientation.w *= -1.0f;
+			function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
+			function_11d820(&target_orientation, &orientation, &orientation);
+			*(point3f *)(seat_transform + 0x10) = local;
+			*(quaternionf *)seat_transform = orientation;
 		}
-		function_141f60(&object_matrix.rotation, &object_orientation);
-		function_141f60(&target.rotation, &target_orientation);
-		target_orientation.w *= -1.0f;
-		function_11d820((quaternionf const *)seat_transform, &object_orientation, &orientation);
-		function_11d820(&orientation, &target_orientation, &orientation);
-		*(vector3f *)(seat_transform + 0x10) = local;
-		*(quaternionf *)seat_transform = orientation;
+		actions->unknown36 = (short)mode;
 	}
-	actions->unknown36 = (short)mode;
 	return result;
 }
 
@@ -4555,7 +4943,7 @@ bool __stdcall function_ee090(long unit_index, long state_name, long mode, long 
 bool __stdcall function_ee460(long unit_index, long state_name, long action_name)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	byte *definition = g_4e3b44[unit->definition_index & 0xffff].bytes;
+	byte *definition = g_4e3b44[UNIT_ACTION_UNIT_GET(unit_index)->definition_index & 0xffff].bytes;
 	byte *model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
 	byte *graph = g_4e3b44[*(long *)(model + 4) & 0xffff].bytes;
 	byte *root = *(byte **)(graph + 0x4c);
@@ -4570,26 +4958,10 @@ bool __stdcall function_ee460(long unit_index, long state_name, long action_name
 
 	position.z = position.z - root_position.z;
 	function_142a60(nodes, &root_matrix, &matrix);
-	forward.i = matrix.forward.i;
-	forward.j = matrix.forward.j;
-	forward.k = matrix.forward.k;
-
-	real length = (real)sqrt(forward.i * forward.i + forward.j * forward.j);
-
-	if (0.0001f > (real)fabs(length))
-	{
+	forward = matrix.forward;
+	forward.n[2] = 0.0f;
+	if (normalize3d(&forward) == 0.0f)
 		forward = *g_4687a8;
-	}
-	else
-	{
-		real inverse = 1.0f / length;
-
-		forward.i = inverse * forward.i;
-		forward.j = inverse * forward.j;
-		forward.k = inverse * 0.0f;
-		if (length == 0.0f)
-			forward = *g_4687a8;
-	}
 	function_b75a0(unit_index, &position, &forward, g_4687b0, NULL, false);
 	if (state_name != NONE && action_name != NONE)
 		function_10f430(unit_index, state_name, 0x7000101, 0x7000101, action_name, 0.0f, 0, 2);
@@ -4609,38 +4981,49 @@ void function_168896(long user_index, long weapon_index, long field_x11c898, lon
 // @retail 0xee680
 void function_ee680(long user_index, long state, long secondary, long weapon_index)
 {
-	if (user_index != NONE)
+	if (local_player_exists(user_index))
 	{
 		long player_index = g_4e8c20->entries[user_index];
 
-		if (player_index != NONE)
+		long unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
+
+		if (unit_index != NONE)
 		{
-			long unit_index = *(long *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c + 0x2c);
-
-			if (unit_index != NONE)
+			switch (state)
 			{
-				switch (state)
-				{
-				case 1:
-				case 2:
-				case 3:
-				case 4:
-				{
-					byte *unit = (byte *)UNIT_ACTION_UNIT_GET(unit_index);
+			case 14:
+			{
+				long request_type;
+				if (secondary)
+					request_type = 0x39;
+				else
+					request_type = 0x36;
+				function_e68c0(request_type, unit_index);
+				break;
+			}
+			case 15:
+			{
+				long request_type;
+				if (secondary)
+					request_type = 0x3b;
+				else
+					request_type = 0x38;
+				function_e68c0(request_type, unit_index);
+				break;
+			}
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			{
+				byte *unit = (byte *)UNIT_ACTION_UNIT_GET(unit_index);
 
-					if (!secondary)
-						unit[0x1fa] = unit_action_round((real)g_510c54->field_2_3 * 0.3f);
-					else
-						unit[0x1fb] = unit_action_round((real)g_510c54->field_2_3 * 0.3f);
-					break;
-				}
-				case 14:
-					function_e68c0(secondary ? 0x39 : 0x36, unit_index);
-					break;
-				case 15:
-					function_e68c0(secondary ? 0x3b : 0x38, unit_index);
-					break;
-				}
+				if (!secondary)
+					unit[0x1fa] = unit_action_round((real)g_510c54->field_2_3 * 0.3f);
+				else
+					unit[0x1fb] = unit_action_round((real)g_510c54->field_2_3 * 0.3f);
+				break;
+			}
 			}
 		}
 	}
@@ -4682,6 +5065,8 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax E (11-01): no new form, no lower score; the reduced image scores 54 where the
+// full build gives 70.
 // score 70 (was 70): the first difference is inside the body of function_1058b0,
 // which is inlined here but lives in src/weapons.cpp, so the object lookup and
 // the tag table are read through different registers than retail. The 12 extra bytes are the

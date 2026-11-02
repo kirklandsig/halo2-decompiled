@@ -382,10 +382,13 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // opposite order (retail j, first, i; ours first, i, j). Shared component base 8; i, j, k
 // declared at the top 8; chained FLT_MAX stores 8; contact pointer walk 8; shape calls
 // through the field pointers 168; about 300 natural forms compiled alone keep the slot order.
-// opposite order.
-// First component/outer index/inner index spill cycle remains. Indexed second/first/both shape reads
-// fast 24/79/8; indexed second kind 24; both/second entry shape reads 135/135;
-// indexed second/both shape addresses 24/8. All new scores reduced; original frame and loops restored.
+// Indexed second/first/both shape reads 24/79/8; indexed second kind 24; both/second entry
+// shape reads 135/135; indexed second/both shape addresses 24/8; first body through an entry
+// pointer 8; contact index declared outside the loops 8; first body read in the outer loop 211;
+// second's body array in a local 158; second's count in a local 151. Round 60: the loop indices
+// renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
+// and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
+// NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -573,6 +576,64 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 237: root/component/classifier noinline 359/358/349; root-component/root-classifier/
 // component-classifier/all 384/365/401/414; all ordinary inline 401 (control 321).
 // Entire original helper graph restored; frame and plane/output homes remain.
+// Round 390: Native first/second shape values and admitted computed last-key observation,
+// seven subsets plus signed encoded data: 369/321/359/320/359/322/358/358. Original body restored.
+// Round 181: common exit with original/separate/compound/nested admission 321 each; reversed material arms on those four graphs 316 each. Five-count lead rejected; original body restored.
+// Round 397: shared initial component query; marked getter, second-first acquisition and two-use entity masks 0..7
+// 321/358/328/362/321/358/328/362; all restored.
+// Key-continuation node/shape 322/353; shared admitted normal Z 317; native-position
+// combinations 313/378/340/373 (exact-only grouping, rejected); position alone 344;
+// shape plus shared Z 349. Original body restored; frame and plane/output homes remain.
+// Round 427: complete scalar transformed normals with plane/side/material entry-scope
+// masks 0..7, 334 each (1243 bytes, frame 0x3c); native shape entry/surface/kind bitfields
+// with uniform at-use encoded data, masks 0..7, 358 each. Original shape layout, snapshots,
+// normal workspace and full body restored; frame 0x48 versus 0x44 and classifier homes remain.
+// Native unsigned interval/complement, material-case order and discarded coefficient masks
+// 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
+// Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
+// queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 221: material arm first through the common exit plus direct lookup-return consumption, with
+// separate/shared discarded coefficient outputs, 379/377; both at entry scope 379/377; the four graphs
+// with native byte validity 379/377/379/377. Frame grows to 0x4c and extents to 1288/1286 versus 1243.
+// All thirteen matched controls survive. Original independent coefficient outputs, geometry-first arm,
+// material receiver, Boolean validity, exits, normal/plane arithmetic and full body restored; frame 0x48
+// versus 0x44 and classifier/plane/output homes remain.
+// Round 45 (lane 13, fast): retail loads the shape data three times in the exclusion test and ends it
+// with setne/test. data as a dword/byte-pointer union with the byte test through the pointer 321 (one
+// shared load); pointer check and byte test as one && bool helper 319; the condition as a named bool 321
+// (same code); a bool helper with early returns 331 (retail's setne/test, loads still shared); that as a
+// single-exit result 331. Original body restored.
+// Round 40 (m3 lane 15, fast = plain): the component check is the inline sequence of src/unknown_1c25a0.cpp's
+// contact_shape_has_material (matched 0x1c5400/0x1d4880), but retail here loads the data field three times and clamps
+// with the constant in the result register (`mov ecx, 1; cmp ecx, edx; jg`), unlike those siblings. A same-file copy
+// of that helper shape 335 (1258 bytes, retail's setne/test), plus the key test through its pin 335; clamp
+// `1 > v ? 1 : (16 < v ? 16 : v)` 321 (same code); MIN(16, MAX(1, v)) written out 341; result-register if form 329
+// (both comparison spellings); two-step clamp 347.
+// Round 23 (lane 18, fast control 321): in the 1..16 classifier, MIN(16, MAX(1, v)) as two named steps
+// 321 (same code); max then an if for the upper bound 321; `limited = 1; if (v >= 1) limited = v > 16 ?
+// 16 : v;` 332 (retail's `mov ecx, 1` preload); the nested preset (`limited = 1; if (v >= 1) { limited = 16;
+// if (v <= 16) limited = v; } `) 329 and with constant-first tests 329 (both bounds preloaded as retail, but
+// `cmp value, const` and the data copied to EAX; retail reads the data field three times, ours once);
+// origin through a point pointer local read x, y, z / z, y, x 323/322. Diagnostics: the byte test in a bool
+// helper 321 (folds); data test, classifier and byte test in a multi-return bool helper 331 (gives retail's
+// `setne al; test al, al`); the data field as a dword/pointer union read as a pointer for the byte 321.
+// Round 443: phase-specific final/surface/material output receivers, seven
+// pointer subsets and full graph with final reference, 344/393/329/321/344/393/329/329.
+// Original output observations, scalar samples, plane math and full body restored.
+// Round 284: existing shared axis-rotation producer, separate/in-place plane output,
+// without/with all four named distance products: 419/419/448/448; shared row-rotation
+// producer 321/321/352/353. Grouping changes were exact-only; all helpers, includes,
+// normal/plane expressions and complete body restored. Frame 0x48 versus 0x44 remains.
+// Round 74 (m3 lane 12, fast): the material read back through 0x1ee410's returned pointer (retail's
+// `mov ax, word ptr [eax]`) 319; the root entity as `root->type == 1 ? root->entity : NULL` then tested 321 (retail
+// loads the type into ECX first; ours still compares memory); both 319; distance computed before the origin
+// reads 322; index/other_index declared before valid 321.
+// Round 451: Existing initial-entity/repeated-root/material-entity helper boundaries,
+// subsets 1..7 and complete graph with shared discarded coefficient: 343/350/360/321/343/350/360/362. Original traversals,
+// coefficient outputs, helper uses and full body restored; frame/classifier/plane homes remain.
+// Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
+// subsets 321 each; all with successive original-group normal/distance sums 321.
+// Original producers, helper contracts and complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

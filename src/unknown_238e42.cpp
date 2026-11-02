@@ -351,35 +351,17 @@ struct s_join_screen_view
 extern long g_51ec08;
 extern long g_51ec0c;
 
+/* what joining a friend shows in place of the join */
+enum e_join_prompt
+{
+	_join_prompt_none,
+	_join_prompt_unavailable,	/* the OK dialog of 0x23982a (states 6 to 8) */
+	_join_prompt_squad_choice,	/* 0x239843 asks how to join */
+	_join_prompt_session_choice	/* 0x2398a0 asks how the session's squad comes along */
+};
+
 /* joins the friend's game (mode 1 to 4: how a squad already formed comes
    along) */
-// score 80 (was 80): only the placement differs (aligned, 6 instructions): the state 6-8 and
-// mode-not-1 call blocks follow the mode-one branch, where retail emits them after the mode-3
-// window block; the longer jumps make the body twelve bytes short. Earlier join-mode widths and
-// session-record forms excluded. State ranges 125; cold range first 99; availability gate 126;
-// common switch exits 80; later join-type lifetime 155; timestamp workspace 80; gate/common exits
-// 126; ranges/lifetime 137; cold cases first 80; state nine first 80; entry join result 96;
-// shared player gate 104; leave from join result 123; positive title gate 101; zero-time
-// initializer 80; query declarations first 80; native/numeric mode switches 116/116; mode-one
-// rejection first 81; leave/screen mode first 79/112; screen-first mode switch 116; non-three
-// state outcome first 95; invitation test outcome 103; leave code written in both branches 104;
-// return/break in every combination 80; in-session chain first 80 (same code); case locals at
-// function scope 80; rejection as a final else-if 80 (same code).
-// frame 0x14 agrees; cold dialog blocks precede the main join path, twelve bytes short.
-// Cold state/mode blocks precede the main join block; body remains twelve bytes short.
-// state ranges 125; cold range first 99; availability gate 126; common switch exits 80;
-// later join-type lifetime 155; timestamp workspace 80; gate/common exits 126; ranges/lifetime 137.
-// matching 0x14 frame; cold state/mode block placement still differs,
-// with twelve missing bytes. Earlier join-mode widths and session-record forms excluded;
-// tried cold cases first 80; state nine first 80; entry join result 96; shared player gate 104;
-// leave from join result 123; positive title gate 101; zero-time initializer 80;
-// query declarations first 80.
-// native/numeric mode switches 116/116; mode-one rejection first 81;
-// leave/screen mode first 79/112; screen-first mode switch 116; non-three state outcome first 95;
-// invitation test outcome 103. One-point leave-first gain rejected; body restored.
-// Explicit unsupported-state exit, actual squad predicate and both 80/80/80;
-// leave action from original inputs with neither/either/both boundaries 104 each at 479 bytes;
-// precomputed complete leave expression 147 at 495 bytes.
 // @retail 0x2395dc
 void __stdcall function_2395dc(XONLINE_FRIEND *friend_, long controller_index, long mode)
 {
@@ -389,6 +371,7 @@ void __stdcall function_2395dc(XONLINE_FRIEND *friend_, long controller_index, l
 	long state = function_0592d0();
 	bool in_this_title = online_friend_is_in_this_title(friend_);
 	long join_type = 1;
+	e_join_prompt prompt = _join_prompt_none;
 
 	if (!(flags & 1))
 	{
@@ -403,7 +386,6 @@ void __stdcall function_2395dc(XONLINE_FRIEND *friend_, long controller_index, l
 	case 3:
 	case 4:
 	case 9:
-	{
 		if (!in_session && mode != 4)
 		{
 			if (players > 1)
@@ -413,8 +395,7 @@ void __stdcall function_2395dc(XONLINE_FRIEND *friend_, long controller_index, l
 					join_type = 2;
 					goto leave;
 				}
-				function_239843(controller_index);
-				return;
+				prompt = _join_prompt_squad_choice;
 			}
 		}
 		else if (players > 1)
@@ -440,63 +421,78 @@ void __stdcall function_2395dc(XONLINE_FRIEND *friend_, long controller_index, l
 			}
 			else
 			{
-				function_2398a0(controller_index);
-				return;
+				prompt = _join_prompt_session_choice;
 			}
-		}
-
-		bool join_pending = ((s_online_selection *)&g_54d598.settings)->join_pending;
-
-		if (flags & 0xc0)
-		{
-			online_friends_answer_game_invite(controller_index, friend_, 0);
-		}
-		if (!in_this_title)
-		{
-			if (join_pending)
-			{
-				((s_online_selection *)&g_54d598.settings)->join_pending = false;
-				XOnlineFriendsJoinGame(controller_index, friend_);
-			}
-			function_2397b9(controller_index);
-			return;
-		}
-
-		FILETIME none;
-		bool invited;
-
-		memset(&none, 0, sizeof(none));
-		invited = memcmp(&friend_->gameinviteTime, &none, sizeof(none)) != 0;
-		function_148523();
-		if (state == 3)
-		{
-			g_54d598.pending_join_type = join_type;
-			if (in_session && join_type == 3)
-			{
-				function_19a1bd();
-			}
-			else
-			{
-				g_4ee4e0 = true;
-				function_199e2e(true);
-			}
-		}
-		else
-		{
-			if (!network_session_interface_has_user(&friend_->xuid))
-			{
-				g_51ec08 = 0;
-				g_51ec0c = 0;
-			}
-			function_199c94(friend_, controller_index, invited);
 		}
 		break;
-	}
 	case 6:
 	case 7:
 	case 8:
-		function_23982a(controller_index);
+		prompt = _join_prompt_unavailable;
 		break;
+	default:
+		return;
+	}
+	if (prompt == _join_prompt_unavailable)
+	{
+		function_23982a(controller_index);
+		return;
+	}
+	if (prompt == _join_prompt_squad_choice)
+	{
+		function_239843(controller_index);
+		return;
+	}
+	if (prompt == _join_prompt_session_choice)
+	{
+		function_2398a0(controller_index);
+		return;
+	}
+
+	bool join_pending = ((s_online_selection *)&g_54d598.settings)->join_pending;
+
+	if (flags & 0xc0)
+	{
+		online_friends_answer_game_invite(controller_index, friend_, 0);
+	}
+	if (!in_this_title)
+	{
+		if (join_pending)
+		{
+			((s_online_selection *)&g_54d598.settings)->join_pending = false;
+			XOnlineFriendsJoinGame(controller_index, friend_);
+		}
+		function_2397b9(controller_index);
+		return;
+	}
+
+	FILETIME none;
+	bool invited;
+
+	memset(&none, 0, sizeof(none));
+	invited = memcmp(&friend_->gameinviteTime, &none, sizeof(none)) != 0;
+	function_148523();
+	if (state == 3)
+	{
+		g_54d598.pending_join_type = join_type;
+		if (in_session && join_type == 3)
+		{
+			function_19a1bd();
+		}
+		else
+		{
+			g_4ee4e0 = true;
+			function_199e2e(true);
+		}
+	}
+	else
+	{
+		if (!network_session_interface_has_user(&friend_->xuid))
+		{
+			g_51ec08 = 0;
+			g_51ec0c = 0;
+		}
+		function_199c94(friend_, controller_index, invited);
 	}
 }
 /* joins the selected friend's game through Live */
@@ -523,24 +519,12 @@ void __stdcall function_148893(s_name_request *request, long mode);
 struct s_online_game_invite;
 void online_game_invite_answer(DWORD controller_index, const s_online_game_invite *invite, long answer);
 
-/* a game invite message: its title and when it was sent */
-struct s_invite_message_view
-{
-	byte unknown00[0x24];
-	DWORD title_id;
-	byte unknown28[0x30 - 0x28];
-	FILETIME time;
-};
-
 /* joins the game a message invites the selected player to */
-// score 2 (was 2): retail stores the type before the second half of the
-// FILETIME copy, ours stores it after, so the two stores trade places.
 // @retail 0x238f3f
 void __stdcall function_238f3f(long controller_index, void *message, unsigned __int64 session_id)
 {
-	void **message_reference = &message;
 	s_online_selection selection;
-	s_invite_message_view *invite;
+	s_game_invite_message_view *invite;
 
 	((s_online_selection *)&g_54d598.settings)->join_pending = false;
 	function_14887e((s_screen_settings_54dc6c *)&selection);
@@ -548,7 +532,7 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 	{
 	case 1:
 	{
-		invite = (s_invite_message_view *)*message_reference;
+		invite = (s_game_invite_message_view *)message;
 		XONLINE_FRIEND friend_;
 
 		if (!invite || !session_id)
@@ -556,12 +540,12 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 			return;
 		}
 		online_friend_from_user(&friend_, &selection.user);
-		friend_.dwFriendState |= 0x8000001;
+		friend_.dwFriendState |= XONLINE_FRIENDSTATE_FLAG_ONLINE | XONLINE_FRIENDSTATE_FLAG_RECEIVEDINVITE;
 		selection.friend_ = friend_;
 		*(unsigned __int64 *)&selection.friend_.sessionID = session_id;
 		selection.friend_.dwTitleID = invite->title_id;
-		selection.friend_.gameinviteTime = invite->time;
 		selection.type = 2;
+		selection.friend_.gameinviteTime = invite->time;
 		message = NULL;
 		online_game_invite_answer(controller_index, (s_online_game_invite *)&selection.friend_, 0);
 		selection.friend_.dwFriendState = 1;
@@ -569,13 +553,12 @@ void __stdcall function_238f3f(long controller_index, void *message, unsigned __
 		break;
 	}
 	}
-	invite = (s_invite_message_view *)*message_reference;
+	invite = (s_game_invite_message_view *)message;
 	if (invite && session_id)
 	{
-		((dword *)&selection.friend_.sessionID)[1] = (dword)(session_id >> 32);
+		*(unsigned __int64 *)&selection.friend_.sessionID = session_id;
 		selection.friend_.dwTitleID = invite->title_id;
 		selection.friend_.gameinviteTime = invite->time;
-		((dword *)&selection.friend_.sessionID)[0] = (dword)session_id;
 		function_148893((s_name_request *)&selection, 1);
 	}
 	function_2395dc(&selection.friend_, controller_index, 0);
@@ -905,7 +888,15 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
+// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
+// eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
+// ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
+// later jump). Copying the identity into a local, reading the own rank before the identity
+// test, copying the requested rank into a local before that test, a has-identity flag and
+// four local declaration orders all score 90, so the colouring is fixed by the callee's
+// convention and the body stands.
+// Earlier (90, was 90): frame 0xf00 agrees; selected identity ECX/rank EAX and the extra removal move remain.
 // Earlier 90 (was 90): identity/rank registers and the extra move before removal remain; selection guard,
 // frame 0xf00 agrees; selected identity ECX/rank EAX and extra removal move remain.
 // identity/rank registers and the extra move before removal remain; selection guard,
@@ -924,6 +915,129 @@ bool __stdcall function_2399da(long controller_index)
 // library identity copy 90; copy plus those orders 92/95/94; native own-rank value 90.
 // Task result from complete dispatch 139 at 464 bytes; with named removal/rank tests or
 // selected-validity expression in all seven combinations 139 each at 464 bytes.
+// Round 413: selected-identity producer reversed cases 90; if returns/definite result arms
+// 180/180 (frame 0xefc); direct case returns 156. Forceinline forms repeat 90/180/180/156.
+// All six return-form variants lose a matched peer; original shared producer restored.
+// Round 77: late selection getter 166; post-membership selected pointer 90; member/controller/team 16
+// (remove callee 13, matched peers 4); member/team/controller 16 likewise; controller/member/team 17
+// (remove callee 12); team/controller/member and team/member/controller 91 each (remove callee 2,
+// matched peers 3); read-only rank 90. Original body and every removal declaration/call restored.
+// frame 0xf00 agrees; only allocation differs: retail loads the selected identity
+// pointer into EAX for its test (so the removal call needs no move) and the rank into ECX; ours ECX/EAX
+// plus the extra move before removal (register-masked difference 3).
+// Tried: selection guard, permission guard and both 90 each; update-first branch with neither/either/both
+// guards 92 each; requested-rank lifetime 90; producer pointer scope/name, parameter-only rank name/both
+// names 90/90/90/90; own-rank/task lifetime, immutable pointer and native Boolean homes 90/90/90/90; rank
+// dispatch nested/deny-first shapes with task/own-rank scopes 90 each; have_member block as a negated test
+// 114/92; rank stored before the rank-3 test 89; nested identity tests 90; explicit comparisons 90;
+// identity/own-rank declaration positions 90 each; permission denial first 90/90; membership
+// inline/outline/both 90/90/90; remove inline/outline/both 90/90/90; paired inline and paired
+// inline/outline contracts 90/90; permission operands reversed at the conjunction/outer disjunction/both
+// 92/95/94; library identity copy 90; copy plus those orders 92/95/94; native own-rank value 90; task
+// result from complete dispatch 139 at 464 bytes; with named removal/rank tests or selected-validity
+// expression in all seven combinations 139 each at 464 bytes; selected-identity producer reversed cases
+// 90; if returns/definite result arms 180/180 (frame 0xefc); direct case returns 156; forceinline forms
+// repeat 90/180/180/156 (all six return-form variants lose a matched peer).
+// Round 36 (one-file harness with the callees' files, identical to the full build): the identity
+// pointer declared at each of the 14 other positions and 12 random orders of all declarations (same
+// code); grouped permission test, `own_rank >= rank`, block-scoped identity, the membership copy's bool
+// result kept (same code); rank dispatch inverted (rank != NONE first) worse; own rank read at each use
+// (same code), operands swapped and `own_rank > 1` worse.
+// Lane 17 r1: task index preset to NONE 90; validity through an inline bool predicate 90; validity
+// test inverted with the 0x5c dialog first 90; rank-3 test as `!=` with the rank update first 92;
+// identity copied into a block-local used by the test and the removal 90.
+// Round 439: complete selected-identity copies before lookup/after membership, native/library
+// copies at producer/entry lifetimes, 174/174/174/174 and 147/147/147/147. Exact-only snapshots
+// regress and grow the frame; original producer pointer and all callees restored.
+// Round 10 (m3 lane 2, harness identical to the real build): with the rank dispatch removed
+// (diagnostic) the identity pointer takes EAX as in retail, so the cause is the rank value's
+// temporary winning EAX over the identity pointer's; the positional count is the 2-byte move
+// shifting every later jump. Empty have_member arm folded into `if (!have_member)` 92 (430 bytes);
+// the rank-3 test inverted with the update first 92; own rank read before the identity test 90;
+// the identity test with `!= 0` and other spellings 90; `if (!may_change) { deny; return; }`
+// inside `if (!have_member)` 114.
+// Round 2 of lane 18: validity test through an inline helper (as 0x24b5bc's file has it) 90; flat
+// dispatch (remove, deny, rank 3, set) 90; set-rank first with deny and rank-3 returns 95; removal
+// re-deriving the identity from the selection 147; one shared controller-mask local 176.
+// Round 17 (m3 lane 2, fast): rank read through a pointer to the parameter 90; the permission test
+// as a named bool 90; task index declared at the top 90; `own_rank >= rank` 90; the over-rank
+// denial first (`rank != NONE && rank > own_rank`) then remove/rank-3/set 95 (437 bytes); 1-8 unused
+// initialised locals at the top (diagnostic: symbol numbering) 90 each, so the EAX/ECX choice is not
+// a numbering tie; a 600 s permuter run, best 82 only by duplicating the whole rank dispatch into
+// both permission arms with a short cast (not applied).
+// Round 9 (lane 17, fast): the EAX/ECX swap is a tie between the requested rank and the identity at the
+// rank dispatch: once the rank is not in a register there, the identity takes EAX as in retail. Diagnostics
+// (volatile parameter reads, reverted at once): at the NONE test 32 (433 bytes; aligned 12 -> 8: identity
+// EAX, but the test reads memory, own rank goes to ECX and the rank is reloaded into EAX); at the store 47
+// (every rank use reads memory); at the own-rank compare or the rank-3 test 91; read once into a named local
+// 90. Plain: own rank read from the membership field at each use 90.
+// Round 57 (lane 16, fast with 0xac050/0xac360): the identity test inverted (0x5c denial in the if arm) 90; as an
+// early exit 90; `if (rank != 3) { store; set } else { dialog; return; }` 92; `if (task_index == NONE) return;`
+// before the 0x1487c3 call 90; the identity initialised to NULL where declared 90 (same code where 90).
+// Round 43 (lane 10): one result path (task index preset to NONE, the deny and rank-3 dialogs fall
+// through to the task test) 90; the progress call written in both the remove and set arms 90; dispatch
+// remove / over-rank deny / `rank != 3` set / rank-3 dialog 90; task index declared before the slot
+// read 90; `membership` declared before `member` 90. Diagnostic: the rank store replaced by a constant
+// lets the identity take EAX (but the constant is CSE'd with `>= 2`, so it is no clean test). Also:
+// the non-remove arm as one block with over-rank and rank-3 guard returns 90; with the rank store
+// first in that block 91.
+// Round 143 (lane 4, fast with 0xac050/0xac360/0x18ffc3, faithful 90): flat dispatch (remove, over-rank deny,
+// rank-3 dialog, set) 90; one `team_xuid` pointer for both calls 90; own rank read before the identity
+// test 90; early return when there is no friend request 189 (450 bytes); the rank stored first and the
+// rank-3 test reading the stored field 89 (one rank use fewer, a gain of 1).
+// Round 146 (lane 4, fast): the 89 form forwards the stored field back into the rank register (`cmp eax, 3`),
+// so the rank keeps every register use; the post-membership block as a forceinline helper taking the identity
+// first 90 (same code); the rank copied into a local at the function top 90 (same code); the over-rank and
+// no-permission refusals sharing one block through `goto denied` 116 (432 bytes, but the zero and controller
+// registers swap ESI/EDI and the identity stays in ECX). Diagnostic: the identity test without the 64-bit
+// check 105 (the identity is then compared in memory and never loaded).
+// Round 122 (lane 6, fast with 0x2399da, 0xac050, 0xac360): the non-remove arm as one block with the over-rank
+// and rank-3 guard returns 90; the dispatch as `switch (rank)` with a NONE case and a default 95 (437 bytes); the
+// store through a pointer to the member's properties 90; a set-rank inline helper shared with 0x2399da 90; the
+// identity test as a guard return (`if (!xuid || !xuid->qwUserID) { deny; return; }`) 90. One-file LTCG harness
+// (this file + online_teams.cpp): only a rank use fewer (the store from a constant) or one identity use more
+// moves the identity into EAX; dropping the rank-3 test or the over-rank test does not.
+// Round 107 (lane 7, fast): the member's rank read into a local for the permission test 90; `own_rank >= rank`
+// for the over-rank test 90; the rank store and set-rank call through a pointer to `member` 90.
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
+// and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
+// the changed flag lifetime shortens the body and changes saved-register ownership.
+// Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
+// representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
+// 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
+// Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
+// own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
+// permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
+// if/else chain 101 (440 bytes; 0x239a3d 0 -> 42, restored).
+// Round 128 (m3 lane 5, fast): the identity local renamed to sort before `rank` 90 (same code: no name
+// tie-break); the over-rank denial folded into the permission test as `&& (rank == NONE || rank <= own_rank)`
+// (one 0x5d path) 121 (435 bytes); `NULL != xuid` 90; `byte may_change` 90; a 600 s permuter run (seed 128)
+// reached 17 only by swapping the 0xac050 call's team and member arguments (wrong values, not applied).
+// Round 45 (lane 14, fast): the identity and the rank each have four uses in the dispatch region (a tie);
+// may_change as `(flags & 0x800) != 0` 90; have_member as one comparison 90; the dispatch inverted with the
+// over-rank and rank-3 returns first and the remove arm last 95 (437 bytes); have_member and may_change each
+// declared at their first assignment 90/90.
+// Round 40 (lane 14, fast): own rank read from the membership field at each use plus the rank stored first
+// with the rank-3 test reading the stored field 89; the over-rank denial as its own arm with that stored
+// test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
+// identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
+// rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 115 (lane 7, fast): the rank stored before the rank-3 test re-measured 89; `have_member` as
+// `member.xuidTeamMember.qwUserID != 0` 90, with the stored rank 89; the have/may block nested under
+// `if (!have_member)` 92; the member's rank on the left of the permission comparison 91; the permission bit
+// tested from `flags` at both uses (no `may_change` local) 142 (428 bytes); the identity and permission
+// refusals both as guard returns ahead of a flat rank dispatch 90.
+// Round 52 (fast): the rank read once through its address into a local used at every rank use 90;
+// `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
+// call through a member pointer 90 (lane 7's form again); the permission test read from the membership
+// field with the own-rank local kept for the dispatch 90.
+// Round 342: Definite immutable selected-pointer producer with complete bool/byte/word/long validity and complementary predicates: 90/90/90/90/90/90/90/90.
+// Original complete body restored; selected identity/rank EAX/ECX ownership and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

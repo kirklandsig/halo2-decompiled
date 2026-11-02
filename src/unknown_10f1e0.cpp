@@ -243,9 +243,16 @@ PRIVATE __forceinline real function_112e21(real arg_0)
     return local_0;
 }
 
-// score 133 (was 133): frame 0x80 versus 0x84 and squared/yaw/pitch homes differ;
-// shared normalization scale 133, relative scale 136, both scales 136,
-// reciprocal-root intrinsic 168, two-angle helper precision probe 119 (rejected).
+// score 64 (was 133): the frame, the offset's arithmetic and the direction's registers (i, j, k
+// in xmm3, xmm1, xmm2) now match. Retail clears and stores the direction in i, j, k order (ours
+// j, k, i), and its normalisation scales j and k in place where ours copies the factor first
+// (3 bytes longer), so every later address is shifted. Tried: relative.i = inverse * relative.i
+// with vector3d_from_points3d (133, the compiler commutes it); the offset as a vector3f (71,
+// the j row regrouped as (left.j * y + left.i * x) + left.k * z); the direction as three
+// scalars (105); the clearing in i, j, k order (91, i, j, k land in xmm1, xmm2, xmm3); the
+// normalisation written i = inverse * i, j = j * inverse, k = k * inverse (no change). Tried at
+// 133 (lane): shared normalization scale 133, relative scale 136, both scales 136, reciprocal-root
+// intrinsic 168, two-angle helper precision probe 119 (rejected).
 // @retail 0x112e20
 void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f const *orientation)
 {
@@ -257,22 +264,28 @@ void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f
 	vector3f direction;
 	if (frame.scale != 0.0f)
 	{
-		vector3f relative;
-		vector3d_from_points3d(&frame.position, target, &relative);
+		real x = target->x - frame.position.x;
+		real y = target->y - frame.position.y;
+		real z = target->z - frame.position.z;
 		if (frame.scale != 1.0f)
 		{
 			real inverse = 1.0f / frame.scale;
-			relative.i *= inverse;
-			relative.j *= inverse;
-			relative.k *= inverse;
+			x = inverse * x;
+			y = inverse * y;
+			z = inverse * z;
 		}
 		// summed k, j, i as retail does
-		direction.i = frame.forward.k * relative.k + frame.forward.j * relative.j + frame.forward.i * relative.i;
-		direction.j = frame.left.k * relative.k + frame.left.j * relative.j + frame.left.i * relative.i;
-		direction.k = frame.up.k * relative.k + frame.up.j * relative.j + frame.up.i * relative.i;
+		direction.i = frame.forward.k * z + frame.forward.j * y + frame.forward.i * x;
+		direction.j = frame.left.k * z + frame.left.j * y + frame.left.i * x;
+		direction.k = frame.up.k * z + frame.up.j * y + frame.up.i * x;
 	}
 	else
-		direction.i = direction.j = direction.k = 0.0f;
+	{
+		// cleared j, k, i: the order that gives retail's registers
+		direction.j = 0.0f;
+		direction.k = 0.0f;
+		direction.i = 0.0f;
+	}
 	real squared = direction.k * direction.k + direction.j * direction.j + direction.i * direction.i;
 	if (squared != 0.0f)
 	{
@@ -282,19 +295,20 @@ void function_112e20(transform4x3f *matrix, point3f const *target, transform4x3f
 		direction.j *= inverse;
 		direction.k *= inverse;
 	}
-	real yaw = (real)atan2(direction.j, direction.i);
-	// retail keeps the planar length on the x87 stack: fsqrt and fpatan see it unrounded
-	real pitch = (real)atan2((double)direction.k, sqrt((double)direction.j * direction.j + (double)direction.i * direction.i));
-	if (0.0f - yaw_limit > yaw)
-		yaw = 0.0f - yaw_limit;
-	else if (yaw > yaw_limit)
-		yaw = yaw_limit;
-	if (0.0f - pitch_limit > pitch)
-		pitch = 0.0f - pitch_limit;
-	else if (pitch > pitch_limit)
-		pitch = pitch_limit;
+	s_view_angles angles;
+	angles.yaw = (real)atan2(direction.j, direction.i);
+	// the planar length stays on the x87 stack: fsqrt and fpatan see it unrounded
+	angles.pitch = (real)atan2(direction.k, sqrt(direction.j * direction.j + direction.i * direction.i));
+	if (0.0f - yaw_limit > angles.yaw)
+		angles.yaw = 0.0f - yaw_limit;
+	else if (angles.yaw > yaw_limit)
+		angles.yaw = yaw_limit;
+	if (0.0f - pitch_limit > angles.pitch)
+		angles.pitch = 0.0f - pitch_limit;
+	else if (angles.pitch > pitch_limit)
+		angles.pitch = pitch_limit;
 	transform4x3f rotation;
-	function_141ce0(yaw, pitch, 0.0f, &rotation);
+	function_141ce0(angles.yaw, angles.pitch, 0.0f, &rotation);
 	function_142a60(&frame, &rotation, matrix);
 	matrix->scale = scale;
 }
@@ -413,6 +427,129 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // declared first 37; shared exit 37; state pair helper 148; state graph queries 37; mode/graph/
 // class orders 44-110; shifted word expression 37; clear before object chain 191; entry marker
 // workspaces 37; complete workspace boundaries 191; model after clear 191.
+// Round 32 (all 545 bytes unless noted): the existing bit_vector_test 42 (its test is retail's
+// exactly; the set after 0x1d90e0 then becomes load/OR/store instead of retail's `or [eax], edx`);
+// that with a direct `|=` set 42; a written-out mask test with a direct set 42, with
+// bit_vector_set 42; the existing graph_tag_get for the three graph reads 37 (539, back-edge
+// reload order unchanged); bit_vector_test with the second lookup nested 42; with the set through
+// an explicit word pointer 42. A compile-only build gives the opposite set forms, so screen with
+// --fast here.
+// Complete unvisited decision with shift/mask tests and bool/byte/short/long iterator results
+// 55/42/55/42/83/88/81/86; back-edge reload order and later call carriers remain.
+// Round 17: our code is 536 bytes plus 3 of fill. A mask-form test (any spelling) computes the
+// update's mask first and splits its OR into load/OR/store, as the matched 0x29df30 does after its
+// own mask test, so retail's fused `or [word], mask` after a mask test needs another spelling. Tried:
+// bit_vector_test 42; with the update as `visited[i >> 5] |= 1 << (i & 31)` 42; the test written as
+// `(word & mask) == 0` 42; the second lookup in a nested if 37 (same code); the shared graph/iterator
+// setup hoisted with a ternary call 167 (retail duplicates the setup in both arms).
+// Round 81: the two markers as one `s_object_marker markers[2]` (they sit 0x70 apart) 37, with
+// bit_vector_test 42; the clear through an inline helper taking the vector, shift/mask test 37/42; the
+// existing graph_tag_get with bit_vector_test 42. With the mask test our update reuses the test's
+// mask-first shape (load/OR/store); 0x2c39f0 (matched) shows retail giving that shape after a mask test
+// too, so the update follows the register state rather than its spelling.
+// Round 83: bit_vector_test with the set moved ahead of 0x1d90e0 44 (the update is then index-first but
+// still load/OR/store); a block-scoped graph pointer per arm, `found` declared before the loop, `return`
+// at the walk's end, and a direct `|=` update with the shift test 37 each.
+// Round 85: with the mask test, an opaque call taking the marker or the visited vector right after
+// 0x1d90e0 gives retail's index-first `or [word], mask` update (diagnostic, 48); one inside 0x1d90e0 or
+// 0xb8d30 on its pointer does not (42). Trials: the set ahead of the 0x1d90e0 call 46, a direct `|=` ahead
+// of it 46, the iterator pair as named locals 53, only the target name 50, the pair names with the mask
+// test 52.
+// Round 235: complete/conditional native pair-admission bool/byte, shift/shared mask
+// tests 37/42/37/42/37/42/37/42. The mask still splits the update; original admission
+// and complete executable body restored.
+// Round 115 (all with the mask test, 545 bytes; the set after 0x1d90e0 then computes the mask before the word
+// address and splits into load/OR/store): signed visited words 42; target declared before marker 42; model
+// as a `long const *` read as model[1] 42; hand mask test with the mask on the left 42, on the right 42.
+// Round 25 (fast): bit_vector_test re-measured 42 (aligned 24); with a long node index local used by
+// the test, 0x1d90e0 and the set (nested ifs) 128, the same with the shift test 122, with a short
+// local 45; the first marker query's result named 42 (same code); iterator a tested before b 46.
+// The set still reuses the test's value numbers across 0x1d90e0. Body restored.
+// Round 42 (lane 1): retail's fused set after a mask test needs the visited words to be clobberable
+// by the calls between the test and the set: with the mask test, the clear through the existing
+// bit_vector_fill gives retail's index-first `or [eax], edx` set, but our LTCG keeps that call out of
+// line 213 (466 bytes; also with a forceinline declaration 213); with the entry written as
+// `state->node_count() != 0` the fill inlines and the set is load/OR/store again 42 (shift test 37,
+// identical code); the visited words and both markers as one local aggregate also give the fused set
+// but realign the frame 190 (with the inlined fill 190); 0x1d90e0's marker matrix non-const 42.
+// Diagnostics: a volatile node-index read in the set 42, an opaque no-argument call before it 47.
+// Round 8 (lane 18, fast): with the mask test, a fresh node index read at the set (volatile diagnostic,
+// reverted) still gives the mask-first load/OR/store set, so it is not the index's value number;
+// mask test with `mask & word` operands 42; mask test with the set as `mask | word` 42, both swapped
+// 42; memset through `&visited` 42; first lookup in its own if around the test and second lookup 42;
+// the markers as `markers[2]` with the mask test re-measured 42. 0x120220 (in 0x1d90e0's calls) is
+// unmatched: a lead if retail's set needs a call that may write the vector.
+// Round 44 (lane 1, fast): 0x120220 is at 2 (not the blocker); bit_vector_test re-measured 42; on the shift
+// test: the model as `long const *` read as model[1] 37; the entry tests as guard-clause returns 37; the
+// render-model argument named before the call 37; `if (graph && graph->node_count != 0)` for the ternary
+// 121 (520 bytes); each arm breaking on its own call result (no `found`) 37.
+// Round 118 (lane 5, fast with 0x113ba0/0x113c60): the visited words grouped with both markers in one
+// local struct (so the markers' escape covers the vector) with the mask test 190 (frame realigned to 8;
+// the set is still mask-first load/OR/store, so the vector's escape does not give retail's fused set and
+// 0x120220, which can only reach the markers, is a weak lead); a `break` on each arm's iterator call 37
+// (same code); the state parameter renamed to sort before the tag table's name 37 (back-edge reloads
+// unchanged, so names do not order them); that per-arm break with the mask test 42; the graph and
+// iterator setup shared ahead of an if/else call 167.
+// Round 44 (lane 10, fast): bit_vector_test with `found` declared before the loop 42; the unvisited
+// test repeated after the second lookup (diagnostic) 74; the memset size as `sizeof(dword) * (...)`
+// 37, with bit_vector_test 42; visited declared before the markers with bit_vector_test 42.
+// Round 140 (lane 4): with the mask test the set repeats the test's own mask-first sequence before its
+// load/OR/store, and the 0x1d90e0 setup forms the model value early (retail last, after the pushes).
+// Tried: mask test with the set through pointer arithmetic 42; written-out mask test with a direct `|=`
+// set 42 (round 32's form again); visited declared before the markers with bit_vector_test 42; the target
+// marker declared first 37 (same code); `if (found) { one combined test } else break;` 37 (same code);
+// the iterator's weapon class stored before its mode in both arms 44.
+// Round 109 (lane 8, fast; aligned = difflib count): bit_vector_test re-measured 42 (aligned 17 against the shift
+// test's 21: the test is retail's; left are the second lookup's argument loads (ours loads the target index into
+// ECX ahead of the pushes, retail reuses EAX after them), the 0x1d90e0 setup (ours loads the model value before
+// the last push, retail after it) and the set's load/OR/store). `byte const *model` read as `long const` 37, with
+// bit_vector_test 42; the two markers in one declaration 37, with bit_vector_test 42; with bit_vector_test, the
+// clear's byte count written `sizeof(dword) * (...)` 42 (all same code as their bases).
+// Lane 18 round 15 (fast with the matched callees and 0x113ba0/0x113c60): the visited words as a 256-bit
+// record cleared by its own member (memset inside), with the mask test 42, with the shift test 37; the set
+// through the existing 0xbfe20 on `&visited[i >> 5]` with the shift test 37, with the mask test 42 (inlined,
+// mask-first load/OR/store again); visited and both markers as one record cleared by its own member
+// (diagnostic for lane 1's escaped aggregate) 42: the frame stays 0x104, but the set is load/OR/store.
+// Round 68 (lane 9, fast): with the mask test the split set reloads the word as an array element
+// (`mov ecx, [esp + eax*4 + 0x14]` beside `lea eax, [same]`), i.e. it reuses the test's values. Any opaque
+// call (through a volatile function-pointer local; diagnostic, reverted) between the test and the set, taking the marker, a const pointer to
+// the target or nothing at all, gives retail's fused index-first set (diagnostics 70-78, call included);
+// the markers as `markers[2]` with the mask test still split (42). So our LTCG knows the second 0xb8d30
+// call and 0x1d90e0 leave the marker alone, and retail's compiler did not; retail's fresh reloads of
+// iterator->b after the first query and of the tag table at the back edge fit the same reading. Every
+// callee under both calls matches (0x120220 at 2), none is __asm except 0x142a60 (which only sees the
+// target), and retail's call graph has no cycle through here. Trials: `found` as a byte 37; the marker
+// declared before the definition and visited before the target 37; both with the mask test 42; the
+// markers scoped to the iterator-pair block with the mask test 42, with the shift test 37; a 600 s
+// permuter run, best 36 (a short render-model read, a byte `found` and declaration moves; not kept).
+// Round 127 (lane 5, fast with 0x113ba0/0x113c60): bit_vector_test re-measured 42; the render-model
+// index named before the 0x1d90e0 call 37 (same code); both markers declared in the pair block 37 (same
+// code), with bit_vector_test 42; the unit lookup folded into the definition read 37 (same code).
+// Round 48 (lane 10, fast): the alternate arm as the existing `state->pairs_iterate(iterator)` 148 (kept out
+// of line; with a forceinline declaration, diagnostic only, 37 with identical code, so the arms are already
+// its inlined shape); `return` for the loop's break 37 and a do/while on `found` 37 (both identical code);
+// the clear through the existing bit_vector_fill re-measured with the shift/mask test 216/213 (still out of
+// line). With the mask test the set loads the word through the folded address and stores through a
+// separate `lea`, so the load is not fused with the store.
+// Round 115 (lane 7, fast): the node index named once after the second lookup for 0x1d90e0 and the set 44
+// (LTCG keeps it in ESI across the call; retail reloads the field), with the mask test 40 (542 bytes; the set
+// stays mask-first load/OR/store, so its shape follows the test's form, not the index's value number); the
+// model looked up at the 0x1d90e0 call 122, with the mask test 132; each arm's iterator stores first and the
+// graph looked up in the iterator call's argument 110.
+// Round 52: retail's inline clear is exactly the body of the existing bit_vector_fill (0x12afc0, out of line
+// in retail too), so retail likely called it here and LTCG inlined it, which also escapes the visited words
+// (lane 1's cause for retail's fused set). Our LTCG keeps it out of line: with bit_vector_test 213 (fast and
+// plain), with an `inline` declaration and the shift test 216, `#pragma inline_depth(255)` diagnostic 213.
+// Lead: BLOCKED-BY 0x12afc0 (its file was held this round; try `inline` on its definition, checking 0x1253d0).
+// Also `while (true)` 37, explicit `!= 0` pair tests 37, weight against the zero global g_45dbd8 37.
+// Round 45 (lane 14, fast): the split set needs both the mask test and the variable-size memset: with the mask
+// test, a constant-size memset 164 or no clear 228 (diagnostics) give retail's fused set, while a set on another
+// index (target's, diagnostic 46), the second lookup writing the first marker 45 and an out-of-line call on the
+// visited words before the set 60 or after the clear 104 keep it split (so it is not value reuse or escape). Shift
+// test spellings: `(word & mask) >> shift` 59, `(... & 1) == 0` 37, signed visited words 37, a bool cast 37 (no form
+// gives the mask test); the clear's size as `<< 2` 155, with the mask test 145 (stosd only, set still split).
+// With the mask test the size taken from the node-count parameter 140 or the graph's count 141 (diagnostics)
+// still splits the set: any variable-size memset of the visited words does.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1234,7 +1371,15 @@ bool function_1112f0(long unit_index)
 bool function_c70b0(long unit_index);
 long function_cbd50(long unit_index, short weapon_index);
 
-// score 164 (was 164): frame eight agrees; entry pool/state registers, signed-count joins and result
+// MiniMax R (10-31): no new form, no lower score.
+// score 164 (was 164): this round found no gain - retail keeps index*12 as a value (lea/shl) and re-reads
+// the unit through that offset for both depletion queries, and it writes the first depletion with setle;
+// the byte-offset entry with re-derived queries gives 325 and the if-form depletion gives 330.
+// this round found no gain - retail keeps the pool pointer in EAX and the data in
+// EBP, materialises index*12 and rematerialises the unit pointer for the first query, while ours keeps
+// the unit in EAX, folds index*3 with a scale of 4 and builds the result with a branch instead of setle;
+// the byte-offset header, a pool local, re-read queries and retail-shaped flag joins all score the same or worse.
+// frame eight agrees; entry pool/state registers, signed-count joins and result
 // Round 141: retail returns the result byte unnormalised (a bool) and keeps the depletion in BL with the
 // interruptibility in memory; round 75's first-sets/second-clears depletion 330, with a bool result
 // 361 (1243 bytes, aligned 132 -> 102: retail's setle and second test, but depleted in memory and
@@ -1277,6 +1422,41 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 162: pool/data receivers 378/345; shared word unit slot 368; pool/data plus word
 // slot 400/368; data plus dword slot 350; pool plus long slot 390; data with native result
 // 329. Original lookup observations, status graph and argument handling restored.
+// Round 402: native unsigned first/second/controlling handle domains, seven subsets,
+// all 164; all handles with both unsigned identifier domains 188. Original signed
+// domains and body restored; pool/state allocation, count joins and byte normalization remain.
+// Round 81: an object-headers local (the pool's data) for the unit and both depletion checks with a
+// bool result 334 (1273 bytes; headers EBP, state EDI and name ESI as in retail, aligned 86 -> 58, but
+// retail keeps the pool pointer in EAX for a fresh data load in the second query, which shifts the entry
+// one instruction), with a byte result 339, with the flag set through an inline pointer helper 334, with
+// a ternary depletion and both slot reads through the headers 340, with both slot reads through the unit
+// 329. Retail re-reads the unit in both queries and the data in the second: loads are not reused there.
+// Round 83: one depletion helper for 0x110ab0 and 0x1103a0, static inline (kept out of line) 419, forceinline
+// 334 (frame four); the depletion flag renamed to sort between the other two 164; interruptible declared
+// before depleted 165; result declared after the two flags 165.
+// Round 85: `unit_index = *unit_reference;` at entry (0x1130f0's form) with a plain 0xc70b0 argument
+// 271; an object-headers local with if-form depletion and bool/byte result 336/325, with a byte depletion
+// 336; the headers local with the `&&` depletion, bool result and byte depletion 334.
+// Round 210: Boolean success with depletion/interruptibility bool-short, bool-long, short-bool,
+// short-short, short-long, long-bool, long-short and long-long 315/187/209/314/208/189/315/188.
+// Native pairs reserve frame twelve and 1269 bytes; entry pool/state allocation and count joins
+// remain. Original byte success, canonical statuses, signed counts, queries and argument handling
+// restored.
+// Round 243: Complete success/depletion/interruptibility status enums, subsets
+// 1..7 381/173/386/172/403/174/384; all with entry success constant 384. Original byte
+// result, Boolean statuses, queries, parameter observation and complete body restored.
+// Round 45 (lane 14, fast): the three flags declared before the unit lookup 164, after the overlay/name reads
+// with the controlling field tested directly 164, between the name and controlling reads 164, before the
+// overlay/name reads 164, between the unit and control/state lookups 164 (all same code). Retail stores all three
+// flags' zeroes at entry and re-derives the unit inside both inlined 0xcbd50 queries.
+// Round 273: Complete complementary permission bool/byte/long/dword at the original
+// phase 281/281/277/277; entry bool/byte/short/dword 281/281/290/277. Original byte
+// result, status graph and argument observation restored. Two other reduced links
+// produced no comparison and are excluded; pool/state/count/return differences remain.
+// Round 454: Nullable held-object lookups first/second/both, conditional and branch-produced
+// pointers 328/321/344/328/321/344; both with native success 320/320. Original queries, canonical
+// statuses, own-parameter observation, case sets and entire executable body restored; pool/state
+// allocation and count joins remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1398,7 +1578,15 @@ bool __stdcall function_110ab0(long unit_index)
 }
 
 
-// score 450 (was 450): Frame eight versus twelve, requested/state ownership and result joins remain.
+// MiniMax R (10-31): no new form, no lower score.
+// score 450 (was 450): this round found no gain - retail keeps the result byte in the first argument's dead
+// slot (round 85's `bool result = true;` with no default arm is the spelling that lands it there) and holds
+// index*12 in EDX so the unit is re-derived for the query; ours keeps the unit in a register.
+// Earlier: this round found no gain - retail keeps the pool pointer live in ECX and the data in
+// ESI, rematerialises the unit pointer for the query, reloads the data from the pool and writes the
+// depletion with setle into the flag slot, while ours keeps the unit in a register and initialises the
+// result byte differently; the retail-shaped query joins score 330 or worse.
+// Earlier: Frame eight versus twelve, requested/state ownership and result joins remain.
 // Earlier 453 (was 478): frame 8 versus 12 and requested/state registers still differ.
 // Predicate names 478; byte result 538; byte depleted/overlay 453; global optimization off 1195;
 // merged interruptible cases 473; byte depleted alone 458; byte overlay alone 477; merged cases with bytes 456.
@@ -1446,6 +1634,44 @@ bool __stdcall function_110ab0(long unit_index)
 // Native pool bases recover frame twelve at 487; the paired short graph reserves sixteen.
 // On the native pool graph, default success bool/entry-bool/byte/entry-byte
 // 474/474/514/514. Original result defaults and lifetimes restored.
+// Round 169: whole primary result groups 0x400076c/0x500000a/0x50000c3/0x600008c/
+// 0x600008d/0x60000cc/0x700005c moved first, and the false group after the first
+// interruptibility group: eight forms 450 each. Original dispatch order and body restored.
+// Round 389: Plain two-held-slot traversal with long/short/word/byte indices, slot-first
+// validity joins 470/494/494/523; shared validity-first joins 470/494/494/491 (fast control
+// 450). Original paired queries and complete body restored; frame eight and state homes remain.
+// Round 174: transposed overlay/request dispatch with bool/byte/short/long
+// permission 663/725/829/792; first/second/both overlay defaults before inner
+// dispatch 497/478/581; both with byte permission 545. Original graph restored;
+// frame eight versus twelve and requested/state/result homes remain.
+// Round 81: an object-headers local for the unit and both depletion checks 446, but the unit index then
+// travels in ECX (ret 8, retail ret 0xc) and both callers lose (0x10ff40 44 -> 157, 0x111650 666 -> 673);
+// with a bool depletion 480; with the slot reads through the unit 487; the headers local for the two
+// checks only, after/before the unit read, 480/480; with the unit index read once through its address
+// 474 (callers unchanged); that address read alone 450.
+// Round 83: depletion/interruptible declared before the unit lookup 450 (same code); that with `result = true`
+// at its declaration and no state-switch default 483; interruptible before depleted 463; the overlay flag
+// declared with the others 493; the 0xc7070 test inverted 473.
+// Round 85: retail's state default reads a true byte kept in the unit index's dead slot (`bool result =
+// true;` with no default arm): that with one read of the unit index through its address 474 (1793 bytes,
+// callers unchanged, frame still 8), plus an object-headers local 478; with a short depletion 506, short
+// depletion and overlay 510, both with the headers local 495; the depletion written through a forceinline
+// `byte *` helper 474 (same code).
+// Round 209: Base-permission observation before both read-only held queries, bool/byte/short/long
+// 451/451/471/473; with the early overlay observation 506/495/512/504. Short/long overlay forms
+// recover frame twelve but regress to 1833/1825 bytes. Overlay moves were exact-match-only.
+// Original observations, paired queries, results, dispatch and complete body restored.
+// Round 243: Reused long/word/dword header ordinal and long byte offset,
+// at entry 491/469/491/489 and within controlled admission 495/461/495/476.
+// Original pool observations and body restored; frame/state/request/result homes remain.
+// Round 115 (lane 7, fast): slot bytes read through the unit local 450 (same code); the first depletion as one
+// assignment 481; `bool result = true;` without the default arm re-measured 483 (the unit index then arrives in
+// EDI); `controlling` read before the control/state pointers 444 (1793 bytes, a gain of 6 only), with bool
+// depleted/byte interruptible/flags declared in reverse/bool overlay 470/472/461/453; state before control 450.
+// Retail 0x110ab0 re-reads g_4e0300->data for the second slot block the same way with no store in between.
+// Round 273: Reused two-request primary membership bool/byte/short/long before the
+// predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
+// comparisons, case results and complete body restored; frame eight versus twelve remains.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1665,7 +1891,8 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
-// score 790 (was 790): frame 0xcc/0xd4 and first angle/overlay inline allocation remain.
+// score 790 (was 790): frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
+// frame 0xcc/0xd4 and first angle/overlay inline allocation remain.
 // Earlier: frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
 // frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
 // frame 0xcc versus 0xd4 and first angle/overlay inline allocation remain.
@@ -1729,12 +1956,66 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // 835/838/830; early two-use centered bool alone/with bit 11/with bit 10/both
 // 858/854/859/790; combined byte predicate 790. Keep the Boolean combined form,
 // plain confirmed at 790 (3386/3403); original floating grouping and all call roles retained.
+// Round 258: Eight consistent basis/output formal orders at the existing projection boundary all
+// 790. Original helper contract and both calls restored; frame 0xcc versus 0xd4 and first
+// conversion expansion remain.
 // Round 386: shared projected-vector setter/direction memcpy/both 790/790/790;
 // default-angle memcpy alone/with setter/with direction/all 856/856/856/856;
 // all with ordinary projection inline 1165. Original bodies and copies restored.
 // Round 168: Native unit direction/ratio/weight fields in seven subsets and all with side bytes
 // 790 each; on the newer flag/center graph, plain overlay for 882, with native default angles
 // 911, with conditional activity clear 901, with both 897. Original body and records restored.
+// Round 184: Complete aiming flag word/native tag value/encoded byte/separate predicates at entry
+// 855/836/877/857; after persistent samples 848/880/867/850. Original live flags, native direction
+// copy, helpers, arithmetic and call roles restored.
+// Round 393: native external sample-channel references in seven subsets
+// 793/793/839/790/793/793/839; all with scratch construction at first use 841. Original body restored.
+// Round 172: complete bounds value return, field construction with pointer/reference/value
+// screen inputs 1027/1027/1123; aggregate construction 1027/1027/1123;
+// ordinary inline field/aggregate returns 1010/1010. Frame 0xcc remains;
+// original bounds helper, direction snapshot and all consumers restored.
+// Round 400: Actual bounds outputs as four-real reference/pointer, native interval pair and
+// separate yaw/pitch intervals 790/790/790/790; each output-first
+// 790/790/790/790. Original output contract and every arithmetic tree restored.
+// Round 269: Existing projection boundary includes the angle-conversion call,
+// caller pointer/reference, private vector and native angle value: forced
+// 928/928/961/933; ordinary inline 1180/1180/1184/1230. Original two helpers,
+// separate conversion calls, direction snapshot and complete body restored.
+// DL176: Independent ID/ratio cursors and paired indexed traversal 882/882/903; ID-end with
+// indexed ratio 897; paired ID-end/ratio-end 889/861; paired short/word ordinal 903/903. Original
+// indexed do-loop, all input observations, helpers and complete body restored; frame and first-
+// angle/overlay expansion remain.
+// Staged side cross, overlap-safe direction, both, overlap-safe default angles, side/angles,
+// direction/angles, all, then all with independent secondary projection: 820/842/824/891/847/892/869/882.
+// Original body, complete input capture, helper and includes restored.
+// Round 81: retail calls 0x11df30 once (its first use inlined), ours twice; every other callee's count
+// agrees. The whole body in a helper the stdcall entry calls: static inline 4236 (kept out of line),
+// forceinline 790 (same code), inline 4236; only the part after the overlay-flag clear in a helper:
+// static inline 3727, forceinline 913.
+// Round 83: the final slot test inverted with its arms swapped 790 (same code; retail lays the then-arm
+// first); the relative angles declared with the defaults 790; the scratch channel declared first 801; the
+// two aiming channels at the aiming block's top 789; the graph looked up after the definition 795.
+// Round 85: the body in a forceinline helper taking the render model as an unused parameter 790 (same
+// code); the overlay loop as `while` 790 (same code), as `for` with the play call under its own `if` 882,
+// the play call under its own `if` in the do-loop 790 (same code), a `for` that skips empty ids with
+// `continue` 882.
+// Round 209: Main/blend-pair/all native channel value construction 790/790/790; immutable repeated
+// curve values alone/main/pair/all 790 each; all with immutable animation IDs 790. Complete
+// comparison listings unchanged. Original constructors, helpers, inputs and float grouping
+// restored; frame 0xcc versus 0xd4 and first-angle/overlay expansion remain.
+// Round 243: Complete two-use center predicate byte/short/long/dword storage
+// 790/848/786/786; complementary bool/byte/short/long 844/844/836/831. Long/dword gain
+// only four at 3392 bytes and are dropped. Original predicate, helper and complete body restored.
+// Round 115 (lane 7, fast; aligned = difflib count, 584 at 790): the overlay ratio as the product then
+// `ratio += 0.5f` 859 (retail's mulss/addss on one 0.5 register, aligned 577); the overlay `for` loop
+// re-measured 882 (first 0x11df30 inlined as in retail, frame 0xc8), with that ratio 867; the projection
+// reading its input in place 833 (3403 bytes, aligned 573), with the for loop 922, with the ratio 848; the
+// projection's copy written field by field 911 (aligned 561), with the for loop 856 (aligned 542: the
+// projection is then SSE in place as in retail), copy orders k,j,i / j,k,i with the for loop 859/857.
+// Retail's frame also holds unreferenced bytes at +0x28, +0x70 and +0x98..+0xa3 (after the basis vectors).
+// Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
+// all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
+// native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -1977,6 +2258,15 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // extra fill as a shared inline helper 16; other parameter orders 16; the
 // 0x114520 result in a named bool returned once 95; the fallback test joined
 // to the 0x114520 test 22; a success flag set after the fallback block 96.
+// Round 32: the definition index as its own local (priority then a register argument, frame
+// 0x38) 46; entry_index reassigned in place of the index local 16; request priority as long 16;
+// request priority declared before the index 16; NONE-first comparisons 16.
+// Round 15: `priority = NONE;` before the fallback test 23; entry_index reassigned with the request
+// priority declared first 16; the index from a ternary with one NONE test 16; the request record
+// declared at function scope 16; the fallback test un-nested (a second plain NONE test) 16.
+// Round 105: const priority capture 16; combined declarations 16; const final index 16; priority input through its
+// own address 16; chained default NONE stores 16; output NONE between fallback and the common guard 22;
+// entry/priority stores swapped 16; definition stored first 17. Original body restored.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {
@@ -2334,7 +2624,15 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
     return arg_0->graph_tag_index != NONE && arg_0->animation_id.index != NONE;
 }
 
-// score 666 (was 666): Frame 0x80 agrees; request/control homes, validity expansion and ret 4 versus ret 8 remain.
+// score 666 (was 666): this round found no gain - the request pointer's three stack re-reads need a
+// pointer-to-parameter or volatile spelling the lane rules do not allow, and the const-reference spelling
+// (663) costs both callers in other lanes' files.
+// MiniMax R (10-31): no new form, no lower score.
+// Earlier (666): this round found no gain - retail re-reads the request pointer from the stack three
+// times and never registers it, spills the control pointer to [esp+0x24] and keeps the state in EBP, while
+// ours caches the request pointer in EBP and the state in ESI, giving a 0x88 frame; spelling the argument as
+// a const reference gains 3 but costs the two callers, so it was dropped.
+// Earlier (666): Frame 0x80 agrees; request/control homes, validity expansion and ret 4 versus ret 8 remain.
 // Earlier: frame 0x80 agrees; request/control homes, selected validity calls and ret 4 versus ret 8 differ.
 // frame 0x80 agrees; request/control homes, selected validity calls and ret 4 versus ret 8 differ.
 // Round 55: retail never enregisters the request pointer (esi holds the control pointer, spilled to
@@ -2424,9 +2722,46 @@ PRIVATE inline bool function_111651(c_animation_channel const *arg_0)
 // Round 30: Complete transition complement bool/byte/short/long 727/727/668/667; coupled with
 // permission-override complement 727/727/668/667. Original flags, helper and body restored;
 // request/control homes and ret 4 versus ret 8 remain.
+// Round 258: Complete native channel-value validity input, ordinary bool/byte/short/long results
+// 994/994/1001/993; forced 1000/1000/1013/1004. Original pointer helper and twelve calls
+// restored; request/control homes and validity expansion remain.
 // Round 386: existing native pair-validity helper by primary/case/both/tail/primary-tail/
 // case-tail/all phases 701/666/701/745/751/747/753; native triple state guard 762.
 // Original private validity helper, request/control homes and body restored.
+// Round 169: native incoming record, mutable/readonly byte flags 666/666; word flags
+// 675/675; dword flags 666/666; unsigned keys with byte/word flags 666/675. Original
+// flat input accesses, external signature, request homes and complete body restored.
+// Round 172: shared point-difference producer on the corrected frame 699;
+// with actual transform/point/both/direction/transform-direction/point-direction/
+// all workspaces uninitialized at entry, 699 each. Frame 0x80 and ret 4
+// remain; original displacement statements and every lifetime restored.
+// Round 174: control/state/tag receiver initialization at the completed request
+// phase, seven subsets, 709/708/714/675/702/704/705; all with Boolean transition
+// 725. Original initializers and body restored; request/control homes and ret 4
+// versus retail ret 8 remain.
+// Round 81: the request kept on the stack by a const reference to the parameter, read at the first use,
+// the last use, the first two, the first and last, or once into a local: 663 each (ret 8 as in retail,
+// first difference +0x23), but the request pointer is then cached in ESI where retail re-reads it, and the
+// callers lose (0xdd360 281 -> 282, 0xefde0 715 -> 721).
+// Round 83: the held-slot calls as a plain counted loop 666 (same code, kept); the 0xc000043 flag as one
+// expression 700; the first request flag copied as a bool 673; the change test as one `||` 673; the
+// validity and the forced flag ahead of the change test (retail's order) 686.
+// Round 85: the validity helper as static inline or plain 666 (same code); the 0x700005c case's three
+// bit sets in a forceinline helper 702 (every validity test then inline, 47 calls as retail); the request
+// read through its address at every use 663 (ret 8; callers 0xdd360 282, 0xefde0 721), with the bit-set
+// helper 691.
+// Round 68 (lane 9, fast; aligned = difflib over the listing's instructions, baseline 705 instructions
+// against retail's 703, opcode ratio 0.790): BLOCKED-BY 0xe6b00 too: retail's 0xe6b00 takes the unit index
+// in EBX, ours in ESI, so its three call sites differ (its file was held by another lane this round). The
+// channel-clear test `local_5 == 0x7000101 ? unknown7c == 0x400000c : local_5 == 0x400000c` always
+// materialises a sete (also as its own enclosing if, 666, same code); retail's threaded branches come from
+// `((local_5 == 0x7000101 && unknown7c == 0x400000c) || local_5 == 0x400000c)`, which gives retail's exact
+// shape and instruction count (703) but 2553 bytes and 688 positional (opcode ratio 0.794); with the
+// validity of channel 0 computed before the change flag as well (retail's order) 690 (ratio 0.804). The
+// select compared once, `(local_5 == 0x7000101 ? unknown7c : local_5) == 0x400000c`, 714 (no threading);
+// the existing vector3d_from_points3d for the node offset 699. Retail also re-tests the state's frozen bit
+// before each channel update (ours drops it as already tested) and threads each block's frozen exit to the
+// end; the four-block pattern is the same knowledge difference as in 0x113980.
 // @retail 0x111650
 bool __stdcall function_111650(long arg_0, long *arg_1)
 {
@@ -2623,14 +2958,12 @@ bool __stdcall function_111650(long arg_0, long *arg_1)
     {
         if (local_2->graph_tag_index != NONE && !(local_2->flags & 1))
             local_2->resources_request(local_2->unknown70, local_2->unknown74, local_2->unknown78, true, true);
-        long *local_31 = (long *)((byte *)local_0 + 0x218);
-        long local_32 = 4;
-        do
+        for (long local_32 = 0; local_32 < 4; local_32++)
         {
-            if (*local_31 != NONE)
-                function_1060a0(*local_31, arg_0);
-            ++local_31;
-        } while (--local_32);
+            long local_31 = ((long *)((byte *)local_0 + 0x218))[local_32];
+            if (local_31 != NONE)
+                function_1060a0(local_31, arg_0);
+        }
     }
     if (!(local_2->flags & 1))
     {
@@ -2722,9 +3055,21 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
     return elapsed;
 }
 
-// score 155 (was 155): frame 0x3c versus 0x38; action/decision homes, input carrier roles and
-// call materialization remain. The action query now matches, but its returned-pointer test
-// grows the frame to 0x40 on this caller; the original executable body is retained.
+// MiniMax D (11-01): no new form, no lower score.
+// score 44 (was 44): BLOCKED-BY 0xe70b0 (its return type) for the frame 0x3c versus 0x38. Measured from
+// the frame top every slot agrees except the action short (ours 4-aligned below the 4-byte slots,
+// retail 2-aligned with the two flag bytes under it) and the control/definition pair; VC7.1 gives a
+// lone 2-byte local, word, char[2], one-short struct or inlined short parameter a 4-aligned slot, so
+// the packing needs a 4-byte aggregate. Round 17: success exit as `*flag = result = true` 52 (kept,
+// retail's AL store and length); control declared before state 61; definition declared last 55; flag
+// initializations before the lookup 206; force flag declared first 52; block-scoped action 52;
+// overlay initialized at its declaration 54. Round 19: the action query in an inline helper owning
+// the short 167 (kept out of line, so the frame is 0x38 but the bytes stay at +2/+3), forceinline 145
+// (0xe70b0 then inlines too), forceinline with 0xe70b0 declared noinline 52 (the inlined short is
+// 4-aligned as well); control renamed so it sorts after definition 52 (slot unchanged); only the force
+// flag initialized before the lookup 206.
+// Returned action comparison plus a separate existing channel-copy statement recover
+// native query/play ordering at retail length; the shared result exit is retained.
 // frame 0x3c versus 0x38; the escaped action short has its own
 // aligned slot. The action and seat queries match; returned action-pointer comparison
 // and channel-copy/play argument scheduling still differ.
@@ -2761,26 +3106,78 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // Round 30: Immutable set/mode/lookup results at entry in seven subsets, then all with the constant
 // animation default at entry: 173/173/167/194/189/199/189/173 (expanded control 155).
 // Original table observations and all lifetimes restored; frame 0x3c versus 0x38 remains.
+// Round 258: Immutable mode at every use on the repaired query graph, plus lookup/query/native-
+// channel subsets 191/191/192/192/182/182/181/181. Frame 0x38 forms regress; original
+// observations, action test, copy chain and body restored.
 // Round 386: action/set-decision/channel-backing lifetimes in seven subsets
 // 155/156/156/155/155/156/156; all with native constructed channel 157.
 // Fixed caller/request roots reproduce full 155; original body restored.
 // Round 168: Native paired timing fields/header status/parent slot in seven subsets and all
 // with a shared absolute object index 155 each. Original records, copy chain and body restored.
+// Round 169: returned query with action/force/both/backing/action-backing/force-backing/
+// all scopes 149/150/150/149/149/150/150; all plus native channel 265. Scoped query
+// plus direct true exit 148, Boolean result 151, separate copy 129, actual flag value 149;
+// separate copy with original shared exit 122, also with original action home 122 (plain, kept).
+// Local action comparison on copy graph 132; Boolean result on query/copy graph 127.
+// Round 172: consistent inline copy/indexed-play/both/base-play/copy-base/
+// indexed-base/all summaries 155 each; all with the actual returned-action word
+// test 149. The six-count gain fails the eight-count gate; every declaration,
+// provider contract and the complete caller restored. Frame 0x3c remains.
+// Round 172 DL: Escaped action-role name 122; complete query/play/overlay role names 122;
+// Boolean aggregate with completed-success exit 127, also with those names 127.
+// Whole availability decision on returned-query/separate-copy graph, signed/Boolean
+// aggregate and shared/direct success exit 156/158/163/158. All restored;
+// frame 0x3c versus 0x38 and small-home packing remain.
+// Round 174: chained/result-first successful publication with signed/Boolean aggregate
+// 122/122/128/128; two-use base-channel entry/set lifetimes with original/chained
+// publication 122 each. Original body restored; frame 0x3c and short packing remain.
+// DL176: Selected-set guard/call carrier with signed/Boolean aggregate and shared/direct success
+// 69/61/71/61; consistent mode-at-use combinations 171/194/200/194; single renamed set with
+// Boolean/signed aggregate 127/122. Keep the two-use selected-set carrier and Boolean aggregate,
+// plain confirmed 61; frame 0x3c versus 0x38 and action-short packing remain.
+// Round 81: control declared before definition and state 44 (kept; the entry schedule then
+// matches); force before result 44; the flags (either order) before the animation default 207, after it
+// 207/207; the animation default before the three table reads 44. Retail packs the action short
+// 2-aligned beside the two flag bytes, which VC7.1 does for a compiler temporary: 0xe70b0 written as
+// returning a two-byte class with a constructor by value (hidden return pointer in EAX, returned
+// unchanged, as retail's 0xe70b0 does) gives frame 0x38 and 20 here, 12 with the declaration order
+// kept above (the control/definition slots and the two flag stores before the lookup's branch remain).
+// Round 83: animation chosen by a ternary 189; the action short declared first 218; the no-overlay and
+// overlay-busy exits as `return false` 225/225; the animation default before the table reads with both flags
+// cleared before the lookup's `if` 232 (the clears then sit where retail has them, but NONE goes to EDI).
+// Round 85: flags cleared before a ternary animation lookup 210; force then result between the NONE
+// default and the lookup's test 207; only the result declared first 207; the lookup table read at each use
+// 44 (same code); the overlay pointer declared before the flags 44 (same code). The return-type fix stays
+// blocked: 0xe70b0's caller 0xc98a0 is contributor code.
+// Round 36 (plain checks; --fast builds this function differently, 219 on unchanged source): the
+// action short declared after the overlay pointer 52 (identical); the action query in an inline
+// bool helper owning the short 167 (stays a call; frame 0x38), force-inlined 145 (frame 0x38, flags
+// still at +2/+3, and LTCG then inlines 0xe70b0, which retail calls). Declared first, between or
+// before the flags: identical under --fast.
+// Round 85: flags cleared before a ternary animation lookup 210; force then result between the NONE
+// default and the lookup's test 207; only the result declared first 207; the lookup table read at each use
+// 44 (same code); the overlay pointer declared before the flags 44 (same code). The return-type fix stays
+// blocked: 0xe70b0's caller 0xc98a0 is contributor code.
+// Round 68 (lane 9, plain checks; --fast gives 218-219 at 687 bytes for any edit, even one giving the same
+// code): 0xe70b0 and 0xc98a0 now count as ours, but 0xe70b0's definition sits in a file another lane held this
+// round, so the class return (frame 0x38) waits for the next round. The overlay test through the file's
+// channel-validity helper 44 (same code); the `type < 3` test as its own enclosing if 44; the force decisions
+// as an else-if ladder 44; play flags as a ternary 99; the selected mode as a ternary 205.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
 {
     s_unit_animation_object *unit = UNIT_ANIMATION_OBJECT(unit_index);
+    s_unit_animation_control *control = UNIT_ANIMATION_CONTROL(unit);
     byte *definition = (byte *)TAG_BYTES(unit->definition_index);
     s_animation_state *state = UNIT_ANIMATION_STATE(unit);
-    s_unit_animation_control *control = UNIT_ANIMATION_CONTROL(unit);
     *flag = false;
     long set = g_440918[type];
     long mode = g_440938[type];
     long lookup = g_4408f8[type];
     long animation = NONE;
     if (lookup != NONE) animation = g_46fc30[lookup];
-    signed char result = false;
+    bool result = false;
     bool force_overlay = false;
     short action;
     c_animation_channel *overlay;
@@ -2794,8 +3191,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
                 force_overlay = true;
             else
             {
-                function_e70b0(unit_index, &action);
-                if (action != 0 ||
+                if (*function_e70b0(unit_index, &action) != 0 ||
                     (*((byte *)g_4e0300->data + (unit_index & 0xffff) * 12 + 3) == 0 && function_e4050(unit_index)))
                     force_overlay = true;
             }
@@ -2804,7 +3200,8 @@ bool function_10ff40(long unit_index, long type, short side, short value,
         {
             byte channel_storage[sizeof(c_animation_channel)];
             c_animation_channel *channel = (c_animation_channel *)channel_storage;
-            if (!state->channel_play_indexed(channel->copy_from(&state->channels[0]), animation, side, value, 0, 0))
+            channel->copy_from(&state->channels[0]);
+            if (!state->channel_play_indexed(channel, animation, side, value, 0, 0))
                 force_overlay = true;
         }
         if (force_overlay)
@@ -2823,7 +3220,8 @@ bool function_10ff40(long unit_index, long type, short side, short value,
             *(real *)(definition + 0x108) >= overlay->frame_position * (1.0f / 30.0f))
             goto done;
     }
-    if (set != NONE)
+    long selected_set = set;
+    if (selected_set != NONE)
     {
         long selected_mode = 0x7000101;
         long play_flags = 2;
@@ -2831,7 +3229,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
             play_flags = 14;
         if ((unit->parent_index == NONE || *(short *)((byte *)unit + 0x1fc) == NONE) && mode != NONE)
             selected_mode = mode;
-        result = function_10f430(unit_index, selected_mode, 0x7000101, 0x7000101, set, 0.0f, false, play_flags);
+        result = function_10f430(unit_index, selected_mode, 0x7000101, 0x7000101, selected_set, 0.0f, false, play_flags);
     }
     if (animation != NONE)
     {
@@ -2846,8 +3244,7 @@ bool function_10ff40(long unit_index, long type, short side, short value,
             animated = state->play_indexed(animation, side, value, side_out, value_out);
         if (animated)
         {
-            *flag = true;
-            result = true;
+            *flag = result = true;
             goto done;
         }
     }

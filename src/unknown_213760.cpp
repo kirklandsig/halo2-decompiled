@@ -1136,7 +1136,6 @@ void __stdcall function_2138f0(long first, long last);
 void cache_file_path_from_slot(long index, char *path, long path_size);
 bool cache_file_header_read(long index);
 s_cache_file *cache_file_from_type(long type);
-long __stdcall function_1a08f0(s_async_task *task);
 
 PRIVATE inline void cache_wait_for_completion(bool volatile *done)
 {
@@ -1155,8 +1154,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-
-// score 104 (was 104): frame 0x1144 and extent agree; file displacement, request-copy, the first read
+// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
+// checksum register and header-validation joins remain. Earlier diagnosis before native handles:
+// the read-call value transport differed. The retained API and handle prefix now agree.
+// frame 0x1144 and the entry prefix agree; size/count homes, write setup,
+// checksum register and write/header validity joins remain.
+// Earlier: the read-handle declaration/caller contract differed; frame and extent agreed.
+// frame 0x1144 and extent agree; file displacement, request-copy
+// scheduling, the first read handle copy and write-success join still differ.
+// Earlier: frame 0x1144 and extent agree; file displacement, request-copy, the first read
 // call's handle copy and the write-success join remain.
 // frame 0x1144 and extent agree; file displacement (retail's product in ECX
 // and `lea ebp`), the task zeroing/path/counter registers, the first read call's handle copy, the
@@ -1239,6 +1245,184 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // type-to-range switch keeps the two compares apart (against ECX/EDX copies of 1, index in ESI),
 // with the write success set by its own test 161 (918 bytes); plain locals, enums, a local struct,
 // const tables and one-entry table loops all fold to one compare.
+// Y405: Native metadata at the actual file-record declaration: path/comparison word/dependency
+// bytes and timestamps in all seven combinations 104 each; full native metadata with array
+// addition 104. Original record, byte-offset observations, body and interfaces restored;
+// temporary file-displacement ECX, request-copy and I/O setup remain.
+// Round 208: uniform native acquired handle at every post-open test/value use,
+// with pointer/reference receivers and local/iteration output lifetimes: 215;
+// comparison-produced write success in each context: 216 (898 bytes). All restored;
+// file displacement, request-copy and I/O scheduling within frame 0x1144 remain.
+// Round 424: native create-member pointer/reference and task pointer/reference 104 each;
+// cleared-task pointer alone/with create pointer/with create reference 226 each;
+// cleared-member pointer 217. All restored; file displacement and request/completion/I-O scheduling remain.
+// Round 102 (fast): the file element read at each use with no file local 281 (955 bytes); write success
+// set by its own test 166 (914 bytes; the joins then match, left: displacement, task zeroing register,
+// done-pointer lea, the handle copy moving from the close call to the size query, retail's 1 in ESI),
+// with `index == 1` for the range 414, with the file pointer after the path call 168, with a nested
+// close test 166. All restored.
+// Round 31: post-open handle test through the s_file_handle view 104; file pointer after the path call 106;
+// range as `!(index < 1 || index > 1)` 104; the byte count itself as the write success (zeroed before the
+// resize test, close when != 0x800) 122 (retail's cmp/je join, no sete); `bool written = resized;` 104.
+// Round 233: complete post-completion success and failure decisions, each in bool/byte/short/long
+// widths, all 178 at 930 bytes; every form shrinks the frame to 0x1140. Original nested write
+// result/output storage restored; retail frame 0x1144 and file/request register homes remain.
+// Round 53: the open request through the existing 0x1a0b40 (identical code, kept). Three forms that
+// are kept only on a match reach 7 (fast) together: `else if (cache_file_header_read(index))` with
+// `valid = true` before the range test (retail's 1 in ESI and threaded continue), the write success
+// set by its own test (cmp/je join), and 0x1a0b40 given `&g_557c90[index].handle` while `file` serves
+// the rest (address first built as a call argument: retail's `lea ebp, [ecx + base]` and loop-top
+// registers); with a handle local for the open test and size query in place of the argument form 38,
+// harness-only header-read arm 153, write test 146, both 142. Left at 7: retail loads the write's
+// handle first into EAX with the flags zero in ECX, and the checksum compare into EAX (ours zero EAX
+// first, compare EDX). On the 7 form: s_file_handle member + named write_flags + bytes first 7; header
+// initializer returning the header in both calls 7; named write_flags after bytes 7; bytes declared
+// outside the write block 7; checksum operands swapped 7. A permuter run on the 38 form: 60 tries,
+// none below 38. Diagnostic: one dead load before the 0x213800 call gives the checksum register.
+// Round 449: native initialized validity slots byte/signed-byte/word/long
+// 270/270/263/271; with ordinary completion while 307/307/295/308.
+// Original Boolean slots, byte fill, completion helper and complete body restored.
+// Round 8 (lane 17), round 53's three match-only forms rebuilt at 7 (fast, aligned 5): on them a handle local at the top of
+// the resized block or before the write 114 (917 bytes: the write call then matches retail, handle into EAX first and
+// the flags zero in ECX, but the close call loses its `mov ecx, eax` copy); one handle local for resize/write/close 158,
+// write/close 159, resize/write 145, write only 156; checksum `&&` 78, `if (valid && a != b) valid = false;` 67, the
+// stored checksum read after the call 7, a ternary on the call 15, `valid = false; if (call)` 15; the flags as `0`
+// 133; the write's handle through `g_557c90[index]` or a const cast 7/7; the handle as an s_file_handle member 7.
+// Round 56 (lane 12, fast), on round 53's 7 form: an s_file_handle local for the write call gives
+// retail's write setup (handle loaded first, flags zero in ECX) but drops the close call's
+// `mov ecx, eax` copy, 114 (917 bytes); with a second local at the close 114 (checksum then EAX
+// as retail); a local copy instead of the direct argument at each combination of size query,
+// resize, write and close: write alone 114, resize alone 122, close alone 119, query alone 122,
+// write with resize, with query or with both 6 (930 bytes; left: the resize handle EAX for ECX,
+// the header address ECX for EDX, the close copy EDX for ECX), all four 118; on the 6 form the two
+// locals' positions and copy/assign forms (24) 6 each, written/resized/bytes/header declared
+// earlier 6 each, the header initializer on typed fields 6, a named flags local first 120;
+// permuter on the 6 form: 65 tries, none below 6.
+// Round 20 (fast): the 7 and 6 forms reproduce. The six left look like VC's EAX/ECX/EDX scratch
+// rotation: consistent with the resize handle local being a register variable (EAX) where retail's
+// resize uses a rotating temp (ECX), shifting the header address and the close copy by one. On the 6 form the resize or
+// the write local read through `g_557c90[index]` 6/6; on the 7 form bytes declared first with
+// `sizeof(empty_header)` 7; the file pointer declared after the open wait 258 (7 form) / 245 (6 form).
+// Round 61 (fast): the 6 form reproduces; on it the resize handle as a `const &` local 114 (917 bytes),
+// the write handle as one 122, both 7; a close handle local added 118; a named flags local before the
+// write handle 120.
+// Round 49 (m3 lane 1, fast), on round 53's 7 form (rebuilt: 7, left the write handle loaded late and the
+// checksum in EDX): the write through a force-inline blocking helper taking the handle by value (call and
+// wait; an inlined by-value parameter gives retail's handle-first write) 114 at 917 bytes, the write
+// then matches and the close loses its `mov ecx, eax` copy; plain inline 114. Helper sets for the size
+// query/resize/write/close calls (D direct, H helper): DDHH 114 at 917 (aligned 4: only the close copy
+// missing, checksum EAX as retail), DHHD 6 and HDHD 6 (one rotation off: resize EAX, header ECX, close
+// copy EDX), DHHH/HHHH/HDHH 118. On DDHH: a close helper holding the INVALID test and store, by file or
+// handle pointer, 114/114 (7 without the write helper); the close argument through g_557c90[index] 114;
+// the close test through the s_file_handle view 114; nested close test 114. The handle from a force-
+// inline getter returning it by value, at the write / write+close / all four / write+resize: 7 each (the
+// getter is transparent). Diagnostics: the file pointer from a byte offset 104, from a displacement local
+// 101 (the displacement then takes EAX, retail ECX).
+// Round 110 (lane 8, fast): round 53's 7 form and round 56's 6 form reproduce (7/6). Upstream of the
+// resize block, on the 7 / 6 forms: `remove_later = false;` before the delete call 9/8; the size test
+// written `expected_size != size` 8/7; `dword size` declared at the loop top 7/6; `long expected_size`
+// 7/6. On the 7 form the resize and close match retail; only the write call (the flags zero takes EAX, so
+// the handle load cannot move ahead of it as retail's does) and the checksum register differ.
+// Round 123 (lane 6, fast): the 7 and 6 forms reproduce. On the 7 form a write handle local alone 114 is one
+// instruction from retail (917 bytes: only the close call's `mov ecx, eax` struct copy is missing, the rest is
+// loop padding); with a `s_file_write_flags flags(0)` local as 0x2151f0 writes it 114; the write handle built by
+// member assignment as 0x213760 builds its handle 114, with the resize/size-query/close handle built that way
+// 6/6/114; the 6 form with the flags local 6. On the write-local form: `written = bytes_written == 0x800;` 107
+// (930 bytes, sete join, still no copy); the close argument through `g_557c90[index]` 114; the close test
+// through the s_file_handle view 114; bytes_written declared before the header 114; nested close tests 114;
+// `written` initialised by assignment 114; a HANDLE local for the close test with a member-built close handle
+// 168, a member-built close handle tested in place 168 (both 946 bytes, frame slots shift). A handle local
+// before the resize moves its handle to EAX; one only at the write lets VC drop the close's copy.
+// Round 35 (fast), on round 56's 6 form (rebuilt from its saved file: 6, the other seven functions of the
+// file match): the size query and write handles as locals with the resize handle passed directly 6 (the
+// same six: the resize handle still takes EAX); the resize handle local declared before the remove-later
+// test 15; declared right after `bool resized;` 6; the write handle local at the top of the resized block
+// 6; declared before `written` 121 (917 bytes). Left: the resize handle EAX for ECX, the header address
+// ECX for EDX and the close copy EDX for ECX.
+// Round 13 (lane 17), round 53's 7 form rebuilt (7, fast: the write's handle loaded after the flags zero, and the
+// checksum compare in EDX); on it, a file-scope inline getter returning the element's handle as an s_file_handle in
+// place of the casts: at all four calls 118 (917 bytes, the close copy dropped as with locals), at resize and write
+// 6, at query and write 6 (the listed 6: resize handle EAX, header address ECX, close copy EDX, each one register
+// before retail's), at resize, write and close 118; the getter at resize and write with the plain
+// `written = bytes == 0x800` 110. All restored: no match, and a getter with one caller is not kept.
+// Round 54 (m3 lane 1): the handle as a named `s_file_handle *` to `g_557c90[index].handle` (open argument, all
+// four I/O calls, both tests, the store) 98 (retail's `lea ebp, [ecx + base]` file displacement); with the byte
+// count itself as the write success (`dword bytes_written = 0;`, close when `!= 0x800`) 85, kept (the count
+// alone 122). Left: the count's zero store and its slot (ours 0x24, size 0x28; retail the reverse), the write's
+// handle loaded after the flags zero, the checksum compare in EDX, and the header-read range test (retail's 1 in
+// ESI, threaded continue). On 85: a renamed size local 85; the count declared before size 85; the close test
+// as `(!resized || bytes_written != 0x800)` with no zero 157 (frame 0x1140: count and size share a slot); with
+// the match-only header-read `else if` 135; the count zeroed before the resize call 190; the close test nested
+// under the count test 85. The handle pointer built from `&file->handle` instead 122 (the displacement fix needs the
+// address built from the array element). On round 53's 7 form: the handle pointer 7; the checksum as
+// `if (call) valid = a == b; else valid = false;` 15 (header zero moves to AL); a bool-returning inline write
+// helper in the close condition 355 (834 bytes: the two headers share one slot).
+// Round 64 (lane 16, fast), on round 56's 6 form (reproduces at 6): the resize handle local before `bool resized;`
+// 6, `const` 6, the done flag declared once before the loop 6 (same code each); the close passing the resize handle
+// local 129 (915 bytes); the size limit read just before the size query 284 (902 bytes). s_file_handle cannot take a
+// copy constructor (it is a member of the task union), so retail's by-value handles are plain struct copies.
+// Round 66 (lane 9, fast): the 7 and 6 forms and the write-handle-local form (114, close copy dropped) reproduce.
+// Register reading: in all three the checksum load takes the scratch register one step after the close call's
+// copy (7: ECX/EDX, 6: EDX/EAX, write local: EAX coalesced/ECX), in retail two steps (ECX/EAX), so one more
+// rotating temporary sits between the close and the checksum in retail, whatever the write does. Tried: write local
+// with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
+// *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
+// the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 56 (m3 lane 1, fast): without the count's zero store (`!resized ||` in the close test, the count declared
+// beside size) 157, with the count read first 157: not a size/count share, `resized` moves into the low byte
+// slots (0x12) and the frame drops to 0x1140. `bool written = false;` before the write block, the count scoped
+// inside it and `written = bytes_written == 0x800;` 98 (first difference +0x1e0: frame, slots and the close copy
+// are retail's; left the write's handle load and a `sete` join); plus a write-handle local 57 (write setup exact,
+// the close copy then dropped); with the success set by its own test 119 (914 bytes); the close written in both
+// arms 179 (994 bytes). On 98 the success set by its own test 83, plus round 53's header-read `else if` with
+// `valid = true` 7 (the round 53 plateau, now with no zero store; left the write's handle load after the flags
+// zero and the checksum compare in EDX); on 7: the write's handle through `file` 7, a named stored-path pointer 7,
+// the checksum as a ternary on the call 15. Restored: the 7 needs three match-only forms.
+// Round 35 (lane 15, fast): the 7 and 6 forms reproduce, and the 7 form with a write handle local alone 114 (917
+// bytes: the close's copy dropped, the checksum load in ECX). On that write-local form: the query, resize, close
+// argument or close test through `g_557c90[index]` 114/114/114/114; the write local before the header / before
+// bytes_written 114/114. No `file` local (every use through `g_557c90[index]`) on the 7 / write-local / 6 forms
+// 283/278/284 (955-958 bytes). On the 7 form: an `s_file_write_flags flags(0)` local at the call / at the top of
+// the resized block 7/7; bytes_written before the header, `written` declared before / after `resized` 7/7/7. A
+// constructor on s_file_handle (to make the handle a class temporary like the flags) does not compile: the
+// handle sits in the async task union (C2620).
+// Round 64 (lane 16, fast), on round 56's 6 form (reproduces at 6): the resize handle local before `bool resized;`
+// 6, `const` 6, the done flag declared once before the loop 6 (same code each); the close passing the resize handle
+// local 129 (915 bytes); the size limit read just before the size query 284 (902 bytes). s_file_handle cannot take a
+// copy constructor (it is a member of the task union), so retail's by-value handles are plain struct copies.
+// Round 56 (m3 lane 1, fast): without the count's zero store (`!resized ||` in the close test, the count declared
+// beside size) 157, with the count read first 157: not a size/count share, `resized` moves into the low byte
+// slots (0x12) and the frame drops to 0x1140. `bool written = false;` before the write block, the count scoped
+// inside it and `written = bytes_written == 0x800;` 98 (first difference +0x1e0: frame, slots and the close copy
+// are retail's; left the write's handle load and a `sete` join); plus a write-handle local 57 (write setup exact,
+// the close copy then dropped); with the success set by its own test 119 (914 bytes); the close written in both
+// arms 179 (994 bytes). On 98 the success set by its own test 83, plus round 53's header-read `else if` with
+// `valid = true` 7 (the round 53 plateau, now with no zero store; left the write's handle load after the flags
+// zero and the checksum compare in EDX); on 7: the write's handle through `file` 7, a named stored-path pointer 7,
+// the checksum as a ternary on the call 15. Restored: the 7 needs three match-only forms.
+// Round 66 (lane 9, fast): the 7 and 6 forms and the write-handle-local form (114, close copy dropped) reproduce.
+// Register reading: in all three the checksum load takes the scratch register one step after the close call's
+// copy (7: ECX/EDX, 6: EDX/EAX, write local: EAX coalesced/ECX), in retail two steps (ECX/EAX), so one more
+// rotating temporary sits between the close and the checksum in retail, whatever the write does. Tried: write local
+// with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
+// *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
+// the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 301: Failed-resize-only count initialization, success/failure-first arms at original,
+// pre-resize, pre-query and iteration declaration scopes: 33/123/33/123/33/123/33/123.
+// Keep original-scope success-first form, plain 33 at 930 bytes; write API initializes the actual
+// count on every submitted write. Frame 0x1144 agrees; count/query homes, write argument order,
+// checksum register and header-validation joins remain. All other declaration scopes restored.
+// Round 239: On the indexed-handle/direct write-count graph, native by-value query/resize/write
+// copies in seven subsets, then all four I/O copies, 84/84/89/82/89/89/89/84. All exact-only forms
+// restored; frame and entry prefix agree, size/count homes and write/checksum/result scheduling remain.
+// Round 242: Shared query/write byte-count storage, block/entry scopes with original/later
+// zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
+// All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
+// native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
+// DH271: Query/write-count/resize-result lexical identities, all seven subsets, then joint uninitialized
+// iteration-owned declarations, 33 each. The failure-only count-initialization graph keeps the same code
+// despite every new output-home identity. Original names, scopes, result producers, waits and native
+// handle/options tuples restored; query/count homes, write setup and checksum/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
@@ -1252,23 +1436,15 @@ void function_213970(void)
         char path[256];
         cache_file_path_from_slot(index, path, sizeof(path));
         dword expected_size = cache_file_size_limit(index);
-        s_async_task task;
-        memset(&task, 0, sizeof(task));
-        task.create_file.path = path;
-        task.create_file.access = GENERIC_READ | GENERIC_WRITE;
-        task.create_file.share_mode = 0;
-        task.create_file.creation_disposition = OPEN_ALWAYS;
-        task.create_file.flags = FILE_FLAG_NO_BUFFERING;
-        task.create_file.file = (s_file_handle *)&file->handle;
-        task.create_file.create_path = false;
         bool volatile done;
-        function_120ba0(6, &task, 0, function_1a08f0, &done);
+        s_file_handle *handle = (s_file_handle *)&g_557c90[index].handle;
+        function_1a0b40(path, 3, 3, 1, 0, 6, handle, &done);
         cache_wait_for_completion(&done);
         bool valid = false;
-        if (file->handle != INVALID_HANDLE_VALUE)
+        if (handle->handle != INVALID_HANDLE_VALUE)
         {
             dword size;
-            function_1a15f0(*(s_file_handle *)&file->handle, 0, 6, &size, &done);
+            function_1a15f0(*handle, 0, 6, &size, &done);
             cache_wait_for_completion(&done);
             if (size != expected_size)
             {
@@ -1278,23 +1454,23 @@ void function_213970(void)
                     remove_later = false;
                 }
                 bool resized;
-                function_1a1310(*(s_file_handle *)&file->handle, expected_size, 0, 6, &resized, &done);
+                function_1a1310(*handle, expected_size, 0, 6, &resized, &done);
                 cache_wait_for_completion(&done);
-                bool written = false;
+                dword bytes_written;
                 if (resized)
                 {
                     s_cache_header empty_header;
                     cache_header_initialize_strings(&empty_header);
-                    dword bytes_written;
-                    function_1a1050(*(s_file_handle *)&file->handle, &empty_header, 0x800, 0, s_file_write_flags(0), 0, 6, &bytes_written, &done);
+                    function_1a1050(*handle, &empty_header, 0x800, 0, s_file_write_flags(0), 0, 6, &bytes_written, &done);
                     cache_wait_for_completion(&done);
-                    written = bytes_written == 0x800;
                 }
-                if (!written && file->handle != INVALID_HANDLE_VALUE)
+                else
+                    bytes_written = 0;
+                if (bytes_written != 0x800 && handle->handle != INVALID_HANDLE_VALUE)
                 {
-                    function_1a1550(*(s_file_handle *)&file->handle, 0, 6, &done);
+                    function_1a1550(*handle, 0, 6, &done);
                     cache_wait_for_completion(&done);
-                    file->handle = INVALID_HANDLE_VALUE;
+                    handle->handle = INVALID_HANDLE_VALUE;
                 }
             }
             else

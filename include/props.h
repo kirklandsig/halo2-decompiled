@@ -122,7 +122,8 @@ struct s_type_76cf92
 	bool unknown34;
 	byte unknown35;
 	bool unknown36;
-	byte unknown37[0x3c - 0x37];
+	byte unknown37;
+	long unknown38;
 	bool unknown3c;
 	byte unknown3d[0x58 - 0x3d];
 	s_type_5cfb45 state;

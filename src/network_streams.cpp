@@ -77,18 +77,6 @@ static inline void sequence_window_advance(s_sequence_window *window, long seque
 	}
 }
 
-/* the release routine retail inlines here */
-static inline void free_block(void *block)
-{
-	long info;
-	if (!g_4d87f8->allocator->get_info(block, &info))
-		info = NONE;
-	s_allocator_globals *globals = g_4d87f8;
-	globals->allocator->release(block, NONE);
-	if (block != 0)
-		globals->count--;
-}
-
 
 // @retail 0x81410
 bool c_network_reliable_stream::v1(long *reason)
@@ -129,6 +117,15 @@ static __forceinline void function_94bf3(s_allocator_globals *arg_0, void *arg_1
 	local_0->release(arg_1, NONE);
 	if (arg_1)
 		arg_0->count--;
+}
+
+/* the release routine retail inlines here */
+static inline void free_block(void *block)
+{
+	long info;
+	if (!g_4d87f8->allocator->get_info(block, &info))
+		info = NONE;
+	function_94bf3(g_4d87f8, block);
 }
 
 static __forceinline void function_94bf4(s_allocator_globals *arg_0, void *arg_1, s_allocator_globals **arg_2)
@@ -236,7 +233,7 @@ long c_network_unreliable_stream::v3(long a, long b)
 }
 
 // @retail 0x95b70
-s_stream_fragment *unreliable_stream_get_fragment(c_network_unreliable_stream *stream, long sequence)
+inline s_stream_fragment *unreliable_stream_get_fragment(c_network_unreliable_stream *stream, long sequence)
 {
 	s_stream_fragment *result;
 	long index = sequence_window_index(&stream->m_fragment_window, sequence);
@@ -623,35 +620,6 @@ void c_network_reliable_stream::mark_received(long sequence)
 	}
 }
 
-// score 7 (was 7): Frame 0x14 agrees; initial message EAX/EDX, copy-before-OR and final delivery branch remain.
-// the first lookup's pointer is in EAX (retail EDX), the flags OR is done in
-// place and copied (retail copies, then ORs: mov eax, edx; or eax, 1), and the last delivery
-// test branches to the skip arm (retail jumps to the delivery arm). Kept: the bit index as a
-// named base minus current (retail's unfolded lea/sub start; every spelling of
-// acknowledged - current - 1 folds it to -1) and the type as an if/else (current EDI and the
-// entry EBX as retail, movzx edi, al). Tried after: type as a ternary 21, as 4 + shift 21
-// (lookup in EDX, type arithmetic differs), from (byte)local_1 86, through the field 93;
-// flags value after the OR as dword 16 (lookup in EDX, movzx eax, dx); previous as a ternary 7;
-// delivery test as an else-if 86, as a pending flag or !(a && b) 7-84; word/short flag types,
-// statement orders and type polarity 7.
-// Earlier at 81: the getter inlined (0x966d0 marked inline) and previous set in an if/else fix
-// the head. Bit index derived from current in four spellings 81 (folded to -1);
-// `(local_1 & 8) ? 5 : 4` 118 (current/message registers then as retail, but no movzx and the
-// first lookup in eax); bit as the loop variable 144; loop over the sequence parameter 174;
-// type after the flag store 120; message variable reused in the loop 81.
-// Earlier at 94, the slot address is kept in EAX here and in EDX in
-// retail, and ours zeroes EAX before the range test, so the loop head differs.
-// Native message-bit predicate/publication/both 117/113/80; native repeated-bit type
-// alone/with predicate/with publication/all 119/127/119/123; arithmetic native type 119.
-// acknowledged/undelivered/both skips, fallback exit and ordinary while 81; iteration-bit value
-// alone/with skips 105/105/105.
-// Actual time operand 142; two-use elapsed 84; later type with actual time/reused elapsed 148/121;
-// original flag type alone/with time 113/143; native type byte with time 142; direct publication/time 143.
-// Read-only first message, fixed first/loop/both pointers, live original flags, live flags with fixed pointers, immutable flag stages and retained-value names all 7.
-// Full-width original signed/unsigned 8/8; both signed/unsigned 9/8; separate flag copy/update 7; one word/dword flags value 68/69; named repeated predicate 7.
-// Default previous 17; reversed message guard 38; in-place previous 7; early message declaration/
-// previous before message 7/7; reset before/after lookup 39/138; reversed fallback order 10;
-// default type 82; field/direct publication 70/70.
 // @retail 0x96910
 long c_network_reliable_stream::function_96910(long sequence, long bit_count, dword const *bits, bool complete)
 {
@@ -679,8 +647,7 @@ long c_network_reliable_stream::function_96910(long sequence, long bit_count, dw
 		{
 			long bit = newest_bit - current;
 			s_reliable_message *entry = reliable_stream_get_message(this, current);
-			word local_0 = entry->flags;
-			if (!(local_0 & 1))
+			if (!(entry->flags & 1))
 			{
 				bool delivered;
 				if (current == acknowledged)
@@ -688,17 +655,20 @@ long c_network_reliable_stream::function_96910(long sequence, long bit_count, dw
 				else if (bit < bit_count)
 					delivered = (bits[bit >> 5] & (1 << (bit & 31))) == 0;
 				else
-					delivered = current > m_next_sequence || current > previous;
+				{
+					delivered = true;
+					if (current <= m_next_sequence && current <= previous)
+						delivered = false;
+				}
 				if (delivered)
 				{
 					long start = entry->time;
-					word local_1 = local_0 | 1;
+					entry->flags |= 1;
 					long type;
-					if (local_1 & 8)
+					if (entry->flags & 8)
 						type = 5;
 					else
 						type = 4;
-					entry->flags = local_1;
 					entry->unknown08 = network_time_now() - start;
 					update_round_trip(type, entry->unknown08, current, network_time_now());
 				}
@@ -1163,130 +1133,16 @@ void __stdcall function_095580(void *header, long message_type, long message_siz
 
 bool network_message_read_header(s_bitstream *stream, long *type, c_type_659ceb const *collection, long *size);
 
-// score 141 (was 141): frame agrees; aligned 39. Retail reads the oldest sequence once (EDX) for the
-// count, the first sequence and the scan; keeps the result in a stack byte, made zero in CL at entry and
-// returned with `mov al, cl` from early exits placed at the end, reloaded at the final return; sets the
-// copy loop's fragment to NULL before the index test; and falls into the failure return after the
-// decode test. Kept: the terminal flag in the copy loop's condition (aligned 55 -> 46), long result 141.
-// Tried on the 141 body: short/word result 191, byte/char 217 (791 bytes), bool 234 (771 bytes);
-// literal false failure return 161; first sequence before the count test 241; terminal flag declared
-// first 140; bool result with literal false failure 224; bool single-exit count block 242; short
-// terminal flag 203; copy-loop fragment NULL then assigned 156 (aligned 37), in both loops 156, plus a
-// bool result 213 (aligned 33), plus literal false failure 203, literal false failure alone 174; the
-// count test as a scope around the body with bool result 220, plus literal failure 210, long result 259.
-// Tried on the earlier 172 body: scan getter 302; copy getter 325; both getters 361; unsigned byte
-// progress 215; decode buffer first 213; forced-inline getters 223; readonly decode records 215; native
-// stream value initialization 254; native copy size bits 215; native fragment result selection 213;
-// existing window helper boundary 215; fragment result buffer publication 211; signed-byte/short/word
-// results 210/193/193; read-only scan/copy entries 211/211; oldest with direct fragment selection 232,
-// plus signed byte 234 or read-only scan 232; shared failure result 172; shared success exit 224;
-// nonempty scope 211; scope/failure join 262; byte-total name 193; copy-sequence name 193; scalar
-// names/failure join 172; scope/success join/scalar names 271; on the shared failure result,
-// byte/bool/signed-byte/long results 193/219/193/238; native initial-window count/first with
-// short/bool/byte/signed-byte results 269/278/274/274; single-result reset at payload/copy/CRC phases
-// and validation tests, short 256/231/214/255, bool 229/268/265/276; existing release-helper
-// composition 221; reused fragment data 213; terminal loop condition 191; first-sequence/saved-CRC
-// homes 172/172; failure result before payload/after copy 250/224; failure publication order 172; data
-// and terminal lifetimes 254; per-fragment terminal bool/header byte 192/250; conditional size with
-// bool/byte 192/250; default size with bool/byte 244/251; native result with terminal bool/byte
-// 266/218; independent bool/byte/short/long completion with literal returns 210/210/193/255, with
-// separate callback results 206/206/189/253; oldest after/before result and result before receiver
-// 229; shared initial newest with oldest-first/newest-first 202/202; oldest plus readonly types/stream
-// helper/unsigned byte total 229; native valid/terminal/both fields 172 each; twice-used scan flags
-// byte/native width 172/172, either with native copy terminal 172/172; full fragment observation with
-// native terminal 238; availability accumulation: short logical OR 244, bitwise OR and normalized
-// terminal bit 229/229, incomplete-only assignment 252, bool logical/bitwise OR 262/220, byte
-// logical/bitwise OR 227/235. Diagnostics: frame pointer 289; global optimization 297; size
-// preference 571.
-// Frame 0x10048 agrees; 806/805 bytes; initial oldest/false carriers and allocator save differ.
-// Frame and copy entry agree; oldest/false carriers, nullable copy result and allocator save differ.
-// Earlier: Frame and length agree; retained oldest/false carriers and copy-loop entry differ.
-// Frame 0x10048 agrees; oldest/false carriers, copy-loop entry and allocator save remain.
-// Earlier 172 (was 172): Frame and length agree; retained oldest/false carriers and copy-loop entry differ.
-// Frame and length agree; oldest/false carriers and copy-loop entry still differ.
-// Earlier at 172 (was 172): Frame and length agree; retained oldest/false carriers and copy-loop entry differ.
-// Earlier: retained oldest/false registers and copy-loop entry differ;
-// scan getter 302; copy getter 325; both getters 361; unsigned byte progress 215; decode buffer first 213; forced-inline getters 223.
-// readonly decode records 215; native stream value initialization 254; native copy size bits 215; native
-// fragment result selection 213; frame pointer 289; global optimization 297; size preference 571; existing
-// window helper boundary 215; fragment result buffer publication 211.
-// Earlier: oldest/false carriers and copy-loop entry remain.
-// Signed-byte/short/word results 210/193/193; read-only scan/copy entries 211/211;
-// oldest with direct fragment selection 232, plus signed byte 234 or read-only scan 232.
-// Shared failure result 172 at 805 bytes; shared success exit 224; nonempty scope 211;
-// scope/failure join 262; byte-total name 193; copy-sequence name 193;
-// scalar names/failure join 172; scope/success join/scalar names 271.
-// On the shared failure-result body, byte/bool/signed-byte/long results give 193/219/193/238;
-// native initial-window count/first with short/bool/byte/signed-byte results give 269/278/274/274.
-// Single-result reset at payload/copy/CRC phases and validation tests, short
-// 256/231/214/255, Boolean 229/268/265/276. All restored.
-// Existing release-helper composition 221; reused fragment data 213; terminal loop condition 191;
-// first-sequence/saved-CRC homes 172/172; failure result before payload/after copy 250/224;
-// failure publication order 172; data and terminal lifetimes 254.
-// Round 152: Per-fragment terminal bool/header byte 192/250; conditional size with bool/byte 192/250; default size with bool/byte 244/251; native result with terminal bool/byte 266/218.
-// Independent bool/byte/short/long completion with literal returns 210/210/193/255;
-// with separate callback results 206/206/189/253. All reverted.
-// On common-failure result: oldest after/before result and result before receiver 229/229/229;
-// shared initial newest with oldest-first/newest-first 202/202; oldest plus readonly types/stream
-// helper/unsigned byte total 229/229/229.
-// Native valid/terminal/both fields 172 each; twice-used scan flags byte/native width 172/172;
-// either with native copy terminal 172/172; full fragment observation with native terminal 238.
-// Original fragment declaration and body restored; oldest/false and copy entry still differ.
-// Read-only availability accumulation: short logical OR 244; bitwise OR and normalized terminal bit 229/229; incomplete-only assignment 252; Boolean logical/bitwise OR 262/220; byte logical/bitwise OR 227/235. Original scan and short common-failure result restored.
-// frame agrees; the copy loop now tests the terminal flag at the bottom
-// and the newest sequence at the top as retail does. Retail's result is a stack byte kept in CL
-// at entry (the early exits return it from duplicated epilogues) and reloaded at the final
-// return; ours folds it. Retail also loads the oldest sequence once (EDX) for the count, the
-// first sequence and the scan.
-// Kept: the terminal flag in the copy loop's condition (aligned differences 55 -> 46), with a
-// long result 141 (short 191, word 191, byte/char 217 at 791 bytes, bool 234 at 771 bytes,
-// aligned 43 each for byte and bool).
-// Tried on the kept body: literal false failure return 161; first sequence before the count
-// test 241; terminal flag declared first 140; bool result with literal false failure 224; bool
-// single-exit count block 242; short terminal flag 203. Earlier (on the 172 body): scan getter
-// 302; copy getter 325; both getters 361; unsigned byte progress 215; decode buffer first 213;
-// forced-inline getters 223; readonly decode records 215; native stream value initialization
-// 254; native copy size bits 215; native fragment result selection 213; frame pointer 289;
-// global optimization 297; size preference 571; existing window helper boundary 215; fragment
-// result buffer publication 211; signed-byte/short/word results 210/193/193; read-only
-// scan/copy entries 211/211; oldest with direct fragment selection 232, plus signed byte 234 or
-// read-only scan 232; shared failure result 172; shared success exit 224; nonempty scope 211;
-// scope/failure join 262; byte-total name 193; copy-sequence name 193; scalar names/failure join
-// 172; scope/success join/scalar names 271; byte/bool/signed-byte/long results 193/219/193/238;
-// native initial-window count/first with short/bool/byte/signed-byte results 269/278/274/274;
-// single-result reset at payload/copy/CRC phases and validation tests, short 256/231/214/255,
-// Boolean 229/268/265/276; existing release-helper composition 221; reused fragment data 213;
-// terminal loop condition 191; first-sequence/saved-CRC homes 172/172; failure result before
-// payload/after copy 250/224; failure publication order 172; data and terminal lifetimes 254;
-// per-fragment terminal bool/header byte 192/250; conditional size with bool/byte 192/250;
-// default size with bool/byte 244/251; native result with terminal bool/byte 266/218;
-// independent bool/byte/short/long completion with literal returns 210/210/193/255, with
-// separate callback results 206/206/189/253; oldest after/before result and result before
-// receiver 229; shared initial newest with oldest-first/newest-first 202/202; oldest plus
-// readonly types/stream helper/unsigned byte total 229; availability accumulation forms
-// 220-262.
-// Round 136, terminal-loop graph: oldest/both initial endpoints 269,158;
-// oldest with bool/byte/short/signed-byte result 276,268,267,268;
-// oldest before false/newest first 269,158;
-// both endpoints with bool/byte/short/signed-byte result 282,262,218,262.
-// Round 138: shared lookup index/fragment/both/all walk carriers 141/141/141/141;
-// all with Boolean/short result 234/191; shared index-sequence/fragment-sequence 141/141.
-// Original walk locals and long result restored; oldest/false homes and allocator save remain.
-// Pre-lookup nullable scan/copy/both results with long 141/202/202; with bool 234/263/263;
-// both lookups with byte/short result 243/214. Original terminal-loop body restored.
 // @retail 0x95840
 bool __stdcall function_095840(s_network_stream_header *header, long *message_type, long *message_size, void *message_data)
 {
 	c_network_unreliable_stream *self = (c_network_unreliable_stream *)header;
-	long result = false;
-	if (!sequence_window_count(&self->m_fragment_window))
-		return result;
+	bool result = false;
+	if (sequence_window_count(&self->m_fragment_window))
 	{
-		long first = self->m_fragment_window.oldest + 1;
-		for (long sequence = first; sequence <= self->m_fragment_window.newest; sequence++)
+		for (long sequence = self->m_fragment_window.oldest + 1; sequence <= self->m_fragment_window.newest; sequence++)
 		{
-			long index = sequence_window_index(&self->m_fragment_window, sequence);
-			s_stream_fragment *fragment = index != NONE ? &self->m_fragments[index] : NULL;
+			s_stream_fragment *fragment = unreliable_stream_get_fragment(self, sequence);
 			if (!fragment || !(fragment->flags & 1))
 				break;
 			if (fragment->flags & 2)
@@ -1309,10 +1165,12 @@ bool __stdcall function_095840(s_network_stream_header *header, long *message_ty
 			stream.size_in_bytes = sizeof(payload.data);
 			long bytes = 0;
 			bool last = false;
-			for (long sequence = first; !last && sequence <= self->m_fragment_window.newest; sequence++)
+			for (long sequence = self->m_fragment_window.oldest + 1; !last && sequence <= self->m_fragment_window.newest; sequence++)
 			{
 				long index = sequence_window_index(&self->m_fragment_window, sequence);
-				s_stream_fragment *fragment = index != NONE ? &self->m_fragments[index] : NULL;
+				s_stream_fragment *fragment = NULL;
+				if (index != NONE)
+					fragment = &self->m_fragments[index];
 				long size;
 				if (fragment->flags & 2)
 				{
@@ -1341,12 +1199,23 @@ bool __stdcall function_095840(s_network_stream_header *header, long *message_ty
 				{
 					s_message_type *type = &types->m_types[*message_type];
 					memset(message_data, 0, *message_size);
-					if (type->decode(&stream, *message_size, message_data))
-						return result;
+					if (!type->decode(&stream, *message_size, message_data))
+					{
+						self->m_unknown05 = true;
+						result = false;
+					}
+				}
+				else
+				{
+					self->m_unknown05 = true;
+					result = false;
 				}
 			}
-			self->m_unknown05 = true;
-			result = false;
+			else
+			{
+				self->m_unknown05 = true;
+				result = false;
+			}
 		}
 	}
 	return result;

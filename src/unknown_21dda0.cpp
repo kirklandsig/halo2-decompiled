@@ -168,6 +168,26 @@ long sound_classes_match(long class_a, long class_b)
 // score 2 (was 2): retail loads the source's compare callback into ebp after
 // the object index test, ours loads it before the test, so the load and the
 // branch that follows it differ.
+// Retry, 20 attempts: an earlier index guard, direct short-circuit callback,
+// delayed volatile callback read, in-condition assignment, positive index
+// guard, separate guards, moved callback declaration, const/reference capture,
+// voice-source read, conditional selection or saved call result score 3:
+// the load timing matches but the callback moves from EBP to EAX. Index locals
+// and split invocation with the original load score 2; sound-source lookup 77;
+// sourced-branch return expression 75; shared-failure draft did not compile.
+// Original retained; the direct callee matches. Round 88: the index guard as its own
+// return then the named callback 3; a long result with early returns of it 132 (direct or
+// named callback); the index test moved into the outer condition as `(!source || ...)` gives
+// retail's block order and load timing, but the callback still takes EAX 3 (named or direct).
+// Round 10: index test as a positive outer `if` with the named callback inside 3; the call result in a
+// named match flag 3; `return !g_55e780;` 13; index test with an `else return false` 3; a function-scope
+// long result with the late direct callback 132 (the callback then takes EBP after the index test as in
+// retail, but the result needs a stack slot: one-file LTCG probe).
+// Round 134 (fast): the source test as one positive condition `!(index == && callback && call)` 3; three
+// separate `return false` tests 3; the callback tested in an if/else 3; a matched flag set inside the index
+// test 3; the call's result named before its test 3. One-file LTCG harness (exact: 2): the source pointer
+// reassigned to its callback 3; both marker addresses named before or after the index test 3. With the load
+// after the index test the callback always takes EAX, though the source in EBP dies at that load.
 // @retail 0x21e0b0
 long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const *voice)
 {

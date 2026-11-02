@@ -67,21 +67,10 @@ short __stdcall function_1b7920(long actor_index)
 	return result;
 }
 
-// score 12 (was 12): function_259d0's interval written out, with the bounds
-// in locals (upper first) and the random drawn into a local, keeps the delay
-// in x87 as retail does. Only scheduling differs: retail issues the delay's
-// fmulp/fxch/fadd/fstp one slot earlier among the point copy's stores.
-// Tried: function_259d0 call 74 (with local bounds 74); bounds read in the
-// expression 71/77; lower declared first 58; random folded into the
-// expression 26; local inline interval helper 148; delay computed after the
-// point copy 74; bounds declared before ticks 67; first random folded into
-// ticks 76; z delta hoisted before/after the delay 83/68. Earlier: inline
-// depth two 74, zero 251; global optimization off 189; header interval
-// helper alone 148; force-inline draw/step 74/74; double delay/ticks
-// carriers 78/74. Product first in the sum 12; random first in the product
-// 12; slot state pointer at the top 12; memcpy point copy 12; named range 12;
-// z adjust as a full sum 12, split in two 49; delay after the copy or the z
-// adjust 63/63; ticks operands swapped 12/12; state view at its use 119/50.
+/* the delay is function_259d0's interval (bounds upper first, then the
+   draw, rounded by its (real) cast), kept on the x87 stack as retail does;
+   a call to function_259d0 itself is computed in SSE after the call to
+   function_1f86a0 here (74 differences) */
 // @retail 0x1b79d0
 bool __stdcall function_1b79d0(long actor_index, s_slot *slot)
 {
@@ -99,7 +88,7 @@ bool __stdcall function_1b79d0(long actor_index, s_slot *slot)
 		real upper = character->unknown20;
 		real lower = character->unknown1c;
 		real sample2 = function_x82e52f(&g_4e7408->unknown0, __FILE__, __LINE__);
-		real delay = lower + (upper - lower) * sample2;
+		real delay = (real)(lower + (upper - lower) * sample2);
 
 		state->point = view->unknown18;
 		state->point.point.z += s_type_5cfb45->unknown38 - s_type_5cfb45->position.z;

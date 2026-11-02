@@ -115,7 +115,13 @@ struct s_24e9c7_bounds
 };
 
 /* Draws one marker's sprite at its placement; returns the sprite's height. */
-// score 125 (was 125): result/kind/bitmap homes sit 8 bytes above retail's (retail keeps a spill at -8
+// score 125 (was 125): the frame size, the bounds stores and the marker copy agree; what is
+// left is the result, kind and bitmap homes eight bytes above retail's, the 1.0 constant in
+// xmm4 where retail uses xmm5, and the geometric SSE schedule — no source form found this round.
+// Earlier (125, was 125): reassociating the corner sums and splitting them into two steps both
+// canonicalise back to retail's association, so what is left is the SSE schedule itself, the
+// eight-byte-higher stack homes and the sprite pointer staging; no source form found.
+// Earlier (125, was 125): result/kind/bitmap homes sit 8 bytes above retail's (retail keeps a spill at -8
 // and an unused slot at -0xc above them), the 1.0 constant is in xmm4 where retail uses xmm5, and the
 // geometric SSE schedule differs. Tried: table read at each use 125 plain (743/743), real half width
 // 135f, direct height 135f, sprite pointer 133f, global optimization off 716f. Truncation helper at
@@ -142,6 +148,116 @@ struct s_24e9c7_bounds
 // with scale 141/141; count with shader/size accumulator/across component lifetimes 125/125/138. Round
 // 132: across as a point struct 144; 0 - forward_j 138; size inline 143; first_bitmap declared before
 // bounds 125; result assigned after its declaration 125.
+// Entry declarations with in-place assignments: across carriers 125; metadata carriers 125;
+// both pairs 125; bounds workspace 125; three displacement workspaces 125; all geometry
+// workspaces 125; reversed geometry declarations 125; coupled scalar role names 125.
+// Round 193: complete per-use kind/bitmap/group observations 207/182/205;
+// kind+bitmap/kind+group/bitmap+group/all 225/223/201/225;
+// all with per-use sequence field 326. All original observations restored.
+// Round 303: early outer/texture/selected-bitmap admissions 128/127/149;
+// outer+texture/outer+bitmap/texture+bitmap/all 130/149/149/183;
+// all with returned height declared after admission 183. Original scopes and body restored.
+// Round 41 (fast): retail computes size * (0 - forward_j) and size * forward_i before the height
+// block, spills the second at -8 and reuses forward_i for the upper vector; ours folds the
+// single-use across terms into the side products (computed late, forward_i read twice). Side
+// vector scaled in place by the half width 144, with the half width first 144, negated forward
+// copied then scaled in place 139 (gives retail's 0 - forward_j); named perpendicular components
+// both/one 138/138. Original body restored.
+// Round 46: retail computes the across pair right after size as size * (0 - forward_j) and spills
+// its j part at -8, the same home later used for the scaled side j (ours sinks both products to the
+// side and negates after multiplying). Side vector built then scaled in place 144; perpendicular
+// then in-place size scale 139; scale field at each use 141; negated operand first 125; marker
+// global stores before the geometry 149. Original body restored.
+// Round 313: Shared real half-width, with direct/named full pixel width: current basis 125/125, early
+// upper 123/123, deferred basis 129/129, both lifetimes 128/128. Two-count gain rejected; original
+// geometry and body restored; early spill and scalar homes remain.
+// Round 48: VC rewrites `size * -forward_j` as `-(forward_j * size)` and sinks it (ours); `0.0f -
+// forward_j` or a negated-component local keeps retail's early `size * (0 - forward_j)`, yet the
+// pair's home stays below result: across built in the side vector and scaled in place by the half
+// width, with `0.0f -` 139; with unary minus 144; `0.0f -` alone (a listed form, as a base) 138;
+// negated-component locals scaled by size 138; scale read before size with `0.0f -` 137.
+// Round 322: Shared upper-origin point copy/value/twice-used coordinates/first vertex at assembly 168/147/190/147; at the height producer 153/146/189/147. Original corner sums, geometry and body restored; early across spill and shifted scalar homes remain.
+// Round 454: Complete center point on the live-table entry graph, native copy at corner
+// assembly 125, with all corner origins initialized first 129; library move 240/240.
+// Basis-boundary counterparts 125/129/195/196. Original point reads, copies and geometry
+// restored; the early across spill and shifted scalar homes remain.
+// Round 9 (lane 17): a compile-only /O1 /FAs build reproduces this frame and code (with the two pointer
+// parameters' registers swapped). An 8-byte point local always homes below the four scalars (ours: the
+// back pair at -0x18, its y spilled at -0x14), while a spilled scalar homes above result; retail's -0xc/-8
+// are two scalar homes above result (-8 holds size * forward_i, then the scaled side y; -0xc is never
+// touched). 144 harness forms (scale read first, across as a point/scalars/scalars scaled in place, up and
+// back as points or scalars, `0.0f -` or unary minus, size sum order, named forward components) never
+// spill the across pair, so none reaches retail's two homes. Real (fast): back as two scalars 133 (frame
+// 0x44: back y at -8 above result -0xc); early across scalars scaled in place, scalar up/back, `0.0f -`
+// 155 (735 bytes); the same with separate side scalars 155; across built in the side point and scaled in
+// place with scalar back 139 (the listed form; side y spilled at -0x14); that scalar form with scale read
+// first 155.
+// Round 50 (lane 1, fast): on the in-place side point with `0.0f -` (139), the point renamed across /
+// width_offset / lateral / a_side 139 each with every home unchanged (names do not move it above result);
+// j component first 138; (0 - forward_j) * size operand order 139; `side.x = (real)half_width * side.x`
+// 139; that with both pairs j first 139.
+// Round 35 (lane 13, fast): retail's -0xc/-8 pair reads as one 8-byte point (x kept in a register, its home
+// unused; y spilled, then scaled in place to the side y); tried: across as a point scaled in place into the
+// side vector, declared at function entry 139 (742 bytes) or at its computation 139; a separate across point
+// declared at entry 139; an initialised across point 139; size computed before the bitmap pointer 125 (same
+// code). Every point local still homes below the scalars.
+// Lane 18 round 15 (fast): result renamed to sort first 125 (its home stays at -8: these are spill slots, names
+// do not order them); back as scalars re-measured 133; back plus up scalars 133; back plus side scalars 133;
+// up, side and back all scalars 133; back scalars with `size * (0.0f - forward_j)` 146 (739 bytes); all scalars
+// with it 146 (739 bytes).
+// Round 145: a compile-only frame screen shows a spilled scalar homes above result only when the back pair
+// is scalar (frame 0x44, one slot short of retail's two). Real (fast): across scaled in place as side
+// scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
+// side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
+// up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
+// Round 71 (lane 12): a compile-only /FAs screen names each home: a spilled 8-byte point always homes below
+// bitmap_index, a spilled scalar above result (so retail's -0xc/-8 are two scalar homes, -0xc never used, as if
+// two spilled scalars were later merged into one slot), and none of 48 across/side/up/back point-or-scalar shapes
+// with unary minus or `0.0f -` gives two such homes (at most one: frame 0x44). Real (fast): across as a point with
+// separate side scalars, `0.0f -` 143 (742 bytes, frame 0x44, side y at -8), with unary minus 148 (746); across
+// and side as separate points with `0.0f -` 139 (742); that with up as scalars 139 (742); across built in side
+// scalars scaled in place with scalar up and a back point, `0.0f -` 138 (739).
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
+// Round 35 (lane 15, fast): ours spills back's y (pair at -0x18/-0x14), retail side's y (pair at -0xc/-8, above
+// result). back renamed reverse_side / away, side renamed width_offset, up renamed upward 125 each (names do not
+// order the struct homes either); corners as full sums `x + up.x + back.x` 229 (664 bytes); scale read before size
+// 125; result assigned after the half width 131; the full width named, then halved 125.
+// Round 19 (lane 18): retail's frame is points 0x20 + bounds 0x10 + six 4-byte spill slots
+// (first_bitmap -4, across j then side j -8, never-touched -0xc, result, kind, bitmap index), no 8-byte
+// slot; the across i product stays in xmm6. Compile-only frame screens: spill slots follow spill order,
+// not names (eight names for the back y, and result renamed, never move); only a scalar back pair puts
+// a spill above result (0x44, one slot short); up/side forms do not. Real (fast): side scalars set to the
+// across products and scaled in place, `0.0f -`, back scalars, up point 155; same, no back variable, up
+// scalars 153 (732 B); same as the first with unary minus 155; separate across scalars, back scalars, up
+// point 155; in-place side, back point, up scalars 147 (735 B otherwise); all sink the across products.
+// Round 194: a compile-only /FAs frame screen puts an 8-byte side point between the scalars once its
+// address goes to an inline pointer helper (side -0x10, between result -8 and kind -0x14; retail's pair
+// sits above result); with its address taken first (perpendicular then scale helpers) it stays below them.
+// Real (fast), side scaled in place by the half width through a pointer helper 134 (752 bytes), with up
+// and back as scalars 134; side from the negated forward scaled by size and then by the half width 145
+// (755); up scaled through the helper as well 143 (745); back negated through a helper 172 (766).
+// Round 150, each on the early-across form (`size * (0.0f - forward_j)`): side products across-first 138 (739
+// bytes); a named real half width for both side products 134; up computed before the half width 134; up as
+// `0.0f -` products 147 (735); the across pair declared right after size 138.
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
+// Round 342: Across scalars scaled into the actual side displacement, upper/reverse scalar-pair and shared real half-width subsets: 125/125/133/133/123/123/132/132.
+// Original complete body restored; early across spill, shifted scalar homes and SSE schedule remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

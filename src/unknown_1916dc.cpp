@@ -146,12 +146,6 @@ static __forceinline byte *definition_19188c(long index)
     return g_4e3b44[*(long *)object_19188c(index) & 0xffff].bytes;
 }
 
-// score 23 (was 23): in case 1/7 retail zero-extends the flags into the dying candidate
-// register (ebx) and keeps the tables and the tag in edx; ours puts the flags in edx. The
-// tag load is also cross-jumped the other way. Tried: flags as a word bitfield or a word
-// field masked with 0xff 72 (retail's registers, but an extra and); flags read after the
-// definition 25; byte or word copies widened into the local 23; the declaration in a case
-// scope or with the object index 23.
 // @retail 0x19188c
 void function_19188c(long user_index)
 {
@@ -299,27 +293,45 @@ void function_19188c(long user_index)
             long tag_index = NONE;
             if (!(flags & 12))
             {
+                bool has_tag = true;
                 if (flags & 1)
                 {
                     message = *(long *)(definition + 0xcc);
                     sound += 0x100;
-                    tag_index = *(long *)((byte *)g_510c94 + 0x42c);
                 }
                 else if (flags & 2)
                 {
                     message = *(long *)(definition + 0xd0);
                     sound += 0x200;
-                    tag_index = *(long *)((byte *)g_510c94 + 0x42c);
                 }
                 else
+                {
                     message = *(long *)(definition + 0xcc);
+                    has_tag = false;
+                }
+                if (has_tag)
+                    tag_index = *(long *)((byte *)g_510c94 + 0x42c);
             }
             else
             {
-                if (flags & 1) { message = *(long *)(definition + 0xd4); sound += 0x20; }
-                else if (flags & 2) { message = *(long *)(definition + 0xd8); sound += 0x40; }
-                else { message = *(long *)(definition + 0xdc); sound += 0x80; }
-                tag_index = *(long *)((byte *)g_510c94 + 0x434);
+                if (flags & 1)
+                {
+                    message = *(long *)(definition + 0xd4);
+                    sound += 0x20;
+                    tag_index = *(long *)((byte *)g_510c94 + 0x434);
+                }
+                else if (flags & 2)
+                {
+                    message = *(long *)(definition + 0xd8);
+                    sound += 0x40;
+                    tag_index = *(long *)((byte *)g_510c94 + 0x434);
+                }
+                else
+                {
+                    message = *(long *)(definition + 0xdc);
+                    sound += 0x80;
+                    tag_index = *(long *)((byte *)g_510c94 + 0x434);
+                }
             }
             function_24c9e9(user_index, message, sound, tag_index);
         }

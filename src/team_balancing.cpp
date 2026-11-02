@@ -387,7 +387,69 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 }
 #pragma function(_ReadWriteBarrier)
 
-// score 116 (was 116): count homes, signed party delta and pure-query ownership remain.
+// score 67 (was 67): the count delta now matches retail (the delta named, then the two new team
+// counts); what remains is the order of the spread queries: retail calls the candidate's
+// count_spread first in both comparisons (and the reference's cost first), ours calls the
+// reference's first whatever the operand order, which also adds a `mov ebx, esi` (514 bytes).
+// Round 37 (on the named delta): every comparison with the reference on the left 65; only the
+// equality/only the less-than so 66/66; cost operands swapped 67; candidate spread named after the
+// selection 65; the selection as a reference 65; `bool better` chain 81; candidate spread named
+// before the selection 74. Compile-only screens of ~60 one-tree delta spellings all reassociate
+// (they do not show the named-delta effect, which only the LTCG build gives).
+// Earlier (score 80/116): count homes, signed party delta and pure-query ownership remain.
+// frame 0x2694 agrees; the full build now scores as the reduced image (80). Left:
+// our build reassociates the new count difference into 2*(b-a) - B + A (retail keeps (A - 2*(a-b)) - B
+// with `lea ecx, [eax+eax]`), so the inner party pointer takes EAX (retail ECX), the A/B count-address
+// homes swap (+0x34/+0x2c against +0x2c/+0x34), and every later line is offset by one; retail also
+// calls the candidate spread before the reference spread.
+// Tried (reduced image unless noted): count fields A/B/both 80/80/80; early roots 173; players
+// A/B/both 78/75/80; reverse count roots 173; B players root before A/first/between views 82/88/82;
+// immutable B root 75 (B players plain 115 in the full build); team/party/both lexical priority
+// 80/80/80; short outer/inner/both ordinals 142/142/155; scope and comparison names 80/80;
+// candidate/reference/both spread values 135/127/137; spread delta 132; candidate A/B/both team roots
+// 80/150/150; outer party cursor 91; first spread order 80; equal spread order 80; spread orders 80;
+// cost order 78; first spread/cost order 78; equal spread/cost order 78; query orders 78; inner party
+// cursor 132; cursor/spread orders 132; reused signed team delta 161; reused party delta 80; reused
+// team and party deltas 161; A/B/both count references 80/80/80; early count references 173; inline
+// count spread 225; inline total spread 80; inline spread queries 225. Full build (when it scored 116):
+// first party pointer in the outer loop 116; nested ifs instead of continues 116; teams read in full
+// at each use 146 (loses 0x91dd0); comparison operands swapped 116; explicit outer party pointer
+// stepping 116. No-link screens: every delta spelling folds to the same 2*(b-a) sequence.
+// Round 82 (full build 80): all three comparisons with the reference on the left (cost compare as
+// retail) 78; that with the reference chosen by if/else 78; party pointer A in the outer loop 78;
+// count-after-swap totals, a named party delta subtracted from both, `- 2 * delta` 78/78/78;
+// `+ (b-a) * 2` 78; `b - a + (a-b) * 2` 78 (A/B count-address homes then agree; the reassociation
+// stays); an inline absolute-difference helper for both differences 78.
+// frame 0x2694 and entry agree; from +0x3e the A/B count-address homes are
+// swapped, the inner party pointer takes EAX (retail ECX) so the count delta is built as 2*(b-a),
+// and the two count_spread queries run reference first (retail candidate first). The full and the
+// reduced build now agree at 80 (earlier rounds saw 116 in the full build).
+// Tried: count fields A/B/both 80/80/80; early roots 173; players A/B/both 78/75/80; reverse
+// count roots 173; B players root before A/first/between views 82/88/82; immutable B root 75
+// (B players plain 115, an ineligible one-count gain); team/party/both lexical priority 80/80/80;
+// short outer/inner/both ordinals 142/142/155; scope and comparison names 80/80;
+// candidate/reference/both spread values 135/127/137; spread delta 132; candidate A/B/both team
+// roots 80/150/150; outer party cursor 91; first/equal/both spread orders 80/80/80; cost order 78;
+// first/equal spread with cost order 78/78; query orders 78; inner party cursor 132;
+// cursor/spread orders 132; reused signed team delta 161; reused party delta 80; reused team and
+// party deltas 161; A/B/both count references 80/80/80; early count references 173; inline count
+// spread 225; inline total spread 80; inline spread queries 225.
+// Full-build forms (when it scored 116): first party pointer in the outer loop, nested ifs
+// instead of continues, comparison operands swapped (the call order follows the operands, not
+// their position), explicit outer party pointer stepping 116 each; teams read in full at each use
+// 146 (loses 0x91dd0). No-link screens: every delta spelling (named, doubled, parenthesised,
+// count-after-swap, abs forms) folds to the same 2*(b-a) sequence; reference/local/method forms
+// keep reference first.
+// Round 9: party elements at each use, no party pointers 140; cost test written candidate first
+// 78 (the cost order form again); delta grouped a - b - 2 * (pa - pb) 80; named a_count/b_count
+// pointers 80 (the count references again); b declared before a 87; both absolute values as
+// ternaries 80; the reference picked by `= &current; if (improved) = &best;` 80. Compile-only
+// screen: the spread queries' order ignores the operands' order.
+// Round 11: outer party pointer declared in the outer loop 80; the new team counts as two named
+// locals 80; nested tests instead of the continues 80; candidate declared at function scope 184
+// (558 bytes); the candidate's spread named before the comparison 80 (the reference's query still
+// runs first: LTCG treats count_spread as pure and reorders the calls); permuter 58 tries, best 80.
+// count homes, signed party delta and pure-query ownership remain.
 // Earlier: count-address homes, party registers, delta and query order differ.
 // Reduced control 80 (full 116); count fields A/B/both 80/80/80; early roots 173;
 // players A/B/both 78/75/80; reverse count roots 173; B players root before A/first/
@@ -421,6 +483,149 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // team/party/both lexical priority 80/80/80; short outer/inner/both ordinals 142/142/155;
 // scope and comparison names 80/80; candidate/reference/both spread values 135/127/137; spread
 // delta 132; candidate A/B/both team roots 80/150/150; outer party cursor 91.
+// Round 295: separate noinline declarations for count/total/rank query methods,
+// all seven nonempty subsets, 80 each; rank-only inline declaration 80. Every
+// declaration and body restored; count homes, inner party and query ownership remain.
+// Round 47: with the reference on the left (65) only the four count_spread calls differ (aligned
+// 8). Compile-only screens: a local candidate against a reference pointer calls the reference
+// first in every operand order, as LTCG does; only the candidate's spread named first calls it
+// first there (LTCG reorders that too, 74/80 above). Reference selected before the candidate copy
+// 128 (moves try_swap's register parameters, 0x91dd0 then 2), with the reference on the left 128;
+// selected at the top of the inner loop 121; `(improved ? best : current)` at each use 112.
+// Round 230: solution selection at every query, alone, with A/B/both team observations,
+// outer-party lifetime, both candidate-team roots, shared candidate spread and equality-first
+// acceptance: 112/179/150/186/112/182/107/115. Original selection, named post-swap counts and body restored.
+// Lane 14 r20: the first test as `!(candidate >= reference)` 67; the reference pointer declared
+// `const` 67; the condition rewritten as `<= && (!= || cost)` 100 (512 bytes but reference spread
+// still first and the frame 0x268c); the reference selected right after the candidate copy, before
+// the swaps, 151 (521 bytes; 0x91dd0 9); the cost test written candidate first 67.
+// Round 127 (lane 4): the reference selected right after the candidate copy 151 (0x91dd0 9; the
+// reference is still queried first); the reference on the left of both comparisons 65 (reference
+// still first); the comparison as an in-class solution method called on the candidate 188 (not
+// inlined under /Ob1, 420 bytes); the improvement as an if / else-if pair 150 (0x91dd0 8); the
+// reference pointer declared `const` 67 (same code).
+// Round 46 (lane 9): the cost compare written candidate first (`candidate.cost() < reference->cost()`) 67, with
+// both spread compares reference first 65 (the cost compare is then retail's; only the four count_spread calls
+// differ: ours reference first in every operand order, retail candidate first), with only the first spread
+// compare reference first 66; `candidate - reference spread < 0` for the first test 67; the selection written
+// at each use as `(improved ? &best : &current)->` 112 (not CSE'd; still reference first);
+// `!(candidate.count_spread() >= reference->count_spread())` 67; the selection written `!improved ? &current :
+// &best` 70; the selection moved after the candidate copy (before the swaps) 151; `best = candidate;` before
+// `improved = true;` 71. No other function calls count_spread, total_spread or rank_spread out of line.
+// Round 14 (lane 2): aligned the only cause is the count_spread order (and the `mov ebx, esi` it
+// adds); a compile-only screen reproduces it even with count_spread's body defined after this
+// function, so it is not purity: VC queries the stack-local candidate (`lea ebx, [esp+0x38]`) after
+// any pointer or member solution, in every operand order (probes against `best` and `current`
+// directly do the same). Real builds, 67 each (same code): the comparison as a forceinline
+// `better_than` method on the candidate, as a forceinline `worse_than` method on the reference, as a
+// forceinline free function of both pointers, the selection as an if/else, the reference declared at
+// the top of the inner loop and assigned after the swaps. Compile-only, same order: `this->` inside
+// the method, the selection passed as the call's argument, `(&candidate)->`, a reference variable,
+// the selection written at each use, `!(reference <= candidate)`.
+// Lane 16 r46: the reference declared at the top 67; count_spread as a free function on a pointer 67; the
+// test in a forceinline (candidate, reference) helper 67; renamed trial/baseline 67; `candidate(current)`
+// 67. Compile-only (no /GL, extern methods): the call on the stack copy runs after the call through the
+// pointer in every operator, operand order, helper, free/__stdcall and naming form; with two stack copies
+// the right operand of `<`/`==` runs first. So retail's candidate-first order is not a reorder that only
+// LTCG's readonly knowledge makes.
+// Round 135 (lane 4): a compile-only screen shows the order of two count_spread calls ranks their `this`
+// expressions, not the operands: `&best` (this + 0x2668) before the reference variable before `this` (current)
+// before the stack candidate, in both operand orders; a pointer local to the candidate (declared before or after
+// the reference), a storage-array candidate, a cast to const and forceinline helpers taking (reference,
+// candidate) or (candidate, reference) still query the candidate last (its address is propagated first). Real
+// builds: the reference pointer non-const 67; that with `candidate.cost() < reference->cost()` 67; with both
+// spread tests reference-left 65; count_spread non-const 67; the selection as a reference variable 67.
+// Round 33 (m3 lane 11), fast: the test as a forceinline solution method on the candidate
+// (`candidate.better_than(reference)`) with its comparisons this-first 67, this-first with the cost
+// written other-first 67, all other-first 65; the candidate declared in the outer loop and copied in
+// the inner one 209 (570 bytes); the reference as `&(improved ? best : current)` 67 (same code).
+// Round 38 (m3 lane 10): compile-only micro tests: VC calls a method on a stack local after the same
+// call through a register pointer, a member, a global or a pointer parameter, whatever the operand
+// order; between two stack locals the right operand runs first; named one-use results keep their
+// statement order only while the callee's body is unseen (an extern declaration), not with it
+// defined in the file, and not at LTCG with it defined anywhere. Real builds (fast): the three
+// spread definitions moved below this function 67 (same code), with both spreads named 67;
+// `continue` on `candidate > reference` and on equal spreads with `candidate cost >= reference
+// cost` 100 (512 bytes; first difference +0x7), the same with the reference on the left 100; the
+// candidate spread named and used in both tests (three queries) 80 (512 bytes).
+// Round 55 (lane 12; a one-file LTCG harness of this file reproduces the build exactly): the test in a
+// forceinline (candidate, reference) helper written `b > a || (b == a && cost)` 65, `a < b || (b == a && cost)`
+// 66; the qualified call `candidate.s_balance_solution::count_spread()` 67; `a - b < 0 || (a - b == 0 &&
+// cost)` 67; the test as two `continue`s 100 (512 bytes). Harness probes: the stack candidate's call runs
+// last against any pointer, even `&best` or a parameter; against a second stack copy the older copy runs
+// first in either operand order; nested `<=` then `<` 55 aligned, else-if pair 66 aligned (both worse).
+// Round 138 (lane 4; a one-file LTCG harness of this file reproduces the build): `continue` on `candidate >
+// reference` and on equal spreads with `candidate cost >= reference cost` 100 (512 bytes, again); the first test
+// as `!(candidate < reference)` with the rest nested under it and a `continue` 67 (same code); a `bool better`
+// set from the first test and refined by the equal-spread cost test 82 (524 bytes); the two first spreads named
+// in one declaration (`long candidate_spread = ..., reference_spread = ...;`) 67 (same code: LTCG still queries
+// the reference first across the comma); the count difference named once (two queries instead of four) 81
+// (496 bytes). Harness only: the spread queries through an inline forwarding member 9 aligned (unchanged order),
+// an inline (candidate, reference) value comparison helper unchanged, a volatile address of the reference or of a
+// candidate pointer (diagnostic) still reference first: no form evaluated the candidate's count_spread first.
+// Round 27 (m3 lane 15, plain): pointers to the candidate's two teams for the swaps 150 (518 bytes,
+// 0x91dd0 then 9); the first test as `!(reference->count_spread() <= candidate.count_spread())` 66; the
+// condition named `bool better` 67; only the equality written reference first 66; the equality-and-cost
+// clause tested before the `<` 107 (536 bytes). The candidate's count_spread still runs last.
+// Round 23 (m3 lane 2, fast): an inline `operator<` on the solution (`candidate < *reference`) 188 (420 bytes, not
+// inlined under /Ob1), as a free inline operator 185 (422 bytes); the equality named first as a bool 67; the candidate
+// through a `s_balance_solution const *trial = &candidate;` pointer 67; the test as a forceinline optimizer member taking
+// the candidate (reference selected inside) 67. The candidate's count_spread still runs last.
+// Round 32 (m3 lane 14, fast): not purity: count_spread made to look writing (a store through a copy
+// of `this`, diagnostic, 0x91860 then 38) still queries the reference first, 97 (it takes EDX then);
+// that with the reference on the left 97; the spreads passed as arguments of forceinline `less`/`equal`
+// helpers (candidate first) 67 (same code); a `const &` alias of the candidate in the test 67; a const
+// pointer to the candidate for all six queries 67.
+// Round 125 (lane 6, fast with 0x91dd0/0x91860): `reference->count_spread() - candidate.count_spread() > 0`
+// for the first test 72 (516 bytes); the reference picked by `= &current; if (improved) = &best;` on this
+// body 70; nested ifs in place of the two continues on this body 67; the selection through a forceinline
+// optimizer member returning `improved ? &best : &current` 67; party_b's pointer declared before party_a's
+// 67 (the last three identical code). The candidate's count_spread still runs second.
+// Round 25 (m3 lane 2, fast): a placement-new candidate (`*new (storage) s_balance_solution(current)`, as 0x91fc0
+// builds its optimizer) 67 (same code); the candidate default-built and filled by memcpy 204 (560 bytes, the
+// team constructors run; 0x91dd0 9); count_spread declared first in the solution 67; the cost test as
+// `reference->cost() - candidate.cost() > 0` 36, not kept (VC distributes it into 7 * (t - t') + 3 * (r - r'),
+// unlike retail's two-cost compare, and the code is 510 bytes plus two int3: only the tail realigns; the count
+// pairs still run reference first); as `candidate.cost() - reference->cost() < 0` 67 (508 bytes); the first
+// test as `reference->count_spread() - candidate.count_spread() > 0` 72 (516 bytes, reference still first).
+// Round 61 (m3 lane 9, fast): the first test as `reference->count_spread() - candidate.count_spread() > 0`
+// 72 (516 bytes); nested `if (candidate <= reference) { if (candidate < reference || cost) ... }` in the
+// real build 100 (512 bytes); the equality spelled `!(candidate > reference)` 67 and `candidate <=
+// reference` 67 (same code); the reference selected once before the loops and set to `&best` after an
+// improvement 125 (spilled to the stack, still queried first).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top, before the reference and before the
+// candidate (24 probes) 67 each, same code (not a numbering tie); the candidate in raw `long` storage bound by a
+// reference (balance_teams' pool idiom) 67; the cost test as `candidate.cost() < reference->cost()` 67 (same
+// code); the copy, swaps and test in a forceinline helper (candidate an inlinee local) 67, with a forceinline
+// comparison 67; the reference from `= &current; if (improved) reference = &best;` 70; the reference declared
+// ahead of the candidate copy 128 (512 bytes, loop-entry registers rotate, still reference first); an in-class
+// `better_than` method stays out of line 188 (420 bytes); a one-element candidate array 204 (constructor runs).
+// Round 114 (lane 8; one-file LTCG harness of this file, exact at 67): the copy, swaps and queries through a
+// non-const `s_balance_solution *trial = &candidate` 67 (same code); `s_balance_solution const &reference =
+// improved ? best : current` at the test 67; `(improved ? best : current).` at each of the six queries 112 (539
+// bytes); `reference[0].count_spread()` 67; the spread tests through forceinline `spread_greater(reference,
+// candidate)` / `spread_equal(reference, candidate)` helpers 65 (the reference-left code). Retail queries the left
+// operand first in both the spread compares (candidate left) and the cost compare (reference left); ours queries
+// the stack candidate last in every form.
+// Round 69 (lane 16, fast): the candidate as a reference bound to a copied temporary 123 (535 bytes); a
+// `__forceinline` free `operator<` on two solution references, `candidate < *reference`, 67 (same code), with the
+// cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
+// reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
+// count_spread (the newer, higher stack copy) still runs before the candidate's.
+// Round 441: byte/word outer and inner ordinal domains (word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, word/byte, byte/word) 146/146/151/142/148/150/155/144.
+// All regress; narrowed inner domains also lose the matched caller. Original body restored;
+// reference-first spread queries and the extra two bytes remain.
+// Round 276: complete selected-solution value after edits with no/candidate/reference/both
+// retained spread results 126/97/100/99; before candidate copy 183/152/155/139.
+// Original selected-pointer graph restored; candidate-first query ownership remains.
+// Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
+// `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
+// a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
+// pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
+// Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
+// result storage 92/92/106/105; complementary rejection results 92/92/106/105.
+// Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -437,7 +642,10 @@ void s_balance_optimizer::try_swap(long team_a, long team_b)
 			s_balance_party const *party_b = &b->parties[j];
 			if (party_a->flagged != party_b->flagged)
 				continue;
-			long new_difference = a->players.count - (party_a->count - party_b->count) * 2 - b->players.count;
+			long delta = party_a->count - party_b->count;
+			long new_count_a = a->players.count - delta;
+			long new_count_b = b->players.count + delta;
+			long new_difference = new_count_a - new_count_b;
 			if (new_difference < 0)
 				new_difference = -new_difference;
 			if (new_difference > difference)
@@ -594,21 +802,175 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 /* whether the players and the extra players joining them can be balanced
    into the teams within the given imbalance; each extra player is a party
    of its own */
-// score 34 (was 34): frame 0x48 agrees; +0x14 player-count EAX/EDX roles
-// differ and flow through the copy, fill and call setup. Earlier result-first
-// 34; guarded countdown 45; source/output cursors 67; count parameter reference 54.
-// Tried: shared existing count 34; staged total 34; capacity lifetime first 34;
-// independent loop indices 34; named candidate party 34; descriptive scalar
-// homes 34; independent indices with candidate 34; earlier imbalance output 65.
-// Opening executable body and outside call sites retained.
-// score 34 (was 34): player-count EAX/EDX roles still exchange; standard party maximum in either order 100; standard excess maximum in either order 61; both maxima 118; guarded standard fill 55; maxima with fill 119.
-// player-count EAX/EDX roles and final clamp allocation remain;
-// total after copy 74; phase-accumulated total 74; shared party value 73;
-// strict maximum update 35; early imbalance 66; explicit excess clamp 46;
-// result from combined tests 67; separate noinline declaration 34.
-// score 34 (was 34): the body, not the parameter order, gives player count EDX: with the caller
-// updated, orders (extra, parties, player) 35, (player, extra, parties) 34, (parties, player,
-// extra) 34, (parties, extra, player) 35, (extra, player, parties) 35; extra-first sum 35.
+// score 34 (was 34): frame 0x48 agrees; from +0x14 the player-count EAX/EDX roles are exchanged
+// (retail player count in EAX, extra count in EDX) and flow through the copy, fill, call setup and
+// the final clamp's register: our loop temporaries take EDI/EAX (retail EDX/EDI), leaving EDX for the
+// player count. The body, not the parameter order or the caller, decides them.
+// Round 22: retail's only caller 0x7e210 (src/unknown_07a9a0.cpp) loads the player count
+// into EAX and the loop count into EDX before the call; the call to 0x91e30 then keeps its
+// arguments in ECX/EDX/EAX (retail) where ours keeps them in EDX/EAX/ECX, the same rotation
+// as the two counts, so the exchange reaches the call setup from that out-of-lane caller.
+// Tried: result first 34; guarded countdown 45; source/output cursors 67; count parameter reference
+// 54; shared existing count 34; staged total 34; capacity lifetime first 34; independent loop
+// indices 34; named candidate party 34; descriptive scalar homes 34; independent indices with
+// candidate 34; earlier imbalance output 65; standard party maximum in either order 100; standard
+// excess maximum in either order 61; both maxima 118; guarded standard fill 55; maxima with fill 119;
+// total after copy 74; phase-accumulated total 74; shared party value 73; strict maximum update 35;
+// early imbalance 66; explicit excess clamp 46; result from combined tests 67; separate noinline
+// declaration 34; with the caller updated, orders (extra, parties, player) 35, (player, extra,
+// parties) 34, (parties, player, extra) 34, (parties, extra, player) 35, (extra, player,
+// parties) 35; extra-first sum 35; copy before the maximum update 82; parties read back for
+// the maximum 75; fill as `while (i < total) parties[i++] = next;` 34; clamp as
+// `excess >= 0 ? excess : 0` 34; array and index declared first 34.
+// Round 116: open slots from the sum before the total 71; `party_indices[i] + 1 >= next_party` 35;
+// open slots written at their use 87 (170 bytes); next_party declared first 34; capacity as
+// `maximum_team_size * team_count` 34. In the all-stack first pass extra count is always loaded
+// into EAX (player count into EBX or EDX), which LTCG keeps; retail's roles need player count there.
+// parties) 34, (parties, player, extra) 34, (parties, extra, player) 35, (extra, player, parties) 35;
+// extra-first sum 35 (34 in round 82); copy before the maximum update 82; parties read back for the
+// maximum 75; fill as `while (i < total) parties[i++] = next;` 34; clamp as `excess >= 0 ? excess : 0`
+// 34; array and index declared first 34. Round 94: copy then max from the copy 75; fill counted by
+// extra count 62 (moves extra count to the stack); clamp as `excess > 0 ? excess : 0` 43; open slots
+// from the sum written out 71; `party >= next_party` 81. Screened without a role change: all 60
+// declaration orders, local and parameter names, another caller, inline fill/copy helpers, clamp
+// spellings. Round 82: total as `extra_count` then `+= player_count` 34; next party declared first
+// 34; fill counted down from the top 72 (193 bytes); maximum as a ternary
+// (`next > p + 1 ? next : p + 1`) 34, with the operands reversed 35.
+// declaration 34; with the caller updated, parameter orders (extra, parties, player) 35, (player,
+// extra, parties) 34, (parties, player, extra) 34, (parties, extra, player) 35, (extra, player,
+// parties) 35; extra-first sum 35. Round 94: copy then max from the copy 75; fill counted by extra
+// count 62 (moves extra count to the stack); clamp as `excess > 0 ? excess : 0` 43; open slots from
+// the sum written out 71; `party >= next_party` 81; copy before the maximum update 82; parties read
+// back for the maximum 75; fill as `while (i < total) parties[i++] = next;` 34; clamp as
+// `excess >= 0 ? excess : 0` 34; array and index declared first 34. Screened without a role change:
+// all 60 declaration orders, local and parameter names, another caller, inline fill/copy helpers,
+// clamp spellings.
+// Round 9: early `return false` when the balance fails 63; `return result && clamp <= maximum` 63;
+// fill bound written `player_count + extra_count` 34; open slots computed at the clamp 87; the copy
+// as a `while` loop 34 (the listed copy-before-maximum form reran at 82).
+// declaration 34; parameter orders (extra, parties, player) 35, (player, extra, parties) 34,
+// (parties, player, extra) 34, (parties, extra, player) 35, (extra, player, parties) 35;
+// extra-first sum 35; copy before the maximum update 82; parties read back for the maximum 75.
+// Round 94: copy then max from the copy 75; fill counted by extra count 62 (moves extra count to
+// the stack); clamp as `excess > 0 ? excess : 0` 43, as `excess >= 0 ? excess : 0` 34; open slots
+// from the sum written out 71; `party >= next_party` 81; fill as `while (i < total) parties[i++] =
+// next;` 34; array and index declared first 34. Screened without a role change: all 60
+// spellings. Round 13 (lane 13): retail's clamp tail (`and eax, ecx`: the excess register is the
+// destination) comes from the subtraction written in the clamp, e.g. `MAX(0, imbalance -
+// open_slots)` (compile-only); in the build it loads the maximum into ECX early and keeps EDX for
+// the mask: `MAX(0, ...) <= maximum` 45 (192 bytes), the same through a local 45, as `maximum >=
+// MAX(...)` 45, as an `if` clearing the result 45, the `< 0 ? 0 :` form written out 45.
+// Separate maximum reduction and guarded memcpy, copy before/after scan, indexed/advancing
+// source and if/conditional maximum 93/93/83/83/79/79/88/88. Count register exchange and clamp
+// homes remain; original body restored.
+// Round 14 (lane 2; fast with 0x91e30): imbalance declared with the other locals at the top and set
+// to NONE before the call 34; declared there with its NONE initializer 65 (190 bytes); open slots
+// computed just before the call 87 (170 bytes), with imbalance at the top too 87; next_party declared
+// after the array and index 34.
+// Round 38 (m3 lane 10, fast): the player count arrives in EDX in every form, whatever its parameter
+// position; an all-stack compile-only build loads extra count into EAX and player count into EBX.
+// Trials: parameters (extra, parties, player) with the caller updated 35 (player count still EDX); the
+// fill continuing the copy loop's index 70 (now: player count in ECX, party indices on the stack,
+// 0x7e210 781), with that parameter order 70; `result = false;` with the call as the test 82 (204
+// bytes); `player_count > i` 34; open slots computed after next_party 34; pre-increment in both
+// loops 34.
+// Round 55 (lane 12; the one-file LTCG harness of this file reproduces the build exactly): total and open slots
+// computed after the copy loop 96 (162 bytes), with the sum written extra first 96; total after the copy loop and
+// open slots just before the call 87 (172 bytes); open slots after the fill 87 (170 bytes); `open_slots =
+// team_count * maximum_team_size;` then `open_slots -= total;` 34 (same code). In the compile-only all-stack
+// first pass player count always takes a callee-saved register (EBX, or EDX/EBP when the sums move) and extra
+// count EAX or ECX, never EDX, so LTCG gives player count the leftover EDX.
+// Round 135 (lane 4, fast with 0x91e30): `bool result = false; if (balance_teams_by_count(...)) {...}` 82
+// (204 bytes); fill bound written `player_count + extra_count` 34 (same code); the party index read once into a
+// named local 73; fill as `parties[player_count + i] = next_party` over extra_count 62; no total local (the sum
+// written at the open slots, the fill and the call) 74.
+// Round 23 (m3 lane 2, fast): the function moved ahead of 0x91e30 34; the maximum updated through a
+// forceinline `long *` helper 34 (the address is promoted); `unsigned long` total 35 (`jae`); the fill value
+// copied into its own local 34 (propagated); the fill as a pointer walk 63 (199 bytes, no rep stosd);
+// `(dword)` on the fill value 34. A permuter run (42 tries) reached 8 only with a value-changing
+// `(short)next_party` fill and swapped call arguments. Diagnostic, not keepable: `(short)next_party` in the
+// fill alone gives 7 with retail's roles (player count EAX, extra count EDX, every loop register as
+// retail); adding the clamp written as `(imbalance - open_slots < 0 ? 0 : imbalance - open_slots)` gives 5
+// (left: `lea ebx, [eax + edx]` against `[edx + eax]`, the movsx and its byte). So the roles follow whether
+// the rep stosd value is the maximum variable itself (ours) or a separate value loaded at the fill (retail).
+// Round 32 (m3 lane 14, fast): the clamp as `if (excess < 0) excess = 0;` 46; `0 > excess ? 0 : excess` 34;
+// the next party value named in the copy loop 34; the party value named, stored first, then the maximum
+// 75; pre-increment in the fill 34. Compile-only with two dummy leading parameters (all-stack first
+// pass): the total first/extra-first/`+=`/open slots first/next party first all load the player count
+// into EBX.
+// Round 125 (lane 6, fast with 0x91e30): open slots computed first from the sum written out, total after
+// (real build) 71, with the sum extra first 71 (player count still EDX; next party then in EAX with a
+// cmovle); total and open slots `const` 34; the locals as `int` 34; the excess as `imbalance -=
+// open_slots` in place 34 (all three identical code).
+// Round 25 (m3 lane 2, fast): extra-first sum with the clamp's subtraction written in place 45 (192 bytes); a
+// `short` next_party local 76 (197 bytes); open slots as `team_count * maximum_team_size - player_count -
+// extra_count` 71; the last party index tracked from NONE and the fill writing `last_party + 1` 82 (173 bytes);
+// the clamp compare as `maximum_imbalance >= (excess < 0 ? 0 : excess)` 35.
+// Round 61 (m3 lane 9, fast; the caller's file was on another lane's list, so no parameter orders): the
+// clamp as `excess = imbalance > open_slots ? imbalance - open_slots : 0;` then `result = excess <=
+// maximum_imbalance;` 65 (205 bytes); the copy bound `i != player_count` 35; open slots as `team_count *
+// maximum_team_size - player_count - extra_count` 71; `long i = 0;` with `for (; i < player_count; i++)` 34
+// (same code); next_party first, then the total, then `open_slots = team_count * maximum_team_size;
+// open_slots -= total;` 34 (same code).
+// Round 34 (m3 lane 14, fast): 1-8 initialized unused locals at the top and 1/2/3/5 before the imbalance 34 each
+// (same code: the count register exchange is no numbering tie); the fill through a walking `long *slot` 63 (199
+// bytes); the clamp named `clamped` 34; the call given `player_count + extra_count` 34; the imbalance declared
+// bare and set to NONE before the call 34; the party index read once into `party` 73 (frame 0x40, cmovle).
+// Lane 12 r66 (fast, with 0x91e30 matched): the result as `excess < 0 || excess <= maximum_imbalance` 48
+// (193 bytes); the maximum as one ternary assignment per party 34 (same code); the fill as
+// `while (extra_count-- > 0) parties[i++] = next_party;` 70 (the party list moves to the stack); the
+// excess clamped in place in the imbalance output 46; `maximum_imbalance >= (excess < 0 ? 0 : excess)`
+// 35. Re-measured: copy before the maximum 82, open
+// slots from the sum written out 71, fill counted by the extra count 62, next_party after the array 34.
+// Round 114 (lane 8; fast, and a one-file LTCG harness of this file that reproduces 34): the fill as `while
+// (player_count < total) parties[player_count++] = next_party;` 34 (same code); parameters (extra_count,
+// party_indices, player_count) with the call updated 35, with the clamp's subtraction in place 46, with the
+// fill advancing player_count / next_party first / extra-first sum / an independent fill index / the maximum
+// as a ternary 35 each, the clamp as `if (excess < 0) excess = 0;` 47, the fill over extra_count 62; fill
+// values `next_party + 0`, `| 0`, `-(-next_party)`, `*&next_party`, through a `long const *`, through a
+// const-reference fill helper, an `int` or `dword` next_party, a one-field struct: 34 each (same code).
+// Diagnostics: `(short)` on the fill value with the clamp's subtraction in place 5, and with extra_count
+// declared before player_count (any of three orders) 4, only the `movsx` left: the `lea ebx, [edx + eax]`
+// operand order follows the parameter declaration order, not the sum's spelling, and the fill value has to
+// be evaluated after the count and destination, which here only a non-leaf value does (a load through a
+// register such as `party_indices[0]` is placed last; every local, global or folded form loads first).
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// Round 276: standard count-based fill with difference/extra count, alone 62/60,
+// with excess maximum 82/82, party maximum 118/115, both maxima 116/113.
+// Combined scan, original fill and clamp restored; EAX/EDX count ownership remains.
+// Round 127 (lane 5, fast with 0x91e30): the copy stored before the maximum update 82 (170 bytes);
+// next_party set to 0 just before the copy loop 34; the fill through a block-scoped element pointer 34;
+// the clamp as `if (excess < 0) excess = 0;` 46; the fill through a pointer to next_party 34
+// (propagated); diagnostics: next_party as a memory-resident one-element array 34 (same code, so
+// residency is not what flips the roles), a volatile read at the fill 58 (no rep stosd; reverted).
+// Round 48 (m3 lane 10, fast): retail's only caller passes the player count in EAX, the party list in ECX
+// and the extra count in EDX. `int next_party` 34; one variable serving as next party and then as the
+// call's imbalance output (address-taken, sharing retail's frame-0 slot) 36 (the fill value is still
+// loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
+// bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
+// (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
+// Round 279: standard maximum element selection, reduction/copy first, maximum/reverse-minimum
+// comparator, if/conditional lower bound: 72/80/84/94/78/87/84/90.
+// Original combined scan, fill and clamp restored; count ownership remains.
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// Round 56 (m3 lane 10; one-file LTCG harness, exact here; the first form confirmed --fast): `int next_party` 34; `int
+// parties[]` 34; `dword parties[]` 34; `(long)next_party` in the fill 34; next_party declared after the index 34; a
+// forceinline fill helper (first, last, value) 34, plain inline 34, (pointer, count, value) 56; a static next_party 60
+// (diagnostic); a one-element array 34; next_party read through its own address in the fill 34. Diagnostics
+// (value-changing): the fill value `(short)` or `(unsigned short)` 4 (retail roles; left the movsx, `lea ebx, [edx +
+// eax]` and the clamp register), `next_party + 1` 38 (retail roles), `(char)` 63, `-next_party` 48, `^ 1` 48, constant
+// 5 31, no maximum update 66 (retail roles): the player count gets EAX only when the rep stosd value is a temporary
+// computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
+// keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
+// alike, so it is no proxy for these roles.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

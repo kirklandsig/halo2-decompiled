@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "havok_reference.h"
 #include "constraint_helpers_314090.h"
+#include "joint_descriptions_312920.h"
 #include <math.h>
 // @flags /O2 /arch:SSE /Gr
 
@@ -153,24 +154,6 @@ struct s_physics_model_owner
 };
 
 /* what the joints' constructors read */
-struct c_component_joint_snapshot_0
-{
-	__m128 data[6];
-	c_component_joint_snapshot_0();
-};
-
-struct c_component_joint_snapshot_1
-{
-	__m128 data[9];
-	c_component_joint_snapshot_1();
-};
-
-struct c_component_joint_snapshot_2
-{
-	__m128 data[9];
-	c_component_joint_snapshot_2();
-};
-
 /* the setters that fill a snapshot from the two bodies and their frames */
 struct s_1ce4f0
 {
@@ -224,27 +207,6 @@ public:
 		((c_havok_reference_counted *)block)->allocation_size = (word)size;
 		return block;
 	}
-};
-
-class c_component_joint_0 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_0(c_component_joint_snapshot_0 const *info);
-	byte unknown00[0xa0];
-};
-
-class c_component_joint_1 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_1(c_component_joint_snapshot_1 const *info);
-	byte unknown00[0xe0];
-};
-
-class c_component_joint_2 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_2(c_component_joint_snapshot_2 const *info);
-	byte unknown00[0xe0];
 };
 
 class c_component_joint_3 : public c_component_joint_constraint
@@ -306,7 +268,7 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 			((s_1ce4f0 *)&info)->function_1ce4f0(local_560343, rigid_body_b,
 				&frame_a.m_translation.m_quad, &frame_b.m_translation.m_quad,
 				&frame_a.m_rotation.m_col2.m_quad, &frame_b.m_rotation.m_col2.m_quad);
-			constraint = (s_havok_contact_entities *)new c_component_joint_0(&info);
+			constraint = (s_havok_contact_entities *)new lane_a_hinge(&info);
 		}
 		break;
 	case 1:
@@ -317,14 +279,14 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 				&frame_a.m_translation.m_quad, &frame_b.m_translation.m_quad,
 				&frame_a.m_rotation.m_col2.m_quad, &frame_b.m_rotation.m_col2.m_quad,
 				&frame_a.m_rotation.m_col1.m_quad, &frame_b.m_rotation.m_col1.m_quad);
-			info.data[8].m128_f32[2] = strength == 0.0f ? hinge->strength : strength;
+			info.friction = strength == 0.0f ? hinge->strength : strength;
 			real lower = 0.0f - hinge->minimum;
 			real upper = 0.0f - hinge->maximum;
-			info.data[8].m128_f32[0] = (lower > upper ? upper : lower) * 0.01745329238474369f;
+			info.angle_min = (lower > upper ? upper : lower) * 0.01745329238474369f;
 			lower = 0.0f - hinge->minimum;
 			upper = 0.0f - hinge->maximum;
-			info.data[8].m128_f32[1] = (lower > upper ? lower : upper) * 0.01745329238474369f;
-			constraint = (s_havok_contact_entities *)new c_component_joint_1(&info);
+			info.angle_max = (lower > upper ? lower : upper) * 0.01745329238474369f;
+			constraint = (s_havok_contact_entities *)new lane_a_limited_hinge(&info);
 		}
 		break;
 	case 2:
@@ -335,13 +297,13 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 				&frame_a.m_translation.m_quad, &frame_b.m_translation.m_quad,
 				&frame_a.m_rotation.m_col2.m_quad, &frame_b.m_rotation.m_col2.m_quad,
 				&frame_a.m_rotation.m_col1.m_quad, &frame_b.m_rotation.m_col1.m_quad);
-			info.data[7].m128_f32[3] = (angles->twist_minimum > angles->twist_maximum ? angles->twist_maximum : angles->twist_minimum) * 0.01745329238474369f;
-			info.data[8].m128_f32[0] = (angles->twist_minimum > angles->twist_maximum ? angles->twist_minimum : angles->twist_maximum) * 0.01745329238474369f;
-			info.data[7].m128_f32[1] = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_maximum : angles->plane_minimum) * 0.01745329238474369f);
-			info.data[7].m128_f32[2] = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_minimum : angles->plane_maximum) * 0.01745329238474369f);
-			info.data[7].m128_f32[0] = (real)cos((angles->cone_minimum > angles->cone_maximum ? angles->cone_minimum : angles->cone_maximum) * 0.01745329238474369f);
-			info.data[8].m128_f32[1] = strength != 0.0f ? strength : angles->strength;
-			constraint = (s_havok_contact_entities *)new c_component_joint_2(&info);
+			info.twist_low = (angles->twist_minimum > angles->twist_maximum ? angles->twist_maximum : angles->twist_minimum) * 0.01745329238474369f;
+			info.twist_high = (angles->twist_minimum > angles->twist_maximum ? angles->twist_minimum : angles->twist_maximum) * 0.01745329238474369f;
+			info.plane_low = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_maximum : angles->plane_minimum) * 0.01745329238474369f);
+			info.plane_high = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_minimum : angles->plane_maximum) * 0.01745329238474369f);
+			info.cone_limit = (real)cos((angles->cone_minimum > angles->cone_maximum ? angles->cone_minimum : angles->cone_maximum) * 0.01745329238474369f);
+			info.friction = strength != 0.0f ? strength : angles->strength;
+			constraint = (s_havok_contact_entities *)new lane_a_ragdoll(&info);
 		}
 		break;
 	case 3:
@@ -406,6 +368,14 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 // EBX, the NONE test kept); the whole tail as a forceinline helper 22; a contact element pointer
 // 23; the index declared at function scope 22; a bool set at the found break and tested after the
 // loop 22 (the same layout: the size guard still joins the loop's normal exit).
+// This round: retail's tail has two copies of the epilogue, and its zero-size guard jumps to
+// the one the found path falls into, so that block has two predecessors and the flag update
+// stays whole; ours jumps to the loop's own copy, so the found path's block has one
+// predecessor and the update sinks into it. `break`, `goto done`, the update after the loop
+// behind a flag, the bit-field set, the `|` and `+` forms and the update dropped all compile
+// to the same bytes (22); an explicit `if (size > 0)` adds a second guard (1828 bytes, 86).
+// This round: an early `if (size <= 0) return;` before the loop adds its own copy of the
+// epilogue (1828 bytes, 86); `break` in the found path is canonicalised into the same bytes (22).
 // @retail 0x1d77d0
 void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_owner *owner)
 {

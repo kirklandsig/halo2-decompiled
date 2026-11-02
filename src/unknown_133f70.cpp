@@ -159,6 +159,18 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // arguments remains.
 // Round 47: tag local 16; key local 16; tag/key in either order 16; category+tag 16;
 // category+key 16; category+tag+key 16; category+key+tag 16; caller preserved.
+// Lane 14 round 8: 0x2cbf0's level declared a word (as this caller pushes it) with the word field
+// passed directly 8; not kept while the held src/unknown_1321f0.cpp declares level a byte (see 0x2cbf0).
+// Round 15 (lane 15): short inner counter 253 (655 bytes); selected index as a ternary 16; NONE
+// default then the selected byte 102; entry flags read before the selected byte 26; the bools
+// set in both arms 95 (714 bytes). Both remaining causes are 0x2cbf0's prototype (level width,
+// register-argument order), which the held file also declares.
+// Round 28: flags field read at each use 110; flags computed per entry inside the j loop 187
+// (684 bytes); struct assignment for the copy 16; category test through the original 16; first
+// record tested `i == 0` 17.
+// Round 37 (fast): the level passed without the byte cast 16; first/second declared before the
+// flags copy 16; index declared before the selected byte 16; category or instance read through the
+// original 206/201. Both causes stay BLOCKED-BY the held src/unknown_1321f0.cpp (0x2cbf0's prototype).
 // @retail 0x133f70
 void function_133f70(s_133f70 const *record, bool arg_2)
 {

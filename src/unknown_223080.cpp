@@ -138,19 +138,18 @@ void function_2f800(s_2f800_view *arg_3, s_2f800_source const *arg_0, s_2f800_si
 void function_2c490(long arg_0);
 void function_3f450(long arg_0);
 
-// score 71 (was 71): everything matches until the 0x2f6b0 call setup:
-// retail's callee takes the position in esi, the inner rectangle in ebx
-// and three pointers on the stack; ours takes edi/ebx/eax and two pushes
-// (its body lives in another lane's file). The 3-byte length difference
-// shifts every later branch displacement (first diff +0x1a). Also
-// outstanding: the 0x2f640 setup loads edx before ecx in retail; the
-// 0x3f450 argument's pointer loads through eax in retail, edx in ours;
-// the else-branch copy rotates ecx,edx,eax,ecx in retail, eax,ecx,edx,eax
-// in ours. Else copies swapped 71; dimensions through a pointer local 71;
+// score 2 (was 71): the 0x2f640 call sets ecx before edx, retail edx first:
+// BLOCKED-BY 0x2f640, whose parameters retail declares (index, dimensions,
+// extent, ...): that order at its definition and this call matches this
+// function with 0x2f640 still matched, but its file is machine 1's. At 71
+// (since solved): the 0x2f6b0 convention, the 0x3f450 argument's pointer
+// register and the else-branch copy's rotation. Else copies swapped 71; dimensions through a pointer local 71;
 // menu guard split 71; grid locals declared separately 71; arg_6 through
 // a local 71; local_4 at function scope 71; arg_0 == 0 71; else rects
 // through a local pair 73. Struct-copy of the pair 58 but positional
 // only; field-by-field 146; arm swap 122 (earlier rounds).
+// Round 113: shared extent/dimensions/position pointers 2/2/2; all three pointers 2;
+// shared count/mode/both 2/2/2; early extent through three calls 2. Call tuples unchanged.
 // @retail 0x223080
 void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 	long arg_4, long arg_5, s_223081 const *arg_6)

@@ -128,27 +128,10 @@ struct s_player_view
 };
 
 long function_155760(long index);
-bool function_bafb0(long object_index, long ancestor_index);
+bool function_bafb0(long ancestor_index, long object_index);
 
 bool function_14ddc0(long local_player_index);
 
-// score 44 (was 44): existence BL and loop/unit allocation still differ. index-accessor
-// predicate 67; shared player index 65; short index 61; unsigned index 44;
-// relationship result/guards 44/44; immutable existence 44; audible guard 44.
-// existence byte and index/unit registers differ;
-// inline/noinline controller 44/44; inline/noinline hierarchy 44/44;
-// force-inline existence 44; controller range 58; membership 59; success break 44.
-// existence byte still coalesces across the controller call; eligibility input 44, eligibility guard 44, saved existence output 44, conditional merge 44; the same forms with the player accessor 44,44,44,44 (round 115).
-// existence flag and loop/unit registers differ;
-// long/word/byte split masks 72/59/69; char/long existence with mask 72/83;
-// existing player accessor 44; related-player result 86; shared emitter index 44.
-// score 44 (was 44): BLOCKED-BY 0xbafb0: `if (function_14ddc0(i) && split)` with the unit read as
-// `function_14ddc0(i) ? player(function_14de70(i))->unit_index : NONE` gives retail's two existence
-// tests (89 alone: the second hierarchy call sets esi before eax, so the unit leaves esi and the
-// table pointer spills); with 0xbafb0's parameters reordered to (ancestor, object) at its
-// definition and both calls it matches, with 0xbafb0 still matched.
-// Player-index accessor then NONE test 42; if-form unit 89; nested unit test 89; unit declared
-// first 89; short index 122; dword index 89; reused index/unit variable 89; inline unit getter 89.
 // @retail 0x18d4f0
 void function_18d4f0(long object_index, char *audible, long *local_player_index)
 {
@@ -162,15 +145,11 @@ void function_18d4f0(long object_index, char *audible, long *local_player_index)
 		for (long i = 0; i < 4; i++)
 		{
 			bool exists = function_14ddc0(i);
-			bool split = false;
-			if (exists)
+			bool split = exists && ((1 << function_155760(i)) & 3) != 0;
+			if (split)
 			{
-				split = ((1 << function_155760(i)) & 3) != 0;
-			}
-			if (split && exists)
-			{
-				long unit_index = ((s_player_view *)g_4e8c24->data)[g_4e8c20->entries[i] & 0xffff].unit_index;
-				if (unit_index != NONE && (function_bafb0(object_index, unit_index) || function_bafb0(unit_index, object_index)))
+				long unit_index = function_14ddc0(i) ? ((s_player_view *)g_4e8c24->data)[g_4e8c20->entries[i] & 0xffff].unit_index : NONE;
+				if (unit_index != NONE && (function_bafb0(unit_index, object_index) || function_bafb0(object_index, unit_index)))
 				{
 					if (local_player_index)
 					{

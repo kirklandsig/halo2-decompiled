@@ -135,7 +135,14 @@ void function_254200(void)
 
 #undef program_words_254200
 
-// score 4 (was 4): two depth/top-edge reload pairs remain.
+// MiniMax I (11-01): the member 4f form and the swapped y operands keep 4, the constant as a helper parameter 8, the point and size swapped 15, the y sum as a named local 151, the point and size below the colour call 214 and the free 2s form 392; no new form, no lower score.
+// score 4 (was 4): in the two records that follow the second reservation retail loads the
+// 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
+// first; only that order differs, the pool address of the constant is masked by the check.
+// Round 34 (lane A, machine 3): the constant through a named local keeps 4, so the order is the
+// live-in order of the whole-program build (retail reloads ascending, ours descending) and not
+// reachable from here.
+// first; the constant's pool address differs as well and the check cannot mask it.
 // shared left edge lifetimes 162;
 // shared right edge lifetimes 118;
 // shared left/right edge lifetimes 171;
@@ -147,6 +154,9 @@ void function_254200(void)
 // second-vertex point after/before the texture call 133/138; scoped point 133;
 // position helper for vertices 2 and 3/all four 8/8;
 // texture-position helper for vertices 2 and 3/all four 4/4; comma-sequenced pair 4.
+// inline color helper 339; direct color products 4; color aggregate 33; color value input 218;
+// scalar color inputs 4; red-first color products 9; color home names 4; snapshot home names 4;
+// native point copy 4; point copy assignment 4; reference color input 4.
 // @retail 0x254490
 void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, color3f const *arg_3, bool arg_4)
 {
@@ -188,7 +198,18 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 	}
 }
 
-// score 153 (was 153): frame 0x14 versus 0x10 (our color struct copy, made before 0x1cf50, where retail
+// score 18 (was 18): the texture-coordinate sums are computed at the first vertex and reused for
+// the other three, and the colour is read through a pointer with the alpha as a byte; what is left
+// is that in the last quad's third and fourth vertices retail loads y into a register before it
+// adds the offset, where ours copies the offset and folds the load into the addition, and that
+// after the second reservation retail reloads the lower coordinate before the 16777215 constant.
+// The pool address of the constant is masked by the check; only the order of the two loads differs.
+// Round 34 (lane A, machine 3): the y sums of the third and fourth vertices are folded by the
+// commutative-operand canonicalisation of the whole-program build: swapping their operand order
+// keeps 18, swapping the whole quad gives 91, and the constant through a named local keeps 18;
+// what is left is the fold in those two vertices and the reload order after the reservation.
+// after the second reservation retail reloads the lower coordinate before the 16777215 constant,
+// whose pool address differs as well and that the check cannot mask.
 // Round 83 on the round-220 near source (color pointer, per-use coordinates, byte alpha, scalar size;
 // still 18 fast): size declared at function scope, const size, scale-first second texture products,
 // size-first sum in the third vertex 18 each; retail loads y before the pushes in the third and fourth
@@ -345,6 +366,24 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // body everything through the second reservation matches; ours then loads the size and computes the
 // half span before the third reservation, retail after its call); color pointer with the lower
 // coordinate first 372. All restored.
+// Round 180: Final integral size selection long/dword/short/word 534/528/534/534; on the earlier
+// pointer-color/byte-alpha/per-use reservation graph 548/542/548/548 (reduced control 162). All
+// conversions and storage changes regress; original complete body and real size reference restored.
+// Round 39 (m3 lane 12): 13 of the 18 come from the `y + size` fold (ours is 2 bytes shorter, so the
+// three jumps to the else tail and the padding shift). A point pointer local for the last quad 18;
+// the quad through a forceinline helper 348 (not inlined under the region's inline_depth(0)); the
+// point parameter renamed to sort after the size 18; the size computed after 0x1cf50 26; the size's
+// address taken 18. All restored.
+// Round 134 (m3 lane 4): the size local named half_size 18; the size held in the scale parameter
+// (diagnostic) 29 (the y fold stays, so it is not the size's symbol or slot); the size computed after
+// 0x1cf50 26 (as before); the last quad's texture calls through D3DDevice:: 18; the size as a
+// `real const &` 18. All restored.
+// Round 54 (lane 10, fast): upper coordinate named at its first use 362 (2276 bytes); the depth constant as
+// `(real)0xffffff` 18 (same code); the size ternary inverted 19; size-first x and y sums in the last two
+// vertices 18; the size computed after the blip quad's Begin 85; the size defaulting to 32 and overridden
+// for one view 90 (2256 bytes); the 3rd/4th y written `y - -size` (diagnostic) 64 (2263 bytes, a negation).
+// 0x254490 shows the same reload swap: after a
+// reservation call retail reloads the live xmm values in the order they were defined, ours in reverse.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {
@@ -396,21 +435,18 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			g_484f68.PSFinalCombinerInputsABCD = 0xc;
 			g_484f68.PSFinalCombinerInputsEFG = 0x1c00;
 			function_15180(&g_484f68);
-			color3f color = *(color3f const *)function_13927e(g_4b9ed8);
+			color3f const *color = (color3f const *)function_13927e(g_4b9ed8);
 			function_1cf50();
 			D3DDevice::Begin(D3DPT_TRIANGLEFAN);
-			D3DDevice_SetVertexData4f(5, color.red, color.green, color.blue, 1.f);
-			real local_3 = arg_1 * 0.5f;
-			real local_4 = local_3 + 0.5f;
-			real local_5 = 0.5f - local_3;
-			D3DDevice::SetVertexData2f(1, local_4, local_5);
+			D3DDevice_SetVertexData4f(5, color->red, color->green, color->blue, 1.f);
+			D3DDevice::SetVertexData2f(1, arg_1 * 0.5f + 0.5f, 0.5f - arg_1 * 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 0.f, 0.f, 16777215.f, 16777215.f);
-			D3DDevice::SetVertexData2f(1, local_5, local_5);
+			D3DDevice::SetVertexData2f(1, 0.5f - arg_1 * 0.5f, 0.5f - arg_1 * 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 64.f, 0.f, 16777215.f, 16777215.f);
 			#pragma inline_depth(0)
-			D3DDevice_SetVertexData2f(1, local_5, local_4);
+			D3DDevice_SetVertexData2f(1, 0.5f - arg_1 * 0.5f, arg_1 * 0.5f + 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 64.f, 64.f, 16777215.f, 16777215.f);
-			D3DDevice_SetVertexData2f(1, local_4, local_4);
+			D3DDevice_SetVertexData2f(1, arg_1 * 0.5f + 0.5f, arg_1 * 0.5f + 0.5f);
 			D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, 0.f, 64.f, 16777215.f, 16777215.f);
 			D3DDevice_End();
 			#pragma inline_depth()
@@ -455,7 +491,7 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			function_0224f0(0, D3DTSS_ALPHAKILL, 0);
 			function_0222d0((D3DRENDERSTATETYPE)0x3e, 1);
 			function_0222d0((D3DRENDERSTATETYPE)0x3f, 0x303);
-			word local_6 = (byte)(long)(function_1392a9(g_4b9ed8) * 255.f);
+			byte local_6 = (byte)(long)(function_1392a9(g_4b9ed8) * 255.f);
 			memset(&g_484f68, 0, sizeof(g_484f68));
 			g_484f68.PSConstant0[0] = (((((dword)local_6 << 8) | local_6) << 8 | local_6) << 8) | local_6;
 			g_484f68.PSCombinerCount = 1;
@@ -468,7 +504,7 @@ void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 			g_484f68.PSFinalCombinerInputsABCD = 8;
 			g_484f68.PSFinalCombinerInputsEFG = 0x1800;
 			function_15180(&g_484f68);
-			real const &local_7 = g_4ba04c > 1 ? 32.f : 42.f;
+			real local_7 = g_4ba04c > 1 ? 32.f : 42.f;
 			function_1cf50();
 			D3DDevice_Begin(D3DPT_TRIANGLEFAN);
 			D3DDevice_SetVertexData2s(1, 0, 0);

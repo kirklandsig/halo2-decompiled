@@ -979,13 +979,33 @@ struct s_string_buffer
 };
 
 /* the player's name, team and the game engine's two scores */
-// Earlier comparison: score 65 (was 50): the arguments are pushed in the opposite order and the two virtual calls are
-// made in the other order.
 // score 13 (was 13): discrete 7/8 tests and the final 9 test after RET differ;
+// an earlier comparison at 65 (from 50) had the arguments pushed in the opposite order and the two
+// virtual calls made in the other order;
 // low/high partitions 59/56, conditional membership 57/53, classified result
 // 57/53, upper/lower range result 95/53 (plain scores).
 // Range in a bool local 13; both values under a repeated test 104; conditional
 // values 140; forced-inline mode predicate 50; one flag for both values 50 (fast).
+// r105 (fast): the plain six-way chain 65 (480 bytes, 9 in line); the chain without 9
+// and an `else if (== 9)` arm with the same loads 65 (the arms merge); the chain in a
+// bool, a long, or a flag set by an if 65; the score1 format call in both arms with the
+// chain 100 (483 bytes) or the range 104.
+// Independent final-mode if 63 (501 bytes); nested output guards with the range 13,
+// with the chain 50; score-widget declarations split 50; one value declaration 50;
+// upper-bound-first range 14; 7/9/8 chain 51; grouped final equalities 50 (plain).
+// Round 41 (lane 10, fast): retail's `cmp 9; jne <score1 format>; jmp <loads>` after RET
+// looks like a second copy of the loads cross-jumped into the first after layout. Six
+// separate else-if arms with the same loads 50 (merged, 9 in line); the 1/3/4/7/8 chain,
+// an `== 9` arm and a final else arm, each with its own score1 format call 95 (484 bytes,
+// the format string goes to EDI); the same as seven arms 95; the 1/3/4/7/8 chain with an
+// `== 9` arm whose loads are in the other order 50, the chain's loads reversed instead 50;
+// a multi-label switch (diagnostic) 100 (range compares).
+// Round 48 (fast here gives 34 at 475 bytes on the unchanged source: the reduced image passes
+// show_row's row on the stack; aligned counts against that): a 1/3/4/7/8 switch with case 9 as its
+// own identical arm, after or before, 101 (range compares, aligned 24); `>= 7 && <= 8` plus `== 9`
+// 65 (aligned 10); the 1/3/4/7/8 chain with the `== 9` test nested in its else 65 (aligned 9: only
+// the 9 test is in line); the chain and a separate `if (== 9)` 76, with `>= 7 && <= 8` 77 (500 bytes,
+// not threaded).
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

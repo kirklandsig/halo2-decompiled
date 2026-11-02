@@ -529,11 +529,28 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // read in a different order. In the loop retail loads the block into edx and copies it to esi for the
 // release call; after the loop ours loads it into edx and copies it to ecx. Tried: an inline helper taking
 // the group for the pointer clear 51 (cache block moves to ebp); with a shared address helper 51; the
-// count in a local read before the block 68; the index read through its address 51; the block re-read 51.
+// count in a local read before the block 68; the index read through its address 51; the block re-read 51;
+// alone (no other change): the loop's block read at each use 27, the physical block re-derived into
+// its local in the loop 27, the page shift read into a local first 27, the address through an inline
+// helper 27 (all identical code); the pointer record cleared by memset 82. Round 31: the release
+// call's block re-read through the pool getter (as 0x12e210 does) 115 (the pool is reloaded,
+// 293 bytes); a named block local for the test and the pointer after the loop 51 (cache block
+// and physical index swap edi/ebp); the release address in a local before the call 27 and a
+// group local for the pointer clear 27 (both identical code); the time adjusted through the
+// physical block local without the field pointer 45 (the time is loaded, not addressed).
+// Round 119 (lane 8, fast): the post-loop unlink as an inline helper taking the group 51 (the tail then
+// matches retail, but the cache block and the index*24 product swap edi/ebp); one block local for
+// the loop and the tail 51 (same); that local also holding the entry test's block 51 (same); the pool
+// entry through the existing getter 27 (same code, kept); the tail's pointer offset through the
+// block's own field 27 (same code). One-file LTCG harness (no edi/ebp swap there), each with the tail
+// helper: `continue` when unlinked, a cache-block release helper, a group release helper, a named
+// linked flag, a derived-struct group, the block through a cast of its field's address: aligned 8
+// each, as the helper alone (the in-loop block still goes straight to esi; retail loads edx and
+// copies it to esi); the count stored after the block read 32 (the store sinks past the test).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
-	s_cache_block *cache_block = &((s_cache_block *)g_4e648c->data)[block_index & 0xffff];
+	s_cache_block *cache_block = geometry_cache_block_get(block_index);
 
 	if (cache_block->block)
 	{

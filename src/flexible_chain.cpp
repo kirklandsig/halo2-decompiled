@@ -267,10 +267,125 @@ void __stdcall function_1160c0(real dt)
 // Original complete body and all provider interfaces restored; frame 0xa4, segment/previous/axis
 // homes and rotation schedule remain.
 // Round 223: Existing target/interpolation/prediction point constructors, seven subsets 179/179/179/179/179/179/179; all with complete direction/velocity setters 183. Original producers and body restored.
+// Round 386: preserve native previous aggregate; independent complete rest-offset,
+// axis and prediction coordinate domains in all seven subsets, then native role names
+// 280/197/289/216/273/193/293/293; original native domains and complete body restored.
 // Round 387: Complete delta/axis squared sums 179/179/179; native double distance-root alone and with those sums 249/249/249/249, both named roots 249. All expression stages restored.
 // Round 32: existing in-place axis scale 179; original-angle segment-first 276;
 // tiny-axis-owned fallback 294; scale/segment 276; scale/fallback 294; segment/fallback 247;
 // all 247, cosine-first all 247. Original producers, fallback and include set restored.
+// Round 251: interpolation-owned stiffness 315; velocity-owned reciprocal 294;
+// both 320; rest offset after readonly angle/trigonometry 229; with stiffness/
+// reciprocal/both 299/288/310; all with the native prediction constructor 310.
+// Original producer points and complete body restored; segment/previous/axis homes remain.
+// Round 393: published-node previous, three-use old-position snapshot and native velocity
+// publication subsets 179/263/263/262/262/390/390; all with immutable snapshot 390. Body restored.
+// Round 262: complete segment/node/both receivers at uses 350/193/359;
+// repeated stiffness alone/segment/node/both 301/475/309/480 (restored);
+// separate segment base 278. Original receivers and computed stiffness restored.
+// Round 226: complete rotation base sums, sine-scaled transverse terms and rotated components,
+// all seven combinations and full graph with existing point publication 179 each.
+// Original body restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 395: native node cursor 329; with readonly segment 329, invariant reciprocal 327, both 327;
+// invariant vertical on those four graphs 338/338/326/326. All original induction and scopes restored.
+// Round 397: one direction workspace; complete target scalars, noninitial branch first and readonly segment masks 0..7
+// 246/318/277/323/246/318/277/323; all restored.
+// Round 185: Plain target/interpolation/velocity coordinate-loop subsets
+// 188/194/200/639/194/200/634; all with complete direction loop 615. Original native arithmetic
+// statements, copies, segment loop, homes and every call tuple restored.
+// Round 181: outer/per-selection count 298/179; inclusive bound live/selection/outer
+// 302/302/235; ordered terminal selection live/selection/outer 180/180/298. Original body restored.
+// Y423: Existing staged cross with paired differences, scaled target and velocity
+// helper subsets 192/265/186/265/204/273/198/273 fast (control 179);
+// all regress. Original complete body and include list restored.
+// N226: Current position owns the constrained target; direction-workspace/axis-scale/
+// blend-owned-stiffness masks 0..7 give 208/252/208/252/285/334/285/334.
+// All shorten the body and lose the original frame; complete original body restored.
+// Round 46: retail's low frame slots run length +0, segment/scale +4, axis +8..+0x10, rest offset
+// +0x40, previous +0x4c; ours run axis, segment/scale, length and previous +0x40 (the order is
+// reversed). Retail scales axis j/k in place on reloaded values (`mulss xmm3, xmm0`). Length declared
+// before axis 179; inverse time step before the loop 189; segment pointer before node 276; vertical
+// before the loop 301; existing normalize3d for the axis 179 (identical code, not kept: round 62
+// found it costs 0x73360 in the full build).
+// Round 208: Prediction rows xzy/yxz/yzx/zxy/zyx: 217/217/187/187/218; reverse prediction with
+// velocity rows jik/jki/kji: 218/217/217. Original row order restored; two forms keep 0xa4 but
+// regress, the others enlarge the frame. Segment/previous/axis homes and rotation schedule remain.
+// Round 242: Long/word/signed-byte/byte node ordinals 290/180/282/282;
+// with invariant reciprocal 296/190/279/279. Original short induction,
+// reciprocal scope and complete body restored; segment/previous/axis homes remain.
+// Round 43 (one-file LTCG link of this file with the callee closure and the inlining ballast object,
+// equal to the full listing): renaming axis/length/segment/previous/offset (five name sets, both
+// orders of each pair) leaves every stack home and instruction unchanged, so the reversed slot order
+// does not follow local names; the rotation through an inline (vector, axis, sine, cosine) helper
+// on an offset copy, explicit or staged cross terms, about 240 (harness 218 against 161, 1370 bytes);
+// stiffness computed after the tick increment about 183 (harness 165); the axis scaled with *= 179 (same code).
+// Round 53: the axis j/k (or all three) scaled with `*=` 179/179 (same code); the segment index in a short
+// local 290; `definition->segments + (...)` 179; length declared then assigned 179.
+// Round 61 (lane 16, fast): the float library forms for the roots and the angle: sinf/cosf for the rotation 182
+// (aligned 198 -> 200), sqrtf for the axis length 179 and for the segment-length scale 179 (same code), fabsf
+// for the length test 179, all five together 182. Retail's frame runs length, segment, axis upward from
+// [esp+0x10]; ours axis, segment, length; the axis j/k scaling reloads the stored component in retail.
+// Lane 18 round 17 (an LTCG link of this file's generated unit, 180 objects, equal to the full listing; 172
+// there for 179): the physics tag in a one-use local 172 and the physics index in a local used for the test and
+// the lookup 172 (both identical; the tag address is still formed before the -1 push); 1/dt before the loop 182;
+// a long loop index 289 (1358 bytes); the root test as `fabs(length) < .0001f` 172.
+// Round 35 (lane 13): rest-offset copy at the loop top (before the tick) 289 (1354 bytes; offset still homes
+// above previous); length/axis declared at the loop-body top 179 (same code); previous renamed last_position
+// 179 (no slot moves); the dot named before the complement product 179 (same code); a 600 s permuter run
+// (55 tries) none below 179.
+// Round 264: Existing initial/normalized axis setters and const native delta/target/offset,
+// subsets 1/2/4/3/5/6/7, then all with const assigned-once scalars 192/179/179/192/192/179/192/192.
+// Original producers and complete body restored; segment/previous/axis homes remain.
+// Round 54 (m3 lane 1, fast): retail's angle call passes direction in ECX and the up vector in EDX, which is
+// `function_11ce20(&vertical, &direction)` (0x11ce20 matches; the angle is symmetric): 177, the call setup then
+// agrees (two points, not kept). The rest offset declared at function scope before previous 179 (identical code:
+// the homes do not follow scope); on the swapped call: the prediction rows after the velocity and position
+// publication 213; the rest offset copied right after the segment lookup 292 (1354 bytes); the blend complement
+// named and used three times 177. Retail mirrors two groups of homes: length/cosine +0x10, segment/scale/sine
+// +0x14, axis +0x18 (ours axis +0x10, length +0x20) and offset +0x50, previous +0x5c (ours reversed).
+// Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
+// direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
+// offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot
+// and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
+// &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
+// axis 177. Body restored.
+// Round 45 (lane 14, fast), on the retail-order angle call (177): the vertical declared before the loop 301; the
+// vertical and the inverse step before the loop 190; the angle taken after the rest-offset copy with the vertical
+// before the loop 301; the first node's direction copied before its position 188. The segment/scale temp slot
+// sits above the axis in our frame and below it in retail's.
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position` and sine/cosine angle names 179
+// each (all identical code: neither names nor declaration order place these homes).
+// Round 37 (lane 15, fast): every slot is shared alike except two mirrored groups: retail runs length/cosine +0,
+// segment/scale/sine +4, axis +8, rest offset +0x40, previous +0x4c; ours runs axis +0, segment +0xc, length
+// +0x10, previous +0x40, offset +0x4c (the axis, length and normalization code is otherwise retail's). The axis
+// is `vertical x direction`: the existing cross3f(&vertical, &direction, &axis) with the vertical declared just
+// before it 192; with the existing normalize3d for the length 190 (1371 bytes); normalize3d alone 184 (first
+// difference +0xc1, homes unchanged); cross3f_staged 192; cross3f with the vertical declared at the loop top 266.
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 179 179 181 181 181 179 179 (homes unchanged).
+// Round 298: Normalized axis store orders ikj/jik/jki/kij/kji 179/179/179/178/178; complete scalar
+// axis producers with jki/kij/kji normalization 192/190/192. One-point gains rejected; original
+// axis producers and body restored. Segment/previous/axis homes and rotation schedule remain.
+// Round 132 (m3 lane 5, fast): retail's rest offset sits below previous (+0x50/+0x5c; ours +0x5c/+0x50) and
+// cosine below sine (+0x10/+0x14; ours sine +0x1c, cosine +0x20). Rest offset declared at function scope 179;
+// cosine declared before sine 179; both 179; `rest_offset`, `last_position`, sine/cosine angle names 179
+// each (all identical code: neither names nor declaration order place these homes).
+// Round 49 (lane 10, fast): the angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup:
+// direction in ECX, vertical in EDX) 177; on that: the rotation through a private inline Rodrigues helper on the
+// offset copy (v*cos + projection*axis - cross*sine) with predicted = position + offset 236 (1370 bytes); the dot
+// and cross operands written offset-first 177 (same code); the axis through the existing cross3f(&vertical,
+// &direction, &axis) 192, with node/segment/stiffness/inverse step/tick order 192; vertical declared before the
+// axis 177. Body restored.
+// Round 74 (m3 lane 12, fast; 0x73360 kept its match in each): `previous = position` right after the i == 0
+// if/else 200, before the rest-offset copy 194, before the velocity stores 192 (previous stays at +0x40 in all three:
+// the mirrored homes do not follow where previous's live range ends); `previous = node->position` after the
+// publication 179 (same code); `segment->stiffness * definition->stiffness` 179 (same code).
+// Round 291: Angle before axis/after axis/after root, with original/early paired trig,
+// 314/307/293/319/294/316; early angle with short selected ordinal 326/332. Original producers restored.
+// Round 293: Initial-node position/direction/degenerate-axis fallback memmove subsets 1/2/4/3/5/6/7:
+// 371/380/363/400/373/382/402; all with rest-offset memmove 409. Original copies and file restored;
+// segment/previous/axis homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

@@ -26,11 +26,11 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 	s_actor_view *local_0 = actor_get(arg_0);
 	*(bool volatile *)&local_0->unknown50c = false;
 	*(long volatile *)&local_0->unknown5ac = NONE;
-	*(short volatile *)&local_0->unknown5b0 = NONE;
-	*(short volatile *)&local_0->unknown5b4 = 0;
+	local_0->unknown5b0 = NONE;
+	local_0->unknown5b4 = 0;
 	*(short volatile *)&local_0->unknown5b6 = 0;
 	local_0->unknown4ac = 0;
-	*(short volatile *)&local_0->unknown504 = 0;
+	local_0->unknown504 = 0;
 }
 
 // score 14 (was 14): ours keeps the scaled actor index in ECX and the actor pointer in EAX,
@@ -39,7 +39,21 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 // before the state 14; helper taking the actor pointer 14; actor_get spelled out,
 // index first, or as an array element (first get, second, or both) 14; the flag read
 // into a local first 14; if/else form 14; the reference in a local first 28; actor_get
-// after the if 25; no actor local 34.
+// after the if 25; no actor local 34. Round 15: the existing 0x1f86a0 inlined at link time 18
+// (same swap); result declared first 14; slot read directly 14; actor_get at one use 25;
+// eight spellings of the helper's address (cast, integer sum, data/pool/offset locals) 14;
+// definition order in the file 14. The swap needs the reset's second actor pointer: with one
+// or two reset stores (folded address) the index takes EAX as in retail.
+// Round 28: the slot block read through slot->unknownc 14; the reset helper plain inline 14; its
+// parameter/local named actor_index/actor 14; a result local 14; (harness: declaration order,
+// const actor 14). Three of the reset's volatile stores (0x5b0, 0x5b4, 0x504) made plain: 14,
+// kept; making any fourth one plain raises the count. Round 64: actor flag in the reset 20;
+// that with a direct reference lookup 33; shared unmasked index local 14; in-place index mask 14;
+// each pair of the remaining qualified stores made plain 18; reset before the actor flag 31.
+// Round 37 (fast): plain reset stores with a barrier after 0x5b6 (as matched 0x1bcee0) 16 (pop esi
+// placed as retail, swap unchanged); the 0x3f2 store through a second getter 33; the 0x10 store
+// as a ternary 43; the reset index as a (word) cast 46; one use of actor_index read through its
+// address, in the first getter or in the reset, 14 each.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {
@@ -65,24 +79,6 @@ short __stdcall function_1b1f30(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
-// score 32 (was 32): node-pool/state-two register reuse and four-byte extent excess remain.
-// Paired mode result short/long 62/63; flags before paired state short/long 81/82;
-// guarded mode result short/long 46/45; view rejection first 32; conditional view acceptance 32.
-// node-pool base uses EDI instead of retail ESI, which
-// retail reuses for state two; four-byte extent gap. State/mode destination
-// pointers 32/32; both destinations 32; default flag destinations 33; readonly
-// view 32; readonly view with state/mode/both destinations 32/32/32.
-// +0x29 default target moves with the four-byte length gap;
-// retail reuses ESI for the node base and constant 2, ours uses EDI and immediates.
-// Earlier separate exits 28/233; node reference, paired stores, reversed paths
-// and nested view forms tied; unsigned range 55/231. Ordinary trials: short
-// classification 32; long classification 31/231 (below keep threshold); equality
-// cases 106/183; test-derived state 32; assigned state 32; short classification
-// with shared default stores 49/217; state with common exit 32; primary-state
-// store first with short classification 32. Opening executable body restored.
-// score 32 (was 32): node-base EDI versus retail ESI/shared two still differs; node, actor, view and combined receiver names 32; early node declaration and renamed early node 32; complete native node type 32; native node with open classification bounds 39.
-// node-base/constant register ownership and extent still differ; index/direct pointer lookup 109/32; shared handle 109/42; entry-scope view with index/native lookup 109/32; entry view and shared handle 109/42 (all plain).
-// score 32 (was 32): a compile-only harness hoists 2 into ESI (retail's form) only with a fifth use of short 2; first test `>= 2` gives retail's tail but `cmp si; jl` 33; early-exit default 32; sibling then-arm store order 32; range bounds swapped 33; prop index local 42; 384 store-order/nesting/polarity forms in the harness never hoist it.
 // @retail 0x1b21f0
 void __stdcall function_1b21f0(long actor_index, s_slot *slot)
 {
@@ -102,10 +98,18 @@ void __stdcall function_1b21f0(long actor_index, s_slot *slot)
 
 		s_prop_view_fields *view = prop_node_view(node);
 
-		if (view && (view->unknown00 >= 5 || view->unknown69 && view->unknown4c))
+		if (view)
 		{
-			actor->unknown41c = 2;
-			actor->unknown420 = 2;
+			if (view->unknown00 >= 5)
+			{
+				actor->unknown41c = 2;
+				actor->unknown420 = 2;
+			}
+			else if (view->unknown69 && view->unknown4c)
+			{
+				actor->unknown41c = 2;
+				actor->unknown420 = 2;
+			}
 		}
 		actor->unknown484 = true;
 		actor->unknown4a1 = true;
@@ -189,64 +193,7 @@ struct s_slot_05_data
     byte unknown0c[0x34 - 0xc];
 };
 
-// score 91 (was 91): saved scalar homes and cold reference joins remain; early slot ESI now agrees.
-// Earlier: slot load, actor/permission/index/scratch homes and cold reference arms still differ.
-// Early invalid copy 168; early mode copy 140; both copies 140 (nonmatches dropped);
-// unsigned actor handle 168; byte permission 195; reference receiver order 170;
-// request mode first 168; permission first 168; shared active mode 168/635.
-// early ESI slot load, scalar homes and cold reference arms still differ.
-// Native request byte 168; earlier scratch 164; result before scratch 168; both 167 (dropped);
-// permission success/failure arms 183/183; reference-test result 168; request byte/scratch 164.
-// early slot load, scalar homes and cold reference joins remain.
-// slot reference 164; actor reference 164; both references 164;
-// const actor pointer 164; declared request byte 164; slot/request byte 164;
-// actor/request byte 164; both/request byte 164.
-// early slot receiver, scalar homes and reference arms remain;
-// reference before request/index/guard 203/203/201; late output index 163;
-// selection flag before clear 168; scratch before fields/clear 164/181;
-// early reference/scratch with late index 204.
-// delayed ESI slot, scalar homes and cold reference arms remain.
-// Short-circuit invalid result 166; empty-reference first 166; mode-first guard 163;
-// copied initial reference 139 (dropped); target reference 162; request permission 165;
-// short-circuit/mode-first 166; both reference copies 143 (dropped);
-// declared-field equality 196; actual pooled-field reference 164.
-// delayed ESI slot, scalar homes and cold reference arms remain.
-// Common scratch release 162f; later selection flag / acceptance / request predicates 164f;
-// release combinations and release with late output index 162f (two-point gain dropped).
-// early ESI slot, scalar homes and fallback arms remain;
-// shared defaults / native mode with defaults / native mode 168/168/164f on earlier scratch;
-// consumed request scope / scope with defaults / unsigned output handle / fallback result / combined 164/168/164/164/168f.
-// early slot ESI, scalar homes and cold reference arms remain.
-// Mixed pre-scratch request enable/permission/both/byte/enable-byte/permission-byte
-// stores 165/168/165/166/165/165; outer actor join 166; inactive return 164.
-// early ESI slot, scalar homes and cold reference arms remain;
-// branch-only reference on earlier scratch 211; with read-only actor / slot reference 211/211;
-// common release / request scope / late handle / early permission / release plus late handle 181/211/207/211/178.
-// delayed ESI slot, saved scalar homes and cold reference joins remain.
-// Signed permission byte/short 197/200; entry mode shared by two tests 193;
-// rejection-first fallback 164; failure-first acceptance 169; request eligibility exit 164;
-// eligibility/fallback 164; short permission with failure-first acceptance 200.
-// delayed slot ESI, scalar homes and cold reference arms remain;
-// explicit mode assignments 164; native reference initializer 220; library reference copy 164;
-// reference/actor/scratch/selection noinline contracts 164 each; mode/reference initializers 220.
-// Native Boolean invalid flag 164; two chained late request flags 164; three chained late/early flags 167/167; Boolean slot with those chains 164/167/167; immutable permission with Boolean slot 164.
-// Native slot payload 105 (kept); payload with native short/early receiver/read-only actor 105/105/105; payload with branch reference/shared defaults/shared mode/role names 121/104/157/105. Early ESI recovered; saved scalar homes and cold reference joins remain.
-// Round 181 complementary permission bool/byte/short/long 185/185/180/180; field permission at every use 184; complementary permission with native short/default helper/branch reference 185/185/211 (fast); all restored. Frame 0x76c agrees; saved scalar homes and cold reference joins remain.
-// Round 183 retail-timed scratch after request fields 91; positive permission short/long/signed-byte/byte
-// 180/180/185/185; timing with branch reference/early selection output/default helper 117/113/91
-// (fast). Keep only scratch timing; scalar homes and cold reference joins remain.
-// Round 186 on native payload/late scratch: common release 151; flag before acquisition 95;
-// both 152; late output handle 112; release/handle 108; flag/handle 112; all three 109;
-// declared request byte 91; conditional reference with selection result 151, with common release 128.
-// Round 71: plain else-arm reference (`else reference = actor->unknown418;`) gives retail's block layout
-// (both reference arms after the first return) but scratch takes EDI and reference a stack slot, frame 0x774: 117;
-// inverted outer test 118; inverted inner test 91, with the else arm 117; on the else arm, reference at block
-// top / before scratch / function scope, bool first, scratch at function scope, swapped compare, release first 117.
-// Round 233: Native invalid/mode/both on late scratch 91/91/91; live permission
-// alone/invalid/mode/both 181/181/181/181; final selected-reference fields 118.
-// Round 189 independent early declarations of scratch/reference/selection flag and all combinations
-// 91 each; complete saved-scalar role names on late scratch 91. Initializations unchanged; scalar
-// homes and cold joins remain.
+// Dword alignment for the selected reference reproduces all 634 retail bytes.
 // @retail 0x1b1f70
 bool __stdcall function_1b1f70(long actor_index, s_slot *slot)
 {
@@ -291,26 +238,30 @@ bool __stdcall function_1b1f70(long actor_index, s_slot *slot)
             *((byte *)&request + 0x59) = true;
             byte *scratch = ai_scratch_buffer_get();
             bool unknown = false;
-            s_reference reference = actor->unknown418;
+            union
+            {
+                s_reference reference;
+                dword bits;
+            } selected;
             if (state->unknown00)
             {
-                reference = function_2605d0(actor_index, &request, 0, (long)&other_index, scratch, &unknown);
+                selected.reference = function_2605d0(actor_index, &request, 0, (long)&other_index, scratch, &unknown);
                 if (!unknown)
                 {
                     if (!REFERENCE_EQUAL(state->reference, g_470fa0) &&
                         function_262590(actor_index, state->reference, allowed) && !function_262890(actor_index, state->reference))
-                        reference = state->reference;
+                        selected.reference = state->reference;
                     else
-                        state->reference = reference;
+                        state->reference = selected.reference;
                 }
             }
-            if (!REFERENCE_EQUAL(function_2626b0(actor_index, reference, other_index, scratch, unknown, true), g_470fa0))
+            else
+                selected.reference = actor->unknown418;
+            if (!REFERENCE_EQUAL(function_2626b0(actor_index, selected.reference, other_index, scratch, unknown, true), g_470fa0))
             {
                 state->unknown00 = false;
-                ai_scratch_buffer_release(scratch);
-                return true;
             }
-            if (actor->unknown5b4 >= 0x20 && REFERENCE_EQUAL(reference, state->reference))
+            else if (actor->unknown5b4 >= 0x20 && REFERENCE_EQUAL(selected.reference, state->reference))
                 state->reference = g_470fa0;
             ai_scratch_buffer_release(scratch);
         }

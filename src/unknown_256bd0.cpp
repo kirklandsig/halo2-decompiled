@@ -50,7 +50,7 @@ static inline byte *perception_iterator_next_256bd0(s_290c50_iterator *iterator)
 {
 	byte *entry = NULL;
 	s_data_datum_iterator *records = (s_data_datum_iterator *)iterator;
-	if (g_4f55d0->active && data_datum_iterator_next(records))
+	if (data_datum_iterator_next(records))
 		entry = records->datum;
 	iterator->object_index = records->datum_index;
 	return entry;
@@ -62,7 +62,14 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// score 201 (was 201): frame 0x114 versus 0x110, cached activity and actor/geometry/selection homes remain.
+// score 179 (was 201): the activity test is the loop's condition, so the frame is 0x110 and the
+// activity byte is re-read at every pass as retail does; the first block's register homes differ.
+// Round 34: the activity test moved into the while condition and the step helper no longer reads
+// the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
+// loop reloads the byte and takes retail's cmovne; the first block's register homes remain.
+// Round 34 (lane A, machine 3): an early return of the initial g_470c44 (to leave EAX free for
+// the b8d30 argument, as retail does) gives 277 with a 0x118 frame, and the returned global and
+// the grouped case forms regress the same way, so the loop-condition form is kept.
 // Round 15: shared iterator declaration 205; base-record view 208; conditional entry selection 263;
 // existing point-distance helper 204; variant field reread 207; character field reread 202;
 // both fields reread 281; character reread and base-record view on the helper graph 201 (kept).
@@ -203,9 +210,30 @@ struct s_object_flags_256bd0
 // Round 216: real iterator zero aggregate/full aggregate/CRT clear/index defaults
 // 243/244/242/231; before the flags lookup 247/253/246/223. Original iterator input,
 // initializer and private step restored; frame 0x114/0x110, cached activity and homes remain.
+// Round 72: active test outside with the next result named, index copied, then the entry
+// selected 288 (frame 0x110 but the entry block reorders); select then copy inside the active
+// test 201; iterator before the minimum 205; reversed minimum compare 201; selection stored
+// before the minimum 201.
 // Full native position/direction/placement copies on noinline-initializer/ordinary-datum
 // boundaries, all seven subsets 194 each; all copies with selected-before-minimum publication
 // 194. Frame 0x110 recovered, but seven-point gains rejected; all declarations and bodies restored.
+// Round 72 (lane 8): retail's step tests the activity byte on its own and assigns the entry inside
+// it (`if (active) { if (next) entry = datum; object_index = datum_index; }`): that gives retail's
+// `cmovne ebp` and the index store ahead of the exit test (loop body as retail, 1075 B) but stays 201,
+// since the hoisted activity byte still adds the frame word; with the entry as a ternary 279; on
+// that shape `distance < minimum`, a forceinline step and the iterator declared first 201 each.
+// The hoist is not ours to fix: the matched 0x268510 reloads the same global only because its loop
+// calls an out-of-line function; here 0x6b380 is the only call.
+// Round 191: out-of-line initializer/ordinary datum declarations with nested/branch-result/
+// active-ternary/combined-ternary entries, byte/native records each 194/262/290/262.
+// Nested forms recover frame 0x110 at 1070 bytes but gain seven only; all declarations,
+// iterator body, native receivers and complete function restored.
+// Round 211: complete iterator reference input with byte/native entry, default/complete test
+// result and original/recovered initializer-datum boundaries, scores
+// 201/262/201/262/194/262/194/262. Original executable form restored.
+// Round 230: actual timer-field reference, native twice-used actor ordinal and exact double minimum,
+// seven subsets; all with word status, scores [179, 287, 287, 302, 302, 284, 284, 284].
+// Original executable source restored. Initial marker-argument and position/direction homes remain.
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {
@@ -251,7 +279,7 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 					s_290c50_iterator iterator;
 					swarm_iterator_new(&iterator);
 					byte *entry;
-					while ((entry = perception_iterator_next_256bd0(&iterator)) != NULL)
+					while (g_4f55d0->active && (entry = perception_iterator_next_256bd0(&iterator)) != NULL)
 					{
 						real distance = distance_sq3f((point3f const *)(entry + 8), &position);
 						if (minimum > distance)

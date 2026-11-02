@@ -123,14 +123,6 @@ struct s_character_cover_view
 
 extern s_record_pool *g_51e9d8;
 
-/* the structure bsp's pathfinding data (g_4e0348 +0xc4) */
-struct s_bsp_pathfinding_view
-{
-	byte unknown000[0xc4];
-	long pathfinding_count;
-	s_pathfinding_data *pathfinding;
-};
-
 /* the faces of the pathfinding data (+0xc, 16 bytes each) */
 struct s_pathfinding_face_view
 {
@@ -156,6 +148,7 @@ struct s_firing_cover_view
 
 bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa *definition, vector3f const *direction,
 	point3f *point, vector3f *normal, char *side);
+long function_1fa7f0(void);
 
 /* the unit's actor (+0x12c) */
 struct s_unit_actor_view
@@ -413,23 +406,37 @@ void __stdcall function_25dd50(
 	}
 }
 
-// score 38 (was 38): face base/index order, the definition load before the 0x29d7b0 argument
-// pushes, the cover base/index registers, the facing dot's y-product operand order, and the
-// failed-facing store block (retail places it right after the cover arm, ours after the side cases;
-// the aligned difference is 14 instructions).
-// Earlier: face pointer arithmetic 38; validated edge 38; definition receiver 191; cover reference 38;
-// target setter 38; target initializer 38; lateral component loop 38; output point setter 166;
-// native trace 38; facing guard 37 (plain 37); cover index before/after base 38/38; shared
-// inset/lateral/both scale 131/106/138; native trace plus guard 37; trace-block definition receiver
-// 104; receiver plus guard 101; native direction initializer 38; native lateral initializer 38; native
-// lateral target copy 177; completed point workspace 80; symmetric facing inputs 38; readonly cover
-// input 38; native cover normal value 38; side output initializer 203; candidate-record reference 38;
-// reference-flags binding 67; normal input copy 42; point/normal/both output copies 42/42/42; facing
-// scalar 38; published-side switch 59.
-// Round 69: facing dot on the cover's normal with the copy inside the arm 96; point/normal/side
-// declared before the loop 38; trace-block locals at the loop top 38; side read before the two
-// transform calls 152; failed-facing arm setting side to 0 instead of continue 222; any order of
-// the loop-top and trace-block declarations 38 (30 orders screened).
+/* the cover a position stands at, in the definition's space, when the position faces it */
+static __forceinline bool firing_position_cover_side(s_type_967e20 *context, s_type_b36ac5 *position,
+	point3f *point, vector3f *normal, char *side)
+{
+	s_firing_cover_view *covers = (s_firing_cover_view *)context->unknown64;
+
+	if (!covers)
+	{
+		return false;
+	}
+
+	short cover_index = position->reference.unknown0;
+
+	*normal = covers[cover_index].normal;
+	if (dot3f(&position->unknown40, normal) > 0.70710677f)
+	{
+		if (!function_210690(position->definition->unknown0c, &covers[cover_index].point, point) ||
+			!function_210770(position->definition->unknown0c, normal, normal))
+		{
+			return false;
+		}
+		*side = (char)position->unknown5c;
+		return true;
+	}
+	else
+	{
+		position->unknown5c = 0;
+		return false;
+	}
+}
+
 // @retail 0x25e430
 void __stdcall function_25e430(
 	long actor_index,
@@ -456,12 +463,11 @@ void __stdcall function_25e430(
 
 		if (!(position->reference.unknown2 & 0x8000))
 		{
-			s_bsp_pathfinding_view *bsp = (s_bsp_pathfinding_view *)g_4e0348;
-			s_pathfinding_data *pathfinding;
+			s_pathfinding_data *pathfinding = (s_pathfinding_data *)function_1fa7f0();
 			vector3f direction;
 			s_path_trace_result trace;
 
-			if (bsp->pathfinding_count <= 0 || (pathfinding = bsp->pathfinding) == NULL)
+			if (!pathfinding)
 			{
 				continue;
 			}
@@ -472,38 +478,21 @@ void __stdcall function_25e430(
 			if (!function_26c590(position->definition->unknown14, (point3f *)position->definition, &trace, pathfinding,
 					(point3f *)position->definition, NONE, &direction, 0.35f, 0) ||
 				!*(bool *)&trace.unknown00 || *(long *)&trace.unknown10[4] == 0xffff ||
-				!(((s_pathfinding_faces_view *)pathfinding)->faces[*(long *)&trace.unknown10[4]].flags & 8) ||
-				!function_29d7b0(*(long *)&trace.unknown10[4], pathfinding, position->definition, &direction, &point, &normal, &side))
+				!(((s_pathfinding_faces_view *)pathfinding)->faces[*(long *)&trace.unknown10[4]].flags & 8))
+			{
+				continue;
+			}
+
+			s_type_d4fbfa *definition = position->definition;
+
+			if (!function_29d7b0(*(long *)&trace.unknown10[4], pathfinding, definition, &direction, &point, &normal, &side))
 			{
 				continue;
 			}
 		}
-		else
+		else if (!firing_position_cover_side(context, position, &point, &normal, &side))
 		{
-			s_firing_cover_view *covers = (s_firing_cover_view *)context->unknown64;
-
-			if (!covers)
-			{
-				continue;
-			}
-
-			s_firing_cover_view *cover = &covers[position->reference.unknown0];
-
-			normal = cover->normal;
-			if (dot3f(&position->unknown40, &normal) > 0.70710677f)
-			{
-				if (!function_210690(position->definition->unknown0c, &cover->point, &point) ||
-					!function_210770(position->definition->unknown0c, &normal, &normal))
-				{
-					continue;
-				}
-				side = (char)position->unknown5c;
-			}
-			else
-			{
-				position->unknown5c = 0;
-				continue;
-			}
+			continue;
 		}
 
 		if (!side)
@@ -535,7 +524,7 @@ void __stdcall function_25e430(
 				target.z -= perpendicular.k * 0.25f;
 				break;
 			case 2:
-				target.x += perpendicular.i * 0.25f;
+				target.x += (perpendicular.i * 0.25f);
 				target.y += perpendicular.j * 0.25f;
 				target.z += perpendicular.k * 0.25f;
 				break;
@@ -930,23 +919,7 @@ void __stdcall function_25edd0(
 	}
 }
 
-// score 50 (was 50): protected iterator setup and range-bonus comparisons/multiplies differ.
-// Normalized clamp 66; bounded raw margin 137; positive fraction 83; source-domain fraction 51;
-// nested candidate 50; conditional weapon result 50; real unit reference 50; guarded owner result 264.
-// iterator setup, bonus tests/multiplies and query load scheduling differ.
-// Upper-margin-first 58; range once/limit once/range before root 155; full-width mode 258;
-// reversed style cases 50; forward position countdown 255; nearest conditional 50.
-// score 50 (was 50): vector workspace entry offset/closest/both 50/50/50;
-// in-place offset 50; component projection 95; in-place component projection 155;
-// projected workspace first 50; unsigned line ordinal 145. Iterator setup and bonus tests remain.
-// Selected-arm staged scales 72; upper-first staged 66; half by division 50;
-// selected margin carrier 186; near/far or separate bonus names 50; staged/name pairs 66.
-// score 50 (was 50): the range bonus in retail is a two-test select (over 2 first,
-// then over 0) with two multiplies (halve, then times ten); that exact form scores 66
-// (997 bytes) because the line loop's xmm homes rotate — the allocation cascade from the
-// protected iterator setup defeats it. Nested select 83; staged halves with the new
-// order 66; new order with folded multiply 58; old order with two multiplies 72;
-// squared-length local 186; closest product order 66; margin initialized 66.
+/* adds the weapon-range bonuses and the bonus for the distance to the nearest line of type 2 */
 // @retail 0x25eea0
 void __stdcall function_25eea0(
 	long actor_index,
@@ -966,7 +939,7 @@ void __stdcall function_25eea0(
 			return;
 		}
 
-		function_d0620(actor->unknown26c, &iterator);
+		function_d0620(&iterator, actor->unknown26c);
 		while (function_d0690(&iterator))
 		{
 			long unit_index = iterator.child_index;
@@ -1035,7 +1008,7 @@ void __stdcall function_25eea0(
 			{
 				real range = weapon->unknown0c * 0.8f;
 
-				position->score += range > distance ? 10.f : range / distance * 10.f;
+				position->score += range > distance ? 10.f : 10.f * (range / distance);
 			}
 
 			if (maximum_range > 0.f && maximum_range > distance)
@@ -1052,9 +1025,13 @@ void __stdcall function_25eea0(
 					margin = distance - minimum_range;
 				}
 				real bonus = 0.f;
-				if (margin > 0.f)
+				if (margin > 2.f)
 				{
-					bonus = margin > 2.f ? 10.f : margin * 0.5f * 10.f;
+					bonus = 10.f;
+				}
+				else if (margin > 0.f)
+				{
+					bonus = 10.f * (margin / 2.f);
 				}
 				position->score += bonus;
 			}
@@ -1087,9 +1064,11 @@ void __stdcall function_25eea0(
 						closest.i = direction->i * nt + offset.i;
 						closest.j = direction->j * nt + offset.j;
 						closest.k = nt * direction->k + offset.k;
-						if (nearest > length_sq3f(&closest))
+						real length_squared = length_sq3f(&closest);
+
+						if (nearest > length_squared)
 						{
-							nearest = length_sq3f(&closest);
+							nearest = length_squared;
 						}
 					}
 				}
@@ -1758,6 +1737,9 @@ struct s_collision_result_25f7b0
 	byte unknown26[0x5c - 0x26];
 };
 
+// Tried: the hit fraction read into a named local before the distance is computed: 22 on its own (2 only
+// alongside an unrelated edit in src/unknown_16bd10.cpp, not kept).
+// MiniMax D (10-31): the same named hit-fraction local again 22 (a one-use local, not kept without a match).
 // score 4 (was 7): the collision bool's byte home is +0x13 where retail keeps it at +0x10,
 // and the product loads the hit fraction where retail loads the distance.
 // Earlier rounds (7 or worse): byte collision flag, byte allow flag, long initial mode, short
@@ -1910,7 +1892,7 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 			local_23 = function_272af0(g_4e0348, &local_21);
 		else
 			local_23 = arg_2->definition->unknown12;
-		arg_2->type = function_1c8df0(*(short *)((byte *)arg_1 + 0x660), local_23,
+		arg_2->type = function_1c8df0(local_23, *(short *)((byte *)arg_1 + 0x660),
 			(point3f const *)((byte *)arg_1 + 0x638), *(long *)((byte *)arg_1 + 0x648), &local_21,
 			local_14, true, local_0->unknown26c != NONE, local_22, NULL);
 	}

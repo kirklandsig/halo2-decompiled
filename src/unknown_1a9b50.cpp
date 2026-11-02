@@ -250,21 +250,6 @@ bool __stdcall function_1aa990(long actor_index, s_slot *slot)
 	return result;
 }
 
-// score 11 (was 11): extent now agrees at 352 bytes; the pool pointer still uses ECX
-// instead of EAX, the fraction uses EDX instead of ECX, and the shared range-value
-// load/compare schedule differs.
-// Tried (r35): prop_ref_get and the real record types 17; the state assigned after declaration 17;
-// prop_node_state 17; the reversed probability comparison 35; const entry, state, or actor/unit 17.
-// Guarded state/value/both observations 59/11/57; probability result conditional 105;
-// three-first rejection 42; four-first selection 97; both observations with the
-// conditional/four-first result 91/94. Keep the twice-used range value after the prop guard.
-// Round 268 on the two-use range graph: long result 11; entry range declaration 11;
-// entry prop/state declarations 11; unsigned result 11; long result plus entry range 11;
-// entry range/receivers 11; unsigned result plus entry receivers 11; split entry acquisition
-// with unsigned result 11. Loads and call tuples stayed at their original boundaries.
-// Upper-first range with original/full role names 14/14; complete role names 11;
-// byte selection alone/upper-first/names/both 41/44/41/44; signed-byte selection 41
-// (fast control 11). Pool/fraction carriers and conditional range loads remain; all restored.
 // @retail 0x1aa9f0
 short __stdcall function_1aa9f0(long actor_index)
 {
@@ -275,21 +260,22 @@ short __stdcall function_1aa9f0(long actor_index)
 
 	if (!(unit->flags19 & 1) && entry && actor->prop_index != NONE &&
 		entry->unknown24 >= g_45dbd8 && !actor->unknown229 &&
-		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34) &&
-		!function_110ab0(actor->unknown018))
+		(actor->times[4] == NONE || (real)(g_510c54->game_time - actor->times[4]) * g_510c54->rate > entry->unknown34))
 	{
-		s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
-		s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
-		if (prop->unknown27 >= 1)
+		long unit_index = actor->unknown018;
+		if (!function_110ab0(unit_index))
 		{
-			real prop_value = prop->unknown28;
-
-			if ((state->unknown64 || prop_value > entry->unknown1c) && entry->unknown20 > prop_value)
+			s_prop_datum_view *prop = (s_prop_datum_view *)prop_node_get(actor->prop_index);
+			s_prop_state_64 *state = (s_prop_state_64 *)function_25d690((s_prop_datum *)prop);
+			if (prop->unknown27 >= 1)
 			{
-				if (state->unknown64 && !function_1e2030(actor_index))
-					result = 4;
-				else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
-					result = 3;
+				if ((state->unknown64 || prop->unknown28 > entry->unknown1c) && entry->unknown20 > prop->unknown28)
+				{
+					if (state->unknown64 && !function_1e2030(actor_index))
+						result = 4;
+					else if (function_1c9ee0(entry->unknown24) > function_259a0(&g_4e7408->unknown0))
+						result = 3;
+				}
 			}
 		}
 	}
@@ -511,6 +497,45 @@ extern point2f *g_468778;
 // Round 205: Complete settings/state/direction getter receiver masks 1/2/3/4/5/6/7
 // 433/487/516/506/574/663/657; all with constant return exits 660. Every original
 // receiver, early distance, request transfer, expression tree and body restored.
+// Round 399: Native slot callback input, original/actor-first lookup, with entry/late result defaults,
+// constant-return exits and early rejection: 375/413/409/426/425/393/440/413. Body and declaration
+// restored.
+// Round 38: Common result set by independent final failure tests, all six field orders 375
+// each fast; nested success assignment 380; failure-result ladder 373, all 1549 bytes.
+// Two-point best rejected; original result expression, defaults and complete body restored.
+// Round 428: native short/word/long/dword completion result 404/404/406/406;
+// those result widths with actor-first acquisition 401/401/403/403. All 1549 bytes;
+// result spill and actor/settings/prop allocation remain; original bool result and lookup order restored.
+// Round 238: complementary rejection result bool/byte/short/long 394/394/403/401;
+// those domains with actor-first acquisition 419/419/406/404. Original positive
+// bool result, lookup order, early distance and complete body restored.
+// Round 37 (lane 1, fast): no facing pointer, the facing read through the prop view 401; the settings
+// threshold field in a named local 406; the actor before the settings call 413; that with
+// `if (!settings || f13 || f14 || f2d) return false;` and a direct final return 393 (1549 bytes, frame
+// 0x40 and all four pushes at entry as retail; ours keeps arg_0/actor/settings/slot in EBX/EDI/ESI/EBP,
+// retail in EDI/EBP/memory/ESI with the prop in EBX); the slot pointer declared first there 393.
+// Round 249: Repeated actor/request truth snapshots, singly/both 400/401/394;
+// actor-first counterparts 402/425/415; both with late false default, original/actor-first
+// acquisition 426/429. All three predicate calls, early distance and complete original body restored.
+// Round 471: Complete persistent actor/settings/slot/prop lexical priorities in eight
+// role-correct identity sets 375 each. Original pointer names, observations and body restored.
+// Round 145: ignoring register names, ours differs from retail in about 100 instructions (entry order,
+// result byte, prop home, facing reads, constant exits). Actor first with `if (...) {...; if (!f14 && !f13
+// && !f2d) return true;} return false;` 413 (1523 bytes); actor first with the result byte 413 (1555);
+// constant exits alone 440 (1517); actor first with `return !f14 && !f13 && !f2d;` in the arm 393 (1549:
+// settings spilled at [esp+0x10] as retail, but arg_0 kept in EBX and the actor in EDI); that with the
+// first facing dot read off the prop view 408 (1556).
+// Round 55 (lane 10, fast): on the actor-first form with constant returns (393 re-measured): the slot pointer
+// declared first 393; the settings rejection as its own early return 410; the prop pointer declared with the
+// lookups at function scope 395; the prop pointer cleared in the prop-less else arm in place of its NULL
+// initializer 385 (the settings pointer then lives only at [esp+0xc] as retail's [esp+0x10], but arg_0 stays in
+// EBX and the prop goes to ESI; retail's `xor ebx, ebx` before the NONE test shows the NULL initializer is
+// retail's); the prop index in a named local 393.
+// Round 289: Complete facing value with actor-first/target position/target velocity values, masks
+// 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
+// observations, lookup order, early distance and complete body retained.
+// Round 304: primary/secondary displacement production in all six uniform coordinate orders,
+// then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -678,7 +703,18 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 384 (was 384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// score 382 (was 384): the frame and the length agree, and the early false exit's place, the
+// object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
+// Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
+// target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
+// matched 0x2900b0 uses for target and origin) 384 -> 382. Tried: the entry flags through a forceinline
+// predicate 519 (exit still last, frame 0x54, 0x25d740 inlined); the flag preset true and cleared in an `if`
+// then tested 527; local_1/local_3/local_4 declared at the top 384 (same code); the computed flag declared
+// before local_0 517; on the value fix: an object pointer for the velocity reads 411 (1919 bytes), the
+// computed entry flag 517. Every form whose false exit is threaded (computed flag, false default) also moves
+// arg_0 into EDI and drops the frame to 0x54.
+// Earlier (384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
+// Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
 // `goto local_7` jump; ours puts it last. `bool local_2 = !f13 && !f14 && !f2d; if (local_2) {...} return
 // local_2;` (and the same with an if/else setting the flag) lands it where retail does, but arg_0 then takes
@@ -748,6 +784,58 @@ static __forceinline long real_to_long(real value);
 // then separate noinline declarations on all three: 386/386/386/386/386/386/386/386. Original restored.
 // Round 227: Prediction/facing/query fallback vector setters, all subsets, then early distance default 382/466/467/484/485/491/492/494.
 // Original body and all helpers restored.
+// Round 392: Entry result from each individual flag and each flag pair, then the first pair in byte/long
+// storage: 476/476/476/393/395/396/438/454. Complete original entry/result and body restored.
+// Round 399: Magnitude/weight phase scope, readonly magnitude, magnitude/distance names and all
+// combinations, then coefficient/time names: 384 each. Original restored.
+// Round 206: Combined metadata/prop guard, query rejection else-if, typed request direction and all
+// subsets [384, 384, 384, 384, 384, 384, 384]; all with returned admission predicate 517. Original restored.
+// Round 220: Early distance-limit scope/exhaustive/conditional/complementary producers 398/402/402/402;
+// the same four with the actual native slot formal and no cast alias 398/402/402/402. All retain
+// retail length but regress; complete original body, formal, sole declaration and every query restored.
+// Round 42: complete target/object velocity scalar values retained at all uses
+// 513/502; complete prop-facing value 489; target/object, target/facing and
+// object/facing value pairs 555/583/544; all scalar values 603; all native vector
+// values 574. Original pointers, fresh reads, arithmetic, query aliases and body
+// restored; frame 0x58, early rejection and magnitude/query homes remain.
+// Lane 18 round 6: the first 66 instructions agree; retail's false exit after the `goto local_7` jump shifts
+// positions by 3-5 to about index 430. Retail keeps the actor in ESI into the velocity block, forms the facing
+// address late (`add eax, 0x2c`, later `lea esi, [eax+0x2c]`) and spills the AI object pointer (velocity read
+// at +0x88). Then-arm `return local_2;` with a final `return false;` 510; false-initialised result without the
+// else arm 496; object pointer local for the six velocity reads 409 (1918 bytes); facing field read at each use
+// 513 (1941 bytes); both 524; `facing` declared in the else arm only, the then-arm copy read from the field
+// 477 (1906 bytes). Original body restored.
+// Round 37 (lane 1, fast): the existing magnitude3d call for the written-out object-speed root 482
+// (1886 bytes: our LTCG keeps the call, retail inlines it here and calls it in 0x1aa0d0); result
+// preset false without the else 496 (frame 0x54); no facing pointer, the prop view's facing read at
+// each use (retail addresses it off the view) 513 (1941 bytes); that with an object pointer and
+// `object->velocity` reads (retail spills the object pointer, not object + 0x88) 524; the object
+// pointer alone 409.
+// Round 181 (lane 3): aligned through the moved early exit only 170 rows differ: our code is
+// retail's apart from the early false exit's place (retail puts it after the first `goto local_7`
+// jump; ours is last) and the object/facing/query homes. Retail stores the true result once
+// (`mov byte [esp+0x13], 1`) and reloads it at the end, so its result is not folded to a constant
+// even though the false path has its own exit. The result preset true with the false arm first
+// 399 (the true store hoists to the entry, the exit stays last); an early `return false` with the
+// result declared true before it 510 (frame 0x54: the result folds); the facing pointer declared
+// after the flag and vector 384 (identical); the near-facing flag set before its copy 384
+// (identical); that copy read from the view directly 397.
+// Lane 18 round 15 (fast with the callees): VC pulls a block up behind its first predecessor's chain only when jump
+// threading created it, so retail's false exit is a threaded copy of the return; the computed entry flag
+// (`bool local_2 = !f13 && !f14 && !f2d; if (local_2)`, lane 6's form) re-measured 517: it lands the exit where
+// retail does, but arg_0 then keeps EDI (the settings pointer is spilled) and the frame is 0x54. On that form:
+// `!(f13 || f14 || f2d)` 517; the actor taken before the flag 518 (1921 bytes); the settings lookup before the
+// actor 511 (1912 bytes); a redundant `local_2 = true` in the then-arm (diagnostic) 530. On the original form:
+// the last 0x1a9e00 dispatch moved after the if and guarded by `local_2 &&` 406 (the exit stays last); the
+// result declared before the slot view 384 (identical).
+// Round 262: Returned admission predicate with entry declarations of query speed/time/direction,
+// their three pairs/all, and all plus actual request: 517 each (1926/1904, frame 0x54).
+// Original result, scopes, input/output query aliases, arithmetic and complete body restored.
+// Round 288: Prop handle before/after metadata, then before with actor/target/both position receivers and after with actor/target/both receivers,
+// 458/473/500/494/477/457/494/483 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 232: Complete branch-owned direction distance 382; query scope/names/
+// declaration order 382/382/382; target-velocity receiver and scope/names/both 381/381/381/381.
+// Three-count best rejected; all executable code, query aliases and observations restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
@@ -837,8 +925,8 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 						real local_20;
 						vector3f local_22;
 						/* retail reuses the speed variable as the vertical speed output and stores that result below */
-						if (function_fa1a0(local_19, 1.0f, &local_8->field_4, &local_1->position, &local_15, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20) ||
-							(local_3->field_2c > local_15 && function_fa1a0(local_15 + 0.03f, 1.0f, &local_8->field_4, &local_1->position, NULL, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20)))
+						if (function_fa1a0(local_19, 1.0f, &local_1->position, &local_8->field_4, &local_15, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20) ||
+							(local_3->field_2c > local_15 && function_fa1a0(local_15 + 0.03f, 1.0f, &local_1->position, &local_8->field_4, NULL, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20)))
 						{
 							if (normalize2d((point2f *)&local_22) == 0.0f)
 							{
@@ -927,17 +1015,6 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 	return local_2;
 }
 
-// score 31 (was 31): native frame agrees; stack-input scratch and object/prop
-// receivers differ. Fast: native result enum 32; lookup declarations 32;
-// immutable actor binding 32; read-only entry 32; inner facing 32;
-// complete state memory view 32, with inner facing 32; callback
-// noinline declaration 32. Original fast 32, plain 31; time getter kept.
-// object/prop scratch registers, state receiver and exit displacements differ.
-// External tag reference 32 fast; actor reference 32; node reference 32; tag/actor 32; tag/node 32.
-// Node/actor references 32; tag/node/actor 32; state reference 32. Unchanged fast preview is also 32.
-// The first register difference is the 0x110ab0 push (ECX, retail EAX); the later lookups follow it.
-// Object header getter 32; named unit index 124; declarations before assignments 32; result set
-// before the test 32; explicit NULL test 32 (fast).
 // @retail 0x1a9ec0
 short __stdcall function_1a9ec0(long arg_0)
 {
@@ -945,34 +1022,38 @@ short __stdcall function_1a9ec0(long arg_0)
 	s_actor_view *local_0 = actor_get(arg_0);
 	s_actor_tag_entry *local_1 = (s_actor_tag_entry *)function_1e4f90(arg_0);
 	long local_2 = 0;
-	if (local_1 && local_0->prop_index != NONE && !function_25d9b0(local_0->prop_index) && !function_110ab0(local_0->unknown018))
+	if (local_1 && local_0->prop_index != NONE && !function_25d9b0(local_0->prop_index))
 	{
-		s_ai_object *local_3 = ai_object_get(local_0->unknown018);
-		if (!(local_3->flags19 & 1) || (!(local_3->flags19 & 2) && (local_1->flags & 1)))
+		long unit_index = local_0->unknown018;
+		if (!function_110ab0(unit_index))
 		{
-			s_prop_node_view *local_4 = prop_node_get(local_0->prop_index);
-			s_prop_state_view *local_5 = (s_prop_state_view *)function_25d690((s_prop_datum *)local_4);
-			s_prop_view_fields *local_6 = (s_prop_view_fields *)function_25d740((s_prop_node *)local_4);
-			vector3f const *facing = &local_0->unknown290;
-			if ((local_0->unknown229 || !((s_prop_state_64 *)local_5)->unknown64) && local_4->unknown27 >= 1)
+			s_ai_object *local_3 = ai_object_get(local_0->unknown018);
+			if (!(local_3->flags19 & 1) || (!(local_3->flags19 & 2) && (local_1->flags & 1)))
 			{
-				if (local_0->unknown225)
-					local_2 = 3;
-				else
+				s_prop_node_view *local_4 = prop_node_get(local_0->prop_index);
+				s_prop_state_view *local_5 = (s_prop_state_view *)function_25d690((s_prop_datum *)local_4);
+				s_prop_view_fields *local_6 = (s_prop_view_fields *)function_25d740((s_prop_node *)local_4);
+				vector3f const *facing = &local_0->unknown290;
+				if ((local_0->unknown229 || !((s_prop_state_64 *)local_5)->unknown64) && local_4->unknown27 >= 1)
 				{
-					bool choose_four = !function_1e2030(arg_0) || (local_6 && local_1->unknown0c > local_4->unknown28 &&
-						-0.4f > local_6->unknown2c.k * facing->k + local_6->unknown2c.j * facing->j + local_6->unknown2c.i * facing->i &&
-						!local_0->unknown264 && function_10f340(local_0->unknown018, 0x7000101, 0xa0005b9));
-					if (choose_four)
+					if (local_0->unknown225)
+						local_2 = 3;
+					else
 					{
-						local_2 = 4;
-					}
-					else if (local_5->unknown3c == NONE && local_1->unknown04 >= local_4->unknown28 &&
-						(local_0->times[3] == NONE || (real)(function_146650() - local_0->times[3]) * g_510c54->rate > function_1e9700(0x15) * local_1->unknown18))
-					{
-						real local_8 = function_1c9ee0(local_1->unknown08);
-						if (local_8 > function_259a0(&g_4e7408->unknown0))
-							local_2 = 3;
+						bool choose_four = !function_1e2030(arg_0) || (local_6 && local_1->unknown0c > local_4->unknown28 &&
+							-0.4f > local_6->unknown2c.k * facing->k + local_6->unknown2c.j * facing->j + local_6->unknown2c.i * facing->i &&
+							!local_0->unknown264 && function_10f340(local_0->unknown018, 0x7000101, 0xa0005b9));
+						if (choose_four)
+						{
+							local_2 = 4;
+						}
+						else if (local_5->unknown3c == NONE && local_1->unknown04 >= local_4->unknown28 &&
+							(local_0->times[3] == NONE || (real)(function_146650() - local_0->times[3]) * g_510c54->rate > function_1e9700(0x15) * local_1->unknown18))
+						{
+							real local_8 = function_1c9ee0(local_1->unknown08);
+							if (local_8 > function_259a0(&g_4e7408->unknown0))
+								local_2 = 3;
+						}
 					}
 				}
 			}

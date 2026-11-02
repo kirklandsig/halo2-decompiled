@@ -245,7 +245,7 @@ void function_1e54d0(void *state, long mode)
 }
 
 // @retail 0x1e5a60
-void function_1e5a60(s_biped_physics_result *result, s_biped_physics_input const *input, void *physics)
+void function_1e5a60(void *physics, s_biped_physics_result *result, s_biped_physics_input const *input)
 {
 	byte *state = (byte *)physics;
 	result->contact_index = NONE;
@@ -586,12 +586,127 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // y to the limits' spill slots. Plain bits 170; on/off first with `*=` 233, with the factor on the left 233 (both
 // 1020 bytes; aligned difference 129 against this body's 154); on/off first in a jitter vector 163 (1048 bytes,
 // aligned 110, closest), its products added straight into the velocity 239.
+// Round 16 (later): the jitter block's shape, the constant's XMM ownership and the limit spills
+// are the whole difference; the plain score is 132 and the reduced image scores 310 because the
+// reduced build does not inline the magnitude helper retail inlines.
+// Round 16: the near-distance value named in a local, the comparison against it and the second
+// magnitude in the branch (plain 132 -> 130; dropped, a gain under 8); the sign factor on the left of
+// the on/off factor 131, the scale factor on the left of the jitter value 130, both 131, and the scaled
+// products added straight into the velocity 163 (1051 bytes against retail's 1077); the jitter block's
+// own body restored.
+// Round 36: single-workspace jitter 163; shared jitter add 157; shared movement add 156; all shared updates 156;
+// jitter rename 156; shared offset scale 139; scale with direct updates 155; scale with shared jitter add 149.
+// Native word/short/dword bit samples 168/168/170; on/off-first samples 231/231/233;
+// word/dword native jitter workspaces 161/163 (exact-only). Original sample and body restored.
+// Round 308: Complete control/speed-scale/projection-input value subsets 288/256/294/195/287/259/296;
+// all with immutable native limits 296. All regress; original observations, projection stores,
+// frame and inherited jitter qualifier restored. Constant/limit ownership and jitter spills remain.
+// Round 430: native definition/output fields and real view of the existing dual-use output field,
+// all seven subsets 132; ordinary bit sample on that complete field graph 170. Original declarations
+// and body restored; constant/limit XMM ownership, jitter order and spill homes remain.
+// Lane 15 r19 (fast checks need 0x24590 listed): jitter in retail's order (on/off, signs, scales,
+// `*=`) with a plain long 233 (1020 bytes; the jitter block then has retail's shape, bits in EAX and
+// retail's test order), with the volatile long 202 (1053 bytes); the blend factor as one
+// if/else-if/else chain 215 (1081 bytes); factor declared before input_fraction 165;
+// `1 + (def - 1) * blend` and `blend * (def - 1) + 1` 132/132 (identical code).
+// Round 91: velocity updates through the existing vector3f_add/vector3f_add_scaled (in/out on
+// &state->velocity; retail reloads velocity.j/k after the velocity.i store, as those give): all three
+// 182, movement add 181, projection and movement 177, jitter add 130 (1077 bytes, retail's length;
+// not kept, -2); on the jitter add, plain bits with the on/off bits first 231 (1021 bytes; structural
+// 34 against 47), the same with volatile bits 201, on/off factor on the left 231; plus the movement
+// add 174 (1064 bytes, 251 instructions as retail, structural 28, aligned 96 against 105: closest
+// shape; limits.j/k then share one register where retail keeps two copies, and on_z/y spill
+// differently); plus a chained limits.j/k 258, both 208.
+// Round 116 (lane 6, fast, 0x24590 listed): projection through the existing vector3f_add_scaled 181 (1119
+// bytes); that with the jitter add 176; movement and jitter adds 182; the jitter add alone 130 again (1077
+// bytes, gain 2, not kept); on it, named on/off factors first with the volatile bits 201 (1054 bytes), with
+// plain bits 231 (1021 bytes: the jitter block takes retail's shape, bits in EAX, tests 1, 2, 4 first, but the
+// movement block above shifts). Retail reuses the limits.j/k spill slots for y and the z on/off factor.
+// Round 53 (lane 9, fast): jitter as on/off factors first with a plain long 233 (1020 bytes: limits.j/k
+// then share one register, so on_z and y are not spilled); `limits.k = limits.j` 221 (1045 bytes); the
+// projection dot with direction first in each product 132 (same code); the movement scaled by the field
+// at each use 172; length_squared summed k, j, i 144. Compile-only screens (magnitude3d inline, 512
+// spellings: scale local, length/projection/offset/control/limit/acceleration operand orders, volatile,
+// jitter factor and offset forms) never give retail's 1.0 in XMM3 or its k, j, i projection order.
+// Round 12 (lane 18, fast, 0x24590 listed): 1-7 unused initialised locals at the top 132 each (the XMM3/XMM4
+// constant choice is no numbering tie); the two `(void)&parameter;` statements were dead (removed: identical
+// code); without them, the jitter add through the existing vector3f_add 130 (1077 bytes, as round 91: not kept);
+// the movement scaled through the existing vector3f_scale 132; the direction normalised through it 132.
+// Round 67 (lane 12, fast, 0x24590 listed): limits, the jitter offset or both through the existing
+// vector3f_assign 132/132/132; a `vector3f *velocity = &state->velocity` pointer declared after the enable store
+// and used for every velocity access 128 (gain 4, not kept), declared just before the first velocity store 141;
+// on the top pointer: projection and movement through vector3f_add_scaled/vector3f_add 128, the jitter add
+// through vector3f_add 128, all three 128, the movement add alone 128, limits through vector3f_assign 128.
+// Round 47 (m3 lane 1, fast, 0x24590 listed; aligned counts against this body's 154): retail order
+// jitter (on/off, signs, scale-on-left selects) with a plain long and its products added straight into the
+// velocity plus the movement add through vector3f_add 202 (1055 bytes, aligned 111); round 91's 174 form
+// plus the projection through vector3f_add_scaled 191 (aligned 117); the jitter add through vector3f_add
+// with a plain long in the old order 163 (1045 bytes), plus the movement add 147 (1087 bytes), plus the
+// projection through vector3f_add_scaled too 147 (1086 bytes). Reconfirmed:
+// jitter add 130, with retail-order plain jitter 231, plus movement add 174 (aligned 129), retail order alone 233.
+// Round 62 (fast, 0x24590 listed; jitter on/off first with `*=` and a plain long in each): projection, movement
+// and jitter adds through the existing helpers 191 (1066 bytes); projection and movement 189 (1063, aligned
+// 110); projection and jitter 171 (1064); projection alone 188 (1068); the same on/off order keeping the
+// volatile long with projection and jitter 199 (1097), with all three 205 (1099). In each, limits.k is
+// memory-resident from its definition (retail keeps it in XMM7 and spills on_z and y instead).
+// Round 112 (m3 lane 7, fast, 0x24590 listed): the reciprocal square root through intrinsics instead of
+// the asm block (`_mm_store_ss(&inverse, _mm_rsqrt_ss(_mm_load_ss(&squared)))`, the same with _mm_set_ss, and
+// with a named __m128 estimate) 286/274/286 (1102/1094 bytes: the __m128 temporaries change the frame from
+// +0x0); limits.j/k as one chained assignment with retail's plain-long jitter order (j = k = and k = j)
+// 259/259 (1009 bytes), with the volatile jitter 221 (1045 bytes). Retail keeps two copies of the j/k limit
+// (XMM6/XMM7, two spill slots) only where ours has more pressure; the plain jitter merges them.
+// Round 126 (lane 5, fast, 0x24590 listed): written operand and sum orders do not reach the code: the
+// direction scaled as `inverse * i`, `j * inverse`, `k * inverse` (retail's register pattern) 132, the
+// projection summed i, j, k 132, `0.0f <` on the definition and blend tests 132, `1.0f == blend` 132,
+// `1.0f > magnitude` in the clamp 132 (all identical); speed/acceleration stores before the limits 212
+// (1065 bytes); limits in k, j, i order 136, in j, k, i order 134; retail-order jitter with a plain long
+// re-measured 233 (limits.k then shares limits.j's register and is stored at its definition).
+// Round 50 (lane 10, fast, 0x24590 listed): the projection as `0.0f - dot3f(&state->velocity, &direction)` (the
+// existing helper) 130 at retail's 1077 bytes, the dot then k first as retail (two points, not kept), with the
+// arguments swapped 130 (same code); on it: the direction scaled through vector3f_scale 130, the squared length
+// through length_sq3f 130, the direction declared then assigned 130, the projection and movement adds through
+// vector3f_add_scaled/vector3f_add 177 (1111 bytes), the movement add alone 178, the jitter add 132. On the plain
+// body: limits built unscaled and scaled in place by vector3f_scale 190 (1078 bytes: the j/k products are
+// multiplied separately); retail-order jitter with a plain long 233 again (limits.k stored from its definition and
+// velocity.k reading limits.j's XMM6), with `limits.j = limits.k = ...` or `limits.k = limits.j = ...` 259 (1009
+// bytes, one register). Left: 1.0 in XMM4 (retail XMM3), the direction loaded k/j/i into XMM3/2/1 (retail 2/1/3),
+// the velocity stores and the jitter block.
+// Round 69 (lane 12, fast, 0x24590 listed): the velocity pointer (`vector3f *velocity = &state->velocity`) declared
+// at the very top 128 (gain 4, not kept); retail-order jitter (on/off, signs, `*=` scales) on a plain long 233 (1020
+// bytes), with the top or post-enable velocity pointer 233/233; on that plain-long base, limits, the jitter offset or
+// both through the existing vector3f_assign 233 each (1020 bytes). On the plain long our build merges limits.j and
+// limits.k into one value (two stores and one spill where retail keeps XMM6/XMM7 copies and three stores); the
+// volatile long is what keeps them apart here, and no tried form keeps them apart without it.
+// Round 56 (m3 lane 1, fast, 0x24590 listed): limits as one aggregate initializer 132 (same code); that with
+// retail-order jitter on a plain long 233; that jitter with its products added straight into the velocity 239;
+// the scaled factor named (`speed_factor = x134 * factor`) 132 (same code); retail-order jitter on a plain long
+// with every on/off, sign and scale value as `v = 1.0f; if (!(bits & n)) v = alt;` 165 (1051 bytes, aligned 90
+// against this body's 104: limits split around the call and spilled at retail's +0x1c/+0x20/+0x24 from
+// XMM4/6/7, on_x/on_y in XMM2/XMM5 and on_z in a stack slot as retail, but 1.0 then takes XMM1, the factor XMM2
+// and input_fraction XMM3, retail 3/1/2, and the jitter sums run z first); on that, the products added straight
+// into the velocity 248, the jitter add through vector3f_add 160 (aligned 88), plus the movement add 164
+// (1098 bytes, aligned 82); only the on/off values in that if form, signs and scales as `*=` ternaries, 165
+// (1046 bytes, aligned 83: the on/off form alone gives the split limits).
+// Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
+// inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
+// recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
+// Round 286: independent multi-use directional limits in ijk/ikj/jik/jki/kij/kji
+// producer order 158/160/158/158/160/160; immutable ijk/kji 158/160. Scalar forms
+// shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
+// DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
+// 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
+// DL226: Uniform conditional zero/half multiplication, separate/together/coordinate-local,
+// inherited then ordinary sample: 179/190/205/189/213/223/238/221. All restored;
+// constant/limit ownership, direction carriers and jitter spill homes remain.
+// Round 450: Complete limit/weighted-acceleration/projection product-node subsets 1..7, then all
+// with ordinary bit sampling: 132/132/132/132/132/130/130/164. Weighted+projection and all-node
+// forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
+// products, sample qualifier and complete body restored; constant/limit ownership and jitter
+// spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
  s_physics_movement_output *state = (s_physics_movement_output *)output;
- (void)&object_index;
- (void)&blend;
  *(real *)((byte *)state + 0x28) = rate;
  state->enabled = true;
  byte *definition = (byte *)state->definition;
@@ -701,7 +816,13 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
  return a->k * b->k + a->j * b->j + a->i * b->i;
 }
 
+// Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
+// pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
+// and the flags on the stack; this file's declaration describes another order and the callers are
+// in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
+// sine and the cosine in the dead argument slots.
 // score 155 (was 155): Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
+// MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // movement/rotation homes and cross/result lifetimes still differ.
 // Frame 0x18 agrees; sampled movement/rotation homes and SSE/output scheduling still differ.
 // Frame 0x18 agrees; sampled-vector homes and x87/SSE rotation scheduling remain.
@@ -775,6 +896,66 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // Round 194: dot producer first/second/both value inputs 320/385/525;
 // first/second/both input references 155/155/155; value/reference and
 // reference/value inputs 320/385. Original dot interface and body restored.
+// Round 111 (fast): 25 name pairs for the sampled vector and the forward copy 155 each; the sample in
+// its own closed block 155; one shared vector for sample and forward copy 187 (retail slot and length),
+// plus `!(fabs(angle) < 0.0001f)` 178, plus an in-place rotate of it 155 at 1382 B (retail re-reads
+// each axis component and puts cosine in the angle's dead slot +0x34, sine at +0x44; ours caches the
+// axis and swaps them); cosine declared first 155; five sine/cosine name pairs 155. Original restored.
+// Round 206: Complete scalar first/second cross inputs and rotation-axis observations, seven subsets
+// [194, 202, 192, 298, 339, 306, 336]; all with immutable original 336. Original restored.
+// Round 308: Complete three-row indexed rotation, original/projection-first additive operands with long,
+// unsigned-long, short and byte coordinates: 176/176/176/176/296/296/296/296. Original rows and
+// body restored; sampled-vector homes and rotation/output scheduling remain.
+// Round 430: staged rotation cross/paired side crosses/both 184/153/184; those with common
+// completion 184/153/184; both with early side-output storage, with/without common completion 184/184.
+// Two-point side-product gains rejected; original helpers, storage, ordered guard and body restored.
+// Round 207: completed sample copied to velocity then scaled in place, original/rate-angle/
+// per-use scale/both 208/265/211/262; the same four through the shared float scale
+// 220/207/220/207. Original sample, field stores, angle storage and includes restored.
+// Round 53 (lane 9, fast; the score is a lockstep count, so a one-instruction shift in a region costs
+// the rest of it): `!(fabs(angle) < 0.0001f)` 173 (retail's exact `fld; fcompi; ja` test at 1382 bytes;
+// the rotation is then one instruction short and the turn block two short of retail); with moved_away
+// preset false and set in the test 176 (retail's `xor dl, dl` ... `mov dl, 1`; flag form, needs a match);
+// with the rotation done in place on the forward copy 178; with sin/cos of `angle * rate` and no rotation
+// local 156, the same on the original body 169. A /FAs frame probe (compile only) groups movement with
+// new_cross at -12 and original/rotated at -24 (retail: movement with original/rotated, new_cross alone);
+// declaration order and names never move it, one extra early read of original swaps movement and original.
+// Extra arithmetic tuples anywhere rotate the turn-block dot sums toward retail's j,k,i / j,i,k orders.
+// Round 26 (lane 14, fast): the sampled vector's slot follows reference counts: two extra reads of it
+// (diagnostic only) put it at retail's [esp+0xc], sharing the forward copy's slot, 236 at 1415 B. Side
+// cross names cross_a/cross_b and z_ names, and the two crosses declared apart, 155 each (slot unchanged);
+// existing vector3f_scale into velocity 186 (1382 B, slot unchanged); vector3f_scale in place then a
+// copy 206 (slot fixed, the scale goes through memory); the same by hand 203; in place plus
+// `!(fabs(angle) < 0.0001f)` 200; copy then scale in place 220; `moved_away = false` set inside the
+// test 159 (retail's `xor dl, dl` ... `mov dl, 1`, a flag set in a test: only with a match).
+// Round 56 (m3 lane 1, fast): the sample vector in its own block closed after the velocity stores (angle outside)
+// 155 (same code: scope does not place the slot); that with `!(0.0001f > fabs(angle))` 173 (the test and the
+// forward copy then retail's, the sample still at +0x18); one vector for the sample, the forward copy and the
+// rotation done in place (cross and projection first) with that test 155 at 1382 bytes (everything up to the
+// rotation is then retail's: sample at +0xc, test, copy; left the axis read into registers where retail uses
+// memory operands, and sine in the angle's dead slot +0x34 where retail puts cosine there and sine at +0x44);
+// on that, cosine before sine 156, the moved-away flag preset false and set in its test 178.
+// Round 191 (lane 3, fast): on the 1382-byte shared sample/forward vector with the
+// `!(fabs(angle) < 0.0001f)` guard and an in-place rotation (155, everything before the rotation
+// matches): rows assigned j, i, k 149 (a compile-only screen of the rotation block also ranks j,i,k
+// first; dot term/operand orders, cross component orders and sine/cosine order change nothing);
+// with dot3f for the four turn-block dots 149 (VC still forms the alignment dot k, j, i; retail j,
+// k, i); plus dot3f for the projection 154; plus cross3f for the turn crosses 154, and for the
+// rotation cross 154. The shared-vector in-place rotation through the sibling 0x1ecf50's rotate form
+// 176 (1385 bytes); a separate forward local rotated in place with the sample in its own block 169
+// (the slot is not shared). Retail keeps the vector components in XMM and multiplies by the axis from
+// memory; ours loads the axis into the destination registers.
+// Round 293: Complete scalar velocity-product schedules ijk/ikj/jik/jki/kij/kji
+// 219 each (frame 0x24, retail length); all-input then all-product and per-row compound
+// producers 213/213. Original sampled-vector, frame 0x18 and full body restored.
+// DL220: Native scalar rotation-cross storage, crossed with original/axis scalar observations and complementary cosine:
+// 196/203/248/236/196/221/247/228. Sample home and rotation/output scheduling remain. Original body restored.
+// DL224: Final direction decision in bool/long/byte storage, bit before/after publication:
+// 173/166/173/166/173/166; selected direction pointer consumed twice, bit before/after publication
+// 213/215. All restored; sampled-vector slot and rotation/output schedule remain.
+// DL226: Existing complete vector setter at goal output, rotated output and original-input
+// copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
+// Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

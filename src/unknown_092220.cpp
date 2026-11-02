@@ -181,7 +181,28 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax I (11-01): the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx; a conditional-expression user pointer (both polarities, with and without a record cursor), the flags and the pointer in function-scope locals and the mask test first all leave the code as it was.
+// score 14 (was 14): this round: compiling the file without whole-program optimisation (/GL- in the
+// file's flags) drops the register calling convention retail's code uses, so every function in the
+// file stops matching; the flags in a named local and the two tests split into two ifs stay
+// byte-identical to the baseline. Still the user flags are loaded into eax where retail loads them
+// into the dying pointer register.
+// score 14 (was 14): the plain (full) check agrees with the fast one: all 14 differences come from
+// one register choice, the user flags loaded into eax where retail loads them into the dying user
+// pointer register ecx; our two shorter encodings leave the function two bytes short, so every
+// later field (the globals and the calls) is reported as differing as well.
+// This round: the flags in a const dword local 14, in an unsigned long local 14, a const kind 14,
+// the kind declared before the user pointer 14, the mask test before the equality test 15 (all
+// reverted).
+// this round: the user flags are still loaded into eax where retail loads them
+// into ecx; a named local for the flags, the record's field read directly, the flags read through
+// an index cast, the two tests in the other order, the two tests split apart and a signed local
+// all leave the code as it was.
 // score 14 (was 14): the user flags are loaded into eax in ours and into ecx in retail.
+// The block layout is the same in both builds (the branch that finds no user jumps to the
+// shared load with ecx zero), so only the register the flags are loaded into differs.
+// This round: the flags in a named local and the two tests split into two ifs 14 (byte-identical
+// to the baseline).
 // Earlier: the same register and padding remain. Shared task/datum lookups 14/14;
 // enclosing update/conditional records 14/14; kind first 14; early flags carrier 14;
 // inverse continue 14; report-id name 14; SDK guest test 14; existing allocator 183/317;

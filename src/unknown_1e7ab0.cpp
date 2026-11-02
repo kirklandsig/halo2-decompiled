@@ -167,6 +167,14 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
  return function_cbd50(unit_index, *(signed char *)(unit + 0x212 + slot));
 }
 
+// Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,
+// below the retention margin) and it adds volatile qualifiers and swapped call arguments, so it is not
+// kept. Manual trials this round: a named table base 620 (a tie), the player index set to NONE and then
+// conditionally assigned 623, that form with the named base 623, and dropping the (void)&local_index
+// anchor 620 (a tie); all restored. What still differs: retail loads the state table into ESI and the
+// state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
+// pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
+// argument and the 2308-byte length agree.
 // score 620 (was 620): retail loads the state table into ESI and the state pointer into EDI, then reuses
 // ESI for the player index and the player pointer and keeps the unit pointer in EBX; ours folds the base
 // into the add and keeps the state in ESI, and retail returns from inside each switch case.
@@ -229,16 +237,104 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // 665 [413] (inlined again); plus cases 0/1/31 after 18 666 [355] (retail's case layout); plus the player
 // index as NONE then an if (retail's or/cmp/je shape) 667 [361]. Register roles (retail: state EDI,
 // player ESI, unit index spilled, unit EBX, headers EBP) still differ in all of them.
+// Round 89 (fast; per-case byte sizes compared through both jump tables): cases 0/1/31
+// after 18 650; plus the existing function_14de70 for the player index (retail's or/cmp/je entry, the
+// state base loaded first) 652; plus a plain player pointer 772 at 2132 B, but structurally closest:
+// retail's case order, 20 of 28 case sizes equal, 40 calls as retail, unit index spilled; left are
+// request_weapon out of line (cases 15/18/16/23/9 short), state/player in ESI/EDI (retail EDI/ESI)
+// and headers/unit in EBX/EBP (retail EBP/EBX); request_weapon forced inline 929 (more callees
+// inline, the 0x1e8eb0 tails unmerge); request_weapon taking the unit index 657 (still out of line).
 // Round 169: Native unit parent/seat/health-and-flags field subsets, all seven 620;
 // complete readonly unit receiver 620. Original types and body restored; state/player/unit
 // allocation remains despite the matching frame, selector and cleanup.
 // Round 220: Entry-getter failure guards, per-use table, both, readonly table,
 // readonly with guards/per-use/both, and conditional nullable result 620 each.
 // Original getter, state/player/unit receivers and complete body restored.
+// Round 272: native state byte bitfields, all seven returned-bit subsets and all
+// with ordinary player 620/620/620/620/620/620/620/786. Original field and complete body restored.
+// Round 393: Existing weapon-accessor role orders, header-first unit accessor and readonly player inputs:
+// 620/620/620/620/620/620/620/620. All helper contracts and complete original case graph restored.
+// Round 395: existing-result completion after reset pairs 10/11, 12/13, 2/16 and all six
+// 630/630/670/670; with ordinary player carrier 792/792/805/805. All original cases restored.
+// Round 395: player pool at use 742; object-table context once 669; both 758;
+// each with ordinary child result 760/643/769; both with case-entry iterator
+// 758, with ordinary child result 769. Original pools, qualifiers and body restored.
+// Round 267: positive admission partitions 620/638/620/638/620/638; actual
+// admission result 657, with unit-presence result 853. Original admission,
+// cases, local qualifiers and complete executable body restored.
+// Round 193: Existing masked-index domains word/short/dword 659/659/620; with Boolean slots 661/661/665;
+// word/short indices with short slots 661/661. Original accessor domains, all case bodies, inherited
+// qualifiers and matched sibling restored; state/player/unit residency remains.
+// Y423: All 32 cases return the completed result, ordinary player/child flags
+// and native long eligibility subsets 830/795/871/815/723/828/736/846 fast;
+// control 620. All shorten away from retail; complete original body restored.
+// DL200: All seven coordinated ordinary inline subsets of the existing test/counter/eligibility
+// helpers 620 each; counter stdcall 620; coordinated status-producer inline contract 620. All nine
+// retain 559 differing rows through the last retail return. Original target, helper
+// definitions/declarations, native cases, pool observations, local qualifiers and all call values
+// restored. Base/state and player/unit homes remain.
+// DL209: Case-owned failure guards in reset/inventory/capability group subsets 1-7: 620 each; all
+// with ordinary player pointer 786. Original cases and qualifier restored.
+// Round 459: Uniform caller unit-field observations, bool/byte/short/long return carriers, inherited/plain
+// player pointer 760/683/659/661/786/865/650/669. Original unit snapshot, cases and qualifiers restored.
+// All executable trial forms restored.
+// Round 262: Entry declaration scopes for status/child iterator/metadata result, all
+// seven nonempty subsets 620 each; complete workspaces with ordinary player pointer 786 (2124/2308).
+// Original scopes, cases, helper contracts and inherited local qualifications restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 53 (m3 lane 1; kept: the `(void)&local_index;` line dropped, byte-identical 620: the index
+// stays a stack argument without it): the existing function_14de70 for the player index 623 (retail's
+// or/cmp/je entry, but the state base then held in EBX and the state in ESI); the same without the
+// address line 623; the player index as the matched 0x1e83c0's ternary 622; result declared first 620
+// (same code).
+// Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
+// 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
+// through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 440: call-free seated-reset/magazine/input field-test orders, subsets 1/2/4/3/5/6/7, then all with
+// seat/parent test order 657/620/782/657/759/782/759/759. Magazine producer clears the complete output
+// first. Call admissions, widths and values are preserved; no state/player allocation gain; original guard
+// orders and complete body restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
+// Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
+// Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
+// gives 620/623/650/649/613/651/651/653. Seven-point best is below the
+// retention margin; original case order and executable body restored.
+// Round 56 (m3 lane 1, fast; 0x1e83c0 kept its match, 0x1e6bd0 unchanged at 303): the weapon helper in
+// src/unknown_1e77c0.cpp's form (`bool secondary`, 0x212/0x213 select, object table read inside) 653 (2256
+// bytes); only the headers parameter dropped (table read inside) 653; the helper as a plain `inline` 620 (same
+// code: PRIVATE is empty); the admission test as nested ifs 620 (same code); the request entry fetched before
+// the player index 622. Retail tail-merges cases 24-29 into one 0x1e8eb0 call (each case only pushes its
+// arguments) and case 18 into the same post-call test, with 19 returns against our 26.
+// Round 293: Direct capability-return families (3, 1, 4) in seven nonempty subsets
+// 679/680/661/679/661/662/677; all with ordinary player carrier 715. Code rows
+// through the last return 569/570/569/569/569/570/569/561 versus 559; all restored.
+// DH round 265: selective completed-result returns for reset/inventory/remaining-test subsets 1..7, then all with ordinary player:
+// 630/646/646/684/684/701/872/783. Original complete body restored.
+// Round N274: Result owned by admitted unit dispatch, one shared switch completion: bool with
+// original/ordinary-player/ordinary-child/both local carriers 842/754/858/781; native long
+// with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
+// Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
+// Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
+// Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
+// gives 620/623/650/649/613/651/651/653. Seven-point best is below the
+// retention margin; original case order and executable body restored.
+// DL226: Intact inventory/capability/input handler-family order masks 1..8:
+// 656/620/656/632/643/632/643/643. Input-before-health gives 548 executable differences
+// versus 559 but 2268/2308 bytes and score 632; all restored. State/player/unit homes remain.
+// Round 292: Common admissions in cases 15/18, 5/6 and 7/8, subsets 1/2/4/3/5/6/7,
+// 696/617/625/690/701/655/667; all with ordinary player carrier 827. Three-point best rejected;
+// original cases, body and qualifiers restored. State/player/unit residency and case tails remain.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
- (void)&local_index;
  s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
  byte *data = (byte *)state;
  bool result = false;

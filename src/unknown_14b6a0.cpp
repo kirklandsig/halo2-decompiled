@@ -3,6 +3,7 @@
 #include "data_array.h"
 #include "data_iterator.h"
 #include "unknown_067e10.h"
+#include "vehicle_ray.h"
 #include <string.h>
 
 // @flags /O2 /arch:SSE /Gr
@@ -38,7 +39,6 @@ point3f *function_b9dd0(long object_index, point3f *point);
 struct s_location;
 void function_b75a0(long object_index, point3f const *position, vector3f const *forward,
 	vector3f const *up, s_location const *location, bool update);
-struct s_vehicle_ray { point3f point; vector3f vector; real t; };
 bool __stdcall function_168f40(long flags, s_vehicle_ray const *ray, long ignore, long ignore2);
 void __stdcall function_df5f0(long object_index, point3f *center, real *height, real *radius);
 void function_1c7e70(long player_index, short value);
@@ -118,7 +118,7 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
-// score 230 (was 230): Frame 0x44 versus 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
+// score 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
 // Round 9 (lane 11, fast): second loop through data_datum_iterator_next as retail calls it 257 (frame 0x44:
 // center 0x10, destination 0x1c, alternate 0x28, second iterator 0x34; retail packs the iterator over the
 // probe point at 0x1c); plus a bare block around the probe/center code 257 (identical code); per-marker
@@ -232,9 +232,167 @@ void function_14bac0()
 // aggregate/CRT clear 230 each; both aggregates 230; first aggregate/native recipient aggregate
 // 250; both cleared/native recipient 279. Original initialization and iterators restored; frame
 // 0x44/0x3c, readiness homes and recipient overlap remain.
+// Shared in-place vector addition with native recipient/difference/query-input combinations 230/259/230/259/230/259/230/259; original storage and helpers restored.
+// Round 175: Complementary destination/alternate/both readiness 233/240/242;
+// with the native result-tested recipient iterator 254/254/259; both as byte/long
+// 242/286. Original readiness, iterators, points, counters and executable body restored.
 // Existing in-place vector sum with shared displacement/live ancestry headers/both 230 each;
 // sum alone 230; all four with the native recipient call 259 each. Original geometry,
 // both iterators and includes restored; frame 0x44/0x3c and readiness homes remain.
+// Round 89: the readiness homes follow the second scan (an in-memory iterator through 0x6b380 frees BL
+// for the alternate flag, as in retail; frame 0x48 259); final scan through the existing inline record
+// iterator 268 (retail's or/inc/js scan); with the 0x6b380 second scan 270; final scan on the global with
+// the three `players` reloads dropped 295, with the 0x6b380 scan 294; with that scan, centre/height/radius
+// or its iterator declared at the block top 259/259 (declaration scopes do not move the packing).
+// Round 227: Existing final reset record-inline/datum-inline/called/step producers
+// 268/268/306/290; with native recipient iterator
+// 270/270/328/296. Original final scan and both request traversals restored;
+// frame 0x44/0x3c, point/recipient sharing and readiness homes remain.
+// Distinct native 16-byte iterator role names and entry recipient reservation, all seven
+// non-original subsets, 259 each; both named native workspaces at entry 259. Frame 0x48;
+// original iterator identities, reservation lifetimes and complete body restored.
+// Returned relocation output 243; paired initial marker snapshots 230; both 243;
+// selected-unit reuse alone 245; returned output plus unit reuse 222 kept (1036 bytes);
+// marker/unit snapshots 245; complete graph 222; with native recipients 228. Four complete
+// returned-point buffer/pointer role-name families 222 each, all frame 0x50. Original t05
+// identities retained; selected-unit value begins at its original bounds read and serves every
+// subsequent recipient call. Frame grows from 0x44 to 0x50; readiness and native recipient sharing remain.
+// Round 212: complete origin value with pointer/value destination and scalar/shared difference
+// 319/316/319/316; native recipient counterparts 318/361/318/361 (fast control 230). Original input
+// observations, points and both traversals restored; frame/readiness sharing remains.
+// Round 56: retail's frame is 0x3c and its locals (relative to the post-prologue esp E) are:
+// the readiness byte at E+0x13, the player at E+0x14, the scenario (reused for the radius) at E+0x18,
+// the height at E+0x1c, the destination point at E+0x20, one shared point at E+0x2c (the marker
+// point, the alternate marker point and the centre written by the capsule call), the alternate
+// point at E+0x3c and the first scan's iterator at E+0x40/E+0x48; the second scan's 16-byte
+// iterator sits on the shared point's slot at E+0x2c and is stepped by the out-of-line 0x6b380.
+// Our frame is 0x44. Merging the centre into the marker point and moving the second iterator
+// into its block gives 0x34, keeping the marker point as a 16-byte iterator 0x38, and using the
+// out-of-line 0x6b380 for the second scan 0x44/0x48; all of those score 233-262 against the
+// retained 230, so the original body stands. What is left is the frame size itself and the
+// point/destination slot order, which our compiler keeps the other way round.
+// Returned relocation output 243; paired initial marker snapshots 230; both 243;
+// selected-unit reuse alone 245; returned output plus unit reuse 222 kept (1036 bytes);
+// marker/unit snapshots 245; complete graph 222; with native recipients 228. Four complete
+// returned-point buffer/pointer role-name families 222 each, all frame 0x50. Original t05
+// identities retained; selected-unit value begins at its original bounds read and serves every
+// subsequent recipient call. Frame grows from 0x44 to 0x50; readiness and native recipient sharing remain.
+// Round 431: relocation buffer reused as accepted destination, original/native recipients 222/237;
+// with shared query/bounds point 233/237; accepted alternate 222/237, with shared query/bounds 231/237.
+// Accepted-output reuse shrinks frame to 0x44; query/bounds sharing reaches 0x38, native recipients stay 0x44;
+// retail needs 0x3c. Original returned-output/selected-unit graph restored at frame 0x50.
+// Round 440: Complete native request-row value, native/library copy and producer/entry storage, original/native
+// recipient boundary: 255/275 repeated four times. All native row storage and original field observations restored.
+// Round 239: shared relocation/bounds buffer, probes, native scan representation and
+// readiness order: 222/233/222/233/222/233/222/233; actual out-of-line recipient
+// step 228/229/228/229, reaching frame 0x40 with shared probes. Complete selected-unit
+// field observations on those four graphs 264/264/263/263 (1032 bytes). Original
+// returned-output/selected-unit graph, point buffers and both traversals restored.
+// Round 465: existing in-place sum on returned relocation output, shared difference/ancestry helper/
+// native recipient masks 0..7: 222/222/301/300/228/228/315/315. All frame 0x50; original full body restored.
+// Round 253: Complete returned relocation-point value, native/library copy, dead getter input shared with
+// bounds and native recipient combinations; scores 277/274/277/274/277/274/277/274.
+// Original executable source restored; no qualifying gain.
+// Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
+// 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
+// output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
+// Round 53 (lane 10, fast): retail adds the offset to its own position local (read back from +0x20, the
+// destination's slot) after 0xb9dd0, reads the target unit from the player at both calls, and steps the second
+// scan through the out-of-line 0x6b380 on a 16-byte iterator at +0x2c. The position local used directly 245
+// (1048 bytes); the second scan through data_datum_iterator_next 229 (1036); both 238 (1052, frame 0x44); both
+// with the unit read from the player at each call 259 (1048, frame 0x48: position shares the destination's
+// +0x20, the second iterator sits at +0x2c, the alternate at +0x3c, both flags in retail's homes; only the centre
+// sits apart, at +0x48 with the first iterator, where retail puts it at +0x2c and the first iterator at +0x3c);
+// that with the flags declared the other way 254; with one point for both markers and the centre (declared
+// after/before/with destination and alternate) 262/262/262 (frame 0x48, homes reshuffled); with the centre,
+// height and radius in their own block 259 (same code). Retail also re-reads the visit counter at each test
+// where ours keeps the incremented value in ESI and reloads it after 0xb75a0.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
+// Round 20 (lane 18, fast): retail's slots are 0x20 {position, destination}, 0x2c {offset, both probe
+// points, centre, second 16-byte iterator} and 0x3c {first iterator, alternate}. A local position buffer
+// (return ignored), the unit re-read from the player at both calls and the second scan on its own 16-byte
+// iterator through 0x6b380, 259 (frame 0x48: centre packs with the first iterator); plus centre/height/radius
+// in their own block 259 (centre joins the probe slot, but the second iterator joins the first iterator's
+// and the alternate stays alone); with the accepted points declared the other way 259; with the position
+// declared at the first block's top 259; renaming the alternate or the iterators changes nothing (259);
+// the first scan on a 12-byte iterator through data_iterator_next_calling 262 (frame 0x44). On the kept
+// body: the unit re-read from the player at the last call 243.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
+// Round 189 (m3 lane 3, fast = plain 222): second loop on a block-local datum iterator through the existing 0x6b380
+// (retail's loop shape) 228, declared at the request block top 228, plus the unit read at each use 264; the unit
+// at each use alone 243; the relocation point used directly 245 (frame 0x44), with the unit at each use 230, with
+// the 0x6b380 loop 237, all three 259; centre/height/radius in their own block 217 (frame 0x44, gain under the gate),
+// with the 0x6b380 loop 229, plus the direct point 238 (frame 0x40).
+// Round 112 (lane 8, fast): retail adds the offset to the translated local and passes it to both calls,
+// re-reads the player's unit for 0x14e0f0 and runs the second scan through 0x6b380. Translated local
+// 245 (1048 bytes); plus the unit field at each use 230; plus the 0x6b380 second scan 259 (readiness
+// homes and the second loop as retail, frame 0x48); plus a block around centre/height/radius 259 (centre
+// at retail's 0x2c, alternate and first iterator at 0x38, the second iterator alone at 0x48 where retail
+// shares 0x2c); its index stored before the datum index 259 (retail's store order); plus the final scan
+// through data_iterator_next_inlined 268 (1027), without the block 270. On that form: the offset as
+// three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
+// iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
+// slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 442: null-unit/visited-root/both continues with the cached pool and original reload
+// paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
+// value 253, with native recipients 264. Original output, pool observations and body restored.
+// Round 229: repeated recipient handle ownership with native recipient step, actual relocation/destination
+// sharing and repeated visit-stamp ownership: 222/228/222/228/222/228/222/228. All original
+// executable source restored; frame 0x50/0x3c and readiness/recipient sharing remain.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 290: request-array field indexing, captured/repeated base with native-recipient/bounds-scope
+// combinations 285/285/271/273/281/281/279/279. Frames 0x50/0x44/0x54/0x50 and 0x50/0x44/0x50/0x50;
+// original persistent request pointer, points, selected unit, observations and both traversals restored.
+// Round 219: common reset exit with native recipient, shared probe/bounds and real relocation/destination
+// buffers, masks 0..7: 222/228/233/229/222/228/233/229. Original exit, buffers and both scans
+// restored; frame, point/recipient sharing and readiness homes remain.
+// Round 334: first +0xf reserves 0x50 versus 0x3c; point/recipient sharing,
+// readiness homes and scalar spill order remain. Plain ordered traversal of the two
+// adjacent marker indices, long/short counter and separate/shared probe-bounds
+// workspace, 311/305/311/305; with native result-tested recipients
+// 304/302/307/305. Original separate probes, returned relocation output,
+// selected unit, observations and both player traversals restored.
+// Round 300: Complete alternate elevation before publication: native/memcpy/shared-setter copies
+// 233/233/240; each with native recipients 229/229/245. Shared setter producing the final z
+// directly 240, with native recipients 245. Original point copies, elevation, returned relocation
+// output, selected unit and both scans restored; frame/readiness/recipient sharing remains.
+// Round 244: independent scalar displacement on the returned-output/selected-unit graph,
+// six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
+// declarations 235/235. Original aggregate, output pointer, bounds and traversals
+// restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
@@ -282,12 +440,12 @@ void function_14b6a0()
 					if (g_4de300[root & 0xffff] != g_4de2fc)
 					{
 						g_4de300[root & 0xffff] = g_4de2fc;
-						point3f position;
-						function_b9dd0(root, &position);
-						position.x += offset.i;
-						position.y += offset.j;
-						position.z += offset.k;
-						function_b75a0(root, &position, NULL, NULL, NULL, false);
+						point3f translated;
+						point3f *position = function_b9dd0(root, &translated);
+						position->x += offset.i;
+						position->y += offset.j;
+						position->z += offset.k;
+						function_b75a0(root, position, NULL, NULL, NULL, false);
 					}
 					players = g_4e8c24;
 				}
@@ -318,7 +476,8 @@ void function_14b6a0()
 			}
 			point3f center;
 			real height, radius;
-			function_df5f0(*(long *)(player + 0x2c), &center, &height, &radius);
+			long target_unit = *(long *)(player + 0x2c);
+			function_df5f0(target_unit, &center, &height, &radius);
 			if (have_destination)
 				destination.z += radius;
 			else if (!function_168f40(0x800005, (s_vehicle_ray const *)&center, NONE, NONE))
@@ -336,7 +495,7 @@ void function_14b6a0()
 					if (iterator.datum_index != *(long *)((byte *)g_4e8c20 + 0xa8))
 					{
 						function_1c7e70(iterator.datum_index, g_4686c4);
-						function_14e0f0(iterator.datum_index, *(long *)(player + 0x2c), &destination,
+						function_14e0f0(iterator.datum_index, target_unit, &destination,
 							have_alternate ? &alternate : NULL);
 					}
 				}

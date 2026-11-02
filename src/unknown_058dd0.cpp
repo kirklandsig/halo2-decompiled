@@ -130,6 +130,18 @@ bool c_session_state_none::update()
 
 /* ---- pre-game ---- */
 
+// score 5 (was 5): in the type 2-4 arm retail loads the member index and the
+// member's kind into eax; ours puts the index in edx and the kind in ebp (the
+// session's register, which dies there). Retail's case table runs to type 18
+// (16-18 share the type 15 arm). Tried: the kind through a NONE default before
+// the test 5; the kind tests in the 0x58d70 condition 5; the kind read through
+// the member's parameters 5; a named member index 5. Round 60: an unsigned kind 5;
+// the member index read before the 0x58d70 call 5 (the load is sunk, same code); the
+// kind declared at function scope 5; the switch on a named type local 5; the
+// `default: __assume(0)` label first 65 (the case blocks follow source order).
+// Round 65: named 0x58d50, 0x58d70 and 0x58d20 results 5 each and combined 5;
+// a case-1 session pointer 5; the type-0 arm with an early break 5; case-1 results
+// from short-circuit tests 83, from conditional expressions 76.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {
@@ -172,6 +184,9 @@ bool c_session_state_pre_game::update()
 			}
 			break;
 		case 15:
+		case 16:
+		case 17:
+		case 18:
 			function_06df60(o, 5, 0, 0);
 			break;
 		case 6:
@@ -209,9 +224,6 @@ void c_session_state_pre_game::enter(long a, long b, long c)
 
 /* ---- start-game ---- */
 
-// score 65 (was 65): the result lives in bl where retail keeps it in a stack
-// byte, because retail's 0x6e720 takes the session in ebx (this function saves
-// ebx around that call) and ours takes it in esi; see the note there.
 // @retail 0x6e500
 bool c_session_state_start_game::update()
 {
@@ -226,11 +238,11 @@ bool c_session_state_start_game::update()
 		}
 		else if (a->type == 2)
 		{
-			result = a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10);
-			if (result)
+			if (a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10))
 			{
 				network_session_stop_countdown(a);
 				network_session_set_mode(a, 4);
+				result = true;
 			}
 		}
 		else
@@ -745,10 +757,80 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
-// score 44 (was 43): this stays in edx where retail copies it to ebx at entry, so
+// MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
+// score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
 // the mode and member index take esi; separate case 7 and 8 labels (retail's direct
 // table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
-// a member-index local 47, an id copy 47, the mode in a local 47.
+// a member-index local 47, an id copy 47, the mode in a local 47; a state local 43;
+// cases grouped by outcome 43; a do/while (false) join 43; an early return on an equal
+// id 43; a goto single exit 43; copies of this before, after or at the call 43 (all
+// compile-only). With 0x58d90 inlined by the link (its file at /Ob1, a diagnostic) the
+// table is retail's but this stays in edx (47); only /Os or /G7, which compare the mode
+// in memory, give retail's push ebx.
+// Round 81: the 0x6d380 call written twice (a diagnostic) gives retail's head exactly (this in
+// ebx, id in ebp, mode and index in edx): retail allocates as if this and id were live across a
+// call; with only this live across one, id still takes edx. Separate case 7 and 8 bodies 47; a
+// busy flag set by the switch 47; an early return on an equal id 43; session at each use 46; one
+// combined condition 43; harness: a memcmp result local (worse), a sized compare helper, a __stdcall
+// member or __cdecl callee, /arch:SSE, /G7, /Ob1, /Ox or /G5 all keep this in edx.
+// Round 84: an early return on the mode and type 43; session read in the switch and the local
+// after it 43; the type tested before the mode 43; memcmp operands swapped 47; a return after the
+// call 43; harness: one && condition with the memcmp, cases 3 and 5 left to the default, an id
+// copy: no change. Calling the existing busy-state test out of line puts this in ebx (as any call
+// before the compare does), but retail has that switch inline.
+// in memory, give retail's push ebx. Round 11: the existing 0x58d90 called in the test 100 (stays
+// out of line, 84 bytes); an early return on the mode/type test, the mode test outer with the type
+// and id tests inside and a member id pointer local 43 each (same code); the session read at each
+// use (no local) worse (this in eax). Compile-only, all with this in edx: 32 combinations of the
+// condition shape (also the type test first), truthy memcmp, a copy of this as the call argument and
+// grouped or separate case 7/8; an inline copy of 0x58d90's body gives retail's direct table only.
+// Lane 13 r14: the existing 0x58d90 called with a `__forceinline` declaration in this file stays
+// out of line (its /Ob0 definition) 100, as a plain call 100; the type test first 43; memcmp with
+// the id first 47; the memcmp folded into the mode/type condition 43.
+// Round 84: an early return on the mode and type 43; session read in the switch and the local
+// after it 43; the type tested before the mode 43; memcmp operands swapped 47; a return after the
+// call 43; harness: one && condition with the memcmp, cases 3 and 5 left to the default, an id
+// copy: no change. Calling the existing busy-state test out of line puts this in ebx (as any call
+// before the compare does), but retail has that switch inline.
+// Round 90 (fast): the switch as 0x58d90's own result-variable form (retail's direct table) with an
+// early return or joined into the condition 45/45 (diagnostic: a hand copy of the helper); memcmp size
+// as sizeof(s_session_id), an equal-id return before the call and a return after it 43 each
+// (identical). BLOCKED-BY 0x58d90: retail inlines that existing helper, ours stays out of line (/Ob0).
+// Round 183 (lane 3, fast): a member pointer named for the memcmp 43; a client copy of this carrying
+// the session read and the call 43; case 7/8 as `if (!flag) break; return;` 43; the mode/type test as an
+// early return before the compare 43; a named differs result with sizeof(s_session_id) 43 (all the same
+// code). The function is virtual (standard thiscall), so no caller or convention lever applies.
+// Round 31 (lane 13): compile-only, a second 0x6d380 call or 0x58d90 called out of line give retail's
+// `push ebx; mov ebx, ecx`; 0x58d90's result-variable switch as a forceinline helper (early return,
+// joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
+// explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
+// (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
+// Round 275: existing busy predicate with a separate producer force-inline declaration, bool/byte/
+// short/long results and early/combined admission, eight forms 100 each (84 bytes). Predicate remains
+// out of line; original body and producer declaration restored. This/id register ownership remains.
+// Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
+// agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
+// moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that
+// base: the compare reading `session->` while the switch uses `s` 50; id read once through its address 47;
+// a member pointer local 47; a `client` copy of this 47; cases 2/4/6 grouped 47. The file is /O2 /Gr and
+// 0x58d90's own file /O2 /Ob0, which keeps it out of line here where retail inlines it (a flags lead for
+// the user, not tried).
+// Round 131 (lane 5, fast), on separate case 7 and 8 bodies (direct table, re-measured 47): mode, type and
+// id tests in one condition 47; an early return on mode/type 47; an equal-id early return 47; case 7/8 as
+// `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
+// `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
+// clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
+// Round 25 (lane 17, fast): 0x6d380 as a __stdcall member of c_session_client (definition, declaration and
+// both calls) 43 (same code); the compare and call inside the switch's default with cases 2/4/6 breaking 43;
+// early returns on the mode/type test and on an equal id 43; those early returns with separate case 7 and 8
+// bodies 47; the in-switch compare with separate case 7 and 8 bodies 47. In every form mode and member index
+// take a callee-saved register because this already holds EDX; retail colours mode/index first (EDX).
+// Round 71 (lane 9, fast): a `client` copy of this passed to the call 43; a member pointer declared with
+// `s` before the switch 48 (with separate case 7/8 bodies 49); the id compare as a named bool 43; an early
+// return on mode/type before the compare 43; a local pointer for the memcmp's first operand 43; a return
+// after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
+// whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
+// call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
@@ -1089,181 +1171,6 @@ void function_72170(c_session_state_matchmaking *state)
 	}
 }
 
-struct s_matchmaking_player_values
-{
-	byte unknown00[0x18];
-	long selected;
-	byte unknown1c[0x630 - 0x1c];
-	byte summary[0x184];
-	long player_count;
-	byte unknown7b8[0x878 - 0x7b8];
-	long ranks[16];
-	long values[16];
-	byte unknown8f8[0x938 - 0x8f8];
-	long limit;
-	bool common_found;
-	byte common[12];
-	byte unknown949[3];
-	long first;
-	long second;
-	bool ready;
-	byte unknown955[3];
-	long maximum;
-	long minimum;
-	long average;
-};
-
-struct s_player_rating_properties
-{
-	byte unknown00[0x12c];
-	long selected;
-	short unknown130;
-	short rank;
-	long value;
-};
-
-long __stdcall function_063190(void *summary, long user);
-
-#pragma optimize("s", on)
-// score 110 (was 115): frame, aggregate registers and conditional moves differ. Retail
-// keeps one frame word (the session), missing/ordinal in EBX/EBP, and in the last loop
-// indexes the ranks by EDX, rereads the player count and keeps minimum/maximum in
-// EAX/EBX with cmovg/cmovle, which needs /arch:SSE (this file is /O2 /Gr; retail's
-// `mov eax, 1`/`mov eax, 0x7f` are speed-mode code, the size pragma here gives
-// `inc`/`push; pop`).
-// Round 129: without the size pragma 180 (483 bytes); a plain `for` for the last loop
-// 129 (435 bytes); both 143; ternary minimum/maximum 129 (either comparison order).
-// Screened with /arch:SSE on a scratch copy: the plain `for` without the pragma gives
-// retail's register minimum/maximum and cmovs and a one-word frame, but counts the loop
-// down with the count cached and a pointer, where retail rereads the count.
-// Before: read-only session 115; external session reference 115; short missing 116;
-// direct readiness 119; shifted membership bit 120; average scalar 115; external rank
-// reference 110 kept; both rating references 124; session per-use 169, mode-scoped 115;
-// word ordinal 134; absent/user continues 115/116; ready-first 112; sum-first 118;
-// rating-data reference 115; indexed aggregate 129; aggregate field reference 110;
-// availability count 156; early summary result 110; rank element pointer 110; absent-rank
-// continue 110; count before extrema 113; active-session spill name 110; count/member/scan
-// failure exits 124/121/115; complete-rating/property skips 110/110; empty-aggregate
-// rejection 112; live count field 110; distinct traversal roles 110; mode field 115;
-// selection snapshot 131; property/player records 110/110; source rank/value/both field
-// bindings 110/110/110; live selection field 110; byte missing count 110; signed byte
-// missing count 110; byte player ordinal 129; both byte counters 129; native signed
-// counters 110; aggregate function scope 110; native member property storage 110; fixed
-// player end test 110; sse after rank binding 111.
-// Frame/aggregate registers and conditional moves still differ.
-// Read-only session 115; external session reference 115; short missing
-// 116; direct readiness 119; shifted membership bit 120; average scalar
-// 115; external rank reference 110 kept; both rating references 124.
-// EBP frame has three words versus one session spill; aggregate registers differ.
-// Session per-use 169, mode-scoped 115; word ordinal 134; absent/user continues 115/116;
-// ready-first 112; sum-first 118; rating-data reference 115.
-// score 110 (was 110): session spill and aggregate allocation still differ.
-// Indexed aggregate 129; aggregate field reference 110; availability count 156;
-// early summary result 110; rank element pointer 110; absent-rank continue 110;
-// count before extrema 113; active-session spill name 110. Opening body retained.
-// score 110 (was 110): session spill and aggregate registers remain different.
-// Count/member/scan failure exits 124/121/115; complete-rating/property skips 110/110;
-// empty-aggregate rejection 112; live count field 110; distinct traversal roles 110.
-// score 110 (was 110): three-word frame/session spill and aggregate allocation remain.
-// Mode field 115; selection snapshot 131; property/player records 110/110;
-// source rank/value/both field bindings 110/110/110; live selection field 110.
-// score 110 (was 110): Three-word frame/session spill and aggregate allocation remain. byte missing count 110; signed byte
-// missing count 110; byte player ordinal 129; both byte counters 129; native signed counters 110; aggregate
-// function scope 110; native member property storage 110; fixed player end test 110; sse after rank binding
-// 111.
-// Eligible-only rank reference 115; early property receiver 110; both lifetimes 115;
-// maximum-first/sum-between-extrema/count-before-sum 110/110/113;
-// eligible source-rank snapshot/read-only inputs 116/115.
-// @retail 0x72540
-void function_72540(c_session_state_matchmaking *state)
-{
-	c_class_58d20 *session = state->owner->session_a;
-	s_matchmaking_player_values *ratings = (s_matchmaking_player_values *)state;
-	if (state->mode == 3)
-	{
-		if (ratings->player_count == session->player_count)
-		{
-			long missing = 0;
-			for (long i = 0; i < 16; i++)
-			{
-				if (session->player_mask & (1 << i))
-				{
-					s_network_session_player *player = &session->players[i];
-					long index = function_063190(ratings->summary, (long)&player->user_id);
-					if (index != NONE)
-					{
-						long &rank = ratings->ranks[index];
-						if (!(player->user_flags & 3))
-						{
-							if (rank == NONE || ratings->values[index] == NONE)
-							{
-								s_player_rating_properties *properties = (s_player_rating_properties *)player;
-								missing++;
-								if (properties->selected == ratings->selected && properties->value != NONE && properties->rank != NONE)
-								{
-									rank = properties->rank;
-									ratings->values[index] = properties->value;
-									missing--;
-								}
-							}
-						}
-						else
-						{
-							rank = NONE;
-							ratings->values[index] = NONE;
-						}
-					}
-					else
-						state->mode = 6;
-				}
-			}
-			ratings->ready = missing == 0;
-		}
-		else
-			state->mode = 6;
-		if (state->mode == 3)
-		{
-			for (long i = 0; i < session->member_count; i++)
-			{
-				if (*(long *)((byte *)&session->members[i] + 0xac + ratings->selected * sizeof(long)) != 1)
-				{
-					state->mode = 6;
-					break;
-				}
-			}
-		}
-		if (state->mode == 3 && ratings->ready)
-		{
-			long maximum = 0;
-			long total = 0;
-			long count = 0;
-			long minimum = 127;
-			long i = 0;
-			if (ratings->player_count > 0) do
-			{
-				long rank = ratings->ranks[i];
-				if (rank != NONE)
-				{
-					if (rank < minimum) minimum = rank;
-					if (rank >= maximum) maximum = rank;
-					total += rank;
-					count++;
-				}
-			}
-			while (++i < ratings->player_count);
-			if (count > 0)
-			{
-				ratings->minimum = minimum;
-				ratings->maximum = maximum;
-				ratings->average = total / count;
-			}
-			else
-				state->mode = 1;
-		}
-	}
-}
-#pragma optimize("", on)
-
 bool network_session_host_clear_flag49fc(c_class_58d20 *session);
 struct s_member_quality_collection;
 struct s_message_identities;
@@ -1289,68 +1196,13 @@ static __forceinline long function_724a6(s_surface_description *arg_0)
 }
 #pragma inline_depth(255)
 
-// score 7 (was 7): the session member is loaded into ecx (retail eax), the level's address into
-// edx (retail ecx) and the reloaded type into eax (retail edx), one rotation of the scratch
-// registers; the type filter (cmp 5/je, cmp 3/je, cmp 4/jne default) and both arms are retail's.
-// The named condition gives that filter (the || test written in the if lays the default arm
-// first, 98), and 0x1932c0 stays out of line through the out-of-line wrapper above (inlined in
-// the default arm otherwise, 568 bytes; a noinline declaration in its own file also gives 7 but
-// costs 0x1931d0 its match, where retail inlines it). The barrier keeps the inlined 0x193440
-// reloading the type.
-// Goto-filter forms (9): one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch
-// (108), cases 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then
-// a case 4 switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111); an else-if chain of equality gotos (7). Member at
-// each use 165; member before session root 9; common limit result 190; retained width/minimum
-// results 99/162; typed variant storage/native record copy 9/9; typed storage with helper
-// classification 128; helper classification with fallback noinline 128, without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10; immutable variant,
-// summary, values or type 9; unsigned type 9.
-// Named-condition forms: no barrier 86; the type read from the values record 27 (reloads, but
-// loads before the limit store); an unsigned type read 86; summary/selected results as if
-// statements 7/7; member after the collection 8; values first 7; member through an inline getter
-// 7; 0x5c240 called directly is inlined (580 bytes; a noinline declaration here is ignored).
-// retail tests the variant type as cmp 5/je, cmp 3/je, cmp 4/jne default,
-// (MiniMax S run 4: an else-if chain of equality gotos for 5, 3 and 4 gives retail's filter but
-// scores 7, a gain under the bar: the session member, level address and reloaded type stay in
-// the wrong registers.)
-// ours turns the 3/4 cases into a jl/jg range; the session member travels in eax (ours ecx)
-// and the reloaded type in edx (ours eax). Every goto-free form lays the default block out
-// first: one 5 || 3 || 4 test or its negation (100), case 5/3/4 in one switch (108), cases
-// 1-2 and 3-5 with __assume(0) (134); separate case 3 and case 4 (103); 5 || 3 then a case 4
-// switch (100); a negated && test before the special block (100); the || test around a
-// case 1-2/3-5 switch with __assume(0) (111). The table itself is function_193440 inlined.
-// Member at each use 165; member before session root 9; common limit result 190;
-// retained width/minimum results 99/162; typed variant storage/native record copy 9/9;
-// typed storage with helper classification 128. Frame and first +0xe remain unchanged.
-// helper classification with fallback noinline 128; without the barrier 145;
-// fallback noinline alone 9; immutable member 9; member after collection 10;
-// immutable variant 9; immutable summary 9; immutable values 9;
-// immutable type 9; unsigned type 9.
-// Further trials: member/level-address allocation, range dispatch and reloaded type remain.
-// own fallback noinline/held dispatch 9; own fallback noinline/classifier with barrier 7.
-// own fallback noinline/classifier 86; own fallback noinline/classifier with native output 7.
-// own fallback inline/held dispatch 57; own fallback inline/classifier with barrier 128.
-// own fallback inline/classifier 145; own fallback inline/classifier with native output 128.
-// new classifier/uniform session 166; new classifier/collection at use 44.
-// new classifier/session and collection 184; new classifier/session and output 166.
-// new classifier/collection and output 44; new classifier/all roots 184.
-// new classifier/member at use 165; new classifier/all roots and member 153.
-// classifier own inline with barrier 7; classifier own force-inline with barrier 7.
-// classifier own inline without barrier 86; classifier own force-inline without barrier 86.
-// Round 42: current fallback wrapper/existing classifier 7; member through the owning path 7;
-// initialized level 132; collection direct at first/second/third use 7/7/7;
-// first width result as bool/long 7/7. The three-register rotation remains.
-// Entry level/type/shared-variant workspaces and role names 7; width inline 7,
-// force-inline 235. Long/unsigned-long classification results with either
-// or both upper clamps as conditional assignments 7 in all eight forms.
-// Entry level/type declarations and a shared variant workspace, alone and combined: eight forms 7.
-// Width helper declared inline in its own unit and every prototype 7; force-inline 235 (584 bytes).
-// All restored; the member/level-address/type scratch-register rotation remains.
+// 0x1932c0 stays out of line through the wrapper above (inlined in the default arm otherwise),
+// and the barrier keeps the inlined 0x193440 reloading the type.
 // @retail 0x72330
 void function_72330(c_session_state_matchmaking *state)
 {
-	c_class_58d20 *session = state->owner->session_a;
+	s_session_owner *owner = state->owner;
+	c_class_58d20 *session = owner->session_a;
 	long member = session->member_index;
 	s_member_quality_collection *members = (s_member_quality_collection *)&session->value4c;
 	s_matchmaking_player_values *values = (s_matchmaking_player_values *)state;
@@ -1928,37 +1780,6 @@ long function_75890(long time);
 
 bool network_session_host_become_leader(c_class_58d20 *session);
 
-// score 90 (was 90): frame 0xc agrees; readiness uses BL and the failure/mode join differs.
-// cleanup-first mode 90; byte readiness 90; byte completion 94; single state read 90;
-// readiness before countdown 140; shared live-state predicate 90.
-// Owner/secondary/primary/paired object references 90; completion from test 129;
-// host return guard 90; paired preparation result 90; reversed timed-type tests 93.
-// Shared type/all failure commands 144/128; combined mode-readiness 90 (426 bytes);
-// preparation failure first 90; raw-time readiness 94; unsigned saturated time 90;
-// completion before mode call 90; shared failures with combined gate 129.
-// score 59 (was 90): readiness/session registers and failure/timer join still differ.
-// Integer readiness 59 kept; entry readiness 134; entry integer readiness 135;
-// timed type range 107; four/five/timed arm order 111; completion from readiness 136;
-// test-assigned preparation 90; active predicate value 166.
-// score 48 (was 59): readiness callee input and failure/timer join still differ.
-// Live timer/mode/both fields 59/59/59; integer pending 48 kept;
-// byte/word pending 90/59; common-tail guard 59; pending with live timer 48.
-// score 48 (was 48): readiness input and failure/timer join persist. Full
-// preparation pending 71; staged/second-call pending 95/96; tail guard 48;
-// wide completion 146; unsigned preparation 71; early/raw pending 128/61.
-// score 48 (was 48): readiness input and failure/timer join persist. Duration pending 91;
-// shared/early countdown seconds 97/107; clock value 90; timed/five arm order
-// with integer pending 117/118; word completion 146; early duration pending 137.
-// BLOCKED-BY 0x6e720 (retail passes the session to it in EBX, ours
-// in ESI, so EBX holds the pending flag here). Bool ready 90; ready with the failure
-// arm first 90; pending set in each arm 52; clamp as an if 129; the clamp as a
-// ternary gives the same bytes as the mask form it replaces.
-// readiness input and failure/timer join persist.
-// Native int pending, pending/completion/millisecond names and outer pending declaration 48;
-// positive-duration test, full-width pending with failure first and nested preparation 48.
-// score 48 (was 48): readiness input and failure/timer join remain different.
-// Unsigned pending/const captured pointers 48; quotient/remainder ceiling 93;
-// separate inline/noinline readiness/preparation declarations 48 each; pending conjunction 92.
 // @retail 0x72700
 bool c_session_state_start_match::update()
 {
@@ -1975,8 +1796,8 @@ bool c_session_state_start_match::update()
         }
         else if (b->type == 2 || b->type == 3)
         {
-            long pending = true;
-            if (function_06e720(b) && function_06e6b0(b, &unknown14))
+            bool ready = function_06e720(b) && function_06e6b0(b, &unknown14);
+            if (ready)
             {
                 if (!unknown18)
                     unknown18 = function_75870();
@@ -1984,13 +1805,13 @@ bool c_session_state_start_match::update()
                 long remaining = remaining_raw < 0 ? 0 : remaining_raw;
                 network_session_host_become_leader(b);
                 network_session_start_countdown(b, true, (remaining + 999) / 1000, 0, NULL);
-                pending = remaining != 0;
+                ready = remaining == 0;
             }
             else
                 unknown18 = 0;
             if (mode == 3)
             {
-                if (!pending)
+                if (ready)
                 {
                     network_session_set_mode(b, 4);
                     result = true;

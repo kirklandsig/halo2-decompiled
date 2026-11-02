@@ -144,7 +144,7 @@ void function_10ec00(long object_index, s_animation_state *state, long unused, d
 extern real g_547648;
 void c_animation_channel_data_get(c_animation_channel const *channel, s_animation_data *data);
 
-// score 207 (was 207): Frame 0x30 versus 0x2c, destination/ordinal homes and getter expansion remain.
+// score 207 (was 207): Frame 0x30 versus 0x2c, transforms/ordinal homes and getter expansion remain.
 // Round 87: the cause is our inlining of 0x1c6440 in the weighted arm (retail calls it there and in the
 // third arm). With the getter out of line (noinline in its header, diagnostic only) the entry and the first
 // arm match retail (edi is the zero register, transforms is read from the stack): 174 at 940 bytes. Its
@@ -239,6 +239,92 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 246: signed-char frame/weight/both fields 207/207/207; each with a twice-used long
 // frame 257/257/257; both with short frame/immutable frame-count snapshot 258/254. Original
 // field identities, observations and body restored.
+// Native complete weighted input value, mutable/const before/after the getter,
+// 346 each; each with a twice-used full-width sample frame 344. Original record
+// observations, arithmetic, separate constructors and full body restored.
+// Round 72: weight byte * scale named, then * frame 207 (retail's multiply order); frame byte in a
+// long local for compare and conversion 257 (retail's 32-bit compare, 967 bytes); both 257;
+// reversed frame-count compare 207; weight from the entry frame local 309.
+// DH round 230: Post-getter countdown snapshot in byte/short/long/word domains 207/216/280/215;
+// the same complete if/else weight producers 207/216/280/215. Original observations and body restored;
+// frame 0x30/0x2c, destination/ordinal homes and weighted getter expansion remain.
+// DH round 236: positive channel constructed at entry with independent countdown-channel,
+// real ordinal and existing sample-result entry lifetimes, eight subsets
+// 279/375/279/375/317/391/317/391. Original separate constructions, observations and body restored;
+// frame 0x30/0x2c, destination/ordinal homes and weighted getter expansion remain.
+// Round 398: actual eligibility retained for sampling and loop-result accumulation,
+// bitwise bool/byte/short/long 306/306/303/304; logical
+// accumulation with those carriers 324/324/314/310. Original result and body restored.
+// Round 186: double storage for initial/weighted/both/countdown/initial-countdown/weighted-countdown/all
+// results 285/326/352/290/314/305/330; weighted double with promoted sample frame 335.
+// Original scalar storage and body restored; frame, getter expansion and ordinal spill remain.
+// Round 297: On early weighted-output construction, frame rejection/nested
+// frame-first/both rejections 207 each; magnitude rejection/nested magnitude-first/
+// reverse rejections/reversed shared admission 262 each (frame 0x2c, 927 bytes);
+// combined frame-or-negligible rejection 207. Original loop and full body restored.
+// Round 225: fabsf with mutable/immutable weight, native real/double absolute
+// values, mutable/immutable and with immutable weight: 207 each. Original
+// absolute expression, frame tests and body restored; getter/ordinal/frame remain.
+// DL202: Native external frame/weight table direct/pointer/const-pointer/per-iteration pointer/reference/
+// const-reference 207/250/250/250/250/250; pointer/const-pointer with twice-used long sample
+// frames 222/222. Input aliases recover frame 0x2c but regress; original table fields,
+// observations, constructors and body restored. Destination/ordinal homes and getter expansion remain.
+// Round 241: early weighted output with long/dword/short/word contribution counts
+// 275/275/276/276; before getter 275/275/276/276. All result-storage diagnostics restored;
+// original Boolean, separate constructors, frame 0x30/0x2c and getter/ordinal differences remain.
+// Round 460: Positive admission bool/byte/short/long, then paired positive/nonzero admissions,
+// 207/207/207/207/343/343/337/337. Original direct frame tests, constructors and body restored;
+// frame 0x30/0x2c, weighted getter and ordinal homes remain.
+// Round 266: existing sample success before frame positioning or between positioning/sampling,
+// each in bool/byte/short/long storage, 276/276/279/278/276/276/279/278. Original result stores,
+// constructors and complete body restored; frame, getter and ordinal differences remain.
+// Round 270: Native countdown identifier copy/assignment, with direct base, weighted
+// identifier and both input policies: 296/296/284/284/327/327/301/301. Original
+// identifiers, separate constructors and body restored; frame, getter and ordinal homes remain.
+// Round I (MiniMax lane I, fast): the getter called through a member-function pointer local (only to keep
+// it out of line, which the noinline ruling rules out) with the twelve samples walked by a frames pointer
+// that reads each weight as sample[12] 137 (frame 0x2c as retail's); the getter called directly with that
+// walk 199 (the weight read past the frames array is a pun: not kept); a second pointer over signed_weights
+// 269. On the 137 form: an index loop over the two arrays 174-216, an int frame compare 185, the data struct
+// in the sampled block 189. Original body restored.
+// Round 41 (ours ends `ret 0x18` as retail): the weighted getter's inlining is local to its call site: it stays
+// inlined with arm 1 removed (421) or arm 3's getter removed (218), and goes out of line (as retail, which also
+// un-merges the second publish tail) when its call sits under one more condition, even a redundant one the
+// optimizer folds: a repeated `weighted.index != NONE` guard around it 227 (943 bytes, entry and first arm then
+// retail's but for the 0x30 frame); with the data struct in the sampled block 210; plus a twice-used long frame
+// 201 (940 bytes; left: the loop's pointer plus spilled countdown, frame-first product, `mov eax, edi` where
+// retail recomputes `lea eax, [esp+0x14]` after 0x1ddb40/0x1c7380). Not kept (a repeated test, no match).
+// Plain forms, getter still inlined: nested ifs for the weighted admission 207; `return` when it fails 207;
+// separate weighted channel 360; weighted id in a twice-used local 306; animation declared at the positive
+// block's top 207; sampled flag before the getter 276; data struct in the sampled block 215; the frame read
+// from the field at both tests 260 (retail's reload at the second test, 955 bytes).
+// Round 111 (lane 7, fast): one function-scope animation pointer for the weighted and countdown getters 207;
+// the frame field read at both tests (no frame local) 260 (955 bytes); the base id read from the field (no id
+// local) 256 (940 bytes, getter still inlined); the weighted play as a nested test returning on failure 207;
+// the weight test as `fabs(weight) >= 0.0001f` 257. Retail calls 0x1c6440 out of line in both arms yet inlines
+// the data getter after the weighted loop, so its refusal is not a plain size budget taken in source order.
+// Round 227: Target inline/stdcall/both 207 each; channel getter, frame setter and sampler inline
+// singly, getter/setter and getter/sampler pairs 207 each; complete playback inline declarations 207.
+// All declarations and original bodies restored; weighted getter expansion and spilled induction remain.
+// Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
+// Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
+// Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each
+// with publication-owned weighted output 281/281/300/300. Original frame observations, constructors
+// and body restored; frame, getter expansion and ordinal homes remain.
+// Round 131 (m3 lane 6, fast; both builds now end `ret 0x18`): diagnostic, the first arm written twice 496
+// (1120 bytes) and the weighted arm still inlines the getter and the data get, so the getter's inlining does
+// not follow a budget used up by the first arm. The getter called in the loop condition 284 (992 bytes); a
+// const animation pointer 207; the existing channel validity test 0xb6760 after the weighted play 239 (954
+// bytes); in 0x1c6440 itself, its graph in a named local 207 (getter still matches), an early NULL return
+// 207 (getter 15).
+// Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
+// Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
+// Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each
+// with publication-owned weighted output 281/281/300/300. Original frame observations, constructors
+// and body restored; frame, getter expansion and ordinal homes remain.
+// Round 294: Per-iteration native count with twice-used long/short sample frames,
+// long/64-bit counts and before/after-weight count acquisition gives 257 each for
+// long frames, 258 each for short. Exact-only bound copies and full body restored.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

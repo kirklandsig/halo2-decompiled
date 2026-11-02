@@ -52,16 +52,6 @@ struct s_unit_object_view
 	long field2ac;
 };
 
-/* the real a quantized value stands for */
-static inline real event_dequantize_real(long value, long maximum, real minimum_value, real maximum_value)
-{
-	if (value == 0)
-		return minimum_value;
-	if (value >= maximum)
-		return maximum_value;
-	return (minimum_value * (maximum - value) + maximum_value * value) / maximum;
-}
-
 /* the identifier in one of the eight slot table slots, or NONE outside them */
 static long slot_table_identifier(long slot)
 {
@@ -706,31 +696,26 @@ struct s_typed_object_header
 /* 0xe68c0, src/unknown_0e68c0.cpp */
 bool function_e68c0(long type, long unit_index);
 
-// score 75 (was 85): the prologue saves EBX and EBP where retail saves ECX and EBX, so the saved
-// register set and the order of the body differ.
-// With the result a long in ebx the 1<<type shifts use eax, so the vehicle index moves to ebp in
-// the prologue; retail's byte result loses bl to the shifts and spills to the frame slot, the
-// vehicle index stays in eax and ebp is saved late for the pool pointer.
-// Byte result 85; masked-index locals 75; pool data read at each use 77; mask operand order 75;
-// byte result with pool before the guard 89; split missing guards 83; dword indices 75;
-// byte result with the seat read once 85; byte mask locals 82.
+/* whether a unit has left the given seat of a vehicle */
 // @retail 0x9ee20
 bool c_unit_exit_vehicle_event_definition::v11(long a, long const *entities, long c, void const *data)
 {
-	long result = false;
+	bool result = false;
 	long unit_index = function_a58d0(entities[0]);
 	long vehicle_index = function_a58d0(entities[1]);
-	if (unit_index == NONE || vehicle_index == NONE)
-		return result;
-	s_record_pool *local_1 = g_4e0300;
-	if (((1 << ((s_typed_object_header *)local_1->data)[unit_index & 0xffff].type) & 3) && ((1 << ((s_typed_object_header *)local_1->data)[vehicle_index & 0xffff].type) & 3))
+	if (unit_index != NONE && vehicle_index != NONE)
 	{
-		s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)((s_typed_object_header *)local_1->data)[unit_index & 0xffff].object;
-		if (unit->parent_index != NONE && unit->parent_index == vehicle_index &&
-			unit->seat_index != NONE && unit->seat_index == *(long const *)data)
+		s_record_pool *object_headers = g_4e0300;
+		s_typed_object_header *headers = (s_typed_object_header *)object_headers->data;
+		if (((1 << headers[unit_index & 0xffff].type) & 3) && ((1 << ((s_typed_object_header *)object_headers->data)[vehicle_index & 0xffff].type) & 3))
 		{
-			function_e68c0(0x1d, unit_index);
-			result = true;
+			s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)OBJECT(unit_index);
+			if (unit->parent_index != NONE && unit->parent_index == vehicle_index &&
+				unit->seat_index != NONE && unit->seat_index == *(long const *)data)
+			{
+				function_e68c0(0x1d, unit_index);
+				result = true;
+			}
 		}
 	}
 	return result;
@@ -2068,7 +2053,27 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 	return local_0;
 }
 
-// score 168 (was 168): object/offset homes and low-mask allocation remain;
+// MiniMax lane E (11-01): the pool index named in a local gives retail's SIB base (154, a gain of one
+// that the keep rule drops); the head block's register split is not reachable from the source (short
+// casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
+// 201, 212 and 269).
+// score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// Earlier: this round's head-block forms (the 0x13c value truncated to a short and
+// compared against both NONE forms, in nine source shapes) all score 149, and naming the object
+// index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
+// that the keep rule drops, so the original body stands.
+// Earlier: this round's head-block forms (the 0x13c word truncated to a short and
+// compared against both NONE forms, so the tail keeps retail's ax/cx) score 149, a gain of six that
+// the keep rule drops, so the original body stands.
+// Earlier: this round's source permuter over the body found no better form (24 tries,
+// best 148 differing instructions, equal to the baseline 148, no confirming build), so the body is
+// unchanged; the four-slot loop still carries one value more than retail (ours reloads [esp+0x14] in
+// the loop head), the 0x400 block keeps its short in EAX where retail uses EDX/CX, and the reduced
+// image's global and thunk addresses differ.
+// Earlier: this round read the diff groups again: the four-slot loop carries one value
+// more than retail (ours reloads [esp+0x14] in the loop head), the 0x400 block keeps its short in
+// EAX where retail uses EDX/CX, and the reduced image's global and thunk addresses differ.
+// Earlier: object/offset homes and low-mask allocation remain;
 // Round 9 (lane 10): retail holds the 0x400 block's short in EAX (stores 0x90 before the result update);
 // its value as a ternary 201; its declaration after the field reads 168; set in if/else 201; both slot
 // masks at the loop head 285 (1041 bytes); first slot mask long 168.
@@ -2181,7 +2186,91 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // the store 168; the unit through the header-array index 168 (SIB order unchanged); the 0xee field and
 // its new value as bool 168 (retail loads the field into DL before the compare and keeps both float
 // flags in stack bytes; ours compares memory and keeps the first flag in DL).
-// score 155 (was 168): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// Earlier 155 (was 168): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// Round 284: Complete native child-result record, direct request parameter, and
+// signed/unsigned bit ordinal 191/191/191/191; constant field defaults
+// before the getter 278/278/278/278. Exact-only records restored.
+// Original separate results with direct request parameter, signed/unsigned ordinal
+// 155/155; all executable source restored.
+// Round 215: original bit ordinal at short/word/byte widths, with long or short positive-four
+// countdown: 210/210/231/231/210/210/231/231. Original ordinal and countdown restored; frame 0x1c
+// agrees, object/offset homes and low-mask allocation remain.
+// Round 441: Boolean fixed request groups parent/position/both/tail/parent-tail/position-tail/all 285/271/289/178/286/272/290; both dynamic child predicates 223. Original request tests, observations and executable body restored; object/offset and low-mask homes remain.
+// Round 448: Decoded two-bit child request in dword/long/word/byte, masked and
+// unmasked shift domains 284/284/284/284/287/287/287/287.
+// Original body and helpers restored; Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership remain.
+// Round 454: Single low/high and paired mask recurrences on the retained post-store child
+// results 229/237/250; with both native request intersections 261/253/276; single low/high
+// recurrence with Boolean intersections 246/273. Two forms reach 1081 bytes but regress;
+// original ordinal, child stores, masks and whole body restored.
+// Round 462: Direct zero-based child slot, long/short/dword/word with original cursor/indexed
+// record fields: 218/224/255/255/218/224/255/255. Original ordinal, countdown, cursor and whole
+// body restored.
+// Round 267: dependency-safe child input orders tag/fraction/key/bytes, key/tag/fraction/bytes,
+// key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
+// tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
+// Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
+// Round 33 (lane 2, fast): the masked object index named before the entry lookup 154 (retail's SIB base
+// in the entry and child lookups; homes unchanged), with the raw offset form 154; the entry through
+// OBJECT() 155; the 0x400000 test as a plain mask 168, with the named index 167 (retail's
+// `test ecx, 0x400000`, but the result is then loaded in both arms and the unit stays in EBP); with the
+// named index, memcmp for the 0x2000 test 213 (retail's two-register compare, no dead add), memcmp plus
+// memcpy 213, memcpy for the copy alone 154. Retail reloads the unit from its home after the slot loop.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
+// Round 55: object offset named as a local (`local_offset + data + 8`, retail's SIB order) 154;
+// `(local_3 & 0x400000)` for the field-bit test 168, with the named offset 167; the 0x2000 compare through
+// an inline pointer helper either way round 155/155; its copy through memcpy 155, through an inline pointer
+// helper 155, memcpy with the named offset 154; a compare-and-copy inline helper 155; a `long const *` or
+// `long const &` to the 0x214 field used for both, also inside the 0x2000 test, 155/155/155; memcmp for the
+// compare 214 (retail's two loads and register compare, no dead add), with memcpy for the copy 214; the
+// second slot mask named at the loop top for both tests 268 (1043 bytes); the first slot mask declared at
+// function scope 155; `for (local_5 = 18; local_5 < 22; local_5++)` without the countdown 247 (1051), with
+// the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
+// last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
+// existing accessor reads the unit's 0x214 field.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
+// Round 112 (lane 8, fast): first slot mask as long 155 (same code); the second mask named once at the
+// loop top for both tests 268 (1043 bytes: retail computes it twice); the slot pointer used directly with
+// no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
+// read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
+// flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
+// Round 491: actual four-record end traversal != with long/short/word/byte ordinal 286/283/283/280; <
+// counterparts 286/283/283/280. Original countdown, cursor, ordinal and complete body restored.
+// Round 280: joint direct/conditional parent-short producers with decoded slot/header offset
+// and shifted/direct tail request 279/294/288/290/284/273/266/266. Original executable
+// body restored; object/offset homes and low-mask EBP ownership remain.
+// Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
+// outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
+// Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// Round 286: named entry slot with uniform signed-byte/byte/short/long tail results before clamps
+// 154/154/165/168; after clamps 157/157/153/156. Two-point best gain rejected;
+// original tail domains, entry lookup and complete body restored.
+// DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
+// 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
+// Round 304: high-first/combined-mask/low-bank-fold/high-bank-fold admission 285/267/264/262;
+// with the actual entry slot named 285/267/264/262. Original request tests and full body restored.
+// Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-
+// slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
+// three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
+// object/offset homes and low-mask ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

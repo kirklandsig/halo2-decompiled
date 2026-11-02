@@ -18,8 +18,13 @@ extern byte g_485a47;
 extern real g_485a0c[8];
 extern real g_4c9798[36];
 
-// score 239 (was 239): frame 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
-// frame 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
+// score 197 (was 197): the mode bit loads the flags into edx where retail uses eax, so
+// MiniMax lane E (11-01): no new form, no lower score.
+// Earlier: the mode bit loads the flags into edx where retail uses eax, so
+// the mode bit loads the flags into edx where retail uses eax, so
+// every later offset drifts; the mode takes the frame's lowest slot where retail keeps
+// the size, and the size and the aspect stay in registers across the rounding calls.
+// Earlier frame: 0x24 versus 0x28; state in EAX/EDI (retail ECX), the size home across the rounding calls and the far-plane copies differ.
 // Earlier form: frame 0x20 versus 0x28; input registers and rounding-call scalar reloads differ.
 // Branch-defined extent 321; two-vector copy loop 311; frame pointer 372; size policy 497; inline depth one 311.
 // Global optimization off 1009; expansion depth zero 349; late mode 350;
@@ -115,6 +120,9 @@ extern real g_4c9798[36];
 // early border zero alone/with tag/direction/both 342 each, zero after mode
 // with both views 297. Border forms recover frame 0x28 but regress; original
 // short mode/height, observations, copies and protected call inputs restored.
+// Round 109: the tag test as a one-case switch gives retail's `movsx eax; dec eax` and frees ECX
+// but LTCG still passes the state in EAX, 246; mode as a bool-valued arm 239; mode through
+// if/else 239; mode computed first 328; the inverse before the offset 333.
 // Round 222: Existing native projection/opposite/near-normal vector setters, all seven
 // subsets 252/255/264/239/252/255/264; all with both point setters 264. Frame
 // 0x24/0x28 and state/rounding homes remain; complete original body restored.
@@ -122,13 +130,60 @@ extern real g_4c9798[36];
 // 237; short/long tag with raw flags 237/237; tag short/long with entry border zero
 // 342/342; short tag, raw flags and zero 335. Two-count gains and exact-only tag copies
 // restored; frame 0x24/0x28, state transport and protected rounding reloads remain.
+// Round 72 (lane 8): the cause of the state transport is the tag test: ours compares the word
+// against a constant 1 it shares with `mode = 1` (ECX), so state arrives in EAX and moves to EDI;
+// retail loads the word with movsx and tests it with `dec eax`, which leaves ECX for the state
+// record (the entry then matches retail but for the frame). Only the steering spelling
+// `... - 1 == 0` gives that here (319, 1479 B; with an entry border zero 240/238), not kept.
+// Also tried: the tag word in a named local 239; long mode 243; offset as a ternary 335; distance
+// read before the aspect 240. Retail also passes width/height to 0x1ddd0 in ESI/EDI (ours: EAX
+// and the stack; 0x1ddd0's other callers are in a contributor file).
+// Round 191: distance field at every use with saved/lower-live/upper-live/both-live
+// depth observations 330/323/330/324; with entry-owned border zero 267/268/267/268.
+// All regress; original distance/depth snapshots and border restored.
+// Round 280 (lane E, run 14): the overflow fix-up compares the height against the width
+// and the height is rounded first, so the fix-up block matches retail instruction for
+// instruction (cmp esi, edi; cdq; jle; idiv; the & ~63 masks). 230, kept.
+// Round 289: On the retained height-first overflow graph, long-mode/long-height/short-width carrier subsets 1 through 7; positive word counterpart:
+// [231, 250, 250, 274, 280, 268, 265, 274]. All executable source and temporary types restored.
+// Round 299: pixel-size declaration at entry/before mode/before extent 230 each;
+// each with coordinated pixel-size/mode names 230; coordinated names alone and
+// diameter lexical rank 230. Original declarations, names and body restored.
+// Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
+// long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
+// and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
+// Round 279: Complete immediate scalar results for projection/near/far row families,
+// seven nonempty subsets and all with both plane-distance results, 230 each. Original
+// compound updates and entire body restored; mode/size homes and rounding reloads remain.
+// Round 44 (lane 14): retail rounds the width (size / aspect) first into ESI and the height into EDI
+// and passes them to 0x1ddd0 in ESI/EDI with the index in ECX; ours keeps 0x1ddd0's width on the stack
+// (BLOCKED-BY 0x1ddd0). Width rounded first with the fix-up on the width 238; with long mode and height
+// limit 250; with long mode only 239; border as 0.75 * width / maximum or width / maximum * 0.75 230
+// each (every spelling compiles to the divide first; retail multiplies by 0.75 first). With 0x1ddd0 in
+// retail's convention (not kept: 0x1ddd0 21 -> 24, its caller 0x2d140 637 -> 686): 226; width first
+// 218; width first with long mode 189 (fast); with long mode and height limit 245; long height limit 240.
+// Round 325: Entry declaration families for both dimension results, all integer/real limits and
+// the actual point/normal workspaces, seven subsets and complete role identities, all eight
+// 230 at 1487 bytes. Original declarations restored; flags/mode/sizing and rounding homes remain.
+// Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
+// long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
+// and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
+// Y499: retained long-mode graph, size/mode/both/extent/size-extent/all/bounds/aspect
+// scalar role families 197 each; original names and body restored. Mode/size homes and protected rounding reloads remain.
 // @retail 0x48ee0
 void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
 {
+    real border = 0.0f;
     real aspect = (real)sqrt(*(real const *)(state + 8));
     real distance = *(real const *)(state + 0x64);
     real offset = 0.0f;
-    if (*(short const *)(tag + 0x8e) == 1)
+    if (*(short const *)(tag + 0x8e) - 1 == 0)
         offset = *(real const *)(state + 0x28);
     real inverse = distance != 0.0f ? 1.0f / distance : -3.4028234663852886e38f;
     g_4c9798[0] = ((vector3f const *)(matrix + 0x28))->i * inverse;
@@ -139,7 +194,13 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
     g_4c9798[5] = 0.0f - ((vector3f const *)(matrix + 0x28))->j;
     g_4c9798[6] = 0.0f - ((vector3f const *)(matrix + 0x28))->k;
     g_4c9798[7] = 0.0f;
-    short mode = (bool)((~(g_4c1a80 >> 10)) & 1) ? 2 : g_485a40 > 0.0f && *(short const *)(tag + 0x14) == 0 ? 1 : 0;
+    long mode;
+    if ((bool)((~(g_4c1a80 >> 10)) & 1))
+        mode = 2;
+    else if (g_485a40 > 0.0f && *(short const *)(tag + 0x14) == 0)
+        mode = 1;
+    else
+        mode = 0;
     real extent = *(real const *)(state + 4);
     if (*(real const *)(state + 0xc) > 0.0f)
         extent += (real)tan(*(real const *)(state + 0xc) * 0.5f) * distance * 2.0f;
@@ -150,12 +211,12 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
         (maximum - 128.0f) * g_485a34 + 128.0f;
     if (size < 128.0f) size = 128.0f;
     else if (size > maximum) size = maximum;
-    long width = (function_48e70(size / aspect) + 63) & ~63;
     long height = (function_48e70(size * aspect) + 63) & ~63;
+    long width = (function_48e70(size / aspect) + 63) & ~63;
     if (width * height > max_width * max_height)
     {
-        if (width > height) width = (max_width * max_height / height) & ~63;
-        else height = (max_width * max_height / width) & ~63;
+        if (height > width) height = (max_width * max_height / width) & ~63;
+        else width = (max_width * max_height / height) & ~63;
     }
     g_485a47 = (byte)mode;
     g_51f3c8[1][0] = 0;
@@ -182,7 +243,8 @@ void function_48ee0(byte const *matrix, byte const *state, byte const *tag)
     g_4c9798[33] = 1.0f;
     g_4c9798[34] = 0.0f;
     g_4c9798[35] = 0.0f;
-    real border = mode > 0 ? (real)width * 0.75f / maximum : 0.0f;
+    if (mode > 0)
+        border = (real)width * 0.75f / maximum;
     g_4c9798[12] = border + 0.5f;
     g_4c9798[13] = 0.5f - border;
     g_4c9798[15] = 0.0f;

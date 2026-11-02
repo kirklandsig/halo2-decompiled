@@ -979,7 +979,19 @@ void function_fcdd0(long definition_index, point3f const *point, vector3f const 
 void function_fcea0(long effects_index, point3f const *point, vector3f const *direction,
  s_effect_owner const *owner, long index, vector3f const *normal);
 
-// score 22 (was 22): the effect call passes the definition index in ecx where retail uses edx, and the effect setup sets its arguments up in another order and zero-extends the word field with a 16-bit move where ours uses movzx; both calls follow the conventions of the callees in src/projectiles.cpp (BLOCKED-BY 0xfcbc0: with its normal and definition parameters swapped it matches and this is 20; BLOCKED-BY 0xfcea0: with that and a short index there this matches, but 0xfcea0 then differs more); position and direction pointer locals for the three calls 50
+// score 20 (was 20): only the 0xfcea0 call differs: retail passes the word field as a 16-bit argument
+// (`xor edx, edx; mov dx, [ebp + 0x2c]`, then its own argument order), ours zero-extends it with movzx for
+// 0xfcea0's long index. 0xfcea0's index as short matches this, but 0xfcea0 then passes it on to 0xfd740's
+// long element index (4 -> 133); with 0xfd740's as short too 0xfcea0 stays 4 and 0xfd0e0 goes 115 -> 148
+// (0xfd740 then extends it for 0x1883e0, whose matching parameter retail also passes unextended):
+// BLOCKED-BY 0xfd740, 0x1883e0. Earlier: 0xfcbc0 with its normal and definition parameters swapped
+// (since kept, 22 -> 20); position and direction pointer locals for the three calls 50
+// Round 103: the payload's word field declared short 20 (`movsx` for `movzx`); 0xfcea0's index as short
+// (definition, declarations and both calls) matches this function, but 0xfcea0 goes 4 -> 133 (579 bytes: its
+// `movsx` for 0xfd740's long index pads its loop head) and 0xfc330 527 -> 533; the same with word 133; with
+// the payload field short too 133; with 0xfcea0 widening the index into a long local at entry 133.
+// Round 107: final-effect early return and single-exit goto 20/20; explicit 16-bit mask 20; word-to-dword
+// and dword-to-word two-stage locals 20/20; word field reference and pointer 20/20; zeroed dword OR assignment 20.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {
@@ -1262,21 +1274,6 @@ bool c_weapon_reload_event::v11(long a, long const *entities, long c, void const
     return result;
 }
 
-// score 32 (was 32): +0x12 device/unit EDI/EBP roles differ; the second
-// type mask lacks the saved EBX temporary and header-base copy. Earlier guard,
-// declaration/result lifetime, header/table and unsigned-mask forms gave 32-54.
-// Tried: named device mask 32; named unit mask 32; both masks 32; byte suppression
-// bitfields 35; byte flags view 35; byte bitfields with masks 35; combined header
-// predicates 39; byte flags with masks 35. Opening executable body restored.
-// Device/unit saved registers and the second mask temporary differ.
-// constant indices 32; unsigned indices 32; index names 32; early unit offset 39; word slots 53; byte mask 35; typed word slots 69; shifted membership masks 38.
-// score 32 (was 32): complete device/unit classification 32/32/32; deferred eligibility 49/51;
-// negative classification exits 32; explicit membership 53; contiguous byte domains 66.
-// Retail's EBX mask temporary and `mov eax, esi` copy say a second table value is live in EAX
-// during the unit type test. Device-first guard with typed table reads and an object local 33; the
-// same with the object read from a re-read table 33, or through the existing object_get 33; device
-// and unit header pointers 52; unit header pointer from a re-read table 54; re-read table for both
-// unit reads 54 (device then sits in EDI as in retail, but the table moves to EDX).
 // @retail 0xa4540
 bool c_device_touch_event::v11(long a, long const *entities, long c, void const *data)
 {
@@ -1287,19 +1284,20 @@ bool c_device_touch_event::v11(long a, long const *entities, long c, void const 
         word suppressed : 1;
         word unknown3 : 13;
     };
-    long unit;
     long device = function_a58d0(entities[0]);
-    unit = function_a58d0(entities[1]);
-    if (unit != NONE && device != NONE)
+    long unit = function_a58d0(entities[1]);
+    if (device != NONE && unit != NONE)
     {
-        byte *headers = g_4e0300->data;
-        long device_offset = (device & 0xffff) * 12;
-        if ((1 << *(byte *)(headers + device_offset + 3)) & 0x380)
+        s_record_pool *pool = g_4e0300;
+        s_z_event_header *headers = (s_z_event_header *)pool->data;
+        if ((1 << headers[device & 0xffff].type) & 0x380)
         {
-            long unit_offset = (unit & 0xffff) * 12;
-            if (((1 << *(byte *)(headers + unit_offset + 3)) & 3) &&
-                !((bool)((s_unit_flags *)*(byte **)(headers + unit_offset + 8))->suppressed))
-                function_107840(device, unit);
+            if ((1 << ((s_z_event_header *)pool->data)[unit & 0xffff].type) & 3)
+            {
+                byte *unit_object = ((s_z_event_header *)g_4e0300->data)[unit & 0xffff].object;
+                if (!((bool)((s_unit_flags *)unit_object)->suppressed))
+                    function_107840(device, unit);
+            }
         }
     }
     return false;

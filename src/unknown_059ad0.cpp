@@ -69,6 +69,14 @@ bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, 
 /* the session states (0x7420, 0x1f8 bytes) */
 #define SESSION_STATE_DATA_SIZE 0x1f8
 
+/* enters a session state: clears the state block and copies in the new state's data */
+static inline void network_session_enter_state_with_data(c_class_58d20 *session, long state, void const *data, long size)
+{
+	memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
+	memcpy(&session->value7420, data, size);
+	session->state = state;
+}
+
 void network_observer_request_channel(s_network_observer *observer, long index);
 
 // @retail 0x62240
@@ -1034,16 +1042,20 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 }
 
 // score 23 (was 23): retail keeps the inlined disconnect's reason in a pushed ebx set after
-// the memset; ours stores an immediate. Tried: the sibling's long/bool union 33; the result
+// the memset; ours stores an immediate. BLOCKED-BY 0x616b0: with its body written through
+// network_session_enter_state_with_data (the reason copied from its address), this matches and
+// 0x616b0/0x5ef20 stay matched (its file was held in round 15).
+// Tried: the sibling's long/bool union 33; the result
 // assigned in the call's argument 6 (bool in bl, reason still folded); a long result passed as
 // the reason 62; a reason parameter the caller passes as 1 41 (it stays on the stack); the
 // result set first and passed by name 35; the callee's volatile reason read 27 (a stack temp);
 // `inline` on the callee 23; the reason as `true` 23.
-// the reason 62.
 // Fully assigned success arms 36; conditional action result 35; external
 // session reference 23; current-member snapshot with original result 23;
 // rejection result 59; wrapper inline/noinline declarations 23/23;
 // external reference with assigned success arms 36. Reason still folds.
+// Round 15: boot arm first 23; the result taken from the host test 35; early false return 36;
+// result set before the arms 35; `result` with the member index first in the comparison 24.
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {
@@ -1381,59 +1393,28 @@ static inline char *function_x91aa57(char *destination, const char *source, dwor
 	return destination;
 }
 
-/* retail inlines 0x58d50 and 0x58d20 into the parameter setters; their
-   definitions live in another file, so these local copies stand in */
-static inline bool session_member_is_value50(c_class_58d20 *s)
-{
-	bool result = false;
-	if (s->state > 2 && s->state <= 8)
-	{
-		result = s->current_member == s->value50;
-	}
-	return result;
-}
-
-static inline bool session_state_in_5_8(c_class_58d20 *s)
-{
-	bool result = false;
-	long current = s->state;
-	if (current == 5 || current == 6 || current == 7 || current == 8)
-	{
-		result = true;
-	}
-	else
-	{
-		/* retail's dead stack store of the state, as in 0x58d20 */
-		volatile long unused = current;
-	}
-	return result;
-}
-
 // @retail 0x5b790
 bool network_session_parameters_set_value4d08(c_class_58d20 *session, long value4d08, long value4d0c, const char *string)
 {
 	bool result = false;
 
-	if (session_state_is_live(session) && session_member_is_value50(session))
+	if (session_state_is_live(session) && function_058d50(session))
 	{
-		if (!session_state_in_5_8(session))
-		{
-			s_network_message_parameters_request request;
-			parameters_request_initialize(session, &request);
-			request.change_value4d08 = true;
-			request.value4d08 = value4d08;
-			request.value4d0c = value4d0c;
-			strncpy(request.string4d10, string, sizeof(request.string4d10));
-			request.string4d10[sizeof(request.string4d10) - 1] = 0;
-			network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
-		}
-		else
+		if (session->function_058d20())
 		{
 			session->value4d08 = value4d08;
 			session->value4d0c = value4d0c;
 			function_x91aa57(session->string4d10, string, sizeof(session->string4d10));
 			session->update_count++;
+			return true;
 		}
+		s_network_message_parameters_request request;
+		parameters_request_initialize(session, &request);
+		request.change_value4d08 = true;
+		request.value4d08 = value4d08;
+		request.value4d0c = value4d0c;
+		function_x91aa57(request.string4d10, string, sizeof(request.string4d10));
+		network_session_send_to_host(session, _network_message_type_parameters_request, sizeof(request), &request);
 		result = true;
 	}
 	return result;
@@ -2176,29 +2157,10 @@ void network_session_leave_joining(c_class_58d20 *session)
 			network_session_member_state_dispose(session, i);
 	}
 	memset(&session->current_member, 0xff, sizeof(session->current_member));
-	memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
-	memcpy(&session->value7420, &data, sizeof(data));
-	session->state = 2;
+	network_session_enter_state_with_data(session, 2, &data, sizeof(data));
 	network_session_update_leaving_join(session);
 }
 
-// score 3 (was 3): retail sets the NONE carrier (EBX) after clearing the state block; ours sets
-// it before the clear. The carrier must stay live across the clear: set after it in the source, it
-// moves to EAX and EBX is no longer saved. Tried: the copy as a word loop 49, as a pointer range or
-// a byte loop 0 (not kept: the matched siblings 0x61180 and 0x614a0 copy the same way with memcpy);
-// complete field construction without scratch clear 48; clock before record 28, after scratch clear
-// 3; immutable initialized record 48; typed state destination 11, without scratch clear 48, with
-// immutable record 48, with earlier clock 28; memmove 42; request field fill 3; clear result as copy
-// target 9; all-one record fill 31; tail-only clear 32; fill with memmove 37; tail clear with fill
-// 30; tail clear with memmove 46; destination sentinel after copy 30; scratch sentinel after clear
-// 29, as fill 29; NONE before the clock 15 (NONE takes EBP, the clock EBX); destination fill 30;
-// copy-result sentinel 27; fill before clock 15; typed destination with late sentinel 26; zero
-// initializer for the record 27; state-block pointer local for the clear and the copy 11; scratch
-// source pointer: direct clear with record/pointer fields 3/3, with returned state-copy destination
-// 9/9; source from scratch clear with record/pointer fields 38/35, with returned state destination
-// 40/37. Round 87: clock after the state clear 28; state store before the copy 6, before the clear
-// 6; sizeof the record type in the record clear and the copy 3; `void *state_data` (0x5e030's
-// form) declared before the clear 3, between the clock and NONE 3.
 // @retail 0x61330
 void network_session_leave_join_request(c_class_58d20 *session)
 {
@@ -2207,9 +2169,7 @@ void network_session_leave_join_request(c_class_58d20 *session)
 	memset(&data, 0, sizeof(data));
 	data.time = network_session_time_now();
 	data.last_request_time = NONE;
-	memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
-	memcpy(&session->value7420, &data, sizeof(data));
-	session->state = 4;
+	network_session_enter_state_with_data(session, 4, &data, sizeof(data));
 	network_session_update_leaving(session);
 }
 
@@ -2238,9 +2198,7 @@ void network_session_host_leave(c_class_58d20 *session, bool leave, long peer_in
 			data.peer_mask = ((1 << session->member_count) - 1) & ~(1 << session->current_member);
 		else
 			data.peer_mask = 1 << peer_index;
-		memset(&session->value7420, 0, SESSION_STATE_DATA_SIZE);
-		memcpy(&session->value7420, &data, sizeof(data));
-		session->state = 7;
+		network_session_enter_state_with_data(session, 7, &data, sizeof(data));
 	}
 	else if (leave)
 	{
@@ -2474,6 +2432,8 @@ bool network_session_handle_session_disband(c_class_58d20 *session, const s_type
 // peer-fed common success 15;
 // a plain bool result set before the disconnect and passed as the reason 14 (the reason folds
 // to an immediate store); the reason in a union with the result a separate bool 14.
+// Round 15 (diagnostic): BLOCKED-BY 0x616b0: the plain shape matches once 0x616b0's body is
+// written through network_session_enter_state_with_data; this union form is then 22.
 // @retail 0x5e1a0
 bool network_session_handle_session_boot(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3293,10 +3253,7 @@ void __stdcall function_061570(c_class_58d20 *session, bool flag)
 		((byte *)&transition.unknown00)[1] = flag;
 		transition.sent_mask = 1 << session->current_member;
 		transition.mask10 = transition.sent_mask;
-		void *data = &session->value7420;
-		memset(data, 0, SESSION_STATE_DATA_SIZE);
-		memcpy(data, &transition, sizeof(transition));
-		session->state = 8;
+		network_session_enter_state_with_data(session, 8, &transition, sizeof(transition));
 		for (long i = 0; i < session->member_count; i++)
 		{
 			s_network_session_member_state *member = &session->member_states[i];
@@ -3537,21 +3494,69 @@ void function_61050(c_class_58d20 *session, long channel_index,
 	session->value7658 = NONE;
 	network_session_add_member(session, 0, host, true, channel_index, 0);
 	network_session_add_member(session, 1, (const s_session_member_identity *)remote->key188, false, NONE, 0);
-	void *state_data = &session->value7420;
 	session->current_member = 1;
-	memset(state_data, 0, SESSION_STATE_DATA_SIZE);
-	memcpy(state_data, &data, sizeof(data));
-	session->state = 1;
+	network_session_enter_state_with_data(session, 1, &data, sizeof(data));
 	function_62300(session);
 }
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 119 (was 119): the channel call's arguments are set up in the other
+// score 119 (was 119): frame 8 agrees; attach scratch rotation and separate reject tails remain (fast control 131, full 119).
+// Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
+// split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
+// copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
+// pointer for both attaches 119; channel declared first 119; split machine copy 119; time read after now 174.
+// Earlier: the channel call's arguments are set up in the other
 // registers, the failure reason is written before the return value is cleared
 // instead of after, the member's flag byte is read through a computed address
 // instead of an indexed load, and the reservation loop's arguments are pushed
 // in the other order
+// Round 403: copy scope 131; const copy scope 131; scoped input output 131; scoped input state 131;
+// const input copy 131; reservation output lifetime 131; output first 131; scoped result lifetime
+// 136. Opening body restored.
+// Round 81 (fast): direct state time 173; direct now 137; direct age 173; age condition order 137;
+// reservation output at reserve scope 131; counter at reserve scope 131; const reason parameter 131;
+// reason-store return expression 131. Original body restored.
+// Round 422: observer snapshot 188; owner snapshot 163; both attach snapshots 167; per-player
+// identity address 131; observer/identity 188; owner/identity 163; all repeated inputs 167; all
+// inputs/entry snapshots 200. Opening body restored.
+// Round 25 (fast; agrees with full): from the first attach on retail's scratch registers are ours
+// rotated by one, so its reason-7 tails both use ECX and cross-jump (the 15 bytes) and the flag
+// folds to [ebp + edx*4 + 0x72dd]. Non-volatile result 157; result declared after the lookup 136;
+// member arm first 145 (463 bytes); state flag/time read at each use 153; state pointer after the
+// flag test 153; pointer kept with the flag read directly 153 (pointer sunk). Opening body restored.
+// Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
+// fast; all three with the native machine-address field copy 131. Original declarations,
+// machine copy, result qualifier and full body restored; full starting count remains 119.
+// Round 114 (lane 8, fast; check it with 0x59e50 in the same run: with 0x630f0 alone the control reads 131,
+// with 0x59e50 the full 119): `result` declared after the machine copy 133 (control 131; its store moves
+// after the word store); the machine copy through memcpy 119 (same code); one shared `channel == NONE`
+// failure after both attach paths, the else arm closing only an attached channel, 141 at 463 bytes (indexed
+// flag read and an ECX reason-5 tail as retail, but the shared test is laid out after the else arm); the copy
+// and lookup in an inline identity helper 119 (same code); failures through an inline helper that sets its
+// false result before the reason store 119 (same code). Diagnostic: one extra early register temp rotates
+// every later block by one (attach EDX/EAX, reason pointer ECX), so the scratch choice is a round robin and
+// retail sits two allocations further on with identical code before the first attach.
+// Round 21 (lane 17, fast with 0x630f0/0x59e50): the machine copy by `memcpy` from `identity + 0xa` 119 and from the
+// XNADDR `abEnet` 119 (same code); through a named byte source pointer with `memcpy` 151 (463 bytes, as the named
+// source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
+// and reservation loop one register step behind); the copy declared before the result 121; `return *reason = 7,
+// false;` compiles the same (compile-only); 1-3 dead temporaries (diagnostic) 119 each.
+// Round 18 (m3 lane 18; fast with 0x59e50 and 0x630f0 in the list, which reproduces the full 119; without 0x59e50 the
+// reduced image gives 131 at 480 bytes): the machine address copied with memcpy 119 (same code); `result` declared
+// after the copy 121; both attach failures through one `attach_failed:` label 136 (464 bytes); the membership age
+// through network_session_time_since 119 (same code); the reservation out-pointer declared for the whole loop 119.
+// Round 104's named source pointer re-measured plain 151 (463 bytes, aligned 32 against this body's 42: the first
+// attach and the merged reason-7 tails as retail, the member arm and reservation scratch still one step round).
+// Round 482: Independent added/replacement channel results, shared/long/const-long
+// producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
+// Control 119 with related caller retained; original channel join and body restored.
+// Round 119 (lane 8, fast with 0x630f0/0x59e50): the arms swapped (member found first) re-measured 144
+// at 463 bytes for its listing: both attach calls then take retail's EAX/ECX (the member arm's
+// temporaries come first), but the layout puts the member arm first; the member-state pointer declared
+// right after the lookup (not sunk into the arm) 131 (the first reason-7 tail then loads ECX as retail);
+// that with the flag read by index 141 (483 bytes); `long channel = NONE;` 119 and `channel` declared
+// at the top 119 (same code); a named pointer to the existing member for memcmp and properties 144.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3641,7 +3646,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// score 101 (was 101): frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
+// score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
+// Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
+// Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
 // member-state lea, before the timeout call (BLOCKED-BY 0x769a0, held file; same spill in 0x5e7f0),
 // which shifts everything after it; announcement id/member scheduling also differs.
 // Round 55 (on top of each other): constant true/false returns 115 (retail's two exits); guarded
@@ -3672,6 +3679,57 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // native announcement with direct reply fields 129 fast;
 // native flag array with direct reply fields 132 fast;
 // native announcement and long peer result 128 fast;
+// Round 403: native protocol 101; native id fields 101; native identity 101; native zero 101; native
+// reply lifetime 101; native reply order 94; native host default 124; native chained flags 101.
+// Opening body restored.
+// Round 422: shared member-state base 101; shared identifier source 101; both native sources
+// 101; const reply id 101; state base/const reply 101; id source/const reply 101; both
+// sources/const reply 101; shared sources after lookup 101. Opening body restored.
+// Round 30: identity source pointer before the memset 101; `if (state == 7) leave = flag != 0;` 132;
+// `was_host = true` before the announcement 124; leave declared first 103; identity by structure
+// assignment 101. Diagnostic owner argument through a temporary wrapper: passed at the call 101 (no
+// spill), from a local read beside the state 124 (spill at the top, not before the call).
+// Round 32: in a scratch copy an unused owner parameter on 0x769a0 alone leaves 101 (one use: nothing keeps
+// the owner live across the call; 0x769a0 then keeps its observer on the stack without its `&observer` local);
+// the store needs a second owner consumer after the call, as 0x62640/0x627e0 have. Timed-out channel read
+// through `session->member_index` at the call 104; `result` declared unset at entry 101; state range without
+// the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
+// Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
+// the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 47 (m3 lane 13, fast; aligned counts in brackets, baseline [30]): constant true/false exits 116 [29];
+// with the guarded leave 123 [29]; the guarded leave alone 131 [30]; identity source before the memset 101 [27];
+// constant exits with the reply member pointer before the id 116 [23]; those three together 123 [23];
+// `if (peer) {...; return true;} return false;` with the guarded leave and member pointer first 121 [15]: every
+// block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
+// and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
+// shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
+// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
+// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
+// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
+// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
+// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
+// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
+// each with original reply order or member before id: 101/94/101/94/101/94/101/94.
+// Seven-point gain rejected; original executable source restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3741,6 +3799,58 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // only the host register left (retail esi copied to ebx for the address call, session
 // reloaded; ours keeps host in ebx across it); inline address callee 138; inline key
 // setter 138; session parameter re-read at the address call 137 (host still ebx).
+// Separate resolver/key/both noinline declarations 136/136/136; each with
+// the shared clock forceinline declaration 145/145/145. Native full-record
+// copies with resolver alone/all boundaries 136/145. Host/session staging,
+// cleanup placement and clock expansion remain; all declarations and bodies restored.
+// Round 299: entry address/address-and-remote workspaces 136/136; false result
+// after lookup/close/transport 139/143/153, each with entry address 139/143/153.
+// Original workspaces, result lifetime and body restored; host/session and cleanup remain.
+// Round 44: actual returned outcome from availability/registration/resolution, alone/paired/all,
+// then all with channel outcome 187/187/187/187/187/187/187/187.
+// Original result, cleanup and body restored; host/session staging and clock remain.
+// Round 25 (fast, aligned counts in brackets): loopback helper 136 [54]; with forceinline clock 147
+// [38]; with channel failure first too 138 [18: only host/session staging at 0x7ab10 and the mode
+// store's scratch left]. On that composite: key index local 168 (559 bytes); host pointer local
+// before the call/at entry 138/138 (same code); key index and host locals 168; the join-key helper
+// 0x5fac0 called (inlined) 157; 0x7ab10 parameters reordered consistently (local, port, key,
+// address, xnaddr)/(address, local, port, key, xnaddr) 138/138 (same code: allocation, not order).
+// Retail acts as if it lacked register summaries for 0x5fb00 (session reloaded) and 0x7ab10 (host
+// copied ESI->EBX); no call cycle links them. Opening body restored.
+// MiniMax H (10-31): every failure through one `release:` block reached by gotos 49 (576 bytes), but it
+// needs a one-use key_index local read before the key release (138 without it), a test-set loopback flag
+// (164 without it) and network_session_time_now as __forceinline (145 with plain inline); not kept
+// (match-only forms, no match), body restored. Remaining with it: session kept in ESI, host staged in EBX.
+// Round 30: typed single-exit loopback helper 136; with the clock forceinline 147; with channel failure
+// first too 138 (573 bytes, only the 0x7ab10 host/session staging left once aligned). On that composite:
+// 0x5fb00's definition moved below this function 138 (same staging: definition order does not hide its
+// register summary); host pointer local at both calls 138; key index local 168; success `return true`
+// 173. Typed address fields in place with clock and channel failure first 142; success `return true` on
+// the opening body 194. Opening body restored.
+// Round 32: retail's 0x5fb00 preserves ESI (0x75a90 saves it; XNetQosListen is a library call) and 0x7ab10
+// never writes EBX, so the staging is still the missing-summary behaviour. Session read once through its
+// address 136 (same code); one exit with `if (!result)` release 165; named `loopback` bool 136 (same code);
+// key index named before the set-key call 154; clock `__forceinline` declaration alone 145.
+// Round 114 (lane 8, fast with 0x5c720/0x630f0/0x63080): the address tested through its typed fields
+// (`address.address_length`, `address.ipv4_address`) in place of a byte pointer to the whole local 136 (same
+// code, kept); the clock read into a named `now` 136 (same code); the identity copied with memcpy 136 (same
+// code); the address test joined to the 0x7ab10 call's test with `&&` 136; the clock `__forceinline`
+// declaration with the typed fields 145 (581 bytes); the remote record zeroed by `= { 0 }` 136 (the clear then
+// starts at +4, `mov ecx, 0x6a`, where retail's memset clears the whole record).
+// Round 34: on the loopback-helper/forceinline-clock/channel-failure-first composite (138): address declared at
+// function top 138; identity copy after the key release 167; resolved bool for 0x7ab10's result 138; result
+// declared just before the g_4cf792 test 156; identity copy at function top 191 (559 bytes).
+// Round 18 (m3 lane 18, fast with 0x5c720/0x630f0; aligned difflib counts in brackets, this body [61]): the loopback
+// test as an in-place flag (`bool loopback = false; if (length == 4) loopback = ip == 0x7f000001;`, retail's sete/test)
+// 136 [54]; with the channel failure first 152 [28] (554 bytes, the clock still called); with a `__forceinline`
+// declaration of network_session_time_now too 138 [18] (573 bytes; left: the host/session staging at 0x7ab10 and the
+// mode store's scratch); that composite with the flag as one `&&` expression 142 [25] (no sete), with the flag declared
+// before the address lookup 138 [18]. Retail treats 0x5fb00's ESI and 0x7ab10's EBX argument registers as clobbered
+// (it reloads the session and keeps the host in ESI); both callees preserve them and are matched, so this looks like
+// LTCG generating this caller before them: BLOCKED-BY 0x5fb00 and 0x7ab10 (code generation order), not this body.
+// Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
+// three with metadata before payload 138/138/137. Original request construction
+// restored; host/session staging, clock expansion and cleanup placement remain.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -3764,8 +3874,7 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
    s_type_99af70 address;
    if (function_07ab10(session->value38, &address, local, 0x3e9, (const XNADDR *)host))
    {
-    const byte *raw_address = (const byte *)&address;
-    if (*(word *)(raw_address + 0x12) != 4 || *(dword *)raw_address != 0x7f000001)
+    if (address.address_length != 4 || address.ipv4_address != 0x7f000001)
     {
      long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)host);
      if (channel != NONE)
@@ -4351,7 +4460,8 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 /* retail calls 0x5f6a0, 0x58d20, 0x58d90 and 0x75870 here instead of
    inlining them; only the time read for the peer's reply time is inline */
 #pragma inline_depth(0)
-// score 305 (was 305): frame 0xd8 agrees; result/identity/selection byte homes and
+// score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
+// frame 0xd8 and length agree; result/identity/selection byte homes and
 // acknowledgement placement differ.
 // Earlier 305 (was 310): the invalid-state exits and the missing-sender exit return the result directly
 // instead of going through the shared exit, so each one gets its own epilogue and the extent matches
@@ -4372,26 +4482,22 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Earlier 348 (was 356): the valid-state range is an else-if chain, so the invalid-state exit is a
 // separate arm instead of a merged join, and the identity pointer is taken before the member-state
 // pointer. The acceptance/identity byte homes and the duplicated invalid-state exit remain.
-// score 305 (was 305): frame 0xd8 and length agree; the byte homes differ (retail: better +9,
+// Byte homes differ (retail: better +9,
 // identity/same +0xa, result +0xb; ours: identity/same +9, result +0xa, better +0xb), retail reads
 // `result` back from its home at every return (ours folds the two reason-2 returns to `xor al, al`
 // and keeps them as two blocks, where retail has one), and the acknowledgement block is laid out
 // after the first identity test in ours, last in retail.
-// Round 87: one `state <= 2 || state > 8` reason-2 test 368 (the block moves to the end, 1248 bytes),
-// reversed `state > 8 || state <= 2` 370; renamed result/better/identity flag 305 each (names do not
-// move these slots); acknowledgement block after `done:` 305; same declared before better 305;
-// volatile result (diagnostic only, reverted) 317 at 1278 bytes.
-// Earlier: the identity comparison is a predicate and the two timeout reasons are separate arms.
-// Earlier 384: Frame 0xd8 agrees; result/identity homes and block placement remain.
-// Earlier 358 (was 370): the identity comparison is a predicate and the two timeout reasons are
-// separate arms; the extent is 1265/1264 bytes. Acceptance/identity homes and acknowledgement
-// placement remain.
-// Earlier: Aligned frame 0xd8 agrees; acceptance/identity homes and acknowledgement placement remain.
-// Earlier: Frame 0xd8 agrees; result/identity homes and block placement remain.
-// Aligned frame 0xd8 agrees; acceptance/identity homes and acknowledgement/rejection placement remain.
-// Earlier 384 (was 384): Frame 0xd8 agrees; result/identity homes and block placement remain.
-// Aligned frame 0xd8 and sender/identity slots agree; Boolean homes and acknowledgement/rejection placement remain.
-// Frame/sender/identity homes agree; result byte and acknowledgement/rejection placement remain.
+// Kept along the way (356 -> 305): the valid-state range as an else-if chain, the identity pointer taken
+// before the member-state pointer, the peer-map update with the remote member first (the callee is
+// symmetric in its two members), the acceptance test as the no-sender case followed by the acknowledgement
+// (which then stays at the end), the channel-state test on the identity comparison in place, and the
+// acknowledgement, invalid-state and missing-sender exits returning the result directly (own epilogues,
+// extent 1264).
+// Tried: Round 87: one `state <= 2 || state > 8` reason-2 test 368 (the block moves to the end, 1248
+// bytes), reversed `state > 8 || state <= 2` 370; renamed result/better/identity flag 305 each (names do
+// not move these slots); acknowledgement block after `done:` 305; same declared before better 305;
+// volatile result (diagnostic only, reverted) 317 at 1278 bytes. Earlier: the identity comparison as a
+// predicate with the two timeout reasons as separate arms 358 (1265 bytes).
 // shared exit 407, result first 411, role names 411, complete reason arms 411,
 // separate rejection tests 424, positive state arm 411.
 // Member pointers before received copy 396; host workspaces swapped 413;
@@ -4436,6 +4542,53 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Round 214: Native-equality/distinct-exit graph: acceptance, selection, both, identity, identity/acceptance,
 // identity/selection and all Boolean home names 305 each; all names with entry selection constants 372.
 // All executable forms restored; result/identity/selection homes and acknowledgement placement remain.
+// Round 89: every exit through `done:` 318 (1278 bytes; every return then reads `result` from its home
+// as in retail, but the state <= 2 exit keeps its own block); only the three state-test exits through
+// `done:` 308; all exits through `done:` with one `state <= 2 || state > 8` test 357 (1264 bytes, the
+// reason-2 block placed last); better/same declared at entry 367, with every exit through `done:` 381.
+// Round 72: sender test inverted ahead of reason 5 317; acknowledgement after the shared exit 305
+// (same code); its result set before the state-7 test 305; preference/equal flags swapped 305;
+// both declared after the member lookup 314. Retail reloads the result byte on every exit.
+// On native-equality/distinct-policy exits: byte/char acceptance, with original or paired-byte
+// selection, 406/406/406/406; word/short acceptance with either selection domain 410 each.
+// All larger than retail; original truth carriers and body restored.
+// Round 301: Complementary acceptance/preference/equality result storage, seven nonempty
+// combinations 429/305/429/305/429/305/429; all three with complementary identity 429.
+// Original truth carriers and complete body restored; Boolean homes and acknowledgement placement remain.
+// Round 209: Positive policy interval before/inside state-nine admission 375/369; with immutable
+// repeated identity 375/369; with one completion-result exit 365/358; with both 365/358.
+// Completion exits recover length 1264 but regress; opening policy graph, acknowledgement paths,
+// result lifetime and held timeout interface restored.
+// Round 453: Complete version-arm preference/equality/both outputs 304/306/300;
+// explicit identity-result arms on those three 304/306/300; both outputs with delayed
+// selection declarations/entry identity declaration 300/300. Both output homes with
+// all/initial-state shared exits 318/302. The 300 form recovers result +b but gains only five; dropped.
+// Round 30: the timeout call also lacks retail's dead owner spill (BLOCKED-BY 0x769a0, held file).
+// Acknowledgement as a forceinline helper at both sites 506 (1121 bytes: the inline_depth(0) region keeps
+// it out of line); with every exit through `done:` 498; written out at both sites 622 (1478 bytes, no
+// cross-jump); selected-index compare through `map` 317 (1244 bytes); tie-break compare through `map` 317.
+// Round 32: an unused owner parameter on 0x769a0 alone does not give the owner store (305, scratch copy);
+// an owner-taking channel-state accessor after the call stays a call (305). `better`/`same` at the top of
+// the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
+// `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
+// an `owner` local 374 (scratch copy; loaded at the top).
+// Round 287: Shared timeout identity publication with conditional reason and original/newer/
+// equal/both selection predicates 322/331/324/330; explicit reason arms with those same four forms
+// 322/331/324/330. Original timeout publication, selection producers and body restored.
+// Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
+// acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
+// state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
+// code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
+// Round 215: complete decision outputs recover result +b; dword/byte/short counts
+// on that graph 298/314/299; native received packet 298, with those domains 298/314/299;
+// complete native stored fields 323. Seven Boolean-home name combinations 298 each;
+// all names without redundant selection defaults 298. Seven-point leads rejected;
+// original body, packet types, output states and held interfaces restored.
+// Identity/selection byte homes and acknowledgement/rejection placement remain.
+// Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
+// acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
+// state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
+// code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
@@ -4652,18 +4805,33 @@ bool __stdcall function_05d9e0(c_class_58d20 *session, const void *message_)
 
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update);
 
-// score 122 (was 122): missing owner spill leaves frame 0x9148 versus 0x914c (BLOCKED-BY 0x76930:
+// Earlier: missing owner spill leaves frame 0x9148 versus 0x914c (BLOCKED-BY 0x76930:
 // retail passes the owner to the mark-message call as an unused argument; its file is held);
 // mask/counter role names 122, first-loop cursor 122, eligibility guard 122,
 // member bit live across readiness 159, named readiness result 122.
 // Round 50: early continues for the eligibility tests 122; sequence tests swapped 121;
 // channel/observer/sequence read before the tests 136; ready test negated with the mark
 // call in the else arm 119; empty arm for the state-8 test 122.
+// Round 403: live sequence 138; live channel 137; readonly state 122; default buffer 135; default
+// live sequence 138; default live channel 150; readonly live sequence 138; readonly live channel 137.
+// Opening body restored.
+// Round 299: member-entry channel/observer/both/sequence/channel-sequence/observer-sequence
+// snapshots 138/110/137/137/134/137; native unsigned sequence 122; all snapshots
+// with unsigned sequence 136. Uniform observer snapshot 110 plain, 417/416 bytes, kept.
+// Round 30: second-loop member-state pointer at the body's top 123 (416 bytes, retail's flag-byte walk);
+// masks declared delta first 111; observer read after the eligibility tests 122; with the pointer 123;
+// with the mask order 123. Opening body restored.
+// Round 32 (scratch copy; src/unknown_075870.cpp is held): the owner store is a spill of the owner live across
+// the readiness call for the mark call, left behind when LTCG deletes both unused arguments. Inline wrapper
+// with an unused owner (by value / const reference) 110/110; unused owner on 0x768b0 only (by value / const
+// reference) 110/110; on 0x768b0 and 0x76930 108; with a two-use `owner` local 108; with that local, the
+// observer read after the eligibility tests, the second loop's member-state pointer and the masks declared
+// delta first: MATCH. Applied in the tree (coordinator, round 32): MATCH, 0 lost.
 // @retail 0x62640
 void function_62640(c_class_58d20 *session)
 {
- dword full_mask = 0;
  dword delta_mask = 0;
+ dword full_mask = 0;
  byte delta[0x489c];
  byte full[0x489c];
  for (long i = 0; i < session->member_count; i++)
@@ -4675,8 +4843,9 @@ void function_62640(c_class_58d20 *session)
    long channel = state->unknown04;
    s_network_observer *observer = session->observer;
    long sequence = state->unknown08;
-   if (network_observer_channel_ready(observer, channel, 0x19))
-    network_observer_mark_message(observer, channel, 0x19);
+   long owner = session->value10;
+   if (network_observer_channel_ready(observer, owner, channel, 0x19))
+    network_observer_mark_message(observer, owner, channel, 0x19);
    else if (session->state != 8)
    {
     if (sequence != NONE && sequence == session->value24e0)
@@ -4692,6 +4861,7 @@ void function_62640(c_class_58d20 *session)
   function_60400(session, (const byte *)&session->value4c, (const byte *)&session->value24e0, delta);
  for (long j = 0; j < session->member_count; j++)
  {
+  s_network_session_member_state *state = &session->member_states[j];
   byte *message;
   if (delta_mask & (1 << j))
    message = delta;
@@ -4699,21 +4869,48 @@ void function_62640(c_class_58d20 *session)
    message = full;
   else
    continue;
-  session->member_states[j].unknown08 = session->value4c;
+  state->unknown08 = session->value4c;
   network_session_send_to_member(session, j, 0, 0x19, 0x489c, message);
  }
  memcpy(&session->value24e0, &session->value4c, 0x2494);
 }
 
-// score 98 (was 98): the two masks are cleared in the other order and live in
+// Earlier (98): the two masks are cleared in the other order and live in
 // the other stack slots, the frame is four bytes shorter, the bit is shifted
 // in the other register and merged in a register instead of in memory, and the
 // second loop walks the member states from the flag byte
+// Read-only first-loop member / unsigned sequence / immutable observer binding,
+// all seven subsets 98; signed-int cursors in both ordinary loops 98. Original
+// metadata domains and body restored; owner spill, mask homes and send base remain.
+// Round 422: current payload base 105; previous payload base 142; both payload bases 148; opaque
+// message 98; current base/opaque message 105; previous base/opaque message 142; both
+// bases/opaque message 148; both bases/current at encoding 134. Opening body restored.
+// the frame is four bytes shorter: retail loads the session's
+// owner before the readiness call and spills it (BLOCKED-BY 0x76930, the unused owner
+// argument of the mark-message call, as for 0x62640); then the two masks are cleared
+// in the other order and live in the other stack slots, the bit is shifted in the other
+// register and merged in a register instead of in memory, and the second loop walks the
+// member states from the flag byte.
+// Tried: read-only first-loop member / unsigned sequence / immutable observer binding,
+// all seven subsets 98; signed-int cursors in both ordinary loops 98; the second loop's
+// member-state pointer at the top of its body 118 (retail's flag-byte walk, one
+// instruction shorter); that pointer after the `continue`s 98 (same code); a
+// NULL-initialised message with one `continue` 98 (same code); masks declared delta
+// first, buffers swapped, renamed masks and counter (same slots); arms inverted (same
+// code); compared operands swapped and the sequence read first (one-file harness worse).
+// Round 30: observer read once before the eligibility test 128; long masks 98; one bit local for both
+// arms 133 (407 bytes); readiness test negated with the mark call in the else arm 95 (aligned worse, the
+// arms move); equality-first sequence compare 97; negated test with it 95, with long masks 95.
+// Round 32 (scratch copy; src/unknown_075870.cpp is held): unused owner on 0x768b0 only (by value / const
+// reference) 98/98; on 0x768b0 and 0x76930 35 (frame 0x29c4, but the field's address spilled); with a
+// two-use `owner` local 34 (the owner store exact); plus the second loop's member-state pointer 2 (only the
+// order of the two mask clears); plus the masks declared delta first: MATCH. Applied in the tree
+// (coordinator, round 32): MATCH, 0 lost.
 // @retail 0x627e0
 void function_627e0(c_class_58d20 *session)
 {
- dword full_mask = 0;
  dword delta_mask = 0;
+ dword full_mask = 0;
  byte delta[0x14d8];
  byte full[0x14d8];
  for (long i = 0; i < session->member_count; i++)
@@ -4725,8 +4922,9 @@ void function_627e0(c_class_58d20 *session)
    long channel = state->unknown04;
    s_network_observer *observer = session->observer;
    long sequence = state->unknown0c;
-   if (network_observer_channel_ready(observer, channel, 0x21))
-    network_observer_mark_message(observer, channel, 0x21);
+   long owner = session->value10;
+   if (network_observer_channel_ready(observer, owner, channel, 0x21))
+    network_observer_mark_message(observer, owner, channel, 0x21);
    else if (session->state != 8)
    {
     if (sequence != NONE && sequence == *(long *)((byte *)session + 0x5e28))
@@ -4742,6 +4940,7 @@ void function_627e0(c_class_58d20 *session)
   function_609e0(session, (const byte *)&session->update_count, (const byte *)session + 0x5e28, delta);
  for (long j = 0; j < session->member_count; j++)
  {
+  s_network_session_member_state *state = &session->member_states[j];
   byte *message;
   if (delta_mask & (1 << j))
    message = delta;
@@ -4749,7 +4948,7 @@ void function_627e0(c_class_58d20 *session)
    message = full;
   else
    continue;
-  session->member_states[j].unknown0c = session->update_count;
+  state->unknown0c = session->update_count;
   network_session_send_to_member(session, j, 0, 0x21, 0x14d8, message);
  }
  memcpy((byte *)session + 0x5e28, &session->update_count, 0x14b0);
@@ -4799,233 +4998,245 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
+// score 569 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
+// First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
+// Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
+// with first/second/both result passes 798/662/809; all with member-mask role names 809.
+// Second pass without the implied result-loop test 748; complete admission predicates with
+// player fields/original player snapshot 767/750. The 662 form required the implied test and was dropped.
+// Round 467: Native first/second/player record graphs, seven subsets, 696 each fast;
+// all with signed-short member ordinals 669 fast, 680 plain. Original records with
+// first/second/both signed-short ordinals 523/672/669 fast; first alone 569 plain (kept).
+// Necessary result-controlled error-continue loops first/second/both 696/704/732;
+// with signed-short ordinals 718/715/724. Original records and validation exits retained.
+// Round 482: Persistent member-record cursors first/second/both 697/769/761;
+// first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
+// both with unsigned-word application ordinal 743 (fast; unchanged control 523).
+// Every form regresses; original signed-short validation ordinal and full body restored.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
-	bool result = true;
 	const byte *update = (const byte *)message;
-	if (*(const long *)(update + 0xc) != NONE && *(const long *)(update + 0xc) != session->value4c)
-		goto stale_update;
-	s_membership_update_snapshot previous;
-	memcpy(&previous, &session->value4c, sizeof(previous));
-	s_network_session_member_state previous_states[16];
-	memcpy(previous_states, session->member_states, sizeof(previous_states));
-	session->value4c = *(const long *)(update + 8);
-	session->update7618++;
-	dword added = 0;
-	dword moved = 0;
-	dword removed = 0;
-	dword retained = 0;
-	long old_to_new[16];
-	memset(old_to_new, NONE, sizeof(old_to_new));
-	if (*(const long *)(update + 0xc) != NONE)
-		for (long i = 0; i < session->member_count; i++)
-			old_to_new[i] = i;
-	for (long i = 0; i < *(const short *)(update + 0x10); i++)
+	bool result = *(const long *)(update + 0xc) == NONE || *(const long *)(update + 0xc) == session->value4c;
+	if (result)
 	{
-		const byte *entry = update + 0x14 + i * 0x104;
-		short from = *(const short *)entry;
-		short to = *(const short *)(entry + 2);
-		if (from == NONE)
+		s_membership_update_snapshot previous;
+		memcpy(&previous, &session->value4c, sizeof(previous));
+		s_network_session_member_state previous_states[16];
+		memcpy(previous_states, session->member_states, sizeof(previous_states));
+		session->value4c = *(const long *)(update + 8);
+		session->update7618++;
+		dword added = 0;
+		dword moved = 0;
+		dword removed = 0;
+		dword retained = 0;
+		long old_to_new[16];
+		memset(old_to_new, NONE, sizeof(old_to_new));
+		if (*(const long *)(update + 0xc) != NONE)
+			for (long i = 0; i < session->member_count; i++)
+				old_to_new[i] = i;
+		for (short i = 0; i < *(const short *)(update + 0x10); i++)
 		{
-			if (to < 0 || to >= 16 || !entry[0x28]) goto failed;
-		}
-		else if (to == NONE)
-		{
-			if (*(const long *)(update + 0xc) == NONE || from < 0 || from >= previous.member_count ||
-				entry[0x28] || memcmp(previous.members[from].words, entry + 4, 0x24) || old_to_new[from] != from)
-				goto failed;
-			old_to_new[from] = NONE;
-		}
-		else
-		{
-			if (*(const long *)(update + 0xc) == NONE || from < 0 || from >= previous.member_count ||
-				to < 0 || to >= 16 || memcmp(previous.members[from].words, entry + 4, 0x24) || old_to_new[from] != from)
-				goto failed;
-			old_to_new[from] = to;
-		}
-	}
-	if (*(const long *)(update + 0xc) != NONE)
-		retained = (1 << previous.member_count) - 1;
-	for (long i = 0; i < *(const short *)(update + 0x10); i++)
-	{
-		const byte *entry = update + 0x14 + i * 0x104;
-		short from = *(const short *)entry;
-		short to = *(const short *)(entry + 2);
-		if (from == NONE)
-		{
-			if (to < 0 || to >= 16 || !entry[0x28]) goto failed;
-			s_session_member *member = &session->members[to];
-			bool occupied = false;
-			if (*(const long *)(update + 0xc) != NONE)
-				for (long j = 0; j < previous.member_count; j++)
-					if (old_to_new[j] == to) occupied = true;
-			if (occupied) goto failed;
-			memset(member, 0, sizeof(*member));
-			member->properties_valid = *(const bool *)(entry + 0x29);
-			memcpy(member->words, entry + 4, 0x24);
-			for (long j = 0; j < 4; j++) member->player_indices[j] = NONE;
-			session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
-			added |= 1 << to;
-		}
-		else if (to == NONE)
-		{
-			if (*(const long *)(update + 0xc) == NONE || from < 0 || from >= previous.member_count ||
-				entry[0x28] || memcmp(previous.members[from].words, entry + 4, 0x24)) goto failed;
-			removed |= 1 << from;
-			retained &= ~(1 << from);
-		}
-		else
-		{
-			if (*(const long *)(update + 0xc) == NONE || from < 0 || from >= previous.member_count ||
-				to < 0 || to >= 16 || memcmp(previous.members[from].words, entry + 4, 0x24)) goto failed;
-			s_session_member *member = &session->members[to];
-			if (from != to) *member = previous.members[from];
-			if (entry[0x28])
+			const byte *entry = update + 0x14 + i * 0x104;
+			if (*(const short *)entry == NONE)
 			{
-				member->properties_valid = *(const bool *)(entry + 0x29);
-				session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
+				if (*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || !entry[0x28]) goto failed;
 			}
-			if (from != to)
+			else if (*(const short *)(entry + 2) == NONE)
 			{
-				old_to_new[from] = to;
-				moved |= 1 << to;
-				retained &= ~(1 << from);
+				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
+					entry[0x28] || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24) || old_to_new[*(const short *)entry] != *(const short *)entry)
+					goto failed;
+				old_to_new[*(const short *)entry] = NONE;
 			}
-			if (!entry[0x28] && from == to) goto failed;
-		}
-	}
-	if (*(const long *)(update + 0xc) == NONE)
-	{
-		long count = *(const short *)(update + 0x10);
-		if (added != (dword)((1 << count) - 1)) goto failed;
-		session->member_count = count;
-		for (long i = 0; i < previous.member_count; i++)
-		{
-			for (long j = 0; j < session->member_count; j++)
-				if (!memcmp(previous.members[i].words, session->members[j].words, 0x24)) old_to_new[i] = j;
-			if (old_to_new[i] == NONE) removed |= 1 << i;
-		}
-	}
-	else
-	{
-		dword mask = retained | moved | added;
-		long count = NONE;
-		for (long i = 0; i < 16; i++)
-		{
-			if (mask & (1 << i))
-			{
-				if (count != NONE) { result = false; break; }
-			}
-			else if (count == NONE) count = i;
-		}
-		if (count == NONE) count = 16;
-		session->member_count = count;
-		if (!result) goto finish;
-	}
-	{
-		long new_to_old[16];
-		memset(new_to_old, NONE, sizeof(new_to_old));
-		for (long i = 0; i < previous.member_count; i++)
-			if (!(removed & (1 << i))) new_to_old[old_to_new[i]] = i;
-		for (long i = 0; i < previous.member_count; i++)
-			if (removed & (1 << i)) network_session_member_state_dispose(session, i);
-		memset(session->member_states, 0, sizeof(session->member_states));
-		for (long i = 0; i < session->member_count; i++)
-		{
-			if (new_to_old[i] != NONE) session->member_states[i] = previous_states[new_to_old[i]];
 			else
 			{
-				memset(&session->member_states[i], 0, sizeof(session->member_states[i]));
-				long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)session->members[i].words);
-				if (channel != NONE) network_session_member_state_initialize(session, i, true, channel);
-				else result = false;
+				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
+					*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24) || old_to_new[*(const short *)entry] != *(const short *)entry)
+					goto failed;
+				old_to_new[*(const short *)entry] = *(const short *)(entry + 2);
 			}
 		}
-	}
-	if (!result) goto finish;
-	if (old_to_new[session->member_index] == NONE) result = false;
-	else session->member_index = old_to_new[session->member_index];
-	if (old_to_new[session->current_member] == NONE) result = false;
-	else session->current_member = old_to_new[session->current_member];
-	if (*(const long *)(update + 0xc) != NONE)
-	{
-		for (long i = 0; i < 16; i++)
+		if (*(const long *)(update + 0xc) != NONE)
+			retained = (1 << previous.member_count) - 1;
+		for (long i = 0; i < *(const short *)(update + 0x10); i++)
 		{
-			if (session->player_mask & (1 << i))
+			const byte *entry = update + 0x14 + i * 0x104;
+			if (*(const short *)entry == NONE)
 			{
-				long member = old_to_new[session->players[i].member_index];
-				if (member == NONE)
+				if (*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || !entry[0x28]) goto failed;
+				s_session_member *member = &session->members[*(const short *)(entry + 2)];
+				bool occupied = false;
+				if (*(const long *)(update + 0xc) != NONE)
+					for (long j = 0; j < previous.member_count; j++)
+						if (old_to_new[j] == *(const short *)(entry + 2)) occupied = true;
+				if (occupied) goto failed;
+				memset(member, 0, sizeof(*member));
+				member->properties_valid = *(const bool *)(entry + 0x29);
+				memcpy(member->words, entry + 4, 0x24);
+				for (long j = 0; j < 4; j++) member->player_indices[j] = NONE;
+				session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
+				added |= 1 << *(const short *)(entry + 2);
+			}
+			else if (*(const short *)(entry + 2) == NONE)
+			{
+				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
+					entry[0x28] || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24)) goto failed;
+				removed |= 1 << *(const short *)entry;
+				retained &= ~(1 << *(const short *)entry);
+			}
+			else
+			{
+				if (*(const long *)(update + 0xc) == NONE || *(const short *)entry < 0 || *(const short *)entry >= previous.member_count ||
+					*(const short *)(entry + 2) < 0 || *(const short *)(entry + 2) >= 16 || memcmp(previous.members[*(const short *)entry].words, entry + 4, 0x24)) goto failed;
+				s_session_member *member = &session->members[*(const short *)(entry + 2)];
+				if (*(const short *)entry != *(const short *)(entry + 2)) *member = previous.members[*(const short *)entry];
+				if (entry[0x28])
 				{
-					session->player_mask &= ~(1 << i);
-					session->player_count--;
+					member->properties_valid = *(const bool *)(entry + 0x29);
+					session_parameters_apply_update(&member->properties, (const s_session_parameters_update *)(entry + 0x2c));
 				}
-				else session->players[i].member_index = member;
+				if (*(const short *)entry != *(const short *)(entry + 2))
+				{
+					old_to_new[*(const short *)entry] = *(const short *)(entry + 2);
+					moved |= 1 << *(const short *)(entry + 2);
+					retained &= ~(1 << *(const short *)entry);
+				}
+				if (!entry[0x28] && *(const short *)entry == *(const short *)(entry + 2)) goto failed;
 			}
 		}
-	}
-	if (!result) goto finish;
-	if (*(const long *)(update + 0xc) == NONE && !update[0x4894]) goto failed;
-	if (update[0x4894])
-	{
-		long host = *(const long *)(update + 0x4898);
-		if (host < 0 || host >= session->member_count) goto failed;
-		session->value50 = host;
-	}
-	if (*(const long *)(update + 0xc) == NONE)
-	{
-		session->player_count = 0;
-		session->player_mask = 0;
-		for (long i = 0; i < session->member_count; i++)
+		if (*(const long *)(update + 0xc) == NONE)
 		{
-			for (long j = 0; j < 4; j++) session->members[i].player_indices[j] = NONE;
-			session->members[i].player_count = 0;
-		}
-	}
-	for (long i = 0; result && i < *(const short *)(update + 0x12); i++)
-	{
-		const byte *entry = update + 0x2094 + i * 0x140;
-		short player = *(const short *)entry;
-		if (player < 0 || player >= 16) { result = false; continue; }
-		switch (*(const short *)(entry + 2))
-		{
-		case 0:
-			if (!(session->player_mask & (1 << player))) { result = false; break; }
-			network_session_remove_player(session, player);
-			break;
-		case 1:
+			long count = *(const short *)(update + 0x10);
+			if (added != (dword)((1 << count) - 1)) goto failed;
+			session->member_count = count;
+			for (long i = 0; i < previous.member_count; i++)
 			{
-				short member = *(const short *)(entry + 0x10);
-				short slot = *(const short *)(entry + 0x12);
-				if ((session->player_mask & (1 << player)) || member < 0 || member >= session->member_count ||
-					slot < 0 || slot >= 4 || session->members[member].player_indices[slot] != NONE ||
-					network_session_find_player(session, (const dword *)(entry + 4)) != NONE)
-				{ result = false; break; }
-				network_session_add_player(session, member, (const XUID *)(entry + 4), player, slot);
+				for (long j = 0; j < session->member_count; j++)
+					if (!memcmp(previous.members[i].words, session->members[j].words, 0x24)) old_to_new[i] = j;
+				if (old_to_new[i] == NONE) removed |= 1 << i;
 			}
-		case 2:
-			if (!(session->player_mask & (1 << player))) { result = false; break; }
-			session->players[player].unknown14 = *(const long *)(entry + 0x18);
-			memcpy(session->players[player].properties18, entry + 0x1c, 0x90);
-			memcpy(session->players[player].propertiesa8, entry + 0xac, 0x90);
-			session->players[player].unknown138 = *(const long *)(entry + 0x13c);
-			break;
-		default: result = false; break;
 		}
+		else
+		{
+			dword mask = retained | moved | added;
+			long count = NONE;
+			for (long i = 0; i < 16; i++)
+			{
+				if (mask & (1 << i))
+				{
+					if (count != NONE) { result = false; break; }
+				}
+				else if (count == NONE) count = i;
+			}
+			if (count == NONE) count = 16;
+			session->member_count = count;
+			if (!result) goto finish;
+		}
+		{
+			long new_to_old[16];
+			memset(new_to_old, NONE, sizeof(new_to_old));
+			for (long i = 0; i < previous.member_count; i++)
+				if (!(removed & (1 << i))) new_to_old[old_to_new[i]] = i;
+			for (long i = 0; i < previous.member_count; i++)
+				if (removed & (1 << i)) network_session_member_state_dispose(session, i);
+			memset(session->member_states, 0, sizeof(session->member_states));
+			for (long i = 0; i < session->member_count; i++)
+			{
+				if (new_to_old[i] != NONE) session->member_states[i] = previous_states[new_to_old[i]];
+				else
+				{
+					memset(&session->member_states[i], 0, sizeof(session->member_states[i]));
+					long channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)session->members[i].words);
+					if (channel != NONE) network_session_member_state_initialize(session, i, true, channel);
+					else result = false;
+				}
+			}
+		}
+		if (!result) goto finish;
+		if (old_to_new[session->member_index] == NONE) result = false;
+		else session->member_index = old_to_new[session->member_index];
+		if (old_to_new[session->current_member] == NONE) result = false;
+		else session->current_member = old_to_new[session->current_member];
+		if (*(const long *)(update + 0xc) != NONE)
+		{
+			for (long i = 0; i < 16; i++)
+			{
+				if (session->player_mask & (1 << i))
+				{
+					long member = old_to_new[session->players[i].member_index];
+					if (member == NONE)
+					{
+						session->player_mask &= ~(1 << i);
+						session->player_count--;
+					}
+					else session->players[i].member_index = member;
+				}
+			}
+		}
+		if (!result) goto finish;
+		if (*(const long *)(update + 0xc) == NONE && !update[0x4894]) goto failed;
+		if (update[0x4894])
+		{
+			long host = *(const long *)(update + 0x4898);
+			if (host < 0 || host >= session->member_count) goto failed;
+			session->value50 = host;
+		}
+		if (*(const long *)(update + 0xc) == NONE)
+		{
+			session->player_count = 0;
+			session->player_mask = 0;
+			for (long i = 0; i < session->member_count; i++)
+			{
+				for (long j = 0; j < 4; j++) session->members[i].player_indices[j] = NONE;
+				session->members[i].player_count = 0;
+			}
+		}
+		for (long i = 0; result && i < *(const short *)(update + 0x12); i++)
+		{
+			const byte *entry = update + 0x2094 + i * 0x140;
+			short player = *(const short *)entry;
+			if (player < 0 || player >= 16) { result = false; continue; }
+			switch (*(const short *)(entry + 2))
+			{
+			case 0:
+				if (!(session->player_mask & (1 << player))) { result = false; break; }
+				network_session_remove_player(session, player);
+				break;
+			case 1:
+				{
+					short member = *(const short *)(entry + 0x10);
+					short slot = *(const short *)(entry + 0x12);
+					if ((session->player_mask & (1 << player)) || member < 0 || member >= session->member_count ||
+						slot < 0 || slot >= 4 || session->members[member].player_indices[slot] != NONE ||
+						network_session_find_player(session, (const dword *)(entry + 4)) != NONE)
+					{ result = false; break; }
+					network_session_add_player(session, member, (const XUID *)(entry + 4), player, slot);
+				}
+			case 2:
+				if (!(session->player_mask & (1 << player))) { result = false; break; }
+				session->players[player].unknown14 = *(const long *)(entry + 0x18);
+				memcpy(session->players[player].properties18, entry + 0x1c, 0x90);
+				memcpy(session->players[player].propertiesa8, entry + 0xac, 0x90);
+				session->players[player].unknown138 = *(const long *)(entry + 0x13c);
+				break;
+			default: result = false; break;
+			}
+		}
+		if (result) goto local_0;
+		finish:
+		session->flag48 = true;
+		if (!result) network_session_close(session);
+		goto local_0;
+		failed:
+		result = false;
+		goto finish;
 	}
-	if (result) goto local_0;
-	finish:
-	session->flag48 = true;
-	if (!result) network_session_close(session);
+	else
+		network_session_host_lost(session);
 	local_0:
 	return result;
-	failed:
-	result = false;
-	goto finish;
-	stale_update:
-	network_session_host_lost(session);
-	result = false;
-	goto local_0;
 }
 
 void network_session_expire_reservations(c_class_58d20 *session);

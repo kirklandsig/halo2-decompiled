@@ -100,14 +100,98 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 }
 
 /* the collision layer of one of the object's rigid bodies, by object type */
-// score 96 (was 96): retail reads the type once before the kind test with the component in
-// eax and the rigid index in ecx; every one-read type form flips that pair (the caller
+// score 96 (was 96): no local frame; retail reads the type once before the kind test and keeps
+// the body array/body in EBP/ESI. Current component EAX, rigid index ECX, kind EDI and ret 8
+// agree with the matched caller. A single type read must preserve that incoming convention;
+// every prior one-read type form flips the component/index pair (the caller
 // 0x1d5bf0 then differs). Type read after the rigid body 94 at 256 bytes (caller 13), first
 // 117, after headers/body/index 94 (caller 13), body then type 136, kind 7 as a ternary 104;
 // case 0 through the object_index local 91 at 256 bytes (caller 146), with the one-read type
 // 132-133; parameters reordered (rigid index first, component last) 96 / 94 (caller 13).
-// score 96 (was 89): retail pushes ebp and holds the base pointer there, ours keeps the record in esi and ecx;
+// Earlier 96 (was 89): retail pushes ebp and holds the base pointer there, ours keeps the record in esi and ecx;
 // the whole register allocation differs.
+// Round 183: shared header getter at both dispatches 96; shared byte/long type after body 94/96; early byte 106; direct-component long 105; header/typed object lookup 136/136; shared multi-use handle 105. Single-type forms lose 1d5bf0; all restored.
+// MiniMax R: both flag results computed as ((flags & 8) | 0x30) >> 2 and >> 3 instead of branching: 95 (not kept).
+// Round 200: byte/char/short/word layer result 92/91/119/119; with one direct full-width type
+// 141/141/121/121, all four lose the matched caller. Original layer and dispatch restored.
+// Round r4 (lane 17): one header pointer for type and object 132 (220 bytes, kind moves to ESI, caller 213); header
+// array local with one object_index read and one type read 124 (228, component on the stack, caller 209); one type
+// read keeping the component read in case 0 94 (256, component/index swap EAX/ECX, caller 13), the same with result
+// declared first 94 (caller 13); header array local with the component read at both uses 127 (224, caller 209).
+// The register parameters follow how often the body reads component: one read puts it on the stack.
+// Round 320: both rigid-body flags read live through the model; repeated/shared byte type
+// and original/explicit object-bit result arms 117/111/114/117; explicit level tests
+// 117/111/114/117. Every form loses the matched caller; complete original body restored.
+// Round 457: selected-body const reference with repeated/shared type, original/explicit
+// object-bit arms and original/explicit upper-level arms: 96/136/93/136/96/136/93/136.
+// Shared-type forms lose the matched caller; the three-point forms are below the keep gate.
+// Original body and caller convention restored.
+// Round 10 (lane 17): a /Gd first-pass harness loads the rigid-body index into EAX for every one-read-type form
+// (208 orderings, byte/long type, case 0 through the local or the component, header local), into ECX only with the
+// two reads, which is the flip. One read with case 0 through the object_index local 136 (216 bytes, caller 213); the
+// kind-7 test as a plain if 100 (260 bytes, sbb select); parameters (component, owner, level, kind, index) as the
+// caller's setup order implies 96 (same code, caller kept), with the one-read body 136, with a single-exit kind-7
+// path 100 (caller 13).
+// Round 46 (lane 1): parameters in retail's register order (component, index, kind, owner, level) 96 (same
+// code, caller kept), with the one-read type after the body 94 (caller 13), with case 0 also through the
+// object_index local 133 (220 bytes, caller 213), with case 0 through the header data at that index 133
+// (caller 213). A /Gd screen of 72 one-read forms (type/body/result orders, byte/long type, case 0 through the
+// component or the local, switch/result kind-7 path, header pointer) and two with the body formed at its uses
+// loads the index into EAX in every one. Retail loads the header data first and keeps it live into case 0
+// (EDX), which costs EBP for the body array; no form here keeps it.
+// Round 56 (lane 16): a /Gd compile-only screen predicts the register parameters (it agrees with the build for the
+// two-read body, the one-read flip and the form below). Of ~150 one-read forms (orders of object_index, type,
+// rigid body and result; long/byte/short/const type; case 0 through the component or object_index; a header
+// pointer; a split rigid-body pointer; the kind-7 test as a switch, switch with default, single-exit switch,
+// ternary or if/return), only the if/ternary kind-7 tests keep component EAX / index ECX, and they compile to
+// `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
+// kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
+// object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// both switches 125 (284 bytes, caller 194).
+// Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
+// a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
+// 98 (caller 13, movzx); the kind-7 test as `switch (kind) { case 7: ... }` 89 (caller 13); the current body with
+// case 0 through the object_index local 91 (caller 146); the type read straight from component, long 105 (caller 9,
+// index arrives in EDX). An env link with 0x1d5940/0x1d5bf0 (exact for the current body): the type through a
+// forceinline getter in both branches, or straight from component in both, never hoists the two reads (268/264
+// bytes); every order of the object_index/rigid-body/type/result declarations with byte or long type keeps the flip.
+// Round 31 (lane 15, fast; o/t/r = object_index, type, rigid body in declaration order, caller in brackets):
+// type through the byte-array header idiom o,t,r 105 [9], r,o,t 137, o,r,t 136, byte 117/132; o,t,r with case 0
+// through the component 124 at 276 [194] (retail's entry and case 0 exactly, but the type takes EDI and kind goes
+// to the stack); on that form the body array first 118, the model first 122, a byte shift in case 0 124, int type
+// 124, result first 124, the rigid body at each use 97 at 260 [122], the rigid body after the kind-7 path 103.
+// Round 32 (m3 lane 2, fast, caller 0x1d5bf0 in brackets): one byte type read with the kind test inverted (main
+// switch first, the kind-7 switch in the else) 89 at 256 bytes [13] (component ECX, index EAX); the header array read
+// first and shared by the type and case 0 124 at 228 [209]; one read with the kind-7 path as an if/else single exit
+// 104 at 240 [13] (sbb select); the two-read body with the kind test inverted 103 at 268; one read for the main switch
+// with the kind-7 switch re-reading the header expression 94 at 256 [13] (CSE'd into the one-read form).
+// Round 33 (lane 15, fast): o,t,r with the kind-7 ternary re-measured 96 at 256 bytes [0] (rigid body computed
+// in place in ECX where retail copies the index to ESI, header data in ESI for retail's EDX, branchless kind 7);
+// on it the kind-7 path as `if (type == 1) return 0xc; return 1;` 96 (folded to the same select), case 0 as
+// `(byte >> 2) & 1` through the component 96 (still `shr eax, 2`), through object_index 141 [213], the kind-7
+// path as a one-case switch 124 [194]; o,r,t 105 and r,o,t 107 (240 bytes [13]).
+// Round 35 (lane 15, fast), on o,t,r with the kind-7 switch and case 0 through the component (124 at 276 [194]:
+// entry and case 0 as retail, but the type takes EDI and kind drops to the stack): type renamed object_type /
+// type_value, rigid_body renamed body 124/124/124; kind, level or component renamed 124/124/124 (names order no
+// register); the main switch inside `if (kind != 7)` with the kind-7 switch after it 115 at 272 [194]; per-case
+// returns with no result 124. On this body: case 0 as `(byte >> 2) & 1` or `(byte)(byte >> 2) & 1` 96/96 [0].
+// Round 64 (lane 16, fast; caller 0x1d5bf0 in brackets): one type read as a byte 94 [13], as a long 96 [13];
+// on the one-read body the owner read once through `&owner` 96 [13], the level through `&level` 96 [13], the kind
+// through `&kind` 65 at 260 bytes [194: kind on the stack, ret 0xc], the rigid body as `base + index * sizeof`
+// byte arithmetic 96 [13]. Every one-read body takes component in ECX and the index in EAX.
+// Round 39 (lane 15, fast): one type read with a `dword` object_index 94 at 256 [13] (component ECX, index EAX);
+// one read with the kind-7 switch listing cases 0/7/11 and an `__assume(0)` default 121 (284) [13]; two reads with
+// the main switch's through `component->object_index` 91 at 256 [146] (component on the stack, kind EDX), with
+// the kind-7 read through it instead 96 [0] (same code); one read with the body array named first 94 [13].
+// DL226: One completed native layer result across both kind routes, byte/char/short/word,
+// kind-arm defaults 97/99/125/125 and entry defaults 97/97/122/122. All lose 0x1d5bf0;
+// original result flow, repeated type observations and incoming convention restored.
+// Round 240: Primary body result default, crossed with secondary body default, one byte type
+// and native object-byte shift: 100/108/91/91/100/108/91/91. Original body restored;
+// shared-type forms lose the matched caller (13); the five-point gain is below the keep gate.
+// Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
+// 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
+// the matched caller (13). Original separate flag cases, both type reads and body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -214,29 +298,26 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-/* a flag field read as word bits: retail reads these flags with a load, a
-   shift and a test of the low bit */
-struct s_flag_word_bits
-{
-	word bit0 : 1;
-	word bit1 : 1;
-	word bit2 : 1;
-	word bit3 : 1;
-	word bit4 : 1;
-	word bit5 : 1;
-	word bit6 : 1;
-	word bit7 : 1;
-	word bit8 : 1;
-	word bit9 : 1;
-	word bit10 : 1;
-	word bit11 : 1;
-	word bit12 : 1;
-	word bit13 : 1;
-	word bit14 : 1;
-	word bit15 : 1;
-};
-
-// score 275 (was 275): Frame 0x1c versus 0x18; current/entry/status homes and next-group spill remain.
+// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
+// back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
+// through the group pointer, count and first body), the section loops load the component's object index after
+// both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
+// loop latch with the `first_body = NONE`, has-next, `*active = true` and recursion blocks placed after the
+// epilogue (ours keeps them inline before the latch; a compile-only screen of three branch orders never moves
+// them past the epilogue).
+// Earlier at 241 (was 261): frame 0x18, current ESI, groups EBX and the body loop index EDI agreed. Left then: the
+// model pointer is in ESI where retail uses EDX, the output body index and the replaced flag swap BL/CL, the
+// availability stays in memory where retail reloads it into DL (so ours hoists 0x80000 into EBP), the two
+// flag bytes swap frame slots 2/3, and `next` is compared as a short where retail sign-extends it once.
+// Round 30 (lane D): no better form found. The permuter ran 50 tries and its best was 258 against the
+// 261 baseline (three points, below the retention margin), and two flag reads were tried: bit 5 through
+// a byte bitfield view and the flag byte's mask tested directly both score 275, so the word bitfield
+// view stays. What still differs: our frame is 0x1c against retail's 0x18, the current and entry roles
+// are rotated between EDI and ESI, the next-group base is retained in an extra spill, and the policy
+// and availability bytes take the two frame slots the other way round. Original body kept.
+// Earlier: Frame 0x1c versus 0x18; current/entry/status homes and next-group spill remain.
+// flag 1 read through a word bitfield view gives retail's load-and-shift;
+// frame 0x1c versus 0x18 and the current/entry roles and next-group spill still differ.
 // Round 9 (lane 11, fast): first body set in an if/else 300 (frame 0x18 and retail's out-of-line NONE store
 // with the re-tested next, but current moves to EDX and the entry index to ESI where retail has ESI/EDX);
 // with it: nested first-body skip test 300 (identical); `this` used directly for the component alias 300
@@ -307,7 +388,62 @@ struct s_flag_word_bits
 // retail keeps esi and the index/next in esi) 300; with next/first body declared before the entry
 // tests 300; inverted first-body test 300; nested first-body rejection 300; NONE first body declared
 // before the entry tests 313. Original body restored.
-// score 261 (was 275): flag 1 read through a word bitfield view gives retail's load-and-shift; the rest still differs.
+// Earlier: flag 1 read through a word bitfield view gives retail's load-and-shift; the rest still differs.
+// Round 201: Preserving the retained word-view admission: real word flags 261; branch-owned first
+// body 298, also 298 with word flags; model-first 278, also 278 with word flags; branch/model 280,
+// also 280 with word flags; directly declared existing word-bitfield type 261. Original body, flag
+// declaration, type location and includes restored. Masked-context diagnostics 275/297/300/294 in
+// both widths repeat the older allocation and are excluded from the fresh count.
+// Round 208: Recursive inline with first-body/availability/model masks 0..7:
+// 261/298/257/298/278/280/278/280; availability-first with later policy, complementary policy, both
+// and direct bounds: 274/296/297/318. Four-point 257 rejected; original method, class declaration
+// and clamp restored. Frame/status/group homes remain.
+// Round 249: Complementary availability/application/both truths, bool
+// 258/261/292 and byte 258/261/292; both with availability declared first
+// 279/279. Three-point best rejected; original status domains and complete body restored.
+// Round 31 (lane 15, fast): first body as if/else plus `short next = groups[0]; if (next == current) next =
+// groups[1];` 241 (kept: retail's untreaded NONE store, no group spill); if/else alone 298 (909), mask flag
+// test alone 275, short next alone 309 (898), short ternary 304 (898), long overwrite 292, mask + short next
+// 314 (898); on the kept body: mask flag test 279 (aligned 111 -> 110), short ternary 298, long overwrite 298,
+// short temp then long next 288 (925), long with field test 299 (935), long/short if/else 298/298, short with
+// field test 319 (948); policy renamed allow_replacement, availability renamed, both flags or the availability
+// declared at method scope, policy declared after them, byte/char flag types, byte policy: 241 (same code);
+// availability declared first 270; flags before the body index 240; model before the body index 253; model
+// through owner at each use 241; clamp inline 241; output as `replaced ? replacement : body_index` 252, with
+// mask 242; a separate output index 241, with mask 279.
+// Round 35 (lane 15, fast; aligned counts in brackets, base 241 [144]): `body_index = replacement;` before
+// `replaced = true;` 241 [144]; `available = true;` after the replace block 252 [129] (lead: the policy and
+// availability bytes then take retail's slots 0x12/0x13 and available gets retail's `mov dl, 1`; left: model in
+// ESI for EDX, body index ECX for EBX, replaced BL for CL); on it the mask test `body->flags & 0x20` 279 [144],
+// with both flags declared first 302 [185], the model read through owner at both uses 252 [129], the model local
+// before the body index 275 [188]; the clamp bound named `last` 242 [154].
+// Round 484: explicit empty-group return with mask/late availability/admitted policy
+// lifetime subsets 241/279/252/279/258/296/277/296. Frame stays 0x18; status,
+// model and promoted-neighbor homes remain. Complete original method restored.
+// Round 39 (lane 15; fast screens, kept forms confirmed plain): on the 241 body, round 35's lead re-measured 252;
+// with the mask test 279; a separate output index declared first 295 (934 bytes), with the mask 269 (output
+// spilled, available in BL); declared after the flags 279 (copy-propagated); output/available/replaced with the
+// mask and the lead 190; a `char` output index 269. Kept: the separate output index, the flags declared output,
+// available, replaced and bit 5 as `body->flags & 0x20` (the word-bitfield view removed) 182 (plain), the same
+// without the mask 295 (934 bytes). On 182: `short next_group` selected then widened into a `long next` 196 (933
+// bytes, `xor; mov ax` and a re-widen), `long next` loaded directly 192; kept: the entry tests as early
+// `continue`s on a short `next_group` read once with `long next = next_group == current ? entry->groups[1] :
+// next_group;` 172 (plain), the same with the if selection 177 (nested-if or continue form alike), with `long
+// next;` declared first 177. On 172: the `next != NONE` branch first 192 (901 bytes); the file's section-test
+// helper for both db540 calls 178 (933 bytes); the ternary's arms swapped 172, `first_body` as a ternary 172,
+// `long next;` declared before the selection 172, the entry test as `!(a || b)` 172 (all the same code).
+// Round 239: On the retained output/early-continue graph, native selected neighbor, terminal scan-index
+// completion and explicit empty-recursion continuation, seven subsets, 184/340/185/172/184/340/185;
+// native overwrite selection 189. Original method restored; frame 0x18 agrees, exit placement and neighbor/key homes remain.
+// Round 242: Uniform two-query object/first-key/second-key snapshots in both scans,
+// seven input subsets 330/329/377/327/376/321/375; all inputs with long keys 370.
+// Every snapshot has two real uses and preserves the read-only query values, but
+// frames/code grow. Original method, field rereads, counts and recursive arguments
+// restored; frame 0x18 agrees, neighbor/key ownership and cold exit placement remain.
+// Round 244: actual section-element references and direct indexed key fields in the two scans,
+// eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
+// References canonicalize; direct fields grow or rotate allocation. Original method and
+// both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
@@ -322,9 +458,10 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
             long body_index = (current == NONE ? groups->groups[256].bodies[i] : groups->groups[current].bodies[i]);
             s_physics_graph_model *model = (s_physics_graph_model *)owner->model;
             s_physics_graph_body *body = &model->bodies[body_index];
-            bool replaced = false;
+            long output_index = body_index;
             bool available = false;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&body->flags)->bit5))
+            bool replaced = false;
+            if (body->flags & 0x20)
             {
                 short replacement = body->replacement;
                 long bounded = replacement < 0 ? 0 : replacement > model->body_count - 1 ? model->body_count - 1 : replacement;
@@ -334,11 +471,11 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                     if (replace)
                     {
                         replaced = true;
-                        body_index = replacement;
+                        output_index = replacement;
                     }
                 }
             }
-            output[(*output_count)++] = (char)body_index;
+            output[(*output_count)++] = (char)output_index;
             if (replaced)
                 component->unknown04 |= 0x100000;
             if (available)
@@ -349,57 +486,60 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
         for (long entry_index = 0; entry_index < owner->model->entry_count; ++entry_index)
         {
             s_physics_graph_entry *entry = &((s_physics_graph_model *)owner->model)->entries[entry_index];
-            if ((entry_mask[entry_index >> 5] & (1 << (entry_index & 31))) &&
-                (entry->groups[0] == current || entry->groups[1] == current))
+            if (!(entry_mask[entry_index >> 5] & (1 << (entry_index & 31))))
+                continue;
+            short next_group = entry->groups[0];
+            if (next_group != current && entry->groups[1] != current)
+                continue;
+            long next = next_group == current ? entry->groups[1] : next_group;
+            long first_body;
+            if (next != NONE && groups->groups[next].count > 0)
+                first_body = groups->groups[next].bodies[0];
+            else
+                first_body = NONE;
+            if (first_body != NONE && (kinds[first_body] == 6 || (visited[next >> 5] & (1 << (next & 31)))))
+                continue;
+            if (next == NONE)
             {
-                long next = entry->groups[0] == current ? entry->groups[1] : entry->groups[0];
-                long first_body = NONE;
-                if (next != NONE && groups->groups[next].count > 0)
-                    first_body = groups->groups[next].bodies[0];
-                if (first_body != NONE && (kinds[first_body] == 6 || (visited[next >> 5] & (1 << (next & 31)))))
-                    continue;
-                if (next == NONE)
+                for (long j = 0; j < entry->section_count; ++j)
                 {
-                    for (long j = 0; j < entry->section_count; ++j)
+                    s_physics_entry_section *section = &entry->sections[j];
+                    if (!function_db540(component->object_index, section->key_a, section->key_b) &&
+                        !function_db4c0(component->object_index, section->key_a, section->key_b))
                     {
-                        s_physics_entry_section *section = &entry->sections[j];
-                        if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                            !function_db4c0(component->object_index, section->key_a, section->key_b))
-                        {
-                            *active = true;
-                            break;
-                        }
+                        *active = true;
+                        break;
                     }
                 }
-                else
+            }
+            else
+            {
+                if (groups->groups[next].count > 0)
                 {
-                    if (groups->groups[next].count > 0)
+                    if (entry->section_count == 0)
                     {
-                        if (entry->section_count == 0)
-                        {
-                            long this_body = (current == NONE ? groups->groups[256].bodies[0] : groups->groups[current].bodies[0]);
-                            long next_body = groups->groups[next].bodies[0];
-                            if (kinds[this_body] == 7 || kinds[next_body] == 7)
-                                continue;
-                        }
-                        else
-                        {
-                            long j;
-                            for (j = 0; j < entry->section_count; ++j)
-                            {
-                                s_physics_entry_section *section = &entry->sections[j];
-                                if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                                    !function_db4c0(component->object_index, section->key_a, section->key_b))
-                                    break;
-                            }
-                            if (j >= entry->section_count)
-                                continue;
-                        }
+                        long this_body = (current == NONE ? groups->groups[256].bodies[0] : groups->groups[current].bodies[0]);
+                        long next_body = groups->groups[next].bodies[0];
+                        if (kinds[this_body] == 7 || kinds[next_body] == 7)
+                            continue;
                     }
-                    if (first_body != NONE)
-                        static_cast<s_physics_component_walk *>(component)->function_1d6630(owner, kinds, entry_mask, groups, context, current, next,
-                            output, output_count, other_context, visited, active);
+                    else
+                    {
+                        long j;
+                        for (j = 0; j < entry->section_count; ++j)
+                        {
+                            s_physics_entry_section *section = &entry->sections[j];
+                            if (!function_db540(component->object_index, section->key_a, section->key_b) &&
+                                !function_db4c0(component->object_index, section->key_a, section->key_b))
+                                break;
+                        }
+                        if (j >= entry->section_count)
+                            continue;
+                    }
                 }
+                if (first_body != NONE)
+                    static_cast<s_physics_component_walk *>(component)->function_1d6630(owner, kinds, entry_mask, groups, context, current, next,
+                        output, output_count, other_context, visited, active);
             }
         }
     }
@@ -504,8 +644,31 @@ PRIVATE __forceinline void physics_mass_copy(byte const *body, s_physics_mass_ar
 
 // score 4 (was 4): retail loads the 1.0f constant after it stores the array pointer, and
 // loads the allocator global before it stores the centre; ours does both the other way round.
+// Round 26: g_480118 defined in a /GL- library file instead of src/globals.cpp fixes the second
+// (LTCG counts an LTCG-defined global as aliased by pointer stores): 2, not kept (a global's
+// definition moved for a gain without a match).
 // Vector set 454; repeated zero intrinsic 4; explicit quad stores 197; direct lane stores 4;
 // explicit centre store 4; centre memcpy 125; plain copy inline 4; const centre 4; transform set 4.
+// Round 26: allocator local between the mass and centre copies 4; forceinline identity 4; mass
+// array built by an inline constructor 4; on 2: count read before the allocator local 2, a first-entry
+// pointer for the identity 2, aggregate declared before the array 2, zero intrinsic per identity
+// store 2, identity columns set one at a time 2.
+// Round 206: shared allocator interface at first/list/both/all sites 4/4/4/4;
+// shared allocator getter at all sites 4; block allocator interface at first/list/all 4/4/4.
+// Round 18 (lane 14, compile-only screens, which reproduce both swaps): size/capacity chained either way 4;
+// aggregate zeroed by an s_physics_mass constructor 4; identity zero via an hkVector4 local 4, 1.0s via
+// m128_f32 lanes 4; aggregate scalar zeros chained/swapped 4/4, one named __m128 zero 4; allocation without
+// the allocator local 4; identity on array.data->transform 4; identity through a reference 4.
+// Round 92 (plain): identity before size 23, between size/capacity 22; pointer-return identity 4;
+// initial allocator for the list 339; list allocator for release 102; list allocator before the
+// aggregate call 85; value-initialized array 345; one allocator throughout 340. Original restored.
+// Round 31 (lane 15, fast): g_480118 defined in the allocator's own /GL- file (0x2d6fc0's) 2, with the
+// allocator read between the mass and centre copies 2; that read alone 4; identity by reference 4; chained
+// capacity/size 4. Compile-only screens (they reproduce both swaps) keep the 1.0 load first for: identity
+// right after the allocation, size/capacity first, capacity before size, set_ss/named one/column-pointer/
+// m128_f32/rotation-reference identities, a nested rotation identity, a zero-quad local, aggregate zeroed
+// by a helper, a named data pointer, sizeof element size; only copy-before-identity (50 others differ) or a
+// barrier after the data store (array.data reloaded) give retail's store-first order.
 // @retail 0x1d5ec0
 c_havok_reference_counted *__stdcall function_1d5ec0(s_havok_component *component,
     s_physics_model_owner *owner, char const *kinds, char *output, long *output_count,

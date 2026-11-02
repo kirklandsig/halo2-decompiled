@@ -99,6 +99,14 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // assignment 18; index declaration initializer 18. All restored.
 // Round 136, natural spill graph: bool/long/short/byte callback outcomes 18,18,18,18;
 // callback outcome with entry/owner/long-entry/both snapshots 18,18,18,18. All nonmatching exact-only forms restored.
+// Round 44: retail's entry index uses ECX (`lea ecx, [eax+eax*4]`), which keeps its receiver loads
+// after the entry value; ours uses EAX and hoists them. `if (result && call)` without the outer else
+// 113; inner update false-first 18; receiver through `peers` 108; `handles[i]` at each use 18;
+// permuter 56 tries, best 18.
+// Round 184 (lane 3): `if (result && call) result = true; else result = false;` 113 (386 bytes);
+// `if (!result || !call) result = false; else result = true;` 113; the inner update as
+// `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
+// `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -308,8 +316,15 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
-
-// score 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
+// Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
+// this round: no new form; the case 1/3 loop still keeps its cursors in
+// registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
+// Earlier at 115: the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier (115): the case 1/3 loop still differs in registers: retail keeps the items
+// Earlier: the case 1/3 loop still differs in registers: retail keeps the items
+// pointer and the index in different registers than ours, and the argument order of the
+// 0x991d0 call is not reproduced.
 // pointer in eax and the data pointer in edx and enters the loop past the items reload; ours uses
 // ecx for data and moves the handle into edx. The count == 1 branch now loads and spills like retail.
 // The volatile reads keep the loop pointers on the stack as retail does; without them the handle
@@ -333,6 +348,113 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // helper, named size/handle/result values, for or while; 38 screened) keep edi for a cursor and
 // spill the handle: indexed direct call 207f, indexed helper 208f, named size 207f, named size in
 // the test 207f, pointer cursors with a direct call 212f.
+// Generic data/unsigned item contracts/both 115/115/115; actual info record/generic data
+// 229/229; native four-word data/native unsigned items 115/115; info plus native data 229.
+// Real validator coordinated inline knowledge 115; with direct matched call 137; size/handle/both
+// producer forwarding 138/134/137; immediate element-validity result 115 (exact-only); ordinary
+// private-producer inline 115; conditional all-valid accumulation 215. Original validator declarations,
+// private helper, both qualified pointer-slot reads and complete body restored.
+// Lane 14 r11: retail keeps both cursors and the counter in memory (load, add, store, then the
+// loop top reloads) with this/request/handle/index in EBX/EBP/EDI/ESI; every natural form splits
+// the handle (spilled at entry, reloaded after the loop) and gives a cursor EDI. Plain pointer
+// cursors 207; for loop over the parallel items/b arrays with the direct call 207; helper taking
+// the cursors by const reference 207; the volatile read on the data cursor only 207, on the items
+// cursor only 210; cursors grouped in a local struct (diagnostic) 210.
+// Round 40: index loop with items[i], b[i], &data.v[i * 4] passed straight to 0x991d0 207 (data
+// cursor and counter in memory as retail, but the items cursor takes EDI and the handle spills);
+// through the helper 208; handle/index renamed three ways 207; handle/index declared in each
+// case block 166 (with the index loop 189).
+// Round 19 (lane 13), all without the volatile reads: the loop written with a label and a backward
+// goto (diagnostic) 207, so the loop weighting is not syntactic; the items and data read by index in
+// a for loop 208; the cursors passed to the helper by address 207, the helper also advancing them
+// 206 (inlining promotes them back to registers); the result declared first in the function 218;
+// the cursors and counter declared at the function top 207.
+// Round 40: index loop with items[i], b[i], &data.v[i * 4] passed straight to 0x991d0 207 (data
+// cursor and counter in memory as retail, but the items cursor takes EDI and the handle spills);
+// through the helper 208; handle/index renamed three ways 207; handle/index declared in each
+// case block 166 (with the index loop 189).
+// Round 42 (lane 16): the case 5 owner call through a peers local 105 (the case 1 local declared
+// for the whole function and assigned in both cases: the case 5 tail then matches, retail reuses
+// EBX for the table; reverted at review: a one-use copy is kept only with a match); count read into one local for the ==1 test, chain and loop 176; memcmp
+// sized by info.count 158; peers local also in case 2/4 for the flag tests and the chain query 126;
+// 0x991d0 called directly from the loop 137; entry state tested first as an early return 105; loop
+// cursors declared before the count test 195.
+// Round 10 (m3 lane 2): the switch now dispatches with grouped case labels and breaks in place of
+// gotos to labels (identical code, 115). The volatile cursor reads swapped 115; both passed straight
+// to the helper 115; the case 2/4 entry through a named element pointer 115, its state read once into
+// a named local 115 (same code). Natural loops still split the handle (harness: pointer cursors 184
+// positional, index loops with the direct call or the helper 184/185).
+// Round 30 (lane 13, fast): the cursors declared at the case top without the volatile reads 212 (528
+// bytes), also shared (with the counter) by the notify loop 212; the notify loop reusing the validation
+// counter 115 (same code); no early return after the validation 115; a `void *const *` data cursor over
+// data.v 115. Compile-only, the natural loop still splits the handle with the loop in a forceinline
+// helper, without the `__assume(0)` default, with extra cases, or with the handle used inside the loop.
+// Round 214: shared phase ordinal 115; entry chain array 115; positive validity admission 115;
+// ordinal/entry chain array 115; ordinal/positive admission 115; entry array/positive admission
+// 115; all three lifetimes 115; all lifetimes/immutable handle and index 115.
+// Round 106 (fast): after the loop retail loads the count into ECX (ours EAX), which shifts the count == 1
+// block and the chain call. Count test inverted (chain call first) 109 at 544 bytes; result test as a scope
+// instead of the early return 115; loop condition operands swapped 115; dword handle 115; case 2/4 written
+// before case 1/3 162.
+// N round 257: Complete case priorities 354/453 with bool, byte, signed-byte and word validity 179/179/179/204/185/185/185/205.
+// Original dispatch, all validity storage, helper and both local-slot reads restored.
+// Round 125 (lane 5): the slot index written out as `local_1 & 0x3ff` at each use 161 (diagnostic of
+// the handle's weight); the handle typed dword 115; memcmp sized by the request's count with the count
+// test reversed 178 (520 bytes); a plain for loop with the cursors set before it (no hand-inverted
+// guard) 195; the case 2/4 element through a pointer local 115.
+// Round 64 (lane 12; one-link LTCG env with the stand-in callers, code equal to the full listing; env positional/
+// aligned 99/55 for this body): retail's loop cursors behave as ordinary spilled variables (the items cursor
+// reloaded on the back edge only, the preheader's EAX used on entry; ESI/EDI untouched in the loop), not volatile
+// reads. New: an index for loop through a forceinline helper taking the block and the index, without the
+// volatile reads, 184/55; the items cursor typed as the field's dword (volatile reads kept): identical; the
+// handle re-read from the request in the count-one tail (diagnostic, natural loop) 184. Re-measured in the env
+// only (listed above): no volatile reads 184/63 (handle spilled before the switch, items cursor in EDI), the
+// loop in a forceinline validator 184, a for loop stepping both cursors 193, an index loop passing element
+// addresses 185.
+// Round 60 (lane 16, fast): without the volatile cursor reads (207, 524 bytes) VC splits the handle around
+// the loop (spilled at entry, reloaded after) and gives EDI to the items cursor; retail keeps this/request/
+// index/handle in EBX/EBP/ESI/EDI and spills both cursors and the counter. On that base: the notify loop
+// reusing the validation counter 207; 0x991d0 called from the helper with the items read in place 207
+// (aligned 65); handle and index `long const` 207; the validity flag declared before the switch 217; the
+// index declared first from the field (`index & 0x3ff`, then the handle) 207.
+// Round 49 (lane 11, fast), all without the volatile reads: 0x991d0 called directly with `local_10[0]`/`local_10[4]`
+// 207; the notify loop walking the same items cursor variable 220 (520 bytes); the count-one tail reading the
+// handle from the request (diagnostic) 221 (the handle is then not spilled, but the items cursor still takes EDI:
+// retail's choice is the cursor's weight, not the handle conflict); a dword handle 207; the data cursor as
+// `void *const *` over data.v 207. The volatile form's extra `mov edx, eax` (item loaded into EAX) shifts every
+// later line by one, which is most of its 115.
+// Round 285: Test-set inline validator result, success/failure initialization with
+// both/size-only/handle-only/no input producers: 115/134/138/137 in both orders. Items/data carriers and
+// validation-loop entry remain; complete helper and body restored.
+// Round 287: Native byte/signed-byte/word/long validation results on the original
+// case priority, all-valid/rejected polarity: 115/115/206/160/124/124/188/91. Cursors and loop entry
+// remain; native long rejection 91 also plain, restored as an unmatched flag form.
+// Round 31 (m3 lane 2, fast): the request count read into one local for the == 1 test and the chain call
+// 115 (same code); a peers local in case 2/4 for both flag tests and the table calls 182 (552 bytes); case
+// 1's peers local dropped (the member read at each use) 204 (552 bytes); the chain-count comparison
+// operands swapped 116; memcmp sized by the request's count (retail's `lea ecx, [edx*4]`) re-measured on
+// this body 178 (520 bytes). 0x991d0's call setup follows its declared order (one register argument,
+// the handle in EDX), so no parameter reorder has retail evidence.
+// Round 147 (m3 lane 4, fast; volatile-read body): the validation counter declared inside the count test's
+// block 203 (524 bytes); both cursors declared at case scope 195; the counter declared before the validity
+// flag 117; the validity flag declared before the switch 142; the request type read once into a local for the
+// switch and the type-2 test 115 (same code). Re-measured: plain cursors at case scope 212, the count test
+// inverted 109 (544 bytes, branches laid out opposite to retail).
+// Round 490: existing producer returns long/unsigned long/short/word/byte/signed char, 115 each;
+// long result with direct size/handle input 138/134. Producer result width canonicalizes; restored.
+// Round 42 (m3 lane 13, fast): case 2/4's state test as an `if` of its own around the handle/state test 115 (same
+// code); the chain-length test written `local_9 == info.count` with memcmp sized by info.count 178 (520 bytes); the
+// validity flag declared before the switch 142; the validation loop as a plain `for` over the counter (volatile
+// cursor reads kept) 195; the count-one branch reading `table` at each use (no peers local) 204. Independent
+// tie-breaks left besides the loop: the count after the loop in EAX (retail ECX, so the chain call's register
+// temporaries rotate), case 2/4's index*5 in ECX (retail EAX: state read through the scaled index before the entry
+// address is formed), case 5's table in EDX (retail reloads it into EBX).
+// Round 115 (lane 7, fast): case 2/4's first state test written `!= 0` 115; the validator result named and
+// assigned into the flag on failure 203 (524 bytes); the peer nibble from the signed handle 115; the count-one
+// branch's request reads in reverse order 115; the loop increments as counter, items, data 115.
+// Round 261: existing element producer reports failure, neither/size/handle/both input producers
+// 137/134/138/115; with full-width rejection 202/200/202/91. The 91 flag form remains exact-only.
+// Original helper and body restored; items/data carriers and loop-entry reload remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
@@ -341,14 +463,8 @@ void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 	long local_2 = local_1 & 0x3ff;
 	switch (local_0->type)
 	{
-	case 1: goto local_3;
-	case 2: goto local_4;
-	case 3: goto local_3;
-	case 4: goto local_4;
-	case 5: goto local_5;
-	default: __assume(0);
-	}
-local_3:
+	case 1:
+	case 3:
 	{
 		bool local_6 = true;
 		long local_7 = 0;
@@ -384,9 +500,10 @@ local_3:
 			replication_table_add_chain((long const *)local_0->info.b, table, local_0->info.count, (long const *)local_0->info.items, (long const *)local_0->info.c, (s_handle_creation *)&local_0->data);
 		for (long local_7 = 0; local_7 < local_0->info.count; local_7++)
 			function_99690(this, local_0->info.items[local_7], 3);
-		return;
+		break;
 	}
-local_4:
+	case 2:
+	case 4:
 	{
 		if (entries[local_2].state && entries[local_2].handle == local_1 && entries[local_2].state == 3)
 		{
@@ -410,8 +527,12 @@ local_4:
 				}
 			}
 		}
-		return;
+		break;
 	}
-local_5:
-	((c_98fb0 *)table->owner)->v7(local_1, local_0->info.c[0], local_0->count, &local_0->data);
+	case 5:
+		((c_98fb0 *)table->owner)->v7(local_1, local_0->info.c[0], local_0->count, &local_0->data);
+		break;
+	default:
+		__assume(0);
+	}
 }

@@ -297,6 +297,26 @@ void c_juggernaut_engine::v15(long player_index)
 // (word)player_index or juggernaut_is((word)player_index) (5, same code as now).
 // Split mask with absolute membership 8; unsigned count 8; wide removal predicate 8;
 // predicate homes 8; early flags 15; flags reference 8; conditional for 8; early outer exit 8.
+// Round 39: a 32-bit shift count is CSE'd with the keep path's `1 << absolute_index` (the
+// result held in edi, g_4e9ae8 no longer hoisted into ebp): the keep shift on
+// `player_index & 0xffff` 81, the test on it 81; diagnostics with an out-of-line long or dword
+// twin of the test 81/81. A 16-bit count (`juggernaut_is(absolute_index)`, or a word twin) gives
+// retail's code with ebx/esi swapped (the byte use pulls the masked index into ebx): absolute
+// index declared first 8, both read from the iterator 8/8. Every retail call of 0x192950 pushes
+// a full register, so its parameter width is open.
+// Round 57 (--fast): a long parameter on the existing test 81 (the shift is CSE'd with the keep
+// path's, and 0x192950 itself differs); the masked index as a word local 85, also with the test
+// on the player index 85; the removal call on the masked index too 8; renaming the player index
+// (index, player) or the masked index (player_absolute_index, slot_index) with the masked-index
+// test 8 each.
+// Round 70 (--fast): the test shifted as `1u << absolute_index` 81 (the keep path's shift is still
+// CSE'd with it, `or ecx, edi`; the inlined removal's `~(1 << index)` never is); a long-parameter
+// inline twin of the test called with the masked index 81, the twin masking the datum index itself
+// 81; no masked-index local (each use masks the player index) 85 (the test shifts by bl and the
+// mask is computed per path); both indices declared at function scope with the masked-index test 8.
+// Round 112: a separate short membership carrier 8; with masked membership, the count incremented
+// first 52, the accumulator written as `players = players | mask` 8, a word shift count 8, a globals
+// pointer 17, the difference inlined 8, a player-record pointer 8, and count declared before players 10.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

@@ -96,8 +96,9 @@ void __stdcall function_1d24a0(s_havok_component *component, real position);
 bool __stdcall function_11bbf0(long object_index, s_crate_placement_view const *placement, long creation_argument2)
 {
 	s_crate_object_view *crate = CRATE_GET(object_index);
+	dword *crate_flags_ptr = &crate->crate_flags;
 	bool result = false;
-	crate->crate_flags = 0;
+	*crate_flags_ptr = 0;
 	if (placement->definition_index != NONE)
 	{
 		s_crate_definition_view const *definition =

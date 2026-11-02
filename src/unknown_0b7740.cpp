@@ -1,5 +1,6 @@
 #include "unknown_0b68c0.h"
 #include "unknown_11c920.h"
+#include "bit_vector.h"
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "effects.h"
@@ -1093,10 +1094,10 @@ bool function_bfc90(long object_index);
 struct s_bit_vector
 {
     dword bits[8];
+    void function_0bfe80();
+    void function_0bfed0(long node_count);
     bool is_empty() const;
 };
-void function_0bfe80(dword *mask);
-void function_0bfed0(long node_count, dword *mask);
 void function_0bfe20(dword *flags, long bit, bool value);
 struct s_index_triple;
 bool function_0b6780(s_index_triple const *triple);
@@ -1107,7 +1108,12 @@ void __stdcall function_1421f0(transform4x3f *out, rigid_transform_scaled const 
 bool function_a98b0(long index, vector3f *position);
 bool function_a9940(long index, vector3f *up, vector3f *forward);
 
-// score 234 (was 234): retail is 11 bytes longer. Left: retail sets the sample-mask
+// score 97 (was 97): retail is 11 bytes longer. Left: retail tests the node count for > 0 before
+// the node loop from 1 (no loop-head pad), and in the no-model branch keeps the object table pointer
+// in ecx and re-reads its data pointer (parent index in esi) where ours reuses edi. Round 19: the
+// sample-mask helpers 0xbfe80/0xbfed0 written as members of s_bit_vector (as is_empty is) give
+// retail's ESI re-set after 0xbfed0, 234 -> 97 (kept).
+// Before round 19 (at 234): retail sets the sample-mask
 // address in esi again after 0xbfed0 (which never writes esi), tests the node count for
 // > 0 before the node loop from 1 (no loop-head pad), and in the no-model branch keeps
 // the object table pointer in ecx and re-reads its data pointer (parent index in esi)
@@ -1158,12 +1164,59 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // 234; a pool local in the no-model branch 234; the parent read through the entry header pointer 385
 // (1394 bytes; not a real form). The ESI reload after 0xbfed0 is the reverse of 0x14a8e0's case, where
 // retail reuses ESI after a register-argument call that ours re-forms.
+// Round 153 (fast): one pool local for the current and no-model lookups 290; volatile stored flag (diagnostic)
+// 234; render-model node count named once 252; compile-only, no node-loop form gives retail's count > 0 test.
 // Round 108 (fast, aligned differences 20: the esi reload, the count > 0 guard and the no-model
 // reload): retail keeps g_4e0300 in ecx and re-reads its data field in the no-model branch, which our
 // build does only when a pointer store sits on the path from the current-object lookup (diagnostic
 // store in the default-orientation arm, 307; a volatile flag 234 does not). Orientations through an
 // inline out-parameter helper 234; render branch nested under the model test with a return 234;
 // flag computed from the orientation test 312. The esi reload after 0xbfed0 is unique in retail.
+// Round 90: node loop from 0 with `node != 0 &&` in its test 245 (the test stays in the loop; retail's
+// missing loop-head pad follows from the 8-byte count guard, not a threaded label); 0xbfed0 plain with
+// its flags pointer stepped (still matches) 234; no-model mirrored flag read before the matrix 234;
+// 0xb8bd0 marked inline and called in the no-model branch 397 (inlined at every site: matched 0xbcc20
+// and 0x11b710 break); node index declared at the top of the render branch 234.
+// Round 122 (fast, aligned 16): no-model parent through slot_handler.h's object_get/object_node_matrix 234;
+// with the current and render-branch lookups through object_get too 234/234; 0xbfed0 declared inline here 234,
+// and with its separate noinline declaration removed 234 (still called, the caller still trusts its ESI).
+// Round 47 (m3 lane 1, fast; aligned 16): node loop from 0 skipping node 0 by `continue` / by `node > 0 &&`
+// in the mask test 245/245 (no peeling, so no count > 0 guard); the no-model branch written before the render
+// branch 313; orientations defaulting to g_4dc2f0 with the stored-orientation arm overriding it 402; the
+// stored flag initialised beside the orientation test 398. Diagnostics: 0xbfed0's definition moved after
+// this function in this file 234 (still no ESI reload: definition order is not why retail distrusts ESI);
+// the no-model data field read as a dword 234 (still reuses EDI: the reload is not a type difference).
+// Round 121 (m3 lane 5, fast): retail rematerialises 0x55eeb4 at every use (memcpy destination, both
+// mask-call arguments, the sample mask); the stored/empty test as nested ifs 234; the amount by if/else
+// 234; orientations defaulted at the declaration with `else stored = false` 402 (1367 bytes); `stored`
+// declared first 236; the no-model parent matrix by array indexing 234.
+// Round 37 (lane 13, fast): the node-mask tests through the existing bit_vector_test 234 (same code, kept: replaces
+// the hand-written bit tests); render/no-model branches swapped in the source 313 (1372 bytes); a short node
+// counter 222 (1387 bytes, but aligned 16 -> 120: the frame and every later slot move); `++node` 234; the render
+// model's node count named for the default-orientation test and the loop bound 252 (1370 bytes).
+// Round 19 (lane 17, fast with 0xbc820/0xbd020/0xbee60/0xbdb60 and all of unknown_0bfd20.cpp): the mask
+// helpers as s_bit_vector members, called through `((s_bit_vector *)g_55eeb4)->`, 97 (kept; 0xbfe80,
+// 0xbfed0 and 0xbff10 still match). Every form after the old ESI shift scored 234 because the rest of
+// the listing was misaligned, so earlier no-model and node-loop forms are worth re-measuring on this
+// base. On it: an explicit `count > 0` guard around the node loop 44 at 1390 bytes (diagnostic: it
+// repeats the loop's test; the loop then matches and only the no-model branch's data-field reload
+// remains), with a pool local or a parent header pointer in the no-model branch 44/44 (same code); the
+// pool local without the guard 97. Before the members (at 234): the render-node pointer scoped in the
+// mask test 234; model and render index as conditional expressions 340 (1386 bytes); the memset size
+// written `sizeof(dword) * (...)` 234.
+// Round 22 (lane 17, fast): on the count > 0 guard diagnostic (44, 1390 bytes; only the no-model branch left:
+// retail keeps g_4e0300 in ECX and reloads its data field with the parent index in ESI, ours reuses EDI):
+// `(void)&` on stored, orientations, model or current 44 each; the stored flag cleared through a pointer to
+// it 44; the no-model parent through slot_handler.h's object_get and object_node_matrix 44 (same code each).
+// Without the guard: the node loop from 0 with `node != 0 &&` in the mask test 105 (1374 bytes), with
+// `if (node == 0) continue;` 105.
+// Round 26 (lane 17, fast; retail also reuses EDI for the render branch's parent lookup after the 0xb8bd0
+// call, so only the no-model path loses the data field): a pointer local to orientations, stored or
+// current read once (diagnostics) 97 each, same code. On the count > 0 guard diagnostic: no-model mirrored
+// flag before the matrix 43 (aligned 8 -> 12); parent index read at each use 44; no-model branch first 314;
+// render branch ending in `return` with the no-model code after it 44; parent read through
+// s_object_transform_view 44; parent header through a file-local inline lookup taking the pool pointer as a
+// parameter (diagnostic) 44, same code.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
@@ -1228,8 +1281,8 @@ void __stdcall function_bd090(long object_index)
                     if (stored && !((s_bit_vector const *)(model + 0xa4))->is_empty())
                     {
                         memcpy(g_55eeb4, model + 0xa4, sizeof(g_55eeb4));
-                        function_0bfe80(g_55eeb4);
-                        function_0bfed0(node_count, g_55eeb4);
+                        ((s_bit_vector *)g_55eeb4)->function_0bfe80();
+                        ((s_bit_vector *)g_55eeb4)->function_0bfed0(node_count);
                         sample_mask = g_55eeb4;
                     }
                     function_bdb60(object_index, (s_16760c_render_model *)render_model, state,
@@ -1241,7 +1294,7 @@ void __stdcall function_bd090(long object_index)
             }
         }
         if (!*(long *)(render_model + 0x48)) orientations[0] = *(rigid_transform_scaled *)g_4687d8;
-        if (!(mask[0] & 1))
+        if (!bit_vector_test(mask, 0))
         {
             if (root_absolute)
                 function_1421f0(matrices, &orientations[0]);
@@ -1273,7 +1326,7 @@ void __stdcall function_bd090(long object_index)
         for (long node = 1; node < *(long *)(render_model + 0x48); node++)
         {
             byte *render_node = *(byte **)(render_model + 0x4c) + node * 0x60;
-            if (!(mask[node >> 5] & (1 << (node & 31))))
+            if (!bit_vector_test(mask, node))
             {
                 function_1421f0(&matrices[node], &orientations[node]);
                 function_142a60(&matrices[*(short *)(render_node + 4)], &matrices[node], &matrices[node]);

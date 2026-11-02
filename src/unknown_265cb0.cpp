@@ -363,7 +363,8 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 bool function_26d370(point3f const *point, vector3f const *direction, plane3f const *plane, real *distance);
 real function_30bf0(vector3f *vector);
 
-// score 152 (was 184): result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
+// score 152 (was 152): Frame 0x350 agrees; result/range/projection homes and inverse delta/motion SIMD groups remain.
+// Earlier: result/range homes and inverse SIMD groups remain; seat thresholds now stay in memory.
 // result/range homes, inverse SIMD groups and seat-threshold reloads remain.
 // Round 57: retail's result stores are a spill of a long result (dword store, `mov ax, word` reload at
 // each tail-duplicated exit). Plain long result 241 (result home +0xc); short return type with every
@@ -464,6 +465,61 @@ real function_30bf0(vector3f *vector);
 // reversed publication 180; short/facing/single select 197; short/facing/explicit 3-or-2 stores 152 (plain, kept);
 // mode/settings failure exits 188/202; publication order, ordinary result, distance declaration, projected order,
 // facing and outer declaration orders 152 each; direct count-down 197; direct accumulators 245.
+// Round 166: existing complete vector assignment for delta/motion/both/projected
+// 164/154/166/152; projected with delta/motion/both, then all plus plane normal
+// 164/154/165/293. Original component producers restored.
+// Round 224: Live actor/handle/occupant and actor-handle/actor-occupant/handle-occupant/all/all-forward
+// 311/146/218/324/328/218/322/363; live-handle count/index short-word/short-long/long-word/long-long
+// 229/185/232/185. Six-point 146 rejected below margin; original receivers and signed traversal restored.
+// Round 228: Immutable range/distance/scaled-range producers, all seven combinations,
+// and all three with the seat workspace at entry 152 each. Original mutable declarations
+// and seat lifetime restored; result/range homes and inverse SIMD groups remain.
+// DH round 230: Live handles with amount/plane/both/vectors/all projection declarations at entry
+// 146 each; fallback thresholds before facing 238; direct facing outputs 245; conditional final result 228.
+// Six-point forms rejected; original body restored. Result/range/projection homes and SIMD groups remain.
+// Round 189: paired range squares/final squares/both, matched two-term magnitude partials,
+// range-partials/final-partials/all/all with live handle: 193/172/183/193/152/183/168/168.
+// Original products and handle observation restored; result/range/projection homes and SIMD groups remain.
+// Round 394: empty/non-player/both seat continue exits, each with native/seat-scope
+// query outputs, 205 each; both with later up 205; both with long index 209.
+// Original eligibility, cursor and output scopes restored; result/range/SIMD homes remain.
+// DH round 232: Unsigned full-width result 152; stable actor direction gate 296; both 296;
+// signed admission interval 162, with unsigned result 162, stable gate 301, both 301;
+// unsigned-word result on the full graph 301. Native result/range/projection homes remain; restored.
+// DH round 239: Corresponding projected products/positions/both in every row
+// 191/191/195; each with consistent live seat handles 187/187/195; products or
+// positions with both squared-range expressions 195/195. Original expressions,
+// handles and complete body restored; result/range/amount and SIMD homes remain.
+// DH round 252: Existing staged cross at side/up/both; both with later up, seat-scope outputs,
+// both scopes, corresponding basis/output names, both scopes and long ordinal
+// 152/152/152/152/152/152/152/183. Original complete executable body restored.
+// Round 214: existing dot/basis-dot plane producers, both operand orders: copied normal 150 each; native normal 290 each.
+// Exact-only sum forms restored; no gain meeting the margin, result/range/amount homes and inverse SIMD groups remain.
+// Earlier: the volatile result anchor and the pointer-to-whole-local side
+// operand are gone, so the result, range and delta stack homes and the delta/motion SIMD
+// register blocks differ from retail again.
+// Earlier: the facing branch is entered on retail's negated condition and the cross
+// product's multiply operands now follow retail's order; the result, range and delta stack homes
+// and the delta/motion SIMD register blocks still differ.
+// Coordinator review: the facing branch on the negated condition with the volatile result kept scores 150 (was 152);
+// with int result as well 150. Neither meets the 8-point bar, so main's code stays; the 144 above also had the cross
+// product's operand order, which is not in this file.
+// Round 240: reusable mode test/all-axis origin scalars/all-axis point scalars and their pairs/all
+// 323/346/319/364/342/380/395; all with ordinary result 395. Original input observations and
+// complete body restored; mode caching grows the frame to 0x354.
+// Round 38 (m3 lane 11, fast): seat element pointer per iteration of an indexed loop 190 (1310 B);
+// clip as `delta.i += motion.i * amount` 232 (1296 B); not-facing secondary from primary 152;
+// occupant forward cast at each of its three uses (no pointer local) 195 (1315 B); one out-of-range
+// store after both range tests behind an in-range flag 196 (result slot then at retail's +0, first
+// difference +0x27). Original body restored.
+// Round 246: native actor basis fields in all seven nonempty subsets, then all
+// with the native occupant basis, 152 each. Original padding, receiver expressions
+// and complete body restored; result/range/projection homes remain.
+// Round 263: Library projection/paired-maxima/plane-copy masks 1/2/4/3/5/6/7 score
+// 307/203/152/316/307/203/316; complete graph with ordinary result 316. Original selectors, plane copy and
+// inherited result restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
+// length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -889,33 +945,25 @@ struct s_object_activity_flags
 	word unused : 13;
 };
 
-// score 79 (was 79): initial input register, early actor null and exit saves
-// differ; explicit actor arms, unsigned selected handles, bonus snapshots and
-// actor-bonus result 79; split first selection 114; fallback formal read 82.
-// entry input is EAX versus EDX; nullable actor and save timing still differ.
-// Entry/all header helpers 79/79; external object reference 79; const object/actor/settings views 79/79/79.
-// Combined const views 79; header helper with const object 79; existing scalar qualifier and original body restored.
-// score 79 (was 79): retail's second-call re-read looks like a plain spill reload of the parameter
-// (all four saved registers busy); without the qualifier ours keeps the index in ebp and spills the
-// actor instead. NULL actor then conditional lookup re-measured 113 (index eax, header/first edi/ebx);
-// on it: settings as one conditional 170; header getter 113; plain parameter used directly 140;
-// actor declared before the object 113. Settings conditional on the opening body 114.
+/* the object's summed value: its actor's base (or, for a player, the settings' one), its seat's
+   value, the tag values of the two objects looked up for it and, when the actor's flag 0x225 is
+   set, the settings' second value */
 // @retail 0x267370
-real function_267370(long volatile object_index)
+real function_267370(long object_index)
 {
 	real result = 0.0f;
-	long initial_object_index = object_index;
-	if (initial_object_index != NONE)
+	if (object_index != NONE)
 	{
-		s_slot_object_view *object = object_get(initial_object_index);
-		s_actor_view *actor = NULL;
+		s_slot_object_view *object = object_get(object_index);
 		byte *settings = NULL;
 		if (((s_prop_threshold_table *)g_4e034c)->count > 0)
 			settings = (byte *)((s_prop_threshold_table *)g_4e034c)->entries;
 		if (!((bool)((s_object_activity_flags *)object)->blocked) && ((1 << object->type) & 3))
 		{
+			s_actor_view *actor = NULL;
 			long actor_index = object->actor_index;
-			actor = actor_index != NONE ? actor_get(actor_index) : NULL;
+			if (actor_index != NONE)
+				actor = actor_get(actor_index);
 			long first;
 			if (actor)
 			{
@@ -924,7 +972,7 @@ real function_267370(long volatile object_index)
 			}
 			else
 			{
-				first = function_cbd50(initial_object_index, *(char *)((byte *)object + 0x212));
+				first = function_cbd50(object_index, *(char *)((byte *)object + 0x212));
 				if (object->player_index != NONE && settings)
 					result = *(real *)(settings + 0x160);
 			}
@@ -1129,6 +1177,22 @@ struct s_equipped_object_view
 // object_get 28 or object_header_get 28. Tried (r27b): the comparison through a
 // real local 12; the tag index through a long local 12; `if (...) result = true`
 // 14. 0xee8a0 (matched) needs the same volatile view for its weapon lookup.
+// Round 14, no volatile: the existing function_cbd50 for the held index 28 (result
+// declared first 40); the existing unit_get_current_weapon 28; the fields at each use
+// 27; the object pointer for the held slot with the slot read through a second
+// lookup 4 (retail's reload; only the entry's data register and the slot's sign
+// extension differ). Two held lookups reload it data-first (15, 142 bytes).
+// Round 38, no volatile: the 0x267370 form (held index through function_cbd50, the
+// definition read inside the compare) 31; a pool pointer local for both lookups 27; the
+// threshold entries selected (NULL when empty) before the held lookup 30 (142 bytes); the
+// entry object through object_header_get's header 28; an unused header lookup in the entry
+// block (diagnostic) gives retail's entry block but a data-first held reload 15 (142 bytes).
+// Round 67: two used entry lookups with the object pointer kept for the held slot 4 (tag chain exact;
+// entry data/index registers differ); a widened selected index or an object-array pointer 4 each; signed-byte
+// selected 11; entry object_get 27, second object_get 4; held index before object 4; result first 36;
+// conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
+// a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
+// 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1178,36 +1242,73 @@ PRIVATE __forceinline long round_tick_count(real ticks)
 	return result;
 }
 
-// score 99 (was 142): clock/compare schedule and vector homes differ; ordinary
-// pooled/clock reads with memset zero 178; projected-point loop 297; wide query
-// results 318; named maximum 146; target-copy loop 141 (one-count gain rejected).
-// ordinary-access common tick conversion 400; native point setter 146;
-// activity lifetime 344; iterator rejection continue 146; elapsed interval 293.
-// Per-use prop lookup 119; shared dot/length/both 146/146/146 (grouping rejected);
-// query output initialization omitted 347; prop read first 326; native fields 146;
-// false-byte array memset 206. All eight use ordinary pooled/clock reads.
-// j93: Frame 0x60 agrees; clock hoisting, conversion copy and three vector homes remain; typed offset output recovers movement/offset homes.
-// wide event results 371; wide target result 374; state per use 433; state eligibility snapshot 338; typed
-// offset output 99; offset outer direction 99; offset blend before delta 99; offset outer query homes 99.
-// score 99 (was 99): Clock conversion schedule, integer copy and geometry homes remain. branch
-// decay result 398; delta before conversion 100; smoothing value samples 345; sampled early delta
-// 389; native rounded count 99; stored width rounded count 396; branch decay late delta 394;
-// sampled branch decay 402; ordinary conversion inline 373; branch exponent result 416.
-// clock/compare schedule, conversion copy and geometry homes remain.
-// clock/compare schedule, conversion copy and geometry homes remain.
-// Fast: smoothed field 99; desired field 99; both fields 99; native position 393;
-// native origin 383; both geometry inputs 431; prop record 99; field and geometry 431.
-// score 99 (was 99): clock conversion, interpolation registers and three geometry homes remain;
-// interpolation product inputs 99; direct delta 99; direct blend 99; delta-first addition 99;
-// direct pair 414; direct delta/addition 99; direct blend/addition 99; direct pair/addition 414.
-// Clock conversion schedule, integer copy and geometry homes remain. branch
-// decay result 398; delta before conversion 100; smoothing value samples 345; sampled early delta
-// 389; native rounded count 99; stored width rounded count 396; branch decay late delta 394;
-// sampled branch decay 402; ordinary conversion inline 373; branch exponent result 416.
-// score 99 (was 99): the tick-rate conversion is hoisted above the decay test (both arms start the
-// same); the vector homes offset/ahead/target/direction are offset/direction/ahead/target here.
-// Ticks ternary 99; rounding of a ternary 170; 0.25 first 99; negated test 103; a seconds-to-ticks
-// helper for both or one arm 99; vector local names 99; vector declarations moved 99.
+long function_146650(void);
+
+// score 14 (was 14): the only difference left is the order of three 12-byte stack homes: retail stacks
+// movement, offset, ahead, target_direction and direction upward from esp+0x34, ours movement, offset,
+// direction, ahead and target_direction, and the lea/xor order at the three 0x267a80 calls follows it.
+// The direction and ahead homes are swapped: retail stacks movement, offset,
+// ahead, target_direction and direction, ours movement, offset, direction, ahead and
+// target_direction. Declaration order, scope, type, initialiser and extra source references all
+// leave the homes as they are.
+// Only three vector homes differ: retail stacks movement, offset, ahead,
+// target_direction, direction upward from esp+0x34; ours movement, offset, direction, ahead,
+// target_direction (12-byte slots; names and declaration places do not move them).
+// Round 108 (a compile-only /FAs screen of this file gives exactly our homes): renaming direction
+// five ways and moving the ahead, target_direction, direction, movement and offset declarations
+// (seven places) leave the homes as they are, so local names do not order these slots here. A new
+// one-use vector lands between offset and direction wherever its use is, and last when declared
+// innermost; one more `&target_direction` anywhere puts it lowest. Real (fast): the 0x267840 result
+// in a named bool 14; the target query nested under `if (check_target)` 14; the larger query result
+// clamped by an if 314 (1934 bytes); the position through a named point pointer for ahead 14; the
+// first query's arguments on one line 14; direction declared with target_direction 14.
+// Tried, round 22 (fast, plain 14): `long ticks` with the decay after the if 99, with `real
+// ticks` 384 (SSE conversion), `double ticks` 394 (qword constant); the volatile decay dropped
+// 415; the shared real_to_long 170; the decay computed in each arm (kept: 26, the rounding is
+// then filded straight from its slot); the game-time read through the existing getter (kept:
+// 16, retail reads the time before the rounding); `>= 1 ? 3 : 1` for the last state (kept: 14),
+// both states as one ternary 39, the outer ternary 36; vector names (direction, target, ahead
+// renamed) 14 each; direction declared outside the loop, at the loop body's top, beside or
+// before target_direction 14 each; ahead declared with movement 14; ahead through
+// vector3f_add_scaled or real_point3d_set 16/16 (before the tail fix).
+// Earlier (score 99, the old ticks form): ordinary pooled/clock reads with memset zero 178;
+// projected-point loop 297; wide query results 318; named maximum 146; target-copy loop 141;
+// ordinary-access common tick conversion 400; native point setter 146; activity lifetime 344;
+// iterator rejection continue 146; elapsed interval 293; per-use prop lookup 119; shared
+// dot/length/both 146/146/146; query output initialization omitted 347; prop read first 326;
+// native fields 146; false-byte array memset 206; wide event results 371; wide target result
+// 374; state per use 433; state eligibility snapshot 338; typed offset output 99; offset outer
+// direction 99; offset blend before delta 99; offset outer query homes 99; branch decay result
+// 398; delta before conversion 100; smoothing value samples 345; sampled early delta 389;
+// native rounded count 99; stored width rounded count 396; branch decay late delta 394; sampled
+// branch decay 402; ordinary conversion inline 373; branch exponent result 416; smoothed field
+// 99; desired field 99; both fields 99; native position 393; native origin 383; both geometry
+// inputs 431; prop record 99; field and geometry 431; interpolation product inputs 99; direct
+// delta 99; direct blend 99; delta-first addition 99; direct pair 414; direct delta/addition 99;
+// direct blend/addition 99; direct pair/addition 414; ticks ternary 99; rounding of a ternary
+// 170; 0.25 first 99; negated test 103; a seconds-to-ticks helper for both or one arm 99; vector
+// local names 99; vector declarations moved 99; native smoothing fields/cached clock/native byte
+// flags, seven combinations 99/425/425/99/99/425/425/425; native target assignment 133; offset
+// setter 101; both 135; projected-point aggregate 99; target/aggregate 133; offset/aggregate
+// 101; all producers 135; read-only projected point 135; uninitialized difference/decay/blend
+// entry declarations, all seven subsets, and with the rounded count at entry 99 each.
+// Round 427 (old ticks form): exact quarter/player-window/hold clock products using double literals, seven
+// subsets 423/256/425/133/424/257/426; all with the rounded-count name 426. Every signed-short
+// product remains exactly representable. Original literals, count name and full body restored;
+// hoisted clock conversion, joined count copy and geometry homes remain.
+// Round 21 (lane 13): ahead as a copy of the position plus `+=` steps 209 (1974 bytes);
+// real_point3d_set 14; vector3f_add_scaled 14; length_sq3f and dot3f for the two sums 14;
+// offset zeroed by a chained assignment 18. A compile-only model of this file gives our exact
+// homes: names, declaration order/scope and symbol count never move them; the slot order follows
+// how many references each vector has (two fewer `&direction` uses give retail's order).
+// Round 43 (per-arm decay form): target/movement/both library copies 14/14/14;
+// target/movement/both vector setters 77/186/224; library target plus movement setter 186;
+// target setter plus library movement 77. The setters disturb the scalar/geometry allocation;
+// original producers restored. The three 12-byte home rotation and query setup remain.
+// Round 60: a direction pointer at all three calls 14; a direction reference 14; a post-writer
+// direction pointer at both queries 14; a pointer only at the first query 14; a target pointer 14;
+// a movement pointer 14; an ahead pointer 14; an offset pointer 14. Every listing is identical;
+// original executable body restored.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -1240,13 +1341,12 @@ void function_267c50(long actor_index)
 		else if (level >= 8) *(real *)(data + 0x3d4) = *(real *)values;
 		else *(real *)(data + 0x3d4) = 0.0f;
 	}
-	long ticks;
+	real decay;
 	if (*(real *)(data + 0x3d4) > *(real *)(data + 0x3d8))
-		ticks = round_tick_count((real)g_510c54->field_2_3 * 0.25f);
+		decay = expf(-0.6931471824645996f / round_tick_count((real)g_510c54->field_2_3 * 0.25f));
 	else
-		ticks = round_tick_count((real)g_510c54->field_2_3);
+		decay = expf(-0.6931471824645996f / round_tick_count((real)g_510c54->field_2_3));
 	real difference = *(real *)(data + 0x3d4) - *(real *)(data + 0x3d8);
-	volatile real decay = expf(-0.6931471824645996f / ticks);
 	real blend = 1.0f - decay;
 	*(real *)(data + 0x3d8) += difference * blend;
 	if (actor->unknown024 != NONE && !team_is_enemy(actor->unknown024, 1) &&
@@ -1296,7 +1396,7 @@ void function_267c50(long actor_index)
 							long player_index = object_get(node->object_index)->player_index;
 							s_ai_player *player;
 							if (player_index != NONE && (player = ai_player_get(player_index)) != NULL)
-								active = g_510c54->game_time - player->unknown0c < round_tick_count((real)g_510c54->field_2_3 * 2.5f);
+								active = function_146650() - player->unknown0c < round_tick_count((real)g_510c54->field_2_3 * 2.5f);
 						}
 						if (prop_get(node->prop_index)->unknown25 && active)
 						{
@@ -1361,7 +1461,7 @@ void function_267c50(long actor_index)
 		*(short *)(data + 0x3e0) = 0;
 	}
 	if (actor->unknown086 >= 2) actor->unknown084 = 4;
-	else actor->unknown084 = 1 + 2 * (actor->unknown086 >= 1);
+	else actor->unknown084 = actor->unknown086 >= 1 ? 3 : 1;
 }
 
 // @retail 0x2675b0
@@ -1638,7 +1738,12 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 564 (was 724): the prop walk now uses the file's prop iterator (retail's unrotated walk with
+// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
+// visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
+// where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
+// Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
+// Earlier score 502 (was 502): frame 0x84 versus 0x80, selection/iterator and transform/scoring homes differ.
+// the prop walk now uses the file's prop iterator (retail's unrotated walk with
 // the cursor at 0x3c and the current index at 0x38) and reads the actor index from its slot; the
 // frame is 0x84 against 0x80 since the visible flag became a stack byte, and the result/level slots,
 // the forward transform (retail if/else straight from the unit) and the scoring block differ.
@@ -1702,12 +1807,120 @@ real function_2683f0(long actor_index, long node_index, short type)
 // all scoring, all six predicates 699/711/728/684/703/715/732/751 (calibrated fast).
 // Word established/visible separately 694/685; pair with short best level/early
 // sentinels 700/700. Established word recovers frame 0x80, but all gains fail; restored.
+// Round 166: late visibility/derived retention/both/later established 577/572/567/564;
+// visibility+established/retention+established/all/all with long visibility 577/572/563/560.
+// Combined predicates recover frame 0x80, first +0x3b. On that graph: reversed results 559,
+// wide level 647, live iterator index 560, reversed+live 559, reversed+wide 646,
+// wide+live 647, all 646, all with early constants 655. Early constants alone/reversed
+// 568/568. Best five-point gain is below the gate; original body and parameter access restored.
+// Round 228: Independent first-search table ordinal, NONE/bounded induction, long/short
+// result and conditional/guarded pointer selection 552/549/552/548/536/538/555/551.
+// Guarded long ordinal with ordinary actor input also 536, plain confirmed at retail
+// 2880 bytes; retained without the parameter-address alias. First frame remains 0x84/0x80,
+// selection/iterator homes, forward transform and scoring allocation still differ.
+// DH round 230: On the independent-ordinal graph, long established/visible/retain/pair-established-visible/
+// pair-established-retain/pair-visible-retain/all predicates 577/579/550/583/567/579/603;
+// all with reversed selection declarations 604. Restored; frame 0x84/0x80 and native result homes remain.
+// Round 399: independent-search graph, word first/second/both counters 533/530/530;
+// long second result 577; word first result with long second 575, with word second
+// counter 528 (kept); word counters/first result with long/byte second result 580/639.
+// Calibrated preview; first result stays in -1..1 and each bounded counter in 0..2.
+// Frame remains 0x84/0x80; selection/iterator, forward and scoring homes differ.
+// DH round 232: On the retained ordinal graph, unsigned ordinal, native word threshold,
+// both, per-use iterator index, index/ordinal, index/threshold, all, and all with the first-pass
+// workspace scoped each score 536 in the calibrated image. Frame 0x84/0x80 and selection/
+// iterator/transform/scoring homes remain; complete original executable body restored.
+// DH round 239: Contact/player iterator and saved contact-state name subsets each
+// 528; all three with reversed independent selection declarations 529. Calibrated
+// image; original iterator/state names and complete body restored, frame still 0x84/0x80.
+// DH round 252: Independent repeated player handle/datum observations and direct current-contact result,
+// all seven subsets, then all with completed selection scope
+// 528/528/528/528/528/528/528/528. Original complete executable body restored.
+// Existing transform/relative/both complete setters 528/528/528; safe in-place transform
+// 705 (frame 0x74), with relative/point/both 705/712/708; native transform initializer with
+// relative and point producers 528. All vector producers restored; frame and saved homes remain.
+// Round 426: complete transform rows/scoring dots/both accumulated 529/528/529; shared
+// final positive-score producer alone/with rows/with dots/with both 502/503/502/503;
+// all with native byte positive 503. Keep only the shared positive producer, plain
+// confirmed at 502, 2856/2880 bytes; original products, grouping, iterators and calls remain.
+// Round 430: Complete visibility result with original/complete close/complete very-close/both
+// proximity producers: bool 560/636/512/628; byte 560/636/512/628. Complete close recovers frame 0x80
+// but regresses; original body restored.
+// Existing transform/relative/both complete setters 528/528/528; safe in-place transform
+// 705 (frame 0x74), with relative/point/both 705/712/708; native transform initializer with
+// relative and point producers 528. All vector producers restored; frame and saved homes remain.
+// Round 240: complementary established/visibility/both/retention/established-retention/visibility-retention/
+// all decisions 502/560/562/505/505/560/562; byte complementary direct decisions 562.
+// Original independent searches, shared positive producer and all body values restored; frame 0x84/0x80 remains.
+// Round 455: Late retention constant 558; with early scoring zeros 573; with late visibility constant 565;
+// both 569; complete predicate role names on each graph 558/573/565/569. Late visibility recovers
+// frame 0x80, but all regress. Original observations, calls, defaults and body restored.
+// Round 38 (m3 lane 11, plain): forward copied or transformed straight from the unit 745 (2807 B);
+// long second search counter 565; facing/score zeros at the unit block top 575; existing
+// object_get_forward 713 (frame 0x74, forward block exact); with score zeroed at the iteration top and
+// approach/facing at the unit block top 436 (frame 0x80); then strongest_node assigned before strongest
+// 278; strongest_node declared before best_node 434, both 276; score before the threshold 270 (kept);
+// with the long second counter 271, and player NULL before the first search 396; relative velocity
+// through vector3d_from_points3d 262 (kept, relative block exact); visible or retain set first
+// 500/497; C-style flag declarations in either order 262/262; NONE reset first in the positive branch 262.
+// On the 262 body: best_level (and strongest) declared before the memset 259/259 (retail's immediate
+// zero store and loop entry; a 3-point gain, not kept); with a shared iterator-start helper for the
+// file's three prop walks 259 (the walks still match); with the long second counter 260; visibility
+// as one expression or an if/else 450/450 (2841 B).
+// Round 45 (lane 11; fast image 199 at 2880 bytes for this body, 0x25d810 builds differently there): the
+// established/visible flags renamed so their names sort the other way 199/199/199 (identical code: the
+// byte slots do not follow names here); the slot search with a long counter (retail's pointer-walking
+// loop, as the first search) 199 fast, 263 plain (2848 bytes); the player cleared before the first search
+// with it 375, alone 384 (the not-found exit then threads past the index test, which retail keeps). The
+// existing ai_player_get/ai_player_index_get calls: ai_player_get stays out of line (its file is /Ob1;
+// retail inlines it here) 867, with a forceinline declaration 877; ai_player_index_get for both searches
+// (the second search is then CSE'd away) 822/797/818 for a long index with the player cleared first, a
+// short index, and a short index with the player cleared first.
+// Round 36 (lane 13; plain checks, and a one-file LTCG link of this file with its callee closure and the
+// ballast, equal to the full build; --fast is wrong here, its reduced image builds 0x25d810 differently):
+// the view through the existing 0x25d740 262 (same code); the walk through the existing 0x26be00/0x26be30
+// 262 (same code); the player through the existing ai_player_get/ai_player_index_get 2616 B (ai.cpp is /Ob1:
+// they stay calls, where retail inlines 0x1c8180 here); the slot search alone through ai_player_index_get
+// 2659 B. Retail's search is ai_player_get's shape: player NULL first, a long copy of the short index for
+// its NONE test, a long second counter; written so 408 (2850 B, the whole search then equals retail's, the
+// rest shifts one instruction). `if (established || !(far && slow)) { if (established) {...} positive = score
+// > 0; }` 262 (masked aligned 75 -> 60), with that search 407 (masked 51), with best_level/strongest
+// declared before the memset too (immediate zero store as retail) 364 in the link harness; the same with
+// `visible &&` kept in the outer test 281 (695/695 instructions); no `visible &&` in the old expression 269.
+// Left: retail keeps direction i/j/k in xmm3/xmm2/xmm1 from the relative dot to the facing dot (ours folds
+// each read; dot3f spellings and reordered terms compile the same), established/visible slot order (follows
+// retail's extra established re-test on the hidden path) and the players loop's alignment jump.
+// Round 33 (lane 14, plain; --fast builds this function differently, 2880 B and 199, with a callee caveat):
+// the second player search with a long counter (retail's `cmp eax, 2` pointer loop) 263 (2848 B, aligned
+// 116 -> 114); that plus the player pointer set to NULL before the first search 403; plus best_level and
+// strongest declared before the memset 260 (aligned 112); plus the direction through vector3d_from_points3d
+// 266; plus established/visible renamed 260 (same code: spill slots). The length gap is the scoring block:
+// retail loads direction j/k before the relative test and i in both arms, keeps them for the facing dot,
+// stores visible = false straight to its byte and threads the established test into the not-visible path.
+// Round 30 (lane 2, plain): sequence-aligned counts (the check scores positionally) are 116 for this body.
+// The search in ai_player_get's shape (player NULL first, long copy of the short index for its NONE test, long
+// second counter) 408 (aligned 112); with best_level/strongest declared before the memset 405 (aligned 110:
+// everything up to the players loop then equals retail; the only shift is the iterator's table pointer, loaded
+// into ECX (6-byte load) where retail uses EAX (5 bytes) and reuses it for NONE, so our loop-top pad becomes
+// jmp + lea ecx,[ecx] for retail's single lea ebx,[ebx] and every later instruction is one off). On that form
+// the iterator's NONE fields chained 405, assigned before the table pointer 407 (the load stays in ECX), the
+// iterator declared at the function's top 405. The same three iterator statements give retail's EAX form in
+// the matched 0x138fa0 and 0x192b20, so the ECX choice comes from this loop's register colouring (ours uses
+// ECX/EDX where retail uses EAX/ECX through the whole players loop).
+// Round 74 (m3 lane 12; --fast listed with 0x25d810 equals plain): `score > 0` first in the positive expression 260;
+// `if (established || ...) positive = score > 0.0f;` 258; `far_and_slow` named 251 (2880 bytes); positive
+// assigned at the end of the established block with the rest as its else 194 (kept, plain; the difflib-aligned
+// count rises 112 -> 142, the gain is positional); on that: the else as `else if (...) positive = ...` 257, with
+// `far_and_slow` named 249, `else if (visible)` 194, score tested before the distance pair 195, the pair negated
+// into `<=`/`>=` 257, best_level/strongest before the memset 191, a long second search counter 194, both 191.
+// Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
+// (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
+// through a function pointer for the relative vector (diagnostic) did not change that (487).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
-	long const *actor_reference = &actor_index;
 	s_actor_view *actor = actor_get(actor_index);
-	long best_node = NONE, strongest_node = NONE;
+	long strongest_node = NONE, best_node = NONE;
 	byte *data = (byte *)actor;
 	memset(data + 0x324, 0, 0x10);
 	short best_level = 0;
@@ -1741,7 +1954,7 @@ void function_266640(long actor_index)
 				if (prop_get(node->prop_index)->unknown23)
 				{
 					function_2672e0(view, (s_prop_node_view *)node);
-					function_267700(*actor_reference, node, prop, view);
+					function_267700(actor_index, node, prop, view);
 					if (node->unknown27 >= 1) ++*(char *)(data + 0x325);
 					++*(char *)(data + 0x324);
 				}
@@ -1765,16 +1978,16 @@ void function_266640(long actor_index)
 		}
 		if (view && *(real *)((byte *)view + 0x3c) > strongest)
 		{
-			strongest = *(real *)((byte *)view + 0x3c);
 			strongest_node = index;
+			strongest = *(real *)((byte *)view + 0x3c);
 		}
 	}
 	*(short *)(data + 0x328) = best_level;
 	*(long *)(data + 0x32c) = best_node;
-	if (strongest_node != *(long *)(data + 0x338)) function_267770(strongest_node, *actor_reference);
-	function_266540(*actor_reference);
+	if (strongest_node != *(long *)(data + 0x338)) function_267770(strongest_node, actor_index);
+	function_266540(actor_index);
 	*(bool *)(data + 0x340) = false;
-	function_2662f0(*actor_reference);
+	function_2662f0(actor_index);
 	if (*(bool *)(data + 0x30c) && *(short *)(data + 0x310) >= 0 &&
 		*(short *)(data + 0x310) < 2 && actor->unknown086 < 8)
 	{
@@ -1793,10 +2006,10 @@ void function_266640(long actor_index)
 			if (elapsed == first)
 			{
 				if (player->player_index != NONE)
-					function_1fb7e0(0xa8, *actor_reference, NULL, *(long *)(g_4e8c24->data + (g_4f55cc[*(short *)(data + 0x310)].player_index & 0xffff) * 0x21c + 0x2c), NONE);
+					function_1fb7e0(0xa8, actor_index, NULL, *(long *)(g_4e8c24->data + (g_4f55cc[*(short *)(data + 0x310)].player_index & 0xffff) * 0x21c + 0x2c), NONE);
 			}
 			else if (elapsed == second && player->player_index != NONE)
-				function_1fb7e0(0xa9, *actor_reference, NULL, *(long *)(g_4e8c24->data + (g_4f55cc[*(short *)(data + 0x310)].player_index & 0xffff) * 0x21c + 0x2c), NONE);
+				function_1fb7e0(0xa9, actor_index, NULL, *(long *)(g_4e8c24->data + (g_4f55cc[*(short *)(data + 0x310)].player_index & 0xffff) * 0x21c + 0x2c), NONE);
 		}
 		else *(short *)(data + 0x30e) = 0;
 	}
@@ -1824,12 +2037,15 @@ void function_266640(long actor_index)
 	players.datum_index = NONE;
 	while (data_datum_iterator_next(&players))
 	{
+		short player_table_index = NONE;
+		for (long p = 0; p < 2; ++p)
+			if (g_4f55cc[p].player_index == players.datum_index) { player_table_index = p; break; }
 		s_ai_player *player = NULL;
-		for (long p = 0; p < 2; p++)
-			if (g_4f55cc[p].player_index == players.datum_index) { player = &g_4f55cc[p]; break; }
+		if (player_table_index != NONE) player = &g_4f55cc[player_table_index];
 		short player_slot = NONE;
-		for (long i = 0; i < 2; i++)
+		for (short i = 0; i < 2; i++)
 			if (g_4f55cc[i].player_index == players.datum_index) { player_slot = (short)i; break; }
+		real score = 0.0f;
 		long threshold = round_tick_count((real)g_510c54->field_2_3 * 2.0f);
 		if (player && *(long *)(players.datum + 0x2c) != NONE)
 		{
@@ -1838,17 +2054,9 @@ void function_266640(long actor_index)
 			s_slot_object_view *unit = object_get(unit_index);
 			if (*(short *)((byte *)unit + 0x1fc) == NONE)
 			{
-				vector3f forward = *(vector3f *)((byte *)unit + 0x70);
-				if (unit->parent_index != NONE)
-				{
-					byte *parent = (byte *)object_get(unit->parent_index);
-					real *matrix = (real *)(parent + *(short *)(parent + 0x116) + *(char *)((byte *)unit + 0x18) * 0x34);
-					vector3f transformed;
-					transformed.i = matrix[7] * forward.k + matrix[4] * forward.j + matrix[1] * forward.i;
-					transformed.j = matrix[8] * forward.k + matrix[5] * forward.j + matrix[2] * forward.i;
-					transformed.k = matrix[9] * forward.k + matrix[6] * forward.j + matrix[3] * forward.i;
-					forward = transformed;
-				}
+				real approach = 0.0f, facing = 0.0f;
+				vector3f forward;
+				object_get_forward(unit_index, &forward);
 				point3f point;
 				function_b9dd0(unit_index, &point);
 				vector3f direction;
@@ -1860,13 +2068,10 @@ void function_266640(long actor_index)
 				bool retain = true;
 				if (!(distance > 0.0f)) continue;
 				bool visible = true;
-				long reference = function_25d810(unit_index, *actor_reference, false);
+				long reference = function_25d810(unit_index, actor_index, false);
 				vector3f velocity = unit->velocity;
 				vector3f relative;
-				relative.i = unit->velocity.i - vehicle->velocity.i;
-				relative.j = unit->velocity.j - vehicle->velocity.j;
-				relative.k = unit->velocity.k - vehicle->velocity.k;
-				real approach = 0.0f;
+				vector3d_from_points3d((point3f const *)&vehicle->velocity, (point3f const *)&unit->velocity, &relative);
 				if (function_30bf0(&velocity) > 0.0f)
 					approach = velocity.k * direction.k + velocity.j * direction.j + velocity.i * direction.i;
 				if (function_30bf0(&relative) > 0.0f)
@@ -1876,7 +2081,6 @@ void function_266640(long actor_index)
 				}
 				if (reference != NONE && prop_ref_get(reference)->unknown27 < 1)
 					visible = false;
-				real facing = 0.0f, score = 0.0f;
 				bool positive = false;
 				if (distance < 15.0f)
 				{
@@ -1898,7 +2102,7 @@ void function_266640(long actor_index)
 						if (approach > 0.5f) score += 1.0f;
 						positive = score > 0.0f;
 					}
-					else if (visible && !(distance > 3.5f && approach < 0.5f)) positive = score > 0.0f;
+					else positive = visible && !(distance > 3.5f && approach < 0.5f) && score > 0.0f;
 				}
 				if (positive)
 				{
