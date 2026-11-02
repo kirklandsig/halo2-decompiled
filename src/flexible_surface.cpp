@@ -495,6 +495,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 328: actual random-angle/rotation/clamp phase scopes in all seven
 // subsets, then all with immutable complete rotation inputs, 117 each. Original
 // scopes and full body restored; frame 0x28/0x20 and seed/direction/cross homes remain.
+// P271: Consumer-scoped angle on retained projection/row/tail graph, independent
+// entry old/axis/cross declarations masks 0..7: 165/165/165/165/165/165/165/165.
+// Original body restored; frame and seed/direction/rotation homes remain.
 // Round 364: Real-coordinate-array transfers for direction/axis/both/both plus output,
 // long ordinals 167/183/190/190; short ordinals 117/141/141/152. Long axis forms shrink
 // the frame to 0x24, direction alone grows it to 0x30; all original transfers and body
