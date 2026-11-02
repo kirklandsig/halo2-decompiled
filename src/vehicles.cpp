@@ -1157,6 +1157,11 @@ long function_10f5f0(long object_index);
 // Round 251: Two-vector buffer, velocity name, state name, buffer/velocity, buffer/state, both names,
 // buffer/both names and six-real buffer/both names: 588 each. Original complete body and inherited qualifier
 // restored; frame and native flag-result stores remain.
+// Round 236: Native owning-word bit readers, initial/active/physics and pair subsets
+// 600/595/612/600/644/597; full readers with actual six-real buffer 644
+// (frame 0x1990); final Boolean result completion 595. All original record layout,
+// buffer, observations, qualifiers and complete body restored; frame 0x19ac versus
+// 0x1984, native flag-result stores and scalar/SSE homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3459,6 +3464,11 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 470: Plain real-array component loops for projection removal/negative axis/
 // up rotation, subsets 1/2/4/3/5/6/7, then all with forward rotation: 168/170/174/145/177/180/176/176.
 // Original body restored; projection i-product, cross ranks and angle/trig homes remain.
+// Round 236: Full projection-only/both/implicit producers 223/262/262; forward scale/add 235;
+// exact-valued promoted angular coefficient case/default/both 165/160/166, exact-only;
+// complete forward product parts 131; with shared subtraction/native fallback copy/both
+// 133/149/152. Five-point producer form rejected. Original complete body restored;
+// projection i-product, cross ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3999,6 +4009,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
 // construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
 // scalar/world/fallback homes remain.
+// Round 236: Default offset/rest/length before search, with reused change/default collision result/both
+// 264/264/268/268; defaults at the search exit with those same result subsets
+// 263/263/273/273. Pre-search frame stays 0xec; exit defaults grow it to 0xf0.
+// Original complete body restored; found-index retest and scalar/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

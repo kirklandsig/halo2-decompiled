@@ -572,6 +572,10 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH round 279: Spatial-first case priorities 24013/24031/24103/24130/24301/24310/23401/23410 on the
 // retained signed prior-state graph [423, 434, 421, 417, 448, 421, 447, 425]. Original executable body
 // restored.
+// Round 236: Run-wide sampling result before maximum, logical/direct and qualified/plain
+// maximum 450/454/450/420; after maximum logical 450/454, direct with native signed-short
+// prior state 427/417. Several recover frame 0xa0 and 1616 bytes, but actor input stays
+// stacked. Original prior-state type, maximum qualifier, predicates, cases and body restored.
 // DH281: Sampling admission priorities ACB/BAC/BCA/CBA with original and update-first validation on
 // retained 21304/signed-state graph; exact-length 412 ties the opening score [414, 450, 450, 422, 412, 436,
 // 436, 424]. Original executable body restored.
