@@ -152,6 +152,9 @@ extern real g_4c9798[36];
 // Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
 // long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
 // and call tuple unchanged; mode/size homes and rounding reloads remain.
+// Round 283: width-first rounding on the retained overflow graph, full-word mode/height
+// and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
+// Original height-first producers, bounds, mode, capacity expressions and complete body restored.
 // Round 279: Complete immediate scalar results for projection/near/far row families,
 // seven nonempty subsets and all with both plane-distance results, 230 each. Original
 // compound updates and entire body restored; mode/size homes and rounding reloads remain.
@@ -165,6 +168,9 @@ extern real g_4c9798[36];
 // Round 325: Entry declaration families for both dimension results, all integer/real limits and
 // the actual point/normal workspaces, seven subsets and complete role identities, all eight
 // 230 at 1487 bytes. Original declarations restored; flags/mode/sizing and rounding homes remain.
+// Round 491: complete mode producers zero-default/nested/exhaustive/two-default, short 232/229/226/280,
+// long 203/200/197/286. Long exhaustive result retained at 197 plain, 1484/1479; every input, float tree
+// and call tuple unchanged; mode/size homes and rounding reloads remain.
 // Round 283: width-first rounding on the retained overflow graph, full-word mode/height
 // and shared capacity subsets 0/1/2/3/4/6/7: 231/232/250/250/343/353/355; native short width 278.
 // Original height-first producers, bounds, mode, capacity expressions and complete body restored.

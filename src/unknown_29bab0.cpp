@@ -158,6 +158,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // input/heading and normalizer memory-product homes remain.
 // Round 288: On native normalized-input setter/direct input: mode default/history coefficient/both/correction root/mode+root/history+root/all/all with shared addition; shared addition alone and with mode/history/root/mode+history/mode+root/history+root,
 // 822/807/822/750/822/807/822/813/749/822/755/749/813/822/755 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 298: Uniform existing bound macro/direct input with normalized-input setter, staged cross
+// and real absolute API in all eight combinations 804/750/750/809/807/750/748/816. Two-point gain
+// rejected; original input, helpers and body restored. Frame/input/heading and norm homes remain.
 // DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
 // subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
 // DH round 264: Direct input and native normalized-input setter with zero-default/magnitude-default/

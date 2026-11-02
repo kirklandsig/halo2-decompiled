@@ -180,6 +180,9 @@ real normalize2d(point2f *arg_0);
 // integer copy through its `long *` and the output stays EBX); that with the to-centre vector initialised
 // from the input point and differenced in place 233 (1023), with `2.0f - distance` in the normalize block
 // 274, with the centre/radius call before the input copy 220. Retail's inlined radius is a movss load.
+// Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
+// point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
+// Original scalar expressions, publication and complete body restored; output/vector homes remain.
 // Round 51 (lane 11, fast): the found-flag clear before the actor lookup 261, without the output
 // self-address read 275 (both change the convention: 0x1ba5c0/0x1bdad0/0x1bff80 stop matching); the point
 // copy declared at function scope 211 (same code); the output self-address read after the actor lookup 211

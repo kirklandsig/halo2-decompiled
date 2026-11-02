@@ -191,6 +191,9 @@ bool function_a7670(long object_index);
 // instead of `continue` 181; the body count read before the flag is cleared 181; the index stepped back
 // after the flag store 181; the index declared outside its loop 181 (all same code); the retry counts
 // declared ahead of the flag test 186 (966 bytes).
+// Round 298: Complementary deferred result bool/byte/short/long on shared membership/live body
+// bound/indexed cleanup: signed count 233/233/266/267; unsigned count 233/233/266/267. Exact-only
+// shared result restored with original body; selector/list/count homes and BL admission remain.
 // Round 217: native immediate/deferred/both append-end extents, then indexed cleanup,
 // standard deferred search and shared membership result: 312/321/382/319/324/385/360/382. Original counts and body restored.
 // Round 259: Deferred-before-immediate membership, ordinary/first-standard/second-standard/both-standard searches, cursor/indexed cleanup

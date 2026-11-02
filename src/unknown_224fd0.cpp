@@ -162,6 +162,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 452: basis before rotation, before scaling, after forward scaling or after left scaling, composed
 // into rotation 490/536/473/447; composed into basis 489/541/473/447. Original matrix lifetimes, alias
 // destination and switches restored; square/sine/cosine spills, basis registers and table placement remain.
+// Round 300: Plain coordinate products: square ascending/descending 506/505; sine
+// ascending/descending 373/501; independent square-sine/sine-square loops 518/505; paired
+// square-sine/sine-square loops 518/505. Original interleaved native products and complete body
+// restored; axis-specific square/sine/cosine homes and basis registers remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

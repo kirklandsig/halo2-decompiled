@@ -2107,11 +2107,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 296: Per-format a/b/c/ab/ac/bc/abc sample offsets, then bc offsets with long dynamic validity.
+// Scores 589/600/593/598/588/597/606/627. Original complete body restored.
 // Round 231: structure/model/both admission guards 817/618/642; the same guards with
 // test-produced shared status 817/798/776; both guards with special-material single
 // completion and test-produced/original status 816/797. Original admission and body restored.
-// Round 296: Per-format a/b/c/ab/ac/bc/abc sample offsets, then bc offsets with long dynamic validity.
-// Scores 589/600/593/598/588/597/606/627. Original complete body restored.
 // Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
 // native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
 // producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.

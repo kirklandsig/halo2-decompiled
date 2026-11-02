@@ -919,6 +919,9 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // Round 46 (lane 14, plain): only terms whose single use is the next statement written into it: the first 420
 // (921 declarations) 1775 at 10763 bytes with retail's convention (rotation in EAX, ret 4; 0x22850 235, 0x23690
 // 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading

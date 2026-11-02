@@ -1649,6 +1649,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // `shapes.prisms[index].field` with no prism pointer 686 (2956 bytes, zero to EBP, no cursor); the distance through
 // the existing plane_distance_to_point 620 (frame 0xb958); long counters declared count/radius by kind 571 (2890
 // bytes); word counters declared that way 551 (one point); the loop without the `counts[2] > 0` guard 555.
+// Round 298: Independent sums/shared normalization with long counts, point-count-first cap and
+// shared plane distance, masks 0..7: 591/575/593/579/613/605/551/569. One-point gain rejected;
+// original sums, word counts, normalization, cap, plane producer and body restored.
+// Sum/query-zero/cursor homes remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
 // the face sum by the inverse (mulss xmm1, xmm0), the order this body already uses, so the swap is

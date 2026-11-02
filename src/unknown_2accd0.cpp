@@ -1019,6 +1019,9 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
 // `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
 // memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for

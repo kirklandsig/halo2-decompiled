@@ -296,6 +296,9 @@ void function_14bac0()
 // Round 263: Library marker-input/accepted-output/both copies via memcpy 222/222/222, via memmove
 // 268/271/257; complete copies with the native recipient call 228/251. Original native copies, returned
 // output, selected unit and both scans restored; frame and readiness/recipient sharing remain.
+// Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
+// combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
+// Original points, output pointers and both traversals restored; frame/readiness sharing remains.
 // Round 53 (lane 10, fast): retail adds the offset to its own position local (read back from +0x20, the
 // destination's slot) after 0xb9dd0, reads the target unit from the player at both calls, and steps the second
 // scan through the out-of-line 0x6b380 on a 16-byte iterator at +0x2c. The position local used directly 245
@@ -348,6 +351,12 @@ void function_14bac0()
 // three scalars 262, one shared marker point 262, the offset through vector3d_from_points3d 259, the first
 // iterator declared before the offset 259, the second iterator at the block top 259. Lead: retail's 0x2c
 // slot is 16 bytes (the second iterator's), ours 12 (offset/marker/centre), so the iterator can't join it.
+// Round 289: One reset-pool refresh, with native recipients/query-bounds scope/shared point masks
+// 0..7, 298/288/298/288/298/288/298/288. Frames 0x44/0x48 or 0x38/0x44; all regress. Original
+// pool observations, iterators, query workspaces, returned point and selected unit retained.
+// Round 270: Branch-owned destination/alternate/both readiness defaults, original/native
+// recipients, 248/229/249/249/242/258; both producer-adjacent declarations 242/258.
+// Original defaults, points and both traversals restored; frame and readiness/recipient sharing remain.
 // Round 442: null-unit/visited-root/both continues with the cached pool and original reload
 // paths 222/253/253; native recipient counterparts 228/264/264; both guards with shared visit
 // value 253, with native recipients 264. Original output, pool observations and body restored.
@@ -369,6 +378,10 @@ void function_14bac0()
 // workspace, 311/305/311/305; with native result-tested recipients
 // 304/302/307/305. Original separate probes, returned relocation output,
 // selected unit, observations and both player traversals restored.
+// Round 300: Complete alternate elevation before publication: native/memcpy/shared-setter copies
+// 233/233/240; each with native recipients 229/229/245. Shared setter producing the final z
+// directly 240, with native recipients 245. Original point copies, elevation, returned relocation
+// output, selected unit and both scans restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
