@@ -6010,7 +6010,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 001a1d55,169,game,size,ebp packed,,,00024590 000ba1d0,src/unknown_1a1c3e.cpp,matched
 001a1dfe,75,game,size,packed,,,,src/unknown_1a1c3e.cpp,matched
 001a1e49,358,game,size,packed,,,00053750 0014de70 001df560,src/unknown_1a1c3e.cpp,todo
-001a1faf,213,game,size,ebp packed,,,001a1e49,src/unknown_1a1c3e.cpp,todo
+001a1faf,213,game,size,ebp packed,,,001a1e49,src/unknown_1a1c3e.cpp,matched
 001a2084,98,game,size,packed,,,000badc0,src/unknown_1a1c3e.cpp,matched
 001a20e6,177,game,size,ebp packed,,,000e70e0 001a1d55,src/unknown_1a1c3e.cpp,matched
 001a2197,134,game,size,ebp packed,,,00254490,src/unknown_1a1c3e.cpp,matched

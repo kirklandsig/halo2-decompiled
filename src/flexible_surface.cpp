@@ -509,6 +509,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // original/immutable time/immutable angle/both input ownership: 117 each. Original
 // scalar lifetimes and complete body restored; frame 0x28 versus 0x20, seed/time
 // schedule and direction/axis/cross homes remain.
+// AC480: Existing in-place double output scale / complete initialization result / named amplitude
+// envelope, subsets 1/2/4/3/5/6/7, then double scale with weighted oscillation: 158/178/118/204/159/178/204/158.
+// Original transfers, producers and complete body restored; frame and direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

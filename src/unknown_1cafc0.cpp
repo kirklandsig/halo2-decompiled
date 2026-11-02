@@ -628,6 +628,7 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // byte/byte-byte/word-bool/bool-word/word-word/long-bool/bool-long:
 // 348/382/382/348/382/382/348/382. Original entire body and both Boolean declarations restored;
 // frame twelve agrees, graph/request homes and final byte normalization remain.
+// DL245: Frame twelve and original lookup prefix required; graph/name acquisition, destructive graph offset and final byte normalization remain. Request branch returns in byte/bool/short/long status 643/643/624/621; canonical completion returns 668/668/653/657. Retiring status disturbs the agreeing prefix; original query/status/request graph restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

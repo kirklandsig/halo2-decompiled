@@ -1119,6 +1119,10 @@ struct s_signed_file_write_parameters
 // declarations beside getter outputs, seven subsets then complete amount roles:
 // 102/241/241/102/102/241/241/241. Original complete body restored; capacity EAX/EBX and
 // extension buffer/offset homes remain.
+// N321: Repeated phase header extents across API consumers on the retained header-return/live-seek
+// graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
+// homes remain. Scores 138/229/291/255/309/303/320/323.
+// Original executable source restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

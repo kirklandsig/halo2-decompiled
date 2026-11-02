@@ -1568,6 +1568,8 @@ struct s_rating_summary
 // Round 307: and the swapped team/counter homes remain.
 // Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
 // M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
+// M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
+// One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

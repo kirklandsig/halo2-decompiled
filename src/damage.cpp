@@ -701,6 +701,8 @@ void function_d6a70(long object_index)
 // 166 (617, aligned 53 and masked 14 against 87 and 23: object in memory and owner in EBP as retail, but owner loaded
 // in the prologue and no pool register); that with a named owner copy 166 (the copy coalesces), inline notify 166;
 // original lookups 203 (633); fresh test only 190 (590); second pointer 162.
+// P272: Uniform direct primary-object fields, post-guard accumulator declaration and independent entry child iterator subsets, then complete workspace names: 219/159/159/219/219/159/219/219.
+// Original executable source restored; frame 0x4c versus 0x50, retained-pool/object/index and owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -1044,7 +1046,8 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
-// score 297 (was 297): frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
+// score 286 (was 297): frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
+// frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
 // Earlier 343 at 1535 bytes: the stack layout (retail keeps the object offset of
 // the second lookup at esp+0x20, the cone and node scalars in different registers), the NONE-node copy
 // (retail builds &node_direction with lea in the copy), the order of the negated-normal stores, and the dot
@@ -1058,6 +1061,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // M272: both existing point-difference producer subsets 343/343/343; complete closest-point, node-center
 // and surface-normal names alone/with those subsets 343/343/343/343; all with native owner clear 297
 // (plain, 1536 bytes). Keep the native clear and both shared differences; frame/point homes still differ.
+// P272: Entry-owned point/normal/center subsets 297 each; complete direct geometry fields 286;
+// P272: canonical fields 286; original-scoped direct fields 286 (kept). Native NONE-node destination setup agrees.
+// Frame 0x54 agrees; point/normal/center homes and node/cone allocation remain. All captures and operations retained.
 // M315: node/complete geometry lexical roles 297/297; both native point setters 391,
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
@@ -1073,21 +1079,18 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 	{
 		long field_4_2 = function_d5b60(object_index);
 		s_damage_definition *definition = (s_damage_definition *)g_4e3b44[data->definition_index & 0xffff].bytes;
-		point3f const *origin = &data->origin;
-		vector3f *direction = &data->direction;
-		vector3f *node_direction = &data->node_direction;
 		point3f surface_point;
 		vector3f surface_normal;
 		bool outside = false;
 		real scale;
 
-		function_baff0(object_index, origin, &surface_point, &surface_normal);
-		vector3d_from_points3d(origin, &surface_point, direction);
-		data->distance = function_30bf0(direction);
+		function_baff0(object_index, &data->origin, &surface_point, &surface_normal);
+		vector3d_from_points3d(&data->origin, &surface_point, &data->direction);
+		data->distance = function_30bf0(&data->direction);
 
 		if (object->node_index == NONE)
 		{
-			*node_direction = *direction;
+			data->node_direction = data->direction;
 		}
 		else
 		{
@@ -1099,27 +1102,27 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 			else
 				node_center = object->field_x221477;
 
-			vector3d_from_points3d(origin, &node_center, node_direction);
-			function_30bf0(node_direction);
+			vector3d_from_points3d(&data->origin, &node_center, &data->node_direction);
+			function_30bf0(&data->node_direction);
 
-			real dx = origin->x - surface_point.x;
-			real dy = origin->y - surface_point.y;
-			real dz = origin->z - surface_point.z;
+			real dx = data->origin.x - surface_point.x;
+			real dy = data->origin.y - surface_point.y;
+			real dz = data->origin.z - surface_point.z;
 			if (0.05f * 0.05f > dz * dz + dy * dy + dx * dx)
 			{
 				surface_normal.i = 0.0f - surface_normal.i;
 				surface_normal.j = 0.0f - surface_normal.j;
 				surface_normal.k = 0.0f - surface_normal.k;
-				node_direction->i += surface_normal.i;
-				node_direction->j += surface_normal.j;
-				node_direction->k += surface_normal.k;
+				data->node_direction.i += surface_normal.i;
+				data->node_direction.j += surface_normal.j;
+				data->node_direction.k += surface_normal.k;
 			}
 			else
 			{
-				node_direction->i += direction->i;
-				node_direction->j += direction->j;
-				node_direction->k += direction->k;
-				function_30bf0(node_direction);
+				data->node_direction.i += data->direction.i;
+				data->node_direction.j += data->direction.j;
+				data->node_direction.k += data->direction.k;
+				function_30bf0(&data->node_direction);
 			}
 		}
 
@@ -2354,6 +2357,10 @@ struct s_unit_event
 // M315: entry region/permutation before object and native ejection/seat cursor lifetimes,
 // subsets 1/2/4/3/5/6/7 then all with entry event: 558/472/472/558/558/472/558/558.
 // Original body restored; permutation transport, register homes and sixteen-byte excess remain.
+// N321: One permutation-flag observation, shared resettable child iterator and direct nested
+// permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
+// call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
+// Original executable source restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

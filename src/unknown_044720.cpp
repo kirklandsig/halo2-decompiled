@@ -493,6 +493,8 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // point/coordinate prefixes or complete spheres at original/entry producer sites:
 // 238/251/242/249/216/259/236/221. Original capture, query and complete body restored;
 // entry/index spill and center/query/bound homes remain at baseline frame 0x1094.
+// M316: Unsigned-word node cache with original masks; native node/count/query/transform lifetime combinations 209/207/188/211/209/209/207/209.
+// Entry/index spill and center/query/bound homes remain. Original executable body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
