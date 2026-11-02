@@ -462,16 +462,27 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
 // orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
 // the root changes nothing.
+// Round 247: Existing shared scaler native/scalar input capture crossed with complete scalar/native
+// output publication: 146/32/32/145/146/145/189/32; original body and helpers restored.
+// Round 249: Native current/previous/both source-position copies 127/127/162; coordinate
+// initializers current/previous 97/93, mixed 147/147, both 114. Original source observations and
+// body restored; tick/rate register reuse remains.
 // DH269: On the named-length graph, native output/local/common base accumulations
 // 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
 // and common-expression publication 50/50. All regress; original body, includes,
 // parameter storage, length lifetime, delta order and correction producer restored.
+// Round 461: Final tracked velocity/location native/memcpy/memmove pairs, excluding both
+// native, with direct tracked parameter: 99/102/99/99/102/100/100/109.
+// Original complete transfers, prediction/correction graph and parameter storage restored.
 // Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
 // then all with correction publication, without the own-parameter address read:
 // 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
 // Round 513: Complete overlap-safe transfers at initial velocity, fallback output and
 // history velocity, seven subsets, then all with location commit, without the own-parameter
 // address read: 162/107/100/158/157/105/153/170. Original body and includes restored.
+// Round 309: Without the own-parameter address read, indexed correction accumulation,
+// location-first admission and word-order subsets 1..7: 99/100/100/99/99/100/100;
+// all with short ordinal 121. Original prediction, parameter storage, helper and complete body restored; tick/delta/correction allocation remains.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

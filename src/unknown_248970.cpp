@@ -348,6 +348,12 @@ public:
 // rejected; original stores, for loop and complete body restored.
 // Round 342: Unsigned snapshot/traversal/allocation handle subsets on the separate-allocation graph, then all with unsigned produced handle: 54/54/54/54/54/54/54/54.
 // Original complete body restored; child pretest, pool/NONE ranks and allocation/link homes remain.
+// Round 346: entry head/tail/both or child-phase link pointers, crossed with original for/native while:
+// 54/54/54/54/49/49/49/49.
+// Frame 0x14 and viewer scan agree; child admission, pool/NONE ranks, retest and handle construction
+// remain. Original executable body restored.
+// Round 351: Allocation-result, initialization-receiver and link-output declaration scopes on the recovered frame/input graph;
+// 54/54/54/54/54/54/54/49. Original executable source restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

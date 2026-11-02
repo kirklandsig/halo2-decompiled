@@ -184,6 +184,11 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 58 (m3 lane 1, fast): the three buffers at function scope 128; buffers, flags and size at function scope
+// 128; flags and size at the block's top 128, ahead of the buffers 128; a named path pointer for the three path
+// uses 128 (all same code). Compile-only: token declared outside the success block, or NULL there with the walk
+// after it, or one goto to the block's end leave the code unchanged; only a real use of the token after the
+// block (`g_4e3b40 = token == NULL`, diagnostic) saves EBP at the block's top, which retail's code does not show.
 // Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
 // mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
 // delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
@@ -194,6 +199,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
 // `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
 // before the token array, unique first 127.
+// Round 299: Standard endpoint/count-based native pointer-table initialization, with independent
+// counters before the table and zero read-count interactions: 238/239/238/239/225/225/225/225. All
+// original source/includes restored; outer EBP preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

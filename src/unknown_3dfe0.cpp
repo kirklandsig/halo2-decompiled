@@ -34,6 +34,14 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // the sample/update timestamps swap esi/edi), after the cache lookup 227, before the elapsed return
 // 227, after it 216; force as a flag set in an if 55 (830 bytes); `update = force` with
 // `if (!force && (object[0xc1] & 1)) return;` 228; force as `!(initialized && valid)` 27 (same code).
+// Round 50 (lane 13, fast): entry object/update elapsed/update/force 186, force before update 214; timestamps named or a
+// `now` local on that order 186; force byte or char 112; update elapsed below update 171; force one test + assign 82; force
+// set in an if 55; update after the clamp 30; `update = force` 228, flag test first 246; update assigned in both arms 221
+// (aligned 13; object and force homes as retail, the false store in the else arm); force renamed a_force, z_force 27.
+// Lead, BLOCKED-BY 0xd4080's definition line (its file is another lane's this round): retail sets up `lea esi` before the
+// push, so 0xd4080's last two parameters swap (flag, then record; 0x3d2c0 stays matched, 0xd4080 364 -> 363): 23, special
+// declared first 21, with update assigned in both arms 222 (aligned 7: only the early false store and retail's object
+// reload in the force arm remain). All 24 entry orders with either arm on that lead: 21 is the lowest count, aligned 7.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

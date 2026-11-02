@@ -161,6 +161,12 @@ void function_44720(void)
         ++index;
     }
 }
+// MiniMax R (11-01): retail builds the flag it passes to 0x41040 at the call site out of the
+// fourth argument's slot (`cmp dword ptr [esp+0x60], 0x1f` / `setne cl`), so the flag is that
+// argument, not the level; writing it that way reproduces those bytes and the 0x40 frame but
+// scores 148, and reading the entry through g_4ba138[index] instead of g_4ba138[(short)index]
+// scores 144. Retail keeps the entry pointer in EBP and the part counter in EDI, ours has them
+// the other way round. No lower score; body unchanged.
 // score 107 (was 107): the frame is still 0x44 against retail's 0x40, the entry is addressed
 // through a pointer instead of retail's index-then-pointer form, and the geometry lookup keeps
 // the flags word; this round's variants all scored worse, so the body is unchanged.
@@ -460,6 +466,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 216/216/216/216; division with masked bit 218/218; division/remainder 251/251.
 // Original word addressing, query storage and body restored; entry/index spill
 // and center/query/bound homes remain at the correct 0x1094 frame.
+// Round 461: Branch-produced next-node result committed once per iteration, with filled-count,
+// short-cache and successful-query matrix scopes, masks 0-7: 236/223/250/238/236/223/250/238.
+// Original cache update, count initializer, native domains and complete body restored.
 // Round 505: Independent scalar bound coordinates XYZ/ZYX and coherent coordinate names,
 // original query 185/185/185/185; separate center/native query 177/177/177/177.
 // Single-use memory snapshots and the five-point gain are ineligible; original point/body restored.
@@ -470,6 +479,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 225/237/202, initial+query/initial+bound/query+bound 241/238/249; separate
 // center/query with initial or initial+bound transfers 226/239. Original body
 // restored; entry/index spill and center/query/bound homes remain.
+// Round 309: Indexed coordinate producers at initial/large/both/single-initial captures,
+// each with original/common radius lifetime: 280/280/182/186/280/280/242/242.
+// Original native and scalar copies, radius lifetime and complete body restored; entry/index and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

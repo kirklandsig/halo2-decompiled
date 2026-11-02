@@ -93,6 +93,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // that output form with global first-turn inputs 472; native returned-vector initialization with late
 // inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
 // restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
+// Round 344: complete axis/input staging, their pair, returned matrix and its three staging subsets,
+// then native input-vector copies: 393/356/393/431/452/429/453/485. Original helpers and body
+// restored; frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1725,6 +1728,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
+// score 507 (was 507; earlier 508, 594): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // MiniMax R (11-01): no new form, no lower score.
 // score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
@@ -1751,6 +1755,9 @@ real game_time_get_seconds();
 // role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
 // directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
 // member vertex API 524. Original body restored.
+// Round 344: native tag/count/visibility admission subsets 525/507/525/507/525/507/507;
+// all admissions with the member vertex API 512 (2285 bytes). Original body restored;
+// frame 0x90 versus 0x94, tag/output homes and EBX/EBP roles remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2625,6 +2632,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 517 (was 517; earlier 529, 561): the logic matches retail block by block (walked statement by statement against
 // MiniMax R (11-01): no new form, no lower score.
 // score 517 (was 529; 561 before that): the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
@@ -2639,6 +2647,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // random step (no change), the lane order of offset and of the view fields (no change), dz/dy/dx from the stored
 // position (587), phase read before the cycle test (+7 over the per-branch read), structs for the state and view
 // layouts (517 with the two reorders, 536 without; the byte offsets are kept).
+// Round 344: output projection, shared moved-point add, their pair, shared phase publication,
+// its three combinations and complete projection input staging: 556/589/645/526/545/593/644/539.
+// Original projection helper and complete body restored; frame 0x60 versus 0x38, stored velocity
+// acquisition and loop pointer ownership remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3126,6 +3138,8 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // but moves its load above the early return); names never move them.
 // Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
 // range/record, all native views and const callback arrays each 4. Original body restored.
+// Round 307: positive enabled scope 4; handle per view 4; table root at every use 217;
+// decoded/position/both point storage at entry 4/4/4; node/range and record/geometry storage at entry 4/4.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -3652,6 +3666,12 @@ long __stdcall function_3ddd0(long object_index);
 // Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
 // one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
 // Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
+// Round 28 (lane 17, fast): global read through a const cast 1; named index local 1; whole read as an inline
+// getter 1; slot from an inline getter, indexed in two statements / one expression 1/1; read through an inline
+// taking (table, index) 1; both inlines 1; struct at +0xbc with a levels array, indexed / pointer sum 1/1; record
+// struct with a levels member, element form / record pointer 46/46 (491 bytes); uninitialized slot declared at
+// the top / before / after the previous byte 1/1/1; one-byte element struct 1; pointer to a one-byte row 1; read
+// through a cast of the element address 1; slot as long 1. Original body restored.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
