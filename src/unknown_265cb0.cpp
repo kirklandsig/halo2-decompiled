@@ -1953,6 +1953,14 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
 // DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
 // complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
+// Round 61 (lane 1, fast): second search with a long counter 194; player NULL first 399; with the index through a long local
+// 404 (search equals retail; aligned 99); `if (distance < 15 && (visible || established))` with no visible test in the
+// non-established arm 381 at retail's 2880 bytes (visible stays in memory and the test threads, aligned 97), the same
+// without the search form 242; declarations before the memset 191 (a gain of 3, not kept), with the rest 378-239. Named
+// direction scalars after the last normalize 381 (same code). Diagnostics, reverted: direction's address stored to a
+// global 497; all three normalizes through a function pointer with the vectors' addresses stored 555; only the relative
+// normalize so, address not stored/stored 509/529: i/j/k load into registers after that call only with both, so retail's
+// callers treat the normalize as killing an escaped direction. /Ow on the file 194 (same code; one flag diagnostic).
 // @retail 0x266640
 void function_266640(long actor_index)
 {
