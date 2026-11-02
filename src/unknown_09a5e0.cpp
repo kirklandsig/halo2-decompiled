@@ -2271,6 +2271,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
 // three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
 // object/offset homes and low-mask ownership remain.
+// M303: Positive-four countdown signed-char/byte/short/word at loop scope or entry: 155 in all eight forms; original long countdown and lifetime restored.
 // Round 120 (fast): the masked entry offset named at its computation 154 (retail's SIB base again, one
 // point); the 0x2000 test nested in its own if 155 (same code); a `byte const *` unit pointer 155 (same
 // code); the slot-loop counters and cursor declared right after the 0xa5e70 call 279 (1081 bytes, every

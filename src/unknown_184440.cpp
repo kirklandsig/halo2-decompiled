@@ -260,6 +260,9 @@ __forceinline bool function_184448(long arg_0)
 // Round 458: Actual external face-plane/polygon-vertex transfers, native/memcpy/memmove
 // pairs excluding native/native: 965/1021/965/965/1021/989/989/1027. Original source transfers and
 // existing in-place transforms restored; frame 0x11d4 versus 0x11cc remains.
+// Round 463: complete normalizer output publication, scalar/native early result, direct/scalar/native
+// common result, then early scalar/common direct/common native with inverse declared first:
+// 965/1087/988/988/1062/965/988/1062. Original helper restored; frame excess remains.
 // Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
 // matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
 // basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.
@@ -267,6 +270,9 @@ __forceinline bool function_184448(long arg_0)
 // 1016, both in ijk/ikj/jik/jki/kij/kji producer orders 1086 each.
 // Original native input copies, in-place helpers and full body restored; frame 0x11d4 versus
 // 0x11cc remains.
+// Round 465: complete plane input before orientation, native/memcpy/normal-distance/
+// normal setter-distance, at face/entry scope: 987/987/966/973 twice.
+// Original split plane producer and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

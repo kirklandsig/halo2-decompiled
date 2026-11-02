@@ -478,6 +478,12 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 318: one shared release on the ordinary result/search-tail graph, crossed with early
 // result declaration, native request and complete limit reads: 53/53/53/53/49/49/49/49.
 // Keep common release and limit field reads only (49 plain); original request and declarations.
+// Round 465: marker pointer produced at collection/request start/geometry/movement,
+// current/full-body common result: 199/242/248/201/252/253/246/202.
+// Last two recover frame 0x162c but regress; original pointer lifetime and result restored.
+// Round 256: nullable marker-list at the query producer, branch/conditional output,
+// early result storage and limit-field observations: branch 236 each, conditional 233 each.
+// Original readiness Boolean, list construction, movement snapshot and complete body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

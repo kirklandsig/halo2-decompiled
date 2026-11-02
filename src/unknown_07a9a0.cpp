@@ -404,6 +404,9 @@ void function_07b3e0(void)
 // tail stores restored; split scan/datum residency remains.
 // M299: Independent native scan/record header captures, cached/dynamic scanners,
 // signed/unsigned cursors [77, 90, 77, 90, 81, 92, 81, 92]. Original header ownership restored.
+// M302: Pre-stepped pointer/bool iterators with independent record-pool capture,
+// aggregate/field setup and either capture order: 126/126/126/126/144/144/144/144.
+// All exact-only forms rejected; original scan and terminal observations restored.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1347,6 +1350,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // complete body restored; frame/session/lookup remain.
 // M299: Native short identity/player/group induction subsets
 // [871, 863, 865, 873, 881, 886, 885], all word 885. Original long counters restored.
+// M302: Independent all/eligible phase cells byte/word, word/byte, byte/byte,
+// byte/dword, each aggregate/library first clear: 823/830/816/826/831/839/835/850.
+// Original word workspace and both populations restored; frame/session/lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

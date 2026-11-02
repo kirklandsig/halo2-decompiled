@@ -213,6 +213,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // dot/projection: 71/71/71/71/71/71/124/124.
 // All mixed observations are exact-only and none matches; original four-use helper and complete
 // body restored.
+// Round 256: plain native-array dot reduction, long/dword/short/byte counters,
+// original projection 110/110/221/221; indexed projection 110/110/221/221.
+// Original shared dot call, private normalizer and complete body restored.
+// DH282: Complete native forward/up/both values after normalization and before normalization with matrix
+// publication, then paired forms with symmetric dot roles [228, 278, 333, 255, 253, 336, 333, 336].
+// Original executable body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
