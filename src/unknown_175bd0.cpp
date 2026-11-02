@@ -2068,6 +2068,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 288: Native placement rejection in bool/byte/signed-char/short/word/long
 // 139/139/139/168/168/164; true/false default rejection 139/139. Original positive
 // placement result, color observations, query carriers and full body restored.
+// AC474: Complete positive/failure zone-admission results in bool/byte/word/long: 379 each
+// (outlined); forced positive-result expansions 238/238/284/271. Original zone producer,
+// queries and full body restored; early color/query/cursor homes and frame 0x40/0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3442,6 +3445,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and preserved point-Y source remain.
 // Fraction producer independent bounds/reversed bounds/early returns/successive selections
 // 74/86/147/74; each with default-before-color scale 270/270/258/270.
+// AC474: Paired scale-enable expression results in bool/byte/word/long, original/default-before-color
+// scale production: 380/380/375/321/315/315/318/306. Narrow forms lose both update callers.
+// Original scale, observations and full body restored; scale prefix and point-Y preservation remain.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
