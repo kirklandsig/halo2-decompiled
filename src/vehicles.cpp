@@ -2915,6 +2915,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // P252: Low-byte flag payload/full-width driven/full-width paired direction truths, subsets 1/2/4/3/5/6/7:
 // 1053/1052/1095/1099/1080/1110/1080; all native byte carriers 1053. Subsets 4/3/5/6/7 shrink the frame to
 // 0x7c but regress; original complete body and 0x80 frame restored.
+// B358: Named repeated pitch/roll scales / one stable active-phase admission /
+// separate native point-loop indices, subsets 1/2/4/3/5/6/7:
+// 1067/1102/1052/1091/1067/1102/1091; all with paired shared projections 1091.
+// Frame remains 0x80 versus 0x74. Complete original body and all evaluations restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4229,6 +4233,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P252: Channel result/forced state, blend/reverse scalar and native vector-output role-name subsets
 // 1/2/4/3/5/6/7 765 each; all with the pure forced-state constant declared first 765. Original complete body
 // restored; frame 0x18, entry definition and zero/result SSE allocation remain.
+// B358: Complete shared definition ordinal / paired velocity-selection observation /
+// existing projections, subsets 1/2/4/3/5/6/7: 919/792/765/941/919/792/941;
+// all with a native tag-entry receiver 1012. Projection forms are match-only
+// for grouping; no candidate qualifies. Original complete body restored.
+// The 0x18 frame agrees; entry definition and zero/result/constant residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
