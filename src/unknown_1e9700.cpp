@@ -305,6 +305,9 @@ struct s_object_damage_view
 // Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
 // then consistent existing inline validation: 375/396/509/494/509/526/557/515.
 // Original complete executable body restored.
+// Round 305: Record-pointer selection, assist admission and both award-prefix scans, seven subsets:
+// 461/379/465/370/480/398/485; all with native short teams 494. Original body restored; frame/scalar
+// homes and the biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

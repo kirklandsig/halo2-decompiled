@@ -2219,6 +2219,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 335: Complete turning/alignment/both-distance product parts, subsets 1-7,
 // 485 each; all parts const 485 (fast control 485; full 469). Actor/state allocation
 // and first point home remain; all original products, cases and body restored.
+// Round 305: Actor/command/state/completion initialization orders C-A-S-R, S-A-C-R, A-S-C-R, C-S-A-R,
+// S-C-A-R, R-A-C-S, R-S-A-C, R-C-S-A: fast 614/485/485/614/614/502/502/616 against control 485.
+// Original full 469 body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -441,6 +441,9 @@ struct s_physics_component_walk : s_havok_component
 // eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
 // References canonicalize; direct fields grow or rotate allocation. Original method and
 // both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
+// Round 305: Terminal continuation, positive neighbor admission and empty-group return, seven boundary
+// subsets, 172 each; all with shared section ordinal 172. Frame 0x18 agrees; neighbor/key homes and
+// cold exit placement remain. Original method restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
