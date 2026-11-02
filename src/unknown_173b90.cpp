@@ -624,6 +624,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 455: Original particle position/motion captures through memcpy/native,
 // native/memcpy, both memcpy, memmove/native, native/memmove, both memmove,
 // memcpy/memmove and memmove/memcpy: 42/42/42/193/177/210/177/193. Original native copies restored.
+// Round 457: Native emitter-row cursor across readonly rows, scale-first defaults and complete
+// mask-field observation combinations; original shared rotations and callback inputs preserved.
+// Scores 270/270/269/269/298/298/299/299. Original executable body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1115,6 +1118,9 @@ public:
 // Round 455: Actual forward seeded from velocity before in-place negative scaling,
 // native default/fallback/both, shared setter default/fallback/both, memcpy/memmove both:
 // 311/297/346/193/260/269/346/339. Original forward producers, helper calls and complete body restored.
+// Round 457: Complete absolute-forward vector with ijk/ikj/jik/jki/kij/kji member producers,
+// aggregate or shared setter construction; exact-only storage forms, all restored. Scores
+// 268/215/268/256/213/257/268/213. Original executable body restored.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1574,6 +1580,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 455: On the retained two-use nullable effect graph, false-default/direct logical/
 // complete valid-invalid arms/raw two-use status, original then shifted-word flag:
 // 144/150/150/145/132/140/140/72. One-point best rejected; original body restored.
+// Round 457: Same-view bool/byte/short/long after attachment on the recovered two-use effect
+// graph, original then shifted-word flag; original snapshot and call gates retained. Scores
+// 154/151/161/158/164/162/171/168. Original executable body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

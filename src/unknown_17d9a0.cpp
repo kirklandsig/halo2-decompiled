@@ -292,6 +292,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // the existing shared final projection 241/257/241/235. Every form alters the prologue and
 // regresses. Original bound reads, normal/edge producers, corner helper, declaration set and
 // entire body restored; plane receiver and projection schedule remain.
+// Round 457: Projection X/Y publication through the eight nonoriginal direct/memcpy/memmove pairs;
+// original points, selectors, plane and edge math preserved. Scores
+// 138/787/138/138/787/774/774/787. Original executable body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
