@@ -183,6 +183,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // all with reversed independent defaults, 819/840/811/882/784/813/847/832. All new forms use direct input
 // and regress; original input observation, real vector copies, private helpers and full body restored. Early
 // input/object/heading and memory-product homes remain.
+// Round 254: Direct input normalized before readonly position provider, with complete input
+// setter, real absolute API and single normalizer exit combinations
+// 812/813/815/817/768/829/768/829. Original input access, helper and body restored; early
+// input/heading and normalization homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
