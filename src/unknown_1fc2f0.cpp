@@ -469,6 +469,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
 // then all with correction publication, without the own-parameter address read:
 // 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
+// Round 513: Complete overlap-safe transfers at initial velocity, fallback output and
+// history velocity, seven subsets, then all with location commit, without the own-parameter
+// address read: 162/107/100/158/157/105/153/170. Original body and includes restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

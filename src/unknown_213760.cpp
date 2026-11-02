@@ -1423,6 +1423,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // iteration-owned declarations, 33 each. The failure-only count-initialization graph keeps the same code
 // despite every new output-home identity. Original names, scopes, result producers, waits and native
 // handle/options tuples restored; query/count homes, write setup and checksum/header joins remain.
+// Round 513: Native path/write-header/read-header construction, seven subsets on the
+// failure-only count graph, 33 each; all three with early header construction 264.
+// Original objects, construction sites, scalar output lifetimes and full body restored.
 // @retail 0x213970
 void function_213970(void)
 {

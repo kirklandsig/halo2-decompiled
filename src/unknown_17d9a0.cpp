@@ -648,7 +648,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
-// score 552 (was 552): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 539 (was 552): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -799,6 +799,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // M288: Long/short edge side on long axis induction 677/637; dword induction
 // 677/637; short induction 664/668; byte induction 664/668. All on the retained
 // exact-frame axis-loop graph; original predicate, induction and complete body restored.
+// Round 513: Bounded first-face for-loop consumes its ordinal in the array argument;
+// short/word/long/int with original count order 539/609/741/741, face-count first
+// 539/608/741/741. Keep the signed-short original-order form, plain 539 at 3647 bytes;
+// face load now precedes count-pointer setup. Tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
@@ -811,9 +815,9 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	faces[0] = placement->unknown50;
 	short secondary_count = 0;
 	short face_count = 1;
-	for (short i = 0; i < face_count; ++i)
+	for (short i = 0; i < face_count;)
 	{
-		function_17dd80(mesh, &projection->quad, output, faces[i], true, projection->radius,
+		function_17dd80(mesh, &projection->quad, output, faces[i++], true, projection->radius,
 			*(short const *)(definition + 2), faces, &face_count, secondary, &secondary_count);
 	}
 	if ((byte)g_444a38[*(short const *)(definition + 2)].flags && secondary_count > 0)
