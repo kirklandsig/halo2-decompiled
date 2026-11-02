@@ -259,6 +259,16 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // minimum/hit homes and inactive-return placement remain.
 // DH280: Existing native cross/point/rotation publication subsets, then all with the native ray publisher
 // [618, 630, 630, 628, 623, 630, 624, 628]. Original executable body restored.
+// Round 73 (m3 lane 16, fast; 618 stands, every form below scores higher): the active test as a positive if with `return
+// true` last 679 (2839 bytes, aligned 473 -> 462: retail's exit layout at the function's end); with `else local_0 = true` 679; the range read once before the test 666 (2828, aligned 461; retail's
+// `comiss xmm1, xmm0` and the later store from xmm1), declared before the input copy 675; the ray loop as a plain for 755
+// (2768, frame 0x100: index scaled, no byte offset or count down), with the positive test 746, with the range too 724.
+// Eight name sets for success, minimum, hit flags and basis 666 each (same code). Next cause: low slots, retail
+// remaining/point cursor/success/offset/minimum/hit/basis/hit cursor/range, ours
+// remaining/offset/minimum/success/basis/hit/point cursor/hit cursor/range.
+// DH283: Native coordinate input/origin/projection producer subsets 1-7
+// 667/721/739/618/667/721/739; complete graph with aggregate hit initialization 730.
+// Original input copies, private producers, in-place snapshots and complete body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

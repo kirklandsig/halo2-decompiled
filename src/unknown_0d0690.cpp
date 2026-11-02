@@ -1763,6 +1763,12 @@ dword function_015cd0(long index, dword entry);
 // Round 118: the buffer declared in the conversion block 4; a short result 19; the bsp globals
 // pointer in a local 4; the bitmap tested before the status 4; the result declared after the
 // buffer 4 (a compile-only build keeps the same two registers in every form).
+// Round 136 (m3 lane 6, fast): a sample pointer local set in each arm (0xd30d0's shape) 68 (312 B, block
+// order flips); UV filled by field stores 4; UV declared at function scope 4; palette colour as two unpack calls 4;
+// converted surface in a named local 6 (the d15e0 call moves ahead of the push, buffer still ECX); buffer declared
+// before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
+// shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
+// general registers as retail, so no register-summary gap there.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

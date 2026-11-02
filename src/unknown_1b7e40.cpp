@@ -441,6 +441,9 @@ evaluate:
 // function's top 73; the far result assigned (`result = g_46fbe8;`) and returned at the end 78; view and
 // velocity declared right after the node lookup 73; the near test with the call in its else arm and no early
 // return 78; the prop compare as a guard return (`!=`) 73.
+// Round 28 (m3 lane 18, fast; the call still inlined in every form): the node's distance field in a local for
+// both tests 78; the speed named before the final test 73; the near result in an if/else with the far tests in
+// its else 78; the prop compare as a guard return 73; the payload count as a guard return 79 (265 bytes).
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

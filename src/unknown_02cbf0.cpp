@@ -220,7 +220,7 @@ short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,
     void *context, long object_index, real intensity, long group, long group_type,
     bool outside, bool whole, bool first_component, real first_opacity,
-    real second_opacity, real depth, byte level, point3f const *position, real radius)
+    real second_opacity, real depth, word level, point3f const *position, real radius)
 {
     long index = g_4c0b78.current++;
     long result = index;
