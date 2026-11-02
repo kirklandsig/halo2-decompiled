@@ -868,6 +868,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
 // goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
 // object index read before 0x210850 in both remembered branches 309 (1444 B).
+// Round 233: Both normalization producers with false-default positive assignment,
+// bool/byte/short/long result: 267/263/380/372; provisional success with explicit unordered-safe
+// failure correction: 260/266/287/287. Original result graph and complete body restored; narrow
+// carriers retain frame 0x8c, wider carriers expand it to 0x90. Result/presence byte roles and
+// shared case-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

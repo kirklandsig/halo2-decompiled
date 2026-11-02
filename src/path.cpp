@@ -498,6 +498,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
 // in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
 // the short count with the split increment 367.
+// Round 233: Node-array base and CRT memmove step/fallback point-transfer masks 1-7:
+// 430/377/378/307/418/389/374; all with short link count 377. Every node-base graph loses matched
+// caller 0x270930. Original complete body, link memcpy and signed bounds restored; frame
+// 0xe8/0xe4, initial acquisition and memory flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

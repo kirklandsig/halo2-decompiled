@@ -126,7 +126,7 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 410 (was 419): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// score 410 (was 410): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -227,6 +227,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
 // planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
 // Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
+// Round 233: CRT memmove planar-normal transfer, long/bool/short/byte success: 460/544/462/520;
+// with actual multi-use vertex-table owner: 446/545/439/526. Copy-only long/short reach retail
+// frame 0x64 but regress; all eight lose fourteen matches. Original complete body restored;
+// full/planar normal homes, byte state and separate output tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
