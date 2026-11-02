@@ -95,6 +95,10 @@ struct s_planar_camera_source
 
 PRIVATE inline void matrix_cross(vector3f const *a, vector3f const *b, vector3f *out);
 
+// score 7 (was 7): only the operand order of two products in the inlined matrix_cross differs (retail a.j*b.i and
+// b.k*a.i for the k and j terms, ours b.i*a.j and a.i*b.k) plus the placement of one store before function_163db0.
+// Swapping the operands in matrix_cross (k and j terms, four spellings) gives identical bytes: the compiler
+// canonicalizes them; 0x3c9a0 shares the helper and stays MATCH.
 // @retail 0x441b0
 void function_441b0(s_planar_camera_source const *source, s_planar_camera *state, byte const *view)
 {
@@ -959,6 +963,10 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
     D3DDevice_SetTextureStageState(stage, component, *(dword *)&value);
 }
 
+// score 84 (was 213): off-diagonal products are shared (xy/xz/zy) and the statement order is xx,yy,zz,ys,zs,xs,inverse. Still differs:
+// scheduling and register choice only (retail loads the axis as j,i,k,j,k, takes 1.0f after fcos, and keeps ys/zs on one xmm copy of
+// sine; ours computes ys through x87). Tried: sine/cosine as plain locals instead of the struct (115-130), ys/zs before the squares
+// (116-189), inverse first (117), ys,zs computed right after sin and before cos (195), xs as (double) cast / plain / swapped operands (all 84).
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -971,19 +979,22 @@ void function_3c650(byte const *state)
     real xx = axis->i * axis->i;
     real yy = axis->j * axis->j;
     real zz = axis->k * axis->k;
-    real xs = (real)((double)trig.sine * axis->i);
     real ys = axis->j * trig.sine;
     real zs = axis->k * trig.sine;
+    real xs = trig.sine * axis->i;
     real inverse = 1.0f - trig.cosine;
     g_4c1b9c.scale = 1.0f;
     g_4c1b9c.forward.i = (1.0f - xx) * trig.cosine + xx;
-    g_4c1b9c.forward.j = inverse * axis->i * axis->j + zs;
-    g_4c1b9c.forward.k = inverse * axis->i * axis->k - ys;
-    g_4c1b9c.left.i = inverse * axis->i * axis->j - zs;
+    real xy = inverse * axis->i * axis->j;
+    g_4c1b9c.forward.j = xy + zs;
+    g_4c1b9c.left.i = xy - zs;
     g_4c1b9c.left.j = (1.0f - yy) * trig.cosine + yy;
-    g_4c1b9c.left.k = inverse * axis->k * axis->j + xs;
-    g_4c1b9c.up.i = inverse * axis->i * axis->k + ys;
-    g_4c1b9c.up.j = inverse * axis->k * axis->j - xs;
+    real xz = inverse * axis->i * axis->k;
+    g_4c1b9c.forward.k = xz - ys;
+    g_4c1b9c.up.i = xz + ys;
+    real zy = inverse * axis->k * axis->j;
+    g_4c1b9c.left.k = zy + xs;
+    g_4c1b9c.up.j = zy - xs;
     g_4c1b9c.up.k = (1.0f - zz) * trig.cosine + zz;
     g_4c1b9c.position.x = g_4c1b9c.position.y = g_4c1b9c.position.z = 0.0f;
     set_bump_component(1, D3DTSS_BUMPENVMAT00, *(real const *)(state + 0x68) * g_4c1b9c.forward.i);
@@ -1005,6 +1016,13 @@ void function_3c650(byte const *state)
 extern byte g_485ac2;
 s_3c9a0_matrix g_4c1b68;
 
+// score 315 (was 315): logic matches retail block by block (constants checked in the XBE: 0.5, 0.04, -12.0, 0.78068578,
+// 1.0, 1.13, 1.5, 0.0001); no behaviour difference found. Retail spills tangent and view_tangent to float stack slots and
+// divides with divss, ours keeps them on the x87 stack (fdiv st(1)); retail also keeps the near_x/near_y/z stores to
+// g_4c1b08 and reloads them in the corner sums, ours forwards them and drops the stores (1330 vs 1387 bytes), and its
+// frame is 0x4c, ours 0x60.
+// Tried: store order z,x,y,scale (291 -> 291), volatile tangent (-6), volatile tangent+view_tangent (-6), writing only
+// g_4c1b08[3].y and keeping the other corners in locals (same code).
 // @retail 0x3ca90
 void function_3ca90(byte const *state)
 {
@@ -1090,11 +1108,19 @@ struct s_render_part_context
 extern real g_4670e4;
 long function_40de0(long index, bool first, bool second);
 
+// score 300 (was 296): logic matches retail block by block. The two parameter volatiles stay: without them 0x44ac0 (a caller)
+// stops matching because index/part_index leave edx/ecx. Retail takes index raw from edx (`or ebp, edx` at 0x410ed), ours
+// zero-extends it ((word)index); the signature is short in every declaring file, so not changed here. Still differs: register
+// allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
+// and orders the 40de0 call after the 40e30 pushes. Tried: no volatiles (291, breaks 0x44ac0), second via if-flag (296),
+// ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
     dword and_mask, dword or_mask)
 {
+    // Keeps index/part_index in edx/ecx and every other parameter on the stack, as retail's callers
+    // pass them (0x44ac0 stops matching without this).
     part_index = *(long volatile *)&part_index;
     index = *(short volatile *)&index;
     (void)&group; (void)&weight; (void)&context; (void)&material_override;
@@ -1125,7 +1151,8 @@ void function_41040(short index, long part_index, long group, byte weight,
     real priority = weight * context->priority * g_4670e4 * 4.0f;
     word kind = *(word const *)part;
     if (kind == 0 || kind == 5 || context->material == NONE) return;
-    long material = material_override != NONE ? material_override : context->material;
+    long material = material_override;
+    if (material == NONE) material = context->material;
     byte const *definition = g_4e3b44[material & 0xffff].bytes;
     long pass;
     function_1bf50(*(word const *)(definition + 0x3c), material, priority, &pass);
@@ -1142,8 +1169,7 @@ void function_41040(short index, long part_index, long group, byte weight,
     if ((flags & 0xffff7fff) || force)
     {
         bool first = (entry->unknown00 & 2) != 0;
-        bool second = false;
-        if (entry->unknown00 & 4) second = group != 3;
+        bool second = (entry->unknown00 & 4) && group != 3;
         if (first && second && group != 0)
             function_40e30(2, material, priority, *(word const *)(definition + 0x3c), kind,
                 and_mask, or_mask, (t_record_fill)function_4cbf0, (dword)function_4d0b0, (void *)handle);
@@ -1176,18 +1202,23 @@ void function_41040(short index, long part_index, long group, byte weight,
     }
 }
 
-// score 352 (was 365): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// score 305 (was 352): logic matches retail block by block (no behaviour difference found); what still differs is register
+// allocation: retail keeps tag in ebp and stage in edi and leaves pass in its stack slot, ours puts pass in ebp and tag in
+// edi, so the 0x15d70 call setup, the case 18 pass*10 and the record_material reads differ; retail also loads the source
+// fields as [esi+g_4ba138] and takes the address afterwards (lea), and reloads out->value10 for the 0x4cbb0 call.
+// Tried: volatile result/tag (352), (void)&param (no effect), direct g_4ba138[index] field reads (412), pass/tag address
+// tricks (none), statement-order permutations of result/out/key/index (305-360), key as long (341), group as switch or
+// if-chain (switch gives sub/dec instead of test/cmp; the nested != 1 form gives retail's cmp), selection as byte with one
+// movsx (closer to retail, score 340-361 only because the size changes: 1196 vs 1204 bytes).
 // @retail 0x4cbf0
 bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     long entry_index, long handle, void *record)
 {
-    volatile bool result = false;
+    bool result = false;
     s_sort_record *out = (s_sort_record *)record;
-    tag = *(long volatile *)&tag;
-    short key = (byte)handle;
+    short key = handle & 0xff;
     short index = (short)(handle >> 8);
     s_44940_entry *source = &g_4ba138[index];
-    byte *object = *(byte **)source->unknown10;
     long mode = function_15d70(tag, stage, pass, source->tag != NONE,
         (bool)((source->unknown00 >> 10) & 1));
     switch (stage)
@@ -1212,8 +1243,12 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
             byte *pass_entry = *(byte **)(groups + 4) + pass * 10;
             tag = *(long *)(g_485a80 + 0xd0);
             pass = 0;
+            byte *object = *(byte **)source->unknown10;
             if (object)
-                mode = (*(dword *)(pass_entry + 2) & 0x8000) ? 2 : object[0x76] == 0xff;
+            {
+                if (!(*(dword *)(pass_entry + 2) & 0x8000)) mode = object[0x76] >= 0xff;
+                else mode = 2;
+            }
         }
         break;
     }
@@ -1224,6 +1259,7 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
         {
             tag = *(long *)(g_485a80 + 0xd0);
             pass = 0;
+            byte *object = *(byte **)source->unknown10;
             if (object && g_4b9f5c != NONE && !g_4b9f88 &&
                 (g_4b9f78 > g_4b9f7c ? g_4b9f78 : g_4b9f7c) > 0.0f && object[0x76] < 0xff)
                 mode = 0;
@@ -1233,20 +1269,32 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
     case 16:
     {
         bool enabled = g_4ba004 && !g_485a75 && !g_485a76;
-        if (!TEST_FIELD_BIT((source->unknown00 >> 7) & 1)) mode = NONE;
-        else if (source->unknown00 & 0x100) mode = enabled ? NONE : 1;
-        else mode = enabled ? 2 : 0;
+        dword bits = source->unknown00;
+        if (bits & 0x80)
+        {
+            if (bits & 0x100) mode = enabled ? NONE : 1;
+            else mode = enabled ? 2 : 0;
+        }
+        else
+            mode = NONE;
         break;
     }
     }
     out->unknown04 = (byte)mode;
     if (mode != NONE)
     {
-        long kind = source->flags >> 29;
-        if (kind)
+        if (source->flags >> 29)
         {
-            out->group = kind == 1 ? 1 : 2;
-            out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            if (source->flags >> 29 != 1)
+            {
+                out->group = 2;
+                out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            }
+            else
+            {
+                out->group = 1;
+                out->value0c = ((source->flags >> 9) & 0x1ff) | ((source->tag & 0xffff) << 11);
+            }
         }
         else
             out->group = 1;
@@ -1275,17 +1323,23 @@ bool __stdcall function_4cbf0(long tag, long context, long pass, long stage,
         byte *material = record_material(tag, pass, stage, entry_index) + (byte)mode * 0x132;
         out->value10 = (dword)material;
         word primitive = *(word *)geometry_entry;
-        long selection;
+        byte selection;
         switch (primitive)
         {
-        case 1: selection = (signed char)section[0x10]; break;
-        case 2: selection = (signed char)section[0x10]; break;
-        case 3: selection = (signed char)section[0x10]; break;
-        case 4: selection = (signed char)section[0x11]; break;
-        case 5: selection = (signed char)section[0x11]; break;
-        default: selection = (signed char)section[0x10]; break;
+        case 1:
+        case 2:
+        case 3:
+            selection = section[0x10];
+            break;
+        case 4:
+        case 5:
+            selection = section[0x11];
+            break;
+        default:
+            selection = section[0x10];
+            break;
         }
-        long shader = function_1cb20(*(word *)(section + 0x14), selection, *(long *)(material + 0x100));
+        long shader = function_1cb20(*(word *)(section + 0x14), (signed char)selection, *(long *)(material + 0x100));
         out->value08 = (word)shader;
         out->unknown14 = *(dword *)source->unknown10;
         result = function_4cbb0(*(long *)(material + 0x100), (word)shader) != 0;
@@ -1637,15 +1691,24 @@ void function_4d720(short, long);
 extern long g_485a60;
 
 
-// score 499 (was 520): a mask test read as a field bit (TEST_FIELD_BIT) gives retail's load-and-shift; the rest still differs.
+// score 380 (was 499): size equals retail (1418); what still differs is register allocation and frame layout.
+// Retail keeps mode in edi and the unextended packed >> 8 in esi, tag in edx and g_4e3b44 in ebx through the prologue,
+// loads tag before packed, and puts value at [esp+0x13], compound at [esp+0x24], part_index at [esp+0x34].
+// Section/primitive are re-read from entry->flags at every use (no locals): that took the score from 489 to 406.
+// Retail passes the compound flag (its stack slot [esp+0x24]) as 4d640's third argument; the texture block's byte
+// store at [esp+0x58] (0, then 1 after function_015c90) is never read, so the draft's `setup` was dropped.
+// Tried: short primitive (489) vs long primitive (502) as locals, both locals replaced by inline reads (406); decode order of part_index/index/
+// value/definition (391 to 411, definition last kept: 393); long index with (short) casts (393, same bytes);
+// (byte)packed or short part_index (401, 18 bytes short); TEST_FIELD_BIT on the 0x100000 test (389) and on the
+// 0x200 test (380, kept) or both (397); *(long*)(g_485b48+8) store moved first (same).
 // @retail 0x4d0b0
 void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     long fourth, long packed, void *record_address)
 {
-    byte *definition = g_4e3b44[tag & 0xffff].bytes;
     long part_index = packed & 0xff;
     short index = (short)(packed >> 8);
     byte value = (byte)(packed >> 24);
+    byte *definition = g_4e3b44[tag & 0xffff].bytes;
     *(long *)(g_485b48 + 8) = tag;
     if ((mode == 18 || mode == 19) && !(definition[0x16] & 4))
     {
@@ -1655,16 +1718,14 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     bool compound = (definition[0x16] & 1) != 0;
     s_44940_entry *entry = &g_4ba138[index];
     if ((entry->unknown00 & 0x4000) && mode == 16) return;
-    long section = (entry->flags >> 9) & 0x1ff;
-    short primitive = (entry->flags >> 18) & 0x7ff;
     byte *geometry;
     if (entry->tag != NONE)
-        geometry = *(byte **)(*(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x28) + section * 0x5c + 0x34);
+        geometry = *(byte **)(*(byte **)(g_4e3b44[entry->tag & 0xffff].bytes + 0x28) + ((entry->flags >> 9) & 0x1ff) * 0x5c + 0x34);
     else if (!TEST_FIELD_BIT((entry->unknown00 >> 12) & 1))
-        geometry = *(byte **)(*(byte **)((byte *)g_4e0348 + 0xa0) + section * 0xb0 + 0x50);
+        geometry = *(byte **)(*(byte **)((byte *)g_4e0348 + 0xa0) + ((entry->flags >> 9) & 0x1ff) * 0xb0 + 0x50);
     else
     {
-        short cluster = *(short *)(*(byte **)((byte *)g_4e0348 + 0x144) + primitive * 0x58 + 0x34);
+        short cluster = *(short *)(*(byte **)((byte *)g_4e0348 + 0x144) + ((entry->flags >> 18) & 0x7ff) * 0x58 + 0x34);
         geometry = *(byte **)(*(byte **)((byte *)g_4e0348 + 0x13c) + cluster * 0xc8 + 0x50);
     }
     byte *part = *(byte **)(geometry + 4) + part_index * 0x48;
@@ -1672,7 +1733,7 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
     function_4d830((s_render_transform_record *)entry);
     function_4d7c0((dword *)entry, (word *)part);
     byte const *selection = (byte const *)function_44940(index, (entry->unknown00 & 0x1000) != 0);
-    void *extra = 0, *stream = 0, *mask = 0;
+    void *extra = 0;
     if (mode == 5 && entry->tag != NONE && !compound)
     {
         byte *model = g_4e3b44[entry->tag & 0xffff].bytes;
@@ -1681,36 +1742,37 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
             s_24490_definition *resource = *(s_24490_definition **)(model + 0x78);
             long key = **(long **)entry->unknown10;
             function_024040(key, (s_surface_size const *)resource, entry->flags & 15);
-            extra = function_24490(key, resource, section);
+            extra = function_24490(key, resource, ((entry->flags >> 9) & 0x1ff));
         }
     }
-    bool setup = false;
+    void *mask = 0, *stream = 0;
     if (mode == 3 && (entry->unknown00 >> 29) != 3 && !compound)
     {
         long bitmap = NONE;
         long texture = NONE;
-        byte *data = *(byte **)((byte *)g_4e0344 + 0x84);
-        if (primitive != 0x7ff)
+        if (((entry->flags >> 18) & 0x7ff) != 0x7ff)
         {
             if (entry->tag != NONE)
             {
                 if ((entry->unknown00 >> 29) != 2)
                 {
-                    byte *group = *(byte **)(data + 0x64) + primitive * 12;
+                    byte *data = *(byte **)((byte *)g_4e0344 + 0x84);
+                    byte *group = *(byte **)(data + 0x64) + ((entry->flags >> 18) & 0x7ff) * 12;
                     byte *buffer = *(byte **)(data + 0x44) + *(word *)(group + 2) * 0x38;
-                    long size = ((word *)*(byte **)(group + 8))[section] * 4;
+                    long size = ((word *)*(byte **)(group + 8))[((entry->flags >> 9) & 0x1ff)] * 4;
                     if (buffer[0] & 1)
                     {
                         mask = *(void **)(*(byte **)(buffer + 0x34) + 4);
                         ((long *)mask)[1] = size;
                         ((long *)mask)[2] = size;
                     }
-                    stream = function_4dc60((s_primitive_definition *)data, primitive, false, section);
+                    stream = function_4dc60((s_primitive_definition *)data, ((entry->flags >> 18) & 0x7ff), false, ((entry->flags >> 9) & 0x1ff));
                 }
             }
             else
             {
-                byte *group = *(byte **)(data + 0x54) + primitive * 12;
+                byte *data = *(byte **)((byte *)g_4e0344 + 0x84);
+                byte *group = *(byte **)(data + 0x54) + ((entry->flags >> 18) & 0x7ff) * 12;
                 byte *buffer = *(byte **)(data + 0x44) + *(word *)(group + 2) * 0x38;
                 long size = **(word **)(group + 8) * 4;
                 if (buffer[0] & 1)
@@ -1719,23 +1781,21 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
                     ((long *)mask)[1] = size;
                     ((long *)mask)[2] = size;
                 }
-                stream = function_4dc60((s_primitive_definition *)data, primitive, true, NONE);
-                byte *mapping = *(byte **)(data + 0x4c) + primitive * 4;
+                stream = function_4dc60((s_primitive_definition *)data, ((entry->flags >> 18) & 0x7ff), true, NONE);
+                byte *mapping = *(byte **)(data + 0x4c) + ((entry->flags >> 18) & 0x7ff) * 4;
                 bitmap = *(short *)mapping;
                 texture = *(signed char *)(mapping + 2);
             }
         }
         else if (entry->tag == NONE)
         {
-            byte *mapping = *(byte **)(data + 0x2c) + section * 4;
+            byte *data = *(byte **)((byte *)g_4e0344 + 0x84);
+            byte *mapping = *(byte **)(data + 0x2c) + ((entry->flags >> 9) & 0x1ff) * 4;
             bitmap = *(short *)mapping;
             texture = *(signed char *)(mapping + 2);
         }
         if (texture != NONE)
-        {
             function_015c90(3, texture);
-            setup = true;
-        }
         g_485a60 = bitmap;
     }
     for (short i = 0; i < *(long *)(geometry + 0x38); ++i)
@@ -1769,8 +1829,8 @@ void __stdcall function_4d0b0(long tag, long first, long second, long mode,
         (s_1c8c0_stream *)extra, (s_1c8c0_stream *)mask, (s_1c8c0_stream *)stream))
     {
         function_4d9c0(part, mode, value, index, tag, second, fourth, record[4]);
-        function_4d640(index, mode, setup);
-        bool filtered = (entry->unknown00 & 0x200) && !(part[2] & 8);
+        function_4d640(index, mode, compound);
+        bool filtered = TEST_FIELD_BIT((entry->unknown00 >> 9) & 1) && !(part[2] & 8);
         bool strip = (entry->unknown00 & 0x40) && *(long *)(entry->unknown10 + 4) && *(long *)(geometry + 8);
         function_4daa0(filtered, strip, (s_4daa0_geometry *)geometry,
             (s_4daa0_part *)part, *(dword **)(entry->unknown10 + 4));

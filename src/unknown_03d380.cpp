@@ -389,6 +389,22 @@ void function_125a90(long value);
 // 46 gives retail's control flow but keeps the kind arm as the test's fall-through. `remove`
 // assigned on every path with no initializer 36 and the negated test with the kind arm first 36
 // both compile to the same code (VC normalises the arm order).
+// Round 284: complete policy observations from incoming flags, b/a/both 103/143/144;
+// those with the native inner type comparison 104/144/145; both with short/byte type
+// carriers 149/152. Original policy snapshots, type and complete body restored;
+// scaled ordinal before policy load and decision-block placement remain.
+// Round 55 (fast): element computed before the index local 51; index as `(word)datum` 114; the special arm
+// as `if (type == 0x26) remove = !a; else remove = false;` on the long type 88 (417 bytes); `remove` declared
+// before the index and element 36; the element through a typed elements array local 36.
+// Round 132 (lane 6, fast): the condition named as a bool 157 (471 bytes; LTCG still inlines
+// 0x221810); the whole decision as one ternary 88 (both arms threaded, kind arm first); the file's
+// ELEMENT macro with `(datum & 0xffff) + 1` and no index local 51; the special arm as `if (type ==
+// 0x26) remove = !a; else remove = false;` on the long type 88 (aligned 31 against 35: the special arm
+// is then materialised and falls into the join as in retail, but the kind arm is laid out first and
+// jumps into the join with `setne`); that with the kind arm as one `kind && x == 1` test setting
+// `remove = false` 51: both arm bodies are then retail's, but the kind arm stays the class test's
+// fall-through and VC moves the special arm and the removal into the gap after the next-index
+// ternary's `jmp`, where retail puts the kind arm in the gap after the removal's `jmp`.
 // Round 71 (lane 12, fast): the special arm as `if (type == 0x26) remove = !a; else remove = false;` with the kind
 // arm as `if (byte == 1) remove = false;` 51 (retail's arm bodies; the kind arm falls into keep and the special arm
 // with the removal moves after the loop step); the condition named `bool special` with those arms 144 (467 bytes:
@@ -396,6 +412,13 @@ void function_125a90(long value);
 // `remove = type == 0x26 && !a` and `!= 1` 157 (471), with the kind arm as one `&&` test 144 (467); the element
 // pointer formed from `datum & 0xffff` before index 51. Still BLOCKED-BY 0x221810 (inlined whenever the layout is
 // retail's).
+// Round 287: Paired unsigned/signed-byte policies, each isolated byte policy, and paired byte
+// mask-predicate producers 36 each; paired unsigned/signed-byte policies with the native long
+// inner type test 46 each. Original policy storage, producers and body restored.
+// Round 284: complete policy observations from incoming flags, b/a/both 103/143/144;
+// those with the native inner type comparison 104/144/145; both with short/byte type
+// carriers 149/152. Original policy snapshots, type and complete body restored;
+// scaled ordinal before policy load and decision-block placement remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

@@ -656,6 +656,9 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // an inclusive loop bound 64 fast; both guards as `> 3` 12 fast; `index + 0` at the final call
 // 9 fast; a read-only callee index 9 fast; a read-only callee index and pointer 9 fast;
 // the function placed before its callee 9 fast. Full baseline 2; all restored.
+// Round 133 (plain): loop index declared at the top 2; const-qualified parameters 2; half declared
+// before the count test 2; a field pointer for the steps 93 (136 bytes); the polygon test after the
+// if/else 27 (the restore pair unchanged in each).
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

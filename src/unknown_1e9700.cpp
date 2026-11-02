@@ -73,6 +73,8 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 	*(dword *)g_4e9ae8 |= 0x20;
 }
 
+// score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// Earlier 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
 // in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
 // materialises the -1 default twice; still BLOCKED-BY 0x196960/0x1968b0 in another lane's file.
@@ -83,18 +85,18 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // the 15-bit value with the 16-bit idiom (xor eax,eax; mov ax,[...]) with one -1 default and the
 // enable byte in AL; ours zero-extends the value into EAX, keeps the enable byte in DL and
 // materialises the -1 default twice. Still BLOCKED-BY 0x196960/0x1968b0, whose file is held.
-// score 107 (was 107): this round: the comparison written the other way round (the counter first)
+// Earlier 107 (was 107): this round: the comparison written the other way round (the counter first)
 // gives 107, and the counter read through a 16-bit local, at block scope or at function scope, 112
 // with and without that comparison (419 bytes). Still the maximum's register home: retail keeps the
 // old maximum in ECX and the counter in AX and reads the 15-bit value with the 16-bit idiom
 // (xor eax,eax; mov ax,[...]) into ECX with one -1 default and the enable byte in AL, ours
 // zero-extends the value into EAX, keeps the enable byte in DL and materialises the -1 default
 // twice. Still BLOCKED-BY 0x196960/0x1968b0 (retail inlines both; their file is held).
-// score 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
+// Earlier 107 (was 107): this round: the player maximum read as a nested initialise/compare/assign
 // gave 109, the same nested read for the team maximum 117 and the player maximum alone 112.
 // Still the enable reloads and the maximum-register homes: retail keeps the old maximum in ECX
 // and the -1 comparison in EAX, ours merges the enable into DL and the maximum into EAX.
-// score 107 (was 107): no frame; enable reloads and maximum-register homes differ.
+// Earlier 107 (was 107): no frame; enable reloads and maximum-register homes differ.
 // Four meaningful inputs agree; the converter consumes ECX and preserves player EDX.
 // Earlier: the two maximum
 // reads as `if (g_510ca0) x = i != NONE ? value : NONE` gave retail's nested
@@ -111,6 +113,12 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // (401/413 bytes), and with the player setter 202 (362); index admission nested after the limit
 // reads 110 (420); early consecutive and row declarations 107/107; team-mode byte and nested
 // team guards 107/107. Original scalar limits, counter operations and guards restored.
+// Round 279: admission index/writable/enabled/improved 103; writable/index/enabled/improved 104;
+// enabled/index/writable/improved 106; enabled/writable/index/improved 106;
+// writable/enabled/improved/index 104; enabled/improved/writable/index 107;
+// improved/index/enabled/writable 107; improved/writable/enabled/index 107.
+// Best admission with short maximum / separate increment / conditional clamp / per-use counter
+// 103/103/105/103. Four-point gain excluded; original body restored.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -183,7 +191,7 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
-// score 353 (was 421): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
+// score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
 // Byte selection index 421; signed-byte teams 487; explicit append phases 421; selected/fallback result
@@ -270,6 +278,12 @@ struct s_object_damage_view
 // 454 (1583 bytes); the player index read at each use in the selection loop 376; a `&history[selected]` record
 // pointer in the killer block 454 (1583); victim_team/killer/damage_code declared in the other five orders
 // 353-360 (the three slots never move).
+// Round 114 (m3 lane 7, fast): a `&object->history[selected]` record pointer in the killer block 454 (1583 bytes:
+// retail's `lea [sel+0x2f]; shl 4; add` record and victim_team/damage_code slots, but selected loses EDI to a
+// parameter home and the frame grows to 0x54), with a record pointer in the selection loop too 454 (same code),
+// with the record's player index named 491 (1617); the selection amount read once before the time test 454 (the
+// loop base stays +0x2f4); a `history` array pointer local for every lookup 353 (same code: retail saves
+// object+0x2f0 at [esp+0x34] for both loops, ours object+0x2f4).
 // Lane 12 r72 (fast = plain, the same chain rebuilt on its own base before round 49 landed): the shared header's real_to_long made __forceinline (every other user
 // already redeclares it so; retail has its fld/fistp inline at every call) 444 (1561 bytes) alone; with
 // round 120's form (victim through unit_get_player_index, the game time through function_146650, the
@@ -285,6 +299,12 @@ struct s_object_damage_view
 // `selected`: still +4.
 // Lane 12 r72 result not kept: friendly written out (not through function_15eaf0) gave 349 (retail's 1544
 // bytes) on its own form, 4 under the keep bar against round 49's 353.
+// Round 290: Persistent victim-team/credited-player/code role names, all seven subsets, 353 each;
+// all names with separate declarations and original assignments 353. Frame 0x50 agrees; the
+// three scalar homes, biased history cursor and attribution/award allocation remain. Original restored.
+// Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
+// then consistent existing inline validation: 375/396/509/494/509/526/557/515.
+// Original complete executable body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

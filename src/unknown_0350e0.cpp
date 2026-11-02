@@ -70,7 +70,7 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
     return result;
 }
 
-// score 356 (was 372): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
+// score 356 (was 356): second pass walked retail 0x39e50-0x3a540 formula by formula and found no behaviour
 // difference: both matrices (forward axis angle step*0.5 from 0x485624.., up axis angle step*0.3 from 0x485630..,
 // constants 0.5 / 0.3 / 1.0 read from the XBE), all nine entries of each, and the up*k + left*j + forward*i sum order
 // of the vector rotation (0x3a148-0x3a2f0, 0x3a37c-0x3a526) agree with the source. Only scheduling and registers differ.
@@ -87,6 +87,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // to SSE where retail keeps both angles on the x87 stack), in place with the squares before sine/cosine (390), in place
 // with named sine products (356), in place with each rotated vector stored right after its own local (368); on the
 // in-place + named-angles form: the matrices declared second, first (353), the angles declared before them (353).
+// Round 487: first-turn results at declaration 376; with direct final publication 376; final publication
+// alone 357; diagonal-first matrix stores 367; alias-safe explicit output with staged components 380;
+// that output form with global first-turn inputs 472; native returned-vector initialization with late
+// inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
+// restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -587,17 +592,6 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
 void function_14bc0(short index, short element, bool use_depth);
 extern long g_4858b8;
 
-// score 17 (was 17): the three calls are set up differently: retail passes the globals
-// in ECX and the word in EAX where ours uses EDX, and the last call's argument order
-// differs (the callees' conventions are fixed in their own files).
-// Retail also sets function_14bc0's bool (AL) between its two pushes, which suggests a different
-// declared parameter order (index, use_depth, element); that callee has 89 call sites, not tried.
-// Tried: swapping function_4c690's parameters (no change), locals for the index/tag read before
-// the first call (40), dropping the (short) cast or using word (17), testing function_3ebd0's result (24).
-// Round 104: callee entries confirm the current signatures; retail's caller temporaries are offset EDX,
-// output ECX and target EAX against our ECX/EAX/EDX. Matrix pointer at the calls/function scope 17/17;
-// direct element-zero address at both/first/last calls 17/17/17; const count 17; late tag/target snapshots
-// 17/17; offset snapshot 17. Original restored.
 // @retail 0x3ede0
 void function_3ede0(void)
 {
@@ -611,16 +605,15 @@ void function_3ede0(void)
 		byte *data = 0;
 		if (index != NONE) data = g_4e3b44[index & 0xffff].bytes;
 		byte *definition = g_4e3b44[*(long *)(data + 4) & 0xffff].bytes;
-		long count = *(long *)(definition + 0x48);
-		if (count != g_4c5038.count)
+		if (*(long *)(definition + 0x48) != g_4c5038.count)
 		{
-			g_4c5038.count = count;
+			g_4c5038.count = *(long *)(definition + 0x48);
 			g_4c5038.valid = false;
 			return;
 		}
 		if (g_4c5038.valid)
 		{
-			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, count);
+			function_3ebd0(g_4687a4, g_4c5038.matrices, matrices, *(long *)(definition + 0x48));
 			function_14bc0((short)g_4858b8, 0, true);
 			function_4c690(*(long *)(data + 4), matrices);
 		}
@@ -1308,6 +1301,9 @@ long function_baf80(long object_index);
 // load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
 // a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
 // inline model-index helper for the object and its parent 22.
+// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
+// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
+// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {
@@ -1634,6 +1630,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
     perpendicular->k = direction->j * cross.i - direction->i * cross.j;
 }
 
+// MiniMax R (11-01): no new form, no lower score: the five-way switch still evaluates the cross products in our order and allocates the XMM registers differently.
 // score 193 (was 193): the statements match retail (cross products, dot-product operand order, atan2 tail).
 // Retail keeps `result` in its own stack slot (stored 0.0f at entry, fstp'd into by the atan2
 // tail, one shared `movss xmm0, [result]` at the end, frame 0x18); ours keeps the zero in xmm0,
@@ -1745,6 +1742,10 @@ real game_time_get_seconds();
 // as retail does (2285 bytes = retail's, definition in ebx and NONE in ebp as retail) but scores 512 because the stack
 // slots still differ (retail's frame is 0x94; aligned differences 439 -> 370); `if (!(visibility > 0.0f))` gives
 // retail's comparison order (506; 511 with the member form).
+// J225: point-difference helper 507; projection dot helper 507; scalar-output role names 507; vector-output
+// role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
+// directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
+// member vertex API 524. Original body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -1948,7 +1949,9 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
     return result;
 }
 
-// score 204 (was 220, 298 originally): the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
+// score 188 (was 188; earlier 204, 220, 298): frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
 // frame 0x7c against retail's 0xc0 and 846 against 857 bytes, and the register roles (retail keeps the loop count in ebx, the entry
@@ -1960,6 +1963,9 @@ PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevatio
 // Tried: sin/cos without the (real) casts (223), out-pointer helper for both (284/260), for `local` only (256/228), by-value basis helper with `left` as a vector (261, 357 when
 // passed whole) or as three reals (253), `left` from a returning cross helper (235), `local` written inline from the entry fields
 // (269/247), a by-value world_direction(local, forward, up) helper (203 but 846 bytes of different temps), basis declared before position (no change).
+// Round 435: shared/staged left cross 182/182; native matrix plus shared rotation 181/181,
+// in-place 189/189; original cross rows with shared rotation 191, in-place 189. All restored;
+// six/seven-point leads are below the keep gate. Current frame 0x80 vs 0xc0; loop/vector homes differ.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2139,6 +2145,7 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // receiver alone/with loop random/while/both 57 each; outer empty-state exit with
 // loop random and count receiver 300. Exact-only receiver forms restored with the
 // full original body; lazy saves and the post-fstp memory compare remain.
+// Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2204,7 +2211,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 182 (was 193, 324): PIN reevaluates the clamped expression as retail does (the target's
+// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2217,6 +2224,10 @@ real magnitude3d(vector3f const *v);
 // cross terms (the 0x11d3b0 shape, 194), vector3f_scale for both normalizations (199), the six normalized components
 // interleaved first.i, second.i, first.j, first.k, second.j, second.k (188; per component 190), a named length local
 // before the PIN with magnitude3d (282); the two dot products through the existing dot3f (182, same code, kept).
+// Round 435: shared axis cross (cross3f(&first, &second, &axis)) 147, held 11-01: in the full LTCG build it makes
+// 0xc2d00 (unknown_0bffa0.cpp) lose its match (DIFF at +0x12e), so the axis stays written out; staged axis cross 147; shared/staged rotation tangent 196;
+// both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
+// axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2293,6 +2304,7 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
+// MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
 // score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
@@ -2314,6 +2326,9 @@ s_cached_input_list g_5234e8[4];
 // 0x31590), object in EDI, i/entry in ESI and the cursor in EBP. On those forms: object read before the definition
 // 130 | 54; `shape` declared before index 130 | 54; `view` declared before `count` 128 | 55; g_547f98 read at
 // each use (no list local, 556 bytes) 118 | 65.
+// Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
+// reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
+// (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2418,7 +2433,7 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 	entry->initial = entry->initial < 0.0f ? 0.0f : entry->initial > *maximum ? *maximum : entry->initial;
 }
 
-// score 317 (was 405, 424 originally): the logic was walked against retail block by block (0x4ac30-0x4b159) and
+// score 317 (was 317): the logic was walked against retail block by block (0x4ac30-0x4b159) and
 // agrees: the four passes (pairs to the front, first flagged entry, drop of just-created flagged entries, duplicate
 // key removal), both sorts (modes 1 and 2), the decay loop, the growth loop and the output copy. What is left is
 // register allocation. Retail keeps `first` in edx and the state in ebp for the first three loops and reloads `first`
@@ -2434,6 +2449,17 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // declaration order of first/last/requested/found/i (317-319), per-loop `long i` (317), an `entries` alias (317),
 // a copy of `first` for the later calls (370), found set before/after the swap (360/318). Without the
 // "last >= i" forms 390; "limit <= i" stops the unrolling (802).
+// Round 487: persistent-count / ordinal / paired / complete role names 317 each; no separate found flag 436;
+// prefix count initialized before admission 331; separate named phase ordinals 317; retained-only removal
+// cursor advancement 318. All eight executable forms restored; frame 0x30 agrees, early prefix/state
+// register roles and the two counter homes remain exchanged. Earlier scores were 405 and 424.
+// Round 36: a compile-only build reproduces this listing (aligned 131 against retail); `first` takes EBP in all 60
+// random combinations of declaration order, loop tests, flag order, per-loop counters, an entries alias and the
+// clamp spelling, in renames, and even with its address taken (diagnostic), so the EBP/EDX choice is not a spelling.
+// Retail's growth loop computes `elapsed + step`, stores it and re-reads elapsed for `initial + elapsed`; a pointer to
+// `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
+// Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
+// second loop as a search with the swap after it 365.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2867,6 +2893,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
     return (real)sqrt(z * z + y * y + x * x) * g_4b9dcc;
 }
 
+// MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
@@ -2885,6 +2912,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // stack 8-byte aligned down from 0x335e0); the x87 block is byte for byte retail's either way, only the tail's pop
 // placement moved: 175 -> 177 positional, LCS-aligned 76 -> 73. Its differences as `double` parameters change
 // nothing (175, alignment kept); as one expression with no locals 176.
+// Round 226: table already in EBP, frame 0x18 versus 0x1c and missing final fade scratch stores remain.
+// Native object/mode/both 177; alpha first with those view subsets 212 each; byte result 173 at
+// 768 bytes (four-point gain below the retention bar). Original body and shared helper restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3038,7 +3068,7 @@ struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
 // score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
-// slot). This body matched in lane 13 round 38's full image and matches on the --fast image; adding almost any one
+// slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
 // other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
 // Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
 // with the table and assigned after the early return; declared before the table; both as `byte const *`.
@@ -3046,6 +3076,8 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // the callback arrays declared after table/definitions 30; `draw` declared before `fill` 17; both pointers `byte *const`
 // 4. Compile-only /FAs: the two homes follow which pointer is assigned first (reading the scenario first flips them,
 // but moves its load above the early return); names never move them.
+// Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
+// range/record, all native views and const callback arrays each 4. Original body restored.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -3167,7 +3199,7 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
     corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
 }
 
-// score 394 (was 460, 952 originally): the four corners are written out (retail has four copies of the scale
+// score 394 (was 394): the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3191,6 +3223,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // declared before corners (388), plus the offsets through real_point3d_set (389), plus the corner helper adding the
 // origin after the transform (`origin->x + transformed.x`, as retail orders that add; 402, 1786 bytes), plus the
 // colour's red/green/blue set before alpha or the colour declared at function scope (388).
+// Round 487, all with native color4f: aggregate offset 388; complete transformed-point staging through
+// the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
+// names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
+// frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -3220,13 +3256,13 @@ void function_32ce0(long object_index, real opacity)
         D3DDevice::Begin(D3DPT_QUADLIST);
         D3DDevice_SetVertexData4f(9, 1.0f, 1.0f, 1.0f, alpha);
         D3DDevice_SetVertexData2f(3, 0.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[0].x, corners[0].y, corners[0].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[0].x, corners[0].y, corners[0].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 0.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[1].x, corners[1].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[1].x, corners[1].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 1.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[2].x, corners[2].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[2].x, corners[2].y, corners[3].z, 1.0f);
         D3DDevice_SetVertexData2f(3, 1.0f, 0.0f);
-        D3DDevice_SetVertexData4f(D3DVSDE_VERTEX, corners[3].x, corners[3].y, corners[3].z, 1.0f);
+        D3DDevice_SetVertexData4f(D3DVSDE_POSITION, corners[3].x, corners[3].y, corners[3].z, 1.0f);
         D3DDevice::End();
     }
 }
@@ -3330,7 +3366,8 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 272 (was 257 with a volatile counter): no volatile any more. The portal loop is now `while (remaining-- > 0)` with
+// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
 // is unrolled four times by the compiler (1535 bytes, 956); retail keeps the count in memory ([esp+0x10], dec; jne) and does not
@@ -3344,6 +3381,9 @@ bool __stdcall function_391f0(void *state);
 // Tried: the 2-iteration for loop with the volatile counter (299), with a plain counter (273); a plain counter with the
 // unrolled tests (956, the loop is unrolled and grows to 1535 bytes); `for (k < count) portals[k]` (972, unrolled);
 // a while loop with a side index (295); camera_z read before camera_y (no change).
+// Round 435: native camera 321, signed long count 268, cluster/camera 324, cluster/count 294,
+// camera/count 325, all three 343; all plus shared plane helper 343. Early uninitialized step
+// and step/distance declarations with the long count 268/268. All restored; four-point lead rejected.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -3557,6 +3597,7 @@ long __stdcall function_3ddd0(long object_index);
 // A 480-second annealed search: 45 attempts, none below 1.
 // Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
 // one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
+// Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
@@ -3951,6 +3992,7 @@ PRIVATE __forceinline void draw_selected_source_pass(long group, long mode, byte
     if (enabled) { function_44550(); function_445d0(); }
 }
 
+// MiniMax R (11-01): no new form, no lower score: 0x44370 (src/unknown_01cf50.cpp, not my file) is still called out of line where retail inlines it into six of the passes.
 // score 165 (was 165, 213): the pass flag is now tested as retail does (and al,1 stored to the stack slot, then
 // reassigned from the extra gate), and the volatile store on it is gone. What still differs: retail stores
 // the constant 1 into that slot late (after the cull call, passes 3 and 16 only) where we store it early on
@@ -4103,6 +4145,13 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // unculled/gated plus unculled/all five modes 482/280/540/340/636/435/722;
 // plain loop over the actual mode sequence 795. Provider stays out of line;
 // original whole body and call roles restored. Flag stores and stub convention remain.
+// Round 36 (fast, the shared pass helper changed for all three callers): the gate only for modes 2/8 with
+// `if (mode == 3 || mode == 16) enabled = true;` after the cull call and pass 8's raw byte 193 (958 bytes;
+// 0x423c0 201, 0x2bcd0 371), the same with the `!= 0` gate 186, with `g_485898 >= 4 && g_485898 <= 7 ? 0 :
+// cull` 193; the gate pointer with that late store 193, with the cull ternary 193. The late store is
+// threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
+// 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
+// retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

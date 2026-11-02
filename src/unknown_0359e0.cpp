@@ -137,6 +137,18 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 470: additive/XOR table-band joins 83/83; low-first OR/add/XOR
 // 82/83/83; signed full-width outputs with OR/add/XOR 82/83/83. All restored;
 // coordinate promotion, height/common homes and minimum selection remain.
+// Round 437: First-axis word/byte/signed-byte counts with short/word common count
+// 90/99, 99/104, 85/97; long first-axis with word/long common count 124/127.
+// Original counts and complete body restored; coordinate promotion and count homes remain.
+// Round 483: six complete width/height/shared count naming orders 82 each;
+// first two naming orders with the existing shared logarithm 87/87. Native
+// count-home allocation does not change; original names and body restored.
+// Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
+// private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
+// 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 230: Mutable-formal scan with zero exit before/after result construction and
+// nonzero-first/zero-first test-owned result 105/91/82/82; private scan copy on
+// those four result graphs 105/91/82/82. Original helper/body restored.
 // Round 49 (lane 10, fast, 0x136140 kept unless noted): the outputs as a two-entry bits array 82 (same
 // code); a named `common_bits * 2` shift local 100; one inline spread helper for both coordinates 313
 // (kept out of line, 0x136140 1); `mask & x_value` lookups 82; `common_bits << 1` 82.
@@ -145,12 +157,33 @@ PRIVATE inline long swizzle_log2(dword value)
 // `common_bits = width_bits; if (height_bits < width_bits) common_bits = height_bits;` 119 (still cmov); that
 // with y looked up before x in both arms 125 (302 bytes, 0x136140 kept); `long const` copies 82 (same
 // code); y_bits declared before x_bits 82 (same code).
+// Round 277: standard minimum with short/word/byte/long shared count 109/93/93/101;
+// native short less predicate with the same carriers 117/119/119/119. Exact caller
+// and both neighbors survive; original minimum, counts, helper and body restored.
+// Round 193 (lane 3, fast with 0x136140): x and y used directly with the existing log2_floor (retail's
+// loops) 119 again: our allocator then keeps the width count in EDI (retail ECX) and moves x into EBX, and
+// LTCG passes width/x in EAX/ECX and y on the stack (0x136140 28). On that form: the minimum as if/else 119;
+// the height logarithm first 118 (0x136140 8, y still on the stack), with the if/else minimum 118; the high
+// arm's ORs low part first 119; `!=` tail tests 119.
 // Round 483: six complete width/height/shared count naming orders 82 each;
 // first two naming orders with the existing shared logarithm 87/87. Native
 // count-home allocation does not change; original names and body restored.
 // Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
 // private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
 // 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 495: Nonzero scans with negative-seeded index or complete bit length,
+// zero-before/after result selection and long/short counts: 101/94/114/95/100/98/112/93.
+// Original helper and body restored; coordinate promotion and count homes remain.
+// Round 499: Reused width/height dominance with bool/long decisions and private/shared
+// logarithms: 101/95/101/101/107/88/97/90. Original decisions, coordinates, helpers and body
+// restored; promotions and count homes remain.
+// Round 223: Isolated non-SSE unit 94 (diagnostic); immutable/next-bit windows,
+// descending index/mask, ascending thresholds and three-/two-bit chunks give
+// 88/103/97/105/97/96/132/99. The next-bit/index/mask/first-threshold forms lose
+// the exact caller. Original file, table, private scan and full body restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

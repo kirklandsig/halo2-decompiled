@@ -998,6 +998,9 @@ void function_1d1540(s_havok_component *component);
 // and flag tests nested with a return in the reset arm 88; the transformed flag read before the copy 88.
 // It is on the object/havok call cycle (0x1d1260 and 0x1d1540 reach it again through 0x1d1b60 ->
 // 0x1d0c20 without any stubbed function), so where LTCG enters that cycle may decide its convention.
+// Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
+// 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
+// the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2239,6 +2242,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 {
     vector->m_quad = _mm_setzero_ps();
 }
+// MiniMax C (11-01): no lower score; the hoisted speed products and the velocity scaled with the mixed order give the same code.
 // score 91 (was 91): aligned frame 0x34 agrees; the contact loop and the normal block are retail's.
 // Left: velocity j/k loaded before its length test (retail reloads them into xmm2/xmm3 ahead of the
 // branch and scales them in place, i through a copy of the inverse; ours copies the inverse for all

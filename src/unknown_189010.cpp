@@ -149,6 +149,7 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 	return ticks;
 }
 
+// MiniMax S (11-01): no new form, no lower score; the priority and the flags are still formed after the location copy, and our link still expands the first 0x221810 call, so the state flags are forwarded across it where retail reloads them.
 // score 110 (was 110): BLOCKED-BY 0x221810 and 0x21d110 (callee side): LTCG inlines the first
 // 0x221810 call (retail calls both; its file is not this function's) and 0x21d110 (unmatched) takes the
 // tag in EAX and the state on the stack where retail passes the state in EAX; the forms that give 0x21d110
@@ -159,12 +160,16 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // priority from the request's audible field 147 (485). Retail's full header order
 // (priority from the request byte, set-or-clear bits, then the location copy) is listed below with its scores.
 // score 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
+// frame 0xa8 and request EAX agree; first query expansion, header/result homes and playback convention differ.
+// Earlier 110 (was 110): this round: the fast check reads 110 at 473 bytes against retail's 470 again
 // and no new form was tried; the difference is still blocked by 0x221810, which retail calls twice
 // and our link inlines, in src/unknown_221490.cpp.
-// score 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
+// Earlier 110 (was 110): this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
 // retail homes the request in EBX and reloads the state flags after the first 0x221810 call,
 // ours forwards them across it and builds the flag word in EDX where retail builds it in EAX.
-// score 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
+// Earlier 110 (was 110): Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
+// Earlier: this round: no new form. Still BLOCKED-BY 0x21d110/0x221810 (held files):
+// Earlier: Frame 0xa8 and incoming request agree; class-query expansion and state/flag/result homes remain.
 // Frame 0xa8 and request EAX agree; first class-query expansion and header homes differ.
 // BLOCKED-BY 0x21d110 and 0x221810 (their tag/state registers): retail homes the request in EBX and
 // reloads the state flags after the first 0x221810 call, ours forwards them in a callee-saved
@@ -231,13 +236,28 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // declaration 110; state/tag declarations swapped 110; tag pointer renamed 110; immutable tag
 // pointer 110; early uninitialized flags 110; split tag declaration/assignment 110. All restored;
 // first query expansion, initial tag spill and playback convention remain.
-// score 110 (was 110): this round: no new form. The first class lookup is still expanded here and
+// Earlier 110 (was 110): this round: no new form. The first class lookup is still expanded here and
+// Earlier: this round: no new form. The first class lookup is still expanded here and
 // called in retail: our link inlines 0x221810 (src/unknown_221490.cpp, matched) into it, so our
 // compiler forwards the state flags across that call, while retail treats the call as opaque and
 // reloads them. Suppressing the inline (inline depth zero) costs six matched callers of this
 // function. Still BLOCKED-BY 0x221810 and by 0x21d110 (src/unknown_221490.cpp), whose tag and
 // state registers decide where the request is homed.
 // MiniMax R (10-31): no new form, no lower score.
+// MiniMax I (11-01): no new form, no lower score; the priority and the flags are still formed after the location
+// copy, and our compiler still forwards the state flags across the 0x221810 call where retail reloads them.
+// MiniMax I (11-01, second pass): no lower score. Forming the priority and the flags before the location copy,
+// with retail's set/clear branches for the two flag bits and the priority read from the request, reproduces
+// retail's shape (140-149 against 110, 485-499 bytes against retail's 470): our link then inlines the first
+// 0x221810 call, so the body grows past retail's, and the flags still land in EDX where retail builds them in
+// EAX. The original order stays.
+// Round 446: native 64-bit result/optional-flags/end-tick transport, seven subsets
+// 157/137/166/207/248/234/256; all with unsigned result 256. Original domains, helpers and body restored.
+// DL218: Complete query/playback/both inline contracts 110/110/110; query and combined contracts
+// lose matched control 0x129790. Playback contract with first/shared query receivers 110/110,
+// complete marker-size arms 135, request priority 109 and combined marker/priority 134. One-point
+// gain rejected; all declarations, helpers and original body restored. Frame 0xa8, first query
+// expansion, state/flags/result homes and playback convention remain.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
@@ -651,6 +671,10 @@ real function_30bf0(vector3f *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 
 #pragma inline_depth(0)
+// score 2 (was 2): Round 108 plain trials: existing player-unit getter direct with ordinary/forceinline/inline declarations 160/160/160;
+// camera-position copy then component subtraction 147 (664 bytes); direction copy then component scaling 154 (682);
+// to-camera copy then projection subtraction 160 (673); staged along and distance sums 2/2. Original restored;
+// success result/pop schedule remains.
 // score 2 (was 2): success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
 // the link-time context, not this body or its caller's call: a 67-source reduced image matches,
 // any image of 541+ sources (0xf8eb0's, or any of 0xfc330/0xfcdd0/0x10c880/0x17a8a0/0x184440)

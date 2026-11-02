@@ -70,9 +70,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 629 (was 629): Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
+// score 618 (was 629): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// Input/minimum/hit homes, inactive-exit layout and later basis/ray/root/rotation homes differ.
+// Frame 0x108 agrees; success/hit/input/minimum homes, inactive-exit placement and axis schedules remain.
+// Earlier at 629: Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Retail stores true directly in its result byte and returns immediate one on the inactive path.
 // Hit/basis/ray/root/rotation homes follow.
+// Frame 0x108 and the prologue agree (success in retail's stack byte); our
+// early-true exit sits inline where retail places it last, then hit/basis/ray/root/rotation homes follow.
+// Before round 47: success retained in BL with EBX saved early instead of retail's stack byte.
+// Frame 0x108 and the prologue agree (success in retail's stack byte); our
+// Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Early constant minimum with long success 635, with early point copy 651; final products differ.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
@@ -203,9 +211,31 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 259: all six cross-product parts named before subtraction, paired axis schedules
 // ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
 // helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
+// Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
+// 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
 // Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
 // cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 47 (m3 lane 13): `if (!(range > 0.0f)) return true; else {...}` with the FLT_MAX minimum at the top
+// 618 plain (kept; retail's `mov al, 1` exit and early minimum store); the early return alone 623; as a guard
+// with the body at function scope 680; `if (range > 0) {...} else return true;` 679 (retail's exit last);
+// nested `return local_0;` then `return true;` 679, with the range read first inside it 657 (prologue through
+// the arg_6 test exact, divergence starts at the basis cross products); the range read once before the test
+// 619; read first inside the else 618 (still reloaded); cross-product operands swapped in the helper's first or
+// third part 618 (same code).
+// Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
+// 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 498: Closed origin/query/both regions 618/618/618; branch-owned root outputs alone
+// or with origin/query/both 633 each; all regions with the existing staged basis/projection
+// cross 690. Memory-result/input/minimum/hit ordering and later producer homes remain; original
+// body, helpers, every query and all in-place input/result snapshots restored.
+// Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
+// cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
+// Original executable body and declarations restored; remaining allocation differences persist.
+// Round 300: Single inactive goto to the common result exit, staged cross basis/rotation/projection
+// masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
+// Original constant inactive return, private producers, in-place snapshots and complete body
+// restored; success/hit/input/minimum homes and axis schedules remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
@@ -214,19 +244,21 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	s_slot_object_view *local_1 = object_get(arg_1);
 	s_2922b0 const *local_2 = (s_2922b0 const *)function_1e5450(arg_0, local_1->tag_index);
 	vector3f local_3 = *arg_2;
+	real local_4 = 3.402823466e38f;
 	*arg_5 = 0.0f;
 	bool local_5[4];
 	local_5[0] = false;
 	local_5[1] = false;
 	local_5[2] = false;
 	local_5[3] = false;
-	if (local_2->field_48 > 0.0f)
+	if (!(local_2->field_48 > 0.0f))
+		return true;
+	else
 	{
 		arg_3->i = 0.0f;
 		arg_3->j = 0.0f;
 		arg_3->k = 0.0f;
 		real local_6 = local_2->field_48;
-		real local_4 = 3.402823466e38f;
 		vector3f local_7;
 		vector3f local_8;
 		vector3f local_9;

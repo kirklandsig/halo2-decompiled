@@ -631,6 +631,12 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
 // `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
 // nothing below 47.
+// Round 35 (m3 lane 2, fast): round 185's if/else flag with `special = false` closing the scan arm rebuilt 190
+// (frame 0x30, the seat object in the dead actor slot); with the seat object renamed to sort first or last 190/190
+// (same code: the dead-slot reuse does not follow names); `bool ordinary = type != 6 || !byte` tested for the scan
+// and negated at the tail 200 (872 bytes, memory-only); `((type == 6) & byte) != 0` 195 (flag still BL); `special =
+// type == 6; if (!byte) special = false;` 170 (863 bytes: NONE in EBX, flag memory/AL); a `register` `&&` flag 200.
+// Every form with NONE in EBX leaves the flag without a callee-saved byte register, as retail; none gives CL.
 // Round 63 (m3 lane 16, fast): preset-true flag with the tail test written `prop_index != NONE && special`
 // 187 (same code as unswapped); the if/else flag (false at the scan's start) with that tail order 200 (872
 // bytes); the preset-true flag as a byte 187; preset true with the false def after the 0x1b8d40 exit 187.
@@ -643,6 +649,17 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Round 75 (lane 12, fast): the bitwise operands swapped 47 (same code); the byte test cleared by
 // `if (type != 6)` 182 (864 bytes); preset false set true by one `&&` test 202 (872 bytes); the tail
 // test `prop_index != NONE && special` 49; the bitwise flag as a char 47 (same code).
+// Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
+// == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
+// scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
+// declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
+// `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
+// nothing below 47.
+// Round 47 (m3 lane 14, fast): a second `allow_exit = true` at the end of the scan arm, keeping the one after
+// the seat call, with the if/else flag 233, the `&&` flag 233 (the first store is dropped as dead, giving the
+// lead's code with allow_exit in BL), the bitwise flag 156; `allow_exit = true` before the seat call: bitwise
+// 48, if/else 200; at the scan's start: if/else 200, bitwise 48. Retail's join of the scan exits (the CL
+// reload at 0x1bc16f) is not an allow_exit store.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

@@ -498,6 +498,10 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // index); with a found flag 94 (336, retail's threaded exits); without the `next = 0` store (diagnostic) the zero
 // register goes, 92 (the store's constant is what VC shares with the index); definition declared before squad 92;
 // the header stores in another order 92.
+// Round 272: Completed output observations
+// definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
+// branch-owned next 74/129/129/74/74/129/129/129.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 190 (fast): retail's scan has a dead `lea edi, [ebx+edi*8]` after the type compare (so the index is
 // re-extended at the loop top), count in EBP, entries in EBX, alternate in CL and the index in EDX. An element
 // pointer local for the compare on the found-flag form 94 (336 bytes, no lea: it folds), on the current body 74
@@ -1441,6 +1445,11 @@ void __stdcall function_205320(long group_index)
 // Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
 // the existing object_get for both object lookups 18; that with squad_get 18; the reload through
 // object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
+// Round 36: the same register pattern (pool in EAX, index product in EDX, lea) is matched 0x204950's, where
+// the product is computed before the pool load, and unmatched 0x20d570's; compile-only, 1-8 unused locals at
+// three places and a pool/data local change nothing. Real (fast): one store of a full-index local 57 (129
+// bytes, callers inline it), the same assigned in both arms 43; the absolute index named at the top 41; the
+// scaled offset named at the top 40; squad_get again for the salt read 46.
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {
@@ -2323,6 +2332,9 @@ bool function_1df5d0(short team_a, short team_b);
 // typed squad fields 39; `actor->swarm` 39; count set before health 39. A forceinline add helper taking health
 // by value 82 (copy form kept). Matched in-place field adds add a parameter (0x1c9c80, 0x1e2570), a fresh load
 // (0xdf5f0) or an inline clamp's result (0x187510), never a plain multi-path local.
+// Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
+// with outer health workspace 39/39/153/153/39/39/153/153.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 190: unused-local probes (diagnostic, not kept) 1-8 before the squad pointer and 1-8 before health in
 // the real build 39 each (2: 47), 1-16 at both places compile-only: the add never folds, so it is no numbering
 // tie. Compile-only experiments: a single-definition value folds (`addss xmm0, [p+16]`) in or out of a loop; a
@@ -2986,6 +2998,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // 0x290e20 call, the 0x204d30 call or the last 0x1fb8a0 call given 0 for the index 87/49/54, the reload stays
 // in each. The trigger pointer declared at function scope 50; the optional output, the counter output or the
 // task declared at function scope 59/50/50.
+// Round 272: Real record selector/pending-
+// state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
+// 50/50/50/50/50/50/50/50.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 190 (fast): a two-use `bool has_definition = flag40 && definition != NONE` for both tests 169 (578 bytes:
 // the follow-up 0x1fb8a0 call gets retail's `mov eax, ebp`, but the bool is materialised at entry and the compute
 // arm re-reads the definition index); the same bool only in the else arm 50 (same code); the trigger part as a
@@ -3399,6 +3415,9 @@ void function_2011f0(long arg_0);
 // second-request and construction-record declarations, 318 in all eight forms.
 // Original request representation, declaration phases and header restored; frame 0x134 agrees,
 // placement/definition and final-chain homes remain.
+// Round 327: Count parameter as the sole remaining-attempt carrier in do/for loops 386/318;
+// last-producer short/long/word/unsigned-long countdowns 364/357/378/357; last-producer
+// short/long for loops 357/375. All restored; frame and placement/chain carriers remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

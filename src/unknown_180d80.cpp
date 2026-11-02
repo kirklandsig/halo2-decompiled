@@ -108,6 +108,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 }
 
 #pragma inline_depth(1)
+// score 94 (was 94): frame 0x4040 agrees; early mesh receiver, count/counter homes,
+// creation-call setup and transform scratch ranks differ.
+// Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
 // score 94 (was 94): BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
@@ -135,6 +138,14 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Round 51: count before tag/vector 95; count initialization split 94; unsigned long polygon counter 94;
 // short counter with count before tag/vector 548; with split count 547; with count between tag/vector 547;
 // with outer maximum distance 547; with both count placement and outer distance 548. Original restored.
+// Round 41: 0x17cfa0 is still todo (score 70) in a contributor's file, so the block stands. Transform helper:
+// accumulator declared first 94; scale as `scale * x` 94; one accumulator per row 170; separate input and
+// output pointers (in place at the four calls) 170 (the x row's products stay swapped: our copy-first `z * up.i`
+// where retail loads up.i first, in all four inlined copies). Count and vertex-index locals renamed
+// quad_count/vertex_index 94, count alone 94 (their two slots stay swapped).
+// Round 55 (fast): count and vertex counter renamed a_/z_ either way and with the names exchanged 94/94/94
+// (the spill slots, ours count 0x10 and counter 0x14, retail the other way, do not follow names); the vertex
+// counter declared at the top of the block 94; the count declared just before its loop 624.
 // Round 71 (lane 12, fast): retail pairs the luminance-loop counter with the strip loop's first short in one slot
 // ([esp+0x10]) and the count in the next ([esp+0x14]); ours pairs the count first. Names and the counter's
 // declaration position do not move those slots (compile-only /FAs screen). The short strip-count index re-measured
@@ -144,6 +155,8 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // product `local_2 * up.i`, all three 94 each (VC reorders the operands itself: retail keeps `up.i * z` and
 // `y * left.i` in the x row and `left.j * y` in the y row, ours the reverse in each); the point copied z, y, x 104,
 // y, x, z 102.
+// Round 278: standard lower/upper/distance extrema subsets 1-7
+// 698/694/642/522/683/628/636; complete graph with short count 635. Original helpers restored.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {
