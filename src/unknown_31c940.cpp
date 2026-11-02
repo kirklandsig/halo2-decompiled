@@ -132,27 +132,6 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	float candidate = error_a * row[0].a.m128_f32[3];
 	if (candidate > 0.0f) apply_linear(candidate, row, a, b, result);
 }
-// Capture the row inputs before projection, while keeping body velocities as
-// references: the second update must observe the first when the bodies alias.
-static __forceinline void solve_angular_error(__m128 axis_a, __m128 axis_b,
-	float mass, float target, __m128 const &inverse_a, __m128 const &inverse_b,
-	solver_step_31c940 *const &step, float *result,
-	__m128 &velocity_a, __m128 &velocity_b)
-{
-	solver_scalar_31c940 projected = sum_three_31c940(_mm_add_ps(
-		_mm_mul_ps(velocity_a, axis_a), _mm_mul_ps(velocity_b, axis_b)));
-	float impulse = mass * (target * load_error_scale(step) - projected.value * load_velocity_scale(step));
-	float rounded;
-	float volatile &store = rounded;
-	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	velocity_a = _mm_add_ps(velocity_a, _mm_mul_ps(change_a, axis_a));
-	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
-	*result += impulse;
-}
-
 // The scalar limit is copied before projection; the friction coefficient's
 // address is retained across the run of consecutive linear-friction rows.
 static __forceinline void solve_linear_friction(float target, float limit, float const &friction_scale,
@@ -198,9 +177,54 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 	return 0.0f;
 }
 
-// score 2244: share the angular-limit update tail (250 bytes versus retail
-// 244, previously 327). The shifted later instructions raise the whole-function
-// score from 2113; register allocation, stack homes, and other paths still differ.
+// Convert only the SIMD update to float; retain the x87 impulse for results.
+static __forceinline void update_angular_values(float impulse,
+	__m128 const &axis_a, __m128 const &axis_b,
+	__m128 &velocity_a, __m128 &velocity_b,
+	__m128 const &inverse_a, __m128 const &inverse_b, float *result)
+{
+	__m128 scalar = _mm_set_ss(impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	velocity_a = _mm_add_ps(velocity_a, _mm_mul_ps(change_a, axis_a));
+	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+	*result += impulse;
+}
+
+// Target and mass are captured before projection. Axes remain references so
+// the angular contributions observe the preceding linear writes, including
+// overlapping row/body storage. Form both contributions before updating A.
+static __forceinline void solve_linear_error_kernel(float target, float mass,
+	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
+	__m128 &angular_a, __m128 &angular_b, __m128 &linear_a, __m128 &linear_b,
+	__m128 const &inverse_a, __m128 const &inverse_b,
+	solver_step_31c940 *const volatile &step, float *result)
+{
+	__m128 relative = _mm_sub_ps(linear_a, linear_b);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(angular_a, axis_a), _mm_mul_ps(angular_b, axis_b));
+	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis_linear));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+	float impulse = mass * (target * load_error_scale(step) - projected * load_velocity_scale(step));
+	volatile float rounded = impulse;
+	__m128 scalar = _mm_set_ss(rounded);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
+	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+	linear_a = _mm_add_ps(linear_a, delta_a);
+	linear_b = _mm_sub_ps(linear_b, delta_b);
+	__m128 angular_change_a = _mm_mul_ps(change_a, axis_a);
+	__m128 angular_change_b = _mm_mul_ps(change_b, axis_b);
+	angular_a = _mm_add_ps(angular_a, angular_change_a);
+	angular_b = _mm_add_ps(angular_b, angular_change_b);
+	*result += impulse;
+}
+
+// score 2239 (was 2244): capture error-row inputs and B field addresses,
+// avoiding scalar return copies. Register allocation and stack homes differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -412,10 +436,27 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
 				solver_velocity_31c940 *body_b = b;
+				__m128 *volatile velocity_b_pointer = &body_b->angular;
+				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *velocity_a_pointer = &a->angular;
 				do
 				{
-					solve_angular_error(row->a, row->b, row->a.m128_f32[3], row->b.m128_f32[3],
-						a->inverse_inertia, body_b->inverse_inertia, step, result, a->angular, body_b->angular);
+					float const volatile &mass_source = row->a.m128_f32[3];
+					float mass = mass_source;
+					float target = row->b.m128_f32[3];
+					__m128 axis_a = row->a;
+					__m128 axis_b = row->b;
+					__m128 weighted_a = _mm_mul_ps(*velocity_a_pointer, axis_a);
+					__m128 weighted_b = _mm_mul_ps(*velocity_b_pointer, axis_b);
+					__m128 weighted = _mm_add_ps(weighted_a, weighted_b);
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0x55), weighted);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(weighted, weighted, 0xaa), xy);
+					float projected;
+					_mm_store_ss(&projected, xyz);
+					solver_step_31c940 *current_step = step;
+					float impulse = mass * (target * current_step->error_scale - projected * current_step->velocity_scale);
+					update_angular_values(impulse, axis_a, axis_b, *velocity_a_pointer, *velocity_b_pointer,
+						a->inverse_inertia, *inverse_b_pointer, result);
 					++row; ++result; op += 4;
 				} while (*op == 12);
 				terms = (__m128 *)row;
@@ -425,10 +466,16 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 13:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
+				__m128 *volatile linear_b_pointer = &body_b->linear;
+				__m128 *volatile angular_b_pointer = &body_b->angular;
+				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *linear_a_pointer = &a->linear;
 				do
 				{
-					float impulse = row->a.m128_f32[3] * (row->linear.m128_f32[3] * load_error_scale(step) - linear_velocity(row, a, b).value * load_velocity_scale(step));
-					apply_linear(impulse, row, a, b, result);
+					solve_linear_error_kernel(row->linear.m128_f32[3], row->a.m128_f32[3], row->a, row->b, row->linear,
+						a->angular, *angular_b_pointer, *linear_a_pointer, *linear_b_pointer,
+						a->inverse_inertia, *inverse_b_pointer, step, result);
 					++row; ++result; op += 4;
 				} while (*op == 13);
 				terms = (__m128 *)row;
@@ -494,10 +541,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				break;
 			}
 			case 15:
-				saved_velocity = load_velocity_scale(step); saved_error = load_error_scale(step);
-				step->velocity_scale = operation_float(op, 8); step->error_scale = operation_float(op, 4);
+			{
+				solver_step_31c940 *parameters = ((solver_step_31c940 *const volatile &)step);
+				saved_velocity = parameters->velocity_scale;
+				saved_error = parameters->error_scale;
+				parameters->velocity_scale = operation_float(op, 8);
+				parameters->error_scale = operation_float(op, 4);
 				op += 12;
 				break;
+			}
 			case 16:
 				step->error_scale = saved_error; step->velocity_scale = saved_velocity;
 				op += 4;
