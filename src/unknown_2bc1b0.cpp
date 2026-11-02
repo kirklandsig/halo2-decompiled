@@ -163,6 +163,10 @@ struct s_placement_2bc1
 // at the update or at entry with the original marker argument 5 each; event pointer 61 (198 bytes, send not
 // inlined); shared creation pointer 5; full-width team copy 5; shared creation pointer plus earlier object
 // result 5; NONE-initialized object result 5. A 2400 s permuter run timed out during its initial full build.
+// Round 49: tag read without the definition local 5; a local for the definition's +0xc pointer 5; engine
+// test `!= NULL` 5; NULL owner argument 5; event declared before the team call, unscoped 32 (223 bytes).
+// The stub callee is not the cause: matched 0x152a50 and 0x1e04a0 copy the placement with EAX before the
+// same stub call, and 0x1e04a0's second site uses ECX.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {

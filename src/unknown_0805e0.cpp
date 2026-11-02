@@ -179,6 +179,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // filters with an early return 55; the `!result` loop assigning the result each pass with the copy after
 // the loop 71 (top-tested, no hoist); the guest test 3rd/4th (diagnostic) 48/47, no hoist; the parameters
 // swapped to (iterator, player) with both callers 43 (identical: player stays in EAX).
+// Round 75 (lane 12, fast): player_configuration_cache_iterate on the iterator in the `!result` loop 79 (102
+// bytes, callers lose), on a local index with `*iterator = index` after it 57; the plain while with
+// `break` and the successor read through the table 60 (137 bytes); `*iterator = entry->next` with
+// `index = entry->next` read again at the loop end 56 (callers lose); the successor carried and
+// copied into the index at the top 43 (same code).
 // Round 127 (lane 6, fast, with 0x1a303b/0x2b393c): `while (!result && index != NONE)` with a successor local and
 // `index = next` at the end 37 again (no hoist in this build; player read from the stack, ret 8, callers 15/27);
 // its test as `index != NONE && !result` 53; the test chain assigned to result, copy under `if (result && player)`
@@ -1146,6 +1151,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
 // canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
 // entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
+// Round 75 (lane 12, fast): `position--` before `upper--` 49 (same code); on the plain entry (56, aligned 21 against
+// the current 30): lower spelled `position < removed ? position : removed` 56, no flag store in the count
+// path 358 (1162 bytes), the `<` arm tested first 341, both 341. Retail keeps the count in EAX and upper in
+// ECX (the repair loop is unrolled on a constant bound, so the count dies in the head).
 // Round 36 (fast, with 0x80330/0x80490/0x7fd10/0x7fd80): compile-only, upper takes EAX in all 50 random combinations
 // of the entry (cache_full / plain / mixed read), bound initializers, declaration order, both min/max spellings,
 // the three-way arm forms, the count path's order, flag and test (search7f.py). Real: upper declared first with

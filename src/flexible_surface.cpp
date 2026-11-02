@@ -337,6 +337,8 @@ void function_117510(long index)
 // Round 299: Native pinned-array base once per function/constraint, each with endpoint
 // snapshots/live fields and existing complete difference: 139/139/154/154/139/139/154/154. Every
 // original body restored; entry record/link allocation and pin-word/correction scheduling remain.
+// M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
+// 148/156/156/189/180/183/183/183. Original executable body restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -543,6 +545,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Round 299: Complete native-array rotation consumer; direct initialization result, staged cross,
 // projection-first and final-output-loop interactions 169/172/169/172/165/165/169/183. All original
 // source restored; frame, old-direction storage and seed/time/rotation/tail scheduling remain.
+// M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
+// 178/178/178/189/189/189/178/178. Original executable body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
