@@ -982,6 +982,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // 202/162/222/155/225/168/228; all plus initial native copies 386. Rotated-output-only reaches retail
 // length but ties 155; broad copies raise the unmatched caller. Original body restored; sample home
 // and rotation/output schedule remain.
+// DL237: Existing complete scalar setter at sampled velocity, crossed with complete
+// cross/rotation setters and uniform live scale: 186/155/186/157/209/182/187/182. All restored;
+// sample home and rotation/output scheduling remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

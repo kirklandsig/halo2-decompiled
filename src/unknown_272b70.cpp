@@ -1445,6 +1445,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // requests on those graphs 60/60/64/64. Iterator scaling, leave-selector and publication homes remain.
 // Round 275: Load-request families T type, O object, S seat, F flags, ordered
 // OSTF/OSFT/FTOS/FOST/SOTF/SOFT/TSOF/FSOT 32/34/34/34/31/33/32/34. Original helper and complete body restored.
+// DL237: Whole-slot zero initialization with native extent chaining: memset/chained 34; value
+// ordinary/chained 100/100; at-use aggregate ordinary/chained 197/197; omit already-zero bit
+// stores with memset/value/aggregate 72/101/191. All restored; iterator/candidate and
+// request/slot scheduling remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

@@ -1639,6 +1639,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // (reverted at once): the yaw output's address escaping to the second aiming call keeps the shared look
 // reciprocal and the -0xc home (228), so neither an escaped nor an address-taken look local stops it.
 // Still BLOCKED-BY the build's stand-in caller for the ESI/EDI save placement (round 98).
+// DL237: Existing unit getter at every genuine use, crossed with complete weapon-object,
+// idle-channel and user-flag observations: 611/602/611/602/611/602/611/602 (fast control 220,
+// full 218). All restored; frame, unit/mode/look homes and shared reciprocal remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
