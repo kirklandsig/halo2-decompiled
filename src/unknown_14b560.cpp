@@ -2773,6 +2773,11 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
 // 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
 // loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
+// Round 75 (lane 12, plain): busy and final stores through `globals` 180 (605 bytes); no `globals` local, the
+// global read at every prologue use 103 (same code); loop 2 passing iterator.datum_index at both
+// calls 103; last_position declared before last_unit 103; both declared at the top 157 (612 bytes).
+// Retail pops EDI before loop 2 and keeps last_unit in memory there; ours carries the global in EDI
+// through the out-of-line 0x6b380 step to the final store.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

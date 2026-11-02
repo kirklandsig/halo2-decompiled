@@ -640,6 +640,9 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
 // takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
 // the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
+// Round 75 (lane 12, fast): the bitwise operands swapped 47 (same code); the byte test cleared by
+// `if (type != 6)` 182 (864 bytes); preset false set true by one `&&` test 202 (872 bytes); the tail
+// test `prop_index != NONE && special` 49; the bitwise flag as a char 47 (same code).
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

@@ -173,6 +173,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // filters with an early return 55; the `!result` loop assigning the result each pass with the copy after
 // the loop 71 (top-tested, no hoist); the guest test 3rd/4th (diagnostic) 48/47, no hoist; the parameters
 // swapped to (iterator, player) with both callers 43 (identical: player stays in EAX).
+// Round 75 (lane 12, fast): player_configuration_cache_iterate on the iterator in the `!result` loop 79 (102
+// bytes, callers lose), on a local index with `*iterator = index` after it 57; the plain while with
+// `break` and the successor read through the table 60 (137 bytes); `*iterator = entry->next` with
+// `index = entry->next` read again at the loop end 56 (callers lose); the successor carried and
+// copied into the index at the top 43 (same code).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1117,6 +1122,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // forward copy as `long i = lower; while (++i <= upper)` 49, both 49 (all identical: the loop spelling is
 // canonicalised, upper still coalesces with the backward index); the flag declared before the bounds 49; the four
 // entry-link repairs through one inline (short *, lower, upper, change) adjust helper 49 (identical).
+// Round 75 (lane 12, fast): `position--` before `upper--` 49 (same code); on the plain entry (56, aligned 21 against
+// the current 30): lower spelled `position < removed ? position : removed` 56, no flag store in the count
+// path 358 (1162 bytes), the `<` arm tested first 341, both 341. Retail keeps the count in EAX and upper in
+// ECX (the repair loop is unrolled on a constant bound, so the count dies in the head).
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
