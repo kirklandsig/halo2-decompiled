@@ -511,6 +511,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
 // invalid-first reference publication 110, combined limit/reference forms 192. Original field
 // observations and body restored; entry table/result production, marker setup and tail roles remain.
+// Round 376: State-field reset/output receivers selected/pending/selection, seven subsets
+// 51/52/52/55/55/55/55; complete entry storage 55. Exact-only field pointers restored.
+// Original frame/result home and native clear-address sequence already agree; table/result producer,
+// marker setup and tail homes remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

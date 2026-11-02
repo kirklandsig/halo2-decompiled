@@ -1797,6 +1797,11 @@ real game_time_get_seconds();
 // Initialized result plus member API 492 (2285/2285 bytes) NOT kept: the clamp graph alone
 // regresses (567) and the gain needs the member vertex call beside this body's C-style
 // D3DDevice_ calls, a combination picked by score. Body restored at 507; frame and output homes remain.
+// Round 376: Twice-used converted angle at intrinsic/shader/point/angle phases,
+// paired real/double trigonometric results 508/552, 510/579, 510/579, 511/579.
+// Earlier real phases reach retail length but frame 0x9c; extended results add 0x9c or aligned
+// 0xac frames. Original float-angle observations, all output scopes, APIs and body restored;
+// frame 0x90 versus 0x94 and definition/NONE/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

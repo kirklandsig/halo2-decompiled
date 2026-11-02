@@ -319,6 +319,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
 // interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend
 // homes remain.
+// Round 376: Optional-bitmap admission truth in bool/byte/short/long,
+// valid-first and invalid-first, 232/232/232/232/232/232/232/232.
+// Exact-only one-use admission forms restored; tint/secondary-UV homes and blend residence remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
