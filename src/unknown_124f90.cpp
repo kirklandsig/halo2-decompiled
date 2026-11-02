@@ -2913,6 +2913,7 @@ static inline short sound_voice_find_available_channel(char type)
 // is already true: a redundant store, not kept without a match (coordinator review 11-02). Without it the
 // same scan scores 134. On that graph, long private search input/complemented status/both 107/130/60.
 // Original helper, byte result and full body restored.
+// N319: Split bitmap rejection through continues/nested guards, free/streaming first, byte/Boolean result: 96/96/99/99/113/113/113/113. Original helper and full body restored; frame twelve/eight, result normalization and early failure tail remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

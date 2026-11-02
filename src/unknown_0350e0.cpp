@@ -96,6 +96,11 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 344: complete axis/input staging, their pair, returned matrix and its three staging subsets,
 // then native input-vector copies: 393/356/393/431/452/429/453/485. Original helpers and body
 // restored; frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain.
+// J238: Existing returned-vector setter 356; complete reused sine-axis products 366; double
+// trigonometric input 357; setter/products, setter/double, products/double, all 366/357/366/366; all
+// with complete native input setters 394. Double forms lose matched 0x137ed0 (42, 147/145 bytes) and
+// are rejected. Original helpers and body restored; concurrent angle lifetimes and frame 0x98 versus
+// 0x90 remain.
 // Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
 // Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
 // Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
@@ -1747,9 +1752,9 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
-// score 507 (was 507; earlier 508, 594): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
+// score 507 (was 507): Frame 0x90 versus 0x94, output homes and definition/NONE registers remain.
 // MiniMax R (11-01): no new form, no lower score.
-// score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
+// Earlier (507 (was 508, 594 originally)): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
 // scales multiplied by size into the two float args). Checked against retail block by block (0x2e9e0-0x2f2ca, 2026-10-31): every
 // field offset and size, condition direction, constant (0x45dbc0 1.0, 0x45dbbc 0.5, 0x45dc0c 2.0, 0x45dc54 pi/180, 0x45dddc pi,
@@ -1777,6 +1782,10 @@ real game_time_get_seconds();
 // Round 344: native tag/count/visibility admission subsets 525/507/525/507/525/507/507;
 // all admissions with the member vertex API 512 (2285 bytes). Original body restored;
 // frame 0x90 versus 0x94, tag/output homes and EBX/EBP roles remain.
+// J238: Reflection setter/scale pipeline, paired trigonometric admission, native point setter
+// 578/518/507; reflection/trigonometric, reflection/point, trigonometric/point, all 593/578/518/593.
+// Complete graph with member vertex API 542 at retail length; reflection/point/member with original
+// zero tests 526. All restored; frame 0x90 versus 0x94 and output/definition/NONE homes remain.
 // F321: entry-owned hash/sample/draw scratch subsets 1/2/4/3/5/6/7 give
 // 507/507/530/507/530/530/530; all with the member vertex API 535 (2308 bytes).
 // Original executable body restored; frame/output homes and EBX/EBP roles remain.
@@ -2037,6 +2046,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // P269: native double heading/elevation and twice-used elevation-cosine subsets 1..7,
 // then both double inputs with complete aggregate result: 215/233/210/234/209/233/210/210.
 // Original helper and body restored; frame/angle/vector-copy homes remain.
+// P271: Complete existing entry pointer/reference/value/mutable-pointer input,
+// each with native vector return/output production and shared zero-pitch forward:
+// 192/192/200/192/223/223/205/223. Original producer, type position and body restored; frame/copy homes remain.
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
@@ -2593,9 +2605,16 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
 // Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
 // second loop as a search with the swap after it 365.
+// J238: Actual paired/fallback admission scan cursors and stable-count subsets
+// 320/403/437/425/437/411/411; complete graph with matched-sort inline declaration 392, declaration
+// alone on original body 339. All restored. Frame 0x30 agrees; prefix/state and ordinal homes and
+// rotated decay base remain.
 // Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
 // Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
 // Round 308: helpers and body restored; prefix/state roles and decay base remain.
+// F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
+// subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
+// All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

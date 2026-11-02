@@ -311,6 +311,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 916/916/911/921/913/913/929/917 fast. Original full body restored.
 // Paired-marker ordinary 918; original body restored.
 // Actor/unit and priority/query/marker homes and excess twelve frame bytes remain.
+// M315: native returned object count with complete priority/ordinary actor-unit/independent-query
+// home subsets 0..7: 915/919/993/1011/903/943/1000/1013 fast (control 931).
+// Count plus independent query, count alone and count plus priorities: 903/938/923 plain.
+// Original body restored; frame, actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

@@ -5554,6 +5554,9 @@ void __stdcall function_d6bc0(long object_index);
 // N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
 // with immutable kind, 144 in all eight forms. Original signed-word producers
 // restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
+// Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
+// and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
+// domains restored; frame 0x14/0x18 and independent timer spill remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
