@@ -640,6 +640,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // the 0x18dc90 NULL, the count test and the cue stores).
 // Round 263: Native query-tail sentinel chains in six array orders 161/162/162/161/161/159; original-order chain with short/word
 // bounded fill induction 256/256. Original fill producer, count, helpers and complete body restored.
+// Round 315: Inner implied cluster guard removed, with native CRT point copy, request-store
+// order and direct angle-output subsets 271/271/271/271/316/316/316/316. Original guard, native copies,
+// helpers and complete body restored; BSP/count slots and camera/request scheduling remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

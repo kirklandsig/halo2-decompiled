@@ -1571,6 +1571,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
 // original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
 // complete body restored; eligibility width and availability/view carriers remain.
+// Round 315: Complete optional-effect admission bool/byte/short/long shared by owner and
+// attachment, original/shifted-word eligibility 144/144/147/147/136/136/136/136. Original two-use effect
+// receiver and complete body restored; flag width, availability and view carriers remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

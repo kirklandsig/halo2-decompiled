@@ -4160,6 +4160,10 @@ static __forceinline long nonnegative_15ce70(long value)
 // M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
 // 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
 // first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
+// Round 315: Native interval-loop quotient, next-interval and repeated earliest-bound expression
+// ownership in seven subsets 456/456/456/456/456/456/456; all with the earliest bound
+// before division 603. Original expression graph and body restored; extra frame word and
+// attacker/category/NONE/decision homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
