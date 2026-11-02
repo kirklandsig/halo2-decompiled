@@ -720,6 +720,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
 // 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
 // Constant/limit XMM ownership, movement outputs and jitter spills remain.
+// DL239: Indexed animation scale/normalization/projection-and-movement stage subsets 1..7, all
+// with ordinary sample: 130/130/132/178/192/192/172/138. Two-point retail-length forms rejected.
+// Original complete body, sample qualifier, magnitude observations and frame 0x28 restored;
+// constant/limit ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -985,6 +989,13 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // 202/162/222/155/225/168/228; all plus initial native copies 386. Rotated-output-only reaches retail
 // length but ties 155; broad copies raise the unmatched caller. Original body restored; sample home
 // and rotation/output schedule remain.
+// DL237: Existing complete scalar setter at sampled velocity, crossed with complete
+// cross/rotation setters and uniform live scale: 186/155/186/157/209/182/187/182. All restored;
+// sample home and rotation/output scheduling remain.
+// DL239: Complete native up-vector for rotation and side tests, four acquisition phases with
+// original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
+// complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
+// rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

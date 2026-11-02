@@ -201,6 +201,9 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Restore-load order and the sampler state convention remain; original body restored.
 // MiniMax I (11-01): no new form, no lower score; the restore block still loads `second` before the table bases
 // where retail loads it after them, and the 0x18a90 tail is still blocked by that file's call convention.
+// Round 516: Packed entry/chain results in short/word/long pairs on recovered field-reference
+// graph. Restore table/index order and protected sampler state convention remain.
+// Scores 48/47/49/47/50/48/49/47; original executable body restored.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
@@ -1525,6 +1528,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // initializers, seven subsets; all with short outer ordinals, scores [130, 350, 350, 131, 131, 350,
 // 350, 351].
 // Original executable source restored. The mapped post-sampler word-load form remains.
+// Round 516: Fused per-channel rescale/clamp, direct/mapped/both, conditional/branch clamps
+// and long/short ordinals. Mapped descriptor word-load test remains; sampler/writers
+// unchanged.
+// Scores 301/379/135/217/307/468/461/467; original executable body restored.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {
