@@ -929,6 +929,9 @@ done:
 // retail callers pass stack iterators. A 192-form static-global harness search (short flags, direct reads,
 // block/entries if-else, definition local kinds, third-scan local, `alternate` local) keeps NONE in EBP in every
 // form. Left: whatever keeps g_4e0350 from being hoisted in the second scan.
+// P270: native unsigned explicit palette id with independent signed full-width
+// entry carriers, subsets 0..7: 176/189/202/202/201/202/215/214. Original selector
+// domains and all three scans restored; next-word/sentinel allocation remains.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2222,6 +2225,10 @@ bool function_1e11b0(long actor_index, bool active);
 // On the current body (fast): the actor looked up before the index copy 64; a field pointer for the +0x34 store 64;
 // the flag byte in a named local for the test 64; the iterator's next through a named reference 64; the next actor
 // read into a local before its store 64 (all same code).
+// Round 479: Retained squad-array/pool bases with long/word absolute ordinals, base-first/ordinal-first
+// acquisition: 65/59/65/65/97/92/107/107. Array ordinal-first long reaches 59/199 with frame 0x10
+// and a register handle, but loses 0x203d70. Original receiver, index, guard and body
+// restored; EBP handle, receiver spill and full-width return remain.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2587,6 +2594,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 509: Persistent idle/remaining/last-seen timer field receivers, subsets
 // 1/2/4/3/5/6/7, 275 each; all with area bitmap receiver 302 (1119 bytes).
 // Original body restored; frame, iterator pool, point homes and intersection spill remain.
+// P270: existing generic squad producer with entry-owned area/point-pair/location
+// workspace subsets 0..7: 306/306/306/306/306/306/306/306. Original producer,
+// declaration scopes and body restored; frame, pool and intersection homes remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3062,6 +3072,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // ternary 50; a named has-task bool for the follow-up test 50. Diagnostics: the follow-up block given a second call
 // 137 (594 bytes; loads the index into EBX, so the block is out of EBP's region, not only a missed copy); the index
 // read through its address in the trigger loop 50; a volatile read there 50, at the walk 49 (580 bytes), both reverted.
+// Round 479: Sentinel-first, combined-rejection, separate-rejection and valid-outer trigger graphs, each
+// with nested action or insufficient-count continuation: 50/50/50/50/50/50/50/50. Original loop and
+// call sites restored; the first follow-up still reloads the index instead of copying EBP.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
