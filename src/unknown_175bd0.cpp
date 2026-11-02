@@ -2839,6 +2839,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order: velocity first 40; a compress local before the velocity copy 14, stored after location 21 (one-use local); velocity
 // pointer 40; matrix pointer in the attached sound call 23, with velocity first 40; position and forward pointers with
 // velocity first 40; node ternary in the argument list with velocity first 40; tag local with velocity first 40.
+// This round: function-scope direction and velocity 23; that with detached velocity before location 40;
+// compound velocity additions 23; the shared vector-add helper 23; a zero-initialized sound record 104
+// (1363 bytes); a sound location snapshot 26; sound velocity and combined snapshots 23 each. Original
+// body restored.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
