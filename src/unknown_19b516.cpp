@@ -155,6 +155,11 @@ void c_widget::v15(c_widget *widget)
 // Round 101: direct base traversal at entry, step or both; a named or function-scope next result;
 // explicit else, this entry, failure return or derived step qualification; a loop-local current: all 2;
 // a 2400 s permuter run, initial-build compiler hang.
+// Round 49 (--fast; a /FAs compile of this file reproduces the tail exactly): a `next` local set at the entry
+// and the step with `while ((widget = next) != NULL)` 2; `while (c_widget *widget = next)` 2; `next` as the
+// base class pointer 2; a guarded do-while ending `while ((widget = widget->next_wrapped()) != NULL)` 2, with
+// the entry assigned in its `if` 2. Compile-only: the copy-then-test tail appears only with one helper call
+// in the loop condition (`widget = this` first), which keeps one walk (the listed 64).
 // @retail 0x22ebc3
 void c_widget::v16()
 {

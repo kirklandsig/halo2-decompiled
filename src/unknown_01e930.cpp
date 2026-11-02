@@ -487,12 +487,21 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // success 288/288/289/304; result-conditioned finite loop 312/312/311/328. All preserve the thirty-pump
 // sequence but shrink the frame to 0x34 and grow code. Original retry phase, clocks, helpers, file policy
 // and full body restored; frame 0x3c/0x40 and status/allocation/output homes remain.
+// Round 290: existing retry producer on the entry-result/Boolean graph, direct-mode/format-field/movie
+// observation masks 0..7, 291/291/279/279/313/313/285/285; all frames 0x3c. Exact-only elapsed
+// precision, include, clocks, calls and original body restored; frame 0x40 and instruction-policy gaps remain.
 // Round 444: Shared terminal cleanup for allocation/movie/texture/protected-texture failures,
 // subsets 1/2/4/8/3/12/7/15: 244/244/244/244/244/244/241/239. Original early cleanup returns, complete body and file policy restored.
 // Round 446: complete native 64-bit size/retry/mode storage, seven subsets
 // 280/298/314/288/317/339/363; all with native skip storage 363. Original domains and complete body restored.
 // Lane 15 round 42: only 0x23e340's declaration changed (long width and height, its retail reads, now matched): the
 // call's `movsx` pushes are retail's, 244 -> 246 positional at 1102 bytes (retail 1098), aligned difference 109 -> 105.
+// Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
+// tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
+// helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.
+// Round 294: Status tail memset, length last/first, Boolean/mask 286/283/285/282;
+// native field-zero chains 287/285/288/286. Other producer users regress (18-19/75-78/42-50);
+// original helper and body restored; frame 0x3c/0x40 and status/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
