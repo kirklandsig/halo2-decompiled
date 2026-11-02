@@ -2282,6 +2282,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 317: Per-use native child metadata/count/fraction source groups 1..7, all with read-only child
 // view 304/257/292/243/273/315/347/347 fast. Exact-only source-observation graphs restored.
 // Indexed lookup, object/offset homes and low-mask ownership remain; original full body restored.
+// DL238: Parent-root scope followed by raw/typed tail root, each original/named-slot/native-
+// short/both: 293/253/238/277 repeated. Complete parent-position memcpy in the same four
+// index/parent forms 155/154/289/288; memmove 247/247/298/298. One-point lead rejected; every
+// original observation, root lifetime, helper, store and loop restored. Header/object/offset and
+// low-mask homes remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

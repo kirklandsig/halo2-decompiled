@@ -209,6 +209,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 505: Shared low-band producer with optional high-band insertion, short/long low mask,
 // OR/add joins and symmetric y-shift production: 104/104/104/104/103/105/103/105.
 // All remain 270 bytes; original branch producers and body restored.
+// Round 516: Signed axis-count difference in short/long storage, both orientations, reused by
+// suffixes and optionally minimum. Early coordinate promotion and height/common homes remain.
+// Scores 119/120/125/125/119/125/125/125; original executable body restored.
+// Round 518: independent unsigned quotient scan with long/dword/short/word
+// counts 98/98/98/98, with zero-first exit 105/105/103/103. Original helper
+// and body restored; delayed coordinate promotions and height/common homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

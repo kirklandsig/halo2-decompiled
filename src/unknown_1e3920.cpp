@@ -1142,6 +1142,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // inner/outer real query storage and retained/omitted overwritten enabled default:
 // 348/275/348/275/348/275/348/275 on the retained mode/field/squad-bit graph.
 // Omitted default expands frame to 0x11c; original 0x118-frame body and all outputs restored.
+// P260: Squad-bit zero default before/after actor result, after definition/cleanup/
+// settings/squad and before final settings guard: 341/341/341/341/340/336/254;
+// entry declaration with original initialization 254. Original lifetime/body restored;
+// sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1829,6 +1833,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // DH282: Complete probability-default/increased-selection/delay-default ownership, seven subsets then all
 // with native signed-word tick storage [251, 251, 251, 251, 251, 251, 251, 251]. Original executable body
 // restored.
+// Round 259: One actor unit handle throughout both phases 347; with current/secondary/both
+// default query results 348/352/356, current/secondary/both rejection results
+// 352/352/350, mixed default/rejection 352. Original body and both queries
+// restored; actor/options/pool residency and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

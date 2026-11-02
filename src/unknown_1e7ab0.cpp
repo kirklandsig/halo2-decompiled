@@ -337,9 +337,16 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // 171 each before the split test (all keep the byte load); macro spellings 118/118/124/118; the unit pointer named as in
 // 0x1e83c0 118, with a named index too 193; getter locals swapped 118; entry declared apart 118, initialised NULL 118;
 // player index declared apart 118; player index before the result 118.
+// Round 515: Parent-first seat acquisition with bounds-getter failure exits, native seat-flag
+// snapshot and uniform parent-field reads, eight subsets 117/117/456/456/117/117/456/456.
+// One-point best rejected; original getter, case graph and complete executable body restored.
 // Round 354: Native metadata flag, readonly lookup result and branch-completed nullable
 // result subsets 1..7, then native flag bitfield: 118/118/118/118/118/612/612/612. Original metadata
 // layout, getter, complete case graph and matched sibling restored.
+// Round 517: On the recovered entry graph, validity-player-permission order 366; validity-
+// permission-player 367; entry/player nested admissions 366/118; complete metadata permission in
+// bool/byte/short/long 630/630/631/630. Original admission, getter, case graph and body restored;
+// metadata table/result scratch rotation remains.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

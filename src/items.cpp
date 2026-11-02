@@ -644,6 +644,9 @@ struct s_item_collision_bsp
 // Round 296: Standard native-array normal/paired-axis/paired-spin producer subsets 1..7
 // 322/272/293/351/414/326/389; all with standard linear addition 375. Normal range capture grows
 // frame to 0xa4; original complete body, protected plane interface and include set restored.
+// Round 309: Genuine uninitialized final-linear/final-angular/both-plane output declarations reserved at
+// entry, subsets 1..7, then all after admission: 213/211/213/211/213/211/213/213. Original declaration lifetimes
+// and body restored; plane width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1166,6 +1169,10 @@ struct s_item_flags_view_10b850
 // kij with angular-before-linear capture 805, angular role name 806. The 805 form reaches 4096
 // bytes but plain loses 0x54590 by two reloads; nearby standard include and backward angular copy
 // remain 805 with the same loss. Original body, rotation producer and includes restored.
+// Round 309: Plain component loops at complete integration/ray, paired contact displacement and settled
+// angular projection producers, subsets 1..7, then all unsigned counters: 862/871/970/856/866/833/929/929. Some loops
+// reach frame 0x148 but regress. Original output producers and body restored; frame, entry Boolean
+// and native workspace homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
