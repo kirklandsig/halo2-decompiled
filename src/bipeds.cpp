@@ -948,6 +948,10 @@ extern long *g_51e9cc;
 // before object/gate/component/root, original/offset names, 2 each (eight forms).
 // Common real lookup/getter record declarations 42, joint publication 27; all other
 // lookup-user scores unchanged. Original body and all supporting declarations restored.
+// Round 369: complete squared-speed expression and three-product staging, each
+// crossed with shared word flag publication and outer velocity workspace ownership:
+// 45/45/38/38/45/45/38/38. Four-point best above 30 rejected; original predicate,
+// declarations, flag stores and complete body restored. Lookup and crouch schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
