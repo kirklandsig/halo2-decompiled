@@ -253,6 +253,12 @@ struct c_aggregate : c_child
 // added 32. Frame 0x8024 in each. Diagnostic, harness only: a defined direct callee that only writes through its
 // pointer gives retail's frame 0x8020 and produced in the shared slot 0x10, an undefined one or a function pointer
 // does not, so under LTCG the slot needs the callee proven not to keep the pointer, which a virtual call never gets.
+// DL233: One real block pointer across dispatch/cleanup, before/after arrays, separate/shared
+// query output and joint/separate dispatch bounds: 31/31/31/31/31/31/33/33. Shared output
+// recovers 0x8020 but exchanges the low loop homes; original complete body and outputs restored.
+// M292: Boundary table ends before cleanup, crossed with boundary-scope collection output,
+// completed information-query scope and real item traversal, masks 0-7:
+// 31/42/31/42/77/88/77/88. Original executable body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

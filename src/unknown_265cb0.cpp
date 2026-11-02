@@ -520,6 +520,11 @@ real function_30bf0(vector3f *vector);
 // inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
 // length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
+// Round 295: isolated complete plane products in yzx/xyz/xzy/zyx declaration orders,
+// mutable/const, each 191 (1310 bytes). Original plane expression and native copy restored.
+// Round 300: positive projection before upper clamp, combined/nested admission and
+// in-place/named clipped fraction 269/269/287/287; with live object handle
+// 263/263/269/269. Original admission, fraction and handle observations restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1754,7 +1759,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -1932,6 +1937,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
 // (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
 // through a function pointer for the relative vector (diagnostic) did not change that (487).
+// Round 348: native player/contact/both iterator aggregate initialization
+// 394/194/394; with early constant results 391/191/391; both with native second
+// search counter 402, plus early results 399. The 191 form gains only three and
+// is restored; byte homes, direction preloads and entry operands remain.
+// Round 295: all-axis normalized direction scalars before contact or velocity normalization,
+// mutable/const and forward/reverse declaration orders, each 194. Original consumers restored.
+// M297: Complete product terms named uniformly in all three scoring dots, six
+// declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
+// DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
+// complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

@@ -1930,6 +1930,8 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
+// then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
 // limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which

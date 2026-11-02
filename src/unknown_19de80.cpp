@@ -450,6 +450,14 @@ static inline bool teams_enabled_19e1c0()
 // Round 451: Separate positive/rejected maximum-score gates with short/long opponent
 // counter and inherited/ordinary result storage: 388/388/421/421/691/691/688/688. Best two-point gain rejected; original
 // scan, result and full body restored; frame and independent name-copy tails remain.
+// Round 456: Ordinary result with bounded player/team name-copy contracts
+// memcpy/original, memmove/original, original/memcpy, original/memmove,
+// memcpy/memcpy, memcpy/memmove, memmove/memcpy, memmove/memmove:
+// 636/553/632/518/670/502/448/441. Original result, wide copies and complete body restored; frame and separate copy tails remain.
+// Round 458: Bounded word player/team/all-name and short all-name length producers,
+// each with inherited/ordinary final result storage: 441/442/428/428/651/651/691/691.
+// Original full-width producers, signed clamps, result storage and complete body
+// restored; frame 0x208 versus 0x204 and independent copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

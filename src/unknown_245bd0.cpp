@@ -234,6 +234,10 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 	out->unknown0e = source->unknown0e;
 }
 
+// score 57 (was 57): unchanged this round: retail still loads the 1.0 constant inside each of the
+// sphere test's two arms and holds the differences in XMM1/XMM2/XMM4 (i, k, j), while ours hoists one
+// 1.0 load above the fsqrt and holds them in XMM1/XMM4/XMM3, which also rotates the radius, the
+// scale products and the plane dot's registers.
 // score 57 (was 57): the sphere test's normal: retail multiplies the x and z differences in
 // place (normal x/y/z in xmm1/xmm3/xmm2, differences x/z/y in xmm1/xmm2/xmm4) and loads 1.0 in
 // each arm; ours multiplies copies of the scale, keeps z/y in xmm4/xmm3 and hoists 1.0 into xmm0
@@ -409,6 +413,14 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // j (0x2461a0's own order) 59. No existing helper squares only i and k through a pointer.
 // Round 342: Complete nondegenerate/degenerate normalization predicates in bool/byte/word/long native storage: 57/57/57/57/57/57/57/57.
 // Original complete body restored; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
+// Round 345: Complete center/sphere and point input values with the existing sphere helper forced inline; native/library copies in all eight combinations: 221/262/221/262/221/262/221/262.
+// Original executable source restored; Frame 0x3c agrees; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
+// Round 347: Native Y normal operand before/after length, self-dot, K-I-J, K-J-I and reverse-dot
+// helpers, then complete operand at Y/containment: 4/4/4/4/4/10/10/4/4/4/61/61.
+// Original complete body restored; sphere X/Z square order and normal/reciprocal ownership remain; four-count forms archived.
+// Round 351: All three displacement components read once for the squared-distance
+// tree and complete normal operand, six producer orders 61/61/59/57/59/57;
+// earlier complete operand at the sum/containment 61/61. Original helper/body restored.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

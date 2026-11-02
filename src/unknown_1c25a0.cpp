@@ -831,6 +831,11 @@ void function_1c54b0(char const *variants, long object_index)
 // else arm without an initialiser 73; island-array local with the flag after the call 18; function-scope
 // flag cleared at the top of each iteration 18; `entity_count == count` with the flag after the call 18;
 // a 600 s permuter run (71 tries), none below 4.
+// Lane 15 round 42 (fast): outer while with the flag after the call 18; a named next index 4; a named step
+// with the flag after the call 18; an island-table local with the flag after the call 18; a for-scoped entity
+// index with the flag after the call 18; a byte flag with the flag after the call 18. Compile-only, 26 forms
+// of the index update, flag type and world read (`island_index = !removed + island_index`, a bool kept flag,
+// a world local read per iteration with the discard through the global): the reload pair never swaps.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -1119,6 +1124,11 @@ struct s_1c4040
 // see src/unknown_0b8540.cpp); the island-scan count in EDX rather than ECX follows from DL. Body trials:
 // separate index for the island scan 8; island element read at each use 150; entity read through the
 // priority view at both uses 143; fixed island read at each use 78; for-scoped indices 8.
+// Lane 15 round 42 (fast): the active choice as if/else stores 20; a named copy of the active flag 8; `active
+// == false` 8; a named array local before the volatile store 192 (553 bytes); the world pointer declared before
+// the record 8. A static definition (diagnostic:
+// the other caller in src/unknown_146a20.cpp no longer links) gives the custom convention, attempt EAX and
+// active CL 13, with 0x1c51c0 at 2.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1531,7 +1541,21 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // retail's `test eax, eax`, 125 diagnostic; no reload in the impulse path 106 diagnostic); index initialised
 // before the selection 162; mirror zeroed before the selection 166; mirror stored at the top of each iteration
 // 111; default-NONE selected index in place of the goto 3; selected index stored before the count 5.
-// BLOCKED-BY 0x1d10b0 (its file on the avoid list).
+// BLOCKED-BY 0x1d10b0 (its file on the avoid list; free in lane 15 round 42, form below, not kept).
+// Lane 15 round 42: 0x1d10b0's parameters as (component, index, velocity) in a free function 1, but 0x1d10b0
+// itself 1 (`[edx+ecx+0x40]`); as a member of s_havok_component (`component->...(index, &b)`, its siblings
+// 0x1d0bb0/0x1d0c00/0x1d0b20 are members and retail addresses `[index*0x60+data+0x40]`) 1 with 0x1d10b0 still
+// matched (plain check): the setup-order pair goes and only the entry `cmp eax, ebx` is left. Not kept (a gain
+// of 2 without a match). With no mirror at all the body is retail's except the index spills: the two stores,
+// the reload after the impulse call and the 4-byte frame slot (126 positional, 858 bytes, all three aligned).
+// Entry test, compile-only: the zero of the mirror store is shared with the compare in that block, so mirror
+// typed dword/int/unsigned, declared apart, set from the index, `i = local_0 = 0`, `local_0 = i = 0`, an
+// int index, store-through-index before the test all keep `cmp eax, ebx`; `(local_0 = i) < count` re-reads the
+// volatile; the mirror set in each selection arm gives `test eax, eax` but `mov [slot], 0` (+4 bytes); stored at
+// the top of each iteration with a store after the loop `test eax, eax` but no head merge. Plain loop with
+// `inline` on 0x1d1160's definition 126; with an unused fifth parameter on 0x1d1160 126. Fast, from 3: a positive
+// guard around the for 3; the mirror set in each selection arm 36 (872 bytes); the mirror stored at the top of each
+// iteration and after the loop 119 (870 bytes); `i = local_0 = 0` 161 (882 bytes); int index 3.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

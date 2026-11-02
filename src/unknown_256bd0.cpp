@@ -62,7 +62,7 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// score 179 (was 201): the activity test is the loop's condition, so the frame is 0x110 and the
+// score 179 (was 179): the activity test is the loop's condition, so the frame is 0x110 and the
 // activity byte is re-read at every pass as retail does; the first block's register homes differ.
 // Round 34: the activity test moved into the while condition and the step helper no longer reads
 // the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
@@ -234,6 +234,9 @@ struct s_object_flags_256bd0
 // Round 230: actual timer-field reference, native twice-used actor ordinal and exact double minimum,
 // seven subsets; all with word status, scores [179, 287, 287, 302, 302, 284, 284, 284].
 // Original executable source restored. Initial marker-argument and position/direction homes remain.
+// Round 349: status assigned in the actual timer arms on the recovered active-loop graph,
+// short/word/long/dword with expired/positive arm first 282/277/282/277/285/280/285/280.
+// Initial status residency and marker-argument ownership regress; original status/body restored.
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {
