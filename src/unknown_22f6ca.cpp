@@ -129,6 +129,10 @@ void function_22fba9(c_class_1473c9 *screen)
 // Round 101: the inner counter initialized at declaration 23; concrete block-24 or block-18 result
 // types 23 each; implicit model index store 23; text or model preincrement 23 each; a forceinline
 // setup helper for only the first three alike loops 23; both concrete group result types 23.
+// Round 50 (lane 13, fast; aligned 4: the two zero stores and the model loop's copy): counter uninitialised with `for (i = 0`
+// in the first loop 66; model animation without braces 23; model or text definition local 23; parent local for the model call
+// 23; `if (!pane) return;` 23; model loop as a while 23; text test nested 23; text loop's own counter 23; counter before the
+// pane lookup 25; screen pointer local in the model body or above its loop 23; animation type local 23, before the call 166.
 // @retail 0x22fc08
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
