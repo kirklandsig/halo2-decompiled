@@ -254,6 +254,12 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH281: Complete endpoint-source/first-edge-source/hit-tail priorities, seven subsets then all with native
 // Boolean success; the one-point 409 form is below the retention gates [446, 410, 449, 419, 441, 419, 444,
 // 409]. Original executable body restored.
+// P262: Native counted sector for with short/word/long/dword count and long success
+// 410/410/409/409; with Boolean success 448/448/446/446. Original while,
+// count scope, long success, normal storage and every output tail restored.
+// P264: negative edge-search outcome bool/byte/short/long, long success
+// 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
+// original positive hit, normal storage, tails and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

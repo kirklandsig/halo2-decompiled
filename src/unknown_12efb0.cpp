@@ -336,6 +336,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // ICWR/IWCR/IWRC/WICR/WRIC/CWIR/CWRI/CRWI (C RGB, I intensity, W weight, R remainder)
 // 775/775/775/748/748/616/614/612; two/four-point leads rejected. Original helpers and complete body
 // restored; palette/record and SIMD carriers remain.
+// Round 44 (lane 15, fast, with a CAVEAT line): the palette slot as a char local, retail's `cmp cl, al`, 705 (3835
+// bytes, masked 131 against 130), read right after the palette call 705; long slot with the test on the byte field 761
+// (3856); the record pointer cleared only in the palette arm, retail's `xor ebx, ebx` position, 616 (same code), with
+// the char slot 705. The -1 in EAX tie stays.
 // N306: Native output combined/separate rejection, nested/intensity-first acceptance, each with
 // original/early-exit merge: 616/616/616/616/616/616/616/616. Original helpers and complete body restored;
 // palette/record and SIMD zero/contribution carriers remain.

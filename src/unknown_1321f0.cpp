@@ -732,7 +732,7 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
     long arg_5, dword arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
     void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
     bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
-    real arg_21, byte arg_22, point3f const *arg_23, real arg_24);
+    real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
 // @retail 0x133390
 void function_133390(s_bit_vector_pool const *arg_1)

@@ -754,6 +754,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // original/staged side/staged normal/both 325/325/325/325; with vertical normal
 // previous/neighbor/both order 321/334/406; both staged and both orders 406.
 // Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
+// Round 471: Emitted-pair capture, cursor step at lookup/color/tint/half-width/geometry/position/alpha/pixel,
+// 635/619/635/581/558/606/556/444. Original cursor and body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

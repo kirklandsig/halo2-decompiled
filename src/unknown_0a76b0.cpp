@@ -287,6 +287,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // J238: Computed state-action result 287; shared actual hand/weapon acquisition 445; existing active
 // query 336; state/hand, state/query, hand/query 365/294/429; all 398, short selected action 383.
 // Original body restored; frame 8, incoming unit/name/actions ranks and shared-call threading remain.
+// M309: Reused self-object header/table 330/332; with uniform per-use state,
+// complete local role names, or both 330/332 each. All eight restored;
+// frame 8 and incoming unit/name/actions ranks remain unresolved.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -847,7 +850,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
-// score 318 (was 392): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 309 (was 318): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -870,6 +873,13 @@ extern vector3f *g_4687b0;
 // the 0x400 set through bit_vector_set 324 (1702 bytes), both 318 (kept, plain confirmed). On 318: the
 // spread blend on a vector3f_scale'd aim 312 (aligned 227 -> 232), operands swapped 312; velocity before
 // origin, both vectors first, attach/flag17 first 318 (same code each).
+// B358: Restore/origin/velocity scopes, subsets 1/2/4/3/5/6/7: 318/315/318/315/318/315/315;
+// all with native role names 315. Staged crosses alone/with branch origins 319/316;
+// staged with scaled aim/with both 313/310; original/direct shared crosses on the
+// branch-origin/scaled-aim graph 309/310. Only branch-owned origins and the complete
+// scaled aim blend retained. The direct random-call producer removes the one-use
+// scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
+// Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -890,7 +900,6 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 	long marker_name = NONE;
 	bool attach = false;
 	bool flag17;
-	point3f origin;
 	vector3f velocity;
 
 	actions->grenade_projectile_index = NONE;
@@ -915,6 +924,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 	if (function_a76b0(unit_index, 1))
 	{
+		point3f origin;
 		vector3f forward;
 
 		function_cafc0(unit_index, &origin);
@@ -923,6 +933,7 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 	}
 	else if (!actions->grenade_cancelled)
 	{
+		point3f origin;
 		if (!attach)
 		{
 			if (unit->unknown12c != NONE)
@@ -987,11 +998,12 @@ void __stdcall function_e7900(long unit_index, bool spread, point3f const *origi
 
 				if (1.0f > ratio)
 				{
-					real scale = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f);
+					vector3f aim;
 
-					velocity.i = unit->field_xe66477.i * scale * (1.0f - ratio) + velocity.i * ratio;
-					velocity.j = unit->field_xe66477.j * scale * (1.0f - ratio) + velocity.j * ratio;
-					velocity.k = unit->field_xe66477.k * scale * (1.0f - ratio) + velocity.k * ratio;
+					vector3f_scale(&unit->field_xe66477, function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, 0.6f, 1.4f), &aim);
+					velocity.i = aim.i * (1.0f - ratio) + velocity.i * ratio;
+					velocity.j = aim.j * (1.0f - ratio) + velocity.j * ratio;
+					velocity.k = aim.k * (1.0f - ratio) + velocity.k * ratio;
 				}
 			}
 
@@ -1380,6 +1392,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
+// direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
+// extra frame word, second entry lookup and hand transport remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1697,7 +1712,7 @@ void __stdcall function_191fab(long definition_index, long value);
 void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 72 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
+// score 60 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
@@ -1724,6 +1739,11 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // bytes; the first 0x14de90 call still inlines); with the weapon dead before the end (0x191fab given 0) the request
 // still takes EBP and the result moves to BL (123), so the request is outranked by the result as well as the weapon.
 // Retail's NONE arm after the out-of-line call is `or eax, eax` (0b c0).
+// B358: Shared player observation / full mode if-chain / byte result, subsets
+// 1/2/4/3/5/6/7: 60/139/78/131/73/151/141; all with word result 145.
+// Shared player lookup with direct reporting argument 60.
+// Only one pure player observation and direct reporting value selected; ordinary confirms 60 at 392/388.
+// Frame reuse agrees; request/weapon homes and retail getter-call expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -1768,10 +1788,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 			function_e69c0(unit_index, 0x16);
 			if (function_cd0c0(unit_index, pickup->weapon_index, pickup->mode))
 			{
-				long value = unit_get_player_index(unit_index) == NONE ? NONE :
-					unit_action_player_value28_get(unit_get_player_index(unit_index));
-
-				function_191fab(weapon->definition_index, value);
+				long player_index = unit_get_player_index(unit_index);
+				function_191fab(weapon->definition_index,
+					player_index == NONE ? NONE : unit_action_player_value28_get(player_index));
 				function_c86e0(unit_index, 0);
 				result = true;
 			}
@@ -1813,6 +1832,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
 // DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
+// F321: complementary give result in bool/byte/word/long storage, each with
+// original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
+// Original executable body restored; frame/result and pool/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
@@ -2214,6 +2236,9 @@ __forceinline char unit_action_round(real value)
 // AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
 // with byte result 235/325/331; direct/byte predicate with long result 331/235.
 // Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
+// M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
+// with Boolean active test 297/299; both 295/297. All regress and are restored;
+// pool/index/type/name register ownership and result-byte home remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2563,6 +2588,13 @@ long function_c8f60(long unit_index, short seat_index);
 // 304/331/307/338/304/331/307/338.
 // Frame 0xf0 agrees; vehicle/index/unit-pointer ranks, state comparison and late result scheduling remain.
 // Original executable body restored.
+// B358: Shared unit ordinal long/dword/word inside admission 306/306/324; before
+// admission 315/315/324; long ordinal with every lookup on one pool receiver,
+// inside/before admission 307/311. Complete original body restored; entry EBX
+// vehicle promotion and unit/ordinal residence remain, with the original 0xf0 frame.
+// Round 360: admission/parent early failure guards and full-width result subsets,
+// 341/325/321/359/333/336/365; all with byte reset 369. Original admissions,
+// Boolean storage and complete body restored; entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
