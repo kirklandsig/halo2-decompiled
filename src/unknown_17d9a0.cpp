@@ -125,7 +125,7 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
-// score 46 (was 138): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
+// score 46 (was 46): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
 // ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
 // and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
 // prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
@@ -315,6 +315,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // stores 142 (964: both copies go through integer registers), y first 142; a corner local copied out 244 (1039); a
 // two-call component helper 144; a row pointer local 142. Forward/left pointer locals 64, with origin 60; references for
 // the coordinates 46; box fields 50, with pointers 62; rows z, y, x 79; rows y, x, z 71.
+// Round 328: existing vector/point normal setters with copied/source/plane/normal
+// receivers 207/211/209/213 and 207/211/209/211. Original normal block copy,
+// all consumers, corner helper and complete body restored; plane base and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
