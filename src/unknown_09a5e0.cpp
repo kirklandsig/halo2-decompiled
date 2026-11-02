@@ -2210,6 +2210,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
 // Round 33 (lane 2, fast): the masked object index named before the entry lookup 154 (retail's SIB base
 // in the entry and child lookups; homes unchanged), with the raw offset form 154; the entry through
 // OBJECT() 155; the 0x400000 test as a plain mask 168, with the named index 167 (retail's
@@ -2256,10 +2260,17 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
 // outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
 // Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// Round 286: named entry slot with uniform signed-byte/byte/short/long tail results before clamps
+// 154/154/165/168; after clamps 157/157/153/156. Two-point best gain rejected;
+// original tail domains, entry lookup and complete body restored.
 // DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
 // 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
 // Round 304: high-first/combined-mask/low-bank-fold/high-bank-fold admission 285/267/264/262;
 // with the actual entry slot named 285/267/264/262. Original request tests and full body restored.
+// Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-
+// slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
+// three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
+// object/offset homes and low-mask ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

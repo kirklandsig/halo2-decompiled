@@ -637,6 +637,9 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // Also tried: the d5b60 result typed as s_damage_info with a named +0xb0 effect (6), the flag set through a fresh
 // DAMAGE_OBJECT lookup (62, reloads the pool), the two stores as side effects of ba7f0's first argument (6, the
 // same bytes: the order is the scheduler's), `maximum > 0 && info` (14), a nested `if (info)` (6).
+// Round 339: byte/word setters and native byte/word masks 31/0/28/6; CRT clear 28/11/28/11.
+// Word setter matches at 124 bytes but loses an outside reload pair (2); include positions
+// and field-pointer forms keep that loss. Original body and includes restored.
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -796,6 +799,9 @@ void __stdcall function_d6bc0(long object_index)
 // return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
 // predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
 // restored; shared true epilogue and stack parameter convention remain coupled.
+// Round 339: True-default result with failure-owned gates, player early-return/assignment and
+// direct/conditional team result 80/73/88/71; entry result 78/96/88/92.
+// Original false-default body restored; shared true exit and parameter homes remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -1785,6 +1791,21 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax C (11-01): the first permutation loop indexes the permutation array instead of walking it with a pointer, so
+// the permutation count is read before the array as retail does.
+// MiniMax C (11-01): the pending xor narrowed to a byte reproduces retail's byte form and measures 111, seven points and
+// under the keep bar for a function still above 30, so it was reverted.
+// score 118 (was 134): the first permutation loop indexes the permutation array instead of walking it with a pointer,
+// which reads the permutation count before the array as retail does and leaves the region pointer in edx. Left: retail
+// tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, the random global is in edx in
+// retail and ecx here, the pending index is used through ax in retail and cx here, and the calls to 0xda110 and 0xd9d60
+// take their arguments in another shape (the conventions of those two unmatched callees, see 0xdae60).
+// score 134 (was 229): the exclusive test is written as two mask conditions and the blocked flag is stored before the
+// threshold check, which puts `destroy` in bl and the permutation index in memory as retail does. Left: retail keeps
+// the region pointer in edx and ours in edi, retail applies `and eax, 0xffff` before the prologue's pushes and ours
+// after, retail tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, and the pending
+// index and the random global land in different registers. The conventions of 0xd9d60 and 0xda110 are unmatched
+// callees' (see 0xdae60).
 // score 229 (was 265): register and stack-slot assignment only. Retail keeps `destroy` in bl and the permutation index
 // in memory, ours the reverse; the damage-level delay is read through a region pointer reloaded from the stack right at
 // the use in retail, ours reloads it into edi early on each path; retail tests the exclusive flag with `test eax, mask`
@@ -1813,8 +1834,10 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 		long i;
 		s_damage_info_permutation *permutation;
 
-		for (i = 0, permutation = region->permutations; i < region->permutation_count; i++, permutation++)
+		for (i = 0; i < region->permutation_count; i++)
 		{
+			permutation = &region->permutations[i];
+
 			if (!(state->destroyed_permutations & (1 << i)))
 			{
 				next_threshold = permutation->unknown08;
@@ -1858,6 +1881,8 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 
 				permutation = &region->permutations[i];
 
+				bool blocked = false;
+
 				if (!have_threshold)
 				{
 					have_threshold = true;
@@ -1869,7 +1894,6 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 				}
 
 				bool destroy = true;
-				bool blocked = false;
 
 				if (last_permutation && (region->flags & 4) && function_db110(object_index, false, false))
 					destroy = false;
@@ -1891,7 +1915,15 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 					destroy = false;
 					blocked = true;
 				}
-				if ((accumulator->flags & 0x400) ? (permutation->flags & 0x1000000) : (permutation->flags & 0x800000))
+				if (accumulator->flags & 0x400)
+				{
+					if (permutation->flags & 0x1000000)
+					{
+						destroy = false;
+						blocked = true;
+					}
+				}
+				else if (permutation->flags & 0x800000)
 				{
 					destroy = false;
 					blocked = true;
@@ -1988,6 +2020,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
 // use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
 // a 600 s permuter run, 12 tries, none below 5.
+// Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
+// separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
+// both gates/names 5; all forms 215. Original body restored; scheduling remains.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -3598,7 +3633,7 @@ struct s_collision_result_1697c0
 	point3f point;
 	byte unknown14[0x24 - 0x14];
 	short unknown24;
-	byte unknown26[0x4c - 0x26];
+	byte unknown26[0x5c - 0x26];
 };
 
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
@@ -3623,7 +3658,13 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 /* whether the structure blocks damage from the damage's origin to a point
    on an object; around units, four rays offset sideways by the
    definition's spread must all be blocked */
-// score 153 (was 153): the root walk is written out inline in the ray loop (damage_object_root,
+// score 151 (was 153): the collision result record is 0x5c bytes, the buffer the provider fills (frame 0xa0 as retail).
+// MiniMax C (11-01): not kept (one-use locals without a match): the spread read into a local in each ray case 101,
+// plus the second root walk in a local before the point difference 61 (the caller 0xd74e0 then 297 -> 308); the
+// spread in one local at the function's top 164, before the switch 215. At 61, left: retail keeps the definition
+// pointer in edi and the point in esi, its cross product loads side.k and offset.k first, and its case 2 scales as
+// `scale * up.i`; the permuter reached 59 (push esi against push edi).
+// score 151 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
 // 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
 // inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
 // cases 2 and 3 share the code from `movaps xmm1,xmm0 / mulss xmm1,[up.i]` while ours scales case 2 as
@@ -4426,6 +4467,7 @@ struct s_damage_object_creation
 
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
+// MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
 // score 221 (was 235): caching `info->unknowne0` as the loop bound (retail does not reload it; 235 -> 221) and
 // making detached_nodes signed (`test / jle` as retail; same score). Left is register allocation: retail keeps
 // object_index in esi, hoists the section_mask_a zero-extension into edi and spills the datum offset, so its

@@ -346,8 +346,14 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // first with the direction from it 230; direction as three scalars (diagnostic, helpers written out) 226 (991 bytes);
 // both 225 (991); start copy first with the offset from ray->start 223 (991); start and end copied and the direction
 // from both copies 196 (all six loads before the subtractions, start.z first as in retail; the end copy is one-use).
+// Round 286: CRT origin/start/both copies with original/CRT normal publication
+// 282/307/204/264/270/291; both input copies plus the hit-point setter 270/291.
+// Origin retention and edge homes remain; original copies, stores and body restored.
 // DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
 // 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
+// Round 450: Existing dot-helper complete products/partial sum/accumulation/native inputs,
+// original then shared polygon count, 192/253/253/320/193/269/269/315. Original complete shape
+// query and shared dot helper restored; frame 0x84 and retained-origin/edge homes remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

@@ -946,6 +946,9 @@ struct s_flags_1f0870
 // Round 248: complete native input/result-history/tuning-record field views, seven subsets
 // and all with a twice-used history timestamp, 590 each. All types and executable body restored.
 // J218: Output-pointer history change/offset/relative difference producers, seven subsets, then both named squared-length nodes: 659/647/723/611/687/672/743/748. Original complete body restored.
+// Round 448: Shared direct/general, direct/history, general/history and all-phase
+// maximum-change scalar 591/590/590/591; sole mode read at its test on those
+// graphs 593/592/592/593. Original limits, mode, vector workspaces and body restored.
 // Round 288: Continued magnitude/input squared sum/both/history squared sum/magnitude+history/input+history/all/all with entry magnitude,
 // 593/590/593/590/593/590/593/593 (fast). Original complete body, observations, helpers and call roles restored.
 // Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
@@ -1591,6 +1594,12 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // NONE as `unknown58 = selected = highest = NONE` 274 (1076); contact count/element through inline
 // accessors 222; extra trivial inline calls to grow the caller 221 (0x1f1df0 stays inlined at the
 // second call).
+// Round 448: Separate selected/fallback entry lifetimes 221/221/221; supported-first
+// final admission 222, with either/both lifetimes 222/222/222; all with real movement
+// 225. Original distinct block workspaces, movement and selected-first test restored.
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
 // at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
 // rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.
@@ -1602,6 +1611,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
 // native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
 // executable source restored; zero width, reset/selection homes and material-call expansion remain.
+// DH round 266: indexed coordinate reduction, long/short/word/byte axis crossed with
+// double/real root carriers: 611/609/630/630/630/630/630/630, all 1332 bytes.
+// New reduction storage fails the movement/reset/material-call graph; original arithmetic restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

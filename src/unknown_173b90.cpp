@@ -615,6 +615,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
 // before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
 // All overrides and memory observations stayed fixed; original defaults and complete body restored.
+// Round 337: returned rotation consumed through shared addition/three-use pointer, with
+// native emitter indexing and scale-first defaults: 122/124/117/121/120/122/115/119.
+// All lengthen and regress; original in-place rotations, translation and whole body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1096,6 +1099,10 @@ public:
 // 189/248/240/184/237; coordinate names 248; reversed independent comparisons
 // with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
 // Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
+// Round 337: existing double-factor negative scale in default/fallback/both paths, then
+// each with staged cross, then both nested normalizers without/with staged cross:
+// 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
+// color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1325,6 +1332,9 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // separate-tag/group-first declarations 135/135/135/135; definition rejection with the
 // same four declaration graphs 135/135/135/135. Original nested body restored; tag/group
 // ownership, definition bit five and callback reloads remain.
+// Round 500: native camera/request/position lexical-home subsets, all seven,
+// then all with displacement identity, 135 each on the recovered child-tail graph.
+// Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1540,6 +1550,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 299: Complete owner-valid/equal/available conjunction orders ACB/BAC/BCA/CAB/CBA 102/102/102/147/147;
 // explicit owner-result arms with ACB/BCA/CBA 149/149/104. Original full predicate order, owner result and
 // body restored; NONE/owner coalescing, BL availability and Boolean homes remain.
+// Round 337: raw view classification consumed by both zero-status tests, long/dword/short/byte,
+// default/query then conditional producer: 137/137/135/155/136/136/134/149. Wider raw carriers
+// recover the first EBP save but worsen later homes; original availability and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
