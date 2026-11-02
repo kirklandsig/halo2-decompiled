@@ -873,6 +873,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round 463: actual partial length accumulation, full successive/leading-pair,
 // zero-first factor result and uniform product directions, 256/236/371/368/256/236/371/368;
 // original (k+j)+i grouping and complete executable source restored.
+// Round 289: Standard native-array normal/basis/converted-animation transfers, subsets 1..7,
+// then backward normal with all: 446/475/474/337/464/465/437/437. Coherent output-first
+// matrix-builder formal/declaration/call order 236, matched callee preserved. All transfers,
+// include, interfaces and complete executable source restored; direction and zero homes remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -633,6 +633,17 @@ static inline word font_character_pixel(long alpha, long color)
 // N308: Independent low/high literal parts word/word, word/long, long/word, long/long,
 // 85/85/85/85; with numeric parity in the existing word helper 204/204/204/204. Original
 // literal expression, helper and decoder restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 310: Existing pixel writer returns the actual next output cursor, with numeric parity/
+// statement advance/word packed-run subsets 0..7: 188/214/189/214/185/181/183/179.
+// Original scalar producer, ordinary fill and decoder restored; alpha widening,
+// literal assembly and constant-two reuse remain.
+// N313: Shared actual run workspace under the retained word pixel helper; numeric parity/word fill
+// subsets 0..3: 85/204/107/208; with native byte consumed span 91/204/110/208. Shared run alone
+// ties the opening body; all helper and domain combinations regress. Original private helper,
+// independent runs and complete decoder restored; parity extension, literal fusion and two-run reuse remain.
+// N316: Coherent signed source octets with numeric parity/word fill/unsigned count combinations:
+// 110/192/103/200/110/192/103/200. Original source octets, helper, counts and fills restored; alpha
+// width, literal fusion and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

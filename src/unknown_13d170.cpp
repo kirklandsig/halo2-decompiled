@@ -327,6 +327,12 @@ struct s_block_candidate
 // N304: Actual allocation/category/predecessor spill-name subsets 1..7 all 347;
 // all names with limit-before-result 397 (1228 bytes, frame 0x1050). Original body
 // restored; missing frame dword and page/ring ownership remain.
+// N315: Final predecessor/offset/both/paired overlap-end ownership, admitted locals
+// 351/347/351/360; bare entry declarations 351/347/351/360. Original selected record
+// and full body restored; missing frame dword and page/ring roles remain.
+// N317: Actual winning ordinal long/short, admitted/entry lifetime, after/before native
+// candidate copy: 391/391/397/398/391/392/397/398. Frame 0x1054 recovered, but
+// page/ring roles and policy placement regress; exact-only selection state restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

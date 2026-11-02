@@ -617,6 +617,17 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // differs too); the primary lookup's test inverted (fallback arm first, success in the else) 567 (1766 bytes);
 // the found set stored after success 350.
 // Round 319: Request-boundary native found-name values mutable/const/assigned 504/504/504; scalar request orders mode-class-type/mode-type-class/class-mode-type/class-type-mode/type-mode-class 390/390/353/352/350. Original queries, graph, helper expansion and body restored.
+// M310: Uniform graph owner observations through existing member/direct tag producers, byte/bool status and native completed success/failure [744, 716, 737, 716, 744, 716, 737, 716]. Original body restored.
+// DL240: Shared-request graph const-reference with mode/class/type reference masks 0..7:
+// 348/588/722/681/608/697/663/674; name-reference forms also regress other users. Both original
+// declarations and all executable source restored. Frame twelve agrees; graph/request register
+// homes and final byte normalization remain.
+// DL243: Corrected shared expansion with primary/alternate/fallback query-produced success subsets
+// 1..7 and all Boolean: 506/616/592/547/525/608/590/587. Earlier result trials had frame eight;
+// these disturb the now-matching prefix. Shared-request canonical urgent/other byte-bool/bool-
+// byte/byte-byte/word-bool/bool-word/word-word/long-bool/bool-long:
+// 348/382/382/348/382/382/348/382. Original entire body and both Boolean declarations restored;
+// frame twelve agrees, graph/request homes and final byte normalization remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

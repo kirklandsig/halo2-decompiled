@@ -3501,124 +3501,53 @@ void function_61050(c_class_58d20 *session, long channel_index,
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 76 (was 76): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
-// Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
-// split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
-// copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
-// pointer for both attaches 119; channel declared first 119; split machine copy 119; time read after now 174.
-// Earlier: the channel call's arguments are set up in the other
-// registers, the failure reason is written before the return value is cleared
-// instead of after, the member's flag byte is read through a computed address
-// instead of an indexed load, and the reservation loop's arguments are pushed
-// in the other order
-// Round 403: copy scope 131; const copy scope 131; scoped input output 131; scoped input state 131;
-// const input copy 131; reservation output lifetime 131; output first 131; scoped result lifetime
-// 136. Opening body restored.
-// Round 81 (fast): direct state time 173; direct now 137; direct age 173; age condition order 137;
-// reservation output at reserve scope 131; counter at reserve scope 131; const reason parameter 131;
-// reason-store return expression 131. Original body restored.
-// Round 422: observer snapshot 188; owner snapshot 163; both attach snapshots 167; per-player
-// identity address 131; observer/identity 188; owner/identity 163; all repeated inputs 167; all
-// inputs/entry snapshots 200. Opening body restored.
-// Round 25 (fast; agrees with full): from the first attach on retail's scratch registers are ours
-// rotated by one, so its reason-7 tails both use ECX and cross-jump (the 15 bytes) and the flag
-// folds to [ebp + edx*4 + 0x72dd]. Non-volatile result 157; result declared after the lookup 136;
-// member arm first 145 (463 bytes); state flag/time read at each use 153; state pointer after the
-// flag test 153; pointer kept with the flag read directly 153 (pointer sunk). Opening body restored.
-// Round 467: Ordinary-inline lookup/attach/remove contracts, seven subsets, 131 each
-// fast; all three with the native machine-address field copy 131. Original declarations,
-// machine copy, result qualifier and full body restored; full starting count remains 119.
-// Round 114 (lane 8, fast; check it with 0x59e50 in the same run: with 0x630f0 alone the control reads 131,
-// with 0x59e50 the full 119): `result` declared after the machine copy 133 (control 131; its store moves
-// after the word store); the machine copy through memcpy 119 (same code); one shared `channel == NONE`
-// failure after both attach paths, the else arm closing only an attached channel, 141 at 463 bytes (indexed
-// flag read and an ECX reason-5 tail as retail, but the shared test is laid out after the else arm); the copy
-// and lookup in an inline identity helper 119 (same code); failures through an inline helper that sets its
-// false result before the reason store 119 (same code). Diagnostic: one extra early register temp rotates
-// every later block by one (attach EDX/EAX, reason pointer ECX), so the scratch choice is a round robin and
-// retail sits two allocations further on with identical code before the first attach.
-// Round 21 (lane 17, fast with 0x630f0/0x59e50): the machine copy by `memcpy` from `identity + 0xa` 119 and from the
-// XNADDR `abEnet` 119 (same code); through a named byte source pointer with `memcpy` 151 (463 bytes, as the named
-// source pointer: first attach and merged reason-7 tails retail's, the copy's `lea` folded, the member path, tails
-// and reservation loop one register step behind); the copy declared before the result 121; `return *reason = 7,
-// false;` compiles the same (compile-only); 1-3 dead temporaries (diagnostic) 119 each.
-// Round 18 (m3 lane 18; fast with 0x59e50 and 0x630f0 in the list, which reproduces the full 119; without 0x59e50 the
-// reduced image gives 131 at 480 bytes): the machine address copied with memcpy 119 (same code); `result` declared
-// after the copy 121; both attach failures through one `attach_failed:` label 136 (464 bytes); the membership age
-// through network_session_time_since 119 (same code); the reservation out-pointer declared for the whole loop 119.
-// Round 104's named source pointer re-measured plain 151 (463 bytes, aligned 32 against this body's 42: the first
-// attach and the merged reason-7 tails as retail, the member arm and reservation scratch still one step round).
-// Round 482: Independent added/replacement channel results, shared/long/const-long
-// producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
-// Control 119 with related caller retained; original channel join and body restored.
-// Round 504: shared-result failure/all exits with existing/ordinary result and true/false
-// defaults 180/198/180/119/137/164/137/129 (calibrated reduced). Original early exits and
-// full body restored; attach scratch rotation and separate reject tails remain.
-// Round 506: common attach producer after optional member removal, direct/twice-used
-// presence, repeated identity ownership and entry/producer channel declarations
-// 172/172/172/172/165/165/165/165. Original producers and full body restored.
-// Round 119 (lane 8, fast with 0x630f0/0x59e50): the arms swapped (member found first) re-measured 144
-// at 463 bytes for its listing: both attach calls then take retail's EAX/ECX (the member arm's
-// temporaries come first), but the layout puts the member arm first; the member-state pointer declared
-// right after the lookup (not sunk into the arm) 131 (the first reason-7 tail then loads ECX as retail);
-// that with the flag read by index 141 (483 bytes); `long channel = NONE;` 119 and `channel` declared
-// at the top 119 (same code); a named pointer to the existing member for memcmp and properties 144.
-// Round 511: eligibility before attach dispatch, indexed/nullable-state receivers with
-// negative/positive admission 76/143/76/143; machine memmove variants
-// 184/185/184/185. Keep the indexed early eligibility guard, plain 76
-// at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
-// attach producers, reservations and call tuples stay fixed.
-// Round 307: Branch-owned native state/member receivers and plain identity cursor, seven subsets
-// plus complete nullable state: 101/77/98/121/105/122/134/134; paired native state/member
-// receivers in member admission, without/with cursor: 144/144. Original body restored;
-// eligibility/reject ordering and member/reservation scratch homes remain.
-// Round 316: Shared attach-failure negative/positive continuations, original/ordinary
-// success storage, original/scoped machine copy 143/143/126/126/145/145/153/153.
-// Exact-length negative continuation still regresses; original early admission,
-// independent failures, success qualifier and complete body restored.
-// Round 309: Unsigned full-bit member/channel carriers and twice-used membership result, subsets 1..7,
-// then complete byte presence: 76/76/76/155/155/155/155/155. Original native carriers, admission tests and body
-// restored; dispatch/reject layout and scratch roles remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
 	long timeout, const s_session_id *id, long *reason)
 {
-	volatile bool result = true;
+	bool result = true;
 	s_session_machine_address machine = *(const s_session_machine_address *)((const byte *)identity + 0xa);
 	long member = network_session_find_member_by_machine(session, &machine);
-	if (member != NONE && !session->member_states[member].flag1)
-	{
-		*reason = 5;
-		return false;
-	}
 	long channel;
 	if (member == NONE)
 	{
-		channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)identity);
+		long owner = session->value10;
+		s_network_observer *observer = session->observer;
+		channel = network_observer_attach_channel(observer, owner, (const XNADDR *)identity);
 		if (channel == NONE)
 		{
+			result = false;
 			*reason = 7;
-			return false;
+			goto done;
 		}
 	}
 	else
 	{
+		s_network_session_member_state *state = &session->member_states[member];
+		if (!state->flag1)
+		{
+			result = false;
+			*reason = 5;
+			goto done;
+		}
 		if (!memcmp(session->members[member].words, identity, sizeof(*identity)))
 		{
-			long time = session->member_states[member].unknown10;
+			long time = state->unknown10;
 			long now = network_session_time_now();
 			if (!session->members[member].properties_valid && now - time < g_network_configuration.value1468)
-				return result;
+				goto done;
 		}
 		network_session_remove_member(session, member);
 		channel = network_observer_attach_channel(session->observer, session->value10, (const XNADDR *)identity);
-		if (channel == NONE)
+		if (channel != NONE)
+			network_observer_close_channel(session->observer, channel);
+		else
 		{
+			result = false;
 			*reason = 7;
-			return false;
+			goto done;
 		}
-		network_observer_close_channel(session->observer, channel);
 	}
 	if (reserve)
 	{
@@ -3638,6 +3567,7 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 	network_observer_request_channel(session->observer, channel);
 	session->value4c++;
 	session->update7618++;
+done:
 	return result;
 }
 

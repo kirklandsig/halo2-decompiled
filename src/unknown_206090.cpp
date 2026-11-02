@@ -141,7 +141,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1355 (was 1363): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1355 (was 1355): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -301,6 +301,17 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Scaled translation alone kept, 1355 plain at 6243/6238; original captures and helper bodies preserved.
 // DL236: Branch-owned tangent default/late force default/live control-bit subsets 1..7, then shared scalar default setters: 1365/1376/1367/1425/1423/1391/1382/1423.
 // Native byte/short/long/dword final result at completion/entry: 1411/1407/1408/1408/1423/1392/1393/1393. All restored; frame 0x5cc versus 0x58c and component/velocity/query/list homes remain; Boolean interface and caller preserved.
+// Y522: Existing rigid-body mass/keyframe/get helpers, seven subsets
+// 1417/1387/1470/1355/1417/1387/1470; direct member mass/keyframe with getter 1470.
+// All original producer bodies and force source restored; frame and velocity/query homes remain.
+// DL240: Native contact direction/velocity/residual projection loops, masks 1/2/4/3/5/6/7/15:
+// 1396/1405/1382/1417/1389/1373/1376/1398. Final mask includes moving-surface correction. All
+// regress; original body, float trees, captures and helpers restored. Frame 0x5cc versus 0x58c and
+// component/velocity/query homes remain.
+// Round 137 (m3 lane 6, fast control 1355 = plain): the velocity outputs declared one per line, angular first
+// 1355; the ray record and force vector declared at the first loop's top 1355; contact velocity at function scope
+// 1355; the two collected arrays declared at entry 1355; the two arrays in swapped order 1355 (all the same code:
+// no declaration moves a slot, so the extra 0x40 bytes are compiler temporaries, not declared locals).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -265,8 +265,17 @@ struct c_aggregate : c_child
 // M302: Common signed block ordinal across dispatch/cleanup, before/after arrays,
 // separate/shared query output and start/end bound order: 31/31/31/31/31/31/33/33.
 // Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
+// P261: shared callback/information output with all six error/total/output lexical
+// priorities 31 each; first two priorities before arrays 31/31. Frame 0x8020
+// recovered, but low loop homes exchange; independent outputs and full body restored.
 // M304: Seven-cell cleanup item ordinal signed-char/byte/short/word with separate/shared query
 // output: 92/102/92/102/77/81/77/81. Original long ordinal, independent outputs and body restored.
+// M310: Native signed-int status/total/boundary storage, seven subsets, then all with signed-int traversal ordinals [31, 31, 31, 31, 31, 31, 31, 31]. Original body restored.
+// Round 521: repeated cleanup block/item/both record references, original/query-only
+// output scopes 31/31/31/31/31/31; block/item references with shared callback output
+// 31/31 (frame 0x8020, lowest loop homes still exchanged). Original complete body restored.
+// M312: Native block-count field with shared query output/block reference/error-first gate
+// subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

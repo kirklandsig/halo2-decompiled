@@ -1453,6 +1453,21 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // both 34/32/34; later pure receiver alone/with invalidation/continue/both
 // 42/44/42/44; all with chained identical extent stores 46.
 // Original receiver, request continuation, invalidation and extent stores restored.
+// P265: Existing request-producer submit-test success bool/byte/short/long, before fields
+// 85/89/93/92; at submission 83/87/91/90. All exact-only result flags restored;
+// original helper/body retained. Candidate scaling, leave selector and publication homes remain.
+// DH285: Joint native array/geometric workspace lexical priorities, branch-owned then
+// collection-owned displacement, eight compiled forms: 32/32/32/32/32/32/32/32. Original body restored;
+// iterator/candidate schedule, leave-selector transport and request publication remain.
+// Round 287: Native short-winner declaration/update order and inner-seat rejection,
+// seven combinations then read-only candidate/actor/selection-seat views: 32/34/34/32/32/34/34/34. Original
+// source restored; iterator scaling, leave-selector and request publication homes remain.
+// DH291: Native mutable/read-only complete seat-flag inputs with nested/conditional/default-first/
+// override priorities 39/40/52/121 in both sets. Original flags, score graph, request publication,
+// frame 0x6ac and complete executable body restored; iterator/leave-request homes remain.
+// DH293: Actual leave-request type shared by the leave call and load/walk choice,
+// long/dword/int/short/word/byte/char/const-long 90/90/90/82/82/103/103/90.
+// Original body restored; iterator scaling, leave registers and request/slot homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2676,6 +2691,15 @@ struct s_scenario_scripting_view
 // Round 317: Common final-exit graph crossed with sign-extended selector, delayed short counter and
 // admitted scripting-data read 80/96/87/92/96/95/98/99 fast. Original complete search restored.
 // Actor/set/counter homes and delayed scripting-data observation remain.
+// DH285: Joint traversal/winner/set short lexical priorities, all six, then two
+// with coordinated resolved-point/displacement identities: 80/80/80/80/80/80/80/80. Original search
+// restored; actor/counter/set allocation and delayed scripting-data observation remain.
+// Round 287: Current-actor global resolved at each geometry use, crossed with complete
+// data/point-set observations and original/loop short counter: 102/93/104/104/117/113/125/124. Original search
+// restored; actor/set/counter allocation and guarded data observation remain.
+// DH293: Joint actor/data/set pointer lexical priorities, all six 80; two
+// opposite priorities with promoted signed-short-decoded selector 96/96. Original
+// body restored; actor/set/counter homes and guarded data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

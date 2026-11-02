@@ -1047,7 +1047,14 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 24 (was 72): only the first read differs (the ring start stays in esi across it; retail reloads it from
+// score 24 (was 24): lane 12 r78 reached 2 (not kept: the read helper's new offset parameter was found by measuring, with no
+// retail call to show it, 10-30 rule). That 2 form is retail's code but for case 2, which sets up 0x68670's source before its block (ours after). Only the
+// declared order of that contributor function moves it: (block, source, size) or (block, size, source) gives a byte match in
+// a diagnostic, so BLOCKED-BY 0x68670. This round (fast): the read taking its offset, one `ring` local before the first read and
+// its start passed to both reads 24 -> 2 (553 bytes); the offset through the view for the first read only 4; through the view
+// for both 24 (556 bytes, aligned 5); the ring re-derived after the read, or an advance helper, 121 (554); the helper taking the
+// ring 160 (574); on the 2 form: a named size, source or block pointer, or both, used at the call or also at the send, 2 each.
+// Earlier 24 (was 72): only the first read differs (the ring start stays in esi across it; retail reloads it from
 // the ring) and the 0x68670 argument loads (retail's load order implies (block, source, size); that callee is a
 // contributor's). Earlier: the case-0 copy of the header value, block- and function-scoped,
 // header/sequence homes, the size register, forwarded read position and prefix stores differ.

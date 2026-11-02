@@ -233,6 +233,15 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // alone 391; short candidate alone 446 (register-masked aligned 170 against 183). Original body restored.
 // DH281: Admitted-group/nearest-selection/candidate-validation lexical ownership, seven subsets then all
 // with full-width signed group [390, 390, 390, 390, 390, 390, 390, 461]. Original executable body restored.
+// Y522: Output-record point setter/native input value/returned output cursor, seven subsets
+// 395/397/476/390/395/397/476; complete graph with ordinary output-helper inline 482.
+// Original private output helper and body restored; selected-default, table and endpoint homes remain.
+// DH291: Native selected group/point/record accumulator subsets on the retained output-cursor
+// graph 462/444/390/466/462/409/468; all with full-width input group 440. Original short
+// traversals, selected homes, byte narrowing, bitmaps, metrics and complete body restored.
+// DH293: Joint selected-terminal/best-distance/point-bitmap four-byte lexical
+// priorities, all six 390; two opposite priorities with nearest-distance identity
+// 390/390. Original complete body restored; default/table/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
