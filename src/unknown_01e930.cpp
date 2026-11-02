@@ -502,6 +502,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // 0x2148b0 tests 287 (`test al, al` stays, retail `cmp al, bl`); the movie open with a call per arm 251, st 92, with the mask local
 // 278, with both 298; plus a named direct-sound value 282 (1098 bytes, st 92). Still needs /arch:SSE for retail's
 // `fld; fcompi` and movss stores (build flags are the user's decision), and the mask's dword slot for frame 0x40.
+// Round 294: Status tail memset, length last/first, Boolean/mask 286/283/285/282;
+// native field-zero chains 287/285/288/286. Other producer users regress (18-19/75-78/42-50);
+// original helper and body restored; frame 0x3c/0x40 and status/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

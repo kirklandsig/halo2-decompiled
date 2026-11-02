@@ -328,6 +328,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // slot declared earlier; `NONE !=` tests; the tag lookup through a helper; a named no-source value (696, al 82);
 // diagnostics adding -1 uses or dropping a result use. The 0x88 pointer before the tag test loses -1 again (674).
 // None kept: the positional count stays above 616 until the -1 tie clears. Retry from these forms.
+// N295: Independent palette-input/metadata-default/weighted-state lifetimes before the provider,
+// subsets 1-7 625/718/755/618/625/625/625; all with signed-byte palette 749. Original order,
+// body and helpers restored; palette/record and SIMD accumulator homes remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

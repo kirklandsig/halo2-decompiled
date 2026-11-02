@@ -834,6 +834,17 @@ real g_55e618;
 // points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
 // forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
 // retail is not an inline-boundary effect).
+// Round 194 (fast): the normal's three components read into named locals at the block's top with the
+// velocity pointer and the position through real_point3d_set 179 (1537 bytes: retail's length, its dot
+// product and its normal registers xmm1/xmm4/xmm2 held through the position; tangent.i/j spilled at +0x38/+0x3c
+// as retail, but tangent.k spills where retail spills perp.k, so perpendicular gets no home and the frame
+// is 0x118; perp = n * dot copies the normal where retail copies dot; the position stores go through
+// the pointer, [ebx+4]/[ebx+8], where retail stores y/z through the particle); the same with the set
+// nested as placement_set's argument 179; with plain position stores 223 (1541); with the velocity copy
+// plain/set/nested 237/245/245; the velocity pointer with set or nested and no normal locals 188/188 (1536).
+// On the 179 form: perpendicular/tangent per component 182, in retail's computation order 191, tangent
+// declared first 179, tangent.k first 179, the final rows through the velocity pointer 180, the +0x34
+// scale before the rows 187.
 // Round 55 (lane 10, fast): the particle struct typed (flags word at +2, reals at +8 and +0x34, read as
 // fields with no flags pointer) 99 (the flags test after the call then hoists as retail); that with the
 // collision word stored before the start stores 97 (five points, not kept); on that typed body: the

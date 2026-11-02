@@ -1334,7 +1334,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 148 (was 148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
+// score 136 (was 148): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
+// Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
 // primary 148, both 203; hand before unit lookup 203, with scan 198, with state and scan 201.
@@ -1365,11 +1366,13 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 324: lexical receiver/hand/paired-weapon home subsets 1-7, then all with
 // the companion-weapon test named by its role, 148/148/148/148/148/148/148/148. Original body
 // restored; early pool load, second unit lookup and hand lifetime remain.
+// M291: native bool/long companion predicates with short/char hands and long/short slots
+// 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
 	s_unit_action_unit *unit = UNIT_ACTION_UNIT_GET(unit_index);
-	long hand = !primary;
+	short hand = !primary;
 	long other_weapon_index = function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->weapon_slots[primary != false]);
 	long has_other;
 	bool is_vehicle;
@@ -1607,6 +1610,8 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // Round 324: lexical weapon/mode/slot home subsets 1-7, then all with the Boolean
 // flag named by its animation role, 138 each. Complete original body restored;
 // same-block pool reload and weapon/mode homes remain.
+// M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
+// 165/158/172/151/150/155/151/144. Original executable body restored.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1876,10 +1881,11 @@ PRIVATE inline bool unit_action_channel_valid(c_animation_channel const *channel
    it, or holds or releases its channels */
 PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *request, long name)
 {
-	bool result = function_e92e0(unit_index, name);
+	bool result = false;
 
-	if (result)
+	if (function_e92e0(unit_index, name))
 	{
+		result = true;
 		if (*((byte *)request + 4) == 1)
 		{
 			s_animation_state *state = unit_action_state_get(unit_index);
@@ -1895,71 +1901,43 @@ PRIVATE __forceinline bool unit_action_pause(long unit_index, s_unit_request *re
 				child_index = *(long *)((byte *)UNIT_ACTION_UNIT_GET(child_index) + 0xc);
 			}
 		}
+		else if (*((byte *)request + 5) == 1)
+		{
+			s_animation_state *state = unit_action_state_get(unit_index);
+
+			if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
+				state->channels[2].unknown11 |= 1;
+			if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
+				state->channels[0].unknown11 |= 1;
+			if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
+				state->channels[1].unknown11 |= 1;
+		}
 		else
 		{
 			s_animation_state *state = unit_action_state_get(unit_index);
 
-			if (*((byte *)request + 5) == 1)
+			if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
+				state->channels[2].unknown11 &= ~1;
+			if (!unit_action_channel_valid(&state->channels[2]))
 			{
-				if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
-					state->channels[2].unknown11 |= 1;
 				if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
-					state->channels[0].unknown11 |= 1;
+					state->channels[0].unknown11 &= ~1;
 				if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
-					state->channels[1].unknown11 |= 1;
-			}
-			else
-			{
-				if (unit_action_channel_valid(&state->channels[2]) && TEST_FIELD_BIT(state->channels[2].flag0))
-					state->channels[2].unknown11 &= ~1;
-				if (!unit_action_channel_valid(&state->channels[2]))
-				{
-					if (unit_action_channel_valid(&state->channels[0]) && TEST_FIELD_BIT(state->channels[0].flag0))
-						state->channels[0].unknown11 &= ~1;
-					if (unit_action_channel_valid(&state->channels[1]) && TEST_FIELD_BIT(state->channels[1].flag0))
-						state->channels[1].unknown11 &= ~1;
-				}
+					state->channels[1].unknown11 &= ~1;
 			}
 		}
 	}
 	return result;
 }
 
-// 0xe9370 and 0xe9500 (score 139 each; round 58: 127 and 129, both 389 bytes) were 17 bytes short through unit_action_pause, which
-// reaches function_e7020 (that one matches since its overlay lookup stays out of line).
 /* pauses a unit's animation (type 23) */
-// MiniMax E (11-01): no new form, no lower score.
-// score 127 (was 127): saved EBX/result BL still replace retail scratch ECX/stack byte;
-// sentinel, channel flags and completion homes differ. False-first bool/byte/short/long
-// completions 135/129/142/139; true-first 127/133/153/149. True-first bool kept;
-// existing shared helper and its other caller unchanged.
-// Round 29: retail keeps the result in its stack byte, NONE in EBX in both arms and 1 in DL;
-// ours gives BL to the result, which then doubles as the constant 1. The state
-// and channel helpers __forceinline 127; the helper's result as byte 127 (0xe9500 130, 381
-// bytes); the call result as a flag tested afterwards 127; `bool result = unit_action_pause(...);`
-// 139 (372 bytes); the helper's arms swapped 143 (412 bytes; 0xe9500 128 at 389 bytes, else arm
-// first); swapped arms with `return unit_action_pause(...)` here as in 0xe9500 128 (both 389
-// bytes at 128, the same code; not kept, a rise here).
-// Round 58: the helper's `result = true` after both arms 127 (0xe9500 135, 381 bytes); a `bool *` out-parameter
-// 139 (372 bytes; the address-taken local is promoted after inlining); the helper's result as the 0xe92e0 call
-// 127 (kept: 0xe9500 139 -> 129 at 389 bytes; the result is now in memory as retail, but the constant 1 takes
-// EBX where retail has NONE in EBX and 1 in DL); on it the child loop as a `while` 127, `return
-// unit_action_pause(...)` here 129 (aligned 111 -> 61), `bool result = false; if (...) result = true;` 135 (381
-// bytes; NONE then in EBX as retail, but the result is constant-propagated).
 // @retail 0xe9370
 bool __stdcall function_e9370(long unit_index, s_unit_request *request)
 {
-	bool result = true;
-	if (!unit_action_pause(unit_index, request, 0x700005c))
-		result = false;
-	return result;
+	return unit_action_pause(unit_index, request, 0x700005c);
 }
 
 /* pauses a unit's animation (type 24) */
-// score 129 (was 139): retail's code except the colouring: the constant 1 takes EBX (retail NONE in EBX and 1 in
-// DL) and the result uses the unit_index home (retail its own slot, stored false before the 0xe92e0 call).
-// Round 58: the helper's result as the 0xe92e0 call 129 (kept; 389 bytes); the helper's `result = true` after
-// both arms 135 (381 bytes); a `bool *` out-parameter 139 (372 bytes).
 // @retail 0xe9500
 bool __stdcall function_e9500(long unit_index, s_unit_request *request)
 {
@@ -4327,7 +4305,7 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 201 (was 268): the result is now retail's (per-case `result = b8d30 > 0 && f10f430`, body under
+// score 201 (was 201): the result is now retail's (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
 // away/left and frame-left xmm colouring (retail loads up before forward), the seat offset scaled with the
 // component as destination (1406 bytes against 1388) and the transform rows' sum order.
@@ -4354,6 +4332,8 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // `default: result = false` 313, with no default 201 (kept, plain confirmed). On 201: the transform scale as
 // `x *= scale` 201 (same code); away scaled before the up copy 201; frame stores up, forward, cross 206; the
 // cross first 204; up declared before forward 201.
+// M291: Existing staged crosses at all seven basis subsets, then all with entry frame lifetime:
+// 201/201/201/201/201/201/201/201. Original executable body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

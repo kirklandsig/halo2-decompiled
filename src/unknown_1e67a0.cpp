@@ -695,6 +695,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
 // DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
 // 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
+// DL226: Uniform conditional zero/half multiplication, separate/together/coordinate-local,
+// inherited then ordinary sample: 179/190/205/189/213/223/238/221. All restored;
+// constant/limit ownership, direction carriers and jitter spill homes remain.
 // Round 450: Complete limit/weighted-acceleration/projection product-node subsets 1..7, then all
 // with ordinary bit sampling: 132/132/132/132/132/130/130/164. Weighted+projection and all-node
 // forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
@@ -962,6 +965,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // `!(0.0001f > fabs(angle))` 204/204, `>=` 215/215; with `&state->up` as axis 165/165 (1383 bytes, al 123), `>=`
 // 197/197; retail still reads v.j/v.k into registers and multiplies by memory for the axis.j/k products. 120 random
 // spellings of that helper (sum order, operand sides, cross order, compile-only) stay flat: 37 of the 78 rotation lines differ. None kept.
+// DL226: Existing complete vector setter at goal output, rotated output and original-input
+// copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
+// Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

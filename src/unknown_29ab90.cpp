@@ -232,6 +232,8 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 301: Direct shared clamp expansion at turn, complete final vector and both 345/345/345; separate
 // turn/speed values alone or with each clamp boundary 351/351/351/351; separate values and private clamp
 // forwarding to the shared expression 351. Frame remains 0x58 versus 0x64; restored.
+// Round 304: function-scope planar storage subsets 1-7, then all three at settings scope in reverse
+// declaration order: 345 each. Every initializer stayed at its original read; original body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
