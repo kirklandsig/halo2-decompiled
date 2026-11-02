@@ -3484,6 +3484,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // complete forward product parts 131; with shared subtraction/native fallback copy/both
 // 133/149/152. Five-point producer form rejected. Original complete body restored;
 // projection i-product, cross ranks and angle/trig homes remain.
+// Round 325: Common real-angle/trig phase, switch/conditional dispatch, cosine/sine first
+// and case/default axis branch order: 184/160/184/159/184/160/184/159. Original complete body restored;
+// projection/cross ranks and x87 angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

@@ -949,6 +949,10 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
 // Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
 // Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
+// Round 325: Bounded two-state enum capture, uninitialized/initialized with conditional/branch
+// producers: primary inequality 146/155/193/209; secondary equality 144/153/113/140
+// (fast control 58, plain 30). Original byte capture and complete body restored;
+// the uninitialized enum recovers early homes but widens the capture and consumer.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
