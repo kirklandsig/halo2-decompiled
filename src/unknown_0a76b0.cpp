@@ -1639,6 +1639,8 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
 // 165/158/172/151/150/155/151/144. Original executable body restored.
 // M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
+// M313: Full primary/selected mode scope/plain interruption-table subsets, all with short slot; original body restored;
+// fast 157/138/157/323/334/323/334/334.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2240,6 +2242,8 @@ __forceinline char unit_action_round(real value)
 // pool/index/type/name register ownership and result-byte home remain.
 // M311: Native bounded event type short/word/char/byte, original/numeric actual-case order:
 // 243/243/243/243/270/270/270/270; restored.
+// M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
+// fast 326/379/549/338/382/552/556/559.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
