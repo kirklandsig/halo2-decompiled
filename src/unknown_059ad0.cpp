@@ -3554,6 +3554,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 504: shared-result failure/all exits with existing/ordinary result and true/false
 // defaults 180/198/180/119/137/164/137/129 (calibrated reduced). Original early exits and
 // full body restored; attach scratch rotation and separate reject tails remain.
+// Round 506: common attach producer after optional member removal, direct/twice-used
+// presence, repeated identity ownership and entry/producer channel declarations
+// 172/172/172/172/165/165/165/165. Original producers and full body restored.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,

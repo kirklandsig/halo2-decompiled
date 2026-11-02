@@ -236,6 +236,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // folds and the false tails merge), plus `success = false;` at the two breaks 604 (folded away). Value difference:
 // the no-target over-distance tail stores `(dword)NONE` (0xffffffff) where retail stores 0xffff; `(word)NONE` there
 // 429 (1585 bytes: that tail then merges into the final tail), not kept. `edge` declared first 409.
+// Round 506: common second-endpoint producer, native orientation/vertex-table/paired-scope
+// combinations 524/524/528/528/518/518/416/416; best graph with complete planar library
+// copy 444. Original producers and full body restored; frame, byte state and tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
