@@ -3661,7 +3661,7 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 // spread in one local at the function's top 164, before the switch 215. At 61, left: retail keeps the definition
 // pointer in edi and the point in esi, its cross product loads side.k and offset.k first, and its case 2 scales as
 // `scale * up.i`; the permuter reached 59 (push esi against push edi).
-// score 153 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
+// score 151 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
 // 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
 // inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
 // cases 2 and 3 share the code from `movaps xmm1,xmm0 / mulss xmm1,[up.i]` while ours scales case 2 as
