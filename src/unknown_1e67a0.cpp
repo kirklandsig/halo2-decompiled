@@ -428,6 +428,8 @@ struct s_character_physics_component
 	byte has_position;
 };
 
+#include "unknown_1dacb0.h"
+
 struct s_type_94656b
 {
 	long unknown00;
@@ -436,7 +438,7 @@ struct s_type_94656b
 	point3f point2c;
 	point3f point38;
 	point3f point44;
-	long unknown50;
+	c_type_709360 unknown50;
 	byte unknown54[0x58];
 	point3f pointac;
 	byte byteb8;
@@ -495,7 +497,7 @@ void function_1e67a0(s_character_physics_component *component, s_type_94656b *da
 }
 
 // @retail 0x1e67f0
-void function_1e67f0(s_type_94656b *datum, s_character_physics_component *component, long animation_id, point3f *p1, point3f *p2, point3f *p3)
+void function_1e67f0(s_type_94656b *datum, s_character_physics_component *component, c_type_709360 animation_id, point3f *p1, point3f *p2, point3f *p3)
 {
 	datum->unknown50 = animation_id;
 	datum->point2c = *p1;
