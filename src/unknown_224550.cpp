@@ -312,6 +312,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 325: Existing UV producer consumes its real four-element input array, pointer/reference
 // input and output with original/scalar pivot storage: 232/232/232/232/325/325/325/325. All alias-safe captures,
 // original contracts, workspaces and complete body restored; tint/secondary-UV homes remain.
+// Round 318: Direct-bounds UV outputs encoded independently by the existing encoder,
+// geometry/output phases GAB/AGB/ABG/GBA, then a shared two-use selector;
+// 645/645/645/645/575/575/573/575. Original whole body and helpers restored.
 // Round 331: Native primary-aspect/secondary-span/reciprocal stage boundaries, two early-selector
 // graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
 // interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend

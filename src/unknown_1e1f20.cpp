@@ -443,51 +443,6 @@ struct s_node_view;
 void function_26be00(long actor_index, s_iterator *iterator);
 s_node_view *function_26be30(s_iterator *iterator);
 
-// score 7 (was 7): slot address and callback lookup allocation differ (the slot loop is matched
-// 0x1e1740's loop source, and a compile without LTCG allocates it like retail);
-// shared slot/condition callback/at-use callback 10/10/10; nullable slot
-// before lookup/after test 10/10; handler local/slot reference 10/10;
-// direct slot expressions 7.
-// slot cursor/cursor callback at use 115/115; signed slot type 7;
-// direct actor index 7; inclusive current count 99; empty callback continue 7;
-// counter lifetime from entry 30; callback declared before slot 7.
-// Type through slot/slot element, ternary on the expression/slot/inverted, callback before/after slot
-// 7/7/7/10/7/7; view and prop walk through the existing 0x25d740 wrapper and 0x26be00/0x26be30 7 (same
-// code, kept); 0x25d690 through its wrapper or a noinline declaration without the pragma: inlined, 132;
-// a 600 s permuter run (72 tries), none below 7.
-// Direct lookup with slot callback 10; pointer arithmetic/scaled offset 7/7;
-// later index reference/per-iteration index snapshot 7/7;
-// slot/callback/both outside the loop 7/7/7; inverted slot test 7.
-// Localised (reduced image, prop walk removed): the loop alone, or with any prefix that leaves
-// no zero in ebx, gets retail's allocation; every prefix with the reset helper's zero in ebx gets
-// ours. Reset with the parameter read directly 7; actor from the parameter 7; 0x28c before 0x278
-// 9; location after the two stores 15; 0x4fc before the 0x4ac test 11; nested swarm test with a
-// named perception index 7.
-// Further trials: slot-offset/type allocation and delayed slot-address formation remain.
-// uniform actor reads 157; entry iterator lifetime 7.
-// native prop result 7; actor/iterator 157.
-// actor/native prop 157; iterator/native prop 7.
-// all three receivers 157; all three/nested view validity 157.
-// Round 39: plain while loop 7; post-increment 7; `callback != NULL` 7; type in a short local 7;
-// type through the element with the slot pointer passed 10.
-// Round 184 (lane 3): the parameter read directly (the `&actor_index` reference dropped) 7, same
-// code, kept; slot local used only as the callback argument with the type read directly 10; the
-// handler's callback field read for the test and again for the call 7 (same code). Diagnostics:
-// without the swarm test and call before the loop (0x28fdf0) the loop takes retail's registers
-// (offset ECX, type EDX, early slot `lea eax`; 107 overall), without the inlined state reset it
-// keeps ours (152): the call ahead of the loop, not the zero register, tips the allocation. The swarm
-// test nested in two ifs 7; the swarm index read into a local inside the block for the call 7.
-// Round 67: shared slot with named type or callback declared first 10 each; with 0x28c before 0x278 12;
-// with a named swarm flag or nested swarm test and two-use perception index 10 each; with location after
-// the two stores 18; with 0x4fc before the 0x4ac test 14; plain while 10; handler local 10; callback field
-// at test and call through the handler local 10. The slot address still forms after the callback test and
-// only the nullable-slot mask changes; none of the prefix combinations moves it or the offset/type registers.
-// Round 152: callback read through the element's type with the slot pointer declared after it and passed
-// to the callback 10; the callback declared in the if's condition 7; a handler local tested and called
-// with the slot pointer passed 10; a short type local with the slot pointer passed 10; the nullable slot
-// named before the callback test 10. Each keeps the offset in eax and the slot lea after the test.
-// Retail's matched 0x1e17d0 and 0x1e2150 get retail's loop registers from this loop source (without a
-// zero register in the loop), 0x1e22d0 gets ours; retail's 0x28fdf0 clobbers eax, ecx and edx.
 // @retail 0x1e23c0
 void function_1e23c0(long actor_index)
 {

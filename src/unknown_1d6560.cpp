@@ -212,6 +212,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `(byte *)` arithmetic either way round or from a copied index 38
 // (same code); index modified in place 96; byte-shift spellings of the case 0 flag 38 (same code), the mask 57; inline
 // getters for the rigid body and the type 126 (224 B, caller lost).
+// Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
+// with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
+// forms lose the matched caller; original observations, body and convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
