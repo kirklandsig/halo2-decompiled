@@ -1744,6 +1744,9 @@ void function_b7360(long object_index);
 // entry carriers and the 24-byte deficit remain.
 // Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
 // 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
+// Round 525: Shared case-seven/eight admission, either payload first, native bool/byte/short/long
+// moving result: 473/473/473/473/476/476/476/476. Original separate admissions, result widths, cases and
+// complete callback restored; pool/input/output ownership and the 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

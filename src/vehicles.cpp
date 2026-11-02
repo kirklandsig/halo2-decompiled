@@ -3937,7 +3937,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 176 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -4031,6 +4031,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
 // 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
 // at 176 by the full check; frame/length unchanged, zero and vector staging closer.
+// Earlier retained form: 176 (was 197).
+// Round 525: Search-owned active scalars with six default creation orders and two threshold-failure
+// exits, eight forms 261/261/260/261/260/261/261/261. The found-index retest goes but extent falls to 1339;
+// original complete search, scalar observations and body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

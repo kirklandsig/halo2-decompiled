@@ -1862,6 +1862,9 @@ void function_dfd70(long arg_159e6d)
 // direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
 // 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
 // snapshots also need a match. Original shared helper and complete target restored.
+// Round 525: Single-exit mode-three/raised-eye branch after common origin acquisition, four crouch
+// result forms with native/memmove origin transfer: 248/248/251/251/273/273/274/274. Memmove loses a matched
+// helper user; both original helpers and the complete target restored. Frame/convention homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

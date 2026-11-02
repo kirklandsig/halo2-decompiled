@@ -397,6 +397,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 523: Direct inverse factors with complete raw/scaled copy/branch/conditional/native-point
 // families, field/coherent scale, 213/227/262/301/301/277/679/226. Final form reaches 955 bytes
 // but not the frame/homes; original alias-safe helper, inverse defaults and full body restored.
+// Round 525: Genuine coefficient-column cursors with indexed/cursor translation and output,
+// repeated/coherent scale, eight graphs 278/276/278/275/278/275/277/276. Original helper and body restored; frame and displaced-transform spills remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
