@@ -4449,6 +4449,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // seven subsets 175/175/173/175/173/173/173; all with late relative position 199.
 // Every form also raises the other helper caller from 0; both helpers and body restored.
 // Frame 0x110 versus 0x11c and point/basis scheduling remain.
+// Round 371: Actual result byte/short/word/long at original declaration,
+// 308/317/317/317; the same with entry false initialization 308/317/317/317.
+// All restored; native frame, basis and point/quaternion homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
