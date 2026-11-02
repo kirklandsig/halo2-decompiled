@@ -80,6 +80,9 @@ PRIVATE __forceinline long texture_floor(real value)
 // 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
 // bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
 // Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
+// Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
+// its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
+// named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

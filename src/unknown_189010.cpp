@@ -262,6 +262,14 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // ternary/first/second/both conditional publications 115/113/113/119 and
 // 121/119/119/125; original per-use destination with first/second/both
 // conditional stores 113/108/119. Two-point 108 rejected; original body restored.
+// Round 122 (fast): the link-time inliner weighs the call site, not this body's size. 40 extra statements after
+// the second lookup 133 (476 bytes), before the first 139 (486), first still expanded; second lookup removed 143
+// (456), first still expanded; first lookup under one more conditional (diagnostic, a redundant test) 140 (476):
+// both lookups become calls as in retail, arguments on the stack, request in EBP; first lookup after the variant
+// block 154 (491); `sound->flags` test dropped 129; receiver local 110; second lookup written like the first 136;
+// first test in a static inline helper 173 (433), forceinline 110; class flag alone in a helper 163; class getter
+// helper 110; the lookup's header helper as if/else with named locals 131 (0x221810 17, 0x129aa0 96), as nested
+// inline getters 110. Restored: retail's first lookup would need conditional depth two or a costlier callee.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

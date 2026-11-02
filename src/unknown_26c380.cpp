@@ -260,6 +260,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // P264: negative edge-search outcome bool/byte/short/long, long success
 // 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
 // original positive hit, normal storage, tails and complete body restored.
+// P266: Native two-component normal-copy for with long/dword/short/word ordinal
+// 459/459/464/464; plain while 459/459/464/464. Frame 0x64 recovered,
+// but all grow to 1667 bytes; original scalar transfers and complete body restored.
 // DH292: Pending-sector parameter owns the genuine next-sector query output, long/bool/byte/short
 // success with short count 440/444/433/439; with long count 449/447/442/453.
 // Original pending/current histories, normal homes, count, result and complete body restored.

@@ -445,58 +445,13 @@ struct s_decal_globals;
 extern s_decal_globals *g_4ea94c;
 extern long g_4ba038;
 bool g_4c8780;
-dword g_4c8784;
+byte g_4c8784[4];
 long g_4c8788, g_4c878c;
 long g_4c8790;
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 void function_1cf50(void);
 
 #pragma inline_depth(0)
-// MiniMax S (11-01): no new form, no lower score; 0x144f0 is still called with four stack arguments and the priority in XMM2 where retail passes the first three arguments in EAX/ECX/EBX; its definition is in src/unknown_01cf50.cpp.
-// score 100 (was 100): BLOCKED-BY 0x144f0 (unmatched, in src/unknown_01cf50.cpp): retail calls it with the tag
-// and two zeros in EAX/ECX/EBX and three stack arguments; our tree takes four stack arguments and the priority
-// in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
-// schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
-// below gain 2 at most).
-// Earlier at 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
-// image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
-// call convention in src/unknown_01cf50.cpp.
-// this round: no new form. Retail's argument values for the call to 0x144f0
-// are (tag, 0, 0, 1, bitmap, 0.0f) and naming them that way leaves the score at 100, so the call
-// site was left as it was: the six arguments are still pushed on the stack where retail passes the
-// first three in EAX/ECX/EBX, because 0x144f0's definition (src/unknown_01cf50.cpp) carries no /Gr
-// flag; the colour/draw schedule after the call still differs.
-// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (held file): retail calls
-// it with tag/stage/fallback in EAX/ECX/EBX and three stack arguments, our tree uses the standard
-// six-argument convention, so the call site and the colour/draw schedule after it differ.
-// Earlier at 100 (from 100): no frame; hoisted zero and material-call convention, then color/draw scheduling differ.
-// Earlier: the record index is scaled by 0x40 in retail and by 0x4 here, and the table retail reads is not the one this tree reads
-// Current stride agrees; the hoisted zero, callee convention and color/draw
-// scheduling differ. Record view, byte-channel locals, material/color results,
-// block-pool/byte-offset lifetimes and typed-record for 100; byte bitmap 98.
-// Earlier: BLOCKED-BY 0x144f0, which retail calls with the tag, stage and index in
-// EAX/ECX/EBX and three pushes (ours four pushes and the priority in XMM2, zero held in EBX).
-// Tag read at every use with all cache-store orders 99; store-order forms without that change
-// 100; bitmap read at every use 98. One- and two-point gains rejected. All original cache
-// stores and field observations restored.
-// Round 414: No frame; loop-wide zero, provider convention and SDK color/draw scheduling remain.
-// Material/color/draw workspace scope masks 1-7 scored 100 each; all scopes with native bitmap 98.
-// Two-count gain rejected; original scopes and bitmap restored.
-// Round 122 (fast; retail reads colour bytes 2/3 from the global, 0/1 from al/ah): manager read at each use 100;
-// colour global as a dword/byte union read after the store 98, with the manager change 98 (union with anonymous
-// bytes / byte array 98/98); shifts of the global after the store 100; `& 0xff` channels of the global/local 98/100;
-// union colour local copied to the global, channels from either 98/98 (unions get a stack copy, `sub esp, 8`).
-// Earlier at 100 (from 100): this round: no new form. Still BLOCKED-BY 0x144f0 (src/unknown_01cf50.cpp):
-// retail calls it with the tag, stage and index in EAX/ECX/EBX and three stack arguments, our tree
-// uses the standard six-argument convention, so the call site and the colour/draw schedule after it
-// differ. (The fast score reads 100 or 101 depending on the size of the reduced image; that is a
-// layout artefact of the reduced build, not a source change.)
-// Round 69 (m3 lane 9): no new form; the first difference (+0x1f) is the loop-wide `xor ebx, ebx` that
-// feeds the zero pushes of 0x144f0's standard six-argument call; retail sets EBX/ECX to zero at the call
-// (0x144f0 takes three register arguments there, ret 0xc). BLOCKED-BY 0x144f0 (a contributor's file).
-// Round 510: actual stamp/bitmap receivers and read-only entry subsets 99/100/99/100/99/100/99;
-// complete graph with short bitmap 97. One/three-point leads rejected. Original body restored;
-// material-provider convention and SDK/color/draw scheduling remain.
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
@@ -511,30 +466,26 @@ void __stdcall function_44040(long cell, short mask)
             {
                 byte *definition = g_4e3b44[*(long *)(entry + 0x2c) & 0xffff].bytes + 0x6c;
                 *(short *)(group + 8) = (short)g_4ba038;
-                long tag = *(long *)(definition + 0x20);
-                if (g_4c878c != tag || g_4c8788 != *(signed char *)(entry + 0x29))
+                if (g_4c878c != *(long *)(definition + 0x20) || g_4c8788 != *(signed char *)(entry + 0x29))
                 {
-                    long bitmap = *(signed char *)(entry + 0x29);
-                    g_4c8788 = bitmap;
-                    g_4c878c = tag;
-                    function_144f0(tag, 0, 1, (short)bitmap, 0, 0.0f);
+                    g_4c878c = *(long *)(definition + 0x20);
+                    g_4c8788 = *(signed char *)(entry + 0x29);
+                    function_144f0(0, 0, g_4c878c, 1, (short)g_4c8788, 0.0f);
                     function_1cf50();
                 }
-                dword color = *(dword *)(entry + 0x24);
-                if (g_4c8784 != color || g_4c8780)
+                if (*(dword *)g_4c8784 != *(dword *)(entry + 0x24) || g_4c8780)
                 {
-                    g_4c8784 = color;
+                    *(dword *)g_4c8784 = *(dword *)(entry + 0x24);
                     g_4c8780 = false;
-                    D3DDevice_SetVertexData4ub(10, (byte)(color >> 16), (byte)(color >> 8), (byte)color, (byte)(color >> 24));
+                    D3DDevice_SetVertexData4ub(10, g_4c8784[2], g_4c8784[1], g_4c8784[0], g_4c8784[3]);
                     #pragma inline_depth(1)
                     D3DDevice_SetVertexDataColor(11, 0);
                     #pragma inline_depth(0)
                 }
                 long block_index = *(long *)(entry + 4) & 0xffff;
                 long vertex_count = *(short *)(entry + 0x2a) * 4;
-                s_physical_object *manager = (s_physical_object *)g_509448;
-                s_physical_block *block = (s_physical_block *)manager->blocks->data + block_index;
-                dword first_vertex = ((dword)block->offset << manager->page_shift) >> 4;
+                s_physical_block *block = (s_physical_block *)((s_physical_object *)g_509448)->blocks->data + block_index;
+                dword first_vertex = ((dword)block->offset << ((s_physical_object *)g_509448)->page_shift) >> 4;
                 D3DDevice_DrawVertices(D3DPT_QUADLIST, first_vertex, vertex_count);
             }
             handle = *(long *)(entry + 0x34);

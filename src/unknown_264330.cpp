@@ -579,6 +579,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH281: Sampling admission priorities ACB/BAC/BCA/CBA with original and update-first validation on
 // retained 21304/signed-state graph; exact-length 412 ties the opening score [414, 450, 450, 422, 412, 436,
 // 436, 424]. Original executable body restored.
+// Round 324: post-query timer limit from branches/conditional/default, each alone and with
+// native short decrement, then branch/conditional with named elapsed: 412/412/412/412/412/412/412/412. Original restored.
 // P262: Complete sample/update/sampled-once lexical priorities, all six native Boolean
 // orders 412 each; signed prior-state word on sample-first/update-first flag graphs 413/413.
 // Original flags, signed-long state, workspaces, cases and complete body restored.
