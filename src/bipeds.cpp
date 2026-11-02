@@ -1893,6 +1893,11 @@ void function_dfd70(long arg_159e6d)
 // P269: existing native tag real fields +0x218/+0x21c, mutable/read-only tag and
 // biped roots, initialized/separate pointer declarations, masks 0..7:
 // 248/248/248/248/248/248/248/248. Original tag layout, helpers and body restored.
+// AC481: match-only offsets parameter address read and forward/origin/mode home
+// subsets 0..7: 222/242/242/242/242/242/242/245. On offsets-only, zero-mode first /
+// forward-up names / native tag-table receiver, subsets 1/2/4/3/5/6/7, then all
+// with head declared after collision: 228/222/222/228/228/222/228/228. The 222
+// form restores ret 0x14 but needs exact bytes; all bodies and helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
