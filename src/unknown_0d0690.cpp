@@ -1464,6 +1464,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 235: Complete selection-header value with native-entry/combined-mask/entry-false
 // result subsets 567/568/573/572/544/545/571/572. Frame 0x28 is recovered but type moves
 // to the stack; original scan inputs, result, helpers and complete body restored.
+// DH291: Library-copy primary-color/secondary-direction/ambient-direction publications,
+// seven subsets 529 each; complete transfers with dead bounded-color workspace reused for the
+// final ambient clamp 556. Original complete body and all helper/caller contracts restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

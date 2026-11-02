@@ -1459,6 +1459,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 287: Native short-winner declaration/update order and inner-seat rejection,
 // seven combinations then read-only candidate/actor/selection-seat views: 32/34/34/32/32/34/34/34. Original
 // source restored; iterator scaling, leave-selector and request publication homes remain.
+// DH291: Native mutable/read-only complete seat-flag inputs with nested/conditional/default-first/
+// override priorities 39/40/52/121 in both sets. Original flags, score graph, request publication,
+// frame 0x6ac and complete executable body restored; iterator/leave-request homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
