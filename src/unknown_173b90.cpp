@@ -621,6 +621,17 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 337: returned rotation consumed through shared addition/three-use pointer, with
 // native emitter indexing and scale-first defaults: 122/124/117/121/120/122/115/119.
 // All lengthen and regress; original in-place rotations, translation and whole body restored.
+// Round 455: Original particle position/motion captures through memcpy/native,
+// native/memcpy, both memcpy, memmove/native, native/memmove, both memmove,
+// memcpy/memmove and memmove/memcpy: 42/42/42/193/177/210/177/193. Original native copies restored.
+// Round 457: Native emitter-row cursor across readonly rows, scale-first defaults and complete
+// mask-field observation combinations; original shared rotations and callback inputs preserved.
+// Scores 270/270/269/269/298/298/299/299. Original executable body restored.
+// Round 459: Double scale/multiplier/both storage, scale-first variants and indexed single-wide variants
+// 328/320/322/328/320/322/311/324. Original executable source restored.
+// Round 461: Conditional validity results at system/location/particle cache transitions,
+// subsets 1-7, 140/131/144/179/171/161/192; one shared entry validity result 283.
+// Original invalidations, masks, offset/default lifetimes and shared rotations restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1109,6 +1120,17 @@ public:
 // each with staged cross, then both nested normalizers without/with staged cross:
 // 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
 // color/tag homes remain.
+// Round 455: Actual forward seeded from velocity before in-place negative scaling,
+// native default/fallback/both, shared setter default/fallback/both, memcpy/memmove both:
+// 311/297/346/193/260/269/346/339. Original forward producers, helper calls and complete body restored.
+// Round 457: Complete absolute-forward vector with ijk/ikj/jik/jki/kij/kji member producers,
+// aggregate or shared setter construction; exact-only storage forms, all restored. Scores
+// 268/215/268/256/213/257/268/213. Original executable body restored.
+// Round 459: Shared perpendicular setter on zxy magnitudes, staged-cross/position-copy/fixed-basis-copy combinations
+// 184/184/184/184/184/184/184/184. Original executable source restored.
+// M299: Actual forward/up/left output-axis pointer subsets
+// [296, 184, 277, 184, 296, 184, 277], all before particle lookup 275.
+// Original axis addresses, workspace lifetime and complete body restored.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1459,7 +1481,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 73 (was 102): frame 0x14, NONE/owner and Boolean stack homes agree;
+// score 73 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
 // flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
@@ -1565,6 +1587,20 @@ bool function_17afd0(long effect_index, long value);
 // Round 337: raw view classification consumed by both zero-status tests, long/dword/short/byte,
 // default/query then conditional producer: 137/137/135/155/136/136/134/149. Wider raw carriers
 // recover the first EBP save but worsen later homes; original availability and body restored.
+// Round 455: On the retained two-use nullable effect graph, false-default/direct logical/
+// complete valid-invalid arms/raw two-use status, original then shifted-word flag:
+// 144/150/150/145/132/140/140/72. One-point best rejected; original body restored.
+// Round 457: Same-view bool/byte/short/long after attachment on the recovered two-use effect
+// graph, original then shifted-word flag; original snapshot and call gates retained. Scores
+// 154/151/161/158/164/162/171/168. Original executable body restored.
+// Round 459: Complementary unavailable bool/byte/short/long on two-use effect graph, original/shifted-word flag
+// 155/155/154/152/144/144/144/142. Original executable source restored.
+// Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
+// original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
+// complete body restored; eligibility width and availability/view carriers remain.
+// M299: Attachment effect-first/nullable-conditional/complete/nested results,
+// original and shifted-word flags [72, 132, 134, 134, 113, 116, 87, 86].
+// One-point form rejected; original attachment result and eligibility restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

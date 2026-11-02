@@ -1114,9 +1114,11 @@ void function_2118c0(void)
 
 	g_4f93bc.cell_count = (short)globals->count;
 }
-// score 14 (was 14): the k loop spills w2 and w0 after the two float offsets
-// here and before them in retail; retail steps b * 8 in esi where ours steps b
-// and scales it. Tried: t to tc in the band loop 14;
+// score 10 (was 14): retail steps b * 8 in esi and adds it to the wrapped
+// indices (lea/add, add esi, 8) where ours steps b and scales it (lea with
+// esi*8); that is four instructions, the rest of the count is the shift they
+// cause. Earlier forms, before previous and ta to tc moved into the band loop:
+// t to tc in the band loop 14;
 // m set before the indices 14; a for loop over b 14; index operands swapped
 // 14; the output rows indexed from row 175; (r169) a short row 166; every row
 // as b * 8 + x 150; a [3][8][8] table 150; a row += 8 loop, a row induction
@@ -1127,6 +1129,17 @@ void function_2118c0(void)
 // Round 141 (lane 4): the band row as `b * 8` 150 (every row becomes a pointer IV); w3, w2, w0
 // declared in that order 150; a long band index 134; the knots named (`next = previous + 2.0f`,
 // `current = previous + 1.0f`) 14 (same code); the first sample row from the band row 163.
+// Round 57 (lane 10): `previous` at the head of the band loop and ta, tb, tc after the row pointers
+// 10 (the spill order now as retail; t stays in the sample loop). On that form: `long row = b * 8`
+// 150, `short row = b * 8` 166 (764 bytes), `short` index locals 161 (787 bytes), the wrapped indices
+// in a word array 10 (same code). A compile-only screen of the same body, whose listing agrees with
+// the real build: all placements of t, previous and ta to tc; every order of the five pointers; row as
+// b * 8, 8 * b, (b + b) * 4, two statements, with a local stride, by reference, through inline helpers;
+// a row counter stepped by 8 or a band index stepped by 8; the table as [3][64] and flat; wrapped
+// indices long, dword, short, byte, in a struct, in an array, inside the band loop, one reused index;
+// explicit components and an inline cubic helper; for loops: all fully reduce the rows to pointers, or
+// leave the 10. Only a truncated sum (short index), a volatile index (diagnostic, removed) or a row
+// computed under a real test keeps `add esi, 8` with the rows unreduced, each with extra code.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -1164,21 +1177,21 @@ void function_211cc0(void)
 		do
 		{
 			real t = (real)m * 0.125f + (real)k;
-			real previous = (real)(k - 1);
-			real ta = t - (previous + 2.0f);
-			real tb = t - (previous + 1.0f);
-			real tc = t - previous;
 
 			b = 0;
 
 			do
 			{
+				real previous = (real)(k - 1);
 				long row = b << 3;
 				vector3f *p3 = g_4f93bc.noise[row + w3];
 				vector3f *p2 = g_4f93bc.noise[row + w2];
 				vector3f *p1 = &g_4f93bc.noise[b * 8 + k][0];
 				vector3f *p0 = g_4f93bc.noise[row + w0];
 				vector3f *out = &g_4f93bc.noise[b * 8 + k][m];
+				real ta = t - (previous + 2.0f);
+				real tb = t - (previous + 1.0f);
+				real tc = t - previous;
 				long i;
 
 				for (i = 0; i < 3; i++)
@@ -2529,6 +2542,13 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // sums 26/26; a one-expression sum in every difference order (the term order is ignored; only the
 // difference order counts) xyz/xzy 27, yxz 23, yzx 26, zxy 11, zyx 16; the outer x, y, z locals in
 // the other five orders xzy/zxy/zyx 15, yxz/yzx 3 (same code).
+// Round 57 (lane 10): retail keeps these colours (z XMM1, x XMM2, y XMM3, sum XMM0) but schedules the
+// y load and subtract first. dy declared after the first square 3; a local delta vector 3 (both same
+// code); named z and y squares 7; dy, dz, dx in the helper 26; no helper, z, y, x and a one-expression
+// sum 43; no helper, y, z, x and an accumulated sum 45. A compile-only screen (its listing of this
+// block agrees with the real one) of about 480 forms, every helper difference order, outer local order
+// and selector position, with staged, parenthesized and named sums: y first only comes with y in XMM1
+// (helper) or sum XMM1 (no helper).
 // @retail 0x20c440
 void function_20c440(byte const *request, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2814,6 +2834,12 @@ void function_20fda0(long arg_0);
 // if/else 19; the pool read into a local before the owner (0x20f960's form) 19; the node declared
 // first 19; the side cast inside the owner expression 19; the object through OBJECT_FROM_INDEX 19
 // (all the same code).
+// Round 57 (lane 10): retail's node takes its register from the data (mov eax, [edx + 0x44]; add
+// eax, ecx), ours from the scaled index, which is what folds the flag read and leaves the queue in
+// EDX. Node before owner 24; owner offset named 22; node from the data then `+=` the offset 19; data
+// local before the owner 19; masked index local before the owner 19; owner and node offsets both named
+// 22. A compile-only screen (its listing agrees with the real one) of ~680 owner, node, pool, inline
+// helper and typed element forms: none loads the data into EAX.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

@@ -924,6 +924,9 @@ extern long *g_51e9cc;
 // used for both the initialize call and 0x1efd80 gives retail's esi reuse (`mov edx, esi`) and length, 42 -> 17
 // (1481 bytes; left: the crouch sum/store order, case 5's 0x35c store, case 4's store order, the 0x10 or); 0x14a8e0
 // shows the same reuse, so the lead is a source form in which both calls take one pointer value.
+// Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
+// lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
+// address rematerialization and crouch/surface/store scheduling remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1507,7 +1510,11 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 /* a biped's response to a damage impulse: it starts flinching or falling,
    a hard one knocks it over (and a ragdoll gets a random spin), and on
    the ground it turns to face away from the hit */
-// score 77 (was 77): Frame 0x28 and entry saves agree; the x87 squares (k, j, i; retail j, k, i), spin.i
+// MiniMax D (11-01): the mode byte now has a byte home (mode_byte) beside its long copy, so the 4/5 tests widen it
+// into eax and the 3 test keeps it in cl as retail does; the 0.5 scale goes through the existing vector3f_scale and
+// the magnitude is written i, k, j, which fixes the x87 squares.
+// score 20 (was 77): the two jne targets and the spin.i product (retail multiplies the angle into axis.i, ours into
+// a register copy) still differ, beside the reduced image's call and global addresses.
 // (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
 // in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
 // Earlier (score 122 (was 223)): tag/flag carriers, strong-result home, spin scaling and late call/output scheduling.
@@ -1596,9 +1603,7 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 
 		if (!(TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)))
 		{
-			velocity.i *= 0.5f;
-			velocity.j *= 0.5f;
-			velocity.k *= 0.5f;
+			vector3f_scale(&velocity, 0.5f, &velocity);
 		}
 		word_flags_set(&biped->flags_348, 1, true);
 		if ((TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2)) || (TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1)) || biped->physics_mode == 2)
@@ -1610,7 +1615,7 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 
 			cross3f(g_4687b0, &velocity, &axis);
 			function_30bf0(&axis);
-			magnitude = (real)sqrt(velocity.j * velocity.j + velocity.k * velocity.k + velocity.i * velocity.i);
+			magnitude = (real)sqrt(velocity.i * velocity.i + velocity.k * velocity.k + velocity.j * velocity.j);
 			spin_fraction = (real)random_next(&g_4e7408->unknown0) * 1.5259022e-05f;
 			angle = spin_fraction * magnitude * 1.5707964f;
 			spin.i = angle * axis.i;
@@ -1646,9 +1651,10 @@ apply:
 		}
 		if (biped->parent_object_index == NONE && biped->unknown13c == NONE)
 		{
-			long mode = biped->physics_mode;
+			byte mode_byte = biped->physics_mode;
+			long mode = mode_byte;
 
-			if (mode != 4 && mode != 5 && !biped->unknown34b && (strong || mode != 3) &&
+			if (mode != 4 && mode != 5 && !biped->unknown34b && (strong || mode_byte != 3) &&
 				impulse->j * impulse->j + impulse->k * impulse->k + impulse->i * impulse->i > 1.4f * 1.4f)
 			{
 				vector3f away = *impulse;
@@ -3790,20 +3796,21 @@ void __stdcall function_e40d0(long arg_159e6d, long *names)
 /* turns a vector about a unit axis (Rodrigues) */
 PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real sine, real cosine)
 {
-	real dot = (v->i * axis->i + v->k * axis->k + v->j * axis->j) * (1.0f - cosine);
+	real projection_i = v->i * axis->i;
+	real projection_j = v->j * axis->j;
+	real projection_k = v->k * axis->k;
+	real dot = (projection_i + projection_k + projection_j) * (1.0f - cosine);
 	vector3f cross;
 
 	cross3f(axis, v, &cross);
-	v->i = v->i * cosine + axis->i * dot + cross.i * sine;
-	v->j = v->j * cosine + axis->j * dot + cross.j * sine;
-	v->k = v->k * cosine + axis->k * dot + cross.k * sine;
+	for (long component = 0; component < 3; ++component)
+		v->n[component] = v->n[component] * cosine + axis->n[component] * dot + cross.n[component] * sine;
 }
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm5/xmm4,
-// retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
-// carriers still differ.
+// score 145 (was 171): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,
+// followed by rotation/basis carriers and trigonometric homes. Earlier frame 0x30 had cross spills.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
 // Direct rotation output 235; scalar cross terms 246; all shared cross producers 184 (plain);
 // shared normalizer 240 (restored grouping); explicit rotation output 251; weighted producers 265;
@@ -3843,6 +3850,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // header helper would let this body use it.
 // Round 289: staged rotation/side/up cross subsets 1/2/4/3/5/6/7 give 171/171/180/171/180/180/180;
 // all staged plus a native input snapshot 215. Original helper/body restored; frame and SIMD carriers remain.
+// Round 312: indexed rotation publication 179; complete dot products 167 (four-point lead, restored);
+// both 145 plain, retained; indexed axis/cosine/both weighted vectors 150/207/198;
+// indexed parallel component terms 145; cross-first named-dot indexed form 175.
+// Existing twice-used helper only; original arithmetic association and in-place input safety preserved.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3878,15 +3889,18 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
-// MiniMax R (11-01): no new form, no lower score: the tail's actor index still rides in ECX (retail moves it to EDI) because our LTCG knows magnitude3d (0x24590) preserves ECX; marking that helper inline in src/unknown_023540.cpp is the known fix, in a file I may not edit.
-// score 19 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
+// MiniMax R (11-01): earlier, the actor rode in ECX because LTCG knew magnitude3d preserved it; the helper file was closed.
+// score 2 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
 // 0x38c, 0x88-0x90, 0x84, 0x94), constants (0.5, 2.0, 0.0, 0.3, 0.6, 1.5707964), the sum < time test (comiss/jbe 0xe3459),
 // the normal copy over the direction slot (0xe366f-0xe3694) and the 0x54/0x55/0x56 selection all agree; no behaviour
-// difference. Frame 0x84 agrees; the actor index for 0x1fb7e0 stays in ECX across the
-// 0x24590 call (retail moves it to EDI and back: its callers do not trust 0x24590 to keep ECX), and
-// that 2-byte tail difference shifts six jumps to the exit. Round 35: both probes through 0xdf880
+// difference. Frame 0x84 agrees. Only the event-call setup remains: ours pushes both NONEs before `mov ecx, edi`; retail
+// pushes the first, moves the actor, zeroes EDX, then pushes the second. R75: the magnitude tested inside the upright arm,
+// selecting 0x55/0x56 there (19 -> 2 plain; the same with a named one-use angular_speed, not kept): the actor now has
+// retail's EDI home and the six shifted exits agree. Caller-local inline
+// declaration 19; split calls without it 20; one-use/two-use actor locals 2/2; split calls with it 20; inner conditional
+// expression 2; fallback event with it 60. Earlier actor-in-ECX description and Round 35: both probes through 0xdf880
 // (as 0xe30c0 does) 28 at retail length; the vehicle's 0x34c byte 27; the time comparison written
 // sum < time 21; the actor index as a named local 21 (same code); `falling` set before the flight
 // vector 19.
@@ -3951,9 +3965,9 @@ void __stdcall function_e3380(long arg_159e6d)
 				{
 					type = 0x54;
 				}
-				else if (vehicle->up.k > 0.6f && 1.5707964f > magnitude3d(&vehicle->angular_velocity))
+				else if (vehicle->up.k > 0.6f)
 				{
-					type = 0x55;
+					type = 1.5707964f > magnitude3d(&vehicle->angular_velocity) ? 0x55 : 0x56;
 				}
 				else
 				{
@@ -4278,6 +4292,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // receiver), full scalar graph 222. Direct parameter on up/contact 213; direct up with bool/short/byte
 // contact 215/210/215; one result exit with bool/long/short contact 210/209/206 (four-point gain rejected).
 // All executable forms restored; the 0x24/0x28 frame and overwritten state-base lifetime remain.
+// Round 313: Natural-parameter component loops for relative/kick/actor-ground subsets
+// 240/228/176/228/240/228/167; complete dot/norm products 228.
+// All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
+// The 176 form also uses a register argument and ret instead of retail ret 4; restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

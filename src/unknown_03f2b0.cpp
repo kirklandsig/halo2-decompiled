@@ -458,7 +458,7 @@ void function_1cf50(void);
 // in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
 // schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
 // below gain 2 at most).
-// score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
+// Earlier at 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
 // image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
 // call convention in src/unknown_01cf50.cpp.
 // this round: no new form. Retail's argument values for the call to 0x144f0
@@ -494,6 +494,9 @@ void function_1cf50(void);
 // Round 69 (m3 lane 9): no new form; the first difference (+0x1f) is the loop-wide `xor ebx, ebx` that
 // feeds the zero pushes of 0x144f0's standard six-argument call; retail sets EBX/ECX to zero at the call
 // (0x144f0 takes three register arguments there, ret 0xc). BLOCKED-BY 0x144f0 (a contributor's file).
+// Round 510: actual stamp/bitmap receivers and read-only entry subsets 99/100/99/100/99/100/99;
+// complete graph with short bitmap 97. One/three-point leads rejected. Original body restored;
+// material-provider convention and SDK/color/draw scheduling remain.
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
@@ -1241,6 +1244,15 @@ static inline long render_memory_allocate(long bytes)
 // the permutations still gets eax.
 // Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
 // sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
+// Round 71 (one-file LTCG harness): the permutations take ECX exactly when another parameter takes EAX: an
+// early test of node_count or lod, a shift by lod, a division of extra_bytes, `long level = lod & 0xff` (each
+// leaves the stack, ret 0x10 or 0xc). Still eax: local copies of lod, permutations and the model index;
+// result, out, count or bytes declared first; NONE and false locals; a seventh parameter unused, read into a
+// dead local, under if (false), or passed to an empty or identity function in another file; existing
+// parameters passed to the empty function; the allocator out of line in another file; a long or short lod
+// with byte casts at both uses or one. Without the second call the three arrive in eax, edx and ebx directly.
+// Fast: a lod local 1; a permutations local 1; result declared first 1; a false local 1; bytes declared first 15 (157 bytes);
+// out declared first 28 (158 bytes).
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)

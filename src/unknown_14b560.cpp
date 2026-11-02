@@ -808,15 +808,16 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 	return datum != 0;
 }
 
-// score 43 (was 43): the datum address is still computed in EBX where retail computes it in EDI, and the
+// score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
+// Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
 // walk is still 0xbaf80 called out of line because another lane's file pins it noinline: BLOCKED-BY 0xbaf80.
-// score 43 (was 43): the 44 differing lines are 34 real ones (the rest are the
+// Earlier: the 44 differing lines are 34 real ones (the rest are the
 // unmatched callees and the relocated globals): the datum address is computed in
 // EBX where retail computes it in EDI, and the two are used the other way round.
 // The walk reads the first parent before the loop and keeps the root in a local,
 // retail's inlined 0xbaf80 keeps the entry test and the root in its register:
 // BLOCKED-BY 0xbaf80 (another file), so the swap is not ours to fix.
-// score 43 (was 43): the record pointer is kept in EBX here and in EDI in
+// Earlier: the record pointer is kept in EBX here and in EDI in
 // retail, and the two are used the other way round after the index is masked;
 // the walk differs (retail's starts from the unit with the root preset to NONE and keeps its entry test,
 // the shape of 0xbaf80 inlined; ours is pinned out of line there: BLOCKED-BY 0xbaf80).
@@ -845,6 +846,10 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // the iterator step through the existing data_datum_iterator_next_inlined 44; exits storing the
 // unit local 182; the parent declared before the root 44. Retail inlines 0xbaf80 here (it calls
 // it elsewhere); ours keeps it out of line, pinned in another lane's file: BLOCKED-BY 0xbaf80.
+// Round 254: Private iterator publishes datum pointers (byte/player), entry-null defaults and
+// stored/local result combinations 44/44/149/149/44/44/149/149 (fast control 44; full baseline
+// 43). Original iterator, traversal and body restored; player/unit carriers and root-walk entry
+// remain.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1355,6 +1360,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
 // masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
 // 0xb8540 is still an empty stub here (its retail body makes calls).
+// Round 254: Provider-owned representation defaults: caller tag/third/both initializer elision
+// 241/241/251; with complete timer clear 241/241/251; both elisions with native result byte,
+// without/with timer clear 241/241. Original sentinel initializers, bool result, clears and body
+// restored; NONE materialization and timer/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

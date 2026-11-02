@@ -170,6 +170,7 @@ struct s_block_candidate
 	long pages;
 };
 
+// MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
 // score 347 (was 347): Frame 0x1050 versus 0x1054; page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
@@ -310,6 +311,15 @@ struct s_block_candidate
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
+// Round 308: One post-callback block timestamp with direct/cached/conditional/guarded callback producer
+// 347/347/356/358 for long and 347/347/356/358 for dword. Pre-callback segment time remained
+// separate. The missing frame dword and page/ring register roles persist; original observations
+// and callback expression restored.
+// Round 248: Native indexed-ring best/array/deletion-iterator entry storage, seven scope subsets
+// and all with coherent object-role names: 347 each. Original scopes, initialization and body restored.
+// N304: Actual allocation/category/predecessor spill-name subsets 1..7 all 347;
+// all names with limit-before-result 397 (1228 bytes, frame 0x1050). Original body
+// restored; missing frame dword and page/ring ownership remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

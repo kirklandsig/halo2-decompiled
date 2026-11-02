@@ -80,6 +80,13 @@ static inline void *function_xc5914d(long thread_index, short size)
 // (278 bytes: the spill goes to the index pointer instead); no volatile with the argument index read
 // into a local for the test and the element 95 (266 bytes); no volatile with the result kept as void *
 // 95 (266 bytes).
+// Round 116: retail computes the pointer in EBX while the frame holds EAX, stores it to its slot and later copies
+// EBX into EAX (a spill plus a register copy: result and the pointer are separate live ranges); ours reads the
+// slot back. `result = arguments = allocation` with the volatile 12 (same code); no volatile with the result
+// cleared before the call and the element passed directly 83; the volatile with the element passed directly
+// (no argument local) 21; an early `return NULL` and `return arguments` at the end, with/without the volatile
+// 88/90, without it returning a result copy 90. Diagnostics: the pointer's address taken (`(void)&arguments`,
+// or a pointer to it used for the element) without the volatile 95/95: VC still promotes it.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

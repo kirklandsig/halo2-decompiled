@@ -498,6 +498,11 @@ s_1a8a10 g_4453c0[] =
 // subtraction 86; the shared dot/cross helpers 114; an 8-byte library facing copy 118; the exchanged
 // reads with the leading dot term 40; a j reference for every read 29, with the copy's j live 17;
 // the rotated point as vector2f 17; a partial vector3f facing copy 17.
+// Round 54 (m3 lane 11, fast): the rotated point assigned y before x in each case 101; the facing copy assigned j
+// before i 20, with the first sum's terms swapped 20, with the y-first point 101; the copy's j assigned after the
+// first sum (written i*y first) 17 (retail's folded j re-read, but i*y goes through the copy and the j load stays
+// after the point store), with the stores in retail's [3], [1], [2], [0] order 19, with the second/first sum's i
+// read from the actor 94/27.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {
