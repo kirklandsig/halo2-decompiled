@@ -259,6 +259,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // minimum/hit homes and inactive-return placement remain.
 // DH280: Existing native cross/point/rotation publication subsets, then all with the native ray publisher
 // [618, 630, 630, 628, 623, 630, 624, 628]. Original executable body restored.
+// DH283: Native coordinate input/origin/projection producer subsets 1-7
+// 667/721/739/618/667/721/739; complete graph with aggregate hit initialization 730.
+// Original input copies, private producers, in-place snapshots and complete body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

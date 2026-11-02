@@ -667,6 +667,10 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // normalized bool, then native bool/byte/char/short/word/long/dword predicate carriers:
 // 47/193/193/193/57/57/190/190. Original byte declaration, predicate and body restored;
 // NONE EBP/EBX and special BL/CL remain.
+// Round 51 (m3 lane 13, fast): `&&` flag with a redundant `special = false` closing the scan arm 190 (round
+// 185's code, frame 0x30); `&&` flag with the false closing the team block only 169 (flag BL, NONE EBP, frame
+// 0x30); the bitwise flag with the false closing the scan arm 119 (the def moves to AL, frame 0x30); `&&` flag
+// with the false after the 0x1b8d40 test 200 (872 bytes); `cond && byte ? true : false` 200 (872 bytes).
 // Round 463: complete indexed actor observations at each use, reused low index long/word,
 // canonical bitwise/logical/conditional/join-defined special graphs: 310/304/326/299/287/295/294/250;
 // original actor receiver, predicate and complete executable source restored.
