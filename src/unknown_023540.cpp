@@ -2723,18 +2723,18 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
             *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
         real red[16], green[16], blue[16];
-        long level = 5 - order;
-        if (level > layout->level_count - 1) level = layout->level_count - 1;
-        long stride = layout->groups * (layout->columns * 3 + 4);
-        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
-        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
-        long bytes = total * stride * sizeof(real);
         if (!use_samples)
         {
             vector3f direction = { 0.0f, 0.0f, -1.0f };
             spherical_harmonics_evaluate_directional_light(&direction, layout->order,
                 1.0f, 1.0f, 1.0f, red, green, blue);
         }
+        long level = 5 - order;
+        if (level > layout->level_count - 1) level = layout->level_count - 1;
+        long stride = layout->groups * (layout->columns * 3 + 4);
+        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
+        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
+        long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
@@ -2747,17 +2747,48 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
                 word available_samples = *(word const *)(pair + 2);
-                short samples = available_samples > 2 ? 2 : available_samples;
-                if (!samples) continue;
+                if (!available_samples) continue;
                 real const *source = (real const *)((byte const *)vertices + 0x44 + *(short const *)pair * 0x30);
                 transform4x3f matrix;
+                matrix3x3 rotation;
+                real rotated_red[16], rotated_green[16], rotated_blue[16];
+                real determinant;
                 function_0235a0(source, &matrix);
-                for (short sample = 0; sample < samples; ++sample)
+                if (use_samples)
                 {
-                    if (sample) function_0235a0(source + 12, &matrix);
+                    point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 0);
+                    if (position)
+                    {
+                        byte *bsp = *(byte **)(structure + 0x84);
+                        function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
+                            (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                    }
+                }
+                determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
+                function_143600((real const *)&rotation, 3, red, rotated_red);
+                function_143600((real const *)&rotation, 3, green, rotated_green);
+                function_143600((real const *)&rotation, 3, blue, rotated_blue);
+                function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                output += stride;
+                if (available_samples > 1)
+                {
+                    function_0235a0(source + 12, &matrix);
+                    determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                    determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                    determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
                     if (use_samples)
                     {
-                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, sample);
+                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 1);
                         if (position)
                         {
                             byte *bsp = *(byte **)(structure + 0x84);
@@ -2765,15 +2796,6 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                                 (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
                         }
                     }
-                    real determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
-                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
-                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
-                    determinant -= matrix.forward.i * matrix.left.k * matrix.up.j;
-                    determinant -= matrix.forward.j * matrix.left.i * matrix.up.k;
-                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
-                    matrix3x3 rotation;
-                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
-                    real rotated_red[16], rotated_green[16], rotated_blue[16];
                     function_143600((real const *)&rotation, 3, red, rotated_red);
                     function_143600((real const *)&rotation, 3, green, rotated_green);
                     function_143600((real const *)&rotation, 3, blue, rotated_blue);
