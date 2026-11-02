@@ -1369,6 +1369,10 @@ struct s_looping_detail_request
 // All restored; first-player expansion and detail/offset homes remain.
 // Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
 // 154/173/155/162/136/169/151/149; original complete body restored.
+// DH301: Whole detail-input native/immutable/assignment/memcpy ownership, each with
+// original or twice-used definition-index ownership: 167 in all eight forms. All regress;
+// original complete input observations and body restored. Detail/offset transport and
+// first-player expansion remain; frame 0xc agrees on the original body.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
