@@ -613,6 +613,11 @@ done:
 // call); that with the NONE-guarded call 57; the repeated-copy form with the tag read first 44 (178 bytes);
 // the shared variant getter written with early returns (`if (variant) return variant; return &...;`) on the
 // natural form 54 (same code), on the kept form 48.
+// Round 194 (fast; parse_variant stays matched): the natural one-copy form re-measured 54 (173 bytes);
+// an early copy-and-return for a missing definition with the natural tail 72 (189 bytes, the two copies
+// are not merged), with the default case copying and returning 77 (194), with the current repeated
+// copy 77 (194); the early return with the natural tail and the tag read before the variant 68 (187);
+// a const variant pointer on the natural form 54 (173), on the current form 32 (same code).
 // Round 110 (m3 lane 7, fast): a compile-only /O1 screen puts the tag load between the getter's test and branch
 // only with the getter written out (call, tag read, then the fallback; not keepable). On the natural one-copy form:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
