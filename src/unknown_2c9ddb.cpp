@@ -147,6 +147,11 @@ extern long g_55c154;
 // first half's selection in its own local with a fresh `selected` in the second half 174, entry->variant read
 // directly in the second half 174, the name buffer declared just before the second half 174, `saved`
 // declared at the top 174 (all the same code).
+// Round 122 (fast, two load arms): plain 174 (595 bytes); under a named bool 174; entry field read directly in both
+// arms 174; a success flag with no returns in the second half 174; saved declared ahead of the first half 174; game
+// type read once into a local 160 (586: `this` EDI, the type in the item's stack home). Retail and our one-load body
+// colour saved EDI, entry ESI, `this` EBX; every two-arm body flips to `this` EDI, entry ESI, saved EBX, and EBX then
+// also takes the hoisted constant 1; the spill or home reuse goes with the unbiased frame. Original body restored.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

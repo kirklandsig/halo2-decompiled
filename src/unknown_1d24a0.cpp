@@ -296,6 +296,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Y522: Existing body getter at owner activity/other activity/center, seven subsets
 // 902/902/902/902/902/902/902; all with existing free matrix getter 902.
 // Original body observations, center snapshot, kernels and complete force body restored.
+// DL243: Actual escaped radial/axial/angle output role-name subsets, then the shared response
+// name: all eight 902. Saved canonical vertical/mass/high-response option decisions in byte
+// storage, seven subsets: 902/989/989/985/985/1030/1030; all four in word storage 1058. Original
+// names, Boolean domains and complete body restored. Frame 0x1f0 versus 0x1d4, entry
+// receiver/flags, activity byte and lower scalar/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
