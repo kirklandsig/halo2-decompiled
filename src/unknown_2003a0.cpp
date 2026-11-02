@@ -525,6 +525,7 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // [74, 92, 75, 92, 74, 92, 75, 92]. Original type, ordinal lifetime and body restored.
 // DH278: Separate short/long parent traversal with early/scan-local ordinal and compound/separate ordered exits 74/74/92/92/141/141/98/98.
 // Complete opening body restored; no qualifying keeper.
+// DL236: Actual iterator flags as the persistent owner, crossed with scan-local ordinal, per-use alternate and count-field observations: 138/133/138/133/138/133/138/133. All restored; ordinal push-ECX home and scan allocation remain; early flag stores lengthen the body.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -1707,6 +1708,11 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
 // search result stored in the iterator's index and tested there 113; distance test as a continue 2;
 // squad index read after the flag test 2.
+// Round 119: ordinary inline helper 216; existing datum helper in the shared step 110; existing squad
+// step reused 88; preincremented search input 2; index declared before the pool 2; step in the for
+// update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
+// the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
+// byte-return helper 2; boolean datum step directly in the caller 150.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -2353,6 +2359,7 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 509: Actual population/swarm/eligible counter receivers, subsets 1/2/4/3/5/6/7,
 // 38/39/44/46/51/52/43; all with health-total receiver 43. One-point lead rejected;
 // original body restored; in-place health add and node/pool lifetime remain.
+// DL236: Shared population sample as ratio numerator and contribution, word/short/long/dword, original/named node: 178/178/179/179/180/180/182/182. All restored; frame/extent agree, in-place health add and node/pool ordering remain. Named-node sources were exact-only and never retained.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -3440,6 +3447,7 @@ void function_2011f0(long arg_0);
 // [384, 359, 362, 402, 383, 362, 356, 385]. Original output defaults and lifetimes restored.
 // DH278: Persistent success logical/bitwise accumulation with final-node receiver and scalar-mask subsets 350/350/340/340/361/361/351/351.
 // Complete opening body restored; no qualifying keeper.
+// DL236: Early mask/admission/selection inline declaration subsets 1..7, then all with final success gate: 318/318/318/318/318/318/318/318. Original contracts and body restored; frame 0x134 agrees, masked index/placement/definition and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

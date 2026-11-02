@@ -262,6 +262,9 @@ struct c_aggregate : c_child
 // Round 467: One signed inner ordinal across dispatch blocks and cleanup items, common child
 // ordinal/shared query output/before-array declarations: 31/31/33/33/31/31/33/33.
 // Shared output recovers 0x8020 but exchanges the low loop homes; original body restored.
+// M302: Common signed block ordinal across dispatch/cleanup, before/after arrays,
+// separate/shared query output and start/end bound order: 31/31/31/31/31/31/33/33.
+// Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -27,7 +27,6 @@ s_mp_globals *g_4e9ae8;
 c_engine_peer *g_55e4d0[256];
 s_index_table *g_4e8c20;
 s_allocator_globals *g_4d87f8;
-c_allocator *g_480118;
 real g_45dbd8;
 s_record_pool *g_4f55f0;
 s_record_pool *g_502420;

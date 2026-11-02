@@ -696,6 +696,9 @@ bool sound_driver_voice_create_buffer(
 // phases, then both with indexed receivers: 82/158/170/82/100/111/176/109.
 // All preserve the caller but move saves earlier (+0xc); original direct outputs,
 // spatial/play carriers, descriptors and full body restored.
+// Round 354: Real submix/spatial output-field references and count-first mixbin stores
+// subsets 1..7, then spatial-first predicates: 82/158/170/74/85/156/168/166. Original actual output
+// slots, descriptors, pairs, SDK flags, modes and calls restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
