@@ -261,6 +261,10 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
 // with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
 // normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
+// Round 454: Native destructive difference in the direction itself, goal/source seeds and
+// direct/shared subtraction 175/173/175/173; all four with shared dot/cross consumers
+// 189/187/189/187. Original native difference, normalizer and complete body restored; early Y load
+// and XMM roles remain.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
