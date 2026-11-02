@@ -3196,6 +3196,8 @@ struct s_voice_route_choice
 // all 64 pointer/direct mixes of the six field reads, a long mode local, named count, while loop, unsigned count, extra
 // statements ahead and choices forced into a register keep the pointer walk; only a hand-named byte offset gives it,
 // and that loses the main loop's pointer. Mixes move the main bias (+4, +0x10 = retail, +0x14, +0x1c).
+// Round 520: native byte/word bitwise radio, with actual receiver/talker mask/both:
+// 363/432/395/438/391/409/394/408. Original bool result, masks and body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3474,6 +3476,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // channel 162; no __stdcall 139, with the cursor 162; positive nested member/mask/size tests, each and all, 162; bit
 // test and clear through by-value/by-pointer inlines and word_flags_set 162; relay/direct arm as __forceinline helpers
 // 162/162 (plain inline helpers stay out of line 375/227); the relay helper without the cursor 139 (all same code).
+// Round 520: native unsigned/short current member on original/word current-kind and
+// original/independent cursor graphs: 139/166/137/169/164/159/140/150.
+// Two-count word-kind lead remains below the keep floor; original body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

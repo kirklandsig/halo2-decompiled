@@ -2213,6 +2213,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 509: Actual flags/tick/stamp field-address lifetimes, subsets 1/2/4/3/5/6/7,
 // 64/64/64/64/64/64/64; all three with word flags 64 (201 bytes). No gain;
 // original complete body restored; squad spill, EBP handle and common loop head remain.
+// Round 56 (lane 11, fast; on 0x203d70's loop, 71 at 191 bytes, the eight missing bytes are the squad's spill into the
+// parameter's home and its back-edge reload, aligned 56): the post-loop flag and tick stores through a forceinline
+// helper on the squad 71; those and the return through helpers 71; a named index copy for both uses 71; the arm's
+// store and two calls as a forceinline helper with the actor passed 71, with the actor fetched again 79 (213 bytes).
+// All restored; the index still loses EBP to the squad pointer.
+// On the current body (fast): the actor looked up before the index copy 64; a field pointer for the +0x34 store 64;
+// the flag byte in a named local for the test 64; the iterator's next through a named reference 64; the next actor
+// read into a local before its store 64 (all same code).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -3047,6 +3055,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // M298: Native admission bit-six bool/direct/nonzero and complete-word mask,
 // then once-owned bool/long bit and word/long mask [186, 50, 50, 50, 189, 191, 187, 172].
 // Original shared record and every admission observation restored.
+// Round 56 (lane 11, fast; aligned 2: the reload, and the loop pad it shifts): the two 0x1fb8a0 follow-ups through one
+// inline/forceinline `if (event != NONE)` helper 50/50; the first follow-up as an `&&` expression statement 50, as a
+// ternary 50; a named has-task bool for the follow-up test 50. Diagnostics: the follow-up block given a second call
+// 137 (594 bytes; loads the index into EBX, so the block is out of EBP's region, not only a missed copy); the index
+// read through its address in the trigger loop 50; a volatile read there 50, at the walk 49 (580 bytes), both reverted.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

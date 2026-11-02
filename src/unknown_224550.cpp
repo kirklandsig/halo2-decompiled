@@ -95,7 +95,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 245 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 232 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -291,7 +291,14 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
 // 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
 // component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
+// Round 311: Returned seed-color unpack output with scalar/seed-loop/input-loop/both RGB consumers,
+// branch-local buffer 431/431/431/431, entry buffer 483/483/483/483. Original producer use and full body
+// restored; tint/secondary-UV home order and blend residency remain.
 // Round 357: Direct-bounds mode secondary-UV producer then primary copy, four geometry-copy phases with union/member copies 263/253/304/308/263/253/304/308. Original body and input-before-store UV encoder restored; tint/secondary-UV homes remain.
+// Round 288: Complete previous/next/both interpolation-product stages, both coordinates
+// at every interpolation site 280/232/245; with branch-produced primary aspects
+// 279/262/239; complete stages with secondary-first reciprocals, original/branch
+// primary 239/245. Next-term stages kept at plain 232; other bodies restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -358,8 +365,10 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 					s_draw_sprite_frame const *next=&context->sequence->frames[(index+1)%context->sequence->count];
 					if(!(definition->flags&0x20)) blend=frame-(real)index;
 					uv_a.bounds=first->bounds; uv_b.bounds=next->bounds;
-					pivot.x=first->pivot.x*(1.0f-blend)+next->pivot.x*blend;
-					pivot.y=first->pivot.y*(1.0f-blend)+next->pivot.y*blend;
+					real pivot_x_next=next->pivot.x*blend;
+					pivot.x=first->pivot.x*(1.0f-blend)+pivot_x_next;
+					real pivot_y_next=next->pivot.y*blend;
+					pivot.y=first->pivot.y*(1.0f-blend)+pivot_y_next;
 				}
 			}
 		}
@@ -370,10 +379,20 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 		real aspect_x=1.0f,aspect_y=1.0f;
 		if(ax>ay) aspect_y=ay*inv_ax; else aspect_x=ax*inv_ay;
 		real remaining_blend=1.0f-blend;
-		if(bx>by) aspect_y=by*inv_bx*blend+remaining_blend*aspect_y;
-		else aspect_x=bx*inv_by*blend+remaining_blend*aspect_x;
-		real inv_x=remaining_blend*inv_ax+inv_bx*blend;
-		real inv_y=remaining_blend*inv_ay+inv_by*blend;
+		if(bx>by)
+		{
+			real aspect_y_next=by*inv_bx*blend;
+			aspect_y=aspect_y_next+remaining_blend*aspect_y;
+		}
+		else
+		{
+			real aspect_x_next=bx*inv_by*blend;
+			aspect_x=aspect_x_next+remaining_blend*aspect_x;
+		}
+		real inverse_x_next=inv_bx*blend;
+		real inv_x=remaining_blend*inv_ax+inverse_x_next;
+		real inverse_y_next=inv_by*blend;
+		real inv_y=remaining_blend*inv_ay+inverse_y_next;
 		real width=context->width*aspect_x;
 		function_x0ec080(&uv_a.bounds,flip,uv_a.values); function_x0ec080(&uv_b.bounds,flip,uv_b.values);
 		real x=inv_x*pivot.x*2.0f-1.0f,y=inv_y*pivot.y*2.0f-1.0f;
