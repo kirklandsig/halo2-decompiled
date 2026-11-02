@@ -212,6 +212,10 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 50: pending request as path input 161; call-first pending input 430; transfer buffer local
 // after/before resize 165/519; one-use handle locals in states 7/9/14 151/317/153 and states 7+14
 // 143 (one-use field copies, not kept without a match). Opening body restored.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
 // Round 25 (lane 17, fast): state 19's buffer release before the slot clear 43 (the -1 store then sinks to the
 // handle store); state 0 call-first 432, with a memcpy copy 432, and with 0x214db0's file name as a ternary
 // (still matching) 432: `mov esi, edi` stays; state 11's clamp as min-ternaries in three operand orders 37/37/37,
@@ -223,6 +227,12 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Single-variable clamps `chunk = total - completed; if (...) chunk = limit;` with `chunk > limit` 38,
 // `limit <= chunk` 37 (retail's `cmp limit, chunk; jg` shape, registers still rotated: ours colours the limit
 // first) and `limit < chunk` 38.
+// Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
+// (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
+// after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
+// that store in place); state 11's clamp as `remaining < limit ? remaining : limit` 37 (same code), as the
+// chunk set to the remaining bytes and clamped in place 38 (the chunk stays in ECX where retail keeps it in
+// EAX); state 16 with the flag store before the header clear 37; the header copy as a struct assignment 37.
 // Round 131 (lane 5, fast): state 11's clamp `remaining < g_55bd1c ? remaining : g_55bd1c` 37 (same
 // registers); the size computed into chunk and clamped by `if (chunk > g_55bd1c)` 38, `if (chunk >= g_55bd1c)`
 // 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to

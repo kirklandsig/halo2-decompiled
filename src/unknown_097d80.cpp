@@ -220,6 +220,12 @@ struct c_aggregate : c_child
 // declared and then zeroed in its own statement 31; the error test as an outer if around the child test 37;
 // the cleanup result declared before the item's object 31; the dispatch child declared const 31 (frame
 // 0x8024 in all).
+// Round 448: Query-only information-output scope with iteration completion,
+// common child/object and common fixed ordinal subsets 31/42/31/42/31/42/31/42.
+// Frame stays 0x8024; original output scopes, carriers and full body restored.
+// Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
+// then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
+// restored.
 // J228: one object pointer across collection/dispatch or all three phases, crossed with a shared
 // query output and a common fixed-child ordinal: eight at 31/373. Shared output recovers 0x8020
 // but exchanges the loop homes; separate outputs retain 0x8024. Original body restored.
@@ -233,6 +239,12 @@ struct c_aggregate : c_child
 // Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
 // then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
 // restored.
+// M287: Cleanup driven by the actual item-array cursor and signed array distance,
+// shared query output/block cursor/boundary-dispatch subsets 0-7:
+// 85/89/85/89/151/150/151/150. Output/loop homes still differ; original signed traversals restored.
+// Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
+// cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
+// escaped-output and loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

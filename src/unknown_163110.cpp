@@ -906,6 +906,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // directly as `delta.i * t + p0->x` 119 (fast), point-first 119, into a separate scaled vector 115.
 // Diagnostic (not keepable): plane 0's j and k negations through a normal pointer 113 (classification
 // operands fixed in the unrolled loop, flipped in the remainder loop).
+// Y488: plain near/source/far normal-negation loops, seven subsets,
+// 259/257/259/259/267/259/113; all with short component indices 488.
+// Two-point gain rejected; original body restored. Coefficient/zero XMM roles remain.
 // Round 55 (lane 10, fast): retail follows the source's operand order in the remainder classification
 // loop's j term and in the clip denominator/distance products, ours swaps some of them. The plane pointer
 // const 115 (same code); the classification index declared in the for 115 (same code); the two planes as
@@ -914,6 +917,13 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 441: indexed near-final/far-input/far-final normal negation loops, subsets 1..7
 // 259/257/259/259/267/259/113; all plus two-component screen loop 232. Two-point gain
 // rejected; original body restored. Early coefficient preload and projection homes remain.
+// Round 37 (lane 15, fast): that pointer used for all three plane-0 negations 251 (1867 bytes); the j/k-only
+// diagnostic re-measured 113 (the e4.i load stays after the copy: its gain is in the later classification
+// operands); plane 0's d negated before its normal 143; plane 1's negated vector computed before plane 0 426;
+// vector_e4 copied into a local vector3f before the normal copy and read from it in d 463 (1883 bytes, the copy
+// goes through integer registers to the frame); plane 1's negated vector declared at function scope 115 (same code).
+// Diagnostic (initialised dead long temps at the top, k = 1..7): 119 135 130 242 246 135 127, first difference
+// always +0xbb (the e4.i load does not follow the temp count).
 // Y488: plain near/source/far normal-negation loops, seven subsets,
 // 259/257/259/259/267/259/113; all with short component indices 488.
 // Two-point gain rejected; original body restored. Coefficient/zero XMM roles remain.
@@ -939,6 +949,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 219: positive visibility on guarded loops, entry-result/projection-input-cursor/shared-count
 // masks 0..7: 236/236/132/132/470/470/470/470. Original culling result, independent counts and
 // projection indexing restored; coefficient preload, zero roles and projection staging remain.
+// Round 449: Conditional projection-extent publications, x/y/z subsets 1..7
+// 173/168/191/162/190/185/290; all six selections named symmetrically before publication 287 (fast control 115, full 115).
+// Original complete executable source restored; opening structural differences remain.
+// Round 451: Complete classification-distance/clipped-distance/negative-reciprocal expression
+// nodes, subsets 1..7 and complete nodes with reciprocal first: 249/115/249/115/249/115/249/249. Original expression boundaries
+// and complete body restored; coefficient preload, XMM zero and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

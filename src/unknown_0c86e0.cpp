@@ -94,7 +94,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 }
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 
-// score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
+// Earlier 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
 // the two 0xbadc0 calls (index * 12 kept in ESI), ours reuses the entry fetch. Earlier notes:
 // Earlier 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
 // and no new form was tried; the difference is still blocked by 0xbadc0's memory-effect knowledge in
@@ -173,7 +173,7 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // MiniMax R (11-01): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail re-fetches the
 // unit after its calls because its link treats the callee as writing memory, while our link knows
 // that it writes none and keeps the unit in a register.
-// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// Earlier 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
 // retail re-fetches the unit after the two calls because its compiler treats 0xbadc0 as writing
 // memory, while our link knows it writes none, so the unit and the flag registers are homed
 // differently and the entry prologue differs.
@@ -198,6 +198,9 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 284: reset/sound domain without the implied keep retest, crossed with early preserve
 // exit, producer prior-state lifetime and sound sentinel exit: eight forms 134 each.
 // Original complete body restored; fresh current-unit observation and late prior-state home remain.
+// Round 289: immediate preserve/weapon-sound predicate producers and prior-state-first
+// admission, seven subsets: 107/107/125/107/125/125/125; complete graph with promoted user
+// ordinal 128. Original predicates, types and complete body restored; fresh lookup remains.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

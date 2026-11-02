@@ -468,6 +468,8 @@ struct s_1f8a70_actor
 // EDI is pushed before the first test); unit_mode renamed a_mode/z_mode 270 each (same code: the slot
 // stays at +0, so retail's +2 is not name order). Retail's route_mode is a dword slot read as a word
 // (movsx/cmp word) and its result a memory byte everywhere but the first exit (BL).
+// Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
+// Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
 // Round 51 (lane 11, fast): VALUE BUG still in this body (retail case 3 shares case 5's tail: node NONE,
 // radius 0, route_mode = 1). On the value-fixed graph (case 3 in case 5's order with route_mode = 1, a real
 // route default storing false, `failed: result = false;`) 270 (1636 B, aligned 70), the same without the

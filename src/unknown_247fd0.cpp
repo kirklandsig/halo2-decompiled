@@ -587,6 +587,7 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // re-derives the effect record for the velocity (so a shared effect pointer would not fit): the copy through a
 // `real` local 359 (still an integer move); with a `(real)` cast 356 (same code); through the reused `last_sample`
 // 356 (integer move); through the grouped sample field 373 (1659 bytes: `movss` as retail, plus a store to the field).
+// Round 264: Existing bounded category helper with scalar-first-sample/selective-refresh/combined-header masks 0..7: 356/416/376/436/356/416/376/436. Original random producer, storage, header stores and descriptor refresh restored; late EBP save and random/blend/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

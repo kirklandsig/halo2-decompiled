@@ -498,6 +498,13 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
 // in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
 // the short count with the split increment 367.
+// Round 70 (m3 lane 16, fast): retail's [esp+0xf] byte behaves like an address-taken bool (no constant propagation):
+// `special` as an address-taken local, false at the else arm's start and set by an if (diagnostic) gives retail's
+// special sequence exactly (`mov byte ptr [esp+0xf], 0` beside the count test, `mov cl, 1; je` / `mov cl, [esp+0xf]`)
+// 315; that flag at function scope also taking the link test's edge bit, on the short count (diagnostic) 363 (1370
+// bytes, aligned 150; the link-bit store is still dropped as dead). The type named for the tests only (stores read
+// the field, for retail's type store from CX) 342; one store block for the two-step and type-2 arms with the call
+// under `if (two_step)` 364 (1375 bytes); `previous` declared first 295 (same code).
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -914,6 +921,14 @@ bool function_2715a0(byte *buffer)
 // (2100 bytes); per-case child depth stores with case 2 if/else 566 (2136 bytes); per-case depth local with case 2
 // `if (clear) { +2; break; }` falling into the default 528 (2104 bytes); the surface test through a helper shared
 // with 0x270d90's special test 486 (same code), with case 2 as if/else 523.
+// Round 70 (m3 lane 16, fast): `volatile` dropped from `result` 525 (2056 bytes; retail stores the byte at entry and
+// reads it back at the end, like an address-taken bool). Retail compares the location entry with the link field
+// loaded first; `(short)link->type == entries[j].unknown00 && link->index == entries[j].node_index` gives that form
+// 489. Both link flag tests as masks 522 (2052 bytes). Retail's hash-loop distance test is `!(d > 0.09f)` (comiss d,
+// [0.09]; jbe found): that form 502 (2060 bytes). The location order, `!(d > 0.09f)`, `(link->flags & 0x3c0) > 0`
+// (retail's setg) and per-case `child->depth = node->depth + N` stores with case 2 reading `child->unknown14`, all
+// together: 486 at 2076 bytes (same count; opcode-only alignment 121 -> 104, the closest structure so far). The
+// four-register rotation (state EBX/EBP) remains; the compile-only harness puts state in EDI, so it cannot screen it.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

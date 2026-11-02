@@ -420,6 +420,9 @@ static inline bool teams_enabled_19e1c0()
 // each case its own `if` ending in `return result;` (no else chain) volatile/plain 436/630 (the plain form keeps
 // token EDI, token_length EBX, event EBP). Diagnostic: the plain result with `|| result > remaining` added to every
 // failure test (seven more uses of `remaining`) 688 with the same registers, so use counts do not decide it.
+// Round 497: Complete 512-byte text initialization, entry aggregate/CRT and branch CRT/aggregate:
+// inherited result 526/526/452/549; ordinary result 614/619/529/471. All regress; original buffer,
+// result and body restored. Frame and copy tails remain.
 // Round 46 (lane 14, fast): retail's per-compare `token` reloads take a scratch register each, so the case
 // bodies' EAX/ECX/EDX rotation differs and only the copy and format calls are shared (0x19e74c, 0x19e3b8).
 // Plain result 691 (control); with a `length` local and `length > remaining ? remaining : length` in the four
@@ -438,6 +441,12 @@ static inline bool teams_enabled_19e1c0()
 // local 691. Re-measured listed forms: long team with `best_score <=` 421, event teams read at each use 394.
 // Retail never gives `token` a register (re-read from its home before every compare, the first one hoisted
 // above `sub esp`), which is what keeps the four name/team tails apart.
+// Round 449: Complete player/team/other token dispatch results, bool subsets 1..7
+// 454/454/454/454/454/454/454; all with ordinary final result 736 (fast control 390, full 390).
+// Original complete executable source restored; opening structural differences remain.
+// Round 451: Separate positive/rejected maximum-score gates with short/long opponent
+// counter and inherited/ordinary result storage: 388/388/421/421/691/691/688/688. Best two-point gain rejected; original
+// scan, result and full body restored; frame and independent name-copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
