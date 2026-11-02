@@ -3326,6 +3326,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // with consumed-direction reuse; root relocation offset with aggregate copy/point setter:
 // 369/401/395/401/395/428/428/428/396/379.
 // Matrix/origin and paired point/property homes remain. Original executable body restored.
+// Round 375: Collision fraction from candidate update/owned candidate/full branches/named distance,
+// storage at producer/parent-block entry: 368/368/368/369/368/368/368/369. Original conditional and whole
+// body restored; frame 0x12c, matrix/pivot/property homes and first +0x71 remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

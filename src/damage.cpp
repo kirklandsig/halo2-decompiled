@@ -1083,6 +1083,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // That asymmetric producer recovers point/normal homes and 1535 bytes, but the fallback center is
 // at +0x4c instead of +0x40. On it, retained origin/direction/node/all field addresses: 295/357/355/354.
 // All forms regress; original body restored. Shared-add include clashes with the existing cross helper.
+// Round 375: Scale default at entry/before point call/before node phase/before cone, original jump
+// versus outside-owned falloff: 434/426/434/426/422/422/343/343. NOT kept: extra result lifetime enlarges
+// the frame/body and regresses. Original complete body restored; geometry/cone/node homes remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

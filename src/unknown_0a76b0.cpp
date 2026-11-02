@@ -1425,6 +1425,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
 // each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
 // long result and complete body restored; second entry lookup and hand spill remain.
+// Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
+// 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
+// second entry unit load, table/hand homes and downstream scheduling remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -4483,6 +4486,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 373: Actual quaternion/position record receiver as pointer/reference, direct/late
 // position and native/library quaternion publication: 175/173/201/199/175/173/201/199. NOT kept: two-point
 // leads are below threshold; original byte receiver and whole body restored.
+// Round 375: Native/library away-input snapshot before/after up capture, real/double in-place scale:
+// 284/276/284/276/282/276/282/276. NOT kept: input record copies do not match and retain frame 0x110;
+// lengths 1406/1375 versus 1388. Original direct producer and complete body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
