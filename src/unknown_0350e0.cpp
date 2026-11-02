@@ -96,6 +96,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 344: complete axis/input staging, their pair, returned matrix and its three staging subsets,
 // then native input-vector copies: 393/356/393/431/452/429/453/485. Original helpers and body
 // restored; frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain.
+// Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
+// Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
+// Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2179,13 +2182,14 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 
 // score 57 (was 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
 // Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
 // x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
 // float copy (`magnitude`) used by the divide and `fabs((real)length)` so the 0.0001 constant stays a float
 // (retail: sqrt result moved into z's slot, `fst` to the float temp); the six -1..1 samples are `real`
 // (sample + sample - 1.0f), which gives retail's dword `fsub`; the entry+0xc fraction is evaluated before its
 // range, as retail does. What still differs: retail pushes ebx/ebp and esi/edi lazily inside the two count
-// guards (we push all four at the top, with a 4-byte larger frame; ours also loads the random globals and the
+// guards (we push all four at the top; both frames are 0xc; ours also loads the random globals and the
 // count above the second guard); `motion[1] = inverse * motion[1]` order (same code); the loop test reads the
 // count into edx instead of comparing against [ebx].
 // Tried: explicit `if (count > 0)` guard around the loop (257), count read once before the loop (116),
@@ -2200,6 +2204,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // subsets, then full graph with normalization scratch scope: 276/276/157/294/274/274/291/291.
 // Original bases, samples and complete body restored; frame 0xc agrees, delayed saves and post-fstp
 // count compare remain.
+// Round 307: native external state/group/entry layouts, all seven subsets, 57 each;
+// Round 307: all three with native motion records 57. Original raw receivers, body and external types
+// Round 307: restored; delayed register saves and the split post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2408,6 +2415,9 @@ s_cached_input_list g_5234e8[4];
 // Round 360: native selected-count/view/total lexical home priorities, seven subsets,
 // then complete input-list/ordinal names, all 139/549 on a reduced control of 139/549
 // (full 132/554). Original scalar names and executable body restored; list/cursor split remains.
+// Round 307: native full-width unsigned index/object/parent carriers, all seven subsets,
+// Round 307: 136 fast each; all three with view before count 149. Reduced control 136 at 538/548;
+// Round 307: original body restored. Full baseline remains 132 at 554/548; list/output/index homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2539,6 +2549,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // `initial` there (the decay loop's form) gives the first half (harness 123) but 369 for real (1336 bytes).
 // Real (fast): `i < last` in the first loop 321; found set before ++first 318; found declared first 355; the
 // second loop as a search with the swap after it 365.
+// Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
+// Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
+// Round 308: helpers and body restored; prefix/state roles and decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4275,6 +4288,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Round 360: complete conditional gate results in byte/bool/long/dword, shifted-bit/native-mask,
 // 207/207/241/241/207/207/241/241. Every shared user also regresses; original helper restored.
 // Earlier starting score 210; flag-store timing, dead mode loads and clear-call convention remain.
+// Round 307: existing shared light-pass helper for culled/gated/unculled/both culled-gated/
+// Round 307: culled-unculled/gated-unculled/all families 179/198/192/183/189/210/186;
+// Round 307: first pass alone 171. Original caller and all shared helpers restored;
+// Round 307: late enabled stores, dead mode loads and the stub register convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
