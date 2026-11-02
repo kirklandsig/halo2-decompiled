@@ -123,7 +123,8 @@ struct s_free_state_23d260
 	real pitch;
 	real roll;
 };
-// score 102 (was 102): this round's side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
+// score 102 (was 102): frame 0x4c agrees; zero/side normalization and up/roll allocation differ.
+// Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
 // local-carrier form all compile to the same 102/103, and a named clamp or a named zero carrier give
 // 103, so the zero constant still lands in xmm3 against retail's xmm1.
 // the side vector's i and j roles were swapped and the shared `normalize3d`
@@ -323,6 +324,9 @@ struct s_free_state_23d260
 // Round 340: coordinated roll-cross/row/trig workspace names on the retained
 // accumulated-row graph, seven subsets and all six cross/row declarations at entry, 102 each.
 // Original body restored; zero XMM3/XMM1 and side/up/roll allocation remain.
+// Round 351: Complete camera-angle observation ownership on the accumulated projection/row graph;
+// 324/135/365/266/361/252/362/362. Pitch-only recovers zero XMM1, first +0x89,
+// but regresses to 135. Original executable source restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

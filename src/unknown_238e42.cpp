@@ -1041,6 +1041,11 @@ bool __stdcall function_2399da(long controller_index)
 // Round 232: Complete outgoing member value owns requested rank before dispatch/non-removal;
 // property tests and deny-first admission combinations 142/147/142/147/136/148/136/148. Exact-only
 // forms restored; identity/rank register ownership and the extra removal move remain.
+// Round 345: Complete per-use selected-pointer producer crossed with per-use permission, own-rank and complete identity-test ownership: 227/232/227/232/227/232/227/232.
+// Original executable source restored; Frame 0xf00 agrees; selected identity/rank EAX/ECX ownership and the extra removal move remain.
+// Round 347: Scalar selected identity shared by member copy and validity, late/producer capture crossed
+// with full member-presence and per-use permission: 147/147/155/155/158/158/151/151.
+// Original complete body restored; selected identity/rank ownership and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

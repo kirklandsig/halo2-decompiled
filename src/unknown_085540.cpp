@@ -1262,6 +1262,9 @@ bool function_68670(byte *source, long size, void *block);
 // AC460: Actual outgoing message/decoded-block/both workspaces at loop scope, both orders,
 // 118/118/118/118 (553 bytes, entry allocation regresses); the same function-scope forms
 // 72/72/72/72. Original workspace lifetimes, header, payload and complete body restored.
+// Round 350: Positive payload delta word/int with native header/payload/both cursor
+// addition-then-remainder stores: eight forms 72 each. Header/sequence homes, DX size and forwarded
+// cursor remain.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

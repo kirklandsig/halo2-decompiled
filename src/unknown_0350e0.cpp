@@ -93,6 +93,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // that output form with global first-turn inputs 472; native returned-vector initialization with late
 // inputs 376; diagonal-first/late-input/direct-final combination 390. All eight forms and existing helpers
 // restored. Frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain. Earlier score was 372.
+// Round 344: complete axis/input staging, their pair, returned matrix and its three staging subsets,
+// then native input-vector copies: 393/356/393/431/452/429/453/485. Original helpers and body
+// restored; frame 0x98 versus 0x90 and simultaneous angle/vector lifetimes remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1725,6 +1728,7 @@ PRIVATE inline real clamp_2e9e0(real value)
 
 real game_time_get_seconds();
 
+// score 507 (was 507; earlier 508, 594): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // MiniMax R (11-01): no new form, no lower score.
 // score 507 (was 508, 594 originally): draft passed (cosine * size, sine * size, x_scale, y_scale) to function_480a0; retail passes
 // (x_scale * size, y_scale * size, cosine, sine) (0x2f209-0x2f247: edx=sine and [0x2c]=cosine pushed as args 4 and 5, the
@@ -1751,6 +1755,9 @@ real game_time_get_seconds();
 // role names 507; all output role names 507; role names plus member vertex API 512; entry flags read
 // directly 507; sample directly into animated color 580; whole-color copy then tint 527; color copy plus
 // member vertex API 524. Original body restored.
+// Round 344: native tag/count/visibility admission subsets 525/507/525/507/525/507/507;
+// all admissions with the member vertex API 512 (2285 bytes). Original body restored;
+// frame 0x90 versus 0x94, tag/output homes and EBX/EBP roles remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2625,6 +2632,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
+// score 517 (was 517; earlier 529, 561): the logic matches retail block by block (walked statement by statement against
 // MiniMax R (11-01): no new form, no lower score.
 // score 517 (was 529; 561 before that): the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
@@ -2639,6 +2647,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // random step (no change), the lane order of offset and of the view fields (no change), dz/dy/dx from the stored
 // position (587), phase read before the cycle test (+7 over the per-branch read), structs for the state and view
 // layouts (517 with the two reorders, 536 without; the byte offsets are kept).
+// Round 344: output projection, shared moved-point add, their pair, shared phase publication,
+// its three combinations and complete projection input staging: 556/589/645/526/545/593/644/539.
+// Original projection helper and complete body restored; frame 0x60 versus 0x38, stored velocity
+// acquisition and loop pointer ownership remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

@@ -194,6 +194,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 59 (135 bytes; compile-only it hoists the mask into AL and builds the entry in place, but next shares the index
 // register), the same with the result declared after the index 59, with `else index = next` 59; a named `admitted`
 // bool with early returns and a successor local 49.
+// Round 343: Real admission bitfields: dword bit2/bit4/both, word/byte both,
+// then Boolean dword/word/byte both 43/43/43/43/44/50/52/44.
+// Original record, helpers and complete body restored; eleven control matches survive.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -696,6 +699,9 @@ void function_1537f0(s_profile_record *record);
 // Complete cache-entry construction including metadata, native/library full-record copies,
 // live/ended input scopes and metadata before/after payload: 92/92/92/92/81/81/81/81.
 // Original complete body restored; identity homes and signed end-bound remain.
+// Round 343: Four-aligned profile/property sources with original/late mutable or immutable
+// identity: 53/74/53/74/53/74/53/74. Original types, includes, initializer tuple, pointer walk and
+// every byte restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1175,6 +1181,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // original/retail-order minimum and original/complete direction cases: 395/395/395/395/61/61/61/61.
 // Original complete body restored; direct count/removal and independent upper ECX/source EAX
 // still differ within the matching frame and tail.
+// Round 343: Direct-head/long-adjustment admission char/word/long/dword 49/392/384/384;
+// complementary room state bool/byte/word/long 58/58/391/383. All control
+// matches survive; original entry, range, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

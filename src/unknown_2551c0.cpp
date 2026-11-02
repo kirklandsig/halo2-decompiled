@@ -223,6 +223,13 @@ short __stdcall function_2551c0(long actor_index)
 // Round 494: native slot data block with complete vector/axis/output component arrays 89;
 // vector/axis/both/output/vector-output/axis-output/all component-array roles
 // 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
+// Round 348: indexed slot payload on the complete setter graph 171; complete direction,
+// best-copy and rotation-output setter subsets 166/111/166/178/153/188/166.
+// Original helper and copies restored; early cross products and score-dot schedule remain.
+// Round 351: Complete mutable output-row bases, row/field accumulators and paired
+// projection accumulation, first with the native slot payload: 150/131/68/130/134/42/133/133.
+// On the 42 graph, complete rowwise/phasewise cross accumulators without/with
+// cosine complement 73/73/126/126. The 42 form gains only one; all original source restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

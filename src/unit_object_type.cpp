@@ -2858,6 +2858,9 @@ void function_c5740(long unit_index, bool start)
 // Round 281: full-width material local 106; full-width slot 110; both 118; early receiver declarations 94;
 // nested weapon gates 94; named admission result 94; early receivers with full-width material 106;
 // immutable definition-argument lifetime 94. Full-width material forms also lose matched 0xcf040 (232).
+// Round 350: Single-exit weapon/fallback with guarded/conditional handle production, short/char slot and
+// original/pool receivers: 121/121/124/124/123/123/123/123. Definition/material/pool ownership and
+// effect convention remain.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -7113,6 +7116,10 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // without/with complete from-frame input value, 613/685/647/625/647/625/647/625. Best value-only form
 // reaches retail 2483 bytes at 613, but all eight lose exact callers (43/210); all original helpers,
 // body, parameter delivery and entry speed zeros restored.
+// Round 343: Complete input value/scalar staging with early wrap bool/byte/word/long:
+// 648/648/637/645/673/673/655/676; all lose exact callers 43/210.
+// Early wrap alone bool/word 725/719. Entire helper, frame inputs, arithmetic,
+// parameter delivery and entry speed zeros restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

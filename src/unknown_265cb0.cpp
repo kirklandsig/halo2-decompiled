@@ -1754,7 +1754,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -1932,6 +1932,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
 // (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
 // through a function pointer for the relative vector (diagnostic) did not change that (487).
+// Round 348: native player/contact/both iterator aggregate initialization
+// 394/194/394; with early constant results 391/191/391; both with native second
+// search counter 402, plus early results 399. The 191 form gains only three and
+// is restored; byte homes, direction preloads and entry operands remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

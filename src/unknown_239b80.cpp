@@ -259,7 +259,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 203 (was 203): Frame 0x14 agrees; count/departure homes, scan bound, equality and compaction differ.
+// score 170 (was 170): native output ordinal separates iteration from produced length;
+// frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
+// Earlier at 203: frame 0x14 agreed; count/departure homes, scan bound, equality and compaction differed.
 // Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
 // after the index store 203; departure as `if (!left_start && !points2d_equal(...)) left_start = true;` 227
 // (767 B); NONE exit tested before the current/heading updates 273 (753 B); the two equality exits joined
@@ -366,6 +368,13 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 495: Standard duplicate search with long/short result and short/long outer
 // ordinal 243/243/235/235; overlap CRT forms 261/251/268/268. Original body restored;
 // count/departure homes and persistent bound allocation remain.
+// Round 348: independent short/native output ordinal with long/bool departure and
+// memcpy/memmove 261/250/260/262/170/259/248/264; native ordinal with original
+// long departure and memcpy retained at 170, 785/784 bytes, plain confirmed.
+// On that graph, short/word produced length 242/242; earlier current/pass lifetimes
+// 249/260; one native count for all admitted phases 274. Follow-ups restored.
+// Round 351: Heading/departure/current lifetimes on the retained native output-ordinal graph;
+// 204/215/254/244/209/245/244/228. Original executable source restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -391,10 +400,11 @@ short function_239e50(short count, point2f const *points, short *indices)
 		}
 
 		real previous_angle = 0.f;
-		while ((short)hull_count < count)
+		for (long pass = 0; pass < count; ++pass)
 		{
 			real best_distance = -FLT_MAX;
-			indices[(short)hull_count++] = current;
+			indices[pass] = current;
+			hull_count = pass + 1;
 			short next = NONE;
 			real best_angle = FLT_MAX;
 			real best_delta = FLT_MAX;

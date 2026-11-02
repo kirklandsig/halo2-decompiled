@@ -743,6 +743,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // field-of-view+offset/field-of-view+velocity/offset+velocity 219/219/238; all
 // common stores, separate/chained vector copies 246/246. Original complete body
 // restored; right i/j colors, forward.k reuse and ordinary-angle bases remain.
+// Round 348: complete normalized-forward/offset/velocity setter subsets
+// 231/233/265/197/243/244/279; all with prior-up setter capture 313.
+// Original aggregate copies and products restored; right i/j carriers and forward.k reload remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
