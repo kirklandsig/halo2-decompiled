@@ -797,6 +797,9 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // Round 94: `unit->type == 0` or `!unit->type` for the mask test 12 (retail's length, not its shl/test);
 // 0xe4bd0's flag test as a field bit 13; a noinline declaration of 0xe4bd0 13; inline depth 0 around
 // 0xe4bd0 (diagnostic) gives it retail's 61 bytes but inlines it here (86).
+// Round 37 (fast): the mask test written `!= 0`, `(long)` mask, `1 & mask`, `1u << type` 13 each; the
+// unit re-read for the test 58. Still BLOCKED-BY 0xe4bd0 (src/bipeds.cpp, held by another lane this
+// round), whose retail ESI convention needs 0xe5930 called out of line.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {

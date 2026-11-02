@@ -168,6 +168,9 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // Round 28: flags field read at each use 110; flags computed per entry inside the j loop 187
 // (684 bytes); struct assignment for the copy 16; category test through the original 16; first
 // record tested `i == 0` 17.
+// Round 37 (fast): the level passed without the byte cast 16; first/second declared before the
+// flags copy 16; index declared before the selected byte 16; category or instance read through the
+// original 206/201. Both causes stay BLOCKED-BY the held src/unknown_1321f0.cpp (0x2cbf0's prototype).
 // @retail 0x133f70
 void function_133f70(s_133f70 const *record, bool arg_2)
 {

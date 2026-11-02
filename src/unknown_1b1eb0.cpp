@@ -50,6 +50,10 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 // kept; making any fourth one plain raises the count. Round 64: actor flag in the reset 20;
 // that with a direct reference lookup 33; shared unmasked index local 14; in-place index mask 14;
 // each pair of the remaining qualified stores made plain 18; reset before the actor flag 31.
+// Round 37 (fast): plain reset stores with a barrier after 0x5b6 (as matched 0x1bcee0) 16 (pop esi
+// placed as retail, swap unchanged); the 0x3f2 store through a second getter 33; the 0x10 store
+// as a ternary 43; the reset index as a (word) cast 46; one use of actor_index read through its
+// address, in the first getter or in the reset, 14 each.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {
