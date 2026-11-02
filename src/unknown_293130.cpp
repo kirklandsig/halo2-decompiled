@@ -265,6 +265,12 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // projection factor 113; the angle field passed straight 41; memcpy for the vector copy 30 (same
 // code). Diagnostic only: the copy written field by field j, k, i 133 (SSE copies; the dot then sums
 // i first, i, j, k).
+// Round 69 (m3 lane 9, fast): the existing rotate_direction with sine and cosine from the caller 60
+// (1409 bytes; fast with 0x1ecf50); the existing rotate_vector_170d70 65 (1409 bytes); the two zero
+// word stores as one chained assignment with +0x18 after +0x14 31; the rotation rows as one expression
+// each 30 (same code); that with (1 - cos) first 30. Diagnostics only: one/two/three dead products after
+// the vector copy 30/57/57 and at entry 30/57/57, only the i and k components named 53; none of them
+// gives retail's (i + k) + j dot.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

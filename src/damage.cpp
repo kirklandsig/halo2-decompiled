@@ -393,7 +393,7 @@ void __stdcall function_b8540(long a);
 void function_b8b70(long object_index);
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator);
-void function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
+void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator);
 void function_d9d60(long marker_name, long object_index, bool at_marker, long effect_index,
 	s_damage_owner const *owner);
@@ -519,6 +519,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // Also tried: +0x1c typed as s_location (3), the owner copied from the const NONE owner (42), unknown18 before
 // the location (7), `player_index = object_index = NONE` (3), `unknown1c = unknown14 = NONE` (3). The alias status
 // of both globals is retail's (g_47d8e0 address-taken there too, g_4686c4 not), so only the scheduler is left.
+// M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
+// chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
+// remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -634,6 +637,9 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 // Also tried: the d5b60 result typed as s_damage_info with a named +0xb0 effect (6), the flag set through a fresh
 // DAMAGE_OBJECT lookup (62, reloads the pool), the two stores as side effects of ba7f0's first argument (6, the
 // same bytes: the order is the scheduler's), `maximum > 0 && info` (14), a nested `if (info)` (6).
+// Round 339: byte/word setters and native byte/word masks 31/0/28/6; CRT clear 28/11/28/11.
+// Word setter matches at 124 bytes but loses an outside reload pair (2); include positions
+// and field-pointer forms keep that loss. Original body and includes restored.
 // @retail 0xd6a70
 void function_d6a70(long object_index)
 {
@@ -793,6 +799,9 @@ void __stdcall function_d6bc0(long object_index)
 // return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
 // predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
 // restored; shared true epilogue and stack parameter convention remain coupled.
+// Round 339: True-default result with failure-owned gates, player early-return/assignment and
+// direct/conditional team result 80/73/88/71; entry result 78/96/88/92.
+// Original false-default body restored; shared true exit and parameter homes remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -846,6 +855,9 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 // pointer declared before the index with `i++, rigid_body += 0x60` (11), that with the count read first (12),
 // named count and element-array locals (12). The parameter takes ECX whenever its last use comes before the
 // loop guard (27, 12, 12), but retail also reads the element array after the guard.
+// Further forms: byte/short/long result 30/36/34; assigning the flag test to result 18 (entry registers
+// agree, loop/exit differ); existing typed array/getter with bool/byte/short/long result 8/30/36/34;
+// private linkage, cdecl and stdcall declarations 8/8/8; a zero-flag continue before setting result 8.
 // @retail 0xd74b0
 bool function_d74b0(byte const *owner)
 {
@@ -1029,7 +1041,8 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
-// score 343 (was 705): size equals retail (1535). Left: the stack layout (retail keeps the object offset of
+// score 297 (was 343): frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
+// Earlier 343 at 1535 bytes: the stack layout (retail keeps the object offset of
 // the second lookup at esp+0x20, the cone and node scalars in different registers), the NONE-node copy
 // (retail builds &node_direction with lea in the copy), the order of the negated-normal stores, and the dot
 // product's operand order (retail multiplies the cone first). Done: the sibling walk is the tail call retail
@@ -1039,6 +1052,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // the cone's x87 tests as !(a > b) (retail's exact shapes: fxch, ja, and the direct loads with the leftover
 // `add eax, 0x70`) 362; each of those alone 372 and 356; the centre as a pointer to a stack copy 440; the
 // centre hoisted or declared in other orders 343; the negate and add per component 362.
+// M272: both existing point-difference producer subsets 343/343/343; complete closest-point, node-center
+// and surface-normal names alone/with those subsets 343/343/343/343; all with native owner clear 297
+// (plain, 1536 bytes). Keep the native clear and both shared differences; frame/point homes still differ.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1053,15 +1069,13 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		point3f const *origin = &data->origin;
 		vector3f *direction = &data->direction;
 		vector3f *node_direction = &data->node_direction;
-		point3f arg_149545;
-		vector3f normal;
+		point3f surface_point;
+		vector3f surface_normal;
 		bool outside = false;
 		real scale;
 
-		function_baff0(object_index, origin, &arg_149545, &normal);
-		direction->i = arg_149545.x - origin->x;
-		direction->j = arg_149545.y - origin->y;
-		direction->k = arg_149545.z - origin->z;
+		function_baff0(object_index, origin, &surface_point, &surface_normal);
+		vector3d_from_points3d(origin, &surface_point, direction);
 		data->distance = function_30bf0(direction);
 
 		if (object->node_index == NONE)
@@ -1071,29 +1085,27 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		else
 		{
 			byte *node = g_51e9b8->data + (object->node_index & 0xffff) * 0xa0;
-			point3f center;
+			point3f node_center;
 
 			if (node && *(long *)(node + 0x74) && !function_d74b0(node))
-				center = *(point3f *)(*(byte **)(*(byte **)(*(byte **)(node + 0x70) + 0x40) + 0x3c) + 0x70);
+				node_center = *(point3f *)(*(byte **)(*(byte **)(*(byte **)(node + 0x70) + 0x40) + 0x3c) + 0x70);
 			else
-				center = object->field_x221477;
+				node_center = object->field_x221477;
 
-			node_direction->i = center.x - origin->x;
-			node_direction->j = center.y - origin->y;
-			node_direction->k = center.z - origin->z;
+			vector3d_from_points3d(origin, &node_center, node_direction);
 			function_30bf0(node_direction);
 
-			real dx = origin->x - arg_149545.x;
-			real dy = origin->y - arg_149545.y;
-			real dz = origin->z - arg_149545.z;
+			real dx = origin->x - surface_point.x;
+			real dy = origin->y - surface_point.y;
+			real dz = origin->z - surface_point.z;
 			if (0.05f * 0.05f > dz * dz + dy * dy + dx * dx)
 			{
-				normal.i = 0.0f - normal.i;
-				normal.j = 0.0f - normal.j;
-				normal.k = 0.0f - normal.k;
-				node_direction->i += normal.i;
-				node_direction->j += normal.j;
-				node_direction->k += normal.k;
+				surface_normal.i = 0.0f - surface_normal.i;
+				surface_normal.j = 0.0f - surface_normal.j;
+				surface_normal.k = 0.0f - surface_normal.k;
+				node_direction->i += surface_normal.i;
+				node_direction->j += surface_normal.j;
+				node_direction->k += surface_normal.k;
 			}
 			else
 			{
@@ -1171,7 +1183,7 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 		data->in_unknown_radius = definition->radius68 > data->distance;
 		if (scale > 0.0f || data->in_unknown_radius || data->unknown58 > 0.0f)
 		{
-			if (!child && function_d6f90(object_index, &arg_149545, data))
+			if (!child && function_d6f90(object_index, &surface_point, data))
 				return;
 
 			if (g_4e6948->mode == 4)
@@ -1190,7 +1202,11 @@ void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child
 						if (team != NONE)
 						{
 							vector3f unit_direction;
-							s_damage_owner owner = { NONE, NONE, NONE };
+							s_damage_owner owner;
+							memset(&owner, 0, sizeof(owner));
+							owner.player_index = NONE;
+							owner.object_index = NONE;
+							owner.team = NONE;
 
 							unit_direction.i = 0.0f - unit->unknown168.i;
 							unit_direction.j = 0.0f - unit->unknown168.j;
@@ -1661,13 +1677,16 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
-// score 10 (was 189): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
+// score 10 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last), and ours pushes the
 // shield-damaged effect before `lea ebx, [edi + 8]` for function_176780 (retail: after). Tried: owner pointer in
 // a local for the function_176780 call (no change), the tail's unknownd4 handle in a long local (12).
 // Also tried: `multiplier = 1.0f` declared at the function top (228) or first in the else-if block (206, both
 // give it a stack home), declared after the in-radius subtraction (38), `multiplier = cond ? d5bc0(...) : 1.0f`
 // (156), the inverse maximum as an if/else statement (10, the same code).
+// Round 489: separate scaled damage / conditional multiplier result / named reciprocal,
+// seven subsets 30/156/160/10/30/156/160; all with named depletion expression 160.
+// Original damage phases, reciprocal expression and whole body restored.
 // @retail 0xd9110
 void function_d9110(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -1769,6 +1788,21 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// MiniMax C (11-01): the first permutation loop indexes the permutation array instead of walking it with a pointer, so
+// the permutation count is read before the array as retail does.
+// MiniMax C (11-01): the pending xor narrowed to a byte reproduces retail's byte form and measures 111, seven points and
+// under the keep bar for a function still above 30, so it was reverted.
+// score 118 (was 134): the first permutation loop indexes the permutation array instead of walking it with a pointer,
+// which reads the permutation count before the array as retail does and leaves the region pointer in edx. Left: retail
+// tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, the random global is in edx in
+// retail and ecx here, the pending index is used through ax in retail and cx here, and the calls to 0xda110 and 0xd9d60
+// take their arguments in another shape (the conventions of those two unmatched callees, see 0xdae60).
+// score 134 (was 229): the exclusive test is written as two mask conditions and the blocked flag is stored before the
+// threshold check, which puts `destroy` in bl and the permutation index in memory as retail does. Left: retail keeps
+// the region pointer in edx and ours in edi, retail applies `and eax, 0xffff` before the prologue's pushes and ours
+// after, retail tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, and the pending
+// index and the random global land in different registers. The conventions of 0xd9d60 and 0xda110 are unmatched
+// callees' (see 0xdae60).
 // score 229 (was 265): register and stack-slot assignment only. Retail keeps `destroy` in bl and the permutation index
 // in memory, ours the reverse; the damage-level delay is read through a region pointer reloaded from the stack right at
 // the use in retail, ours reloads it into edi early on each path; retail tests the exclusive flag with `test eax, mask`
@@ -1797,8 +1831,10 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 		long i;
 		s_damage_info_permutation *permutation;
 
-		for (i = 0, permutation = region->permutations; i < region->permutation_count; i++, permutation++)
+		for (i = 0; i < region->permutation_count; i++)
 		{
+			permutation = &region->permutations[i];
+
 			if (!(state->destroyed_permutations & (1 << i)))
 			{
 				next_threshold = permutation->unknown08;
@@ -1842,6 +1878,8 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 
 				permutation = &region->permutations[i];
 
+				bool blocked = false;
+
 				if (!have_threshold)
 				{
 					have_threshold = true;
@@ -1853,7 +1891,6 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 				}
 
 				bool destroy = true;
-				bool blocked = false;
 
 				if (last_permutation && (region->flags & 4) && function_db110(object_index, false, false))
 					destroy = false;
@@ -1875,7 +1912,15 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 					destroy = false;
 					blocked = true;
 				}
-				if ((accumulator->flags & 0x400) ? (permutation->flags & 0x1000000) : (permutation->flags & 0x800000))
+				if (accumulator->flags & 0x400)
+				{
+					if (permutation->flags & 0x1000000)
+					{
+						destroy = false;
+						blocked = true;
+					}
+				}
+				else if (permutation->flags & 0x800000)
 				{
 					destroy = false;
 					blocked = true;
@@ -1972,6 +2017,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // (accumulator in EAX, old graph); region element pointer 5; one combined guard reading the entry at each
 // use 201 (880 bytes); short region index 201; `!= NULL` guard 5; player test joined into the region test 5;
 // a 600 s permuter run, 12 tries, none below 5.
+// Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
+// separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
+// both gates/names 5; all forms 215. Original body restored; scheduling remains.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2251,7 +2299,9 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
-// score 533 (was 624): the body is statement for statement retail's (same size, same block order). What is left is
+// score 472 (was 533): frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// with register homes/call setup and 1884/1868-byte length still differing.
+// Earlier 533 from 624: the body is statement for statement retail's (same size, same block order). What is left is
 // the calling convention and the register allocation that follows from it: retail takes only the permutation index
 // in eax and leaves `info` on the stack (`ret 0x14`, frame 0x38); ours passes the index in ecx and `info` in edx
 // (`ret 0x10`, frame 0x3c, one spill slot more), so every [esp + N] is 4 off and the registers rotate. Retail also
@@ -2263,8 +2313,11 @@ struct s_unit_event
 // the object (546), the datum looked up afresh in the weapon blocks (571), the flag as `!= 0` or a bit-test local
 // (546, 534). The destroy test also differs by retail's one shared call to 0xdb110 and our `neg al; sbb; inc` on its
 // result; every form of it scored worse, and 0xdb110 itself does not match (187), so that part may follow from it.
+// M272: native __stdcall declaration alone/with section, seat, both indexed scans 531/531/531/531;
+// each with both drop results bool 472/472/472/472; bool results on the original declaration 545.
+// Keep the native declaration plus both bool results; original cursor loops and every call role remain.
 // @retail 0xda110
-void function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
+void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
 {
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
@@ -2336,7 +2389,7 @@ void function_da110(long permutation_index, s_damage_info *info, long object_ind
 
 	if (permutation->flags & 0x60)
 	{
-		dword drop = !((permutation->flags >> 5) & 1);
+		bool drop = !((permutation->flags >> 5) & 1);
 
 		if ((1 << datum->type) & 3)
 		{
@@ -2358,7 +2411,7 @@ void function_da110(long permutation_index, s_damage_info *info, long object_ind
 	}
 	if (permutation->flags & 0x300)
 	{
-		dword drop = !((permutation->flags >> 8) & 1);
+		bool drop = !((permutation->flags >> 8) & 1);
 
 		if ((1 << datum->type) & 3)
 		{
@@ -2586,6 +2639,10 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 // test (5), the team test as an early return before the enemy block (5), the enemy branch scaling `damage` in
 // place with one final return (32), `enemy = team < 0 || team >= 16 || !bfe60(...)` (73). Every `return damage`
 // becomes one block whose damage location (xmm1 or the stack home) the allocator picks; its order follows that.
+// Also tried: damage declared before the random amount (5), team read at every use (5), a positive
+// allegiance predicate (74, frame 4), enemy assigned in the valid/invalid team arms (67, frame 4), one result
+// across both engine/team paths (42, frame 0xc), both paths scaling damage in place (5), the engine product
+// computed at return (52), a team result initialized from damage then multiplied (5), enemy live from entry (5).
 // @retail 0xd9b60
 real function_d9b60(s_type_1e6529 *data, byte const *definition, long object_index, bool *friendly)
 {
@@ -3573,7 +3630,7 @@ struct s_collision_result_1697c0
 	point3f point;
 	byte unknown14[0x24 - 0x14];
 	short unknown24;
-	byte unknown26[0x4c - 0x26];
+	byte unknown26[0x5c - 0x26];
 };
 
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
@@ -3598,7 +3655,13 @@ PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
 /* whether the structure blocks damage from the damage's origin to a point
    on an object; around units, four rays offset sideways by the
    definition's spread must all be blocked */
-// score 153 (was 153): the root walk is written out inline in the ray loop (damage_object_root,
+// score 151 (was 153): the collision result record is 0x5c bytes, the buffer the provider fills (frame 0xa0 as retail).
+// MiniMax C (11-01): not kept (one-use locals without a match): the spread read into a local in each ray case 101,
+// plus the second root walk in a local before the point difference 61 (the caller 0xd74e0 then 297 -> 308); the
+// spread in one local at the function's top 164, before the switch 215. At 61, left: retail keeps the definition
+// pointer in edi and the point in esi, its cross product loads side.k and offset.k first, and its case 2 scales as
+// `scale * up.i`; the permuter reached 59 (push esi against push edi).
+// score 151 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
 // 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
 // inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
 // cases 2 and 3 share the code from `movaps xmm1,xmm0 / mulss xmm1,[up.i]` while ours scales case 2 as
@@ -4306,6 +4369,9 @@ dword function_db810(long object_index, long node_index)
 // Also tried: `model_index` renamed (4) and every head local renamed (4: names do not steer it), no `object`
 // local with DAMAGE_OBJECT(object_index) at each use (17), `result = lowest_rank = 0x7fffffff` (7), `lowest_rank`
 // declared first (7); the permuter (51 tries) found nothing under 4.
+// Also tried: result before the object lookup (17), rank before it (7), both before it (17), rank after the
+// model lookup (6), a signed-short rank (4), the pointer advanced in the body (4), a count-consuming while
+// with pointer advance in the body (4), read-only physics/rows/node indices (4).
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
@@ -4398,6 +4464,7 @@ struct s_damage_object_creation
 
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
+// MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
 // score 221 (was 235): caching `info->unknowne0` as the loop bound (retail does not reload it; 235 -> 221) and
 // making detached_nodes signed (`test / jle` as retail; same score). Left is register allocation: retail keeps
 // object_index in esi, hoists the section_mask_a zero-extension into edi and spills the datum offset, so its

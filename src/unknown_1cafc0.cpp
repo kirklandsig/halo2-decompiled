@@ -513,6 +513,10 @@ bool function_1cb920(void *data, long mode)
 void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, long weapon_type, bool urgent,
 	bool other);
 
+// MiniMax D (run 37): no new form, no lower score; the permuter (15 minutes, --fast) spent all of
+// its time on the first build and never reached a search, and the forms of the earlier rounds leave
+// the body at 348, the graph reload and the request expansion's register use still differ from
+// retail's.
 // score 348 (was 348): frame (12) and both query temporaries' homes agree since the request expansion became the
 // existing graph_resources_request (retail's 0x1ddd00 inlined). From +0x1de retail loads the graph into EBX for
 // `add ebx, 0x34` and reloads it into EBP lazily (first loop preheader, the next one, one failure join), where ours keeps

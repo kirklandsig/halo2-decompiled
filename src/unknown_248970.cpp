@@ -275,6 +275,24 @@ public:
 // with the entry locals 115; the pool local declared, then assigned 95; `return` for the break 95. On 54: the inline
 // 0x2483f0 call 298; head and offset in the for-init 53; `head = child_index;` before the break test, testing head
 // 118 or child_index 118 (both make the location an EBX register argument); the link element from `child_index` 54.
+// Lane 9 round 67 (fast, which reproduces 54 with 0x175270 matching): the salt-and-difference link with the
+// location parameter read through its address at the link 166 (location stays stacked, but frame 0x10, 717 bytes);
+// child_offset alone in the for-init 67; head taking the allocation directly (init and break test on head) 95;
+// head assigned before the initialization with the separate allocation local 95; the break as the init test's
+// `else` 54 (same code). Diagnostic: the file without /Ob1 and the existing 0x2483f0 called for the link 301
+// (670 bytes: 0x1751d0 inlines and 0x2483f0 stays a call), so /Ob1 is right.
+// Round 18 (lane 17, fast, with 0x175270): head declared before the child offset 68 (the prologue changes);
+// the existing 0x2483f0 called for the link with `inline` on its definition and its inline_depth(1) pair removed
+// 261 (the link inlines, 712 bytes, but the location becomes an EBX register argument: 0x175270 100; 0x2483f0,
+// 0x248cc0, 0x248d90 still match); that with the location read once through its address 244 (stacked again,
+// but held in EBX all through, frame 8; 0x175270 21); the child table indexed by the counter
+// (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
+// the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
+// offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
+// Round 439: head before byte-offset update 54; native pretested while with head/ordinal/offset
+// and ordinal/head/offset latches 49/49, head/offset/ordinal 54; direct remaining-count traversal
+// with head/offset or offset/head updates 142/142; real definition cursor with for/while 243/243.
+// Five-point while gains are below the keep threshold; complete original body restored.
 // Round 31 (m3 lane 2, fast; 0x175270, 0x2483f0 and 0x248cc0 checked each time): the link through the
 // existing 0x2483f0 with a forceinline declaration here 301 (still a call); with 0x2483f0's
 // inline_depth(1) wrapper also dropped 301 (still a call; 0x2483f0 and 0x248cc0 still match); with the
@@ -297,6 +315,16 @@ public:
 // 261 (data loaded once, location still EBX); that copy with the location read once through its address 248
 // (location stacked again, frame 8, but held in EBX; 0x175270 21). Retail's link keeps the pool in EBX, NONE in
 // EDI then EBP and reloads the location into EDX; every inlined-link form here keeps the location in EBX.
+// Round 133 (m3 lane 6, fast with 0x175270/0x247470/0x1751d0/0x2483f0/0x16b840/0x248cc0): the child table indexed as
+// `field_34 + i * 0xb8` (no child_offset) 59: the offset becomes a strength-reduced temporary set after the zero-trip
+// test, the count is loaded into ECX for it and the whole loop tail is retail's; left: that temporary shares
+// local_0's slot (frame 0x10, retail keeps local_0 at 0x1c apart from the offset at 0x10) and the head copy is
+// loaded before the test (retail after it), then the child body's registers. On it: local_0 itself as the loop head
+// 243 (local_0 held in ESI from entry); the handle as `(salt << 16) | (element - data)` in place 176 (location held
+// in EBP, frame 0x0c); the link as a 0x2483f0 call 296 (stays a call); that call with 0x2483f0's inline_depth(1)
+// wrapper dropped and `inline` on its definition 259 (0x175270 100, 0x248620 6; a pragma change, diagnostic); head
+// declared in the for-init beside the index 59 (identical to the indexed table alone). Lead: the indexed table with a head
+// whose load lands in the loop preheader without local_0 taking a register for the whole function.
 // Round 18 (lane 17, fast, with 0x175270): head declared before the child offset 68 (the prologue changes);
 // the existing 0x2483f0 called for the link with `inline` on its definition and its inline_depth(1) pair removed
 // 261 (the link inlines, 712 bytes, but the location becomes an EBX register argument: 0x175270 100; 0x2483f0,
@@ -305,6 +333,13 @@ public:
 // (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
 // the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
 // offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
+// Round 222: unsigned byte offset 54; live count 242; both 242; remembered/current
+// child identities 54, with unsigned offset 54, live count 242, both 242; complete
+// graph with separately declared ordinal 242. Original count, offset, identities and body restored.
+// Round 338: initial-child snapshot identity with offset/current-child/ordinal lexical
+// priorities 68/54/54/54/54/54/54/54; independent offset declaration regresses.
+// Original snapshot, scalar declarations and complete body restored; child pretest/pool ranks remain.
+// Round 264: Canonical salted-index producer with named ordinal/successor-before-offset/head-for-init masks 0..7: 261 each, 710/743 bytes. Original header producer, loop setup and stepping restored; pool/NONE ranks, allocation retest and salt/ordinal reconstruction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

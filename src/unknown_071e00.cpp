@@ -160,6 +160,16 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // different in source: its session argument named first 37; its search pointer named first 37; the
 // timeout read into a named elapsed value inside an else arm 37; the players-match result named in
 // the else arm 37; its flag tested `!= 0` 37 (all merged before layout, 176 bytes).
+// Round 33 (lane 2, fast), arms in retail's order (state 0, players match, timeout), each arm ending
+// `local_0 = true` (set) or `return true` (ret): set/ret/ret 85 (223 bytes), set/set/ret 90 (225 bytes),
+// ret/set/ret 34 (merged, search block last); one search block after a nonzero-state guard that returns
+// early for a match or no timeout, with `return local_0` 54 (189 bytes), with `return false` and `return true`
+// not listable (the checker found no section for its symbol). A compile-only screen shows every form whose
+// two search copies are identical lays the merged block out last (goto into the first copy, state test
+// inverted, nested or not); only the timeout arm placed before the match arm keeps the first copy's place.
+// Also (fast): the state test inverted with the search copy in its else and the timeout nested under
+// `!players_match` 37; a goto from the timeout arm to a label in the first copy, all arms setting the
+// result, 37 (both 176 bytes).
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

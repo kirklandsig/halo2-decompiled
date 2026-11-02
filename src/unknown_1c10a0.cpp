@@ -236,49 +236,20 @@ short __stdcall function_1c10a0(long actor_index)
 	return result;
 }
 
-// score 2 (was 2): the pool pointer is loaded into ECX here and into EDX in
-// retail, the rest of the function matches.
-// This round: plain slot read 28; plain index read 4; plain index with
-// const pool/data/slot/actor, swapped local names or early mask 4 each;
-// original with const pool/data/actor/slot or swapped local names 2 each.
-// An ordinary pool read puts the
-// pointer in EDX but lets the data load fold into the final add, and a
-// volatile data read keeps the load apart but moves the pointer to ECX.
-// Typed actor-array base 2; direct typed slot snapshot 2; actor-zero chain 6;
-// missing-index chain 4; both chains 8; mutable pool with byte/actor base 2/2;
-// typed actor base with direct index parameter 4. Original body restored.
-// Single typed/byte actor cursors advanced after the slot snapshot 17/2. Restored.
-// Round 71 (no volatile): slot data block `(s_slot_82_data *)slot->unknownc` with
-// actor_reset_state 20 (retail's slot load, EDX pool and zero; only the data load folds
-// into `add eax, [edx + 0x44]`); with a data local / typed base / actor argument inside
-// the reset 20/20/20; extra lookup first 20; result first 20; index or slot read through
-// its address 20/20; slot read after the reset 28 (unfolded, but pool ECX as 0x1b09b0).
-// Volatile reads of both parameters before the reset 20; both read through their
-// addresses 28; plain slot cast and reset 28; a call to function_1f86a0 90 (stays a call);
-// that with `inline` on 0x1f86a0 28 (and 0x1f86a0 then inlines into all its callers).
-// Retail is 0x1f86a0 inlined at link time (argument in EAX first, its own unfolded
-// loads): BLOCKED-BY 0x1f86a0 (`/Ob1` file, called out of line by 28 other functions).
-// Round 101 (lane 7, no volatile): slot data block first, index read through its address into
-// actor_reset_state 20; reset first, then the slot read through its address 28; that with the
-// block 28; a `__forceinline` declaration of function_1f86a0 and a call 88 (39 bytes, stays a
-// call); a separate `result = true` 20.
 // @retail 0x1c10f0
 bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 {
-	long local_3 = *(volatile long const *)&actor_index;
-	s_record_pool const volatile *local_4 = g_4f55f0;
-	byte *local_0 = local_4->data;
 	s_slot *local_1 = *(s_slot *volatile const *)&slot;
-	s_actor_view *local_2 = (s_actor_view *)(local_0 + (local_3 & 0xffff) * sizeof(s_actor_view));
 	s_slot_82 *state = (s_slot_82 *)local_1;
-
+	s_actor_view *local_2 = actor_get(actor_index);
+	s_actor_view *local_4 = actor_get(actor_index);
 	local_2->unknown50c = false;
 	local_2->unknown5ac = NONE;
 	local_2->unknown5b0 = NONE;
-	local_2->unknown5b4 = 0;
-	local_2->unknown5b6 = 0;
-	local_2->unknown4ac = 0;
-	local_2->unknown504 = 0;
+	local_4->unknown5b4 = 0;
+	local_4->unknown5b6 = 0;
+	local_4->unknown4ac = 0;
+	local_4->unknown504 = 0;
 	state->unknown0c = false;
 	state->unknown10 = NONE;
 	state->unknown38 = 0;

@@ -89,7 +89,7 @@ void function_1d56f0(s_havok_component *component)
 
 // score 77 (was 77): the lookup still reads `[eax + edx + 0x40]` where retail reads `[edx + eax + 0x40]`
 // and the success tail still pushes what retail passes in EAX/EBX/ECX: BLOCKED-BY 0x1d0cf0 (another file).
-// score 77 (was 77): every frame home and the body up to the success tail agree; left: the rigid-body
+// Earlier (score 77, was 77): every frame home and the body up to the success tail agree; left: the rigid-body
 // lookup's address operands (ours `[base+index]`, retail `[index+base]`) and the success tail, BLOCKED-BY
 // 0x1d0cf0 (retail passes it the transform in EAX, the component in EBX and the index in ECX, plain ret;
 // ours pushes index and component), which also moves the release path's scratch registers.
@@ -176,10 +176,38 @@ void function_1d56f0(s_havok_component *component)
 // that tail but the lookup's SIB order. A byte offset local added first, the component through a const
 // reference, a pointer to the element's body field, data-first byte arithmetic and a named motion pointer:
 // 77 each (still `[eax + edx + 0x40]`).
-// score 77 (was 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// A later round: no new source form of this body was found: the 19 aligned differences stay in
 // the tail after the component lookup, whose calling convention is set by 0x1d0cf0 in another file, so the tail
 // cannot be aligned from here, and the lookup still reads `[eax + edx + 0x40]` where retail's order differs.
 // The body was left as it is.
+// Round 130 (lane 6, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x1d0ee0; the two stacked notes merged into this one,
+// nothing dropped): BLOCKED-BY 0x1d0cf0, which sits on a long LTCG call cycle (0x1d1260 -> impacts.cpp ->
+// unknown_175bd0.cpp -> damage.cpp -> 0x1d1b60 -> 0x1d0c20 -> 0x1d0cf0, and 0x1d1540 -> 0x1c39c0 -> ...). The
+// translation built straight into the result (no `local_8`) 64 (811 bytes, frame 0xf4: positional only, retail
+// keeps the temporary and its movaps copy); 0x1d0cf0's definition marked `inline` 77; 0x1d0cf0 as a
+// s_havok_component member (`this` = the component, as the rigid_body_* members) 78 (0x1d1b60 lost at 2); the
+// count stored after the setter call 64 (positional only: retail stores it before the call); `local_0 = true`
+// before the setter call 78.
+// Earlier at 77 (from 77): this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 69 (m3 lane 9, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): as a member of s_havok_component 76;
+// that with 0x1d0cf0 a member too (rigid_body_transform_set(index, transform)) 77, losing matched 0x115b10 (4)
+// and 0x1d1b60 (2); 0x1d0cf0 in retail's shape (set copy, body pointer, m_fixed first) 73, and with this body
+// as a member 72: only the component's push for 0x1d0cf0 (retail EBX) and the frame and scratch shifts it
+// causes are left, but 0x1d0cf0 goes 81 -> 88 and 0x1d0c20 38 -> 40, so not kept; that with 0x1d0cf0's
+// fixed arm refetching through a const element pointer 72 (0x1d0cf0 85). Lead: retail's call cycle through
+// 0x1d0cf0 runs 0x1d1260 -> 0x278f00 -> 0xb8540 -> 0x109400 -> 0xe4c10 -> 0xe18d0 -> 0xb75a0 -> 0xb7430 ->
+// 0x1c4a80 -> 0x1d3fc0 -> 0x1d0c20; here 0xb8540 and 0xb7430 are disabled stubs, so LTCG walks another
+// cycle (via 0x2266a0 ... 0xdbc80 -> 0x1d1b60), which may be what keeps the component on the stack
+// (BLOCKED-BY 0xb8540).
+// Earlier: this round no new source form of this body was found: the 19 aligned differences stay in
+// Round 292: complete component/body, query filter/shape and step/count/output parameter
+// identities in seven subsets and alternate complete roles 77/77/77/77/77/77/77/77.
+// Original formal identities restored; lookup operand order and setter transport remain.
+// Round 97 summary (score 77, was 77): no new source form of this body was found: the 19 aligned differences stay in
+// Round 26 (lane 17): 0x1d0cf0 is now machine 3's, but its EBX component parameter still does not come:
+// 0x1d1260/0x1d1540 declared first in its file (call-cycle walk order, plain) 77 (0x1d0cf0 81); that with
+// 0x1d0cf0's 88 body (plain) 73 (0x1d0cf0 88, 0x1d0c20 40, component still loaded from [ebp + 8]); the 88
+// body with flag5 read into a named bool before the body fetch 73, with a member-wise transform copy 73.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

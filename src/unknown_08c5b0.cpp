@@ -125,6 +125,10 @@ static inline long bungienet_user_voice_setting(short kind)
 // assignment only steers). Kind read, setting, then index 23 (kind AX, request EDX); index first with that
 // arm 5; handler typed as the pending-message header with a last-result helper 32; `kind == 0` arm
 // merged into the default 32 (103 bytes, retail's ECX/AX pair).
+// Round 106: the kind read inside the selector, index first 5; selector first 23;
+// selector without inline, availability force-inline, controller access force-inline,
+// const request parameter, const scalar/pointer locals and external-inline selector 4 each.
+// Original helper boundaries, parameter and local forms restored; request/kind registers remain.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

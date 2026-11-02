@@ -94,7 +94,10 @@ void function_82ac0(s_object_relevance_source *source, s_object_relevance_result
 
 // score 25 (was 25): retail places the allocation failure's `error = 2` arm after
 // the release block's return (it jumps back to the null test); ours lays it out
-// before the release block. Earlier at 25 (from 32): the error codes folded into the
+// before the release block.
+// Round 74: zero/result-initialized error in allocation scope 25/25 and at function scope 25/25;
+// zero-init with plain allocation/cleanup/both guards 25/25/25; function result-init with both 25.
+// Opening control flow restored. Earlier at 25 (from 32): the error codes folded into the
 // release test (32); the error set in an if/else with `result = error` before the
 // release, the index test nested: 25.
 // Earlier at 25 (from 25): cold allocation-error placement remains; validation-derived result 98;
@@ -133,6 +136,12 @@ void function_82ac0(s_object_relevance_source *source, s_object_relevance_result
 // 40, arms 2 then 3 27; result 3 then `if (!block) result = 2` 51; the release through
 // 0x8a6f0's force-inline release helper 25. No matched retail function outside a switch
 // has this late `mov reg, imm; jmp back` block.
+// Round 52: retail's late `mov ebx, 2; jmp` block is a jump-threaded block (as in the matched 0x1405a0,
+// 0x2797a0, 0x5f480): error-code arms followed by a success test give it. `if (!v10) error = 3` then
+// `if (error == 0) { publish; goto }` 40 (publish goes late too); publish in the v10 arm then
+// `if (error == 0) return result;` 56 (retail's block order in a compile-only build, but `xor eax, eax`
+// for the success return and all pushes at entry); error-tested release 25; success flag tested before
+// the release 25; `block && v10` success test with an else-if error chain 25.
 // @retail 0x8b110
 long c_vtable_450cb8::v0(long index, long a2, long a3, long *count, s_item_450cb8 *items, void *a6)
 {

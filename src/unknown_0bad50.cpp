@@ -370,7 +370,7 @@ void function_baff0(long object_index, point3f const *origin, point3f *point, ve
 }
 
 // @retail 0xbafb0
-bool function_bafb0(long object_index, long ancestor_index)
+bool function_bafb0(long ancestor_index, long object_index)
 {
 	long current = NONE;
 

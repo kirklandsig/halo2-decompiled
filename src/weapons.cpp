@@ -2022,6 +2022,12 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // entry weapon read not touching the pool global, the slots take retail's pool-in-EBP/unit-spilled
 // shape (aligned 83), so the entry read joins the loop's pool range; no source form found that splits it.
 // Round 62, later: `taken` as a short 209 (fast, 611 bytes).
+// Round 51 (lane 10, plain checks): `result = true` at the top of the success block 124; result declared after
+// taken 124; taken assigned (not initialised) at the top of the success block (the check tool raised before
+// scoring); the definition index read after the 0x106030 call 122 (587 bytes; a one-use field read moved past a
+// call, not kept); one magazine pointer declared at the top for both blocks 124; the slot's weapon index read from
+// the unit at each use 124. Retail keeps a false result in BL across the 0x106030 call and returns it on the
+// failure exit (constant 1 on success), so its result is not folded at the join; ours folds both exits.
 // Round 52 (lane 1, plain): `long taken = 0;` after the 0x106030 call 126 (585 bytes); the first block's
 // minimum as its own `take` local added to `taken` 178 (589 bytes); `definition` read after the 0x1008f0 call
 // 174; the taken placement without the definition-index local 196 (569 bytes, 0x102b90 5); the taken placement
@@ -2031,6 +2037,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 // success block 160; the other magazine as `->magazines + magazine_index` 124 (same code); the holder
 // test as `taken < count && unit_index != NONE` 125; the slot take as `unloaded < count - taken ? ...`
 // 126. The pool-global lead stands (0x106030 reaches 0x159dd0 in a file another lane holds this round).
+// Round 52 (lane 1, plain): `long taken = 0;` after the 0x106030 call 126 (585 bytes); the first block's
+// minimum as its own `take` local added to `taken` 178 (589 bytes); `definition` read after the 0x1008f0 call
+// 174; the taken placement without the definition-index local 196 (569 bytes, 0x102b90 5); the taken placement
+// with `return true` in the success block and `return result` at the end 130 (0x102b90 5).
 // @retail 0x100b80
 bool function_100b80(long magazine_index, long weapon_index, long count)
 {
@@ -2841,6 +2851,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 398 (was 398): one 27-label switch whose tree retail lays out inverted on the path to 0x1d0007ba
 // (root, 0x1500056e and 0x1700056c fall through to the high side; no other function in the image has that node
 // shape); frame eight versus four and object/tag/activity homes remain.
@@ -3373,6 +3384,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus

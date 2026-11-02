@@ -231,6 +231,9 @@ struct s_object_flags_256bd0
 // Round 211: complete iterator reference input with byte/native entry, default/complete test
 // result and original/recovered initializer-datum boundaries, scores
 // 201/262/201/262/194/262/194/262. Original executable form restored.
+// Round 230: actual timer-field reference, native twice-used actor ordinal and exact double minimum,
+// seven subsets; all with word status, scores [179, 287, 287, 302, 302, 284, 284, 284].
+// Original executable source restored. Initial marker-argument and position/direction homes remain.
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {

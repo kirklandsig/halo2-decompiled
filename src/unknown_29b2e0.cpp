@@ -51,10 +51,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 244 (was 255): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
+// score 244 (was 244): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// Frame 0x2c and early J preload agree; root/yaw homes, one constant in XMM5 versus XMM4, and rotation registers remain.
+// Earlier at 244: frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // local_11 where retail packs them with the yaw at +0xc, the XMM numbering from the 1.0 constant on and the
 // rotations' register and slot assignment differ; the clamps now have retail's shape.
 // Earlier (255, was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
+// frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
 // where retail keeps them with the yaw at +0xc (local_11 at +0x10, the final pitch in the scale parameter's
 // home), the XMM numbering from the 1.0 constant on, the yaw clamp (retail clamps it in its stack home) and
 // the rotations' register and slot assignment differ.
@@ -193,21 +197,43 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 269: Independent yaw/pitch delta/limit/both 265/255/255; entry declarations 265/255/255;
 // per-axis scopes without/with entry declarations 255/255. Keep separate multi-use step limits,
 // plain 255; magnitude/yaw homes and XMM numbering remain. All other forms restored.
+// Round 112 (m3 lane 7, fast, 0x29b990 listed): the normalizer scaling all three by one reciprocal local
+// (`*=` or `local_1 * x`) 370/370 (1714 bytes; retail's 1.0 in XMM4 then, but X is preloaded and the sqrt
+// home moves to +0x14; 0x29b990 6); the reciprocal on the left for X only with Y/K scaled in place 370; the
+// epsilon test as `fabs(local_0) >= 0.0001f` 392 (0x29b990 42); the clamp helper as one conditional
+// expression 277 (1727 bytes). Compile-only screens (calls opaque, inlined angle helper copy) do not track
+// the real build here (the reciprocal form scored better there).
+// Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
+// with complete role names 255/255/255/255/255/255/255/255.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 30 (lane 2, fast): retail packs the sqrt/acos temporaries with the yaw in [esp+0xc] and gives local_11
 // [esp+0x10] alone; ours packs the temporaries with local_11 in [esp+0x10] and the yaw alone in [esp+0xc]
 // (the inlined acos result then needs its own slot). The yaw renamed to sort before local_11 255; local_11
 // renamed to sort after the yaw 255; both angle declarations moved to the function's top 255 (all the same
 // code); the XY vector initialised before the second copy 253 (two-point gain, not kept), before the first
 // copy 361 (1710 bytes). Retail also spills the pitch into arg_4's home after its last use.
+// Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
+// with complete role names 255/255/255/255/255/255/255/255.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 56 (m3 lane 1, fast, plain-confirmed; 0x29b990 kept its match, 0x29ab90/0x29bab0 unchanged at
 // 383/750): the four clamps through the existing PIN_126660 (include/unknown_124f90.h, the same tests as the
 // private clamp helper, which is removed) 244 (kept: the yaw clamped in its +0xc home and the pitch in a
 // register as retail); on 244: each turn delta clamped in place before the add 264 (1719 bytes); each delta
 // computed before its limit 269; a separate pitch delta local 244 (same code); the first rotation reading
 // arg_2 with no copy 323 (0x29b990 lost); the XY vector initialised before the second copy 242.
+// Round 498: Closed angle/clamp, yaw-rate and pitch-rate regions in all seven nonempty
+// combinations, with independent deltas, 244 each; all regions with complete role names 244.
+// Root/acos +0x14 versus yaw +0xc and XMM allocation remain; original body restored.
 // Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
 // with complete role names 255/255/255/255/255/255/255/255.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 452: pitch-axis production at successful validation, after signed angles, after angular clamps or
+// after turn updates, original then shared cross: 407/370/364/284/401/351/345/263. Original late axis, helper
+// bodies and full source restored; unity register and magnitude/yaw/pitch homes remain.
+// Round 300: Pitch result carries the signed target through the current-angle call: in-place
+// conditional/selection, each with current conditional/selection, 244/244/244/244; complete target
+// arms/selection with the same current forms 276/276/276/276. Original separate target lifetime,
+// native clamps and full body restored; root/yaw homes and constant/result registers remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

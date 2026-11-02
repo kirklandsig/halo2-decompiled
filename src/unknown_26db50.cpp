@@ -602,6 +602,26 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // plain radius 247 / with the reference 245, const radius 213. All 27 of current/vector-in-place/vector-on-copies
 // helper x no phase/phase before/phase after the distance x reference/plain/reference-after-sector radius: none
 // below 70 (vector forms without the phase 75, with it 78; the current helper with a phase 125).
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
+// Round 52 (lane 10, fast): retail's store of the pathfinding data to a slot it never reads before the 0x26d100
+// call is the argument LTCG drops from 0x26d100's unused last parameter (0x26d0e0 passes its third argument,
+// 0x1fa7f0's result, the same way); passing 0x1fa7f0's result there replaces the volatile local at the same 90
+// (same code; fast only: the plain check hit a Wine hang, body restored). Passing it at every call is BLOCKED-BY
+// 0x270400 (contributor call lines); a defaulted parameter needs a ruling. On that form: the getter at the trace
+// call as well 92, as a named local there 92 (only the rotation's XMM numbering moves); a plain radius 211 (the
+// score still rests on the `real const &` radius); the ring term first in the angle 90; the distance product as
+// radius times ring 90.
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
 // Round 35 (lane 15, fast): the angle with the ring term first 90 (same code); sine/cosine computed before the
 // direction copy 101 (1086 bytes); the direction copied after the angle 101 (1086); the origin pointer taken
 // before the pathfinding lookup 90; the distance as `ring * radius + radius * 1.2` 90.
@@ -609,6 +629,15 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the angle, sine and cosine before the direction copy 246 (1104 bytes), the angle alone before the copy 246, the radius
 // as a `real const` local without the reference 222 (1083 bytes); on the current body the angle and trig first 101,
 // the `real const` radius 211 (1092 bytes).
+// Round 150: distance terms swapped (ring product first) 90; angle terms swapped (ring term first) 90; both 90;
+// the distance without the explicit double cast 90; the rotation's dot as dot3f(vector, axis) 90 (all the same
+// code: the ring still converts with fild).
+// Round 233: signed-word ring with short/word/char/byte spokes 117/117/246/246;
+// unsigned-byte ring with the same spokes 130/130/247/247. Original full-width
+// ring, word spoke, helper and complete body restored; ring conversion/spill remain.
+// Round 261: complete native rotated-vector publication with scalar/native input snapshots,
+// split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
+// All restored; SSE ring conversion and the unspilled rotation remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

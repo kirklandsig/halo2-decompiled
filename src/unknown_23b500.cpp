@@ -14,9 +14,11 @@
    shared values, three per influence type, then the influence table */
 struct s_spawn_influence_type
 {
-	real value0;
-	real value4;
-	real value8;
+	union
+	{
+		vector3f vector;
+		struct { real value0, value4, value8; };
+	};
 };
 
 struct s_spawn_influence_globals
@@ -59,7 +61,9 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
-// score 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
+// score 61 (was 97): prologue and 438-byte extent agree; the default-copy destination still
+// uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
+// Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
 // induction where retail keeps the integer offset 0x18..0xa8 with the base in the displacement (16
 // stores 3 bytes shorter), and the alignment pad that puts ahead of the override loop.
 // Earlier (105): addressing the weights through the neighbouring global's own symbol
@@ -195,6 +199,16 @@ struct s_spawn_scenario_23aea0
 // function-scope type for both loops 122; nested loops with a twelve-byte record assignment 145 (406);
 // nested loops through a named source record pointer 123. No other retail function uses this
 // integer-offset store idiom, so no matched sibling shows its form.
+// Round 191 (lane 3): the batch's first type stepping by six (`type = 2; type < 14; type += 6`, inner
+// j loop) 105 (same code); one signed type loop with an unsigned `type - 2u` record index 105 (same
+// code); `extern dword g_502258[]` unsized, linked, 105 (same code); a `dword` type counter from 2
+// 141 (375 bytes, a pointer countdown). Diagnostic, reverted at once: a volatile destination 242
+// (294 bytes, not unrolled, still a pointer). 0x502248..0x502257 hold other globals (a `long *` and
+// the game type), so retail's displacement is only g_502258 - 16, not a wider table.
+// Round 112 (m3 lane 7, fast): the table pointer stored before the tag read 105 (same code); the two scalar
+// defaults through g_502258[0]/[1] as dwords 142 (374 bytes); value0 by the dword array and value4/value8
+// through globals->types[type - 2] 105; `type = 2 + i * 6 + j` 105; the six records of a batch written out
+// (diagnostic) 105 (same code: VC's own unroll). Every form keeps the pointer induction.
 // Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
 // (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
 // (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`
@@ -216,6 +230,15 @@ struct s_spawn_scenario_23aea0
 // bytes); before it, a signed `short` type loop 256 (278 bytes, not unrolled), a do-while type loop 254 (not
 // unrolled). Diagnostic (reverted): the stores aimed at a global defined in a /GL- file keep the pointer
 // induction, so LTCG's view of the symbol is not the cause.
+// Round 498: Source-record-difference destination ordinal, flat table with </!= bounds and
+// field/native tuple copies 346/225/209/225; complete scalar header 357/213/212/213. Record-owned
+// traversal loses the retail unroll or grows the frame/code; original types and body restored.
+// Round 242: Existing vector/point setters at defaults and overrides, mutable/read-only
+// inputs, eight 73s (one-use element alias, exact-only). Direct default vector setter
+// alone 61 plain (438/438, kept); override setter alone 109; both direct vector setters
+// and the direct-union record 73/73. Only the default setter and native scalar/vector
+// record view remain; original scalar defaults, override reloads and signed loops retained.
+// Every other user keeps its score in reduced and ordinary checks; all matches survive.
 // @retail 0x23aea0
 void function_23aea0()
 {
@@ -228,10 +251,10 @@ void function_23aea0()
 	globals->value0 = *(real *)(definition + 0x150);
 	for (long type = 2; type < 14; type++)
 	{
-		s_spawn_influence_type *weights = &globals->types[type - 2];
-		weights->value0 = *(real *)(definition + 0x148 + type * 0x1c);
-		weights->value4 = *(real *)(definition + 0x14c + type * 0x1c);
-		weights->value8 = *(real *)(definition + 0x150 + type * 0x1c);
+		vector3f_assign(&globals->types[type - 2].vector,
+			*(real const *)(definition + 0x148 + type * 0x1c),
+			*(real const *)(definition + 0x14c + type * 0x1c),
+			*(real const *)(definition + 0x150 + type * 0x1c));
 	}
 	if (scenario->count > 0)
 	{
