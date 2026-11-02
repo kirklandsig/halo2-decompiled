@@ -505,6 +505,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // DH round 290: sampled axis ordinal short/word/long/dword reused for all three native
 // component reads, aggregate producers 161/161/161/161; shared setter 173/173/173/173.
 // Original draws, native axis/direction captures, cross/dot, all rows and tail restored.
+// Round 533: Sequential real cosine or wave reuse from the initial envelope,
+// original/immutable time/immutable angle/both input ownership: 117 each. Original
+// scalar lifetimes and complete body restored; frame 0x28 versus 0x20, seed/time
+// schedule and direction/axis/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

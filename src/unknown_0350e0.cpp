@@ -2052,6 +2052,10 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
+// Round 533: Immutable native entry direction with independent rotation output,
+// forward and up inputs, subsets 1/2/4/3/5/6/7 and complete vector role names:
+// 186/177/177/186/186/177/186/186. Original captures, writeback and body restored;
+// frame 0x80 versus 0xc0 and angle/vector-copy/draw homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2355,6 +2359,9 @@ real magnitude3d(vector3f const *v);
 // Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
 // bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
 // Both exact controls survive; original body, math APIs and all rounding/grouping restored.
+// Round 533: Complete projected-axis/cosine-aligned/sine-tangent expression parts,
+// subsets 1/2/4/3/5/6/7 and all with scalar/vector role names: 170/171/170/170/170/171/170/170.
+// Original products and body restored; raw-length/dot/angle homes and rotation allocation remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3605,6 +3612,10 @@ bool __stdcall function_391f0(void *state);
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// Round 533: One genuine element ordinal shared by update pair/render pair/corresponding
+// first/corresponding second/opposite first/opposite second/all phases/all with ordinal role name:
+// 251 each. Original independent ordinals and body restored; frame 0x74 versus 0x70,
+// early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
