@@ -1366,7 +1366,7 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 420 (was 444): the shape is retail's (see round 27 below); registers and frame homes differ, 1737 bytes against 1746.
+// score 420 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1737 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1562,6 +1562,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // (1746 bytes, aligned 273); origin through the query, source after it, zero-init first 428/429; data as an if or if/else 429;
 // the count/data locals named 451; used shared with the no-data arm 469; scan as a for 548 (1858); type as long 487; out point pointer
 // 450-481 (aligned down to 245, 1757-1770); both conversions nested 410; z in a local +4; second edge store 442-449 (1770-1777).
+// Round 316: Eager classification short/word/long/dword with short/long links
+// 427/420/415/422/473/420/473/420; eager word with paired corner results
+// short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
+// original classification, Boolean corners and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
