@@ -387,6 +387,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 507: Direct translated-row publication xzy/yxz/yzx/zxy/zyx 216/213/227/220/230;
 // complete parallel product publication xzy/yzx/zyx 214/225/227. Product forms recover
 // frame 0x2c but not inverse homes; original alias-safe helper and body restored.
+// Round 513: Complete native transform input/output library transfers, input memcpy/memmove,
+// output memcpy/memmove, then both APIs in all four pairs: 248/294/334/295/690/685/687/692.
+// Input memcpy recovers frame 0x2c but regresses; original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
