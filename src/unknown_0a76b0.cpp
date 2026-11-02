@@ -1794,6 +1794,7 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
+// DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2217,6 +2218,7 @@ __forceinline char unit_action_round(real value)
 // J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
 // Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
 // all with success at the final return 278. Sub-eight forms and all other trials restored.
+// DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
