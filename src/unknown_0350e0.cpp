@@ -1789,6 +1789,9 @@ real game_time_get_seconds();
 // F321: entry-owned hash/sample/draw scratch subsets 1/2/4/3/5/6/7 give
 // 507/507/530/507/530/530/530; all with the member vertex API 535 (2308 bytes).
 // Original executable body restored; frame/output homes and EBX/EBP roles remain.
+// Round 369: native external definition/entry/const receiver subsets 1/2/4/3/5/6/7,
+// 507 each; complete native graph with member vertex API 512 at retail length.
+// Original receivers, API and whole body restored; frame/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2218,8 +2221,8 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 57; earlier 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
-// Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// score 57 (was 57): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// Earlier at 202: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
 // x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
@@ -2248,6 +2251,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // P267: coherent range-field observations/range lifetime/normalization lifetime,
 // subsets 1/2/4/3/5/6/7: 237/57/57/237/237/57/237; all with entry-fraction scope 237.
 // Direct-range forms reach retail length but regress; original ranges, scopes and complete body restored.
+// Round 369: existing unit-random producer/entry cursor declarations/entry scalar
+// workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
+// role names 63. Original draws, declarations and complete body restored; lazy saves
+// and the post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2747,7 +2754,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // score 517 (was 517): frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier counts 529 and 561; the logic matches retail block by block (walked statement by statement against
-// score 517 (was 517; earlier 529, 561): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
+// Earlier at 517 (529, 561 before): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
 // Earlier: the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
 // is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
@@ -2777,6 +2784,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Caller stays 251; original scalars, helpers, observations and complete body restored.
 // P267: native long cycle/size/reset carriers, subsets 1/2/4/3/5/6/7: 515/511/519/516/518/513/519; all byte carriers 517.
 // Best lead is below the keep threshold; original flag types and complete body restored.
+// Round 369: actual state-scalar/view-and-offset/three-component cursor subsets
+// 1/2/4/3/5/6/7 give 533/523/525/536/536/530/526; all with repeated native
+// flags 557 (frame 0x5c). Original indexed graph and whole body restored; frame and velocity reads remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

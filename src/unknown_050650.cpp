@@ -504,9 +504,8 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 322): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
-// (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
-// schedules differ.
+// score 322 (was 322): frame 0xa8 agrees; first +0xa acquires pitch inputs before the default vector.
+// Normalization scratch at +0x2c versus +0xc displaces axis/result homes; trig and rotation schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
 // random/trig and vector schedules still differ.
@@ -627,6 +626,10 @@ struct s_collision_result_buffer_1697c0
 // Original result boundaries and all body/helper text restored; scratch and axis homes remain.
 // Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
 // 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
+// Round 369: normalizer short-vector return/shared success exit/CRT output subsets
+// 1/2/4/3/5/6/7: 334/363/322/385/334/363/385; all with Boolean clear 384.
+// Exit forms use frame 0xa4 and demote the matched caller to 10; original helper, output copies,
+// result flow and complete body restored. Scratch/axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
