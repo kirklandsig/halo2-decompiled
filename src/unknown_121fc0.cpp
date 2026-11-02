@@ -194,6 +194,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
 // `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
 // before the token array, unique first 127.
+// Round 299: Standard endpoint/count-based native pointer-table initialization, with independent
+// counters before the table and zero read-count interactions: 238/239/238/239/225/225/225/225. All
+// original source/includes restored; outer EBP preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

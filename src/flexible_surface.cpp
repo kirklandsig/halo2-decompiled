@@ -334,6 +334,9 @@ void function_117510(long index)
 // Round 41 (lane 13, --fast): per-use link fields 154 (742 bytes; ours colours delta j/k/i xmm5/xmm6/xmm4 and length
 // xmm2, retail xmm6/xmm4/xmm3 and xmm5); on it `real length`, `real squared, length`, `vector3f delta` or the link
 // pointer declared at function scope 154 each (scope reaches neither the re-read nor the colouring). All restored.
+// Round 299: Native pinned-array base once per function/constraint, each with endpoint
+// snapshots/live fields and existing complete difference: 139/139/154/154/139/139/154/154. Every
+// original body restored; entry record/link allocation and pin-word/correction scheduling remain.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -537,6 +540,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
 // 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
+// Round 299: Complete native-array rotation consumer; direct initialization result, staged cross,
+// projection-first and final-output-loop interactions 169/172/169/172/165/165/169/183. All original
+// source restored; frame, old-direction storage and seed/time/rotation/tail scheduling remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

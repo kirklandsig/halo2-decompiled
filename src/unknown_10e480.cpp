@@ -329,6 +329,9 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // absolute comparison, masks 1..7, 364/299/438/371/432/400/448; complete graph
 // with finite sampled status 454. Original full body and includes restored;
 // frame 0x30/0x2c, weighted getter expansion and ordinal/transforms homes remain.
+// Round 299: Finite sampled-outcome domain in both encodings, initialized at the original,
+// pre-getter, positive-entry and function-entry lifetimes: 215/280/306/318/259/288/312/322. Exact-only
+// result forms and original full body restored; frame, getter and destination/ordinal homes remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

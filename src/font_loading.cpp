@@ -614,6 +614,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N round 296: Standard endpoint/count-based fill contracts independently in switch/ordinary
 // run families, all eight nonoriginal combinations 138/165/173/214/199/173/194/246. Original
 // decoder, helper and includes restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 299: Native literal word/dword byte views, high/low-first and original/full helper parity:
+// 141/141/137/137/183/183/180/180. Exact-only representation forms and the entire original helper/body
+// restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
