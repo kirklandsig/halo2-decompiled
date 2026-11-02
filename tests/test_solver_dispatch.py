@@ -431,6 +431,67 @@ def test_scalar_friction_clamp_rounding(solver_images, kind, precision):
     assert all(coverage.values()), (kind, precision, coverage)
 
 
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_circular_coupling_product_keeps_extended_precision(solver_images, precision):
+    # (2**p + 1) * (1 + 2**-p) - (2**p + 2) leaves 2**-p.
+    # A float spill of the coupled product loses that remainder. Retail's
+    # 24-bit mode rounds the multiplication itself; 53/64-bit modes keep it.
+    for exponent in (12, 16, 20, 22):
+        for sign in (-1, 1):
+            data = solver_case(7, 2)
+            put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+            for body in (HEAP, HEAP + 0x80):
+                for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                    put(data, body + offset, '4f', 0, 0, 0, 0)
+            put(data, TERMS, '24f', *([0] * 24))
+            put(data, TERMS + 12, 'f', -sign * (2.0 ** exponent + 2))
+            put(data, TERMS + 44, 'f', 1)
+            put(data, TERMS + 60, 'f', sign * (2.0 ** exponent + 1))
+            put(data, OPS + 24, 'IIffI', 0x51407, FRICTION_RESULTS,
+                1 + 2.0 ** -exponent, 1e15, 12)
+            put(data, OPS + 44, 'I', 0x400)
+            put(data, IMPULSES, '2f', 0, 0)
+            context = ('coupled product cancellation', exponent, sign)
+            snapshots = compare_case(solver_images, data, precision, context)
+            assert snapshots[0] == snapshots[1], (context, precision)
+            expected = 0.0 if precision == 0x7f else sign * 2.0 ** -exponent
+            for heap, _ in snapshots:
+                actual, = struct.unpack_from('<f', heap, IMPULSES - HEAP)
+                assert actual == expected, (context, precision, actual, expected)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_circular_coupling_nan_payloads(solver_images, precision):
+    # Competing payloads expose operand-order changes that NaN-equal or
+    # tolerance-based comparisons cannot see. Keep all unrelated axes zero.
+    fields = [TERMS + 12, TERMS + 60, TERMS + 44, TERMS + 92, OPS + 32]
+    payloads = [0x7fc00001, 0xffc00001, 0x7fc54321, 0xffc54321]
+    cases = [(field, bits, None, 0) for field in fields for bits in payloads]
+    cases += [(first, a, second, b)
+              for first, second in [(TERMS + 44, TERMS + 92), (TERMS + 12, OPS + 32)]
+              for a in payloads for b in payloads]
+    for first, a, second, b in cases:
+        data = solver_case(7, 2)
+        put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
+        for body in (HEAP, HEAP + 0x80):
+            for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+        put(data, TERMS, '24f', *([0] * 24))
+        put(data, TERMS + 12, 'f', 0.9)
+        put(data, TERMS + 44, 'f', 0.6)
+        put(data, TERMS + 60, 'f', 0.5)
+        put(data, TERMS + 92, 'f', 0.8)
+        put(data, OPS + 24, 'IIffI', 0x51407, FRICTION_RESULTS, 0.3, 0.7, 12)
+        put(data, OPS + 44, 'I', 0x400)
+        put(data, IMPULSES, '2f', 0.25, -0.125)
+        put(data, first, 'I', a)
+        if second is not None:
+            put(data, second, 'I', b)
+        context = ('coupled NaN payload', first, hex(a), second, hex(b))
+        snapshots = compare_case(solver_images, data, precision, context)
+        assert snapshots[0] == snapshots[1], (context, precision)
+
+
 def mixed_case(seed):
     data = solver_case(12, seed)
     for start, end in ((0x1000, 0x3000), (0x4000, 0x7000)):

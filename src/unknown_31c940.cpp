@@ -384,15 +384,27 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 7:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+				float target_a = row->linear.m128_f32[3];
 				solver_scalar_31c940 projected_a = linear_velocity(row, a, b);
 				solver_scalar_31c940 projected_b = linear_velocity(row + 1, a, b);
-				float error_a = row[0].linear.m128_f32[3] * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
+				float error_a = target_a * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
 				float error_b = row[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
 				float maximum = operation_float(op, 12);
-				// The circular limit is rounded before comparison and division.
-				volatile float maximum_squared = maximum * maximum;
-				float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
-				float impulse_b = row[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
+				// Round the circular limit to its float home before comparison and
+				// division; the reads can then use that home directly.
+				float maximum_squared;
+				float volatile &maximum_store = maximum_squared;
+				maximum_store = maximum * maximum;
+				// Capture each mass before its coupled product. These product locals
+				// retain the extended x87 value until addition to the diagonal term.
+				float const volatile &mass_a_source = row[0].b.m128_f32[3];
+				float mass_a = mass_a_source;
+				float coupled_a = error_b * operation_float(op, 8);
+				float impulse_a = mass_a * error_a + coupled_a;
+				float const volatile &mass_b_source = row[1].b.m128_f32[3];
+				float mass_b = mass_b_source;
+				float coupled_b = error_a * operation_float(op, 8);
+				float impulse_b = mass_b * error_b + coupled_b;
 				// Retain the first tangential square before adding the second.
 				float norm = impulse_a * impulse_a;
 				norm += impulse_b * impulse_b;
