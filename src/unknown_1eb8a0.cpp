@@ -320,6 +320,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DL225: alias-safe library direction copies at activation/refresh/angular fallback,
 // masks 1..7: 700/716/718/700/718/706/728; all with initial output copy 755. All restored;
 // frame 0x24 and clock EDI agree, but direction rather than sample still takes EBX at +9.
+// DH277: complete native component-square products at activation/displacement/sample sites, subsets 1-7,
+// 683/642/671/642/683/642/671; complete ordered sums 668. Unlike whole squared-length names, all product
+// terms were explicit; all restored with original 0x24 frame, inputs, counter qualifier and exact caller.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

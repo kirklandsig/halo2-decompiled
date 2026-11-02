@@ -284,6 +284,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
 // Handle ECX and stored-success memory test remain; original task values, waits, completion
 // qualifier and complete executable body restored.
+// DH277: two file-indexed success destinations, uninitialized/zeroed and wide/byte guards on local/direct
+// file flows 89/96/98/101/69/72/96/70. All exact-only table forms restored; original scalar outcome, file
+// value, waits and completion qualification retained.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

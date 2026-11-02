@@ -7071,7 +7071,7 @@ real function_50650(real cosine);
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
-// score 563 (was 653): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
+// score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -7119,6 +7119,9 @@ real function_50650(real cosine);
 // native copied axis normalized in place 574, with early reciprocal 563 (plain kept);
 // either axis scaled before trigonometry 600/574; reciprocal without native axis 591;
 // native axis/reciprocal without clamped producer 615. Original transform helpers retained.
+// DH277: complete prediction field/scalar accumulators and radial/cosine terms 566/566/563/556; with shared
+// cross 585/585/585/595. Seven-point cosine-term lead at 2479/2483 rejected below eight; original body and
+// transform helpers restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
