@@ -940,6 +940,11 @@ struct s_1ac612
 // itself stays out of line 301 (918 bytes); the body as a file-local forceinline helper 29, as a
 // plain inline helper 29; through actor_datum_get with the location-record field names 29; best
 // index at function scope with the selection block after the first one 273 (984 bytes).
+// Round 72 (lane 9, fast): the forward product computed before the marker difference 29; the up axis
+// global read into a pointer local used for all three terms 58; the marker difference through the
+// existing vector3d_from_points3d 29; best index/value declared before the query and assigned after it 29,
+// the index declared at entry 29. Diagnostic: actor_get as offset-first sum or array element 29/29
+// (header restored), so the EBP/EDI swap is not the accessor's spelling.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)
