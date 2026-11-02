@@ -388,6 +388,8 @@ void function_07b3e0(void)
 // existing scanner and immutable receiver combinations:
 // 53/39/53/39/53/39/53/39. Original sentinel loop restored;
 // split scan/datum pool residency and found-arm layout remain.
+// M290: Native char/short/byte/word ordinals for the real 32-slot pool, preincremented input, cached/dynamic scanner:
+// 76/67/76/69/76/67/76/69. Original executable body restored.
 // @retail 0x7b430
 void function_07b430(void)
 {
