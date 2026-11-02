@@ -285,6 +285,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // origin-first/extent-first and flipped/unflipped arm order: 410/411/439/439/420/420/447/447. Original
 // helper, complete callback and all in-place input-before-store captures restored; tint/second-UV homes and
 // blend residence remain.
+// Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
+// 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
+// component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
