@@ -2349,6 +2349,7 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // Round 250: complete paired side-torque stages, named turn parts and named drive products 101 each;
 // gear-only scope alone and with each producer 101; scoped contact ordinal with stages/gear 101.
 // Original body and spin helper restored; NONE edge, zero/product carriers and spin staging remain.
+// Round 319: Per-contact selected torque result right-default/left-default/branch/conditional 101/101/101/101; each with NONE-first gear 127/127/127/127. Original complete body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2634,7 +2635,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 706 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2659,6 +2660,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // Round 251: Angular-output/banking/conversion lifetime subsets 1/2/4/3/5/6/7 with a distinct relative
 // transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
 // complete body restored; retail frame 0xfc and scalar/transform homes remain.
+// Round 319: Complete bounded forward/left/up speeds before reciprocal with distinct relative output, six producer orders 699/699/699/699/699/699; immutable 699; original output 692, kept and plain-confirmed. All fraction trees and original observations preserved.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2698,10 +2700,13 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	vehicle_approach(&vehicle->unknown370, (real const *)(definition + 0x22c), elevation, dt);
 
 	real speed = vehicle->speed * boost;
+	real bounded_forward_speed = PIN(speed, 0.0f - maximum_speed, maximum_speed);
+	real bounded_left_speed = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed);
+	real bounded_up_speed = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed);
 	real inverse_maximum = 1.0f / maximum_speed;
-	real forward_fraction = PIN(speed, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real left_fraction = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real up_fraction = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
+	real forward_fraction = bounded_forward_speed * inverse_maximum;
+	real left_fraction = bounded_left_speed * inverse_maximum;
+	real up_fraction = bounded_up_speed * inverse_maximum;
 	vector3f up;
 
 	up.i = -(facing->k * facing->i);

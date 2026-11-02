@@ -2341,6 +2341,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
 // k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
 // unscaled else), reloading only i; ours reloads all three in each arm.
+// Round 319: Native speed/velocity/normal-output role names, subsets 1/2/4/3/5/6/7 91/91/91/91/91/91/91; all with enclosing output declaration 91. Original names, declarations and body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
