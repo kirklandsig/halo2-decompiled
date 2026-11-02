@@ -92,6 +92,30 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 	*result += impulse;
 }
 
+static __forceinline void apply_linear_spilled(float const volatile &source, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result)
+{
+	// These normal-pair impulses have already been spilled to float. Load that
+	// value for accumulation and copy its bits into the SIMD scalar.
+	float impulse = source;
+	float rounded_impulse;
+	*(unsigned long *)&rounded_impulse = *(unsigned long const volatile *)&source;
+	__m128 scalar = _mm_set_ss(rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	b->linear = _mm_sub_ps(b->linear, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	b->angular = _mm_add_ps(b->angular, angular_b);
+	*result += impulse;
+}
+
 static __forceinline float &operation_float(unsigned char *op, long offset)
 {
 	return *(float *)(op + offset);
@@ -135,8 +159,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	{
 		if (impulse_b > 0.0f)
 		{
-			apply_linear(impulse_a, row, a, b, result);
-			apply_linear(impulse_b, row + 1, a, b, result + 1);
+			apply_linear_spilled(impulse_a, row, a, b, result);
+			apply_linear_spilled(impulse_b, row + 1, a, b, result + 1);
 			return;
 		}
 	}
@@ -295,7 +319,76 @@ static __forceinline void solve_angular_friction_kernel(float target, float limi
 	*result += impulse;
 }
 
-// score 2144 (was 2151): construct coupled/residual projections in place.
+// Keep B's field addresses across consecutive bounded angular rows. Capture
+// both axes before either angular write; only the SIMD impulse rounds here.
+static __forceinline void solve_bounded_angular(float mass, float target,
+	solver_angular_row_31e7b0 *row, solver_velocity_31c940 *a,
+	__m128 &velocity_b, __m128 const *const volatile &inverse_b_pointer,
+	float const &upper, float const &lower, solver_step_31c940 *const volatile &step, float *result)
+{
+	__m128 axis_a = row->a, axis_b = row->b;
+	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(velocity_b, axis_b));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+	// Keep the mass multiplication before the step scale, without an early
+	// float spill. Both clamps retain their divide-then-multiply sequence.
+	double mass_error = (target - projected) * mass;
+	float impulse = mass_error * load_error_scale(step);
+	if (impulse > upper)
+	{
+		float ratio = upper / impulse;
+		impulse = ratio * impulse;
+	}
+	else if (impulse < lower)
+	{
+		float ratio = lower / impulse;
+		impulse = ratio * impulse;
+	}
+	__m128 scalar = _mm_set_ss(impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
+	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+	*result += impulse;
+}
+
+// Preserve the captured linear axis through projection and update. The angular
+// axes reload after the linear stores, as required when rows overlap bodies.
+static __forceinline void solve_unilateral_linear(float target,
+	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
+	__m128 &linear_b, __m128 &angular_b, solver_step_31c940 *const volatile &step, float *result)
+{
+	__m128 axis_linear = row->linear;
+	__m128 relative = _mm_sub_ps(a->linear, linear_b);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b));
+	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, axis_linear));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+	solver_step_31c940 *parameters = step;
+	float error = target * parameters->error_scale - projected * parameters->velocity_scale;
+	if (error > 0.0f)
+	{
+		float impulse = error * row->a.m128_f32[3];
+		__m128 scalar = _mm_set_ss(impulse);
+		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+		__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
+		__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+		a->linear = _mm_add_ps(a->linear, delta_a);
+		linear_b = _mm_sub_ps(linear_b, delta_b);
+		__m128 angular_a = _mm_mul_ps(change_a, row->a);
+		__m128 angular_second = _mm_mul_ps(change_b, row->b);
+		a->angular = _mm_add_ps(a->angular, angular_a);
+		angular_b = _mm_add_ps(angular_b, angular_second);
+		*result += impulse;
+	}
+}
+
+// score 2074 (was 2144): retain row fields and transfer spilled contact bits.
 // Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -355,11 +448,13 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 2:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
+				__m128 *linear_b_pointer = &body_b->linear;
+				__m128 *volatile angular_b_pointer = &body_b->angular;
 				do
 				{
-					float error = row->linear.m128_f32[3] * load_error_scale(step)
-						- linear_velocity(row, a, b).value * load_velocity_scale(step);
-					if (error > 0.0f) apply_linear(error * row->a.m128_f32[3], row, a, b, result);
+					solve_unilateral_linear(row->linear.m128_f32[3], row, a, b,
+						*linear_b_pointer, *angular_b_pointer, step, result);
 					++row; ++result; op += 4;
 				} while (*op == 2);
 				terms = (__m128 *)row;
@@ -495,27 +590,16 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 4:
 			{
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
+				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *velocity_b_pointer = &body_b->angular;
 				do
 				{
-					float mass = row->a.m128_f32[3];
+					float const volatile &mass_source = row->a.m128_f32[3];
+					float mass = mass_source;
 					float target = row->b.m128_f32[3];
-					// The wider intermediate prevents reassociation of mass and step scale
-					// while retaining the extended x87 value across both multiplications.
-					double mass_error = (target - angular_velocity(row, a, b)) * mass;
-					float impulse = mass_error * load_error_scale(step);
-					// Preserve the ratio before multiplying by the original impulse.
-					// Compound assignment can cancel the lower clamp's division.
-					if (impulse > operation_float(op, 4))
-					{
-						float ratio = operation_float(op, 4) / impulse;
-						impulse = ratio * impulse;
-					}
-					else if (impulse < operation_float(op, 8))
-					{
-						float ratio = operation_float(op, 8) / impulse;
-						impulse = ratio * impulse;
-					}
-					apply_angular(impulse, row, a, b, result);
+					solve_bounded_angular(mass, target, row, a, *velocity_b_pointer, inverse_b_pointer,
+						operation_float(op, 4), operation_float(op, 8), step, result);
 					++row; ++result; op += 16;
 				} while (*op == 4);
 				terms = (__m128 *)row;
