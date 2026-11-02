@@ -171,7 +171,7 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
 // pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
 // argument and the 2308-byte length agree.
-// score 118 (was 620): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// score 118 (was 118): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
 // getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
 // Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses
 // ESI for the player index and the player pointer and keeps the unit pointer in EBX; ours folds the base
@@ -337,6 +337,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // 171 each before the split test (all keep the byte load); macro spellings 118/118/124/118; the unit pointer named as in
 // 0x1e83c0 118, with a named index too 193; getter locals swapped 118; entry declared apart 118, initialised NULL 118;
 // player index declared apart 118; player index before the result 118.
+// Round 515: Parent-first seat acquisition with bounds-getter failure exits, native seat-flag
+// snapshot and uniform parent-field reads, eight subsets 117/117/456/456/117/117/456/456.
+// One-point best rejected; original getter, case graph and complete executable body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

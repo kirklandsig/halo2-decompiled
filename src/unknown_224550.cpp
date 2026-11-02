@@ -282,6 +282,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // origin-first/extent-first and flipped/unflipped arm order: 410/411/439/439/420/420/447/447. Original
 // helper, complete callback and all in-place input-before-store captures restored; tint/second-UV homes and
 // blend residence remain.
+// Round 515: Native first/next/both selected-frame values at index production or first use
+// 441/432/475/420/419/473; both with branch-produced primary aspects 474/466.
+// Tint/second-UV homes remain; complete native inputs, scalar phases and body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
