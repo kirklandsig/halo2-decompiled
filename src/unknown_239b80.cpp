@@ -723,6 +723,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Original state and arithmetic graph restored; count/prior-side and SIMD homes remain.
 // Round 362: End-bounded input traversal, crossed with short/native mask ordinal, default/test-assigned fraction and loop-end/pre-append prior side.
 // 326/321/310/304/176/176/273/273. Original executable source restored.
+// Round 364: Coordinated long/int input-count contracts: direct 283/283; reused signed-word
+// count at entry 198/198 or alias join 199/199; entry word-normalized parameter 296/296.
+// All restored; count ECX, prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
