@@ -1995,6 +1995,9 @@ void function_269250(long clump_index, long actor_index);
 // DH292: Common final transfer after intact selected/created merge arms, selected/separate destination,
 // existing/creation-first priority: clump identity 146/151/147/152; native datum identity
 // 193/192/188/187. Original separate transfers, common score and entire body restored.
+// DH296: Joint function-owned group iterator/selected/best storage subsets
+// 1-7 and all with persistent score storage, eight forms 87 each. Every original
+// per-actor initialization and per-candidate assignment retained; full body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

@@ -534,6 +534,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH283: Repeated depth captured as short, with parent/edge/both field captures
 // 425/401/378/420; corresponding long depth forms 426/402/406/420.
 // Original indexed memcpy, field observations, private helpers and complete body restored.
+// DH296: Complete projection/displacement/shared-setter producer subsets
+// 313/295/313/297/313/297/313; all with bounded short link count 354.
+// Original parallel products, point stores and entire body restored; frame and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
