@@ -1609,6 +1609,7 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // P255: Existing object getter at both/first/second headers 17/13/17; paired dot helpers
 // 361, with both/first/second getters 365/361/365; reversed paired dots with both getters
 // 365. Original body restored; header SIB, join reloads and cross/dot ranks remain.
+// J239: actual table-base capture 521; separate refresh/publication ordinals 17; bounded short ordinal 384; base with separate ordinals 521; base with short ordinal 506; separate short ordinals 384; all three 506; sequential animation-ID output cursor 17; coordinated kind-getter inline declarations 13. Original body and declarations restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
