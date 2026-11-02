@@ -1247,6 +1247,9 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // first 118, indexed with `long i;` first 118; sibling first offset named offset/aa_offset 118/118; masks
 // chained 122; a mask copied from another 118; indexed first with index do-whiles (`while (++i < count)`)
 // later 131, all three as index do-whiles 163 (no down-counter).
+// Round 113: field versus initial offset with guarded do 1; exact sibling first with third
+// while/count-first/reversed condition 3/3/3; split third offset 118; all sibling loops with
+// early fourth mask 123; split mask defaults and Boolean fourth-mask zero on score-3 form 3/3.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {
