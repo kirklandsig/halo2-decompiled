@@ -274,7 +274,7 @@ static __forceinline void solve_angular_friction_kernel(float target, float limi
 	*result += impulse;
 }
 
-// score 2114 (was 2219): native friction projections and retained field homes.
+// score 2072 (was 2114): retain the residual pass's impulse cursor advances.
 // Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -681,6 +681,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		// This pass keeps B in a register across consecutive residual rows.
 		solver_velocity_31c940 *b;
 		op = operations;
+		// Retail advances the impulse cursor with each residual row, while
+		// this pass writes the remaining errors back into the row stream.
+		result = impulses;
 		goto residual_header;
 		for (;;)
 		{
@@ -704,6 +707,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					row[0].linear.m128_f32[3] -= velocity_a;
 					row[1].linear.m128_f32[3] -= velocity_b;
 					terms += 6;
+					result += 2;
 					op += op[1];
 				} while (op[2] == 5);
 				break;
@@ -718,9 +722,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					row[0].linear.m128_f32[3] -= velocity_a;
 					row[1].linear.m128_f32[3] -= velocity_b;
 					terms += 6;
+					result += 2;
 					solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)terms;
 					spin->b.m128_f32[3] -= angular_velocity(spin, a, b);
 					terms += 2;
+					++result;
 					op += op[1];
 				} while (op[2] == 6);
 				break;
@@ -731,7 +737,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				do
 				{
 					row->linear.m128_f32[3] -= linear_velocity(row, a, b).value;
-					++row; op += op[1];
+					++row; ++result; op += op[1];
 				} while (op[2] == 3);
 				terms = (__m128 *)row;
 				break;
@@ -742,7 +748,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				do
 				{
 					row->b.m128_f32[3] -= angular_velocity(row, a, b);
-					++row; op += op[1];
+					++row; ++result; op += op[1];
 				} while (op[2] == 4);
 				terms = (__m128 *)row;
 				break;
