@@ -307,6 +307,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // N303: Distinct first-second/first-third/second-third/all marker batches grouped at collection
 // or object scope: 908f each (control 931f, baseline 882 plain). Exact-only forms restored;
 // original separate buffers, query storage, qualifiers and full body retained.
+// Round 317: Native first/second/vehicle relative-vector subsets 1..7, all with shared marker dots
+// 916/916/911/921/913/913/929/917 fast. Original full body restored.
+// Paired-marker ordinary 918; original body restored.
+// Actor/unit and priority/query/marker homes and excess twelve frame bytes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1146,6 +1150,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // N303: Final vertex from the already selected endpoints: conditional/if-else/default-to/default-from
 // 361/361/369/369; default before geometry to/from 369/375; native word endpoints/all indices
 // 397/358. Original body restored; frame 0x30 versus 0x28 and geometry/vertex homes remain.
+// Round 317: Actual endpoint-word/point/node lvalue subsets 1..7, all plus first portal lvalue
+// 333/324/333/324/333/324/333/333 fast; all original receivers and body restored.
+// Frame 0x30 versus 0x28, zero/radius lifetime and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

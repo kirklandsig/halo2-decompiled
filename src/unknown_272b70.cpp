@@ -2667,6 +2667,9 @@ struct s_scenario_scripting_view
 // Round 232: Explicit signed-short wrapping in long/int induction carriers, then unsigned word/dword
 // carriers with uniform signed-short observations; early/loop-owned pairs 93/96/93/96/80/87/80/87.
 // Original complete search restored; actor/counter homes and delayed scripting observation remain.
+// Round 317: Common final-exit graph crossed with sign-extended selector, delayed short counter and
+// admitted scripting-data read 80/96/87/92/96/95/98/99 fast. Original complete search restored.
+// Actor/set/counter homes and delayed scripting-data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
