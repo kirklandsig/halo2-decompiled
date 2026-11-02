@@ -2255,6 +2255,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
 // role names 63. Original draws, declarations and complete body restored; lazy saves
 // and the post-fstp count comparison remain.
+// N325: Complete range/normalization/extent validation-result producers, seven subsets,
+// 62/57/57/62/62/57/62; all with outer admission result 62. Original tests and
+// complete body restored; frame agrees, lazy saves and the post-fstp count compare remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
