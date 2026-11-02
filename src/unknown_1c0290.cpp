@@ -295,6 +295,11 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 // Round 109: two-use actor index local 26; scoped slot 26; masked reset index 26; reset-only formal
 // read 26; reset in the return expression 26; reset before actor 36, after flags 41, before prop 33;
 // permuter initial build timed out at 2400 s.
+// Round 195 (lane 3, fast): every store through a cast of `slot` (no state local) 26; that with the actor read
+// at its use 36 (133 bytes); a two-use game-time globals local 29, with the slot declared first 29; the actor as
+// a reference 26. Compile-only: the reset address spelled offset-first, as an array element or as pointer
+// arithmetic, and 0-9 unused probe locals, all keep the index in ECX; the reset with at most two zero stores
+// gives retail's EAX index, so the allocator ties slot and index on the reset's length, not on numbering.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {

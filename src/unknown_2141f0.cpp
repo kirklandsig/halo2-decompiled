@@ -79,6 +79,7 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
 // score 37 (was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
 // and completed/limit registers, and state 16/19 store scheduling still differ.
 // Round 115: chunk-first, slot/chunk-first and remaining/slot/chunk declarations 141 each;
