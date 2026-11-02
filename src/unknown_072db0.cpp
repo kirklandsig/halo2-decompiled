@@ -1571,6 +1571,8 @@ struct s_rating_summary
 // Round 273: joint team-statistics/ordinal/bound role names, seven subsets 31 each;
 // all three with an uninitialized iteration-entry statistics declaration 31. Original
 // complete body restored; formatter/count schedule and team/counter homes remain.
+// M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
+// One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

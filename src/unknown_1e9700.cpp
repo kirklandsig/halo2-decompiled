@@ -326,6 +326,7 @@ struct s_object_damage_view
 // P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
 // corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
 // Original domains and body restored; scalar homes and biased history cursor remain.
+// DL245: Frame 0x50 agrees; victim-team/credited-player/code homes and amount-biased history cursor remain. Dword consideration/hostility/friendly subsets 381/360/390/354/380/354/397; all word 412. Native unsigned cutoff/recent/both 353 each. Original Boolean, signed window and record graph restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
