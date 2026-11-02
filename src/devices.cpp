@@ -813,6 +813,9 @@ struct s_device_machine_view
 // second-bit local 122. Screen: that bool tested nested, after a `first` bool, with `!= 0` on the first bit,
 // as `second == true`, const, through a `both` bool, through a ternary value, or braced: all the shift
 // (aligned 2); `&` of the bits 13.
+// Round 284: complete case-local numeric result production, conditional delay/position/power
+// selected-value subsets 151/150/123/143/134/145/120; all with native group masks 155.
+// Original body restored; word-load/EAX sharing and power-velocity zero join remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
