@@ -1568,6 +1568,8 @@ struct s_camera_clip_reference_16ebf0
 	byte field_14[4];
 };
 
+// MiniMax R (11-01): the first cross-product carriers still differ; a permuter run over this
+// function was killed before it printed, so no new form was found.
 // score 87 (was 87): frame 0x98, vector homes and forward/position EBX/EBP now agree;
 // Left: cross-product carriers, clipping-result production and interpolation scheduling.
 // Earlier: frame 0x98 and the state/forward/up/point homes agree. Left: the forward and

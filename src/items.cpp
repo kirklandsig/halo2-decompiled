@@ -572,6 +572,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
+// 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
+// of x87 st(1) and the plane joins keep their own xmm order.
 // score 211 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
@@ -628,6 +631,10 @@ struct s_item_collision_bsp
 // join, eight combinations 211/211/211/211/211/263/263/263. Integer-step and final-only fraction forms
 // tie; speed-fraction forms shrink to 1331 bytes and regress. Original expanded draws, common scale,
 // protected plane interface and whole body restored.
+// DL224: Axial source pointer/conditional pointer/selected external reference 311 each; all
+// original spin products at the common join on those three graphs 328 each; shared float scale
+// with pointer/reference 328 each. Original source observations, random draws, pending-k join and
+// helper interfaces restored; protected plane width and plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1134,6 +1141,10 @@ struct s_item_flags_view_10b850
 // Round 288: Paired contact-position setters with predicted-position/contact-copy/ray helper masks
 // 0..7 894/887/883/883/821/886/876/882. Native point boundaries recover frame 0x148 in initial forms
 // but regress; complete original constructions, copies, helpers, rotation and flow operands restored.
+// DL224: Isolated staged flow cross 927; with complete rotation publication kij 934; with pre-
+// projection cosine-product orders ijk/ikj/jik/jki/kij/kji 924 each. All original flow operands,
+// private helpers and complete body restored; frame, entry Boolean publications and
+// carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1484,6 +1495,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body
 // restored.
+// Round 242: On the paired-setter/two-use-spin graph, native short/long countdown values
+// captured before admission or after the positive test, with spin consumed after damping,
+// 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
+// paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
+// release/event homes remain. Earlier terminal-only short work preceded this graph.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

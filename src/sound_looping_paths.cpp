@@ -232,6 +232,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
 // Round 54 (m3 lane 1, fast): retail reads the query count straight from the out-parameter as a dword and keeps
 // the choice count in ESI as a dword (the entry zero in ESI becomes the count; `cmp esi, 2`): the count read
 // directly with a long choice count 927 (3297 bytes; aligned differing lines 700 -> 585), with the short choice

@@ -4,6 +4,14 @@
 
 #include "unknown_11c920.h"
 #include "globals.h"
+#include "camera_storage.h"
+#include "reset_storage.h"
+#include "sound_sources.h"
+#include "unknown_0259d0.h"
+#include "vector_products.h"
+#include "slot_handler.h"
+#include "unknown_1765e0.h"
+#include <xtl.h>
 #include <string.h>
 #include <math.h>
 
@@ -153,6 +161,320 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 	else
 		result = 0.0f;
 	return result;
+}
+
+
+/* the liquid draw callback (0x508d0): the types it reads; see docs/unknown_0508d0.md */
+
+/* the payload of a queued liquid record (unknown_01cf50.cpp's 0x429a0) */
+struct s_liquid_draw_payload
+{
+	byte type;
+	byte opacity;
+	byte unknown02[2];
+	long a;
+	long definition_index;
+	long liquid_index;
+	point3f position;
+	point3f endpoint;
+	vector3f first;
+	vector3f second;
+};
+
+/* a sub-element of a liquid element (0x38 bytes): one strip */
+struct s_liquid_strip
+{
+	byte unknown00[0xc];
+	short sequence;
+	byte unknown0e[2];
+	s_noise_curve amount_curve;
+	s_noise_curve colour_curve;
+	s_noise_curve index_curve;
+	s_noise_curve facing_curve;
+	s_noise_curve width_curve;
+};
+
+/* an element of a liquid definition (0xec bytes), read here as copies of an arc */
+struct s_liquid_arc
+{
+	byte flags;
+	byte unknown01;
+	short exponent;
+	real length;
+	short copies;
+	byte unknown0a[2];
+	real cone_angle;
+	real period;
+	byte unknown14[0x20 - 0x14];
+	long effect_tag_index;
+	byte unknown24[4];
+	long bitmap_tag_index;
+	byte unknown2c[0xd4 - 0x2c];
+	long strip_count;
+	s_liquid_strip *strips;
+	s_noise_curve amplitude_curve;
+	s_noise_curve alpha_curve;
+};
+
+struct s_liquid_arc_definition
+{
+	short unknown00;
+	short kind;
+	byte unknown04[0x40 - 4];
+	real near_distance;
+	real far_distance;
+	byte unknown48[0x68 - 0x48];
+	long arc_count;
+	s_liquid_arc *arc_list;
+};
+
+/* the collision result of 0x1697c0 (0x5c bytes), as read here */
+struct s_liquid_collision
+{
+	long type;
+	real t;
+	point3f point;
+	dword start_location[2];
+	s_location end_location;
+	dword material;
+	plane3f plane;
+	byte unknown38[0x5c - 0x38];
+};
+
+typedef char assert_liquid_strip_size[(sizeof(s_liquid_strip) == 0x38) ? 1 : -1];
+typedef char assert_liquid_arc_size[(sizeof(s_liquid_arc) == 0xec) ? 1 : -1];
+typedef char assert_liquid_collision_size[(sizeof(s_liquid_collision) == 0x5c) ? 1 : -1];
+
+struct s_render_reset_state;
+struct s_collision_result_1697c0;
+struct s_tag_data;
+struct s_501e0;
+extern byte g_46713c;
+extern byte g_4670bc;
+extern short g_47d8e0;
+real function_30bf0(vector3f *v);
+void function_16b10(s_render_reset_state *state);
+byte *function_c4210(long index, long element_index);
+long function_c4250(long index);
+bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector,
+	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *collision);
+void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index,
+	long entry_element_index, long index, long variant, long *first_value04, long *second_value04,
+	long *first_value, long *second_value, long *first_value0c, long *second_value0c);
+dword vector3d_compress(vector3f const *vector);
+long function_1895f0(s_sound_position const *position, real scale, long tag_index);
+dword function_13bc00(s_tag_data const *function, real input);
+color3f *unpack_color3f(dword pixel, color3f *color);
+bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short bitmap,
+	real cosine, real sine, bool segments, bool perspective, bool filtered);
+void function_0222d0(D3DRENDERSTATETYPE state, dword value);
+long __stdcall function_516d0(bool reduced, dword seed,
+	const s_noise_draw_definition *definition, const s_random_draw *draw,
+	const s_noise_basis *basis, real amplitude, s_noise_point *points);
+
+/* draws one queued liquid record: up to eight copies of an arc of noise-displaced points
+   for each element of the liquid definition, faded by the distance from the
+   camera, each arc cut short where it hits something */
+// @retail 0x508d0
+void __stdcall function_508d0(void *payload_data)
+{
+	s_liquid_draw_payload *payload = (s_liquid_draw_payload *)payload_data;
+	if (payload->definition_index == NONE)
+		return;
+	s_liquid_arc_definition *definition =
+		(s_liquid_arc_definition *)g_4e3b44[payload->definition_index & 0xffff].bytes;
+	if (definition->arc_count <= 0)
+		return;
+
+	real fade = 1.0f;
+	vector3f to_camera;
+	to_camera.i = g_4b9da0.x - payload->position.x;
+	to_camera.j = g_4b9da0.y - payload->position.y;
+	to_camera.k = g_4b9da0.z - payload->position.z;
+	real distance = function_30bf0(&to_camera);
+	if (definition->far_distance > definition->near_distance)
+	{
+		if (0.0f > (definition->far_distance - distance) / (definition->far_distance - definition->near_distance))
+			return;
+		if ((definition->far_distance - distance) / (definition->far_distance - definition->near_distance) > 1.0f)
+			fade = 1.0f;
+		else
+		{
+			fade = (definition->far_distance - distance) / (definition->far_distance - definition->near_distance);
+			if (fade <= 0.0f)
+				return;
+		}
+	}
+
+	g_46713c = true;
+	g_4670bc = true;
+	function_16b10((s_render_reset_state *)g_485b48);
+
+	s_noise_basis bases[2];
+	s_noise_point points[257];
+	s_liquid_collision collision;
+	s_sound_position sound_position;
+	long first_values[3];
+	long second_values[3];
+	vector3f ray;
+
+	for (long i = 0; i < definition->arc_count; i++)
+	{
+		s_liquid_arc *arc = &definition->arc_list[i];
+		if (arc->strip_count <= 0 || arc->copies <= 0)
+			continue;
+		s_random_draw *draw;
+		if (payload->liquid_index != NONE)
+			draw = (s_random_draw *)function_c4210(payload->liquid_index, i);
+		else
+			draw = &g_4c9828;
+		long copies = arc->copies > 8 ? 8 : arc->copies;
+		if (payload->liquid_index == NONE)
+			function_507e0(NULL, (const s_random_draw_definition *)arc, 1.0f / 30.0f);
+
+		bases[0].scale = 1.0f;
+		bases[0].origin[0] = payload->position.x;
+		bases[0].origin[1] = payload->position.y;
+		bases[0].origin[2] = payload->position.z;
+		vector3f *up = (vector3f *)bases[0].up;
+		vector3f *left = (vector3f *)bases[0].left;
+		vector3f *forward = (vector3f *)bases[0].forward;
+		*up = payload->first;
+		if (arc->flags & 1)
+		{
+			*left = payload->second;
+			cross3f_staged(up, left, forward);
+		}
+		else
+		{
+			*left = *g_4687b0;
+			cross3f_staged(up, left, forward);
+			if (function_30bf0(forward) < 0.0001f)
+			{
+				*forward = *g_4687a4;
+				*left = *g_4687a4;
+			}
+		}
+		bases[1] = bases[0];
+		bases[1].origin[0] = payload->first.i * arc->length + bases[0].origin[0];
+		bases[1].origin[1] = payload->first.j * arc->length + bases[0].origin[1];
+		bases[1].origin[2] = payload->first.k * arc->length + bases[0].origin[2];
+
+		for (long j = 0; j < copies; j++)
+		{
+			real fraction = 1.0f;
+			if (arc->cone_angle != 0.0f)
+			{
+				real angle = (real)j * 6.2831855f / (real)copies;
+				if (arc->period != 0.0f)
+					angle = draw->reals[0] * 6.2831855f + angle;
+				real radius = (real)tan(arc->cone_angle) * arc->length;
+				real along = (real)cos(angle) * radius;
+				real across = -((real)sin(angle) * radius);
+				bases[1].origin[0] = payload->first.i * arc->length + bases[0].origin[0] + along * forward->i + across * left->i;
+				bases[1].origin[1] = payload->first.j * arc->length + bases[0].origin[1] + along * forward->j + across * left->j;
+				bases[1].origin[2] = payload->first.k * arc->length + bases[0].origin[2] + along * forward->k + across * left->k;
+			}
+			if (definition->kind == 1)
+			{
+				bases[1].origin[0] = payload->endpoint.x;
+				bases[1].origin[1] = payload->endpoint.y;
+				bases[1].origin[2] = payload->endpoint.z;
+				if (arc->length > 0.0f)
+				{
+					real dx = bases[1].origin[0] - bases[0].origin[0];
+					real dy = bases[1].origin[1] - bases[0].origin[1];
+					real dz = bases[1].origin[2] - bases[0].origin[2];
+					fraction = (real)sqrt(dx * dx + dy * dy + dz * dz) / arc->length;
+				}
+			}
+			else if (arc->flags & 4)
+			{
+				ray.i = bases[1].origin[0] - bases[0].origin[0];
+				ray.j = bases[1].origin[1] - bases[0].origin[1];
+				ray.k = bases[1].origin[2] - bases[0].origin[2];
+				*(word *)&collision.material = 0xffff;
+				if (function_1697c0(0x680000d, (point3f const *)bases[0].origin, &ray,
+					function_c4250(payload->liquid_index), NONE, (s_collision_result_1697c0 *)&collision))
+				{
+					fraction = collision.t;
+					bases[1].origin[0] = collision.point.x;
+					bases[1].origin[1] = collision.point.y;
+					bases[1].origin[2] = collision.point.z;
+					if (arc->effect_tag_index != NONE && function_30bf0(&ray) > 0.0001f)
+					{
+						function_1883e0(arc->effect_tag_index, false, &collision.point, g_47d8e0,
+							collision.material, 15, 0, &first_values[0], &second_values[0],
+							&first_values[1], &second_values[1], &first_values[2], &second_values[2]);
+						for (long n = 0; n < 3; n++)
+						{
+							if (second_values[n] != NONE)
+								function_1765e0(&collision.point, &ray, &collision.plane.n, second_values[n], 0, 0);
+							if (first_values[n] != NONE)
+							{
+								memset(&sound_position, 0, sizeof(sound_position));
+								sound_position.position = collision.point;
+								sound_position.compressed_forward = vector3d_compress(&ray);
+								sound_position.velocity = *g_4687a4;
+								sound_position.location = collision.end_location;
+								function_1895f0(&sound_position, 1.0f, first_values[n]);
+							}
+						}
+					}
+				}
+			}
+			if (0.0f > fraction)
+				fraction = 0.0f;
+			else if (fraction > 1.0f)
+				fraction = 1.0f;
+
+			real amplitude = noise_curve_value(&arc->amplitude_curve, fraction);
+			real alpha_scale = noise_curve_value(&arc->alpha_curve, fraction);
+			long count = function_516d0(payload->type != 0, j << 8, (const s_noise_draw_definition *)arc,
+				draw, bases, amplitude, points);
+			if (count <= 1)
+				continue;
+			real step = 1.0f / (real)(count - 1);
+			for (long m = 0; m < arc->strip_count; m++)
+			{
+				s_liquid_strip *strip = &arc->strips[m];
+				real alpha = (real)payload->opacity * alpha_scale * fade * (1.0f / 255.0f);
+				alpha = noise_curve_value(&strip->index_curve, (real)m + draw->reals[1]) * alpha;
+				real facing = (real)fabs(g_4b9dac.i * payload->first.i + g_4b9dac.j * payload->first.j +
+					g_4b9dac.k * payload->first.k);
+				alpha = noise_curve_value(&strip->facing_curve, facing) * alpha;
+				for (long k = 0; k < count; k++)
+				{
+					real t = (real)k * step;
+					real shade = function_13b390(&strip->colour_curve, t, 0.0f);
+					color4f colour;
+					if (strip->colour_curve.data && strip->colour_curve.size > 0)
+						unpack_color3f(function_13bc00((s_tag_data const *)&strip->colour_curve, shade),
+							(color3f *)&colour.red);
+					else
+					{
+						colour.red = g_4686cc->red;
+						colour.green = g_4686cc->green;
+						colour.blue = g_4686cc->blue;
+					}
+					colour.alpha = alpha;
+					long blue = real_to_long(colour.blue * 255.0f);
+					long green = real_to_long(colour.green * 255.0f);
+					long red = real_to_long(colour.red * 255.0f);
+					long opacity = real_to_long(colour.alpha * 255.0f);
+					points[k].flags = blue | green << 8 | red << 16 | opacity << 24;
+					points[k].width = noise_curve_value(&strip->width_curve, t);
+					points[k].amount = noise_curve_value(&strip->amount_curve, t);
+				}
+				function_4f7e0(arc->bitmap_tag_index, (s_501e0 const *)points, count, strip->sequence,
+					1.0f, 0.0f, true, !(arc->flags & 8), false);
+			}
+		}
+	}
+
+	if (!g_46713c)
+		function_0222d0(D3DRS_SAMPLEALPHA, 0);
+	g_46713c = true;
 }
 
 // score 626 (was 626): frame 0x1490 versus aligned 0x1474; mode stack home versus CL remains.

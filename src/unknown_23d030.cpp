@@ -299,6 +299,9 @@ struct s_free_state_23d260
 // two-use double movement trig values, eight subsets 512/484/474/444/503/477/465/439;
 // separate force-inline declaration 512 (producer remains out of line). Original body and
 // declarations restored; zero/side normalization and up/roll allocation remain.
+// Round 286: paired shared horizontal input observations in real/real, double/real,
+// real/double and double/double domains 293/264/267/153; reverse read order repeats
+// 293/264/267/153. Zero/side ownership remains; original input reads and body restored.
 // Round 219: native roll/movement input with alternate normalization, staged up cross and repeated
 // double movement trig results, masks 0..7: 257/274/256/289/264/274/258/157. Original input layout,
 // normalizer and complete body restored; zero/side and up/roll allocation remain.
@@ -307,6 +310,9 @@ struct s_free_state_23d260
 // up-cross/roll-cross/rolled-row expressions, subsets 1/2/3/4/5/6/7,
 // 315/312/129/312/114/257/291; all parts const 291. Every parallel row uses
 // the same form; original arithmetic trees and store phases preserved. Original body restored.
+// Round 337: immediate up-component accumulations, separate/shared scratch, producer/entry
+// declarations, then each with complete roll-cross accumulation: 256/254/256/254/288/289/288/289.
+// Original body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -475,6 +475,7 @@ void function_e5930(long unit_index);
 
 /* resets the biped's state: its flags, landing and melee timers, its ground
    contact and its physics mode */
+// MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) still expands here, so the reset dispatch keeps its extra instructions.
 // score 118 (was 118): flag-store scheduling and the final helper's unwanted expansion remain; BLOCKED-BY 0xe5930.
 // Logic walk (2026-10-31): every store of 0xde4c0-0xde608 agrees with this source (offsets, sizes, the NONE/0/0x7f values,
 // the 0xb9dd0 call with &+0x368, the 0x1f0 bit 1 choosing flags_348 |= 8 / &= ~8, +0x3d8/+0x3e0/+0x3dc/+0x3e4/+0x3e8, the
@@ -1305,6 +1306,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // radius/height/center/eye 610, center/height/radius/eye 610; the root distance through a `length` local (retail
 // stores the root to its own x87 temp, [esp+0x38], before the > 0 select) as a ternary 616 (frame still 0xf8),
 // as `distance = 0; if (length > 0) distance = length;` 611 (2828 bytes), with dy*dy + dx*dx 616.
+// Round 339: Full-width airborne result with paired facing setters, existing target-vector producer
+// and material result in both branches, eight subsets 639/651/639/651/692/690/692/690.
+// Original result types, producers and body restored; frame and workspace homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1808,7 +1812,9 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
-// score 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
+// score 248 (was 248): Frame 0x8c agrees; first global-load scheduling, the offsets in ECX rather than on
+// the stack (ret 0x10 versus 0x14), and the forward/up workspace homes remain.
+// Earlier: 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
 // own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
 // the mode read from [esp+0xa4] at 0xdef9e) with the biped in EDI, its definition in EBX and the index in EBP. Ours
 // takes the mode in EBX, the forward vector in EDX and the offsets in ECX (ret 0xc); their registers force a scratch
@@ -1827,6 +1833,9 @@ void function_dfd70(long arg_159e6d)
 // the inline test written hit-first 275, the vector test 240, the direction too 253, the back vector 248. Still
 // differs: retail falls through into the mode-0 0xb9dd0 call and then the crouch switch, and returns `ret 0x14`
 // (only `point` in EAX) where ours returns `ret 0x10`; `if (mode == 0)` first 254.
+// Round 289: view-forward, basis-up, both, head-direction, forward/direction, up/direction, all three,
+// and complete head/hit frame identities all 248 at 1041 bytes. Original helper/body restored; every
+// checked shared-helper user and matched caller retained its score.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2159,6 +2168,7 @@ bool function_1d5120(s_havok_component *component, long rigid_body_index, long a
 void __stdcall function_1c3770(long object_index, dword flags);
 
 /* steps a dead biped's ragdoll settling (+0x3aa) toward rest */
+// MiniMax R (11-01): no new form, no lower score: the byte test of +0x3aa with the count re-read at the call gives 89 and an if/else-assigned short body 85; retail's `and byte [+0x349], 0x9f` needs a byte field at 0x349 that the header's word flags_348 cannot express.
 // score 63 (was 63): EBX input agrees; the extra EBP save, body-index selection and flag-store scheduling remain.
 // Native index 108; word flags 87; both 82; signed two-use count with word flags 73;
 // native index plus signed count 67, promoted body input 63 kept. Shared short/long getter
@@ -2616,7 +2626,8 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
+// score 530 (was 540): Frame 0x48 versus 0x4c; result byte, scalar homes and native point loading remain.
+// Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
 // loops). The flag tests are TEST_FIELD_BIT (retail `shr; test r8, 1` at 0xe1079, 0xe109d, 0xe10a8, 0xe118c).
 // Still differs: retail returns through one exit with result on the stack (init 0 at 0xe0f1c, stored 1 at
@@ -2629,6 +2640,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // frame 0x50, and 0xdd360 goes 280 -> 281); flags_348 copied to a word local 552; hit position as three reals 568;
 // result declared first (same). Earlier lane forms (names, order, exits): single result exit 861, complete
 // reciprocal, workspace role names, body count at every use, separate scan ordinals, complete offset vectors.
+// M288: Uniform per-use tag fields 530 (plain, kept); complete center/hit setters
+// alone 571/569, tag+center/tag+hit/both setters/all three 562/562/556/546; all plus
+// mass/push role names 546. Every caller and all other file measurements stay unchanged.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2640,7 +2654,6 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 	case 0:
 	{
 		byte *ragdoll = (byte *)biped + 0x3ec;
-		byte *definition;
 		byte *model;
 		bool held;
 
@@ -2649,8 +2662,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 		{
 			return false;
 		}
-		definition = BIPED_DEFINITION_GET(biped);
-		model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+		model = g_4e3b44[*(long *)(BIPED_DEFINITION_GET(biped) + 0x38) & 0xffff].bytes;
 		if (*(long *)(model + 0x24) == NONE || TEST_FIELD_BIT((biped->flags_348 >> 10) & 1))
 		{
 			return false;
@@ -2661,7 +2673,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 			*((byte *)&biped->flags_348 + 1) |= 1;
 			return true;
 		}
-		if (TEST_FIELD_BIT((*(dword *)(definition + 0x1f0) >> 11) & 1))
+		if (TEST_FIELD_BIT((*(dword *)(BIPED_DEFINITION_GET(biped) + 0x1f0) >> 11) & 1))
 		{
 			return true;
 		}
@@ -2744,7 +2756,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 						direction.k -= along.k * dot;
 						if (function_30bf0(&direction) != 0.0f)
 						{
-							real push = *(real *)(definition + 0x258) > 0.7f ? 0.7f : *(real *)(definition + 0x258);
+							real push = *(real *)(BIPED_DEFINITION_GET(biped) + 0x258) > 0.7f ? 0.7f : *(real *)(BIPED_DEFINITION_GET(biped) + 0x258);
 							real farthest = 0.0f;
 
 							push *= strength;
@@ -2856,7 +2868,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
+// score 600 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
 // scheduling of the wall-turn vector maths, `or byte ptr [edi+0x348], 0x20` (ours loads al first).
@@ -2871,6 +2884,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // change), unsigned `>> 5` for the node count (658-660), `changed = mode != 3` as an initialiser (663), shared
 // cross products / unified workspaces / one exit (earlier rounds, 672-720). Retail's `shr eax, 5` on the movsx'd
 // short at 0xe097f is not reproduced (ours is sar).
+// M288: Direct flight-rate argument 593 (seven-point gain, rejected); staged shared
+// projections 633, both 616; complete facing/turn setters 624, with rate 624, with staged
+// projections 616, all three 616, with role names 616. Original complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3123,7 +3139,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
+// score 368 (was 368): Frame 0x12c agrees; first +0x71 is the body-matrix home, +0x60 versus +0x50.
+// Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
 // placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
 // out-alias test `cmp edi,[esp+0x10]` of function_2477b1), so it goes through function_2477b1 instead of a second
 // scaled point transform (505). Which pivot is parent follows retail's registers (0xe1d33-0xe1d6f: esi/edi
@@ -3155,6 +3172,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // !hit` 447. Remaining: retail pairs world_pivot's home with delta/back and child_world's with the copy (ours the
 // reverse), property_b's with limit; retail keeps 1.0f in xmm4 across both pivot transforms; retail materializes
 // `limit > distance` in AL before the target copy; the pivot select (`mov ecx, edi; je` to an out-of-line lea).
+// M288: On the retained exact-frame graph, pivot-result/body-transform/property-placement
+// role names separately and all together 368/368/368/368; complete scaled-point setter
+// 421, with all role names 421; setter plus default pivot selection 424, with all names 424.
+// Original helper, selection and executable body restored; origin/matrix and paired point homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3476,6 +3497,7 @@ void function_e4300(long arg_159e6d)
 }
 
 /* gets the biped up and puts its Havok to sleep, unless it already sleeps */
+// MiniMax R (11-01): no new form, no lower score: 0xe5930 (src/unknown_0e57e0.cpp, not my file) is still inlined at this straight-line call site, where retail keeps the call.
 // score 91 (was 91): reset-mode dispatch expands instead of retail calling it out of line (113/61 bytes).
 // Separate reset noinline declaration 91; Boolean flag test 98; both 98; noinline with
 // field-use object lookup 94; Boolean lookup with/without noinline 101/101; both call-boundary
@@ -3798,7 +3820,7 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm6/xmm4,
+// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm5/xmm4,
 // retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
 // carriers still differ.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
@@ -3838,6 +3860,8 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // copy 171; up copied before the first rotation 229 (874 bytes). Lead: the rotate helper with scalar cross terms
 // is shared by 0x146320, 0x170d70 and 0x50650's files (each has its own copy, all held this round); one shared
 // header helper would let this body use it.
+// Round 289: staged rotation/side/up cross subsets 1/2/4/3/5/6/7 give 171/171/180/171/180/180/180;
+// all staged plus a native input snapshot 215. Original helper/body restored; frame and SIMD carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3873,6 +3897,7 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
+// MiniMax R (11-01): no new form, no lower score: the tail's actor index still rides in ECX (retail moves it to EDI) because our LTCG knows magnitude3d (0x24590) preserves ECX; marking that helper inline in src/unknown_023540.cpp is the known fix, in a file I may not edit.
 // score 19 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
@@ -4252,7 +4277,7 @@ bool function_1f5560(long actor_index, vector3f *facing);
 /* jumps: an upward kick to the definition's jump speed (less for a tired
    player), relative to what the biped stands on; an actor may refuse. The
    biped index is read once from the stack argument (ret 4) */
-// score 210 (was 224): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
+// score 210 (was 210): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
 // (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
 // Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
 // biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
@@ -4267,6 +4292,11 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // (without the shared slot, restored). Tried earlier: late success 221 (subthreshold), shared vector producers 224;
 // CRT relative copy 224; common result exit 222 (subthreshold); all velocity names 224; late/shared 221;
 // natural parameter/common result/shared/CRT 234. All executable forms restored.
+// Round 289: long result/contact/both 211/212/211; native up/scalar up/actor observations 202/219/210;
+// native up plus long contact 193 (ordinary; rejected while depending on the inherited parameter-address
+// receiver), full scalar graph 222. Direct parameter on up/contact 213; direct up with bool/short/byte
+// contact 215/210/215; one result exit with bool/long/short contact 210/209/206 (four-point gain rejected).
+// All executable forms restored; the 0x24/0x28 frame and overwritten state-base lifetime remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4478,6 +4508,7 @@ void function_188180(point3f const *point, vector3f const *forward, long tag_ind
 
 /* a walking biped's footstep effect: at its foot marker (or its origin),
    with the material it stands on */
+// MiniMax R (11-01): no new form, no lower score: 0x188180 is still unmatched, so its argument order and the material homes stay as they are.
 // score 154 (was 168): frame 0xec versus 0x94; material homes, model-count test and effect-call transport remain.
 // Logic walk (2026-10-31) against retail 0xe4d90-0xe503b: every callee, argument order (188180 pushes at
 // 0xe4eb2-0xe4ee5 and 0xe4ff1-0xe5021, point in eax at 0xe5028 and forward in ecx at 0xe4edf/0xe5022), field offset (0x3dc, 0x58,
