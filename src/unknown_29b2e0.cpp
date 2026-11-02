@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 244): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // Frame 0x2c and early J preload agree; root/yaw homes, one constant in XMM5 versus XMM4, and rotation registers remain.
@@ -245,6 +245,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // axis 239, both 237; renames of the vectors or pitch 178 (seven forms). Retail's frame shows the rotations on the first copy's slot (+0x20).
 // M293: First clamp limit before yaw/after yaw/after gain/after signed target pitch,
 // conditional then if-else producers: 344/290/279/282/344/290/279/282. Original lifetime restored.
+// Round 517: On the in-place angle/rotation graph, returned first magnitude 263; entry declaration
+// 263; XY before second vector 261; both input copies before first normalization 370; first
+// magnitude after second normalization 407; early XY with original output/returned magnitude
+// 365/371; both vector copies before normalization 289; direct length-test call 407. Original
+// numeric output, inputs, helpers and complete body restored; unity/root/yaw and rotation homes
+// remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
