@@ -4475,6 +4475,8 @@ void function_15fe20(long team_index, color3f *color);
 // N295: Native object exchanges at rival/own team/individual palette subsets 1-7,
 // 564/536/561/478/567/539/589; complete standard range exchange 673. All exact-only forms
 // restored; native team-color transfers, shared NONE and shift-count residency remain.
+// Round 471: Direct native member publication, rival/own/both team and rival/own/both palettes
+// 562/534/563/139/429/458; all outputs with const/mutable returned sources 685/685. All restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

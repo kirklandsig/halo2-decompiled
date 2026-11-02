@@ -625,6 +625,8 @@ struct s_collision_result_buffer_1697c0
 // P265: Separate normalization result, zero-before/zero-after/complete-before/root-default,
 // native sum 322/322/341/648; shared squared-length 322/322/341/648.
 // Original result boundaries and all body/helper text restored; scratch and axis homes remain.
+// Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
+// 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -857,6 +859,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
 // each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
 // plain 323 versus baseline 257. Original result, presence and full body restored.
+// Round 469: Weapon-aim success-first/failure-first/two-use outcome/common failure join, bool/byte point presence: 270/264/265/258/270/264/265/258 (fast control 258). Original result graph and whole body restored; byte homes and case-tail predecessor remain.
 // P264: complete direction/output library contracts, native+memcpy/native+memmove/
 // memcpy+native/memcpy+memcpy/memcpy+memmove/memmove+native/memmove+memcpy/memmove+memmove
 // 258/333/258/258/333/421/421/415 (fast control 258); original transfers and body restored.

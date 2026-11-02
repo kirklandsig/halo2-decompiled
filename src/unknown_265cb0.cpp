@@ -525,6 +525,9 @@ real function_30bf0(vector3f *vector);
 // Round 300: positive projection before upper clamp, combined/nested admission and
 // in-place/named clipped fraction 269/269/287/287; with live object handle
 // 263/263/269/269. Original admission, fraction and handle observations restored.
+// Round 322: Distance-owned outer/scaled/final paired comparisons, all seven subsets, then
+// corresponding motion-minimum comparison, 152 each. Original comparisons and complete body
+// restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1953,6 +1956,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
 // DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
 // complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
+// Round 520: conditional approach maximum/complete absolute producer/native established
+// byte subsets, then all with native visibility: 194/371/371/194/194/371/371/371.
+// Maximum selection is neutral; complete absolute production regresses. Body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

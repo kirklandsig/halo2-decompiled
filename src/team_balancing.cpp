@@ -994,6 +994,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
 // keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
 // alike, so it is no proxy for these roles.
+// F321: complementary failure result in bool/byte/word/long storage, with
+// conditional-value and branch-owned clamp consumers: 63/63/73/68/90/90/102/96.
+// Original combined scan/fill and success-result graph restored; count ownership remains.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

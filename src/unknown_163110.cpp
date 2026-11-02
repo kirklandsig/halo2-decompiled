@@ -975,6 +975,8 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negation orders and pointers 230-254; classification operand orders 222 (same code); 60 random combinations of
 // term, helper and negation forms 152-275. Permuter on the 19 form: 19 on the full image too, 73 tries, nothing better.
 // Original body restored.
+// Round 471: Selected normal/offset/origin observations, masks 1-7,
+// 515/386/494/515/584/511/565; complete selected-plane value 490. All restored.
 // P261: symmetric near/far coefficient captures, all six native component declaration
 // orders 269 each; joint row lifetime and immutable inputs 269/269 (1867 bytes).
 // All exact-only snapshots restored; coefficient preload, zero roles and projection homes remain.

@@ -246,6 +246,11 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH round 279: Current-sector parameter ownership with long/bool/byte/word success and valid-walk/entry
 // next-sector declarations; all forms also lose four matched callers [426, 422, 424, 430, 426, 422, 424,
 // 430]. Original executable body restored.
+// Round 236: Native first endpoint value with original/long count, then staged cross,
+// 667/670/667/670; both endpoint values with those same subsets 671/680/671/680.
+// First-only frame 0x68 loses twelve matches; paired frame 0x74 preserves matches.
+// Original pointer geometry and complete body restored; full/planar normal homes,
+// byte state and separate output tails remain.
 // DH281: Complete endpoint-source/first-edge-source/hit-tail priorities, seven subsets then all with native
 // Boolean success; the one-point 409 form is below the retention gates [446, 410, 449, 419, 441, 419, 444,
 // 409]. Original executable body restored.
