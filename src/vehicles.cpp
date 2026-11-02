@@ -2383,6 +2383,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // entry time-rate and NONE-first torque kept, plain 42 at 685/682; every other user unchanged.
 // M316: On retained in-place spin graph: shared/paired drive products, paired turn factors and paired result stages; each with original/per-arm magnitude; sole spin value owns the final wrap result 124/94/94/42/130/99/99/57/127.
 // Turn-product scheduling and spin temporary/store placement remain. Original executable body restored.
+// DH300: Existing spin helper advance owned before the field store, native/staged, with
+// per-use/once period 42/151/42/151; gate-scoped input 51/157; new advance with joined final
+// output 78/191. Original helper and complete body restored; turn-product and spin-store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

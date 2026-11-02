@@ -501,6 +501,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
 // availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
 // Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
+// DH300: Twice-used optional-distance snapshot, native/immutable/outer 49/49/49; with complete
+// movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
+// invalid-first reference publication 110, combined limit/reference forms 192. Original field
+// observations and body restored; entry table/result production, marker setup and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

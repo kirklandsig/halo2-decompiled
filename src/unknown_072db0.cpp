@@ -1570,6 +1570,9 @@ struct s_rating_summary
 // M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
 // M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
 // One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
+// DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
+// receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
+// Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
