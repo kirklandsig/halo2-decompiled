@@ -1671,6 +1671,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
 // M313: Full primary/selected mode scope/plain interruption-table subsets, all with short slot; original body restored;
 // fast 157/138/157/323/334/323/334/334.
+// Round 535: all-hand unit snapshot, duplicate-weapon scratch scope and short hand,
+// seven subsets, then all with full player value: 167/138/134/167/165/134/165/167. Original body
+// restored; same-block pool reload and weapon/mode homes remain.
+// Short hand alone 134 gains four above 30 and is below the retention gate.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1886,6 +1890,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
 // slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
 // Original shared accessor, request workspace, result graph and complete body restored.
+// Round 535: independent received-index result and native mutable received index, each
+// with bool/byte/short/long give-result storage: 132/123/115/117/128/115/105/105. Original body
+// restored; frame, give-result byte and pool/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

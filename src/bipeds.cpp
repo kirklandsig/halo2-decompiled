@@ -4474,6 +4474,11 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // body restored. An unused-address preparation 198 is excluded, not a gain.
 // M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
 // fast 239/239/253/253/238/238/254/254.
+// Round 535: natural parameter with complementary actor-rejection result, bool/byte/short/long
+// storage and original/short contact: 232/232/235/233/230/230/235/231. Original body restored;
+// frame/state-result lifetime and input convention remain.
+// Complementary bool/byte results recover frame 0x28 at 232, but lose the two
+// matched callers at 61/14 through the natural register input; restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

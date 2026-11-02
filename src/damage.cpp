@@ -1521,6 +1521,10 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // Round 532: result-owned iterator termination with bool/byte/short/long carriers, guarded success
 // or comparison-produced success: fast 71/67/95/104/58/57/93/98 against unchanged fast 71.
 // Byte predicate measures 246 bytes but none matches; result-tested flags restored. First-call receiver and latch remain.
+// Round 534: rejection-guard for initializer 70; direct successful search
+// returns 84/84; canonical byte/short/long/word/dword results
+// 66/95/104/95/104. Byte result gains four only; original body restored.
+// Initializer receiver and independent latch remain; iterator still owns the search test.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4530,6 +4534,9 @@ struct s_damage_object_creation
 // Round 532: entry detached bitmap, shared marking/node ordinal on the recovered frame, complete
 // scalar role names, seven subsets 211/188/211/188/211/188/211; full workspace names 211.
 // Entry bitmap is 797/808 bytes, first +0xa; all others retain displaced homes. Opening body restored.
+// Round 534: connectivity-mask workspace shared by root and piece scans, dword/long,
+// entry/producer declaration and sequential section/node count: 188/188/188/188/188/188/188/188.
+// Original complete body restored; offset, definition and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

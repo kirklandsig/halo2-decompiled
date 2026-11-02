@@ -2055,6 +2055,10 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
+// Round 533: Immutable native entry direction with independent rotation output,
+// forward and up inputs, subsets 1/2/4/3/5/6/7 and complete vector role names:
+// 186/177/177/186/186/177/186/186. Original captures, writeback and body restored;
+// frame 0x80 versus 0xc0 and angle/vector-copy/draw homes remain.
 // AC480: Local/forward assignment initialization and existing native result setter, subsets
 // 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
 // original producer and body restored. Frame and independent vector-copy homes remain.
@@ -2255,6 +2259,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
 // role names 63. Original draws, declarations and complete body restored; lazy saves
 // and the post-fstp count comparison remain.
+// Round 535: complete squared-norm parts, uniform centered sample producer and independent
+// entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
+// Original body restored; delayed saves and the post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2368,6 +2375,9 @@ real magnitude3d(vector3f const *v);
 // Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
 // bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
 // Both exact controls survive; original body, math APIs and all rounding/grouping restored.
+// Round 533: Complete projected-axis/cosine-aligned/sine-tangent expression parts,
+// subsets 1/2/4/3/5/6/7 and all with scalar/vector role names: 170/171/170/170/170/171/170/170.
+// Original products and body restored; raw-length/dot/angle homes and rotation allocation remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2487,6 +2497,8 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
+// Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3626,6 +3638,10 @@ bool __stdcall function_391f0(void *state);
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// Round 533: One genuine element ordinal shared by update pair/render pair/corresponding
+// first/corresponding second/opposite first/opposite second/all phases/all with ordinal role name:
+// 251 each. Original independent ordinals and body restored; frame 0x74 versus 0x70,
+// early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -4414,6 +4430,8 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F327: Existing light-pass producer for individual modes 3/20/7, then
 // 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
 // Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
+// Round 536: Shared cull call owned by nested result/explicit call arms/inside-range arms/normal-cull arms, then the same four with the raw caller gate: 214/138/138/138/217/191/191/191 fast.
+// Original helper and complete caller restored; enabled stores, mode loads and clear-call convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
