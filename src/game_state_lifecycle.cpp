@@ -23,7 +23,11 @@ struct s_current_map
 typedef char assert_current_map_size[(sizeof(s_current_map) == 0x178) ? 1 : -1];
 typedef char assert_current_map_map_name[(offsetof(s_current_map, map_name) == 0x78) ? 1 : -1];
 
-s_current_map g_current_map;
+/* retail's sits inside the loaded map's cache header (cache_file_globals,
+   which cache_files_load_map fills), so it keeps its address name: its own
+   storage would stay empty, every saved header would have no map name, and
+   function_124520 would refuse every revert */
+s_current_map g_547844;
 /* the build's version string, kept in the game state header */
 char g_450698[0x20];
 
@@ -56,9 +60,9 @@ void game_state_map_begin(void)
 	memset(ARENA, 0, 0x1288);
 	ARENA->checksum = game_state_globals.allocation_size_checksum;
 	ARENA->base_address = (long)game_state_globals.base_address;
-	csstrncpy(ARENA->map_name, g_current_map.map_name, sizeof(ARENA->map_name));
+	csstrncpy(ARENA->map_name, g_547844.map_name, sizeof(ARENA->map_name));
 	csstrncpy(ARENA->version, g_450698, sizeof(ARENA->version));
-	ARENA->unknown128 = g_current_map.unknown00;
+	ARENA->unknown128 = g_547844.unknown00;
 	/* the session options at +8 of the game options */
 	memcpy(ARENA->field_130_2, (byte *)g_4e6948 + 8, sizeof(ARENA->field_130_2));
 	game_state_globals.arena_flag = false;
