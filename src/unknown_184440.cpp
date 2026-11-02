@@ -246,6 +246,9 @@ __forceinline bool function_184448(long arg_0)
 // (three-point gain, not kept); on it: the per-face bounds initialized at the top of the face loop 974; the plane
 // transform reading the normal into scalars (i, j, k) 975 (4557 bytes, frame 0x11cc as retail), captured k, j, i
 // 996 (4541), j, k, i 975 (4557); scalars plus face-top bounds 1021 (4538). Body restored.
+// DH round 268: complete dot-input vector/point/both captures 1018/1035/1081;
+// paired polygon projections through the same dot producer, original/vector/point/both inputs
+// 977/1020/1133/1236; complete product parts 1236. Original dot helper and body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

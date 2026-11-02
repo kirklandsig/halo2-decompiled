@@ -2851,6 +2851,7 @@ PRIVATE __forceinline real weapon_activity_value(long weapon_index, s_weapon *we
 	return result;
 }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 398 (was 398): one 27-label switch whose tree retail lays out inverted on the path to 0x1d0007ba
 // (root, 0x1500056e and 0x1700056c fall through to the high side; no other function in the image has that node
 // shape); frame eight versus four and object/tag/activity homes remain.
@@ -3383,6 +3384,7 @@ PRIVATE __forceinline long unit_player_index_102fb0(long unit_index)
     return unit ? unit->player_index : NONE;
 }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 604 (was 604): Frame 0x1c64 versus 0x1c60; weapon/barrel and definition/holder homes remain.
 // Earlier: round 87 measured 606 plain (was 565; fast 637 -> 640); the three behaviour fixes
 // below are applied by the coordinator (round 87 review) and kept although the count rises. Frame 0x1c64 versus

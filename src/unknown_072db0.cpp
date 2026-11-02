@@ -1876,15 +1876,15 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // (state == 1 as a request flag set again by the retry test, the getter, the identity copied into a
 // local XUID, an index scan only for type 5) 794 at 2942 bytes (aligned 289); the request flag alone
 // 730 (no flag byte appears; retail's `xor dl, dl` comes with the other parts).
-// Round 57 (m3 lane 1, fast): on online_logon_connected() (729, aligned 479): the delay ternary
-// 729 (aligned 477); a user record pointer 775 (2846 bytes, cursor xuid-based in EBX); pointer +
-// ternary 775; pointer + identity memcpy from it 775; pointer + property copy first 774.
-// Round N274: Library property copy before identity capture 711; readonly identity 711;
-// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
-// Original identity/property order, native buffer lifetime and complete body restored.
 // Round 290: Indexed property destination from stored pointer/address producer, crossed with native
 // record-count bound and advancement, 780/788/796/770/826/788/812/770 (2750-2814 bytes). Original
 // initializer restored; frame 0xc0, initial cursor/slot/availability and later request homes remain.
+// Round N274: Library property copy before identity capture 711; readonly identity 711;
+// producer-scoped team result 711; both 711; those four with entry property workspace 711 each.
+// Original identity/property order, native buffer lifetime and complete body restored.
+// Round 57 (m3 lane 1, fast): on online_logon_connected() (729, aligned 479): the delay ternary
+// 729 (aligned 477); a user record pointer 775 (2846 bytes, cursor xuid-based in EBX); pointer +
+// ternary 775; pointer + identity memcpy from it 775; pointer + property copy first 774.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -187,6 +187,15 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // start time read into a local before the clock 439 (aligned diff 155 from 162: retail's load order;
 // one-use, not kept); the reset flag as bool 469 (frame 0x3e4). Retail's 0x5b080 call is why ours
 // keeps the session state in ESI after the getter call (the inlined body re-tests it).
+// Round 478: complete strict solver predicate with short/bool/byte/long result
+// 455/458/458/457; both strict and fallback predicates 458/458/458/458.
+// All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
+// DH round 264: On the complementary waiting graph, native producer record/existing kind-four setter/
+// both/native long balance/record-balance/setter-balance/all/all with initial memset
+// 439/477/477/454/454/477/477/486. Original record, property construction, short balance
+// and complete body restored; frame/result/state/getter homes remain.
 // Round 282: Boolean reset with result/completed, reset/reset_required and
 // transition_pending/waiting name combinations, eight at 469/1562. Frame 0x3e4 agrees
 // but result remains at +0xe; original long reset, names and entire body restored.
@@ -196,6 +205,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 478: complete strict solver predicate with short/bool/byte/long result
 // 455/458/458/457; both strict and fallback predicates 458/458/458/458.
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 221: coordinated byte return with Boolean/native-byte final storage 439/439; with Boolean reset
+// 469/469. Signed-byte return on those four graphs 439/439/469/469. Every native return declaration
+// loses matched dispatcher 0x706f0 (123) and is rejected. Boolean reset recovers frame 0x3e4 but
+// shortens to 1562/1589; result remains at +0xe versus +0xf. Original Boolean interface, caller
+// declaration, long reset, short balance, waiting decision and whole body restored; frame/state stores
+// and getter boundary remain.
 // Round 217: actual assignment output cursor, long/int/short/word ordinal at phase/entry scope,
 // 441/441/443/443/441/441/443/443. Original indexed producer and complete body restored.
 // Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
@@ -204,6 +219,13 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both/native long balance/record-balance/setter-balance/all/all with initial memset
 // 439/477/477/454/454/477/477/486. Original record, property construction, short balance
 // and complete body restored; frame/result/state/getter homes remain.
+// DL224: Coordinated inline count/team balancer and player-lookup declarations in seven subsets
+// 439 each; all three with the capacity getter 439. All checked user scores agree; every original
+// declaration and body restored. Frame, dead state stores, result-byte home and data-getter
+// boundary remain.
+// Round 241: Shared long balance-output scratch with completed roster count/deadline/final deadline,
+// singles/pairs/all 439/441/439/441/439/441/441; all with first elapsed result 441.
+// Original separate scalar phases and complete body restored; frame and result/state/getter homes remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

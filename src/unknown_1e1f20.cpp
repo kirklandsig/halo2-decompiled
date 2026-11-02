@@ -631,7 +631,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
-// score 281 (was 285): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
+// score 281 (was 281): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
 // cleanup countdown and slot homes remain.
@@ -791,6 +791,9 @@ void swarm_leader_detach(long actor_index);
 // Y488: native actor members at 0x10/0x1c/0x3f4, seven subsets and
 // all with short bounded cleanup ordinal, eight 261 against fast control 261.
 // Real type and complete body restored; ordinary 285, frame/actor/cleanup homes remain.
+// Y499: native cleanup/prop-iterator/actor-iterator phase scopes, seven subsets and
+// all with terminal receiver role name, eight 266 against fast control 266 (ordinary 281).
+// Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

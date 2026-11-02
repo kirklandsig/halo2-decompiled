@@ -167,12 +167,14 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
-// Round 286: Native library maximum boundaries in first/second/final producer
-// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
-// component-maximum production 771. Original maxima, includes and body restored.
+// Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
+// 581/581/581/581/581/581/581/581. Original body and producer sites restored.
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 286: Native library maximum boundaries in first/second/final producer
+// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
+// component-maximum production 771. Original maxima, includes and body restored.
 // Round 211: existing double-factor scaler for complete primary/depth/displacement
 // families and combinations 632/694/699/684/702/682/694; all with both wave scalers 768.
 // The primary/depth pair reaches 2622 bytes at 684, frame 0x64; no frame 0x60 recovery.
