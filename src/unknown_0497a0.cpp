@@ -200,6 +200,10 @@
 // Round 512: Complete two-bit mask admission with full-kind/projection-mode/flag
 // snapshots, masks 0/1/2/4/3/5/6/7: 677/596/691/671/691/699/598/703.
 // Original decision and complete body restored; shape/basis/wave homes remain.
+// Round 237: Existing real-factor output scales on the retained second-wave addition graph:
+// primary/depth/displacement families, masks 1/2/4/3/5/6/7, 580/702/702/701/700/701/694; all with
+// complete native input scaling 693. Older real-factor forms predate this wave/frame graph.
+// Original scalar expansions, inputs and integer conversion restored; frame 0x58/0x60 and shape/basis/wave homes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1114,6 +1118,10 @@ void __stdcall function_43720(s_43740_input *input)
 // snapshot mutable/read-only 100/100, both snapshots in four constness forms
 // 124 each. Original body restored; all copies lose the matched caller.
 // Early tag EAX/EBP admission and later slot/shader homes remain.
+// Round 237: Actual owning source frame fields in short/word domains, with no additional layout,
+// typed texture field, typed shader/normal record, both: 62/62/62/62/62/62/62/62. Every form includes
+// the new source fields; old standalone tag/shader forms are excluded. Original layouts and full
+// body restored; early tag EAX/EBP admission, signed-slot residence and shader-relative test remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

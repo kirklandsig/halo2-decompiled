@@ -1513,6 +1513,10 @@ void function_1f86a0(long actor_index);
 // Round 465: admission field captured before the root calls, bool/byte/short/long,
 // each with native/original payload: 225/225/225/225/214/214/225/225.
 // Original field observation restored; frame, mask spill and entry/root homes remain.
+// Round 237: Complete compatibility/incompatibility bool, native/original payload, 247/247/236/236;
+// compatible per-use mask bool/long, native/original payload, 260/260/265/265. Per-use forms
+// recover frame 0x14 and mask +0x13, but the whole flags byte occupies BL and entry stays stacked.
+// Native member payload paired with each graph; original payload, masks, tests and full body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

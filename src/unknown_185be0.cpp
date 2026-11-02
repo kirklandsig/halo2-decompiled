@@ -142,7 +142,7 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 690 (was 731): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 690 (was 690): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -340,6 +340,10 @@ union s_185be7
 // subsets, then short copy ordinal: 731/690/839/690/839/845/845/854. Keep only the duration
 // source cursor, 690 plain at 3782/3777 bytes; the paired source cursor ties.
 // Sole caller 0x186ab0 remains 134/1486. Control-root/NONE, settings/zero and flag joins remain.
+// Round 237: Native copy destination button/duration/both cursors 690/691/691; inferred byte/word/both
+// flag destinations 858/848/864; complete exact-valued promoted angular coefficient
+// alone/with native destinations 1018/1075. Original helper, widths, scalars and body
+// restored; control-root/NONE, settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
