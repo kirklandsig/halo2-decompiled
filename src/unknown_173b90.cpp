@@ -600,14 +600,24 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // (re-measured), plus the separate input copies 115 (1138 bytes), with the emitter mask read from the
 // definition at both uses 232 (1130 bytes); the separate input copy for the position rotation only 42
 // (same code: VC folds it into the helper's own copy).
+// Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
+// before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
+// All overrides and memory observations stayed fixed; original defaults and complete body restored.
 // Round 39 (m3 lane 14, fast): scale first with `+=` translation 40; that with the emitter definition formed before
 // the particle index 40; the motion copy declared before the position copy 50, with scale first 48; the next index
 // read before the particle-mask refresh 58. Diagnostic one-use locals (removed): at the top, after the emitter
 // lookup or before the multiplier 109 (the rotation rows move to another of their cycle states, nothing else
 // fixed); after the particle mask or the particle lookup 42 (no change).
+// Round 299: Word carried particle mask with indexed definitions, scale-first defaults and early pure mask
+// derivation, masks 0..7: 199/201/197/199/259/260/260/261. Original dword mask, offset/default lifetimes and
+// body restored. Shared rotation/frame providers stay matched; offset/default/reload and row-i input/product
+// residence remain.
 // Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
 // before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
 // All overrides and memory observations stayed fixed; original defaults and complete body restored.
+// Round 337: returned rotation consumed through shared addition/three-use pointer, with
+// native emitter indexing and scale-first defaults: 122/124/117/121/120/122/115/119.
+// All lengthen and regress; original in-place rotations, translation and whole body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1064,6 +1074,10 @@ public:
 // typed as the file's particle record (velocity/position by name) 248 (identical); the position copied before
 // the 1.0 scale store 250. A compile-only screen of the default case (scale by hand, scale/cross through
 // returned pointers, the staged cross, the typed particle) never loads the velocity ahead of the -1.0 constant.
+// Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
+// 189/248/240/184/237; coordinate names 248; reversed independent comparisons
+// with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
+// Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
 // Round 43 (lane 14, fast; the old perpendicular call 394 retried on the round-27 base): the fallback's
 // perpendicular through the existing out-of-line 0x11d000 286 (1327
 // bytes), its normalisation through 0x30bf0 357 (1259), both 326 (1253): retail inlines both there; switch on the
@@ -1078,10 +1092,17 @@ public:
 // the flattened squares in reverse spelling order, retail's j, i, k would need a k, i, j spelling no helper has);
 // scale nested in the normalize call in the fallback/default case/both 248 each; the colour in a local before the
 // matrix scale/after the position copy 262/261 (1363 bytes), with a tinted local too 278 (frame 0x5c).
+// Round 299: Retained zxy magnitudes with perpendicular store orders ikj/jik/jki/kij/kji 239/184/258/261/262;
+// native perpendicular result/common publication with ijk/jki/kij producers 431/444/436. Original axis
+// producers and body restored; normalized-j/default-cross and color/tag homes remain.
 // Round 294: absolute-magnitude producer orders xzy/yxz/yzx/zxy/zyx give
 // 189/248/240/184/237; coordinate names 248; reversed independent comparisons
 // with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
 // Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
+// Round 337: existing double-factor negative scale in default/fallback/both paths, then
+// each with staged cross, then both nested normalizers without/with staged cross:
+// 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
+// color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1311,6 +1332,9 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // separate-tag/group-first declarations 135/135/135/135; definition rejection with the
 // same four declaration graphs 135/135/135/135. Original nested body restored; tag/group
 // ownership, definition bit five and callback reloads remain.
+// Round 500: native camera/request/position lexical-home subsets, all seven,
+// then all with displacement identity, 135 each on the recovered child-tail graph.
+// Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {
@@ -1523,6 +1547,12 @@ bool function_17afd0(long effect_index, long value);
 // Round 295: Native system/definition/cluster entry storage in all seven subsets [102, 102, 102, 102, 102, 102, 102].
 // All three plus effect/view entry storage 102. Original producers and body restored.
 // Round 297: Native unsigned owner/iterator/next-slot domains in all seven subsets, then all with owner declared before effect acquisition, 102 each. Original signed domains, declaration scopes, queries and complete body restored; NONE/owner, availability and Boolean homes remain.
+// Round 299: Complete owner-valid/equal/available conjunction orders ACB/BAC/BCA/CAB/CBA 102/102/102/147/147;
+// explicit owner-result arms with ACB/BCA/CBA 149/149/104. Original full predicate order, owner result and
+// body restored; NONE/owner coalescing, BL availability and Boolean homes remain.
+// Round 337: raw view classification consumed by both zero-status tests, long/dword/short/byte,
+// default/query then conditional producer: 137/137/135/155/136/136/134/149. Wider raw carriers
+// recover the first EBP save but worsen later homes; original availability and body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

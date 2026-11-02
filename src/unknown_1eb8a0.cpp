@@ -301,6 +301,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
 // read 642; the counter conversion without `volatile` 671 (2860 bytes).
+// Round 25 (lane 18, fast; aligned counts by difflib in brackets, original [757]): the first clamp's speed
+// factor selected before t 718 [630], caller 0x1eb6f0 0 -> 22 (the factor byte takes CL, so a leaves ECX and
+// b goes to the stack); the first two clamps so 744 [601], caller 22 (our s->fast load is CSE'd from the first
+// clamp to the duration; retail loads it three times, AL/CL/AL); s->limit read at each use (retail reads it
+// four times) 689 [734]; with the second clamp's factor first 719 [581]; with the output clamp's too 719
+// [573]. Callers kept in the last three. Original body restored.
 // Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
 // 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
 // graphs also lose the exact caller; original body, helpers and 0x24 frame restored.

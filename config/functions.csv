@@ -574,7 +574,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00050650,62,game,unknown,a16,,,00322bd8,src/clamped_arccosine.cpp,matched
 00050690,332,game,speed,a16 pad,,,,src/unknown_050690.cpp,matched
 000507e0,235,game,speed,a16 pad ebp,,,00050690 00321099,src/unknown_050690.cpp,matched
-000508d0,3578,game,speed,a16 pad,,,00016b10 00030bf0 0004f7e0 000507e0 000516d0 000c4210 000c4250 00131bb0 0013b390 0013bc00 001697c0 001765e0 001883e0 00188dd0 001895f0 00320560 003f5b20,,todo
+000508d0,3578,game,speed,a16 pad,,,00016b10 00030bf0 0004f7e0 000507e0 000516d0 000c4210 000c4250 00131bb0 0013b390 0013bc00 001697c0 001765e0 001883e0 00188dd0 001895f0 00320560 003f5b20,src/unknown_050690.cpp,todo
 000516d0,2384,game,speed,a16 pad ebp,,,0013b390 00320560 00372d48,src/unknown_050690.cpp,todo
 00052020,24,game,unknown,a16,,,,src/unknown_052020.cpp,matched
 00052040,3316,game,speed,a16 pad,,,00012310 000142f0 0001c590 0001c6b0 0001c710 0001ccb0 0001cf50 000222d0 0004b220 00131e50 003f53d0 003f59b0 003f5cf0 003f6190 003f6390 003f6840 003f6f40 003f7330 003fa3d0 003faae0,src/unknown_01cf50.cpp,todo
@@ -9344,7 +9344,7 @@ va,size,owner,style,evidence,name,object,calls,source,status
 00269250,628,game,speed,a16 pad,,,0016ba40 0026a8d0 0026aa40 0026abd0 0026b120 0026b1d0,src/unknown_26b230.cpp,matched
 002694d0,169,game,speed,a16 pad,,,0026ac60,src/unknown_26b230.cpp,matched
 00269580,737,game,speed,a16 pad,,,000badc0 0026a860 0026a960,src/unknown_26b230.cpp,matched
-00269870,1328,game,speed,a16 pad,,,000baeb0 001e51a0 0025ccd0 0025d690 00269de0 00269e60 0026a310 0026a4f0 0026a960 0026aaf0 00321460,src/unknown_26b230.cpp,todo
+00269870,1328,game,speed,a16 pad,,,000baeb0 001e51a0 0025ccd0 0025d690 00269de0 00269e60 0026a310 0026a4f0 0026a960 0026aaf0 00321460,src/unknown_26b230.cpp,matched
 00269da0,53,game,unknown,a16,,,,src/unknown_26b230.cpp,matched
 00269de0,127,game,speed,a16 pad,,,00269de0 00269e60,src/unknown_26b230.cpp,matched
 00269e60,937,game,speed,a16 pad,,,000b9dd0 000badc0 000bec70 001df560 0026add0 00290c80,src/unknown_26b230.cpp,matched

@@ -231,6 +231,15 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // with actual multi-use vertex-table owner: 446/545/439/526. Copy-only long/short reach retail
 // frame 0x64 but regress; all eight lose fourteen matches. Original complete body restored;
 // full/planar normal homes, byte state and separate output tails remain.
+// Round 70 (lane 16, fast): retail reaches the hit block only from the edge loop's break, runs `++count`, then
+// re-tests `hit` (no-hit tail) before the loop condition; one no-hit tail serves both "no first edge" and "no hit";
+// every tail but the final one returns a constant, and the final one reads a stack byte that is only ever stored 0
+// (at entry and at the two breaks). The hit block inside a `while (edge)` edge loop (`++count; break;`) with one
+// `if (!hit)` tail after it and the two outer breaks as gotos (diagnostic) 483 (1508 bytes; retail's hit, increment
+// and re-test sequence appear); that with constant returns and a bool success 604 (1417 bytes, frame 0x58: success
+// folds and the false tails merge), plus `success = false;` at the two breaks 604 (folded away). Value difference:
+// the no-target over-distance tail stores `(dword)NONE` (0xffffffff) where retail stores 0xffff; `(word)NONE` there
+// 429 (1585 bytes: that tail then merges into the final tail), not kept. `edge` declared first 409.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

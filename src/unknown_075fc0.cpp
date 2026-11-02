@@ -71,6 +71,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 }
 
 // score 408 (was 408): frame 0x3c versus 0x34; observer/channel/result and counter homes remain.
+// MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as
+// observer + index*0x528 with the 0xa8 folded into the field offsets, the search through the channel array and
+// the counter snapshot through the existing union; with the two flags back to bool 430, also without the union
+// snapshot 411. Not kept; body unchanged.
 // Earlier: the 388 form below (four call-result and state locals as word, exact
 // 1369-byte length) was not kept: retail keeps these in 32-bit homes with no 16-bit operations,
 // so the word type is score-picked. Frame 0x3c versus retail 0x34; homes differ.
