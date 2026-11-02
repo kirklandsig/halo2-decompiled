@@ -209,6 +209,10 @@ void function_213970(void);
 // Round 292: Native signed/unsigned wide language result, mutable/immutable and original/entry
 // acquisition, 146/146/146/146/149/149/149/149. Original result and whole body restored;
 // separate protected storage definitions still prevent both retail-wide clears.
+// DL227: Actual shared cached-query return ownership, direct-field, early-hit, exhaustive-result,
+// miss-return, named-conversion, chained-publication and miss-reload forms: 131 each. Original
+// shared helper/body restored; protected separate definitions still prevent both retail-wide
+// clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
