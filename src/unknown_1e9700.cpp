@@ -312,6 +312,9 @@ struct s_object_damage_view
 // with both team results short 454/454/456/456. Every code remains in 0..255 and all
 // callback arguments stay unchanged. Wider carriers disturb the entry and do not recover
 // retail result homes; original byte code, long teams and complete body restored.
+// N308: Complete native history-record values in selection/attribution/assist, seven subsets,
+// 500/378/514/436/615/498/584; all by aggregate assignment 584. Original records and body
+// restored; scalar homes, amount-biased history cursor and credited-player validation remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
