@@ -2344,6 +2344,10 @@ struct s_unit_event
 // M315: entry region/permutation before object and native ejection/seat cursor lifetimes,
 // subsets 1/2/4/3/5/6/7 then all with entry event: 558/472/472/558/558/472/558/558.
 // Original body restored; permutation transport, register homes and sixteen-byte excess remain.
+// N321: One permutation-flag observation, shared resettable child iterator and direct nested
+// permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
+// call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
+// Original executable source restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
