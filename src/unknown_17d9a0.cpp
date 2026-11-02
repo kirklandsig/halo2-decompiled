@@ -669,7 +669,7 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 	*out = rotated;
 }
 
-// score 539 (was 552): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
+// score 539 (was 539): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // Frame 0x21dc and length 3647 agree; tag/count/plane homes and rotation spills remain.
 // Earlier: 552 (was 564): frame 0x21dc and 3647-byte length agree; first +0x41 spills the tag
 // at +0xb4 versus retail +0x94. Count/plane homes, initial face-call scheduling and rotation spills remain.
@@ -833,6 +833,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // M293: Consumed grouping-plane, selection metadata, basis scalar phase scopes, seven subsets,
 // then all with initial face-count phase closed:
 // 552/552/552/552/552/552/552/552. Original complete executable source restored.
+// AC477: Two native sorted endpoint-distance homes, producer direction, exchange-slot scope and
+// coherent near/far names: eight forms 793 each (reduced control 795; full 539). Two-point leads
+// rejected; original distance graph, body and helpers restored. Tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

@@ -932,6 +932,9 @@ extern long *g_51e9cc;
 // Original executable body restored; lookup receiver retention and store scheduling remain.
 // M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
 // M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
+// Lookup aggregate initialization at lookup/case/admission/object phases 186/217/204/204;
+// CRT clears at those phases 182/213/199/199. Shared word-bit publication for crouch,
+// contact, other and all flag groups 39/38/42/35; seven-count lead above 30 rejected.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {

@@ -1655,6 +1655,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // DH285: Native late-magnitude input assignment/memcpy/memmove/components at consumption,
 // then with uninitialized iteration-owned storage: 420/420/426/529/420/420/426/529 fast. Exact-only captures
 // restored; frame, unit/mode homes and independent look divisions remain.
+// Round 476: native pooled-user reference through the existing getter, with
+// unit/iteration-weapon/weapon-object reference subsets: eight at 220 fast
+// (control 220, full 218). Original object roots and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

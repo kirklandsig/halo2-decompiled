@@ -4269,6 +4269,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P252: Channel result/forced state, blend/reverse scalar and native vector-output role-name subsets
 // 1/2/4/3/5/6/7 765 each; all with the pure forced-state constant declared first 765. Original complete body
 // restored; frame 0x18, entry definition and zero/result SSE allocation remain.
+// Round 473: Existing magnitude selector with initialized-B/early/complete/
+// initialized-A result graphs, original/early tag-table receiver: 833/765/765/807/835/768/768/810.
+// Helper and full body restored; entry definition, zero/result roles and hoisted 1.0 remain.
 // B358: Complete shared definition ordinal / paired velocity-selection observation /
 // existing projections, subsets 1/2/4/3/5/6/7: 919/792/765/941/919/792/941;
 // all with a native tag-entry receiver 1012. Projection forms are match-only
