@@ -267,6 +267,9 @@ long g_55e6c0;
 // Round 93: destination-field accumulator 153; typed resource pointer 167; size macros 29;
 // parameter-address reads 29; unsigned packing dimension copies 29; direct typed Size publication 29;
 // signed packed carrier 29; named height part 29. Original packing restored.
+// Round 72 (lane 9, fast): packing after the linear-flag store 44; pitch as `width * sizeof(dword) / 64` 29;
+// the height part in its own local ahead of the pitch 29; the whole packing inside the linear select 175
+// (451 bytes, 0x1dc40 10); pitch as `(width * 4 >> 6) * 0x1000000` 28 (484 bytes). The fold stays in all.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {
