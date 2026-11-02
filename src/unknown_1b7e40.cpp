@@ -230,6 +230,9 @@ bool function_25d9b0(long prop_index);
 // P255 follow-up: View after velocity/at its predicate, with state-at-consumer and
 // full-width priority interactions 100/78/78/80/102/80/81/81. Original view/state ownership and body
 // restored. Earlier P255 record-receiver family overlaps old forms and is excluded from new credit.
+// Round 86 (KIMI2): evaluation result with busy goto/single exit 91; the same without goto 91;
+// scoped zero result 51; priority-initialized result 49; reversed branch-complete result 49;
+// that with velocity declared first 49; selected_priority/outcome result names 49/49. Original body restored.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

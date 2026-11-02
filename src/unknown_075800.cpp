@@ -1063,6 +1063,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // keep 2,4,0,3 at plain 193, retail length. Lookup orders 7,5,6 / 6,7,5 give 196/195;
 // acknowledgment first in residual phase 196; unified observed order 218. All call inputs preserved.
 
+// Earlier at 153: register inputs, the delayed ESI save and the late case layout still differ.
 // Earlier (153, was 153): register inputs, the delayed ESI save and the late case layout still differ.
 // Direct orders 0,4,2,3 / 0,4,3,2 / 2,0,4,3 / 2,3,0,4 give 193/196/193/195 fast;
 // 2,3,4,0 / 3,0,2,4 / 4,0,2,3 / 4,2,0,3 give 194/193/193/191 fast.
@@ -1213,6 +1214,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // switch 218, one extra type test 209 (428 bytes), all the same convention; an unused address parameter on the three
 // connection handlers 217 (plain, same code). The six parameter orders with the caller in the reduced image give type EAX
 // there, 213/214 at 460 bytes, but the plain check does not agree, so screen this function plain. Restored.
+// Round 523: Individual connection cases interleaved across intact primary families, eight
+// native-input priorities 209/209/199/203/200/204/198/197 fast versus control 196 (full 153).
+// Original root, terminal 18/11 cases, all lookups and call tuples restored; delayed ESI save remains.
 // DH285: Native-input non-direct-first primary families QDSPC/QDPSC/SDQPC/SDPQC/
 // PDQSC/PDSQC/CQSPD/CPQSD: 192/194/191/189/191/189/204/205 fast. Original complete dispatch restored;
 // delayed ESI save, late case layout and full-only handler expansion remain.
@@ -1226,6 +1230,11 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // behind an `if` 216 (424 bytes, ECX); one `if` on an unused type 216, two 212 (460 bytes, EAX); an empty out-of-line call
 // taking the address after a connection handler 218 (removed before the convention is chosen); a byte pointer local for
 // the message 218 (same code). So retail's first pass saw the address live across a call that its final code does not have.
+// M312: Native-input session interior priorities and remaining peer orders:
+// 196/196/196/196/196/196/196/196. Original body restored.
+// M314: Native-input first-family priorities QDCSP/QDCPS/QDSCP/QDPCS/SDQCP/SDPCQ/SDCQP/SDCPQ:
+// 205/203/195/201/194/194/204/202 against reduced 196. Original classifiers restored;
+// delayed ESI save, late-case layout and full-only handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

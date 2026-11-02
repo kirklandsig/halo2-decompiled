@@ -683,6 +683,9 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // value) gives retail's layout with the flag in BL, 47 at 865 bytes, because that read crosses the prop call; a second
 // read before the call (diagnostic) folds away. Stored through a pointer at its definition 210 (877 bytes, al 16; retail's
 // layout, flag in memory, no threading). Retail's flag has some use or weight this source lacks.
+// Round 528: result-first seating permission, paired named delay products and signed-long
+// player ordinal, seven subsets 114/47/114/168/164/168/164; all with native int ordinal 164.
+// Original permission, products, short player ordinal and complete body restored.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

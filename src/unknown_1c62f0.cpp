@@ -642,7 +642,8 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
 // clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
 // volatile slot, kept one load but changed the register allocation (133, 132, 141).
-// score 93 (was 93): the second-dispatch callback reload and the third dispatch's scratch registers (rotated
+// score 12 (was 12): frame 0xc and 531-byte extent agree; third-dispatch scratch registers still rotate.
+// Earlier 93: the second-dispatch callback reload and the third dispatch's scratch registers (rotated
 // one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
 // 126; clears spanning clamp 136, with word events 136. Original body and parameter accesses restored.
@@ -796,11 +797,28 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // Round 256: named wrapped-frame subtraction, producer/declaration and conversion
 // orders, real carrier 93/93/93/93; double carrier 91/91/91/91 (531 bytes,
 // two-point gain rejected, precision exact-only). Original complete body restored.
+// DH round 290: plain callback with completed-phase failure exits, seven subsets 128 each;
+// delayed native variant identity with all exits 14, original/initial/initial-end guards 12/12/13,
+// all exits plus frame-delta expression 14. Keep plain callback and twice-used variant,
+// channel identity before rate and saved identity after it; original guards. Plain/full 12.
+// DH293: Separate loop-start with long/word/short/dword events 13/13/13/13;
+// original position with word/short/dword events 12/12/12; separate loop-start
+// and directly initialized replacement 130. Original retained callback/variant
+// graph restored; third-dispatch scratch rotation remains.
+// Round 273: integer loop-start used by both conversions, short/long before/after wrap
+// and branch/entry variant 13/2/13/2/13/2/13/2. Single conversion with four index names
+// uses original position 12 each, separate real start 13 each; two-difference graph with
+// eight scalar/identity names 2 each; uniform loop-field observations 13. The two-point
+// forms move the loop-start spill to the retired callback slot and repeat the conversion;
+// exact-only, rejected. Original complete body restored; scratch rotation remains.
+// N320: Distinct wrapped-result ownership with separate/reused loop start, explicit/embedded delta and
+// pre/post-dispatch transfer grows the frame and regresses all three callers; third-dispatch scratch
+// rotation remains. Scores 135/136/135/136/142/143/142/143.
+// Original executable source restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)
 {
-	animation_event_callback const *local_3 = &callback;
 	c_type_709360 animation_id = channel->animation_id;
 	s_graph_tag *graph = c_animation_channel_get_graph(channel);
 	s_animation *animation = channel->function_1c6440();
@@ -818,13 +836,13 @@ void __stdcall c_animation_channel_advance(c_animation_channel *channel, real fr
 		next_frame = 0.0f;
 	}
 	channel->unknown11 &= ~0xe;
-	events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *(animation_event_callback volatile *)local_3, user);
+	events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, callback, user);
 	if (animation_id == channel->animation_id)
 	{
 		channel->unknown14 |= events;
 		if (next_frame >= last_frame)
 		{
-			events = animation_events_dispatch(graph, animation, channel->flags, position, FLT_MAX, *local_3, user);
+			events = animation_events_dispatch(graph, animation, channel->flags, position, FLT_MAX, callback, user);
 			if (animation_id == channel->animation_id)
 			{
 				channel->unknown14 |= events;
@@ -832,17 +850,19 @@ void __stdcall c_animation_channel_advance(c_animation_channel *channel, real fr
 				{
 					if ((channel->flags & 0x20) && animation->loop_frame_index == 0)
 					{
-						animation_id = state->variant_get(channel->animation_id);
-						channel->animation_id = animation_id;
+						c_type_709360 variant;
+						variant = state->variant_get(channel->animation_id);
+						channel->animation_id = variant;
 						if (channel->flags & 8)
 						{
 							channel->rate = 1.0f;
 						}
+						animation_id = variant;
 						animation = channel->function_1c6440();
 					}
 					position = (real)animation->loop_frame_index;
 					next_frame = next_frame - last_frame + position;
-					events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, *local_3, user);
+					events = animation_events_dispatch(graph, animation, channel->flags, position, next_frame, callback, user);
 					if (animation_id == channel->animation_id)
 					{
 						channel->unknown14 |= events;

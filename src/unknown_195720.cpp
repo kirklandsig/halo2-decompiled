@@ -25,6 +25,11 @@ bool function_1946f0(s_bitstream *stream)
 }
 
 // score 2 (was 2): the masked-byte and clear-start LEAs keep the reversed data/index operand order.
+// Lane 16 round 74: a data local assigned before the index gives [index + data] (assigned after it,
+// [data + index]; its declaration position does not matter), but retail reads the field in each block.
+// Real: data local at the top of the discard block 40; explicit sums with the division inline, in
+// either operand order 2/2; the masked byte by inline division with the clear from the index 2; data
+// local declared first and assigned in each block 35.
 // Reversed additions 2; grouped clear start 2; data plus one then index 2; shared clear start 24;
 // count before mask 47; count declared first 2; split index declaration 2; index plus one then data 2;
 // element address plus one 2; const index and count 2; size local 47.

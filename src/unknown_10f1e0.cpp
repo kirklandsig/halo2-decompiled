@@ -1477,6 +1477,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // controlling field into EBX before its compare and reads the name before the state pointer, keeps depleted in
 // BL (initial false reloaded from +2) with interruptible in memory where ours swaps them, and re-derives the
 // unit from a fresh pool data load in the second query (29 bytes). Original body restored.
+// Round 531: One shared held-object handle, controlled/entry scope, byte/bool result and guarded second
+// clear 164/164/194/194/328/328/336/336. Original queries and complete body restored; pool/state
+// ownership and count joins remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1704,6 +1707,9 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 305: selected real header pointer/value, mutable/readonly at entry
 // 497/497/512/512 and in the held-query admission 476/476/491/491. Original live
 // pool observations, statuses and dispatch restored; frame and state/request homes remain.
+// Round 531: Existing object-header accessor at entry/paired slots/paired counts, seven subsets
+// 450/450/450/450/450/450/450; full accessor graph with read-only receivers 450. Original body and
+// includes restored; frame eight versus twelve and header/state/request homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2061,6 +2067,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // 790/824/840/840/846/838/838/849; complete native component transfers and returned-value snapshots.
 // Mixed primary transfer/secondary value reaches frame 0xd4 at 846, first +0x23, but regresses.
 // Original escaped angle outputs, default values, helpers and complete body restored.
+// Round 137 (m3 lane 6, fast control 790 = plain): ours calls 0x11df30 twice where retail inlines the first (two
+// fpatan) and calls the second; every other callee count agrees. bounds_112070 as plain inline 1064 (3171 bytes,
+// kept out of line), project_112070 as plain inline 1146, both 1378; a `__forceinline` redeclaration of 0x11df30
+// 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

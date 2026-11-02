@@ -325,6 +325,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // (0xb61d0 46); 30 random mixes of guard nesting, length local, compare spelling, increment, clamp, source form and result
 // fall in the known classes 28 (start stays in EDX, walk EDI, 0xb5f10 6), 40, 48, 51 and 53. In retail the walk and counter
 // take EDX and ECX first, which leaves start only a saved register; here start is coloured before the walk.
+// Round 528: native int start/count and immutable destination formal, seven subsets
+// 40 each; complete native graph with exhaustive result arms 48. Original signature,
+// shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

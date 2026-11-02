@@ -994,6 +994,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
 // keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
 // alike, so it is no proxy for these roles.
+// Round 289: One ordered union-domain copy/fill traversal, preserving signed iteration ranges,
+// with conditional/logical bounds, maximum comparison directions and named/expression excess:
+// 87/73/87/73/87/72/87/72. Original separate loops, full-width values and body restored.
 // F321: complementary failure result in bool/byte/word/long storage, with
 // conditional-value and branch-owned clamp consumers: 63/63/73/68/90/90/102/96.
 // Original combined scan/fill and success-result graph restored; count ownership remains.

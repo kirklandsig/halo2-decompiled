@@ -456,6 +456,12 @@ struct s_ai_scene_assignment
 // the scorer and the first store 12 (same code); the int copy declared at the top 25; the recursion passing the
 // parameter while the compares use the int copy 76. Ours reloads the role index before the actor index in the
 // store block (a spilled candidate's reload at the block head); retail loads it after, in expression order.
+// Round 51 (m3 lane 14, fast): on the direct form our build keeps the role index's load live across
+// the scorer call in ESI and narrows each maximum read to a 16-bit load or operand; retail keeps the maximum's
+// dword load in ESI across the call and reloads the role index after it. `(void)&role_index;` on the
+// direct form 59 (removed); a `word` copy 59 (propagated); a 32-bit maximum parameter read through
+// `(short)` views 59 (still narrowed 16-bit loads); that parameter with a long copy 59 (propagated); the
+// role index read once through its address for the four stores 12 (folds, same code).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

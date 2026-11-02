@@ -822,6 +822,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // 546/601/625/532/547/624/630/630. Original complete executable source restored.
 // M296: Actual score ordinals player/team/both long, player/team/both short, then
 // both long with Boolean campaign/native short count [531, 524, 548, 545, 519, 550, 578, 568]. Original score cursors restored.
+// AC475: Canonical campaign bool/byte/short/word with native long count on completed-short
+// selection/admitted-score-pointer graph 540/540/509/509; native short count 556/556/528/528.
+// Three-point 509 forms rejected; original truth/count domains and complete body restored.
+// Signed-byte campaign with long/short count 540/556; original body retained.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

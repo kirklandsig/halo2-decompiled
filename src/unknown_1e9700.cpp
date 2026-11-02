@@ -74,6 +74,14 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 }
 
 // score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
+// (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
+// reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
+// 0x510cb0..0x511000 globals, so a real form must fold those in as fields; held like the 0x2136c0 struct globals.
+// (2) 0x196960's getter as a file-local forceinline used twice, the setter in the body, the increment before the
+// compare with nested clamp tests, `bool teams` set from the flag bit, player->team read at each use.
+// Without the struct symbol the best was 96 (layered getter/setter, first enable read through a const pointer);
+// the struct gave 53 and the teams form 0. All in the body, no helpers: 80 and 51.
 // Earlier 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
 // in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
@@ -318,6 +326,13 @@ struct s_object_damage_view
 // P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
 // corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
 // Original domains and body restored; scalar homes and biased history cursor remain.
+// Round 370: Chained team/credit, selection and award-count defaults, subsets
+// 1/2/4/3/5/6/7, then all with earlier parameter-derived code: 353/463/355/463/355/463/463/463.
+// Selection chains grow frame to 0x54; original body restored. Scalar homes and biased history cursor remain.
+// DL245: Frame 0x50 agrees; victim-team/credited-player/code homes and amount-biased history cursor remain. Dword consideration/hostility/friendly subsets 381/360/390/354/380/354/397; all word 412. Native unsigned cutoff/recent/both 353 each. Original Boolean, signed window and record graph restored.
+// Round 372: positive engine/valid-selection/eligible-assist regions, subsets 1/2/4/3/5/6/7,
+// then common conditional slot fallback: 353/353/353/353/353/353/353/353. Original complete body
+// restored; scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
