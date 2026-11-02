@@ -2249,6 +2249,9 @@ void function_269250(long clump_index, long actor_index)
 // order); if ties between separate pool globals go by symbol creation order, that alone gives 0x25d770/0x25d810
 // (one use of each pool) the node pool first under separate globals.
 // Also round 136: `changed` declared with the categories and reset per clump 89 (same code).
+// Round 235: Native current-clump receiver with declared prop identity/head and native node
+// identity subsets, eight forms 89 each. Entire 0x24-frame body restored;
+// category-byte homes, deletion completion and pool-register roles remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
