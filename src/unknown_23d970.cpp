@@ -762,6 +762,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
 // and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
 // output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
+// Round 348: complete normalized-forward/offset/velocity setter subsets
+// 231/233/265/197/243/244/279; all with prior-up setter capture 313.
+// Original aggregate copies and products restored; right i/j carriers and forward.k reload remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
