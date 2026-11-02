@@ -268,7 +268,7 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
-// score 271 (was 279): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
+// score 271 (was 271): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
 // takes unit_index in esi and keeps name in edi, which function_e6960's type argument clobbers, so name is
 // reloaded at the join and VC cannot thread the switch's two function_e68c0 cases into retail's single
 // shared call; the c7070 chain's calls also merge differently.
@@ -276,6 +276,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // index) 271; actions read at each use 337; no unit local 344; next_state/next_action declared first 278;
 // the e70b0 count arms the other way round 278 (fewer structural differences, positional worse); count
 // declared at function scope 277.
+// Round 346: shared-call cases last/first/reversed/reverse-last, with original/early conditional outputs:
+// 271/271/271/271/279/279/279/279.
+// Frame 8 agrees; unit/name/actions register ranks and shared-call threading remain. Original executable
+// body restored.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1799,6 +1803,7 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
+// DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2195,6 +2200,7 @@ __forceinline char unit_action_round(real value)
 // J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
 // Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
 // all with success at the final return 278. Sub-eight forms and all other trials restored.
+// DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2540,6 +2546,10 @@ long function_c8f60(long unit_index, short seat_index);
 // goto-free form); on it the 0x3dc state in a named long tested twice 304 (aligned 156 -> 151); the vehicle
 // lookup before is_vehicle 308; unit declared at function scope, assigned after the test, 306; is_vehicle
 // with the file's `1u <<` flag (retail's shr) 306 (aligned 155).
+// Round 346: parent result with outer result, byte result and existing vector zero setters:
+// 304/331/307/338/304/331/307/338.
+// Frame 0xf0 agrees; vehicle/index/unit-pointer ranks, state comparison and late result scheduling remain.
+// Original executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2785,39 +2795,6 @@ void function_a8b10(long unit_index);
 
 /* takes a unit out of its vehicle seat: detached, its weapon back in hand,
    its exit animations */
-// MiniMax E (11-01): no new form, no lower score; the reduced image builds this one
-// differently (88 there, 9 in the full build), so only a plain check can score it.
-// score 9 (was 68): 483 bytes as retail. Earlier: score 68 (477 bytes, retail 483). With 0xe0070's loop written with a found flag (lane 14 round 12;
-// not kept, a test-set flag is kept only with a match) it scored 9 and only scratch registers differed:
-// retail eax/ecx for the 0xcbd50 slot read, edx for the 0xee460 push and eax/ecx for the two seat pushes;
-// ours one step on (ecx/edx, eax, ecx/edx).
-// Pointer names 116; widened seat 109; Boolean object flag 104; both 93; unsigned mask 115;
-// unsigned with widened seat 108, with Boolean flag 103, with both 92 (fast); last form 68 plain.
-// Round 12 (lane 14), all with the found-flag 0xe0070 (unit in EDI as retail) 9: the existing 0xb9c60
-// for the flag clear 9 (same code; kept, 68 without the flag); the 0xb58c0 owner in a local 9; the
-// action name as if/else 9; the 0xcbd50 result passed as the slot 9; action/state declarations swapped 11; vehicle read first 9 (all plain;
-// --fast adds a pool reload after 0xbef30 the full build lacks).
-// Round 21 (lane 13): BLOCKED-BY 0xe0070: ours takes the unit index in ESI with a 0x1c frame,
-// retail in EDI with 0x20 (retail's `mov edi, esi` and reload around that call are the 6 missing
-// bytes, and the EBP/EDI unit/index swap follows). Vehicle index read before the type flag 68
-// (plain; fast 92 from the reload); type flag after the early return 154 (and 0xeaad0 lost its match);
-// the unit through UNIT_ACTION_HEADER_GET 68; vehicle index read after the early return 68;
-// `!unit->object_type` at the 0xe0070 call 68 (all plain).
-// Round 51 (score 9, 0xe0070 matched): only scratch registers differ, retail EAX/ECX for the 0xcbd50
-// slot read, EDX for the 0xee460 push, EAX then ECX for the two seat pushes; ours ECX/EDX, EAX, ECX,
-// EDX (one allocation behind). An LTCG env link (this file + the callee closure) gives the full
-// listing; there: an unused local 9 (plain); the 0xb58c0 owner in a local, the 0xcbd50 result in a
-// local passed on, tail actor/player locals, the 0xcdeb0 result in a short local, the 0xe0070 test
-// nested, the flag after the vehicle index, the flag as byte/char/dword cast, an inline unit getter
-// (plain/forceinline/with a local) or weapon-of-unit helper at the 0xcbd50 argument, header-based
-// reads, `is_vehicle == false`, `!TEST_FIELD_BIT(is_vehicle)`, an empty then-arm, `== -1`, the
-// 0xcbd50 test joined to the flag with `&&` and 0xee460 under its own test, `(void)&is_vehicle` 9 each
-// (identical); action name at the call 39; header pointer for the unit 10; state/action before the
-// early return 23; action declared first 11; seat as a short local 24; seat cleared first 11;
-// `not_vehicle` 13; flag as long 23, TEST_FIELD_BIT 10; 0xcc810 in both arms 27. Diagnostics: two
-// extra temps (a load and store) just before or inside the second `!is_vehicle` block give retail's
-// registers (one extra temp does not; two before the 0xd4 test rotate that chain instead), so retail
-// makes two more free-choice allocations (or one fewer) between the 0xd4 chain and the slot read.
 // @retail 0xea8e0
 void __stdcall function_ea8e0(long unit_index, bool hurried)
 {
@@ -2845,8 +2822,10 @@ void __stdcall function_ea8e0(long unit_index, bool hurried)
 	function_b9b90(unit_index, false);
 
 	function_b9c60(unit_index, false);
-	if (UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4 != NONE)
-		function_b58c0(UNIT_ACTION_UNIT_GET(unit_index)->unknown0d4, 0x800);
+	s_unit_action_unit *current = UNIT_ACTION_UNIT_GET(unit_index);
+
+	if (current->unknown0d4 != NONE)
+		function_b58c0(current->unknown0d4, 0x800);
 	if (!is_vehicle)
 	{
 		if (function_cbd50(unit_index, UNIT_ACTION_UNIT_GET(unit_index)->current_weapon_index) == NONE)

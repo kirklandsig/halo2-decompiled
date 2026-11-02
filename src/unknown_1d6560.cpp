@@ -192,6 +192,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
 // 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
 // the matched caller (13). Original separate flag cases, both type reads and body restored.
+// Round 504: actual byte flag3 with repeated/shared type and primary/secondary
+// result defaults 96/94/100/91/104/91/108/91. Shared-type forms lose 1d5bf0 (13);
+// original byte layout, both type reads, result arms and complete body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -298,7 +301,9 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
+// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// neighbor/key homes and remaining cold-block placement differ.
+// Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
 // through the group pointer, count and first body), the section loops load the component's object index after
 // both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
@@ -444,6 +449,12 @@ struct s_physics_component_walk : s_havok_component
 // eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
 // References canonicalize; direct fields grow or rotate allocation. Original method and
 // both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
+// Round 305: Terminal continuation, positive neighbor admission and empty-group return, seven boundary
+// subsets, 172 each; all with shared section ordinal 172. Frame 0x18 agrees; neighbor/key homes and
+// cold exit placement remain. Original method restored.
+// Round 345: Complete section-open/closed predicates in bool/byte/word/long storage: 146 each.
+// Direct complementary predicate, false comparisons and separate query rejection guards: 172 each.
+// Native bool predicates at their original computation kept; terminal scan now falls into the entry latch.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
@@ -504,8 +515,9 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                 for (long j = 0; j < entry->section_count; ++j)
                 {
                     s_physics_entry_section *section = &entry->sections[j];
-                    if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                        !function_db4c0(component->object_index, section->key_a, section->key_b))
+                    bool section_open = !function_db540(component->object_index, section->key_a, section->key_b) &&
+                        !function_db4c0(component->object_index, section->key_a, section->key_b);
+                    if (section_open)
                     {
                         *active = true;
                         break;
@@ -529,8 +541,9 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                         for (j = 0; j < entry->section_count; ++j)
                         {
                             s_physics_entry_section *section = &entry->sections[j];
-                            if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                                !function_db4c0(component->object_index, section->key_a, section->key_b))
+                            bool section_open = !function_db540(component->object_index, section->key_a, section->key_b) &&
+                                !function_db4c0(component->object_index, section->key_a, section->key_b);
+                            if (section_open)
                                 break;
                         }
                         if (j >= entry->section_count)

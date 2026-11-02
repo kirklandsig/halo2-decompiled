@@ -378,6 +378,13 @@ static __forceinline bool structure_bsp_collision_available()
 // Round 294: Native query point assignment/memcpy/memmove 81/81/77; direction
 // assignment/memcpy/memmove 80/80/75; both memcpy/memmove 113/137. Exact-only
 // input snapshots restored; exclusion BL and source-slot publication/reload remain.
+// Round 298: Finite acceptance/outcome/eligibility domains and pairs/all
+// 52/56/53/74/52/56/74; all with complete finite model return 83.
+// One-point leads rejected; original byte result and entire body restored.
+// Exclusion BL and source-slot publication/reload remain.
+// Round 300: Complete positive/rejection availability with common result exit and native
+// short/long object policy, default/type-arm and conditional producers:
+// 95/95/97/97/95/95/97/97. Original complete body restored; exclusion BL and source-slot join remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -686,7 +693,15 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 /* the collision record's object index, re-read at each use as retail does (no local copy) */
 #define COLLISION_OBJECT_14A8E0 (*(long *)((byte const *)collision + 0x40))
 
-// score 70 (was 70): frame 0x58 and initial model/collision homes agree; bounds timing,
+// score 4 (was 4): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
+// second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
+// them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
+// Round 39 (lane 2): 0x11e800 declared (p, a, b, c, u, v), retail's setup order at this call read right to left, at
+// its definition, this file's declaration and both calls: 0 (plain; 0x11e800 129 -> 126, 0x14ac60 stays 172), not
+// kept because 0x11e800 is contributor code. Caller forms with 0x11e800 unchanged (fast): vertices + 1 and + 2 4; named
+// second and third vertex pointers 4; a named point pointer 4; named u and v pointers 4; a named result 4.
+// Earlier at 70: frame 0x58 and initial model/collision homes agree; bounds timing,
 // lookup-address reuse and triangle-test registers differ.
 // Earlier: with the part list read through its 0x48-byte range records and the part offset read
 // at each use, the model/collision registers (EBX/EDI swapped), lookup address (retail keeps it
@@ -800,6 +815,8 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
 // second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
 // them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
+// R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
+// arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -1040,6 +1057,13 @@ done:
 // Round 294: Initial probe memmove/three-long triangle memset/two-byte material memset
 // subsets 1/2/4/3/5/6/7 give 140/144/125/138/140/144/138; all with the availability
 // producer 158. Original body restored; exclusion/result/NONE and direction homes remain.
+// Round 298: Finite eligibility/retry/outcome domains and pairs/all
+// 125/125/131/125/131/131/131; full finite graph with three-outcome model 164.
+// Original Boolean parameter, grouped storage and complete body restored;
+// exclusion/result/NONE ownership and direction residency remain.
+// Round 300: Complete positive-admission/done-exit availability graphs with native short/long
+// policy merges, default/type-arm and conditional producers:
+// 136/136/147/147/136/136/147/147. Original complete body restored; exclusion/result/NONE and direction homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

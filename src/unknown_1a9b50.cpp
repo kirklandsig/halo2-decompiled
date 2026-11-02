@@ -534,6 +534,9 @@ extern point2f *g_468778;
 // Round 289: Complete facing value with actor-first/target position/target velocity values, masks
 // 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
 // observations, lookup order, early distance and complete body retained.
+// Round 456: Facing fallback/secondary direction/planar-test memmove transfers, subsets 1..7
+// 378/381/410/381/386/387/420; all plus three request planar transfers 414.
+// Original copies, early distance, lookup order, arithmetic trees and full body restored; persistent actor/settings/prop homes remain.
 // Round 72 (lane 16, fast; aligned register-blind distance in brackets, control [109]): actor first 413 [136]; a late
 // `&field_2d` pointer with constant exits 413 [109], with a result 413 [136], one expression exit 393 [116]; the facing
 // pointer declared inside the second test 416, on the original order 378; a named velocity pointer 398 [112]; both 398

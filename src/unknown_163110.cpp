@@ -958,6 +958,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 451: Complete classification-distance/clipped-distance/negative-reciprocal expression
 // nodes, subsets 1..7 and complete nodes with reciprocal first: 249/115/249/115/249/115/249/249. Original expression boundaries
 // and complete body restored; coefficient preload, XMM zero and projection homes remain.
+// Round 456: Near-normal/far-normal/input-point memmove transfers, subsets 1..7
+// 458/469/346/401/422/457/475; all plus complete intersection publication 470.
+// Original transfers, arithmetic trees, helpers and full body restored; coefficient preload and projection homes remain.
 // Round 72 (lane 16, fast; a compile-only listing reproduces the clip block). Aligned counts matter here: forms that
 // raised the positional score moved closer. dot3f denominator on plane3f locals 224 (first plane block then retail's
 // order, xmm4/xmm5 swapped); plus intersection `delta.i * t + p0->x` 226, p1 declared before p0 224, total declared

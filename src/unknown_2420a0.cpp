@@ -564,6 +564,14 @@ long function_243b10(long key_b, bool team_only, long *second)
 // the top of each k iteration 169 (717 bytes; the slot parameter moves to the stack, the table is hoisted to
 // EDI and caller 0x240160 drops to 46), with the accumulated distance 169; `long j` declared in the for 173;
 // count declared before the results array and assigned from the query 173.
+// Round 55 (lane 11, fast with 0x19ec40's callees, each on the accumulated distance): the table assigned per
+// select arm, read through the table 184, through the global 184, the read before the assignment 184 (717 B each,
+// the table hoisted to EDI, the slot on the stack, caller 0x240160 46); the select's else arm through an inline
+// getter with its own table local 200 (688 B); the marker test through an inline bool helper on the entry 173,
+// forced inline 173, on the flags with an options local 173, with an if/return body 173 (same code); the marker
+// position through an entry pointer local 172, with const entry and other 172, entry local with the fields copied
+// y first 190, x first 190. Diagnostic, reverted at once: the else arm through a const cast of the global's
+// address 199 (692 B; frame 0x44 and retail's else-arm reload appear, caller 0x240160 7).
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1319,6 +1327,11 @@ void c_game_engine_markers::v21(long object_index)
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
 // form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
 // kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
+// Round 55 (lane 11, fast): the mode test through the existing 0x138880 40, through 0x138860 40 (same code); with
+// the team at each call 119 each; the flag sets through a two-use flags pointer 94 (429 bytes); the unit's player
+// index read at both event-block uses 40 (same code); an object local after the type test with the unit fetched
+// before the slot read 120 (427 bytes); that with the team at each call and the slot first 130 (419 bytes); the
+// team at each call with the player built from the absolute index 120 (429 bytes).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
@@ -1649,6 +1662,21 @@ long function_2421d0(long team)
 // by one, ecx/edx/eax then edx/eax/ecx); the peer tested first with the type if/else inside 57;
 // the peer local declared before the type 33; the type read at each test, no local 59; the peer
 // as a bool 61.
+// Lane 15 round 42 (fast): the type test first with the peer read inside each nested arm, no type local 74 (212
+// bytes), with a type local 74, with a peer local per arm 74; arms swapped 75; a type local used in two tests
+// (`else if (type != 9)` or two && tests) 64 (211 bytes; retail's entry and first-arm peer, second arm rotated by
+// one); that with the helper as one expression, a tag local, `&...->block[0]`, tag and block locals, a tag
+// instance pointer, a block local per arm, a {count, address} block struct with a reference helper or field 64
+// each; the chain written out in each arm 74/74/64; a helper per field with its own NONE result (`or eax, -1`
+// lands before the compare as retail, and the source stays natural) 64 (211 bytes) with a ternary or if/else;
+// a pragma for size (diagnostic) 109.
+// Lead: retail's arms colour alike only when the block pointer is a register variable (two uses) in each arm,
+// and the only such form found has a test always true where it stands: a block local with `definition_index =
+// type == 9 ? block->bomb : block->flag` in both arms of `if (type == 9) ... else ...` MATCHES byte for byte (first
+// arm only 10). Not kept: identical arms and an always-true test are reverted even with a match. Single-use forms
+// (reference local, by-value or reference helper, member helper, typed casts, dead second reads) stay cycling in a
+// compile-only copy. 0x2c0980 has the same chain and a second `or eax, -1` before its peer test, so look for one
+// shared helper.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
@@ -1712,6 +1740,10 @@ void function_2422d0(long slot)
 // Round 53: function-scope object index reused for the second loop's element 7; permuter (58
 // variants) 7; lookup written without the inline getter 7 (diagnostic); a `long i` per loop 7;
 // `dword` object index 7; the eligibility result in a named bool 79.
+// Lane 15 round 42 (fast): object and slot declared before the index 7; no slot local 79 (index EDI and object EBP
+// stay); `short slot` 7; nested tests through a table-entry pointer with `continue` 7; one && test with `continue` 7;
+// a named team entry pointer 7; the table value named in the test 7; the flag cleared after the reject store 9
+// (with a named eligibility bool 9); `++i` 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {
@@ -2100,6 +2132,14 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // both 64; guard return on the mode and range tests 53 (same code); one table local for the time test and the
 // final store 59, with the getter tail 60. Diagnostics: without the cause-player store the engine type takes
 // EBX (options in ECX, table in EDI); with a constant subtype the table and the engine type share EDI.
+// Round 55 (lane 11, fast): an engine-type local before a subtype local 53, the engine-type local alone 53, with
+// a type local too 53 (same code); the initializer through a local inline with its parameters in any of four
+// orders 53 (same code: parameter order does not move the ternaries); the mode test through 0x138880 or 0x138860
+// 53; inline helpers for the cause-player setter, the time test or the final store 53 each; the whole event block
+// forced inline with (player, flag), (player, type, subtype) or (type, subtype, player) 53 each; the type ternary
+// in a forced-inline getter 53. Diagnostics, reverted: a local initializer storing the subtype first 64 (256 B),
+// the type last 63 (256 B), both 63 (retail's fill order, but the options move to EDX and EBP stays); an options
+// local 60 again (the player index then arrives in EDI, 0x241620 at 23).
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {

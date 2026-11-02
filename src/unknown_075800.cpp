@@ -1201,6 +1201,12 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // failure-first lookup guards and inner orders 567/576/657/765: 212 each reduced,
 // against control 196 (full 153). All lose caller 0x7afd0 at three differences;
 // original classifier, separate lookups, native input roles and caller match restored.
+// Round 456: Native-input primary family orders DQPCS/DCSPQ/DCPSQ/DCPQS/DCSQP/
+// DPCQS/DPCSQ/DSCPQ, fast 205/206/205/208/208/208/205/206. D direct, Q query, S session, P peer, C connection;
+// original complete classifiers restored; delayed save and late expansion remain.
+// Round 247: Native-input root with one three-use link observation, scoped/shared results,
+// success/failure guards and direct/common completion: 257/257/257/257/257/257/257/257; original body
+// and helpers restored.
 // Round 72 (lane 16, plain unless marked): every case in one switch in retail's code order 217 at 420 bytes: `push esi`
 // is then delayed past the range check as retail, but type is ECX, address EAX and message on the stack (caller 0x7afd0
 // 3). On it (fast): an early unsigned range return 218, a signed range test 207 (432 bytes), a named type 218, a dword

@@ -817,6 +817,12 @@ union s_60403
 // with a plain bool flag 289 (frame 0x98); with the retained mask declared after the member loop 291
 // (1529 bytes), both 302; `old_members` declared after the maps and used by the mapping, removal and
 // member loops 283 (1513 bytes).
+// M302: Common previous-member carrier through mapping/removal/emission,
+// common current carrier, function-scope discriminator and late retained-zero subsets:
+// 149/336/149/336/149/336/149/336. Original carriers and mask lifetime restored.
+// Round 344: complete unchanged predicate in bool/byte/word/long storage, original and late
+// retained-mask lifetimes: 289/289/283/283/363/363/338/338. Original discriminator, mask,
+// mappings and body restored; previous/current residency and discriminator homes remain.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
