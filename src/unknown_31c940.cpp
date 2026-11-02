@@ -274,7 +274,7 @@ static __forceinline void solve_angular_friction_kernel(float target, float limi
 	*result += impulse;
 }
 
-// score 2072 (was 2114): retain the residual pass's impulse cursor advances.
+// score 2151 (was 2072): reconstruct writeback loops and metadata reloads.
 // Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -714,7 +714,6 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 			case 6:
 			{
-				do
 				{
 					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 					float velocity_a = linear_velocity(row, a, b).value;
@@ -728,7 +727,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					terms += 2;
 					++result;
 					op += op[1];
-				} while (op[2] == 6);
+				}
+				// The header opcode takes precedence over its classification byte.
+				if (*op == 1) goto residual_header;
 				break;
 			}
 			case 3:
@@ -770,34 +771,21 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	goto read_results_header;
 	for (;;)
 	{
-		switch (*(signed char *)op)
+		int kind = *(signed char *)op;
+		switch (kind)
 		{
 		case 1:
 		read_results_header:
 		{
 			solver_header_31c940 *header = (solver_header_31c940 *)op;
-			terms = header->terms; destination = header->results; stride = header->result_stride;
+			stride = header->result_stride;
+			terms = header->terms; destination = header->results;
 			op += 24; break;
-		}
-		case 2: case 5: case 6: case 11: case 13:
-		{
-			*(float *)destination = *result;
-			*(float *)(destination + 4) = terms[0].m128_f32[3] * step->inverse_time;
-			destination += stride;
-			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
-			++result; op += op[1]; break;
-		}
-		case 4: case 9: case 10: case 12:
-		{
-			*(float *)destination = *result;
-			*(float *)(destination + 4) = terms[1].m128_f32[3] * step->inverse_time;
-			destination += stride;
-			terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
-			++result; op += op[1]; break;
 		}
 		case 3:
 		{
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+
 			*(float *)destination = result[0];
 			*(float *)(destination + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
 			destination += stride;
@@ -807,40 +795,73 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(2);
 			result += 2; op += 8; break;
 		}
+		case 2: case 5: case 6: case 11: case 13:
+		{
+			// Keep the coefficient address across the cursor calls.
+			float const *volatile inverse_time_pointer = &step->inverse_time;
+			do
+			{
+				*(float *)destination = *result;
+				*(float *)(destination + 4) = terms[0].m128_f32[3] * *inverse_time_pointer;
+				destination += stride;
+				terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
+				++result; op += op[1];
+			} while (*(signed char *)op == kind);
+			break;
+		}
+		case 4: case 9: case 10: case 12:
+		{
+			float const *volatile inverse_time_pointer = &step->inverse_time;
+			do
+			{
+				*(float *)destination = *result;
+				*(float *)(destination + 4) = terms[1].m128_f32[3] * *inverse_time_pointer;
+				destination += stride;
+				terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
+				++result; op += op[1];
+			} while (*(signed char *)op == kind);
+			break;
+		}
 		case 7:
 		{
 			unsigned char *friction_result = *(unsigned char **)(op + 4);
-			long friction_stride = *(long *)(op + 16);
+			// Earlier output may replace this word; read it after each store.
+			long const volatile &friction_stride = *(long const volatile *)(op + 16);
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
+			float const *volatile inverse_time_pointer = &step->inverse_time;
 			friction_result += friction_stride;
 			*(float *)friction_result = result[1];
-			*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * step->inverse_time;
+			*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * *inverse_time_pointer;
 			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(2);
 			result += 2; op += 20; break;
 		}
 		case 8:
 		{
 			unsigned char *friction_result = *(unsigned char **)(op + 4);
-			long friction_stride = *(long *)(op + 16);
+			// Earlier output may replace this word; read it after each store.
+			long const volatile &friction_stride = *(long const volatile *)(op + 16);
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 			*(float *)friction_result = result[0];
 			*(float *)(friction_result + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
+			float const *volatile inverse_time_pointer = &step->inverse_time;
+			destination = 0;
 			friction_result += friction_stride;
 			*(float *)friction_result = result[1];
-			*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * step->inverse_time;
+			*(float *)(friction_result + 4) = row[1].linear.m128_f32[3] * *inverse_time_pointer;
+
 			friction_result += friction_stride;
-			solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(row + 2);
+
 			*(float *)friction_result = result[2];
-			*(float *)(friction_result + 4) = spin->b.m128_f32[3] * step->inverse_time;
-			terms = (__m128 *)((s_angular_cursor_31c520 *)spin)->offset(1);
-			destination = 0;
+			*(float *)(friction_result + 4) = terms[7].m128_f32[3] * *inverse_time_pointer;
+			terms = (__m128 *)((s_angular_cursor_31c520 *)(terms + 6))->offset(1);
+
 			result += 3; op += 24;
 			break;
 		}
 		case 0: return 1;
-		default: op += op[1]; break;
+		case 14: case 15: case 16: op += op[1]; break;
 		}
 	}
 }

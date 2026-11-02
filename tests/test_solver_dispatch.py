@@ -45,7 +45,8 @@ def return_from_hook(uc, argument_bytes=0):
     uc.reg_write(UC_X86_REG_EIP, ret)
 
 
-def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f):
+def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f,
+            instruction_budget=100000, expect_return=True):
     if not any(lo == 0 for lo, hi, permissions in uc.mem_regions()):
         uc.mem_map(0, 4096)
     uc.mem_write(0, b'\xff' * 4)
@@ -65,10 +66,14 @@ def execute(uc, entry, data, args, this=None, hooks=(), precision=0x37f):
     uc.reg_write(UC_X86_REG_MXCSR, 0x1f80)
     handles = [uc.hook_add(UC_HOOK_CODE, callback, begin=va, end=va) for va, callback in hooks]
     try:
-        uc.emu_start(entry, STOP, count=100000)
+        uc.emu_start(entry, STOP, count=instruction_budget)
     finally:
         for handle in handles:
             uc.hook_del(handle)
+    if not expect_return:
+        assert uc.reg_read(UC_X86_REG_EIP) != STOP
+        assert bytes(uc.mem_read(0, 4)) == b'\xff' * 4
+        return bytes(uc.mem_read(HEAP, len(data))), uc.reg_read(UC_X86_REG_EAX)
     assert uc.reg_read(UC_X86_REG_EIP) == STOP
     assert uc.reg_read(UC_X86_REG_ESP) == sp + 4 + (4 * len(args) if this is not None else 0)
     assert all(uc.reg_read(reg) == 0x12345678 for reg in saved)
@@ -158,6 +163,60 @@ def test_dispatch_operation_paths(solver_images, kind, precision):
         # These finite geometry scenes agree bit for bit across all three x87
         # precision modes, including impulse and residual accumulation.
         assert snapshots[0] == snapshots[1], (kind, precision, seed)
+
+
+@pytest.mark.parametrize('opcode', [17, 127, 128, 255])
+@pytest.mark.parametrize('iterations', [0, -1])
+def test_writeback_invalid_opcode_does_not_advance(solver_images, opcode, iterations):
+    # Skip solving so the invalid record reaches the writeback dispatcher.
+    # Retail keeps redispatching it, even with a terminator immediately after it.
+    data = solver_case(12, 0)
+    put(data, STEP + 28, 'i', iterations)
+    put(data, OPS + 24, '2I', opcode | 4 << 8 | 2 << 16, 0x400)
+    retail, compiled, symbols = solver_images
+    target = address(symbols, 'solve_operations_31c940')
+    compiled_gate = address(symbols, 'g_480c60')
+    for machine, entry, gate in ((retail, 0x31c940, 0x480c60),
+                                 (compiled, target, compiled_gate)):
+        machine.mem_write(gate, b'\x01')
+        snapshot, _ = execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES],
+                              instruction_budget=512, expect_return=False)
+        assert snapshot == bytes(data), (opcode, iterations)
+
+
+@pytest.mark.parametrize('kind,initial_stride,first_bits,second_bits,final_offset', [
+    (7, 8, 16, 0x3f800000, 32),
+    (8, 8, 16, 0, 48),
+    (8, 4, 0, 16, 32),
+])
+def test_friction_writeback_reloads_stride_after_outputs(
+        solver_images, kind, initial_stride, first_bits, second_bits, final_offset):
+    # Let output overwrite its own stride. The first store chooses the second
+    # destination; the second can choose a different destination for spin.
+    data = solver_case(kind, 0)
+    put(data, STEP + 28, 'i', 0)
+    op = OPS + 24
+    size, row_kind = OP_LAYOUT[kind]
+    put(data, op, 'II2fI', kind | size << 8 | row_kind << 16,
+        op + 16, 0, 1, initial_stride)
+    if kind == 8:
+        put(data, op + 20, 'f', 1)
+    put(data, op + size, 'I', 0x400)
+    put(data, TERMS + 12, 'f', 0)
+    put(data, TERMS + 60, 'f', 0)
+    if kind == 8:
+        put(data, TERMS + 124, 'f', 0)
+    put(data, IMPULSES, '3I', first_bits, second_bits, 0x3f800000)
+    retail, compiled, symbols = solver_images
+    target = address(symbols, 'solve_operations_31c940')
+    compiled_gate = address(symbols, 'g_480c60')
+    snapshots = []
+    for machine, entry, gate in ((retail, 0x31c940, 0x480c60),
+                                 (compiled, target, compiled_gate)):
+        machine.mem_write(gate, b'\x01')
+        snapshots.append(execute(machine, entry, data, [STEP, OPS, HEAP, IMPULSES]))
+    assert struct.unpack_from('<I', snapshots[0][0], op + final_offset - HEAP)[0] == 0x3f800000
+    assert snapshots[0] == snapshots[1], (kind, initial_stride, first_bits, second_bits)
 
 
 def float_outputs(data):
@@ -536,6 +595,25 @@ def mixed_case(seed):
 def test_mixed_streams_and_body_pairs(solver_images, precision):
     for seed in range(96):
         compare_case(solver_images, mixed_case(seed), precision, ('mixed', seed))
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_residual_friction_recognizes_header_opcode(solver_images, precision):
+    # The friction tail checks opcode 1 directly. Its header must not be
+    # consumed as a second friction record because of the classification byte.
+    for seed in (7, 9):
+        data = mixed_case(seed)
+        op, previous = OPS, None
+        changed = 0
+        while data[op - HEAP]:
+            kind, size = data[op - HEAP:op - HEAP + 2]
+            if kind == 1 and previous == 8:
+                data[op - HEAP + 2] = 6
+                changed += 1
+            previous = kind
+            op += size
+        assert changed == 1
+        compare_case(solver_images, data, precision, ('friction header', seed))
 
 
 def contact_group_case(pair_count, seed):
