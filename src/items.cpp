@@ -635,6 +635,9 @@ struct s_item_collision_bsp
 // original spin products at the common join on those three graphs 328 each; shared float scale
 // with pointer/reference 328 each. Original source observations, random draws, pending-k join and
 // helper interfaces restored; protected plane width and plane/spin homes remain.
+// Round 310: Single spin workspace with native/CRT/setter/indexed axial capture, original/early
+// factor declaration: 274/274/274/274/255/255/272/272. Original axis, real factor, pending-k
+// join and complete body restored; protected plane width and plane/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1145,6 +1148,10 @@ struct s_item_flags_view_10b850
 // projection cosine-product orders ijk/ikj/jik/jki/kij/kji 924 each. All original flow operands,
 // private helpers and complete body restored; frame, entry Boolean publications and
 // carrier/collision/rotation homes remain.
+// Round 310: Explicit native active/attached/anchored gate producers in all Boolean subsets,
+// then all byte carriers, 887 each (4068 bytes; frame 0x148). None matches; all one-use
+// observations restored. Original frame 0x154/0x12c, entry publications and motion/rotation
+// homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
