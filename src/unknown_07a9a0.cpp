@@ -393,6 +393,8 @@ void function_07b3e0(void)
 // split scan/datum pool residency and found-arm layout remain.
 // M290: Native char/short/byte/word ordinals for the real 32-slot pool, preincremented input, cached/dynamic scanner:
 // 76/67/76/69/76/67/76/69. Original executable body restored.
+// M299: Independent native scan/record header captures, cached/dynamic scanners,
+// signed/unsigned cursors [77, 90, 77, 90, 81, 92, 81, 92]. Original header ownership restored.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1331,6 +1333,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // all with the existing limited selector:
 // 808/814/906/816/921/899/910/910. Original private selectors and body restored;
 // frame/session/initial lookup expansion remain.
+// M299: Native short identity/player/group induction subsets
+// [871, 863, 865, 873, 881, 886, 885], all word 885. Original long counters restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

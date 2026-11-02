@@ -135,7 +135,7 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 }
 
 #pragma intrinsic(_ReadWriteBarrier)
-// score 11 (was 19): the first and third ranges now share one call, as in retail; left: the first end
+// score 11 (was 11): the first and third ranges now share one call, as in retail; left: the first end
 // test is `jg` (retail `jge`), the second block takes EDX for its start and EAX for its vtable (retail EAX/
 // EDX), so the third joins the second's call instead of the first's; the third end is `add edx, eax`
 // (retail `add eax, edx`) and the fallback sets ECX after the push.
@@ -162,6 +162,8 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // allocator declared above the address test 11; third end `m_size + m_buffer` 11; fallback through the
 // allocator local 11; barrier after the first assignment 11. Diagnostic: one to four unused locals at
 // entry 19 each (before the dispatch change).
+// M299: Independent repeated primary/secondary endpoint and physical-start ownership
+// subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
