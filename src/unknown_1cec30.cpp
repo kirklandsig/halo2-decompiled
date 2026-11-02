@@ -923,7 +923,7 @@ void function_1d1540(s_havok_component *component);
 // passes it in EBX (no push ebx, a plain ret and a 0x88 frame), the entry copy is still a rep movsd
 // where retail uses movaps, and retail still tests m_fixed before flag5; the convention is decided
 // by the call cycle through the bodies outside this file.
-// score 81 (was 81): component arrives on the stack where retail passes it in ebx (no push ebx,
+// Earlier: component arrives on the stack where retail passes it in ebx (no push ebx,
 // plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
 // m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
 // set + body pointer + m_fixed first 88 at 230 (retail's code except the ebx parameter); that with
@@ -1005,6 +1005,7 @@ void function_1d1540(s_havok_component *component);
 // Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
 // 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
 // the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
+// Round 357: Common setter with byte/word/dword/long refresh results, constructor then aligned set copy 77/83/82/82/56/59/58/58. Original body restored; frame and component transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
