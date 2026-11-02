@@ -160,6 +160,15 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
 // vector-mediated/direct first projection:
 // 187/187/187/187/187/187/187/187. Original complete executable source restored.
+// Round 40 (m3 lane 2, fast; all restored): the magnitude before the flag and rows 181 (1000 bytes), between them 181, with the
+// flag after the loop 195; flag after the magnitude 195; rows counted down 21; `facing` after the loop 42 (992 bytes), at the tail, after
+// the flag, before the copy, at entry or after the magnitude 4 each; flag at entry 26, before the copy 4; a second pointer to the record for
+// the flag, the rows, the velocity alone, position and offset alone or the copy 4 each; memcpy for the first copy 4, with the flag first 4;
+// the copy declared apart 4; square-sum trees ijk 10, jik 13, jki 10, kij 10, kji 13. Diagnostics: an extra byte store after, before or
+// ahead of the flag 197/198/198, two 241, after the rows 184, after the magnitude 190 (none flips the swaps). Without the flag in this block
+// (at entry, or late) the x87/SSE order is retail's, so retail's flag store takes no issue slot from the rows where ours does.
+// Round 40, continued: dword counter 4, counter declared ahead of the flag 4, `<= 2` 4, `!= 3` 238 (962 bytes, not unrolled), `do` loop 238 (962). Two loops with the flag
+// between them: position+half-step then offset 14 (the flag moves just before the offset loads), half-step then the rest 202 (1004); the flag before both 4, after both 18/202.
 // Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
 // named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
 // root before the offset loop 181. Original body restored at 4.

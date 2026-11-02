@@ -820,6 +820,8 @@ struct s_device_machine_view
 // Round 284: complete case-local numeric result production, conditional delay/position/power
 // selected-value subsets 151/150/123/143/134/145/120; all with native group masks 155.
 // Original body restored; word-load/EAX sharing and power-velocity zero join remain.
+// Round 78 (m3 lane 12, fast; word flags + the 0x1200055f zero store, aligned 4): a forceinline word getter taking the group pointer 122, a const pointer copy of
+// the group at the read 122, nested word tests 122, the pointer scoped to a block that ends before the tests 122 (all the pushed ESI, same code).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
