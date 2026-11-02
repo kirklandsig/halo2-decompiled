@@ -284,6 +284,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH round 268: accumulated-prefix CRT clears for first/second/both/third/first-third/
 // second-third/all 414/414/411/381/411/411/411; all with chained remaining stores 411.
 // Fast control 336 versus full 324; original complete clears, unit stores and body restored.
+// Round 298: Complete explicit color/scalar/weight-remainder updates and pairs/all
+// 344/343/337/326/344/343/341; all with a distinct normalized weight 421
+// (fast control 336). Color/scalar alone is 333 plain, 1877/1892; rejected.
+// Original complete helper and body restored; ESI/unit/reciprocal scheduling remains.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

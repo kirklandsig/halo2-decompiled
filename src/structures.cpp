@@ -378,6 +378,10 @@ static __forceinline bool structure_bsp_collision_available()
 // Round 294: Native query point assignment/memcpy/memmove 81/81/77; direction
 // assignment/memcpy/memmove 80/80/75; both memcpy/memmove 113/137. Exact-only
 // input snapshots restored; exclusion BL and source-slot publication/reload remain.
+// Round 298: Finite acceptance/outcome/eligibility domains and pairs/all
+// 52/56/53/74/52/56/74; all with complete finite model return 83.
+// One-point leads rejected; original byte result and entire body restored.
+// Exclusion BL and source-slot publication/reload remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1040,6 +1044,10 @@ done:
 // Round 294: Initial probe memmove/three-long triangle memset/two-byte material memset
 // subsets 1/2/4/3/5/6/7 give 140/144/125/138/140/144/138; all with the availability
 // producer 158. Original body restored; exclusion/result/NONE and direction homes remain.
+// Round 298: Finite eligibility/retry/outcome domains and pairs/all
+// 125/125/131/125/131/131/131; full finite graph with three-outcome model 164.
+// Original Boolean parameter, grouped storage and complete body restored;
+// exclusion/result/NONE ownership and direction residency remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

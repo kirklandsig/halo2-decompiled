@@ -230,6 +230,11 @@ bool g_47f05b;
 // `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
 // struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
 // (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
+// Round 298: Native member-array fill/fill_n, first-three/full-four ranges,
+// each with body/member-list fixed-base initialization: 56 each (eight forms).
+// All add a constructor call and worsen other users: 0x146b80 57,
+// 0x146e30 169, 0x22c3e0 230/201. Entire original shared header restored;
+// the intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
