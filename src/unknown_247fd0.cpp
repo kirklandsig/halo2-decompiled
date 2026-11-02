@@ -275,6 +275,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
 // before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
 // lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
+// Round 232: Two-consumer cache-array address at use/before reconciliation 70/70; with a twice-
+// used child-lifetime value 78/78; reconciled current-record evaluator input 138/138; both
+// changes 139/139. Frame 0x10 agrees; timestamp/fifth-draw scheduling and child register
+// allocation remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -587,6 +591,7 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // re-derives the effect record for the velocity (so a shared effect pointer would not fit): the copy through a
 // `real` local 359 (still an integer move); with a `(real)` cast 356 (same code); through the reused `last_sample`
 // 356 (integer move); through the grouped sample field 373 (1659 bytes: `movss` as retail, plus a store to the field).
+// Round 264: Existing bounded category helper with scalar-first-sample/selective-refresh/combined-header masks 0..7: 356/416/376/436/356/416/376/436. Original random producer, storage, header stores and descriptor refresh restored; late EBP save and random/blend/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

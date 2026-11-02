@@ -190,7 +190,7 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // Earlier convention form: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
-// score 642 (was 642): frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
+// Earlier: frame 0x24 and clock EDI agree; direction/sample homes and coefficient schedules remain.
 // The stack layout agrees with the matched caller 0x1eb6f0 (out, dt, d, q, pos; state ESI, update AL, a ECX,
 // b EDX); retail loads q into EBX at entry (and again after the first normalize), ours d.
 // Earlier (merged stacked note, was 642 -> 642), MiniMax E run 26: retail passes the state in ESI and the update flag in AL and reads its first argument from a different stack slot than the fastcall form ours compiles to; the declaration and the /Gr convention are fixed, so the prologue and every stack-relative access stay four bytes off and the direction/sample homes and the coefficient schedule still differ.
@@ -301,6 +301,12 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // (d still takes EBX); q left unchanged with the fallback selected into a separate pointer for the copy 662; the
 // output position copied through `out->position` before the position pointer 642; the w dot before the counter
 // read 642; the counter conversion without `volatile` 671 (2860 bytes).
+// Round 25 (lane 18, fast; aligned counts by difflib in brackets, original [757]): the first clamp's speed
+// factor selected before t 718 [630], caller 0x1eb6f0 0 -> 22 (the factor byte takes CL, so a leaves ECX and
+// b goes to the stack); the first two clamps so 744 [601], caller 22 (our s->fast load is CSE'd from the first
+// clamp to the duration; retail loads it three times, AL/CL/AL); s->limit read at each use (retail reads it
+// four times) 689 [734]; with the second clamp's factor first 719 [581]; with the output clamp's too 719
+// [573]. Callers kept in the last three. Original body restored.
 // Round 277: standard minimum/maximum/alignment-pin families, subsets 1..7,
 // 718/752/751/829/868/895/880; all with failure constant first 880. Alignment-pin
 // graphs also lose the exact caller; original body, helpers and 0x24 frame restored.
@@ -311,6 +317,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round N274: Existing scaled vector addition at ramp/first-settling/second-settling output
 // producers, subsets 1..7, 677/642/677/642/677/642/677; all with shared output displacement 677.
 // Original sample observations, output math, inherited counter qualification and body restored.
+// DL225: alias-safe library direction copies at activation/refresh/angular fallback,
+// masks 1..7: 700/716/718/700/718/706/728; all with initial output copy 755. All restored;
+// frame 0x24 and clock EDI agree, but direction rather than sample still takes EBX at +9.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

@@ -2800,16 +2800,21 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // gives retail's ESI prologue and the final store's own reload (first difference +0x3e) but 566 bytes,
 // 173; loop 1 through 0x6b380 180 (562 bytes); both swapped 175 (566 bytes). Retail calls 0x6b380 in
 // loop 2 and still reloads at the store, so what to find is why retail's call there ends the load's reach.
+// Round 75 (lane 12, plain): busy and final stores through `globals` 180 (605 bytes); no `globals` local, the
+// global read at every prologue use 103 (same code); loop 2 passing iterator.datum_index at both
+// calls 103; last_position declared before last_unit 103; both declared at the top 157 (612 bytes).
+// Retail pops EDI before loop 2 and keeps last_unit in memory there; ours carries the global in EDI
+// through the out-of-line 0x6b380 step to the final store.
+// Round 288: Normalized first-iterator result in byte/char/short/long, each with signed/dword next
+// index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
+// helper, all iterator stores, traversal, copies, globals observations and whole body restored.
+// Global-pointer web and target/point homes remain.
 // Round 117 (m3 lane 8, fast, where this body builds 592 bytes and 193): last_position declared first, busy
 // declared at the loop-body top, failed at function scope, iterator.datum_index read at each use in loop 2: 193 each
 // (same code); the pool global read at each iterator init 213 (576 bytes). Matched retail callers of 0x6b380 neither
 // confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
 // 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
 // iterator, so our build promotes g_4e8c20 into EDI through both loops.
-// Round 288: Normalized first-iterator result in byte/char/short/long, each with signed/dword next
-// index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
-// helper, all iterator stores, traversal, copies, globals observations and whole body restored.
-// Global-pointer web and target/point homes remain.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {

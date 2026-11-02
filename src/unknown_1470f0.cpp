@@ -135,7 +135,11 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 }
 
 #pragma intrinsic(_ReadWriteBarrier)
-// score 19 (was 19): retail tests the end of the block with >= and gives the second block its own
+// score 11 (was 19): the first and third ranges now share one call, as in retail; left: the first end
+// test is `jg` (retail `jge`), the second block takes EDX for its start and EAX for its vtable (retail EAX/
+// EDX), so the third joins the second's call instead of the first's; the third end is `add edx, eax`
+// (retail `add eax, edx`) and the fallback sets ECX after the push.
+// Earlier (score 19): retail tests the end of the block with >= and gives the second block its own
 // deallocate, ours shares the first and the second.
 // Second return 19; first+second returns 19; address local 19; second concrete 19; second concrete
 // with third base 19; primary/second branch inversions 19/19; third-before-second 19; fallback local 19;
@@ -150,28 +154,40 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // third block's end is `add edx, eax` (retail `add eax, edx`) in every form tried (operand order, long or
 // pointer sums, size-first or difference tests); with the shared dispatch the second block's start always
 // takes EDX (retail EAX) and its vtable EAX (retail EDX).
+// Round 72 (lane 9, fast = plain): 0x147160's shared first/third dispatch with this function's existing
+// `> || ==` ends and the barrier in the first arm 11 (kept, with the second block calling g_479894
+// directly; assigning it to the allocator first is the same 11); with `>= || ==` 9 (redundant tests, not
+// kept); with plain `>=` ends 41; without the barrier 47 (111 bytes). On the kept form: plain `>=` first
+// end 51 (129 bytes), plain `>=` second end 39 (129 bytes), third in the `> || ==` form 18 (123 bytes);
+// allocator declared above the address test 11; third end `m_size + m_buffer` 11; fallback through the
+// allocator local 11; barrier after the first assignment 11. Diagnostic: one to four unused locals at
+// entry 19 each (before the dispatch change).
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
 	if (address)
 	{
+		c_havok_abstract_allocator *allocator;
 		if (((long)((byte *)g_479898 + 0x4340) <= (long)address && ((long)((byte *)g_479898 + 0xf0340) > (long)address || (byte *)g_479898 + 0xf0340 == address)))
 		{
 			_ReadWriteBarrier();
-			g_479898->deallocate_aligned(address);
+			allocator = g_479898;
 		}
 		else if (((long)((byte *)g_479894 + 0x30) <= (long)address && ((long)((byte *)g_479894 + 0x15030) > (long)address || (byte *)g_479894 + 0x15030 == address)))
 		{
 			g_479894->deallocate_aligned(address);
+			return;
 		}
 		else if (ADDRESS_IN_BLOCK(address, g_47989c->m_buffer, (byte *)g_47989c->m_buffer + g_47989c->m_size))
 		{
-			g_47989c->deallocate_aligned(address);
+			allocator = g_47989c;
 		}
 		else
 		{
 			function_146e30()->deallocate_aligned(address);
+			return;
 		}
+		allocator->deallocate_aligned(address);
 	}
 }
 #pragma function(_ReadWriteBarrier)

@@ -1036,6 +1036,8 @@ bool __stdcall function_2399da(long controller_index)
 // `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
 // call through a member pointer 90 (lane 7's form again); the permission test read from the membership
 // field with the own-rank local kept for the dispatch 90.
+// Round 342: Definite immutable selected-pointer producer with complete bool/byte/word/long validity and complementary predicates: 90/90/90/90/90/90/90/90.
+// Original complete body restored; selected identity/rank EAX/ECX ownership and extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

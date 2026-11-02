@@ -165,6 +165,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // array 122. Diagnostic: the token stored to a global after the loop 149. Compile-only: a use of the token
 // after the success block moves `push ebp` to the block's start (retail's place); renaming the size, next,
 // count and unique locals (four orders, prefixes included) never changes their slot order.
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // Round 35 (m3 lane 2, fast): the success and size outputs initialised (`= false`, `= 0`) 228 (789 bytes); the
 // duplicate search ending on the found index (`&& local_14 == NONE`, no break) 214 (758 bytes); the read outputs
 // and both counters declared at function scope 128 (same code); the tokenizer `__forceinline` with the walk as a

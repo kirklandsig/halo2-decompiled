@@ -494,6 +494,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 261: existing default-body helper result-first/reject-first/conditional/positive admission
 // 232/112/265/112; with existing center converter 156/149/238/149 (caller 11). Original helper,
 // body and call inputs restored; input register pair and early physics-pointer spill remain.
+// Round 290: actual default-body field captured once, char/long value with short/long result,
+// original/converted center, 115/149/267/257/265/257/272/257. Converted centers keep frame 0x44
+// and caller 11 versus 2; original helper, search and body restored. Entry roles and early physics spill remain.
 // Round 219: canonical search latch as byte/char/short/long, each with original/native center
 // transfer: 112/149/112/149/131/236/238/160. Original Boolean latch, center transfer, helpers and
 // body restored; object/entry convention, physics spill and projection schedule remain.
@@ -503,6 +506,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // found combinations, 140/140/140/140; with existing complete center conversion
 // 130/130/130/130 at 928 bytes, frame 0x44, caller 2 -> 11. Original search,
 // center transfer, helpers, arithmetic and complete body restored.
+// Round 292: Overlap-safe previous transform/velocity-pair/center transfers, subsets 1/2/4/3/5/6/7,
+// 236/229/220/219/223/243/256; all with existing center converter 248. Original complete file,
+// helpers, copies and caller restored; input register pair, physics spill and projection schedule remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
