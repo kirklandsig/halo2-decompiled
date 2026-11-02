@@ -2899,6 +2899,9 @@ static inline short sound_voice_find_available_channel(char type)
 // DH292: Available-bit intersection / occupied-bit union in the existing finder, original break
 // with byte/committed Boolean results 144/131/147/130; condition-controlled search
 // 159/131/161/133. Original two bitmap tests, helper, result and entire body restored.
+// DH294: Existing shared bitmap test/streaming-set/free-clear operations, seven subsets,
+// 96 each; complete shared-operation graph with explicit committed Boolean success 122.
+// Original private finder, raw bitmap operations, byte result, includes and full body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

@@ -263,6 +263,11 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH292: Pending-sector parameter owns the genuine next-sector query output, long/bool/byte/short
 // success with short count 440/444/433/439; with long count 449/447/442/453.
 // Original pending/current histories, normal homes, count, result and complete body restored.
+// DH294: Shared terminal-point producer with long/bool/byte/short success and bool first
+// 410/432/414/419; word first 442/415/396/447. Original point calls with byte success/word
+// first also 396 at 1606/1605 bytes. Not kept (coordinator): retail keeps first as a byte (byte
+// stores of 1/0 to [esp+0xf], read through al), so the word is a score-picked type; byte success
+// alone (retail's byte at [esp+0xe]) is 414. Both declarations restored at 410.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

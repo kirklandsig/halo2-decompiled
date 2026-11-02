@@ -4755,7 +4755,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1107 (was 1117): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1095 (was 1107): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4787,6 +4787,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // transfers 1117 each. Complete predicted velocity in the existing target workspace with native
 // component limiting 1107, plain-confirmed at 5077/5094 bytes; frame 0xf8, limiter unrolling and
 // rotation/index homes remain.
+// DH294: Quaternion axis before magnitude via memcpy/setter, original/shared scale and either
+// outcome order: 1101/1095/1101/1095/1101/1095/1101/1095. Keep the existing setter and original
+// scaling/test order, plain 1095 at 5072/5094 bytes; frame 0xf8, index/rotation homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -5091,21 +5094,19 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	real angle;
 
 	function_141f60(function_142eb0(&desired, &current, &desired), &rotation);
-	length = (real)sqrt(rotation.k * rotation.k + rotation.j * rotation.j + rotation.i * rotation.i);
+	vector3f_assign(&axis, rotation.i, rotation.j, rotation.k);
+	length = (real)sqrt(axis.k * axis.k + axis.j * axis.j + axis.i * axis.i);
 	if (0.0001f > (real)fabs(length))
 	{
-		axis.i = rotation.i;
-		axis.j = rotation.j;
-		axis.k = rotation.k;
 		length = 0.0f;
 	}
 	else
 	{
 		real inverse = 1.0f / length;
 
-		axis.i = inverse * rotation.i;
-		axis.j = rotation.j * inverse;
-		axis.k = rotation.k * inverse;
+		axis.i = inverse * axis.i;
+		axis.j = axis.j * inverse;
+		axis.k = axis.k * inverse;
 	}
 	angle = (real)atan2(length, rotation.w) * 2.0f;
 	if (angle > g_5476c4)
