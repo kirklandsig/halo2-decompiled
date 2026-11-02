@@ -81,6 +81,14 @@ extern "C" void _ReadWriteBarrier(void);
 // 49; the third and the fallback sharing the final call 49. A one-file LTCG screen of 194 forms (call sharing
 // x end test x barrier arm, and four plain calls) found none below 9 but the inclusive third; four plain calls
 // give retail's second block and fallback but join the first range to the second's call.
+// Round 49 (one-link LTCG screen, exact at 9): one extra register value in the first arm (a diagnostic
+// store there) gives retail's second block and fallback; every no-code form there coalesces, 7 on the
+// inclusive third: allocator self-assign, a pool local, a `+ 0` cast, getters, a release helper, an
+// address copy, the barrier moved or doubled. Globals as one struct 7; null guard as an early return 20;
+// second and third sharing the call 18; four direct calls with inclusive ends 29, barrier 18; one
+// owner-lookup helper 42; first bounds from start plus size 7. Fast: third end as a long add 9; third as
+// an offset compare 10; address-first equalities 13; the pool's page-array bounds 9; second and third
+// sharing the call on this body 27; the second end as start plus size 9.
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
@@ -162,6 +170,8 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // allocator declared above the address test 11; third end `m_size + m_buffer` 11; fallback through the
 // allocator local 11; barrier after the first assignment 11. Diagnostic: one to four unused locals at
 // entry 19 each (before the dispatch change).
+// Round 459: Branch-admitted primary/secondary/physical receiver capture subsets on shared dispatch, then all with inclusive endpoint arms (exact-only)
+// 11/11/11/42/42/42/42/41. Original executable source restored.
 // M299: Independent repeated primary/secondary endpoint and physical-start ownership
 // subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
 // @retail 0x147240

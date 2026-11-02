@@ -155,6 +155,15 @@ void __stdcall function_2562c0(long actor_index, s_slot *slot)
 // that with a plain result-bearing for loop 19; handler-view actor 19; one outer failure return 29;
 // state arms reversed 86; found flag with all success paths sharing one return 19; that with slot data 19.
 // Original state type, actor view, comparison and body restored.
+// Round 116: the 70 form differs from retail only in the started success's jb, which takes the epilogue copy
+// after the g_470be8 block (short jb) where retail takes the one after the after-loop g_470bec load (long jb;
+// the loop-head pad then follows). On the result preload: g_470be8 assigned in the started arm with one
+// return 125; that with g_470bec returns in the search arm 137; the started success returning result before
+// a final return 70; the after-loop reassigning result before a final return 130; flat early returns with
+// and without else 70/70, with g_470bec returns 89; `!(>=)` returning result 70; the be8 assignment with one
+// started return 113; the search arm first with and without else 84/84 (retail length; the started arm is
+// then laid out last and its jb reaches the after-loop epilogue); the started arm falling out to the outer
+// g_470be8 return 91, to a character-block g_470be8 return 84 (jae, be8 laid out last).
 // @retail 0x256300
 short __stdcall function_256300(long actor_index, s_slot *slot, bool active)
 {

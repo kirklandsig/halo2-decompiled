@@ -142,6 +142,12 @@ bool c_session_state_none::update()
 // Round 65: named 0x58d50, 0x58d70 and 0x58d20 results 5 each and combined 5;
 // a case-1 session pointer 5; the type-0 arm with an early break 5; case-1 results
 // from short-circuit tests 83, from conditional expressions 76.
+// Round 26: the kind read at each use 5 (the merged read still takes the session's register);
+// a switch on the kind 7 (jl/jg); nested result and failed tests 5; a kind getter 5, with named index
+// and kind 5; a kind predicate in the 0x58d70 condition 5, with its own result 5; 0x58d70 or 0x58d50
+// without inline 5 each.
+// A second session pointer read from the owner for the 2-4 arm, the kind or the switch 5 each; the session read
+// through the owner field directly 5, declared before the owner local 5.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {

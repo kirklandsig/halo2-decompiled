@@ -679,7 +679,7 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // camera-position copy then component subtraction 147 (664 bytes); direction copy then component scaling 154 (682);
 // to-camera copy then projection subtraction 160 (673); staged along and distance sums 2/2. Original restored;
 // success result/pop schedule remains.
-// score 2 (was 2): success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
+// Success result/pop schedule (retail pops ESI before `mov al, 1`). It follows
 // the link-time context, not this body or its caller's call: a 67-source reduced image matches,
 // any image of 541+ sources (0xf8eb0's, or any of 0xfc330/0xfcdd0/0x10c880/0x17a8a0/0x184440)
 // gives the swap, and in 0xf8eb0 the result ignored or the call removed still gives it; the
@@ -702,6 +702,11 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // success result set before the final call 181; length_squared reused for the second length 160;
 // dot3f for the projection length 166, for the perpendicular distance 158. The sources that bring the
 // swap (0xfc330, 0x10c880, 0x17a8a0, 0x184440) are all callers of 0x1895f0 that ignore its result.
+// Round 195 (lane 3, plain; --fast matches): 0x1895f0's prototype first 2; the camera block braces
+// dropped 2; position at function scope 2; forward copy declared before position 2; the two trailing
+// `goto local_2` dropped 2 (kept). One, two or three unused initialised probe locals (diagnostic) 2 each,
+// so the symbol count does not decide it. Retail puts `mov al, 1` just before the last pop after this
+// kind of call elsewhere (0x11b50b, 0x1bc56b, 0x98750); ours puts it before the first of the two.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {
@@ -777,11 +782,8 @@ bool function_1897c0(long local_player_index, long unit_index, long tag_index, s
 				position.location = *location;
 				function_1895f0(&position, 1.0f, tag_index);
 				local_1 = true;
-				goto local_2;
 			}
 		}
-		goto local_2;
-
 	}
 local_2:
 	return local_1;
