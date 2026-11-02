@@ -1862,6 +1862,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // 269/268/272/269/268/272/272/272; numeric ordinal plus short/word/dword ticks 278 each, with real
 // pair initializer 277. All regress. Original two private query bodies, ordinal, tick storage and
 // complete body restored; actor/options/pool and scalar homes remain.
+// F338: Common final tail reached directly on absent equipment, crossed with
+// short/long ordinal, bounded-for/fixed-do traversal and empty-weapon continuation:
+// 251/278/251/278/251/278/251/278. All restored; actor/options/pool residency remains.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
