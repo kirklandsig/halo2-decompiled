@@ -905,6 +905,20 @@ done:
 // the first scan's pair through a short pointer 196 (617 bytes, as before); a long result 211 (633, as
 // before). The entry test still loads next into CX for the first pass (retail compares it in memory and
 // reloads it at each loop top), which pushes NONE into EBX.
+// Round 135 (m3 lane 5): retail's code is what VC gives when g_4e0350 is address-exposed: a compile-only build of
+// the while form (below) gives retail's head and first scan exactly (NONE in ECX, `cmp word [edx+4], cx`, next
+// reloaded at each loop top, `mov bl, [edx+0xa]`), and the same build with file-static globals (LTCG's view) gives
+// ours (NONE in EBP pushed before the test). Real: the three scans as `while (iterator->next != NONE)` loops 174;
+// first scan only 202 (617 bytes); `(void)&result` 176; typed definition local after the squad lookup 199; `else {
+// definition local; if (definition) ... else ... }` 174; direct g_4e0350 reads in the second scan / short flags /
+// both 174 each. Diagnostic only: g_4e0350 read through its address 99 (636). `memset(&g_4e0350, 0,
+// sizeof(g_4e0350))` in 0x11be50 (still MATCH) with the while scans 99 (636), plus a third-scan `scenario` local for
+// both palette lookups 49 (619), plus `short flags` (retail's movsx) 48 (619), plus direct second-scan reads 157
+// (631); but the full check then loses 24 matched functions (0x243b10 allocates `xor ebx, ebx` where retail pushes
+// 0), so g_4e0350 is not exposed program-wide and the memset was reverted; without it the 48 form is 176 (626). All
+// retail callers pass stack iterators. A 192-form static-global harness search (short flags, direct reads,
+// block/entries if-else, definition local kinds, third-scan local, `alternate` local) keeps NONE in EBP in every
+// form. Left: whatever keeps g_4e0350 from being hoisted in the second scan.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2346,6 +2360,14 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
 // with outer health workspace 39/39/153/153/39/39/153/153.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 135 (m3 lane 5): compile-only probes: inside a loop VC folds the total into `addss xmm0, [total]` only when
+// the added float has exactly two disjoint definitions (if/else arms, no dominating zero); a dominating zero, three
+// paths, a ternary, a multi-return inline getter, block scopes, struct/array holders and a per-path inline
+// accumulator all load the total first (outside a loop the three-path form folds). A scan of retail (xorps zero,
+// then two or more conditional jumps and an in-place addss/movss within 60 instructions, no call between, inside a
+// backward jump) finds only this function. Real: zero set in the else arm before the perception test 60; two-arm
+// else with a ternary perception health and a separate count test 253 (872 bytes), with the node pointer 267 (882);
+// inverted unit test 55; node pointer alone 84 (re-measured).
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2550,6 +2572,10 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
 // stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
 // (data reloaded each pass) as an escaped local would be.
+// Round 135 (m3 lane 5): retail keeps the overlap loop's intersection in a stack home (a dead `mov [esp+0x28], esi`
+// into the location's slot) and the wake byte at [esp+0x13]; ours folds the intersection into `test [ecx], edx`.
+// `dword intersection` at function scope 275; declared outside the overlap loop 275; `bool overlap` at function
+// scope 275; `long words` at function scope 275; a `dword const *` to the area's cluster bits 302 (1119 bytes).
 // @retail 0x201ea0
 void function_201ea0(void)
 {

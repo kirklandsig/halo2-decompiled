@@ -522,13 +522,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 276): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// score 265 (was 265): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
 // case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
 // where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
 // pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
-// score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
@@ -717,6 +717,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// Round 135 (m3 lane 5): local renames for the same-size slot order (vertex cursor, source, u/v, previous, half
+// width) 265 each: the differing homes belong to spilled register variables, which names do not order.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1081,6 +1083,10 @@ void __stdcall function_43720(s_43740_input *input)
 // with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
 // 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
 // split tag below both parameters in retail's colouring is open.
+// Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
+// only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
+// to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition
+// byte view 62.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
