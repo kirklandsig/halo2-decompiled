@@ -293,6 +293,8 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // M298: Separate collected membership and compatible-contact searches; body/head
 // membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
 // [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
+// DL236: Branch-owned tangent default/late force default/live control-bit subsets 1..7, then shared scalar default setters: 1365/1376/1367/1425/1423/1391/1382/1423.
+// Native byte/short/long/dword final result at completion/entry: 1411/1407/1408/1408/1423/1392/1393/1393. All restored; frame 0x5cc versus 0x58c and component/velocity/query/list homes remain; Boolean interface and caller preserved.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

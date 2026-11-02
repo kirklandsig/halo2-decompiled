@@ -289,6 +289,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // outcome, success publication, native file object, both waits and body restored.
 // DL230: independent open/resize ordinary completion destinations at loop/function/operation scopes: 47/47/47/47/47/47/47/47.
 // Handle carrier and stored success-byte reload remain; original executable source restored.
+// DL235: Sole file-cursor induction with derived path ordinal, relational/sentinel extent,
+// native/direct file and wide/byte admission: 95/95/95/95/107/107/107/107.
+// All restored; ECX handle and stored-success memory retest remain.
 // DH277: two file-indexed success destinations, uninitialized/zeroed and wide/byte guards on local/direct
 // file flows 89/96/98/101/69/72/96/70. All exact-only table forms restored; original scalar outcome, file
 // value, waits and completion qualification retained.
