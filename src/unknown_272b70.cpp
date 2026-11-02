@@ -1453,6 +1453,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // both 34/32/34; later pure receiver alone/with invalidation/continue/both
 // 42/44/42/44; all with chained identical extent stores 46.
 // Original receiver, request continuation, invalidation and extent stores restored.
+// P265: Existing request-producer submit-test success bool/byte/short/long, before fields
+// 85/89/93/92; at submission 83/87/91/90. All exact-only result flags restored;
+// original helper/body retained. Candidate scaling, leave selector and publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

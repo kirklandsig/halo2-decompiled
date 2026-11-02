@@ -255,6 +255,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // DH283: Joint magnitude-input/query-output/working-vector lexical priorities abc/acb/bac/bca/cab/cba 345 each;
 // independent vector producer order with joint identities 343, with entry query-output declarations 343.
 // Two-point gains rejected; original executable body and private helpers restored.
+// P265: Entry-owned magnitude result/speed-limit/turn-floor scalar homes, seven nonempty
+// subsets then joint semantic scalar names, 345 each. All initializers stayed at their original
+// producers; original declarations and body restored. Frame/query-magnitude overlap remains.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

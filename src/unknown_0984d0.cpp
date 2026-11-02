@@ -474,6 +474,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // P263: positive validity byte/signed-byte/short/word/long/dword with native byte ordinal
 // 80/80/205/205/203/203; validity declared after ordinal/at entry 80/144.
 // Original helper and body restored; validity home and validation carriers remain.
+// P265: Native rejection bool/byte/signed-byte/short/word/long/dword/int64 on the retained byte
+// ordinal 153/153/153/205/205/203/203/148. All exact-only flag forms restored; validity
+// home, validation carriers and loop-entry reload remain. Original helper and body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

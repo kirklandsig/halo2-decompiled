@@ -731,6 +731,9 @@ void function_1537f0(s_profile_record *record);
 // record 53 (261), with the source declared first 53 (261); the index loop with s_profile_record and a plain memset 78
 // (238); the identity as a const reference bound to a value-initialized temporary 53 (same code). Harness only: an
 // identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
+// P265: Pointer/no-tail zero-fill return, four identity/source lifetimes and native/four-aligned
+// source, 83 each; early returned-pointer identity with pointer/index traversal and native/four-aligned
+// source 81/81/55/55. Original type/body restored; identity homes and end-bound remain.
 // @retail 0x7f930
 void function_7f930(void)
 {
