@@ -524,6 +524,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // local before the header test 77; an object pointer named in the unflagged arm 77; the NONE and flag tests as
 // breaks out of a `do ... while (false)` 75; the store and attach through the existing 0xbb780 with the update
 // through the existing v23 70 (176 bytes, v23's NONE test stays); that on the long result 57 (181 bytes).
+// Round 154 (lane 4, one-link harness, exact at 49), all on the early bool result: dword-cast index for the flag test, byte
+// arithmetic for the flag read or the object read 77 each; object read through entity->object_index with or without the macro
+// 77/77; `(word)object_index` for the object read / flag test / both forms 71/72/72 (176 bytes, index recomputed as movzx, retail
+// `and`); inline or forceinline lookup helper with its own pool pointer, index local or header local 77 each; one or two named
+// pool pointers for the two reads 77-78; dword-bitfield view of the index for the flag / object / both 77 each.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
