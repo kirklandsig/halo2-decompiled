@@ -703,6 +703,9 @@ void function_d6a70(long object_index)
 // original lookups 203 (633); fresh test only 190 (590); second pointer 162.
 // P272: Uniform direct primary-object fields, post-guard accumulator declaration and independent entry child iterator subsets, then complete workspace names: 219/159/159/219/219/159/219/219.
 // Original executable source restored; frame 0x4c versus 0x50, retained-pool/object/index and owner homes remain.
+// P274: Repeated header ordinal/shared parent index/accumulated last-child result,
+// subsets 1/2/4/3/5/6/7: 159/168/169/168/169/185/185; all with long result 174.
+// Original body restored; frame 0x4c versus 0x50 and pool/object/index/owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -961,6 +964,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
 // with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
 // Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
+// P274: Object-array cursor/native short count/shared sequential verifier receiver,
+// subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
+// Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -2357,6 +2363,9 @@ struct s_unit_event
 // permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
 // call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
 // Original executable source restored.
+// P274: Native zero-then-type/type-in-value event initialization, crossed with actual
+// read-only info and existing inline declaration contracts: eight forms 477 at 1880 bytes.
+// Original body and both declarations restored; permutation stack/EAX ingress and call-cycle homes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
