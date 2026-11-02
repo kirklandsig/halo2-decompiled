@@ -1114,7 +1114,7 @@ void function_2118c0(void)
 
 	g_4f93bc.cell_count = (short)globals->count;
 }
-// score 10 (was 14): retail steps b * 8 in esi and adds it to the wrapped
+// score 10 (was 10): retail steps b * 8 in esi and adds it to the wrapped
 // indices (lea/add, add esi, 8) where ours steps b and scales it (lea with
 // esi*8); that is four instructions, the rest of the count is the shift they
 // cause. Earlier forms, before previous and ta to tc moved into the band loop:
@@ -1140,6 +1140,10 @@ void function_2118c0(void)
 // explicit components and an inline cubic helper; for loops: all fully reduce the rows to pointers, or
 // leave the 10. Only a truncated sum (short index), a volatile index (diagnostic, removed) or a row
 // computed under a real test keeps `add esi, 8` with the rows unreduced, each with extra code.
+// Round 361: Native byte/signed-char/dword band domains across both passes or a
+// separate interpolation pass 10/10/134/10/10/134; byte sample with byte/shared
+// or dword/separate band 10/134. Original domains and body restored; partial
+// scaled induction remains. Earlier short/long/word screens excluded these domains.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

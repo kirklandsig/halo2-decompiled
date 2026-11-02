@@ -3893,6 +3893,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // ranks, trigonometric homes and rotation/basis carriers remain.
 // M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
 // M306: Existing rotation helper force-inline on the original retained expression 145; restored.
+// Round 361: Existing rotation input/result by value, crossed with native axis
+// value, staged cross and shared dot: 329/402/329/412/318/490/319/463. Original
+// in-place helper and full body restored; normalization SIMD ranks and trig/rotation
+// homes remain. Alternate dot grouping was exact-only and is restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4345,6 +4349,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
 // Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
 // callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
+// Round 361: Natural-input velocity setter/direct actor test/separate impulse,
+// subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
+// Every corrected form loses matched callers through the input convention; original
+// body restored. An unused-address preparation 198 is excluded, not a gain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

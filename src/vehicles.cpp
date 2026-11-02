@@ -3460,6 +3460,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // P255: Common matrix-source copy/late pure flip test/complete scale-add up rotation
 // subsets 1-7 224/220/222/167/228/211/219; all with separate scaled-axis/add 219.
 // Original real-angle and complete body restored; projection/cross ranks and trig homes remain.
+// Round 361: Complete CRT input/fallback/result copy boundaries, subsets 1-7:
+// 193/145/158/136/193/145/158; all with enclosing axis workspace 158. Original
+// native copies, fallback setter and complete body restored; projection/cross
+// input ranks and angle/trigonometric homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
