@@ -683,6 +683,36 @@ def contact_group_case(pair_count, seed):
 
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_second_contact_pair_preserves_nan_payloads(solver_images, precision):
+    # Two consecutive pairs enter the separately unrolled second kernel.
+    # Competing payloads distinguish projection and coupled-product operand
+    # order even when ordinary NaN-equal comparisons would accept both results.
+    row = TERMS + 96
+    coupling = OPS + 24 + 8 + 4
+    fields = [row + offset for offset in (0, 16, 32, 48, 64, 80, 12, 60, 44, 92)]
+    fields += [coupling, HEAP + 16, HEAP + 32,
+               HEAP + 0x80 + 16, HEAP + 0x80 + 32]
+    payloads = [0x7fc00001, 0xffc00001, 0x7fc54321, 0xffc54321]
+    cases = [(field, bits, None, 0) for field in fields for bits in payloads]
+    pairs = [(row + 16, row + 32), (row + 64, row + 80),
+             (HEAP + 32, row + 64), (HEAP + 0x80 + 32, row + 80),
+             (row + 12, row + 44), (row + 60, row + 92)]
+    cases += [(first, a, second, b) for first, second in pairs
+              for a in payloads for b in payloads]
+    for first, a, second, b in cases:
+        data = contact_group_case(2, 2)
+        put(data, STEP + 28, 'i', 1)
+        put(data, first, 'I', a)
+        if second is not None:
+            put(data, second, 'I', b)
+        coverage = {0x31cd52: 0}
+        context = ('second normal pair NaN', first, hex(a), second, hex(b))
+        snapshots = compare_case(solver_images, data, precision, context, coverage)
+        assert coverage[0x31cd52] == 1, (context, precision, coverage)
+        assert snapshots[0] == snapshots[1], (context, precision)
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 @pytest.mark.parametrize('positive', [False, True])
 @pytest.mark.parametrize('kind', [4, 5])
 def test_bounded_clamp_keeps_divide_then_multiply(solver_images, precision, positive, kind):

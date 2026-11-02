@@ -191,6 +191,172 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	if (candidate > 0.0f) apply_linear(candidate, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
 }
 
+// The second unrolled pair keeps B field addresses and its first linear axis.
+// Its two updates snapshot the angular-B address at different points.
+static __forceinline void apply_second_pair_fallback(float impulse,
+	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
+	__m128 &angular_velocity_b, __m128 const &inverse_b, __m128 const &axis_linear, float *result)
+{
+	// SSE consumes a rounded float while result accumulation retains the x87
+	// value. Passing the impulse by reference would round both paths early.
+	float rounded_impulse;
+	float volatile &store = rounded_impulse;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	angular_velocity_b = _mm_add_ps(angular_velocity_b, angular_b);
+	*result += impulse;
+}
+
+static __forceinline void apply_second_pair_first_impulse(float const volatile &source,
+	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
+	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear,
+	float *result)
+{
+	// These normal-pair impulses have already been spilled to float. Load that
+	// value for accumulation and copy its bits into the SIMD scalar.
+	float impulse = source;
+	union
+	{
+		unsigned long bits;
+		float value;
+	} rounded;
+	rounded.bits = *(unsigned long const volatile *)&source;
+	__m128 scalar = _mm_set_ss(rounded.value);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	__m128 *angular_b_address = angular_b_pointer;
+	*angular_b_address = _mm_add_ps(*angular_b_address, angular_b);
+	*result += impulse;
+}
+
+static __forceinline void apply_second_pair_second_impulse(float const volatile &source,
+	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
+	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, float *result)
+{
+	// These normal-pair impulses have already been spilled to float. Load that
+	// value for accumulation and copy its bits into the SIMD scalar.
+	float impulse = source;
+	union
+	{
+		unsigned long bits;
+		float value;
+	} rounded;
+	rounded.bits = *(unsigned long const volatile *)&source;
+	__m128 scalar = _mm_set_ss(rounded.value);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	__m128 *angular_b_address = angular_b_pointer;
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	*angular_b_address = _mm_add_ps(*angular_b_address, angular_b);
+	*result += impulse;
+}
+
+static __forceinline solver_projection_31c940 project_second_pair_first_row(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &axis_linear)
+{
+	__m128 relative = _mm_sub_ps(a->linear, b->linear);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
+	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, axis_linear)));
+}
+
+static __forceinline solver_projection_31c940 project_second_pair_second_row(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b, __m128 const &angular_b, __m128 const &axis_linear)
+{
+	__m128 relative = _mm_sub_ps(a->linear, linear_b);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b));
+	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, axis_linear)));
+}
+
+static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &step,
+	unsigned char *op, __m128 *terms, solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
+	float *result)
+{
+	solver_velocity_31c940 *body_b = b;
+	__m128 *linear_b_pointer = &body_b->linear;
+	__m128 *volatile angular_b_pointer = &body_b->angular;
+	__m128 first_linear_axis = terms[0];
+	float target_a = terms[0].m128_f32[3];
+	// Complete both SIMD projections before the coupled x87 errors.
+	solver_projection_31c940 projected_a = project_second_pair_first_row(((solver_linear_row_31e7b0 *)terms),
+		a, body_b, first_linear_axis);
+	solver_projection_31c940 projected_b = project_second_pair_second_row(((solver_linear_row_31e7b0 *)(terms + 3)),
+		a, *linear_b_pointer, *angular_b_pointer, terms[3]);
+	solver_step_31c940 *parameters = step;
+	// Retail spills the first error and both coupled impulses to 32-bit storage.
+	volatile float error_a = target_a * parameters->error_scale
+		- projected_a.value * parameters->velocity_scale;
+	float error_b = terms[3].m128_f32[3] * parameters->error_scale
+		- projected_b.value * parameters->velocity_scale;
+	float const volatile &mass_a_source = terms[2].m128_f32[3];
+	float mass_a = mass_a_source;
+	mass_a *= error_a;
+	volatile float impulse_a = mass_a + error_b * operation_float(op, 4);
+	// Capture the second mass before its coupled product.
+	float const volatile &mass_b_source = terms[5].m128_f32[3];
+	float mass_b = mass_b_source;
+	mass_b *= error_b;
+	volatile float impulse_b = mass_b + error_a * operation_float(op, 4);
+	if (impulse_a > 0.0f)
+	{
+		if (impulse_b > 0.0f)
+		{
+			__m128 const *inverse_b_pointer = &b->inverse_inertia;
+			apply_second_pair_first_impulse(impulse_a,
+				((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, angular_b_pointer, *inverse_b_pointer,
+				first_linear_axis, result);
+			apply_second_pair_second_impulse(impulse_b,
+				((solver_linear_row_31e7b0 *)(terms + 3)), a, *linear_b_pointer, angular_b_pointer,
+				*inverse_b_pointer, result + 1);
+			return;
+		}
+	}
+	else
+	{
+		float candidate = error_b * terms[4].m128_f32[3];
+		// The second-row fallback accepts unordered results in retail.
+		if (!(candidate <= 0.0f))
+		{
+			apply_second_pair_fallback(candidate,
+				((solver_linear_row_31e7b0 *)(terms + 3)), a, *linear_b_pointer, *angular_b_pointer,
+				b->inverse_inertia, terms[3], result + 1);
+			return;
+		}
+	}
+	float candidate = error_a * terms[1].m128_f32[3];
+	if (candidate > 0.0f) apply_second_pair_fallback(candidate,
+		((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, *angular_b_pointer, b->inverse_inertia,
+		first_linear_axis, result);
+}
+
+
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
 static __forceinline void solve_linear_friction(float target, float limit,
@@ -478,7 +644,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// score 2012 (was 2021): retain the residual classification across paired records.
+// score 1983 (was 2012): separate the second pair and retain its body-field captures.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -504,6 +670,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		for (;;)
 		{
 			__m128 *normal_axes = terms + 5;
+					primary_axes_ready:
 			switch (*(signed char *)op)
 			{
 			case 0: goto iteration_solved;
@@ -526,9 +693,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
-				if (*op != 3) break;
+				if (*op != 3) goto primary_axes_ready;
 				{
-					solve_contact_pair(step, op, normal_axes, a, b, result);
+					solve_second_contact_pair(step, op, terms, a, b, result);
 					terms += 6; normal_axes += 6; result += 2; op += 8;
 
 				}
