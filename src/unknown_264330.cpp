@@ -593,6 +593,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH293: Case-local admission completion, timer reset-first and terminal completion,
 // all seven nonempty combinations 412 each; complete graph with native signed
 // saved state 413. Original cases and complete body restored; frame/actor homes remain.
+// DH295: Signed-state graph with zero-first complete priorities 01234/01243/01324/01342/
+// 01423/01432/02134/02143: 418/424/440/448/424/444/420/426. Original cases restored;
+// actor/update register conflict, frame excess and workspace homes remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
