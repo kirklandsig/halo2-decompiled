@@ -2665,6 +2665,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
 // complete body restored; retail frame 0xfc and scalar/transform homes remain.
 // Round 319: Complete bounded forward/left/up speeds before reciprocal with distinct relative output, six producer orders 699/699/699/699/699/699; immutable 699; original output 692, kept and plain-confirmed. All fraction trees and original observations preserved.
+// Round 322: Complete interleaved bound/fraction producers with reciprocal after first bound, six
+// orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
+// output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
+// remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

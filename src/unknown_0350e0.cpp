@@ -2166,7 +2166,8 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 202): the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// score 57 (was 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
 // x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
 // float copy (`magnitude`) used by the divide and `fabs((real)length)` so the 0.0001 constant stays a float
@@ -2184,6 +2185,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // loop random and count receiver 300. Exact-only receiver forms restored with the
 // full original body; lazy saves and the post-fstp memory compare remain.
 // Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
+// Round 322: Native entry/motion cursor walks and plain final-three-component sample loop, seven
+// subsets, then full graph with normalization scratch scope: 276/276/157/294/274/274/291/291.
+// Original bases, samples and complete body restored; frame 0xc agrees, delayed saves and post-fstp
+// count compare remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {

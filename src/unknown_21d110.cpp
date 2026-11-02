@@ -942,6 +942,9 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // (flag below it), so only the flag's one-byte size sends it to the lowest unit.
 // Round 39 (lane 2): repeat_state and the flag packed into one struct local matches (0); not kept, packing
 // locals into a struct is against the lane rules. A form that places the two the same way without the struct is the lead.
+// Round 322: Complementary captured primary choice in bool/byte/short/long storage, conditional
+// outputs 145/145/201/199; full branch outputs 147/147/200/199 (fast control 58, plain baseline
+// 30). All restored; alternate-byte and scalar homes remain.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
