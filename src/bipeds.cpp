@@ -941,6 +941,13 @@ extern long *g_51e9cc;
 // Lookup aggregate initialization at lookup/case/admission/object phases 186/217/204/204;
 // CRT clears at those phases 182/213/199/199. Shared word-bit publication for crouch,
 // contact, other and all flag groups 39/38/42/35; seven-count lead above 30 rejected.
+// N317: Current-crouch bounded state direct/successive 42/42; shared word flags
+// 35/35; branch-owned instance/contact-first publication 27/27; actual shared lookup
+// receiver 2/2 at 1481 bytes. Incoming field capture and receiver alias are exact-only;
+// the two crouch-add operands still reverse. Earlier uninitialized delta declarations
+// before object/gate/component/root, original/offset names, 2 each (eight forms).
+// Common real lookup/getter record declarations 42, joint publication 27; all other
+// lookup-user scores unchanged. Original body and all supporting declarations restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
