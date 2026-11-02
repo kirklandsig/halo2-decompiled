@@ -1726,6 +1726,9 @@ void function_b7360(long object_index);
 // 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
 // is rejected; original complete case order and body restored. Pool/actor/output
 // ownership and the forty-byte length gap remain.
+// Round 341: Consistent actor-object fields with a shared short/long/byte/word completion,
+// failure-first 502/495/565/502, success-first 535/536/548/535. The long failure form reaches
+// 1848 bytes but worsens allocation; original callback and observations restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2209,6 +2212,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // admission/alignment/search workspace names in seven subsets and all with
 // planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
 // First point/prefix recover but later homes regress; original complete body restored.
+// DH269: Independent timer/animation arm swaps 7/0, 9/10, 12/11, their pairs/all,
+// 485,487,487,487,487,485,485; all with case 5 before the timer pair 502. Reduced control 485
+// versus full 469; first +9 actor/state ownership persists. Original arms and entire body restored.
 // Round 499: One candidate handle for query and publication, crossed with candidate/point scopes
 // and both distance-comparison orientations: 490 each (fast control 485; full 469). Original
 // observations, scopes, case order and body restored; actor/state and point homes remain.

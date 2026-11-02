@@ -1423,6 +1423,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // plus resize output: 33 each. Original iteration/block ownership, failure-only initialization, waits
 // and complete body restored. Frame 0x1144 and open prefix agree; swapped output homes and
 // write/checksum/validation joins remain.
+// DH271: Query/write-count/resize-result lexical identities, all seven subsets, then joint uninitialized
+// iteration-owned declarations, 33 each. The failure-only count-initialization graph keeps the same code
+// despite every new output-home identity. Original names, scopes, result producers, waits and native
+// handle/options tuples restored; query/count homes, write setup and checksum/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

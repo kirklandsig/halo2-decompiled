@@ -243,6 +243,10 @@ struct s_spawn_scenario_23aea0
 // zero-based long/dword type ordinal 61/100; non-equality/inclusive fixed bound 232/61;
 // body-stepped source cursor 68. Earlier induction forms used direct stores; this setter graph
 // still keeps a pointer induction and staged scalar loads. Original body restored.
+// Round 246: Native source vector/array records on the retained setter graph, flat/nested
+// 61/61/61/61; native vector assignment/library copy 256/256; both-phase setter 73;
+// mutable nested source records 61. Original source view and complete body restored;
+// integer destination induction and staged default-input loads remain.
 // @retail 0x23aea0
 void function_23aea0()
 {

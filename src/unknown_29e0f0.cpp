@@ -216,6 +216,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // complete library transfers 509. All regress and disturb frame or extent. Original pointer payloads,
 // metrics, signed-short scans, selected output cursor and full body restored at 390;
 // default/bitmap/endpoint homes and root-table roles remain.
+// DH271: Signed-byte-narrowed anchor carried in short with bool/byte/short/long accepted state
+// 457/457/448/456; long anchor with those states 453/453/433/442. All preserve original byte narrowing but
+// regress and grow the frame/extent; original complete body restored. Selected-default, root-register and
+// bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

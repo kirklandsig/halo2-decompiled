@@ -242,6 +242,8 @@ struct c_aggregate : c_child
 // M287: Cleanup driven by the actual item-array cursor and signed array distance,
 // shared query output/block cursor/boundary-dispatch subsets 0-7:
 // 85/89/85/89/151/150/151/150. Output/loop homes still differ; original signed traversals restored.
+// M290: Null/error continuation admissions with independent outputs, limited information-query scope, shared output after/before arrays:
+// 31/31/31/31/37/37/38/38. Original executable body restored.
 // Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
 // cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
 // escaped-output and loop homes remain.
