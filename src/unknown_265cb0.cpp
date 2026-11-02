@@ -1330,6 +1330,12 @@ long function_146650(void);
 // direction pointer at both queries 14; a pointer only at the first query 14; a target pointer 14;
 // a movement pointer 14; an ahead pointer 14; an offset pointer 14. Every listing is identical;
 // original executable body restored.
+// Round 121 (lane 8): a compile-only frame screen ranks the 12-byte homes by references that survive to code: one more
+// materialized target_direction read puts it above ahead, two above direction; two more ahead reads put it above
+// direction; forwarded pointers, inline pointer helpers and reads a common subexpression removes do not count. Retail's
+// order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
+// bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
+// the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

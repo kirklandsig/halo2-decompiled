@@ -231,6 +231,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // no byte narrowing; its byte at the arg_2 home is the pass's found flag). Result assigned from the
 // selection test 430; `else` false after the output 400; short terminal and candidate 431; short terminal
 // alone 391; short candidate alone 446 (register-masked aligned 170 against 183). Original body restored.
+// DH281: Admitted-group/nearest-selection/candidate-validation lexical ownership, seven subsets then all
+// with full-width signed group [390, 390, 390, 390, 390, 390, 390, 461]. Original executable body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

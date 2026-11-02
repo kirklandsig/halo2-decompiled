@@ -779,6 +779,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // DH round 266: writable incoming frame with delayed variant identity, limit-after-clamp
 // and chained event clears, eight subsets 130/129/130/130/134/133/134/134 (525 bytes).
 // All three matched callers stay exact; original frame transport and callback observations restored.
+// Round 256: named wrapped-frame subtraction, producer/declaration and conversion
+// orders, real carrier 93/93/93/93; double carrier 91/91/91/91 (531 bytes,
+// two-point gain rejected, precision exact-only). Original complete body restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

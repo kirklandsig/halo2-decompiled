@@ -1461,6 +1461,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // pointers 328/321/344/328/321/344; both with native success 320/320. Original queries, canonical
 // statuses, own-parameter observation, case sets and entire executable body restored; pool/state
 // allocation and count joins remain.
+// Round 305: plain two-slot traversal, long/short/word/byte index with original
+// conjunction or guarded second publication 472/451/424/462/424/462/423/462.
+// Original paired queries, signed-count domains, argument observation and body restored.
 // AC460: Canonical permission assigned by status tests in primary dispatch, byte/bool/short/long
 // 164/194/377/381; both dispatches 164/194/377/381. Original expression producers, byte result,
 // unconditional queries, signed observations, parameter handling and complete body restored.
@@ -1698,6 +1701,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 430 confirmed plain at 1793 bytes, but code differences remain 424; decoded
 // trailing-table differences fall 22 to 6. Table/extent-only gain rejected; all
 // original statuses, body and types restored. Frame eight versus twelve remains.
+// Round 305: selected real header pointer/value, mutable/readonly at entry
+// 497/497/512/512 and in the held-query admission 476/476/491/491. Original live
+// pool observations, statuses and dispatch restored; frame and state/request homes remain.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2042,6 +2048,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
 // all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
 // native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
+// Round 305: paired pitch/yaw comparison values, bool logical/bitwise in both orders
+// 854/828/824/825; byte equivalents 854/828/825/826. Original combined predicate,
+// complete direction capture, helpers and body restored; frame and first-angle expansion remain.
 // AC460: Both blend products inside the positive-weight admission, canonical activity
 // bool/byte/short/long 881/881/857/861; both products inside the two-screen admission
 // 881/881/857/861. Original product lifetimes, activity and complete body restored.
