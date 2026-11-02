@@ -258,6 +258,8 @@ struct s_24e9c7_bounds
 // geometry, observations and complete body restored; early spill/scalar homes remain.
 // Round 342: Across scalars scaled into the actual side displacement, upper/reverse scalar-pair and shared real half-width subsets: 125/125/133/133/123/123/132/132.
 // Original complete body restored; early across spill, shifted scalar homes and SSE schedule remain.
+// Round 301: paired rectangle limit chains, minima/maxima first and either chain direction,
+// 131/130/127/129; with explicit zero-minus across 144/143/140/142. Original body restored.
 // Round 232: Complete rectangle zero-fill then maxima through memset/zero aggregate, at
 // group/selector/bitmap/default-workspace boundaries 211/191/221/191/222/192/222/192.
 // Original defaults and body restored; early across spill and shifted scalar homes remain.

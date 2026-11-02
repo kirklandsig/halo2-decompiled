@@ -199,6 +199,7 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // Original record, helpers and complete body restored; eleven control matches survive.
 // M296: Cheap-flag-gated two-use identity, nested/continue admission and break/direct
 // success, then those four with single flag observation [43, 52, 43, 52, 43, 52, 43, 52]. Original admission restored.
+// M303: Selected entry/player address result, before/after index declarations and break/single-exit completion: 51 in all eight forms, 133/127 bytes; Boolean result and native copy restored.
 // N301: Cheap-gated complete native identity value, nested/continue with result/direct
 // completion 52/56/52/56; native identity pointer counterparts 43/52/43/52.
 // Value forms also regress both matched callers; all restored. Early ESI, successor and mask remain.
@@ -1202,6 +1203,7 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // matches survive; original entry, range, repairs and complete tail restored.
 // M296: Range-relative copy ordinals forward/reverse/both, then each with the real
 // range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
+// M303: Paired source/destination cursors forward/reverse/both with ordinal bounds, pointer bounds, then mixed bounds: [414, 396, 412, 421, 402, 418, 418, 421]; original native copies restored.
 // N301: Standard directional copy forward/backward/both 393/387/386;
 // direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
 // All restored; initial admission/removal and upper-bound register ownership remain.
