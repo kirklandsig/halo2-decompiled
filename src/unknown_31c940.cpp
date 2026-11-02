@@ -104,7 +104,7 @@ static __forceinline void apply_linear(float impulse, solver_linear_row_31e7b0 c
 }
 
 static __forceinline void apply_linear_spilled(float const volatile &source, solver_linear_row_31e7b0 const *row,
-	solver_velocity_31c940 *a, solver_velocity_31c940 *b, float *result)
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
@@ -113,19 +113,51 @@ static __forceinline void apply_linear_spilled(float const volatile &source, sol
 	rounded.bits = *(unsigned long const volatile *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+	__m128 inverse_b = b->inverse_inertia;
+	solver_velocity_31c940 *linear_body_b = b;
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
 	a->linear = _mm_add_ps(a->linear, linear_a);
-	b->linear = _mm_sub_ps(b->linear, linear_b);
+	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
 	// Reload the axes after both linear writes, then form both contributions
 	// before either angular write. Row storage may overlap the body fields.
+	solver_velocity_31c940 *angular_body_b = b;
 	__m128 angular_a = _mm_mul_ps(change_a, row->a);
 	__m128 angular_b = _mm_mul_ps(change_b, row->b);
 	a->angular = _mm_add_ps(a->angular, angular_a);
-	b->angular = _mm_add_ps(b->angular, angular_b);
+	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
 	*result += impulse;
 }
+
+// The first pair reloads B for inertia, then captures each update receiver.
+static __forceinline void apply_first_normal_fallback(float impulse, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b, float *result)
+{
+	// SSE consumes a rounded float while result accumulation retains the x87
+	// value. Passing the impulse by reference would round both paths early.
+	float rounded_impulse;
+	float volatile &store = rounded_impulse;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 inverse_b = b->inverse_inertia;
+	solver_velocity_31c940 *linear_body_b = b;
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	solver_velocity_31c940 *angular_body_b = b;
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
+	*result += impulse;
+}
+
 
 static __forceinline float &operation_float(unsigned char *op, long offset)
 {
@@ -175,7 +207,7 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 		// The second-row fallback accepts unordered results in retail.
 		if (!(candidate <= 0.0f))
 		{
-			apply_linear(candidate, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
+			apply_first_normal_fallback(candidate, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 			return;
 		}
 	}
@@ -186,7 +218,7 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 		return;
 	}
 	float candidate = error_a * axis[-4].m128_f32[3];
-	if (candidate > 0.0f) apply_linear(candidate, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
+	if (candidate > 0.0f) apply_first_normal_fallback(candidate, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
@@ -664,7 +696,7 @@ union solver_velocity_or_kind_31c940
 	int kind;
 };
 
-// score 1961 (was 1964): retain both normal-row cursors across the first pair.
+// score 1960 (was 1961): capture B separately for the first pair's body fields.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
