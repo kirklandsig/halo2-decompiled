@@ -2073,6 +2073,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
 // 128/138/138/128/138/128/128/128. Original case order, body and zone producer
 // restored; early color/query ownership and frame 0x40 versus 0x44 remain.
+// Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
+// in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
+// query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {

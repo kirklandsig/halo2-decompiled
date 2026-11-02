@@ -1514,6 +1514,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // complete reverse declaration order: 140 each. Original body and all workspaces restored; return byte
 // +0xe/+0xf, release RMW/tail and event/location homes remain. Both existing point setters and the
 // two-use spin capture are preserved.
+// Round 311: Current paired-setter/two-use-spin graph with inverse idle outcome,
+// bool/byte/short/long and bitwise/logical spin reduction 179/189/179/189/186/182/187/184.
+// Original result, spin capture, helper, setters and full body restored; return-byte and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
