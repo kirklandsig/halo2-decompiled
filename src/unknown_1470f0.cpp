@@ -177,6 +177,10 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // 11/11/11/42/42/42/42/41. Original executable source restored.
 // M299: Independent repeated primary/secondary endpoint and physical-start ownership
 // subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
+// Round 122: secondary/fallback/shared/all void-return expressions 21/21/11/11; plain shared return 21;
+// secondary and fallback done exits 11; secondary-only done exit 11; secondary receiver before its bounds 11;
+// concrete primary global declaration 11. Concrete secondary declaration did not compile at its explicit base
+// destructor; primary declaration without the complete type did not compile at an external upcast.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
