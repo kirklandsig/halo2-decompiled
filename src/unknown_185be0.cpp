@@ -344,6 +344,10 @@ union s_185be7
 // flag destinations 858/848/864; complete exact-valued promoted angular coefficient
 // alone/with native destinations 1018/1075. Original helper, widths, scalars and body
 // restored; control-root/NONE, settings/zero homes and flag joins remain.
+// AC468: Shared input-five/four/seven branch ownership retaining the individual flag-helper calls,
+// seven subsets and all with selected-input ownership: 1121/1111/1152/1134/1155/1159/1150/1140.
+// The branches collapse stores and lose the native frame. Original helper calls, masks, observations,
+// two scans and retained duration cursor restored; root/NONE, settings/zero and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

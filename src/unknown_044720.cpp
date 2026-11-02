@@ -306,6 +306,13 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
     }
 }
 // score 182 (was 182): Frame 0x1094 agrees; entry/index spill and center/query/bound homes remain.
+// Round 50 (lane 14) reached a byte match, reverted at review: a named two-member local struct
+// (center + the tree pointer, copied in and out, never passed by address) only groups locals, a
+// reverted form even with a match. The rest of that form is the lead: a one-result geometry helper
+// (no early return in the tag branch), the masks written at each use, list headers stored in
+// constructor order (second's before first's), the bound test as `sum <= combined*combined` into a
+// flag. Left: keep the center load unfolded without the grouping struct (a scalar local or one-member
+// struct folds it).
 // Earlier: Frame 0x1094 agrees; entry/index carriers, entry spill and sphere/position homes remain;
 // retail also keeps a separate center point (+0x30) beside the sphere query (+0x20).
 // Round 81 (fast): a `visible_word` pointer for the test and both marks 190 (same code); one marking

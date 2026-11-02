@@ -93,7 +93,6 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	return result;
 }
 // score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
-
 // Earlier 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
 // the two 0xbadc0 calls (index * 12 kept in ESI), ours reuses the entry fetch. Earlier notes:
 // Earlier 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
@@ -201,6 +200,10 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 289: immediate preserve/weapon-sound predicate producers and prior-state-first
 // admission, seven subsets: 107/107/125/107/125/125/125; complete graph with promoted user
 // ordinal 128. Original predicates, types and complete body restored; fresh lookup remains.
+// Round 28 (m3 lane 18, fast): the two zoom-level resets chained 107; the transition cleared before them 107;
+// the weapon query before the player queries 107 (378 bytes); the player test as `!= NONE` first 117; the
+// sound test with the zoom flag first 125. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided): our
+// link knows it writes no memory and merges retail's second unit fetch into the entry fetch.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {
