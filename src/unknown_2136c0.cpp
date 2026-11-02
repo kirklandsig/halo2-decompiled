@@ -203,6 +203,9 @@ void function_213970(void);
 // 169/178/202/171/195/204/227/227. Separate allocation still prevents both complete bulk clears. Original body restored.
 // DH round 262: language after header payload/first sentinel, with native progress/handle reset
 // subsets 131/175/168/187 and 131/172/165/184. Original resets, getter site and complete body restored.
+// Round 292: Native signed/unsigned wide language result, mutable/immutable and original/entry
+// acquisition, 146/146/146/146/149/149/149/149. Original result and whole body restored;
+// separate protected storage definitions still prevent both retail-wide clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

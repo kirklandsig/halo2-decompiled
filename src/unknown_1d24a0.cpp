@@ -264,6 +264,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 241: In-place direction-to-residual storage at radial/planar/angular sites,
 // singles/pairs/all 946/934/939/954/962/954/963; all with shared radial/planar differences 963.
 // Original separate direction/residual vectors, short scale loop and complete body restored.
+// Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
+// pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
+// entry/frame and activity/record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

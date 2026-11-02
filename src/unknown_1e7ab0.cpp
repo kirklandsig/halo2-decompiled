@@ -304,6 +304,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // with those four carriers 721/701/704/671. Original result lifetime, qualifiers and all cases restored.
 // Round 263: Real state layout with typed current/reset/input observation subsets 620/620/620/620/620/620/620; all with ordinary player 786.
 // Original state declaration, raw observations, case graph, inherited qualifiers and complete body restored.
+// Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
+// gives 620/623/650/649/613/651/651/653. Seven-point best is below the
+// retention margin; original case order and executable body restored.
 // Round 56 (m3 lane 1, fast; 0x1e83c0 kept its match, 0x1e6bd0 unchanged at 303): the weapon helper in
 // src/unknown_1e77c0.cpp's form (`bool secondary`, 0x212/0x213 select, object table read inside) 653 (2256
 // bytes); only the headers parameter dropped (table read inside) 653; the helper as a plain `inline` 620 (same
@@ -323,6 +326,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 288: complete direct-state flag group after cases 14/2/4/30/16/20/23/22
 // gives 620/623/650/649/613/651/651/653. Seven-point best is below the
 // retention margin; original case order and executable body restored.
+// Round 292: Common admissions in cases 15/18, 5/6 and 7/8, subsets 1/2/4/3/5/6/7,
+// 696/617/625/690/701/655/667; all with ordinary player carrier 827. Three-point best rejected;
+// original cases, body and qualifiers restored. State/player/unit residency and case tails remain.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

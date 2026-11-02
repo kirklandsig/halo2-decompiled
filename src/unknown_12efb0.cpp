@@ -298,11 +298,17 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 286: Existing unit-interval producer lower/upper early returns 661/660;
 // lower/upper separate result 615/621; lower/upper conditional result 661/660;
 // lower/upper default guarded result 646/711. Original helper and body restored.
+// Round 290: actual index-output default owned by its provider, short/char palette with immutable
+// tag-result/readonly-record combinations, 703/703/703/703/699/699/699/699; frame 0x4820 agrees.
+// Original caller default, field observations, helpers and body restored; palette/record and SIMD carriers remain.
 // Round 444: Double scalar-contribution/merge-fraction/color-contribution result domains,
 // subsets 1/2/4/3/5/6/7 then all with complete publication reciprocals: 838/839/772/823/867/828/833/927. Original helper
 // precision, alias-safe source-weight capture and full body restored; palette/record and SIMD carriers remain.
 // Round 446: native palette/radius/alpha field lvalues, seven subsets
 // 683/616/683/616/683/616/683; all with previous-index field 681. Original observations, helpers and body restored.
+// Round 292: Overlap-safe scalar-RGB/merge-record/four-channel input copies, subsets 1/2/4/3/5/6/7,
+// 1100/888/961/1214/1194/1077/1328; all with normalized-publication input copy 1552. All enlarge
+// frame/code; original helper bodies and source-weight capture restored. Palette/record/SIMD homes remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
