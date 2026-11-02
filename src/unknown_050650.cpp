@@ -627,6 +627,9 @@ struct s_collision_result_buffer_1697c0
 // Original result boundaries and all body/helper text restored; scratch and axis homes remain.
 // Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
 // 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
+// DH297: Test-produced success/failure-owned collision/immediate per-attempt admission,
+// subsets 1-7, then fraction-first fallback: 348/322/348/322/348/322/348/360.
+// Original Boolean result, collision graph, ten draws, helper bodies and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -869,6 +872,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // done;` label after the return taking all of them 257; only the two case exits 256; only the normalize failures
 // 257; all of them with the normalize step as `if (!(normalize > 0)) goto failure; result = true;` 260;
 // reference and state declared inside case 2's and case 1's own blocks 257.
+// DH297: Eight complete direction/point/reference/object case-family orders
+// 361/332/356/392/369/364/384/375 (fast control 341; full 257). The 0,4,3,5,2,1,6
+// order is 360 plain at 1408/1444, rejected; original cases, predicates and full decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
