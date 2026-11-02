@@ -322,6 +322,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
 // native/array planar sums, native/array parallel products and native running coordinates
 // 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
+// N320: Paired native 3D point setter and 2D determinant reaches 42, below the eight-point gain bar;
+// plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
+// and product ranks remain. Scores 42/87/76/90/54/82/66/90.
+// Original executable source restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
