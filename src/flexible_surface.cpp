@@ -680,6 +680,9 @@ void function_117dd0(long index, vector3f *wind)
 // applied as vector3f_add_scaled(&force, &tangent, -drag, &force) 189 (719 bytes); the dot passed straight to
 // vector3f_scale 63 (same code); both helper forms 66; the point-difference tangent with a written dot
 // `i*i + k*k + j*j` 97 (736 bytes). All restored.
+// Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
+// observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
+// Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {

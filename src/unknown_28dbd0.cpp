@@ -186,6 +186,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 335: Complete accepted-result bool/byte/short/long 173/173/197/195;
+// complementary rejected results 202/202/200/201. All are exact-only post-test
+// flag forms; none matches. Original result flow, rotation helper, full request
+// and complete body restored; frame 0x11c versus 0x118 remains.
 // Round 114 (m3 lane 7, fast): helper order sine, named dot, cosine, projection, `cross3f(v, axis)` subtracted 226
 // (retail's fsin placement, frame 0x120); that with `cross3f(axis, v)` added 225, with cross3f_staged 226, with
 // direct per-component sums 226; the kept order with only the dot named before the cosine 226. Retail keeps the

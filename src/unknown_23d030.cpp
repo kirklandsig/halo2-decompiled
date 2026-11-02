@@ -307,6 +307,9 @@ struct s_free_state_23d260
 // up-cross/roll-cross/rolled-row expressions, subsets 1/2/3/4/5/6/7,
 // 315/312/129/312/114/257/291; all parts const 291. Every parallel row uses
 // the same form; original arithmetic trees and store phases preserved. Original body restored.
+// Round 337: immediate up-component accumulations, separate/shared scratch, producer/entry
+// declarations, then each with complete roll-cross accumulation: 256/254/256/254/288/289/288/289.
+// Original body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
