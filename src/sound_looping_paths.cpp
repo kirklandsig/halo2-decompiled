@@ -112,12 +112,14 @@ __forceinline real loop_path_linear(long value)
 __forceinline long loop_path_logarithmic(real value)
 {
 	real pinned = loop_path_pin(value, 0.0f, 1.0f);
-	real decibels = g_44a0b4;
+	real decibels;
 	if (value > 0.0f)
 	{
 		decibels = (real)(log10(pinned) * 20.0f);
 		decibels = loop_path_pin(decibels, g_44a0b4, 0.0f);
 	}
+	else
+		decibels = g_44a0b4;
 	return loop_path_decibels(decibels);
 }
 
@@ -154,7 +156,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 886 (was 886): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
+// score 866 (was 886): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -264,6 +266,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // DH round 290: sequential record-count, sound-index-list and outer-ordinal identities,
 // seven nonempty subsets, then all with one inner-search ordinal: 887/886/887/886/887/886/887/887.
 // Original separate workspaces, phase initializers, loop domains and complete body restored.
+// AC485: intrinsic raw-decibel/linear bit transfers and exhaustive logarithmic producer,
+// subsets 1..7, then common pin result: 884/916/916/866/864/903/903/936; exhaustive log result 866 kept.
+// Bit captures/pin restored; entry zero and target/query/count homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

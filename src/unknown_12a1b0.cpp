@@ -1719,6 +1719,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
 // playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
 // plain 9-step loop 335; `long selected` 427 (1908 bytes).
+// AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
+// with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
+// NOT kept: one-use captures without a match; original body restored, frame/homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
