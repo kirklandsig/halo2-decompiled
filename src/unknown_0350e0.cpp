@@ -2275,7 +2275,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 170 (was 182): plain fallback component loop recovers retail frame 0x38;
+// score 170 (was 170): plain fallback component loop recovers retail frame 0x38;
 // first +0x30 stores the raw length at +4 rather than +0xc; rotation allocation still differs.
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
 // Earlier baseline 182 (193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
@@ -2314,6 +2314,9 @@ real magnitude3d(vector3f const *v);
 // Exact double current/target magnitude carriers, early immutable interpolation and combinations
 // 268/347/320/354/310/387/378; all with existing final scale 378. Original body restored;
 // both exact controls survive every preview.
+// Round 527: Native real absolute/sine/cosine API subsets 1/2/4/3/5/6/7 and all with separate
+// sine/cosine declarations: 170 each. Original math APIs and complete executable body restored;
+// frame 0x38 agrees, raw-length/dot/angle homes and rotation allocation remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2687,9 +2690,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
-// score 517 (was 517; earlier 529, 561): the logic matches retail block by block (walked statement by statement against
+// score 517 (was 517): frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
-// score 517 (was 529; 561 before that): the logic matches retail block by block (walked statement by statement against
+// Earlier counts 529 and 561; the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
 // is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
 // state+0x18, view+0x104, view+0x120 (offset[1]), view+0x158 and state+0x2c. Reading the strength before the cycle test
@@ -2709,6 +2712,10 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // F321: shared phase/reciprocal/previous-position workspaces in subsets
 // 1/2/4/3/5/6/7 give 518/517/517/518/572/571/572; all with complete point
 // and projection role names 572. Original executable body restored; frame and velocity reloads remain.
+// Round 527: Native repeated flag reads/double random rate/real random-helper input subsets
+// 1/2/4/3/5/6/7 give 511/520/537/514/530/535/528; all with shared maximum scaling 526.
+// Six-point lead rejected; original flags, helper formals, rate and full body restored.
+// Frame 0x60 versus 0x38, stored velocity reads and loop ownership remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3528,6 +3535,9 @@ bool __stdcall function_391f0(void *state);
 // Consistent structure/visibility/live count-table observations, seven subsets,
 // 284/266/306/278/281/306/281; all with the bounded native short ordinal 288.
 // Original complete body restored; stacked numeric headers merged.
+// Round 527: Two-use previous timestamp/native short frame/single-exit admission subsets
+// 1/2/4/3/5/6/7 give 294/262/251/290/294/262/290; all with double previous time 324.
+// Original time observations, frame carrier, gates and complete body restored; extra frame dword and zero/loop homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
