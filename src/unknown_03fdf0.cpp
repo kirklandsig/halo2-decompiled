@@ -447,6 +447,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 500: complete entry attributes/flags/both observations, block/indexed receivers
 // 54/163/87/144/141/141; bounded selection with attribute observation 112/138.
 // Original executable body restored; scaled-index entry and first-index/copy homes remain.
+// Round 502: actual destination-record cursor drives all entry indices; before-copy,
+// memcpy-result, after-copy and pre-loop ownership 165/151/165/165; indexed source receiver
+// 165/112/165/165. Original copy/index graph restored; scaled-index and first-index homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
