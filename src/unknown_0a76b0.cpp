@@ -287,6 +287,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // M309: Reused self-object header/table 330/332; with uniform per-use state,
 // complete local role names, or both 330/332 each. All eight restored;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// F329: Retained masked self-header index, long/word domains crossed with four
+// disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
+// frame 8 and incoming unit/name/actions ranks remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
