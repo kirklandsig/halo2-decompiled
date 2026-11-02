@@ -325,6 +325,16 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 294: Per-iteration native count with twice-used long/short sample frames,
 // long/64-bit counts and before/after-weight count acquisition gives 257 each for
 // long frames, 258 each for short. Exact-only bound copies and full body restored.
+// Round 50 (lane 14, fast with 0x10ec00; ours ends `ret 0x18` as retail; aligned counts from a difflib listing, base
+// 150): weighted id in a local 306 (978 bytes, aligned 228); long frame used twice 257 (967, aligned 119); both 278
+// (983, 119). Getter out of line only with the repeated guard (not keepable): guard alone 174 (940, aligned 141), with
+// the id and long frame 225 (940, aligned 96; all else there is the 0x30 frame's slots, the pointer plus spilled
+// countdown and `mov eax, edi` where retail recomputes the lea). On that form the loop stays a pointer with: dword
+// index, a copy of the index, the frame read after the weight, `*(frames + i)`, byte offsets from the view, a struct-held
+// index, each 225; `__assume(i < 12)` 245 (950); do-while 249 (915, 0x10ec00 lost). Getter still inlined with: a played
+// flag, a valid flag, force-inline valid and play helpers, each 278; the getter after the flag 287 (990); the data
+// struct in the sampled block with the played flag 280 (985); the positive arm in a force-inline helper 278, in an
+// inline helper 783 (434 bytes, outlined).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

@@ -230,6 +230,18 @@ bool g_47f05b;
 // `(byte *)g_479894 + 0x15040` 44 (131 bytes); the fixed allocator and its 0x15000-byte buffer as one
 // struct whose constructor passes its buffer member 35; `g_4798b4++` between the two constructions 39
 // (136 bytes); the three global stores after the fixed construction 42 (142 bytes).
+// Round 50 (lane 14, fast with 0x146b80/0x22c3e0): g_479888 read at each use instead of `block` 38 (144 bytes: retail's
+// reload inside the non-null arm and its `lea` at the join, but 1 no longer sits in EDX); `block` for the placement
+// with the buffer from g_479888 38 (144), the reverse 36 (146 bytes, no reload of its own shape), `block` declared
+// after the three global stores 34, with the buffer from g_479888 38; a buffer local at the top or after the stores
+// 38/38; the three stores after the fixed construction 39; a chained 1 for g_479880 and g_479890 38; a local holding
+// the 1 38. Compile-only, about 45 forms, the abstract store dropped in all but the last two groups: placement through
+// force-inline wrappers (one and two levels) and a static create; an explicit constructor call; operator new then
+// the constructor; the abstract's stores in an init method; a defaulted NONE parameter; arguments in a by-value or
+// by-reference struct, const references, locals and address-taken locals read in the constructor; `this + 1` and a
+// member array for the buffer; `__assume` on fields, the vtable and globals; dead or forwarded reads of fields; a
+// second polymorphic base. Only a real load of a global between the two vtable stores keeps the store (the load
+// stays in the code, so retail's reason is another read that disappears later).
 // @retail 0x146a20
 void function_146a20(void)
 {

@@ -198,12 +198,21 @@ PRIVATE inline void shape_scale3d(vector3f const *v, real scale, vector3f *out)
 	out->k = v->k * scale;
 }
 
+/* the sum of two squares */
+PRIVATE inline real shape_square_sum(real const &a, real const &b)
+{
+	real square = a * a;
+	square += b * b;
+	return square;
+}
+
 /* The point test inlined into the shape collection query. */
 PRIVATE inline bool shape_sphere_point(s_sphere const *sphere, point3f const *point, plane3f *plane, real *depth)
 {
 	vector3f d;
 	vector3d_from_points3d(&sphere->center, point, &d);
-	real distance_squared = d.j * d.j + d.k * d.k + d.i * d.i;
+	real distance_squared = shape_square_sum(d.i, d.k);
+	distance_squared += d.j * d.j;
 	if (sphere->radius * sphere->radius > distance_squared)
 	{
 		real distance = (real)sqrt(distance_squared);
@@ -214,7 +223,8 @@ PRIVATE inline bool shape_sphere_point(s_sphere const *sphere, point3f const *po
 		}
 		else
 		{
-			plane->i = plane->j = 0.f;
+			plane->i = 0.f;
+			plane->j = 0.f;
 			plane->k = 1.f;
 		}
 		plane->d = dot3f((vector3f const *)&sphere->center, &plane->n) + sphere->radius;
@@ -234,181 +244,6 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 	out->unknown0e = source->unknown0e;
 }
 
-// score 57 (was 57): the sphere test's normal: retail multiplies the x and z differences in
-// place (normal x/y/z in xmm1/xmm3/xmm2, differences x/z/y in xmm1/xmm2/xmm4) and loads 1.0 in
-// each arm; ours multiplies copies of the scale, keeps z/y in xmm4/xmm3 and hoists 1.0 into xmm0
-// before the fsqrt. The products go in place only when the sum's first reads of x and z are
-// pointer reads and y's is not: a pointer local to the difference read for x and z in a
-// statement sum x, z, y, the dot's inputs swapped and the unit-z zeros stored separately matches,
-// and so does a one-caller helper returning the x and z squares through its pointer plus
-// `+= d.j * d.j` (fast MATCH; neither keepable).
-// Tried: unit-z zeros chained y-first 57 (y or z first 57, x first 61), stored separately 61,
-// through vector3f_assign 61; unit-z arm first 62; arms swapped 170; depth before plane->d 61-65,
-// before the normalization branch 173; distance-squared orders i,k,j 61, k,i,j 59, k,j,i 57,
-// regrouped 57-61, direct statement sums in each order 61, products by fields after an x,z,y
-// statement sum 57; squared-length/self-dot helpers (length_sq3f, dot3f(&d, &d), the existing
-// reverse dot on the difference) 152 (also with both fixes, with vector3f_scale or the reciprocal
-// passed to shape_scale3d); every square through a pointer local plus the dot swap 148; the scale
-// helper's statement orders 61-158, operand orders 57, the factor as its first parameter 57;
-// existing vector3f_scale with the reciprocal in the call or a scale local 57 (plus dot(normal,
-// center) 57, plus vector3f_assign unit z 61); scale declared first 61; reciprocal in the call
-// 57; double reciprocal 397; the difference by fields 61, in the plane normal 177-181; in-place
-// scale + copy 397; separate/default normal workspace 397; radius-square local 61; a radius local
-// 176 (668 bytes); component-square lifetimes 61; immutable distance, sphere and point references
-// 61; shared scaled difference 57; squared-distance accumulator and paired difference 61/61;
-// normal memset and accumulator/reset 176/180; component scale loops 57/57, with a normal reset
-// 175; outside-sphere exit 57; the comparison's operands swapped 57; root declared first 57;
-// sqrtf 57; default output before normalization 174; center/sphere value copies 397/396; center
-// plus squared helper 397; late radius after normal/before root/after root, shared double-factor
-// scale, in-place input, late radius with scale, native factor, partial squared distance
-// 62/65/65/397/397/397/397/61; containment-test return, plane/depth pointer returns, normal-first
-// projection, projection value, existing reverse dot in either order, test/projection result 57;
-// dot swap 57; squared-distance axial array loop (j term then axes 2 and 0, long/short ordinal,
-// either projection input order, chained/separate zeros) 397 at 456 bytes (sphere helper
-// outlined), forced inline 235-262; a nested unit-vector helper taking the distance (reciprocal
-// inside it) with length_sq3f 129 (and a one-caller helper); a named hit flag with if/else-if
-// arms 157 (669 bytes); depth and plane declared at function scope 57; the distance test against
-// the literal 0.f (0x45dbd8 is the 0.0 constant) 57. Compile-only (no gain):
-// the sphere helper's 24 parameter orders and __forceinline; statement differences x,z,y; scalar
-// component locals; radius square first; a 72-form screen of the squared-distance, scale, unit-z
-// and dot helpers. Round 13 (exact LTCG harness, ~250 forms): the squared distance in every flat,
-// parenthesized and statement order 57-61; the squared-length/self-dot/reverse-dot helpers with
-// either plane-dot order, the reciprocal in the call and separate unit-z zeros 150-152 (aligned
-// lower, but the difference is then computed i, j, k); the pointer local (diagnostic) leaves only
-// the plane dot's i product, as the dot swap fixes; a single-exit result 57; the test inverted 58;
-// a center pointer used twice 170 (669 bytes); single exit with length_sq3f 150; x and z summed
-// before y 59; the difference written out as plain assignments (diagnostic) 57-61 in every order.
-// Round 3 (lane 18, the unit-z arm and the 1.0 retail loads in each arm): unit z stored before the
-// zeros 57; the arm as a const local {0, 0, 1} copied to the normal 397 (456 bytes); distance declared
-// ahead of the radius test 57; the arm through the normal member (`plane->n.i = plane->n.j = 0.f`) 57,
-// with unit z first 57. 1.0 stays hoisted ahead of the fsqrt in every form.
-// Round 28 (lane 10): ours also hoists the 1.0 into XMM0 above the fsqrt for both arms (retail loads
-// it in each arm). The squared distance through the existing out-of-line 0x24550 (k, i, j sum) 303
-// (stays a call, 772 bytes); the sphere helper __forceinline 57 (same code); j + (i + k) grouping (the
-// inline normalize's) 59; the scale helper __forceinline 57 (same code); the point copied by value
-// 397 (helper outlined, 456 bytes).
-// Round 27 (lane 11, real builds): the sphere helper forced inline 57; its parameters (point, sphere,
-// plane, depth) 57, (sphere, point, depth, plane) 57, (point, sphere, depth, plane) 57; the sphere
-// passed as `shapes->spheres + index` 57.
-// Round 22 (lane 13; aligned difflib count 37, all in the sphere test: difference registers z/y,
-// copies of the scale for x and y, the hoisted 1.0 and the plane-dot registers): the scale helper
-// taking the factor by const reference 57 (0x2461a0 4 -> 50); the radius added first in plane->d
-// 57; the best-* locals declared in reverse 59; plane declared before depth in the loop 57;
-// best_depth declared first 60.
-// Round 97 (lane 8, fast with 0x2461a0/0x19cb90/0x245bd0/0x245d80): the normalization test written
-// `g_45dbd8 < distance` 57 (same code); the difference scaled in place (unit z in the other arm) and
-// copied to the plane once 397 (456 bytes, helper outlined); the unit-z arm storing x and copying it to
-// y 61, storing y and copying it to x 57; that with the reciprocal in the call 57. Ours keeps n.k in the
-// scale's register (the k product goes in place on the scale), so both arms start with 1.0 in XMM0 and
-// it is hoisted above the fsqrt; retail keeps n.k in the z difference's register.
-// Round 32 (lane 11, fast with 0x19cb90/0x2461a0): the matching form's two keepable halves together (the
-// dot's inputs swapped and the unit-z zeros stored separately) 61; with the sum grouped j + (i + k) 61, flat
-// i, k, j 61, as i, k, j statements 61; flat i, k, j with the existing vector3f_scale 61.
-// Round 7 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80; the sphere helper forced inline where noted):
-// the difference scaled in place and copied to the plane after the arms (unit z into the difference) 205
-// (720 bytes: the difference goes to the frame), copied inside the scale arm 212 (726); a separate normal
-// built in both arms and copied 205 (720); a pointer to the plane's normal for both arms and the dot 57
-// (same code); the squared distance declared before the difference 57; the helper without `inline` 57
-// (still inlined, same code).
-// Round 113 (lane 6, fast; all with the dot's inputs swapped and the unit-z zeros stored separately): the
-// sum as statements x, z, y 61, as `j + (i + k)` 61, as dot3f(&d, &d) 152, as length_sq3f(&d) 152, as
-// statements j, i, k 61. Diagnostics (not keepable): length_sq3f(&d) plus any otherwise unused direct read
-// of d.j, before or after the sum, 4 (only the sum's x/z order differs: z first); the same with dot3f or the
-// reverse dot 4; a direct read of d.i instead 21; direct reads of d.j and d.k 164 (670 bytes). So the y
-// product is a copy of the scale exactly when d.j is read directly somewhere before the normalization while
-// i and k are read only through the vector's address (helpers or a pointer), as the listed pointer form.
-// Round 115 (lane 6, fast): length_sq3f(&d) with the test written `distance_squared < r * r` 152; dot3f(&d, &d)
-// with that test 152; the difference made in the plane normal, length_sq3f(&plane->n) and the existing
-// vector3f_scale in place 176 (696 bytes); the sum grouped `i + (k + j)` 61, `k + (j + i)` 57. Harness
-// screens (exact here): the eight other flat/parenthesized groupings 57-61; vector3f_scale with the
-// reciprocal in the call 57, with length_sq3f 152.
-// Round 59 (lane 12, exact one-file LTCG harness, 143 forms): the squared distance as j,k,i / i,k,j /
-// k,i,j / i,j,k flat, `j + (i + k)`, i,k,j statements, length_sq3f or dot3f(&d, &d), crossed with
-// shape_scale3d with a scale local or the reciprocal in the call or vector3f_scale, the unit-z zeros
-// chained either way or stored separately, and either dot order: 57 (12 forms: the j,k,i sum or
-// i,k,j statements with any scale/dot form and the chained y-first zeros), 59 (12), 61 (84), 152 (30),
-// 162 (6, 671 bytes); i,k,j statements with the reciprocal in the call, separate zeros and the
-// swapped dot 61 (fast agrees).
-// Round 117 (fast): the listed pointer form still matches; its pointer sum alone (original dot and
-// chained zeros) 123, with i and j through the pointer and k direct 169. With the dot's inputs swapped
-// and the unit-z zeros stored separately: length_sq3f(&d) with the normal written by fields 152; the
-// difference written by fields in x, z, y order with an x, z, y statement sum 59; flat k, i, j 61;
-// `j + (k + i)` 61; k, i, j statements 61.
-// Round 42 (lane 11, fast): the squared distance from the points themselves (the difference vector kept
-// for the normal) 307 (776 bytes), with the separate unit-z zeros and the swapped dot 307 (776); with the
-// difference vector made only in the scale arm 222 (722); the difference held in a plane3f local's
-// normal 57 (same code); the difference as a brace-initialised vector 61. Compile-only screen of the
-// sphere block (GPRs masked, base 42, the listed pointer diagnostic 12): the sum direct/length_sq3f/
-// dot3f/from the points x the scale helper/reciprocal in the call/fields x chained or separate zeros
-// x both dot orders: 34 at best (helper-only reads give every product in place).
-// Round 12 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): the squared distance through a two-point
-// helper with its own difference vector (vector3d_from_points3d + length_sq3f, the form other files carry)
-// beside the normal's difference 307 (776 bytes: the subtractions are not merged), with the normal's
-// difference made inside the radius test 227 (722 bytes); length_sq3f(&d) with the scaled normal through
-// vector3f_assign(&plane->n, d.i * scale, scale * d.j, d.k * scale) 148; the unit-z arm as a copy of a
-// file-scope const {0, 0, 1} 189 (711 bytes, loaded from memory); the unit-z arm stored x, z, y separately 61.
-// Round 28 (m3 lane 2, fast with 0x2461a0/0x245bd0/0x245d80): the sphere helper defined after this function
-// (prototype ahead) 57 (same code: the operand order is not parse order); the scale helper taking the vector
-// by value 397 (456 bytes, sphere helper outlined); `real scale;` declared first in the helper with the dot's
-// inputs swapped and the unit-z zeros stored separately 61 (every product still multiplies a copy of the scale,
-// so declaration order does not set it); length_sq3f(&d) with scale declared first 152; the difference copied
-// to the plane normal, then the existing vector3f_scale on the normal in place 397 (helper outlined).
-// The permuter cannot help here: it rewrites this function's body, and every difference is in the inlined helper.
-// Round 65 (lane 12, fast with 0x2461a0): the scale helper taking the vector by value 397 (456 bytes,
-// sphere helper outlined; 0x2461a0 84); the difference made in the plane's normal with the j,k,i sum
-// read from it and the scale in place 181 (693 bytes); the difference copied to the normal before the
-// radius test and scaled in place there 397 (456); the difference through the existing
-// scaled_difference3f with scale one 57 (same code), with the flat i,k,j sum 61. No existing helper
-// reads only the i and k squares through a pointer (the pointer form's shape).
-// Round 58 (lane 16, fast): the best-* updates stored plane, depth, type, index 63; the root kept as a double
-// with the reciprocal `(real)(1.0 / root)` 397 (456 bytes, sphere helper outlined); the normal copied from the
-// difference and scaled in place on the plane 397 (456); the radius test as `!(distance_squared >= r * r)` 58;
-// the squared distance as a double 397 (456). Repeats: unit-z default before the epsilon test 174 (689 bytes),
-// a radius local after the normal 62 (672 bytes).
-// Round 15 (lane 17, fast with 0x19cb90/0x245bd0/0x245d80/0x2461a0): the sphere passed by reference 57; flat
-// i, k, j sum with the reciprocal in the call 61; a named i + k partial plus the j square 59; the
-// unit-z arm through the normal member, unit z first then separate zeros 61; a scalar point-to-point
-// squared-distance helper (no vector of its own) beside the difference 307 (776 bytes), with the
-// difference made inside the radius test 227 (722): the subtractions are still not merged. Diagnostic:
-// the unit-z arm's 1.0 read from a named global stops the 1.0 hoist (retail's fsqrt block) 153 (681 bytes).
-// Round 17 (lane 17, fast): the difference from a by-value helper 397 (sphere helper outlined, 456 bytes);
-// length_sq3f(&d) with the normal by fields 152 again (every product then in place and 1.0 loaded in each
-// arm, as retail, but the difference and sum run k, j, i); the scale helper taking the vector by value
-// 397 (outlined; 0x2461a0 84); flat i, k, j with the existing vector3f_scale 61; the normal through the
-// existing scaled_difference3f from the center and point 222 (722 bytes: subtractions recomputed).
-// Round 44 (lane 13, fast with the file's other functions): the scale helper's k product written scale-first
-// 57 (same code: products are canonicalised); the radius test as `distance_squared < r * r` on the current sum
-// 57; a named `radius_squared` 57; the epsilon test as `g_45dbd8 < distance` 57 (all same code); the outer
-// function single-exit with a found flag 131 (672 B).
-// Round 49 (lane 10, fast): the depth test folded into the shape tests as `(...) && best_depth < depth` 57 (same
-// code); one difference component copied into a named scalar for the sum (0x2461a0's lever): j or k in the
-// j,k,i sum 57, i 61, j or k in an i,j,k or i,k,j sum 59; the sphere test as `distance_squared < r * r` with
-// length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
-// `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
-// the sphere helper 57 (no symbol-count rotation here).
-// Round 24 (lane 17, fast with 0x2461a0/0x245bd0/0x245d80): diagnostic dead temps 1-7 at this function's top 57
-// each except 6 (171, 669 bytes: a spill), so the temp count does not set these operand orders; the squared distance
-// through the existing accumulating helpers of src/unknown_2ba3e0.cpp (k, i, j / k, j, i statement sums through the
-// pointer) 150/152, each with the dot's inputs swapped and the unit-z zeros stored separately 150/152.
-// Round 37 (lane 15, fast with 0x2461a0/0x245bd0/0x245d80): ours multiplies copies of the scale for x and z
-// (retail multiplies the x and z differences in place, the helper's written order); the scale renamed
-// inverse_distance 57 and the difference renamed to_point 57 (names do not move the operand order); the sum
-// as `(real)(i * i) + (real)(k * k) + (real)(j * j)` 61; the sum through the array view
-// `d.n[0] * d.n[0] + d.n[2] * d.n[2] + d.n[1] * d.n[1]` 171 (669 bytes: differences and sum run j, k, i);
-// the sphere helper declared before this function and defined after it 57 (same code). Diagnostic (initialised
-// dead long temps at the top, k = 1..7): 57 57 57 57 57 171 57, the products never go in place.
-// Round 49 (lane 10, fast): the depth test folded into the shape tests as `(...) && best_depth < depth` 57 (same
-// code); one difference component copied into a named scalar for the sum (0x2461a0's lever): j or k in the
-// j,k,i sum 57, i 61, j or k in an i,j,k or i,k,j sum 59; the sphere test as `distance_squared < r * r` with
-// length_sq3f, vector3f_scale(&d, 1.f / distance, &plane->n), vector3f_assign(&plane->n, 0.f, 0.f, 1.f) and
-// `distance > 0.f` 152, with the j,k,i sum 61, with shape_scale3d 61. Diagnostic: one to three dead locals in
-// the sphere helper 57 (no symbol-count rotation here).
-// Round 151 (lane 4, fast): the depth as `-(distance - sphere->radius)` 165 (682 bytes); the scale arm written
-// field by field (`d.i * scale`, `scale * d.j`, `d.k * scale`, diagnostic) 57 (same code); the matched 0x2461a0's
-// form, a named `d_j` copy with a statement sum: i, k, j 57; that with the normal by fields reading `d_j` 57; k, i,
-// j (0x2461a0's own order) 59. No existing helper squares only i and k through a pointer.
-// Round 342: Complete nondegenerate/degenerate normalization predicates in bool/byte/word/long native storage: 57/57/57/57/57/57/57/57.
-// Original complete body restored; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {
@@ -469,11 +304,9 @@ bool function_2461a0(
 	bool result = false;
 	vector3f d;
 	vector3d_from_points3d(point, &sphere->center, &d);
-	real d_j = d.j;
 	real radius_squared = sphere->radius * sphere->radius;
-	real c = d.k * d.k;
-	c += d.i * d.i;
-	c += d_j * d_j;
+	real c = shape_square_sum(d.k, d.i);
+	c += d.j * d.j;
 	c -= radius_squared;
 	if (0.f >= c)
 	{
@@ -483,7 +316,7 @@ bool function_2461a0(
 	else
 	{
 		/* retail sums these in this order */
-		real b = direction->i * d.i + d.k * direction->k + d_j * direction->j;
+		real b = direction->i * d.i + d.k * direction->k + d.j * direction->j;
 		if (b > 0.f)
 		{
 			real a = direction->j * direction->j + direction->k * direction->k + direction->i * direction->i;
@@ -505,7 +338,7 @@ bool function_2461a0(
 		vector3f scaled;
 		shape_scale3d(direction, *t, &scaled);
 		plane->i = scaled.i - d.i;
-		plane->j = scaled.j - d_j;
+		plane->j = scaled.j - d.j;
 		plane->k = scaled.k - d.k;
 		if (function_30bf0(&plane->n) == 0.f)
 		{
@@ -513,7 +346,7 @@ bool function_2461a0(
 			plane->j = 0.f;
 			plane->k = 1.f;
 		}
-		plane->d = dot3f((vector3f const *)&sphere->center, &plane->n) + sphere->radius;
+		plane->d = dot3f(&plane->n, (vector3f const *)&sphere->center) + sphere->radius;
 	}
 	return result;
 }
