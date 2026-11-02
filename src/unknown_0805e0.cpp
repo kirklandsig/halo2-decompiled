@@ -194,6 +194,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 59 (135 bytes; compile-only it hoists the mask into AL and builds the entry in place, but next shares the index
 // register), the same with the result declared after the index 59, with `else index = next` 59; a named `admitted`
 // bool with early returns and a successor local 49.
+// N301: Cheap-gated complete native identity value, nested/continue with result/direct
+// completion 52/56/52/56; native identity pointer counterparts 43/52/43/52.
+// Value forms also regress both matched callers; all restored. Early ESI, successor and mask remain.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -689,6 +692,9 @@ void function_1537f0(s_profile_record *record);
 // zeroed after the record initializer in an index loop 78 (238); the links as four statements in retail's store
 // order on the pointer walk 53 (same code); flags and timestamp as two stores on the pointer walk 62 (253); the index
 // loop with both 80 (236). The compile-only build cannot inline 0x1537f0 (another file), so it does not reproduce this.
+// N301: Pointer/no-source-tail invariant identity/source/both/native immutable identity
+// 83/79/82/79; each with the destination zero-tail before construction 85/82/88/82.
+// All restored; identity homes still fold and the native entry-end bound remains absent.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1164,6 +1170,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
 // with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
 // the declarations reversed, upper assigned first and the count path upper first 370.
+// N301: Standard directional copy forward/backward/both 393/387/386;
+// direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
+// All restored; initial admission/removal and upper-bound register ownership remain.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

@@ -647,6 +647,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 90/143/90/143/90/143/90/143. Native remaining-count widths do not free the SSE conversion/rotation slot;
 // the named phase still grows the frame. Original complete body, rotation input snapshots, radius reference
 // and inherited local qualifier restored; radius schedule, ring conversion and rotation spill remain.
+// N301: Complete trace/distance/origin scope ends at point before collision, with
+// original/real short marker and aggregate/library fallback transfer 90/90/90/90;
+// each with the outer ring phase 143/143/143/143. All restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
