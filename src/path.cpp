@@ -929,6 +929,9 @@ bool function_2715a0(byte *buffer)
 // (retail's setg) and per-case `child->depth = node->depth + N` stores with case 2 reading `child->unknown14`, all
 // together: 486 at 2076 bytes (same count; opcode-only alignment 121 -> 104, the closest structure so far). The
 // four-register rotation (state EBX/EBP) remains; the compile-only harness puts state in EDI, so it cannot screen it.
+// Round 507: Embedded heap/node/heap+node/hash/heap+hash/node+hash/all/all-after-defaults
+// bases 486/568/568/486/486/568/568/568. Node-base forms shorten to 2004/2076 bytes;
+// state/node/link homes still differ. Original complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

@@ -498,6 +498,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // through a pointer 716 (frame 0x120), the same with the outer test kept out 716, returning a bool 820 [439] (3340
 // bytes, frame 0x11c); both side-point pairs through one inline 719 (same code), with those two helpers 716/820.
 // The entry hoist of the radius into XMM5 stays in every form, a volatile read of it included (772, 726).
+// Round 504: shared planar/edge-distance/normalized-sweep differences, seven subsets
+// 723/719/719/723/723/719/723; full graph with native sector-result records 723.
+// Original helpers, native workspaces and body restored; frame 0x124/0x114 remains.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

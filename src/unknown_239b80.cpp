@@ -681,6 +681,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // for/while/do-while 129/129/128; if/else fraction 249 (880 bytes); current after the distance through points[i] 249; named
 // size 249; `short last` 273; sides in a `bool[2]` 259 (frame +8, element 1 still CL); volatile previous side (diagnostic,
 // removed) 246. What it takes is a third read of count near the loop; no natural source for it found.
+// Round 507: Complete paired coordinate differences or absolute errors, xy/yx and
+// first/neighbor peer priorities, 129/143/147/151 each. Count ECX, prior-side byte and
+// SIMD homes remain; original equality helper and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

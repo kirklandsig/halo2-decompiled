@@ -3176,6 +3176,10 @@ struct s_voice_route_choice
 // Round 502: settings exclusion-mask production at iteration/entry, original/element
 // receivers 428/396/426/383; with conditional radio 395/410/400/410. Original
 // positive-mask observations, mixer workspaces and body restored; entry/cursor homes remain.
+// Round 511: live scalar mode-field pointer/reference receivers with bitwise/conditional
+// radio 363/363/411/411; with shared headset player bit
+// 391/391/411/411. Original body restored; entry saves, cursor bias
+// and tail priority merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3441,6 +3445,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 241: Route output initialized at relay entry/member result/member-set/after local delivery
 // 163/163/163/139; the same boundaries with an independent packet cursor 165/167/168/168.
 // Original route initialization, live count reads and complete body restored.
+// Round 511: consumed result advances before dispatch, after/before size admission,
+// with original/admission byte debit 163/172/176/176; unsigned ordinals
+// 163/172/176/176. Original body restored; channel/cursor/member
+// and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

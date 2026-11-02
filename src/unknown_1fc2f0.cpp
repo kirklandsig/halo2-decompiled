@@ -469,6 +469,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 461: Final tracked velocity/location native/memcpy/memmove pairs, excluding both
 // native, with direct tracked parameter: 99/102/99/99/102/100/100/109.
 // Original complete transfers, prediction/correction graph and parameter storage restored.
+// Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
+// then all with correction publication, without the own-parameter address read:
+// 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -1509,6 +1509,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
 // paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
 // release/event homes remain. Earlier terminal-only short work preceded this graph.
+// Round 506: native event category/location/both on paired setters 140/140/140; each
+// with actual filled-point consumption 158/158/158; signed category/location 140;
+// complete graph with accumulated spin arm 189. Original types and full body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
