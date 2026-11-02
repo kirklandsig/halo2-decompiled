@@ -2256,6 +2256,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 359: Complete spatial/countdown arm priorities 4/0/7/5, 7/4/0/5, 0/4/7/5,
 // 5/4/7/0, 0/5/4/7, 7/0/5/4, 5/7/0/4, 0/7/4/5: 469/473/469/478/478/492/476/473.
 // Original arms and full body restored; actor/state ownership and first-point home remain.
+// Round 361: Complete case-one/fallthrough group after arms 4/7/0/5/9/10/12/11:
+// 625/618/618/624/620/628/618/613 (fast control 485; full 469). Original full
+// case graph and body restored; actor/state ownership and first-point home remain.
+// Round 363: Complete native CRT vector publications turning/state/current, subsets 1/2/4/3/5/6/7
+// 485/485/485/485/485/485/485; all with facing input copy 485 (fast control 485; full baseline 469). Original
+// transfers and body restored; actor/state registers and first-point home remain.
+// Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
+// existing actor perception view: 485 each (fast control 485; full 469). Original complete
+// record layout, observations and executable body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

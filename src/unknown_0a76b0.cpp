@@ -96,8 +96,11 @@ struct s_unit_action_unit
 	byte unknown174[0x1fc - 0x174];
 	short seat_index;
 	byte unknown1fe[0x212 - 0x1fe];
-	char current_weapon_index;
-	char current_secondary_weapon_index;
+	union
+	{
+		struct { char current_weapon_index; char current_secondary_weapon_index; };
+		char current_weapon_indices[2];
+	};
 	byte unknown214[2];
 	char weapon_slots[2];
 	long weapon_object_indices[4];
@@ -847,7 +850,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
-// score 309 (was 318): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -881,6 +884,8 @@ extern vector3f *g_4687b0;
 // seven subsets, then all with the uninitialized type declaration before the
 // released index: 309 each. All capture points fixed; original complete body
 // restored. Definition/index/type/direction homes and offset/SSE schedules remain.
+// Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
+// 309/309/309/309/309/309/309/308. Original executable source restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1358,7 +1363,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 136 (was 136): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
+// score 95 (was 136): frame 0x18 agrees; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1396,6 +1401,10 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
 // direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
 // extra frame word, second entry lookup and hand transport remain.
+// Round 364: Actual current-weapon array view, long/short slot, Boolean/direct hand
+// and conditional/branch event: 136/203/144/142/139/205/95/188. Keep the real array,
+// direct bounded hand and branch event with the original long slot: plain 95, 606/604 bytes.
+// All other full-image measurements stay unchanged; entry table and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1416,7 +1425,7 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 
 		for (i = 0; i < 2; i++)
 		{
-			if ((&unit->current_weapon_index)[i] == slot)
+			if (unit->current_weapon_indices[i] == slot)
 			{
 				function_e8620(unit_index, primary);
 				return;
@@ -1441,8 +1450,8 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 				return;
 			}
 
-			function_d0870(weapon_index, unit_index, hand != 0);
-			(&unit->current_weapon_index)[hand] = (char)slot;
+			function_d0870(weapon_index, unit_index, hand);
+			unit->current_weapon_indices[hand] = (char)slot;
 			unit->weapon_ready_times[slot] = g_510c54->game_time;
 
 			bool animate = function_ee8a0(unit_index, primary != false);
@@ -1450,7 +1459,9 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 			function_fff40(weapon_index, silent, immediate);
 			if (!silent)
 			{
-				long type = primary ? 0x14 : 0x15;
+				long type = 0x14;
+				if (!primary)
+					type = 0x15;
 
 				if (animate)
 					type = 0x16;
@@ -1713,7 +1724,7 @@ void __stdcall function_191fab(long definition_index, long value);
 void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 60 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
+// score 60 (was 60): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
@@ -1745,6 +1756,11 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Shared player lookup with direct reporting argument 60.
 // Only one pure player observation and direct reporting value selected; ordinary confirms 60 at 392/388.
 // Frame reuse agrees; request/weapon homes and retail getter-call expansion remain.
+// Round 362: Tested pickup-result / nested admission / mode-table case order, seven subsets; then tested result with shared mode.
+// 61/60/62/61/62/62/62/128. Original executable source restored.
+// Round 364: Real shared request payload, pointer/direct access, original/entry result,
+// original/split admission: 60/60/130/130/60/60/130/130.
+// Original request union, body and input observations restored; request/weapon homes remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

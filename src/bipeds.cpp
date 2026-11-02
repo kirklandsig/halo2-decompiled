@@ -3235,6 +3235,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
 // the native point declaration first 367. Two-point lead rejected; original
 // alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
+// Round 365: Shared world-offset/placement-difference-plus-origin/final-displacement
+// producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
+// sum 364. Exact-length 364/363 gains are below threshold. Original complete body
+// restored; matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3932,6 +3936,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // ranks, trigonometric homes and rotation/basis carriers remain.
 // M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
 // M306: Existing rotation helper force-inline on the original retained expression 145; restored.
+// Round 361: Existing rotation input/result by value, crossed with native axis
+// value, staged cross and shared dot: 329/402/329/412/318/490/319/463. Original
+// in-place helper and full body restored; normalization SIMD ranks and trig/rotation
+// homes remain. Alternate dot grouping was exact-only and is restored.
 // Round 470: Repeated forward-field receiver at first rotation/before normalization,
 // each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
 // normalization SIMD ranks and trig/rotation/basis homes remain.
@@ -4394,6 +4402,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
 // Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
 // callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
+// Round 361: Natural-input velocity setter/direct actor test/separate impulse,
+// subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
+// Every corrected form loses matched callers through the input convention; original
+// body restored. An unused-address preparation 198 is excluded, not a gain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
