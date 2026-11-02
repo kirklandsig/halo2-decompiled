@@ -1757,6 +1757,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Round 364: Real shared request payload, pointer/direct access, original/entry result,
 // original/split admission: 60/60/130/130/60/60/130/130.
 // Original request union, body and input observations restored; request/weapon homes remain.
+// Round 366: Native admission field and input-only weapon/pickup contracts, seven
+// subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
+// interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
+// static 119/128/120/128. Original fields, six calls and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

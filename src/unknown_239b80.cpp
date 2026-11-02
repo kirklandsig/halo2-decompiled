@@ -726,6 +726,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Round 364: Coordinated long/int input-count contracts: direct 283/283; reused signed-word
 // count at entry 198/198 or alias join 199/199; entry word-normalized parameter 296/296.
 // All restored; count ECX, prior-side byte and SIMD homes remain.
+// Round 366: Actual crossing result before the epsilon collectors, bool/byte/short/long
+// 247/247/300/299; with prior state advanced at that producer 232/232/311/310.
+// Advanced bool/byte state recovers count ECX and both side-byte homes, but adds
+// crossing-result work and leaves SIMD homes different. Original complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -4035,6 +4035,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
 // 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
 // at 176 by the full check; frame/length unchanged, zero and vector staging closer.
+// Round 366: Actual override endpoints, byte/native records, less-than/not-equal
+// bounds and branched/conditional empty endpoints: 262/262/253/253/262/262/253/253.
+// Original indexed search and full body restored; first-match/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
