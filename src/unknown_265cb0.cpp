@@ -1977,6 +1977,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // DH297: Late score/facing/approach zero lifetimes, subsets 1-7, then all with
 // native byte positive: 745/715/749/365/688/704/749/749. Score/facing release shrinks
 // the frame below 0x80; original early zeros, predicates, observations and whole body restored.
+// Round 535: independent first/second/both real-table pointer walks, then native long
+// first/second/both ordinal combinations: 387/369/433/389/372/433/456/456. Original scans and body
+// restored; entry operand order, established/visible bytes and direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

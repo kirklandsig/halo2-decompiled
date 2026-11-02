@@ -1367,6 +1367,9 @@ struct s_looping_detail_request
 // Round 473: Complete failure-valued bool/byte/short/long completion, with
 // request/native-local audible offsets: 144/144/143/142/168/168/168/167.
 // All restored; first-player expansion and detail/offset homes remain.
+// N322: Original positive byte/char/short/word/long/dword completion carriers:
+// 131/131/135/135/134/134; native long/byte admission-produced results 176/159.
+// Original common tail, result, native offset and complete body restored; first-player expansion remains.
 // Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
 // 154/173/155/162/136/169/151/149; original complete body restored.
 // DH301: Whole detail-input native/immutable/assignment/memcpy ownership, each with
@@ -2352,6 +2355,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
 // Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
 // Round 308: and record/track ownership remain.
+// Round 370: Actual byte/char/word/short request-flag formals 617/617/601/601;
+// paired with signed-word class payload 617/617/601/601 (fast control equals full 597).
+// All three declarations and original body restored; entry true/flags, record/track homes and loop padding remain.
 // DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,

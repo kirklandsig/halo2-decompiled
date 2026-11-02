@@ -208,6 +208,10 @@
 // output modes 959/959/956/962; selected-factor counterparts 997/997/994/1000. Original products,
 // repeated clamp arms, mode publication and sixth-component conversion restored; frame and
 // shape/basis/wave homes remain.
+// Round 333: Perspective rows through separate existing scale/add producers, cross/output
+// receivers, complete rows/paired phases and separate/nested returned receivers:
+// 772/772/844/766/925/837/909/839. All regress; original perspective expressions, helpers,
+// frame graph and sixth-component conversion restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1159,6 +1163,10 @@ void __stdcall function_43720(s_43740_input *input)
 // count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
 // 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
 // homes remain.
+// M319: Native subordinate header production via sparse member/mutable aggregate/
+// readonly aggregate/sparse library copy, count from published request 79/105/105/79;
+// count from producer header 81/105/105/81. Extra producer forms require exact
+// equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

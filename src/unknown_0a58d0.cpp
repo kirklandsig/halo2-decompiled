@@ -316,6 +316,10 @@ struct s_z_state_world
 // the byte first 21, the record first 21; `entities + i` 21; a byte-offset record pointer from the database 21;
 // an entities pointer local 34; an offset local with byte casts 45/45 (143); the offset local with global reads
 // 21/21. Every form with the byte before the record shares `add eax, db` and folds the field offsets.
+// This round: two world pointers at entry/inner scope/as const/as references/with the shared world
+// view 11 each; a state pointer with the direct database read 11; bitwise accepted-state test 60
+// (145 bytes); reversed formals with one world local 18 (all six matched callers regress). Original
+// body, signature and call sites restored.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {

@@ -641,6 +641,9 @@ extern "C" void _ReadWriteBarrier(void);
 // top 44, an early return for a busy actor 46 (212 bytes), the NONE test in a named bool 44; the state after the
 // actor with the barrier after both 6. Matched retail callbacks load a parameter in the entry block only when two
 // sibling paths use it (0x1b22e0, 0x29f370, 0xa9120).
+// Round 125: pointer names reversed 6; split state initialization 6; split actor initialization 6;
+// actor declared first 6; outer comparison reversed 6; threshold written > 6 gives 8; memcpy point 6;
+// const slot parameter 6; final store before the outer test 52 (189 bytes).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
