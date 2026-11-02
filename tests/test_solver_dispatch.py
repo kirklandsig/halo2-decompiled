@@ -800,21 +800,27 @@ def test_coupled_rows_with_body_storage_aliases(solver_images, kind, precision):
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 def test_contact_pair_groups_then_friction(solver_images, precision):
-    # Local retail disassembly identifies the two pair entries, their four
-    # outcomes (both, first, second, neither), and the following friction entry.
+    # Local retail disassembly identifies both pair entries in each pass, the
+    # four solve outcomes, and each pass's following friction entry.
     # Coverage is measured only in retail; compiled outputs use compare_case.
     coverage = dict.fromkeys((0x31c9c6, 0x31cd52, 0x31d1fb,
                               0x31cadb, 0x31cc2b, 0x31ccb1, 0x31cd39,
-                              0x31ce74, 0x31d0dc, 0x31d15a, 0x31d1e5), 0)
+                              0x31ce74, 0x31d0dc, 0x31d15a, 0x31d1e5,
+                              0x31e161, 0x31e223, 0x31e2e9), 0)
     for pair_count in range(1, 6):
         for seed in range(32):
             before = coverage.copy()
-            compare_case(solver_images, contact_group_case(pair_count, seed),
-                         precision, ('contact group', pair_count, seed), coverage)
+            snapshots = compare_case(solver_images, contact_group_case(pair_count, seed),
+                                     precision, ('contact group', pair_count, seed), coverage)
+            assert snapshots[0] == snapshots[1], (pair_count, seed, precision)
             iterations = [1, 2, 4][seed % 3]
             assert coverage[0x31c9c6] - before[0x31c9c6] == (pair_count + 1) // 2 * iterations
             assert coverage[0x31cd52] - before[0x31cd52] == pair_count // 2 * iterations
             assert coverage[0x31d1fb] - before[0x31d1fb] == iterations
+            # Residuals use the same bounded pair grouping, then friction.
+            assert coverage[0x31e161] - before[0x31e161] == (pair_count + 1) // 2 * iterations
+            assert coverage[0x31e223] - before[0x31e223] == pair_count // 2 * iterations
+            assert coverage[0x31e2e9] - before[0x31e2e9] == iterations
     assert all(coverage.values()), coverage
 
 

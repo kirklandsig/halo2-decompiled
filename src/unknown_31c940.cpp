@@ -388,7 +388,84 @@ static __forceinline void solve_unilateral_linear(float target,
 	}
 }
 
-// score 2074 (was 2144): retain row fields and transfer spilled contact bits.
+static __forceinline void update_linear_limit_values(float impulse, solver_linear_row_31e7b0 const *row,
+ solver_velocity_31c940 *a, solver_velocity_31c940 *const volatile &b,
+ __m128 &linear_b, __m128 &angular_b, float *result)
+{
+	__m128 scalar = _mm_set_ss(impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_b = _mm_sub_ps(linear_b, delta_b);
+	__m128 angular_change_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_change_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_change_a);
+	angular_b = _mm_add_ps(angular_b, angular_change_b);
+	*result += impulse;
+}
+
+static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
+{
+	solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)cursor;
+	// Form the two angular sums before completing their linear projections.
+	__m128 second = a->angular;
+	__m128 work = row[0].a;
+	__m128 other = b->linear;
+	__m128 axis = row[0].b;
+	__m128 first = second;
+	first = _mm_mul_ps(first, work);
+	work = row[1].a;
+	second = _mm_mul_ps(second, work);
+	work = a->linear;
+	work = _mm_sub_ps(work, other);
+	other = b->angular;
+	__m128 product = other;
+	__m128 relative_for_first = work;
+	product = _mm_mul_ps(product, axis);
+	axis = row[1].b;
+	other = _mm_mul_ps(other, axis);
+	axis = row[0].linear;
+	second = _mm_add_ps(second, other);
+	first = _mm_add_ps(first, product);
+	product = row[1].linear;
+	work = _mm_mul_ps(work, product);
+	second = _mm_add_ps(second, work);
+	// Reduce the second row first; its scalar stays live through the first store.
+	work = _mm_shuffle_ps(second, second, 0x55);
+	work = _mm_add_ss(work, second);
+	other = _mm_shuffle_ps(second, second, 0xaa);
+	second = _mm_add_ss(other, work);
+	relative_for_first = _mm_mul_ps(relative_for_first, axis);
+	first = _mm_add_ps(first, relative_for_first);
+	work = _mm_shuffle_ps(first, first, 0x55);
+	work = _mm_add_ss(work, first);
+	other = _mm_shuffle_ps(first, first, 0xaa);
+	other = _mm_add_ss(other, work);
+	__m128 projected_a = other, projected_b = second;
+	float scalar_a, scalar_b;
+	_mm_store_ss(&scalar_a, projected_a);
+	cursor += 6;
+	result += 2;
+	cursor[-6].m128_f32[3] -= scalar_a;
+	_mm_store_ss(&scalar_b, projected_b);
+	cursor[-3].m128_f32[3] -= scalar_b;
+}
+
+static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
+{
+	__m128 axis_a = row->a, axis_b = row->b;
+	__m128 va = a->angular, vb = b->angular;
+	__m128 v = _mm_add_ps(_mm_mul_ps(va, axis_a), _mm_mul_ps(vb, axis_b));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+	row->b.m128_f32[3] -= projected;
+}
+
+// score 2136 (was 2074): reconstruct grouped residual projections and dispatch.
 // Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -677,13 +754,25 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 11:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
+				__m128 *linear_b_pointer = &body_b->linear;
+				__m128 *volatile angular_b_pointer = &body_b->angular;
 				do
 				{
-					float velocity = linear_velocity(row, a, b).value * load_velocity_scale(step);
+					__m128 relative = _mm_sub_ps(a->linear, *linear_b_pointer);
+					__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(*angular_b_pointer, row->b));
+					__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+					float projected;
+					_mm_store_ss(&projected, xyz);
+					float velocity = projected * load_velocity_scale(step);
 					float low = (row->linear.m128_f32[3] - operation_float(op, 4)) * load_error_scale(step) - velocity;
-					if (low > 0.0f) apply_linear(low * row->a.m128_f32[3], row, a, b, result);
+					if (low > 0.0f)
+						update_linear_limit_values(low * row->a.m128_f32[3], row, a, b, *linear_b_pointer, *angular_b_pointer, result);
 					float high = (row->linear.m128_f32[3] - operation_float(op, 8)) * load_error_scale(step) - velocity;
-					if (high < 0.0f) apply_linear(high * row->a.m128_f32[3], row, a, b, result);
+					if (high < 0.0f)
+						update_linear_limit_values(high * row->a.m128_f32[3], row, a, b, *linear_b_pointer, *angular_b_pointer, result);
 					++row; ++result; op += 12;
 				} while (*op == 11);
 				terms = (__m128 *)row;
@@ -804,31 +893,18 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			}
 			case 5:
 			{
-				do
-				{
-					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-					float velocity_a = project_linear_velocity(row, a, b).value;
-					float velocity_b = project_linear_velocity(row + 1, a, b).value;
-					row[0].linear.m128_f32[3] -= velocity_a;
-					row[1].linear.m128_f32[3] -= velocity_b;
-					terms += 6;
-					result += 2;
-					op += op[1];
-				} while (op[2] == 5);
-				break;
+				// Consume up to two paired records, then join the friction path.
+				update_residual_pair(terms, result, a, b); op += op[1];
+				if (op[2] != 5) break;
+				update_residual_pair(terms, result, a, b); op += op[1];
+				if (op[2] != 6) break;
 			}
 			case 6:
 			{
 				{
-					solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-					float velocity_a = project_linear_velocity(row, a, b).value;
-					float velocity_b = project_linear_velocity(row + 1, a, b).value;
-					row[0].linear.m128_f32[3] -= velocity_a;
-					row[1].linear.m128_f32[3] -= velocity_b;
-					terms += 6;
-					result += 2;
+					update_residual_pair(terms, result, a, b);
 					solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)terms;
-					spin->b.m128_f32[3] -= angular_velocity(spin, a, b);
+					subtract_angular_residual(spin, a, b);
 					terms += 2;
 					++result;
 					op += op[1];
@@ -842,7 +918,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				do
 				{
-					row->linear.m128_f32[3] -= project_linear_velocity(row, a, b).value;
+					row->linear.m128_f32[3] -= linear_velocity(row, a, b).value;
 					++row; ++result; op += op[1];
 				} while (op[2] == 3);
 				terms = (__m128 *)row;
@@ -853,7 +929,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
 				do
 				{
-					row->b.m128_f32[3] -= angular_velocity(row, a, b);
+					subtract_angular_residual(row,a,b);
 					++row; ++result; op += op[1];
 				} while (op[2] == 4);
 				terms = (__m128 *)row;
