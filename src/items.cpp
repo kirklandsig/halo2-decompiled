@@ -647,6 +647,9 @@ struct s_item_collision_bsp
 // Round 309: Genuine uninitialized final-linear/final-angular/both-plane output declarations reserved at
 // entry, subsets 1..7, then all after admission: 213/211/213/211/213/211/213/213. Original declaration lifetimes
 // and body restored; plane width, plane joins and spin/speed homes remain.
+// Round 289: Consistent item/matrix/collision reads at each use, subsets 1..7, then all with
+// paired shared final sums: 459/328/443/308/474/331/447/474. All regress; original receivers,
+// observations, helper calls, protected plane interface and complete body restored.
 // Round 312: Both getter results consumed through actual returned plane inputs, with
 // scalar/native untransformed publication, original/setter transformed normals and both
 // plane declaration orders: 261/283/261/283/261/283/261/283. Native plane publication
@@ -1186,6 +1189,10 @@ struct s_item_flags_view_10b850
 // angular projection producers, subsets 1..7, then all unsigned counters: 862/871/970/856/866/833/929/929. Some loops
 // reach frame 0x148 but regress. Original output producers and body restored; frame, entry Boolean
 // and native workspace homes remain.
+// Round 289: Narrow initial query-ray lifetime with early collision constant, narrow flow-side
+// scope and complete rotation kij publication, eight subsets: 887/886/887/886/887/886/887/886.
+// Frame falls to 0x13c and extent 4068 but scores regress; exact-only query result, original scopes,
+// rotation helper and complete executable body restored.
 // Round 312: Actual private producer output pointers consumed at basis-cross, cross-normalizer
 // and carrier-add motion boundaries, subsets 1-7, then all with library matrix transfer:
 // 813 each. Matched cross-helper sibling preserved throughout; all helper interfaces,
@@ -1586,6 +1593,12 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P264: constant accumulator before object acquisition, bool/byte/short/long
 // 143/144/160/160; between object/tag acquisition 143/144/160/160.
 // Original result lifetime, paired point setters, two-use spin and body restored.
+// P269: shared contact/event point with owner memcpy/memmove at initialization, magnitude,
+// location joins 137/137/140/165/165/164; complete object/team/player publication at the
+// latter two joins 132/138; the magnitude-join field publication with the common active-scope
+// point reached 132 plain at 892/892. Not kept (coordinator): the same form as N315 (owner copy
+// written out as three field stores, the contact and event points folded into one local), a
+// steering form at exactly the keep bar. Body restored.
 // N315: Complete owner-field publication (P/O/T: player/object/team)
 // POT/PTO/OPT/OTP/TPO/TOP
 // 138/138/137/136/138/137; metadata/location joins 138/139. OTP and OPT

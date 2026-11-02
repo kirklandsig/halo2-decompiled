@@ -237,6 +237,17 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Retail's byte homes: transition +0x11, reset +0x12, result +0x13 (after four pushes). Retail also calls
 // get_data_4a00 (0x5b080, its only out-of-line call site; 0x7e210 and network_session_client.cpp inline it)
 // where ours inlines it. Restored.
+// Round 40 (m3 lane 2, fast; all restored; BLOCKED-BY 0x5b080: retail calls it at this site only, ours inlines it and keeps the state in ESI, and
+// per-site inlining has no source lever without a new noinline). A rewrite from retail's flow (a ready flag from the player match, cleared in each
+// failure, set from 0x72140; the mode-7 arms; flags single-exit): fresh opening 473 (1574 bytes, aligned 241); this body's opening 445 (1589, aligned 242,
+// arg_0 in EBX where retail has EBP); declarations swapped 445. Grid on it (fast), in order of arms separate/merged, ready bool/long, reset bool/long,
+// the 0x3c pointer early/late, the property value early/late, kind four by memset/existing setter:
+// 445/482/441/482/443/487/446/483/451/473/446/473/454/481/454/481
+// 460/500/460/500/469/510/462/502/441/479/440/478/454/497/447/487
+// 458/489/458/489/458/490/463/494/433/464/445/474/463/493/453/484
+// 474/503/475/506/487/513/463/498/470/494/470/500/478/503/469/507
+// Best 433 (merged arms, bool ready, long reset, 1589 bytes, aligned 239): six points, and its ready flag is set in failure arms and tested later, so not kept.
+// Merged arms with both bools 458 give retail's frame 0x3e4 and EBP with aligned 202 (1573 bytes). Long ready with separate arms 460, aligned 204 (1571).
 // Round 467: Shared signed entry-state/balance-output workspace with entry declaration,
 // Boolean reset and early property default subsets: 441/441/466/466/455/455/467/467.
 // Secondary-state spill appears, but frame grows to 0x3ec; original workspace/body restored.

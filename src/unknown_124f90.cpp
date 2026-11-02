@@ -2900,6 +2900,12 @@ static inline short sound_voice_find_available_channel(char type)
 // subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
 // Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
 // eight, entry voice/global scheduling and early failure tail remain.
+// DH292: Available-bit intersection / occupied-bit union in the existing finder, original break
+// with byte/committed Boolean results 144/131/147/130; condition-controlled search
+// 159/131/161/133. Original two bitmap tests, helper, result and entire body restored.
+// DH294: Existing shared bitmap test/streaming-set/free-clear operations, seven subsets,
+// 96 each; complete shared-operation graph with explicit committed Boolean success 122.
+// Original private finder, raw bitmap operations, byte result, includes and full body restored.
 // N314: Condition-controlled availability scan with assigned/direct exhaustion results, independent/chained
 // defaults and native byte/committed Boolean results: 134/138/64/128/134/138/64/128. The 64 form (plain,
 // 435/430: frame eight and the later failure tail recovered; entry registers, search exit checks, sentinel
