@@ -683,6 +683,9 @@ void function_117dd0(long index, vector3f *wind)
 // Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
 // observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
 // Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
+// Round 296: Standard native-array acceleration/force/paired-point input transfer subsets 1..7
+// 197/189/188/176/190/202/179; all with standard history/publication transfers 190. Original
+// complete body and include set restored; frame/normal.k cursor agree, preheader and vector scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {

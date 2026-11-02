@@ -635,6 +635,9 @@ struct s_item_collision_bsp
 // original spin products at the common join on those three graphs 328 each; shared float scale
 // with pointer/reference 328 each. Original source observations, random draws, pending-k join and
 // helper interfaces restored; protected plane width and plane/spin homes remain.
+// Round 296: Standard native-array normal/paired-axis/paired-spin producer subsets 1..7
+// 322/272/293/351/414/326/389; all with standard linear addition 375. Normal range capture grows
+// frame to 0xa4; original complete body, protected plane interface and include set restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1145,6 +1148,11 @@ struct s_item_flags_view_10b850
 // projection cosine-product orders ijk/ikj/jik/jki/kij/kji 924 each. All original flow operands,
 // private helpers and complete body restored; frame, entry Boolean publications and
 // carrier/collision/rotation homes remain.
+// Round 296: Standard carrier/linear/angular input-copy subsets 1..7 872/900/880/811/876/871/879;
+// all with standard matrix transfer 896. Angular copy with rotation publication kij/kji 806/814;
+// kij with angular-before-linear capture 805, angular role name 806. The 805 form reaches 4096
+// bytes but plain loses 0x54590 by two reloads; nearby standard include and backward angular copy
+// remain 805 with the same loss. Original body, rotation producer and includes restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1500,6 +1508,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
 // paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
 // release/event homes remain. Earlier terminal-only short work preceded this graph.
+// Round 296: Standard native-array release/damping multiplication and paired event-transfer
+// subsets 1..7 289/231/260/181/278/247/249; all with backward paired event transfer 247. Original
+// helper, setters, body and includes restored; return-byte, release RMW/tail and event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

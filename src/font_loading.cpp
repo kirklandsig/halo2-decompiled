@@ -611,6 +611,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 302: native word store owned by existing pixel helper, pointer/reference output and inline/force-inline:
 // byte parity 107/107/107/107; full parity 208/208/208/208. Original helper and decoder restored;
 // alpha widening, literal assembly and two-run reuse remain.
+// N round 296: Standard endpoint/count-based fill contracts independently in switch/ordinary
+// run families, all eight nonoriginal combinations 138/165/173/214/199/173/194/246. Original
+// decoder, helper and includes restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
