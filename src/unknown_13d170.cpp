@@ -310,6 +310,8 @@ struct s_block_candidate
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
+// Round 248: Native indexed-ring best/array/deletion-iterator entry storage, seven scope subsets
+// and all with coherent object-role names: 347 each. Original scopes, initialization and body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

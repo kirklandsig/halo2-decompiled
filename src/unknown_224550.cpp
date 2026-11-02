@@ -262,6 +262,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
 // 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
 // regress; complete original body and alias-safe helper restored.
+// Round 248: On the native frame/cache graph, branch-produced primary aspects, paired named secondary
+// ratios and cross-phase inverse blend, seven subsets plus inverted primary: 239/245/239/530/529/530/529/529.
+// Six-point primary gain below gate; original tint/UV bodies and arithmetic restored.
+// Combining the new primary-aspect result pair with secondary-first/vertical-first/primary-vertical
+// reciprocal orders and secondary spans first: 245/245/248/246; all complete bodies restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

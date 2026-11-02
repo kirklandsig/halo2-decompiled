@@ -171,6 +171,9 @@ struct s_visibility_bound_record
 // assignment/library copies 485/485/476/476/476/476; indexed/pointer with existing
 // normal scaler 472/460. Original input-plane and output publication restored;
 // entry/table and plane/query homes remain at the 0x74a4 frame.
+// Round 248: Complete independent scalar normal results joined after both transform arms,
+// loop/frustum/view/query declaration scopes with normal-first/distance-first publication: 459 each.
+// Original input plane, scalar lifetimes, publication and zero-scale behavior restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
