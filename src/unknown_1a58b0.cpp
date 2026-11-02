@@ -654,6 +654,9 @@ void function_1a6d80(void)
 // local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
 // pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
 // pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
+// Round 85: count output before the call 6; both output pointers after it 6; count output before and valid
+// output after it 6; output references after it 6; valid store scope 6; count store scope 6; const output
+// parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
@@ -1326,6 +1329,9 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // block 18; a velocity pointer local 18; the point cast to const 18; the nested query's result in a point
 // declared before the clamp 128; the statement query before the body index read 97. Still BLOCKED-BY
 // 0x1d0a20 (src/impacts.cpp is held this round too).
+// Round 86 (KIMI2): entry/scoped multi-use object handle 2/2; body declaration before support 2;
+// clamp declaration first 2; returned point dereference/re-address 2; support/component role names 2;
+// header/unit role names 2; all four role names 2. Original body restored.
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {

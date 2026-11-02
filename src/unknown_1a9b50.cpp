@@ -545,6 +545,9 @@ extern point2f *g_468778;
 // ESI/EDI/EBP, retail in EDI/EBP/ESI, and that rotation dominates the positional score. Restored.
 // Round 304: primary/secondary displacement production in all six uniform coordinate orders,
 // then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
+// Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
+// primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
+// early actor/settings/prop carriers and prediction homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -845,6 +848,9 @@ static __forceinline long real_to_long(real value);
 // Round 232: Complete branch-owned direction distance 382; query scope/names/
 // declaration order 382/382/382; target-velocity receiver and scope/names/both 381/381/381/381.
 // Three-count best rejected; all executable code, query aliases and observations restored.
+// Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
+// dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
+// the object velocity pointer before the magnitude 381 (one count, not kept).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
