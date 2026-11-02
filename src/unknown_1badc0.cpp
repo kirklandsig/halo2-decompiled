@@ -219,6 +219,10 @@ real normalize2d(point2f *arg_0);
 // difference 240 (1034 bytes, aligned 114); the to-center vector initialised from the input and
 // differenced in place 240 (1034 bytes, aligned 115). Lead: the single-exit result plus a fix for the
 // center/vector scheduling (retail copies the input a second time into +0x28 and differences in place).
+// Round 465: ordered native squared-length fold, long/short/signed-byte/int
+// ordinals, original/joined optional-index guard: 267/237/237/267/284/236/236/284.
+// Joined guards change the convention and lose three caller matches. Original sum,
+// guard and complete body restored; output EBP and point/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

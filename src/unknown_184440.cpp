@@ -266,6 +266,9 @@ __forceinline bool function_184448(long arg_0)
 // Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
 // matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
 // basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.
+// Round 465: complete plane input before orientation, native/memcpy/normal-distance/
+// normal setter-distance, at face/entry scope: 987/987/966/973 twice.
+// Original split plane producer and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
