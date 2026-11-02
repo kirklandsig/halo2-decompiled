@@ -3794,6 +3794,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // ray producer + collision miss continue 48; native facing producer + native ray producer + collision
 // miss continue 67; native facing producer + native ray producer + collision miss continue + readonly
 // marker 67; total owns first marker result 141. Original body restored.
+// Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
+// the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
+// j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {

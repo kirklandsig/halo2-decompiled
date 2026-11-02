@@ -3093,6 +3093,10 @@ struct s_unit_flags_14d8b0
 // statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
 // One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
 // scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
+// Round 91: second slot block with both engine globals direct, slots direct alone, engine test
+// direct alone, root walk through object_header_get, late options pointer, second engine result
+// pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
+// All leave +0x304 and the same scratch choices; original helpers and body restored.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
