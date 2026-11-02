@@ -749,6 +749,14 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
 // Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
 // subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
+// Round 115 (lane 7, fast; aligned = difflib count, 601 at 675): bool result re-measured 754 (aligned 609; the
+// epilogue is then duplicated and the failure path threads to its own `xor al, al` exit as in retail, but
+// inline where retail places it last); the failure path as `return false;` 776 (the result's slot goes, frame
+// 0x1f84); bool result with the retry search assigning `found` and one `if (!found)` failure block 746 (2974
+// bytes, aligned 590), with retail's flag loop (short index, `flag` tested per obstacle under
+// `step == count - 1`) alone 752, both 746 (2969 bytes, aligned 571; the failure block then sits last,
+// identical to retail's); the copy loop through a local output count stored once after it 714 (2974 bytes,
+// aligned 634), with the previous combination 749 (aligned 583; retail's copy-loop shape, other registers).
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
