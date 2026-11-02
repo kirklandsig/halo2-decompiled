@@ -312,6 +312,12 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // one path); a global store in 0x1df560 (diagnostic) changes nothing (26). The array pointer in a local at the
 // rider block start 26 (sunk); the same local for the first lookup only 26; an unsigned mask 26; a char team
 // local 121; a byte result 26.
+// Round 152: retail's first lookup leaves the pool global in eax (scaled index ecx, data and then the
+// mask in edx), and its no-call branch targets the instruction after the rider block's global reload
+// (0x1a1edc, past 0x1a1ed7), possibly a late pass acting because eax still holds the value (not tested); ours
+// puts the global and data in ecx and the mask in eax, so nothing survives. The friendly test as a bool
+// `!= NONE && call` local 26, as a flag set under the 0x12c test 26; the type in a long local 26, in a
+// char local 26; a short mask 26.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
