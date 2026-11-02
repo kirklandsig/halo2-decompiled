@@ -305,6 +305,10 @@ static inline void quaternion_transform_vector(
 // memmove/native, memmove/memcpy, memmove/memmove 285/285/319/319/306; both memmove with
 // independent halves/cross components/both 316/321/317. Matrix transfer alone gives frame
 // 0x20; original identities, paired halves, transform helper and full body restored.
+// Round 312: Alias-conditioned native/CRT vector input capture in the existing rotation helper,
+// original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
+// Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
+// paired halves and complete body restored. Quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -996,6 +1000,9 @@ void function_143250(
 // Native typed replay preserves all 83 matrix values and precision boundaries;
 // Full cleanup has frame 0x30c and EAX/ret 4 in preview but regresses and raises a caller score.
 // Original scalar, publication and input graphs restored; frame and homes remain.
+// P264: single-consumer real arithmetic owned by second-band product/sum/all,
+// third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
+// Original scalar graph, workspace, publication phases and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

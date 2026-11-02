@@ -676,6 +676,9 @@ real function_267370(long object_index);
 // Original observations and body restored; early NONE sharing and cross operands remain.
 // Round 295: field-sized library fills for first/second/both invalid handles 357 each;
 // conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
+// DL239: Complete default-forward/stored-forward/up memcpy subsets 1..7 score
+// 98/96/96/98/98/96/96; all memmove 226. Two-point leads rejected; original whole body restored.
+// Frame 0x90 agrees; early NONE sharing, carrier and cross operand homes remain.
 // Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
 // 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
 // Early shared NONE and cross operands remain; every original destination and body restored.
