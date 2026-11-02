@@ -510,6 +510,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // P276: Actual payload signed-selector output/native marker-byte/native outcome-byte
 // contracts, seven subsets, then all with readonly character input: 49 each. Shared
 // Outcome-byte users regress 7 to 22; originals restored. Entry AL and tail roles remain.
+// DH300: Twice-used optional-distance snapshot, native/immutable/outer 49/49/49; with complete
+// movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
+// invalid-first reference publication 110, combined limit/reference forms 192. Original field
+// observations and body restored; entry table/result production, marker setup and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

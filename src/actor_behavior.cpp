@@ -339,11 +339,8 @@ bool __stdcall actor_behavior_6c_update40(long actor_index, s_slot *slot);
 bool __stdcall actor_behavior_wait_start(long actor_index, s_slot *slot);
 short __stdcall actor_behavior_wait_choose(long actor_index, short level, bool active);
 
-extern "C" void _ReadWriteBarrier(void);
-#pragma intrinsic(_ReadWriteBarrier)
 /* behavior 0x6c's start: the unit gets request 0x2c, the point counter and
    the actor's movement state start over */
-/* (without the barrier the stores are reordered: round 39) */
 // @retail 0x1bcee0
 bool __stdcall actor_behavior_6c_start(long actor_index, s_slot *slot)
 {
@@ -354,19 +351,9 @@ bool __stdcall actor_behavior_6c_start(long actor_index, s_slot *slot)
 	request.type = 0x2c;
 	function_e6900(unit_index, &request);
 	((s_counter_behavior_state *)slot)->counter = 0;
-	s_actor_view *actor = actor_get(actor_index);
-	actor->unknown50c = false;
-	actor->unknown5ac = NONE;
-	actor->unknown5b0 = NONE;
-	actor->unknown5b4 = 0;
-	actor->unknown5b6 = 0;
-	_ReadWriteBarrier();
-	actor->unknown4ac = 0;
-	actor->unknown504 = 0;
+	actor_reset_state(actor_index);
 	return true;
 }
-
-#pragma function(_ReadWriteBarrier)
 
 /* behavior 0x6c's evaluate: when the actor reaches a point it stops and
    heads for the next; it never finishes by itself */
@@ -617,20 +604,13 @@ short __stdcall actor_behavior_15_priority(long actor_index)
 
 /* behavior 0x15's start: the actor's movement state starts over and the
    behavior takes the actor's prop */
-/* (the plain stores do not match: round 39) */
 // @retail 0x1c15c0
 bool __stdcall actor_behavior_15_start(long actor_index, s_slot *slot)
 {
 	s_actor_behavior_15_data *state = (s_actor_behavior_15_data *)slot;
 	s_actor_view *actor = actor_get(actor_index);
 
-	*(bool volatile *)&actor->unknown50c = false;
-	*(long volatile *)&actor->unknown5ac = NONE;
-	actor->unknown5b0 = NONE;
-	actor->unknown5b4 = 0;
-	actor->unknown5b6 = 0;
-	actor->unknown4ac = 0;
-	actor->unknown504 = 0;
+	actor_reset_state(actor_index);
 	state->repositioned = false;
 	state->prop_index = actor->prop_index;
 	actor->unknown354 = true;

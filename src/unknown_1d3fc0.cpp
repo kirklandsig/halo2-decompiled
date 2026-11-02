@@ -233,6 +233,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // the cross written out (301 forms), none at 6 or below; a randomized search of helper counts, dot, projection and cross
 // spellings, stopped after about 14 minutes, nothing below 2. Direct up.i flips the i term (102 compile-only, aligned 7) but
 // drops up.i's preload and flips the cross's `up.i * forward.k`.
+// Round 318: Complete normalizer scalar input capture in ijk/ikj/jik/jki/kij/kji order, native
+// vector input and native input with squared magnitude; 110/110/110/110/110/110/342/342. Original
+// whole body and helpers restored. Extra input/output helper contracts 110/110/110, excluded.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

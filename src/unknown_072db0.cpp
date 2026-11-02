@@ -1576,6 +1576,9 @@ struct s_rating_summary
 // P276: Shared value/change/level/lower, summary and identity lexical roles, then
 // joint result roles and all six roles on adjusted-value graph: 31 each. Complete body
 // restored; formatter/count schedule and team/counter homes remain.
+// DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
+// receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
+// Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1929,6 +1932,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Re-measured: a record pointer with the xuid pointer 754 (aligned 364, twice: at the body top / beside the values pointer),
 // online_logon_connected() 729 (2862 bytes, aligned 343), with the record pointer 775. The slot helper's cmovne still needs
 // /arch:SSE (a file-flag decision).
+// M319: Slot index/native row/byte view/flags-address production before the
+// property copy, admission helper kept after it: after identity 709/709/709/761;
+// before identity 709/709/709/767. One-use producers require a match; all
+// restored. User cursor base/home, slot conversion and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
