@@ -267,6 +267,10 @@ void player_action_initialize(s_player_action *arg_0);
 // only a lookup inside the loop gives unit as base, and it also flips the out-of-line copy and moves the lookup
 // below the NONE test (the LTCG build then shifts everywhere, 316). BLOCKED-BY 0xcbec0 (contributor) as far as
 // found: the inlined order needs a cause outside this body.
+// Round 41 (lane 15, fast): the cycle loop's count read as `*(field_23e + index)` 134 (the same [edx + edi]);
+// a named count-array pointer in place of the unit pointer 309; the first count test as `(short)... == 0` 134
+// (still `mov al; test al, al` against retail's movsx/test ax); the 0x60 and 0x4630200 masks tested apart
+// alone 174 (1493 bytes); the cycle index as a long 183.
 // Round 50 (m3 lane 11, fast, all on round 27's score-1 form, reproduced at 1): 1-8 unused locals at the top 1
 // each; permuter 600 s, 21 tries, nothing (its reduced image scores the form 289); one unit-index local for the
 // whole selection block 366; the first unit lookup through a header pointer 1; the cycle result through a named

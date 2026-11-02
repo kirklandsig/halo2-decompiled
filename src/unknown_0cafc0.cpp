@@ -161,6 +161,8 @@ point3f *function_b9ef0(long object_index, point3f *result)
 }
 
 // score 2 (was 2): only constant-one and crouching-height load scheduling remains; frame 0xa4 and all other instructions agree.
+// Round 74: named call result in a ternary/if-else 2/2; immutable crouch 2; immutable/read-only unit 2/2;
+// immutable inner tag pointer 2; shared height-pair pointer alone/with immutable crouch 2/2. Opening graph restored.
 // Round 73: definition-pointer rename 2; direct explicit read-add-store 17; explicit store on the two-local graph 2;
 // standing-only/crouching-only temporaries 2/2; named total with explicit store 2; early constant-one 2;
 // raw crouching-height load before the calls 12. Opening graph restored.

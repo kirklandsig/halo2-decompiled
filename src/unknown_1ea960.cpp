@@ -2,139 +2,26 @@
 #include "unknown_1efac0.h"
 #include "unknown_1eb350.h"
 #include "havok_reference.h"
+#include "physics_part_tables.h"
+#include "impacts.h"
+#include <new>
 
 // @flags /O2 /Gr
 
-#if 0 // Disabled: the nine shape families lack the complete retail virtual interfaces.
-// Constructor declarations here describe the retail field setup; activating them
-// requires the common C/J/AA shape interfaces, including array child_count (+0x28).
-struct s_shape_block_table;
-void *function_1eaf30(short type, s_shape_block_table *table, short index);
-struct c_part_a { c_part_a(void *definition); };
-struct c_part_b { c_part_b(void *owner); };
-struct c_part_c { c_part_c(void *definition); };
-struct c_shape_456088 { c_shape_456088(void *definition); };
-struct c_shape_455ef0 { c_shape_455ef0(void *definition, word flags); };
-struct c_shape_456048 { c_shape_456048(void *definition); };
-struct c_shape_456008 { c_shape_456008(void *definition, void *first, void *second); };
-struct c_shape_455fc0 {
-	c_shape_455fc0(void *children);
-	long child_count();
+/* a physics model's shape: c_a's header, 0x80 at +6 and the tag element
+   it belongs to (or 0) at +8 */
+struct c_model_shape : c_a
+{
+	long element;
+
+	c_model_shape() : element(0) {}
+	c_model_shape(void *owner) : element((long)owner) {}
 };
-struct c_shape_455f58 { c_shape_455f58(void *child, void *data); };
-struct c_shape_455f30 { c_shape_455f30(void *child, void *linked); };
-struct c_shape_455f8c { c_shape_455f8c(long saved_value); };
 
-// @retail 0x1ea9c0 disabled
-void function_1ea9c0(long tag_index, long restore)
+struct c_1ea960 : c_model_shape
 {
-	byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
-	s_shape_block_table *table = (s_shape_block_table *)definition;
-	if (!(byte)restore)
-		for (long i = 0; i < *(long *)(definition + 0x38); ++i)
-		{
-			byte *entry = *(byte **)(definition + 0x3c) + i * 0x90;
-			long key = *(long *)(entry + 0x38);
-			*(void **)(entry + 0x38) = function_1eaf30((short)key, table, (short)(key >> 16));
-		}
-	for (long i = 0; i < *(long *)(definition + 0x48); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x4c) + i * 0x80;
-		new (entry + 0x20) c_part_a((byte)restore ? NULL : entry);
-		new (entry + 0x30) c_part_b((byte)restore ? NULL : entry + 0x20);
-	}
-	for (long i = 0; i < *(long *)(definition + 0x50); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x54) + i * 0xb0;
-		new (entry + 0x20) c_shape_456088((byte)restore ? NULL : entry);
-	}
-	for (long i = 0; i < *(long *)(definition + 0x58); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x5c) + i * 0x50;
-		new (entry + 0x20) c_part_c((byte)restore ? NULL : entry);
-	}
-	for (long i = 0; i < *(long *)(definition + 0x60); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x64) + i * 0x90;
-		new (entry + 0x20) c_shape_455ef0((byte)restore ? NULL : entry, (byte)restore ? 1 : 0x80);
-		new (entry + 0x40) c_part_b((byte)restore ? NULL : entry + 0x20);
-	}
-	for (long i = 0; i < *(long *)(definition + 0x68); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x6c) + i * 0x60;
-		new (entry + 0x20) c_shape_456048((byte)restore ? NULL : entry);
-	}
-	long first_count = 0, second_count = 0;
-	for (long i = 0; i < *(long *)(definition + 0x70); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x74) + i * 0x100;
-		byte *shape = entry + 0x20;
-		if ((byte)restore) new (shape) c_shape_456008(NULL, NULL, NULL);
-		else
-		{
-			bool inline_first = (*(dword *)(shape + 0x38) & 0x7fffffff) <= 3;
-			byte *first = inline_first ? shape + 0x40 : *(byte **)(definition + 0x7c) + first_count * 0x30;
-			byte *second = *(byte **)(definition + 0x84) + second_count * 0x10;
-			new (shape) c_shape_456008(entry, first, second);
-			if (!inline_first) first_count += *(long *)(shape + 0x34);
-			second_count += *(long *)(shape + 0xd8);
-		}
-	}
-	long child_count = 0;
-	for (long i = 0; i < *(long *)(definition + 0x90); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x94) + i * 0x38;
-		if ((byte)restore) new (entry) c_shape_455fc0(NULL);
-		else
-		{
-			bool inline_children = (*(dword *)(entry + 0x14) & 0x7fffffff) <= 4;
-			byte *children = inline_children ? entry + 0x18 : *(byte **)(definition + 0x9c) + child_count * 8;
-			c_shape_455fc0 *shape = new (entry) c_shape_455fc0(children);
-			for (long j = 0; j < shape->child_count(); ++j)
-			{
-				long key = *(long *)(children + j * 8);
-				*(void **)(children + j * 8) = function_1eaf30((short)key, table, (short)(key >> 16));
-				*(long *)(children + j * 8 + 4) = 0;
-			}
-			if (!inline_children) child_count += *(long *)(entry + 0x10);
-		}
-	}
-	long data_offset = 0;
-	for (long i = 0; i < *(long *)(definition + 0xa0); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0xa4) + i * 0x14;
-		if ((byte)restore) new (entry) c_shape_455f58(NULL, NULL);
-		else
-		{
-			long key = *(long *)(entry + 0xc);
-			byte *child = *(byte **)(definition + 0x94) + (key >> 16) * 0x38;
-			byte *data = *(byte **)(definition + 0xac) + data_offset;
-			new (entry) c_shape_455f58(child, data);
-			data_offset += (*(long *)(data + 0x20) + 15) & ~15;
-		}
-	}
-	for (long i = 0; i < *(long *)(definition + 0x108); ++i)
-	{
-		byte *entry = *(byte **)(definition + 0x10c) + i * 0x20;
-		if ((byte)restore)
-		{
-			new (entry) c_shape_455f30(NULL, NULL);
-			new (entry + 0x14) c_shape_455f8c(0);
-		}
-		else
-		{
-			long key = *(long *)(entry + 0xc);
-			long saved_value = *(long *)(entry + 0x1c);
-			void *child = function_1eaf30((short)key, table, (short)(key >> 16));
-			new (entry) c_shape_455f30(child, entry + 0x14);
-			new (entry + 0x14) c_shape_455f8c(saved_value);
-		}
-	}
-}
-#endif
-
-struct c_1ea960 : c_a
-{
+	c_1ea960() { unknown06 = 0x80; }
+	c_1ea960(void *owner) : c_model_shape(owner) { unknown06 = 0x80; }
 	virtual ~c_1ea960();
 	virtual void *v3() { return 0; }
 };
@@ -146,8 +33,10 @@ c_1ea960::~c_1ea960()
 	__assume(0);
 }
 
-struct c_1ea970 : c_a
+struct c_1ea970 : c_model_shape
 {
+	c_1ea970() { unknown06 = 1; }
+	c_1ea970(void *owner) : c_model_shape(owner) { unknown06 = 0x80; }
 	virtual ~c_1ea970();
 	virtual void *v3() { return 0; }
 };
@@ -159,8 +48,10 @@ c_1ea970::~c_1ea970()
 	__assume(0);
 }
 
-struct c_1ea980 : c_a
+struct c_1ea980 : c_model_shape
 {
+	c_1ea980() { unknown06 = 0x80; }
+	c_1ea980(void *owner) : c_model_shape(owner) { unknown06 = 0x80; }
 	virtual ~c_1ea980();
 	virtual void *v3() { return 0; }
 };
@@ -172,8 +63,21 @@ c_1ea980::~c_1ea980()
 	__assume(0);
 }
 
-struct c_1ea990 : c_a
+struct c_1ea990 : c_model_shape
 {
+	byte unknown0c[0x24];
+	void *vertices;
+	long vertex_count;
+	dword vertex_capacity;
+	byte unknown3c[4];
+	byte inline_vertices[0x90];
+	byte unknownd0[4];
+	void *planes;
+	long plane_count;
+
+	c_1ea990() { unknown06 = 0x80; }
+	c_1ea990(void *owner, void *first, void *second) : c_model_shape(owner),
+		vertices(first), planes(second) { unknown06 = 0x80; }
 	virtual ~c_1ea990();
 	virtual void *v3() { return 0; }
 };
@@ -185,10 +89,34 @@ c_1ea990::~c_1ea990()
 	__assume(0);
 }
 
-struct c_1ea9a0 : c_a
+/* a child of a list shape: before the shapes are built, the key of its shape */
+struct s_list_child
 {
+	union
+	{
+		s_physics_model_shape_key key;
+		void *shape;
+	};
+	long filter;
+};
+
+struct c_1ea9a0 : c_model_shape
+{
+	s_list_child *children;
+	long count;
+	dword capacity;
+	s_list_child inline_children[4];
+
+	c_1ea9a0() { unknown06 = 0x80; }
+	c_1ea9a0(s_list_child *list) : children(list) { unknown06 = 0x80; }
 	virtual ~c_1ea9a0();
 	virtual void *v3() { return 0; }
+	virtual void v5() {}
+	virtual void v6() {}
+	virtual void v7() {}
+	virtual void v8() {}
+	virtual void v9() {}
+	virtual long child_count() { return 0; }
 };
 
 // @retail 0x1ea9a0
@@ -198,8 +126,17 @@ c_1ea9a0::~c_1ea9a0()
 	__assume(0);
 }
 
-struct c_1ea9b0 : c_a
+struct c_1ea9b0 : c_model_shape
 {
+	union
+	{
+		s_physics_model_shape_key child_key;
+		void *child;
+	};
+	byte *code;
+
+	c_1ea9b0() { unknown06 = 0x80; }
+	c_1ea9b0(void *list, byte *data) : child(list), code(data) { unknown06 = 0x80; }
 	virtual ~c_1ea9b0();
 	virtual void *v3() { return 0; }
 };
@@ -241,6 +178,9 @@ struct c_shape_pair : c_a
 	long field_8;
 	c_havok_reference_counted *first;
 	c_havok_reference_counted *second;
+	c_shape_pair() : field_8(0) { unknown06 = 0x80; }
+	c_shape_pair(c_havok_reference_counted *a, c_havok_reference_counted *b) : field_8(0),
+		first(a), second(b) { unknown06 = 0x80; }
 	virtual ~c_shape_pair();
 	void operator delete(void *block)
 	{
@@ -274,8 +214,10 @@ struct s_contact_body
 
 struct c_shape_contact_listener
 {
- long field_4;
+ word field_4;
+ word field_6;
  long kind;
+ c_shape_contact_listener(long value) : kind(value) { field_6 = 0x80; }
  virtual void added(s_contact_body const *a, s_contact_body const *b, void *contact);
  virtual void removed(s_contact_body const *a, s_contact_body const *b);
 };
@@ -376,4 +318,162 @@ void c_shape_contact_listener::added(s_contact_body const *a, s_contact_body con
    function_1d1e40(component_index, havok_component_get(component_index), second, shape_index, contact_kind);
   }
  }
+}
+
+struct s_shape_block_table;
+void *function_1eaf30(short type, s_shape_block_table *table, short index);
+
+/* builds the shapes of a physics model in place: each shape gets its tag
+   element and the shapes it refers to (their keys resolved to pointers); with
+   `restore` set they are constructed empty and keep what they hold */
+// score 138 (was a stub): retail copies the tree's child key to the stack and shifts the index
+// out of it (ours reads the high word), reads the listener's value before the pair's shape lookup
+// (ours after, at its constructor), and inside the inlined constructors stores the empty 0x455ef0
+// shape's +6 before +8 and the vertex/plane pointers of 0x456008 and the children of 0x455fc0
+// before the virtual table (ours after it). Tried: one counter for every loop 456 (1419 bytes);
+// conditional offset adds 311 (1404); both 307; the tree's key read through its union 289 (1388);
+// with the key copy, the 0x455ef0 shape as the new-expression's result 307, by a pointer in its
+// build arm 17; that pointer declared for both arms (no key copy) 303;
+// the pair on c_model_shape 14 (0x1eb4c0 MATCH -> 51, reverted). One-use locals, not kept without
+// a match: the tree's key copied to a local 79, the listener's value and the shape lookup result
+// held in locals before the pair 123, both 17; the lookup result named at the pair alone 138.
+// @retail 0x1ea9c0
+void function_1ea9c0(long tag_index, bool restore)
+{
+	byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
+	s_shape_block_table *table = (s_shape_block_table *)definition;
+
+	if (!restore)
+	{
+		for (long i = 0; i < *(long *)(definition + 0x38); i++)
+		{
+			byte *body = *(byte **)(definition + 0x3c) + i * 0x90;
+			s_physics_model_shape_key key = *(s_physics_model_shape_key *)(body + 0x38);
+			*(void **)(body + 0x38) = function_1eaf30(key.type, table, key.index);
+		}
+	}
+	for (long i = 0; i < *(long *)(definition + 0x48); i++)
+	{
+		s_pair_element *pair = (s_pair_element *)(*(byte **)(definition + 0x4c) + i * 0x80);
+		if (restore)
+		{
+			new (&pair->a) c_part_a;
+			new (&pair->b) c_part_b;
+		}
+		else
+		{
+			new (&pair->a) c_part_a(pair);
+			new (&pair->b) c_part_b(&pair->a);
+		}
+	}
+	for (long i = 0; i < *(long *)(definition + 0x50); i++)
+	{
+		byte *entry = *(byte **)(definition + 0x54) + i * 0xb0;
+		if (restore)
+			new (entry + 0x20) c_1ea960;
+		else
+			new (entry + 0x20) c_1ea960(entry);
+	}
+	for (long i = 0; i < *(long *)(definition + 0x58); i++)
+	{
+		s_single_element *single = (s_single_element *)(*(byte **)(definition + 0x5c) + i * 0x50);
+		if (restore)
+			new (&single->c) c_part_c;
+		else
+			new (&single->c) c_part_c(single);
+	}
+	for (long i = 0; i < *(long *)(definition + 0x60); i++)
+	{
+		byte *entry = *(byte **)(definition + 0x64) + i * 0x90;
+		if (restore)
+		{
+			new (entry + 0x20) c_1ea970;
+			new (entry + 0x40) c_part_b;
+		}
+		else
+		{
+			c_1ea970 *shape = (c_1ea970 *)(entry + 0x20);
+			new (shape) c_1ea970(entry);
+			new (entry + 0x40) c_part_b((c_part *)shape);
+		}
+	}
+	for (long i = 0; i < *(long *)(definition + 0x68); i++)
+	{
+		byte *entry = *(byte **)(definition + 0x6c) + i * 0x60;
+		if (restore)
+			new (entry + 0x20) c_1ea980;
+		else
+			new (entry + 0x20) c_1ea980(entry);
+	}
+	long vertex_offset = 0;
+	long plane_offset = 0;
+	for (long i = 0; i < *(long *)(definition + 0x70); i++)
+	{
+		byte *entry = *(byte **)(definition + 0x74) + i * 0x100;
+		c_1ea990 *shape = (c_1ea990 *)(entry + 0x20);
+		if (restore)
+			new (shape) c_1ea990;
+		else
+		{
+			bool inline_vertices = (shape->vertex_capacity & 0x7fffffff) <= 3;
+			void *vertices = inline_vertices ? shape->inline_vertices :
+				*(byte **)(definition + 0x7c) + vertex_offset * 0x30;
+			void *planes = *(byte **)(definition + 0x84) + plane_offset * 0x10;
+			new (shape) c_1ea990(entry, vertices, planes);
+			vertex_offset += inline_vertices ? 0 : shape->vertex_count;
+			plane_offset += shape->plane_count;
+		}
+	}
+	long child_offset = 0;
+	for (long i = 0; i < *(long *)(definition + 0x90); i++)
+	{
+		c_1ea9a0 *list = (c_1ea9a0 *)(*(byte **)(definition + 0x94) + i * 0x38);
+		if (restore)
+			new (list) c_1ea9a0;
+		else
+		{
+			bool inline_children = (list->capacity & 0x7fffffff) <= 4;
+			s_list_child *children = inline_children ? list->inline_children :
+				(s_list_child *)(*(byte **)(definition + 0x9c)) + child_offset;
+			new (list) c_1ea9a0(children);
+			for (long j = 0; j < list->child_count(); j++)
+			{
+				s_physics_model_shape_key key = children[j].key;
+				children[j].shape = function_1eaf30(key.type, table, key.index);
+				children[j].filter = 0;
+			}
+			child_offset += inline_children ? 0 : list->count;
+		}
+	}
+	long code_offset = 0;
+	for (long i = 0; i < *(long *)(definition + 0xa0); i++)
+	{
+		c_1ea9b0 *tree = (c_1ea9b0 *)(*(byte **)(definition + 0xa4) + i * 0x14);
+		if (restore)
+			new (tree) c_1ea9b0;
+		else
+		{
+			byte *list = *(byte **)(definition + 0x94) + tree->child_key.index * 0x38;
+			byte *code = *(byte **)(definition + 0xac) + code_offset;
+			new (tree) c_1ea9b0(list, code);
+			code_offset += (*(long *)(code + 0x20) + 15) & ~15;
+		}
+	}
+	for (long i = 0; i < *(long *)(definition + 0x108); i++)
+	{
+		byte *entry = *(byte **)(definition + 0x10c) + i * 0x20;
+		c_shape_contact_listener *listener = (c_shape_contact_listener *)(entry + 0x14);
+		if (restore)
+		{
+			new (entry) c_shape_pair;
+			new (listener) c_shape_contact_listener(0);
+		}
+		else
+		{
+			s_physics_model_shape_key key = *(s_physics_model_shape_key *)(entry + 0xc);
+			new (entry) c_shape_pair((c_havok_reference_counted *)function_1eaf30(key.type, table, key.index),
+				(c_havok_reference_counted *)listener);
+			new (listener) c_shape_contact_listener(listener->kind);
+		}
+	}
 }

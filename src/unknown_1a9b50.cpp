@@ -534,6 +534,8 @@ extern point2f *g_468778;
 // Round 289: Complete facing value with actor-first/target position/target velocity values, masks
 // 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
 // observations, lookup order, early distance and complete body retained.
+// Round 304: primary/secondary displacement production in all six uniform coordinate orders,
+// then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

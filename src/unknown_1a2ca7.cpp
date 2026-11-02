@@ -900,6 +900,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 
 /* adds the senders of the player's messages (at most 20) to the players
    list, except those given and those already on it */
+// MiniMax S (11-01): no new form, no lower score; the exclusion cursor is still kept in EDX across 0x63d00 and the sender promoted to EDI, where retail spills the sender to +0x6c and reloads it for every call; 0x63d00 is in src/unknown_054fe0.cpp.
 // score 81 (was 81): frame 0x2268 agrees; count/sender homes, nullable sender spill and exclusion cursor remain.
 // Earlier: this round: the listing was re-read only. Retail keeps the excluded-XUID
 // BLOCKED-BY 0x63d00 (Round 113 below). An earlier round re-read the listing
@@ -1500,6 +1501,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 
 /* copies the presence task's results into the friends and team members
    lists */
+// MiniMax S (11-01): no new form, no lower score; the friend count is still homed at [ebp-8] and the clan count at [ebp-4] where retail reads the friend count first into [ebp-4] and reloads it into ESI, and the three reversed xuid_equal argument roles still differ.
 // score 117 (was 117): BLOCKED-BY 0x63d00. Retail keeps &player->xuid in ESI across 0x63d00 in the
 // clan-list loop (it treats 0x63d00 as clobbering EDX), so j takes EDI and the presence cursor spills to
 // [ebp-4], the friend count's earlier home; the early count homes follow from that.

@@ -807,6 +807,12 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // early when the allocation fails 14. Round 64: shared pool local 49; allocation pointer
 // arithmetic 14; null-initialized prediction 14; byte entry local 14; non-short-circuit
 // comparison 85; mismatch-continue loop 119; unsigned datum index 14; named masked index 14.
+// Round 72 (lane 9, fast): parameters renamed (font, zz_font, glyph, a_character) 14; font read
+// once through its own address 14; the shared iterator helper's mask as a named local or through
+// bit_vector_test 14 (diagnostic, restored); plain long parameters with `(void)&` (font in a
+// register, 0x13eeb0 18) 86; plain long parameters each read once through its address (stack
+// convention kept, but the character takes EBX and the font stays in memory) 69 in four placements;
+// font as such a long with the character struct 14, the reverse 69.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

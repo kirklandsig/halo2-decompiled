@@ -614,6 +614,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // cosine product, so the turned components colour XMM4/XMM7/XMM5 as k/j/i where retail has
 // XMM4/XMM6/XMM5 as i/j/k; retail's test zero is XMM0 after the scale products, and it multiplies x
 // as `movaps xmm1, scale; mulss xmm1, [x]`.
+// Round 230: native unsigned object/prop handles and signed-byte side truth, seven subsets; all with
+// unsigned-byte truth, scores [77, 77, 77, 77, 77, 77, 77, 77].
+// Original executable source restored. Zero-test scheduling and rotation register homes remain.
 // Round 69 (m3 lane 9, fast with 0x1ecf50 and 0x2b400): the magnitude and facing tests nested 77 (same code);
 // the facing vector as a named const 2D pointer for both tests 148 (857 bytes); the turned pair written
 // straight into direction on success (no k or fallback copy) 167 (790 bytes); integer-zero literals in both

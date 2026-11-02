@@ -186,6 +186,13 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 261: Axis-first added-cross graph: sine after axis/axis+direction scales 173/233; sine-first
 // 182; shared final sums with original/late/later sine 233/233/229; complete output with late/later
 // sine 288/288. Frame 0x11c versus 0x118 remains; all original code restored.
+// Round 335: Complete accepted-result bool/byte/short/long 173/173/197/195;
+// complementary rejected results 202/202/200/201. All are exact-only post-test
+// flag forms; none matches. Original result flow, rotation helper, full request
+// and complete body restored; frame 0x11c versus 0x118 remains.
+// Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
+// consuming weighted-preserved direction 226/227/208/209
+// Original executable body and helpers restored.
 // Round 114 (m3 lane 7, fast): helper order sine, named dot, cosine, projection, `cross3f(v, axis)` subtracted 226
 // (retail's fsin placement, frame 0x120); that with `cross3f(axis, v)` added 225, with cross3f_staged 226, with
 // direct per-component sums 226; the kept order with only the dot named before the cosine 226. Retail keeps the
@@ -213,6 +220,8 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
 // consuming weighted-preserved direction 226/227/208/209
 // Original executable body and helpers restored.
+// Round 291: Heading/paired transform/fallback-point overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
+// then all with shared velocity scale, 264/299/206/280/275/313/296/296. Original full file and helpers restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

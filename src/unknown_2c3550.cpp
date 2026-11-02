@@ -261,6 +261,10 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
 // with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
 // normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
+// Round 454: Native destructive difference in the direction itself, goal/source seeds and
+// direct/shared subtraction 175/173/175/173; all four with shared dot/cross consumers
+// 189/187/189/187. Original native difference, normalizer and complete body restored; early Y load
+// and XMM roles remain.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -760,10 +764,23 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // subsets 730/728/766/675/730/728/766; all with Boolean success 752. Original body restored.
 // Round 260: Six direction/previous-direction/world-start declaration schedules 675/675/675/675/675/675;
 // reversed schedule with bool/byte success 754/768. Original evaluations and entire body restored.
+// Round 261: all six relative lexical schedules of direction/previous-direction/world-start
+// 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
+// 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
 // Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
 // subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
+// Round 115 (lane 7, fast; aligned = difflib count, 601 at 675): bool result re-measured 754 (aligned 609; the
+// epilogue is then duplicated and the failure path threads to its own `xor al, al` exit as in retail, but
+// inline where retail places it last); the failure path as `return false;` 776 (the result's slot goes, frame
+// 0x1f84); bool result with the retry search assigning `found` and one `if (!found)` failure block 746 (2974
+// bytes, aligned 590), with retail's flag loop (short index, `flag` tested per obstacle under
+// `step == count - 1`) alone 752, both 746 (2969 bytes, aligned 571; the failure block then sits last,
+// identical to retail's); the copy loop through a local output count stored once after it 714 (2974 bytes,
+// aligned 634), with the previous combination 749 (aligned 583; retail's copy-loop shape, other registers).
 // Round 291: conditional/default-high actor-height producers, signed/unsigned flags and
 // long/Boolean success, 727/760/727/760/729/750/729/750. Original complete body restored.
+// Round 481: Independent obstacle/blocking/source transform-output lexical identities, all seven
+// subsets 675 each; complete transform graph with travel-direction identity 675. Original body restored.
 // Round 261: all six relative lexical schedules of direction/previous-direction/world-start
 // 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
 // 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
