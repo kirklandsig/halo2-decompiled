@@ -1484,6 +1484,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body
 // restored.
+// Round 453: Final other-update/spin reduction, bool/long and bool/byte carriers with
+// bitwise/logical joins, masks 0..7 (exact-only): 195/207/193/207/209/206/209/206.
+// Original executable body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
