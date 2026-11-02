@@ -812,6 +812,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 246: Byte/short/bool/word common task results, declared before the request
 // view or after total conversion, 269/264/257/252/269/264/257/252. Original returns
 // and cleanup restored; fresh total EDX and seek/size ESI/EDI allocation remain.
+// Round 309: Natural HBS/HSB/BHS/BSH/SHB/SBH state if-chains
+// 210/216/210/224/229/219; consistent three-use state capture in HBS/SBH 212/220.
+// Original switch, byte-count storage, I/O, default and cleanup restored; total and seek/size allocation remains.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

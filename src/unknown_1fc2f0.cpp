@@ -466,6 +466,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
 // and common-expression publication 50/50. All regress; original body, includes,
 // parameter storage, length lifetime, delta order and correction producer restored.
+// Round 309: Without the own-parameter address read, indexed correction accumulation,
+// location-first admission and word-order subsets 1..7: 99/100/100/99/99/100/100;
+// all with short ordinal 121. Original prediction, parameter storage, helper and complete body restored; tick/delta/correction allocation remains.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

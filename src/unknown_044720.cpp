@@ -460,6 +460,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 216/216/216/216; division with masked bit 218/218; division/remainder 251/251.
 // Original word addressing, query storage and body restored; entry/index spill
 // and center/query/bound homes remain at the correct 0x1094 frame.
+// Round 309: Indexed coordinate producers at initial/large/both/single-initial captures,
+// each with original/common radius lifetime: 280/280/182/186/280/280/242/242.
+// Original native and scalar copies, radius lifetime and complete body restored; entry/index and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
