@@ -419,6 +419,19 @@ void function_125a90(long value);
 // those with the native inner type comparison 104/144/145; both with short/byte type
 // carriers 149/152. Original policy snapshots, type and complete body restored;
 // scaled ordinal before policy load and decision-block placement remain.
+// Round 59 (lane 10): byte MATCH with the pool global at each use (no array/index locals), a named `special`
+// bool and the kind test written `if (!special && remove && K && f == 1)`, plus the keep store through the
+// global beside the element local (a mixed read). Not kept at review (11-02): `remove` is implied by `!special`
+// there, a redundant always-true test that only keeps 0x221810 out of line (10-30 ruling: reverted even with a
+// match), and the mixed read is match-only. With the implied test, no direct keep use 25. Without it, direct `||`
+// with the same global/index forms 29 (415 bytes; still uses the mixed keep store). 0x221810 pinned out of line
+// as a diagnostic gives 25, so the inlining is one of the two real causes; the other is retail's `imul eax` +
+// `lea esi` pair. Body restored at 36.
+// Round 89: special arm without an else assignment 88 (417 bytes), with the fused kind keep test 51;
+// full-width named special predicate 159 (472 bytes); no index local with a pool local 51; pool global
+// at each use with or without the index local 36 each; tag-byte subscript 36; direct global-array object
+// read 34 (416 bytes, -2 not kept); every record field direct with no element local 146 (398 bytes).
+// Original body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

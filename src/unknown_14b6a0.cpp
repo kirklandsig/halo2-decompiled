@@ -119,7 +119,8 @@ void function_14bac0()
 	players_pending_creation_process(iterator_reference);
 }
 // MiniMax S (11-01): no new form, no lower score.
-// score 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
+// score 222 (was 222): Frame 0x50 versus 0x3c, exchanged player/scenario spills, point/recipient overlap and readiness homes remain.
+// Earlier at 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
 // Round 9 (lane 11, fast): second loop through data_datum_iterator_next as retail calls it 257 (frame 0x44:
 // center 0x10, destination 0x1c, alternate 0x28, second iterator 0x34; retail packs the iterator over the
 // probe point at 0x1c); plus a bare block around the probe/center code 257 (identical code); per-marker
@@ -410,6 +411,22 @@ void function_14bac0()
 // Round 309: Plain native component loops for displacement/returned-position addition/all accepted-point
 // transfer subsets 1..7: 222/222/247/263/263/246/263/298; the eighth uses short counters. Original body restored;
 // frame, point/iterator overlap and readiness carriers remain.
+// Round 288: Joint lexical priorities of all native point/displacement roles, both iterator
+// workspaces, complete receiver/bounds scalar orders and readiness bytes: eight orders 222 each.
+// Original names and full body restored; frame 0x50/0x3c and point/recipient sharing remain.
+// Round 311: Readiness-selected bounds output, conditional/if selection, original/shared relocation-probe scratch,
+// original/native result-tested recipients: 267/266/279/279/267/266/279/279. Original outputs and traversals
+// restored; frame 0x50/0x3c, point/iterator sharing and readiness homes remain.
+// N314: Persistent selected-unit handle unsigned on the returned-output graph, with native signed/
+// unsigned selected-player and complete ancestry domains, 222/222/222/222; native result-tested recipient
+// counterparts 228/228/228/228. Native identity domains leave the frame and homes unchanged. Original
+// signed handles, returned point, selected-unit observation, both traversals and complete body restored.
+// N316: Actual alternate marker ordinal owns availability, short/long with original/native recipients and
+// separate/shared probe-bounds point: 238/251/235/236/242/251/235/236. Original Boolean, marker lifetime,
+// points and both traversals restored; frame/readiness/recipient sharing remains.
+// N318: Actual pending-state count/request/selected-player field views, seven nonempty
+// subsets 222 each; complete native state view with result-tested native recipients 228.
+// Original byte observations, record declarations and body restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

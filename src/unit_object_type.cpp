@@ -2229,6 +2229,10 @@ struct s_unit_motion
 // Round 57 (m3 lane 9): the accumulator form with ternary steps 28 (227 bytes) is small enough that LTCG inlines it
 // into both 0xc7840 calls (2786 bytes, 995: the "723 -> 989" above); with the three steps through a forceinline
 // step helper 67 (221 bytes), still inlined. Retail keeps it out of line, so its body costs more than this form.
+// Round 197 (lane 3, fast): the accumulator form re-measured 28 (227 bytes) with every parameter order (same code); time copied
+// 28; named phase values or one step variable 70 (218 bytes); one-use named products and outputs 28 (still inlined at
+// 2871 bytes); in-place position and velocity 121 (277 bytes, stack again, not inlined); `if (time <= step)` steps 66 (221
+// bytes); defined after 0xc7840 28 (still inlined). Only a test ahead of the calls in 0xc7840 keeps it out of line (see its note).
 // @retail 0xc7750
 bool function_c7750(s_unit_motion const *motion, real position, real velocity, real time, real *out_velocity,
 	real *out_position)
@@ -7136,10 +7140,36 @@ real function_50650(real cosine);
 // 614/614/614/614; component aggregate counterparts 563/563/563/563.
 // Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.
 // Original prediction input, axis, reciprocal and complete body restored.
+// Round 286: Current native-axis graph with target/current-direction storage reuse and joint
+// motion-record lexical order, seven subsets then all with complete cosine parts: 563/563/563/563/563/563/563/556. Original
+// storage lifetimes and body restored; frame, vector homes and prediction/motion scheduling remain.
 // Round 309: Plain axis/final-scale loops and accumulated actual completion result, subsets 1..7, then
 // all unsigned component counters: 1090/576/1090/565/1091/577/1091/1091. Axis loops also lose caller 0x1faf80 at 16.
 // Original scaling, completion results and body restored; frame/input/vector homes and
 // prediction/call scheduling remain.
+// Round 197 (lane 3, fast with 0x1e5af0, 0x1faf80): the stack `current` traces to the callee. 0xc7750 in its accumulator form
+// takes retail's XMM5/XMM4/XMM3 convention (28, its note) and then, kept out of line, `current` stays in EDI with the
+// components preloaded and both matched callers still match. Only a test ahead of the two 0xc7750 calls keeps them out of
+// line (LTCG's inline choice follows the call's nesting): `if (&yaw_motion)` 648 (2441 bytes), on the second call only 844
+// (2677), `if (sizeof(s_unit_motion))` (same code as the first on the kept form), float tests 639/653. That is a steering
+// test, so nothing here is kept: BLOCKED-BY 0xc7750's inlining. Forms with the test, aligned count with stack slots and XMM
+// numbers hidden in brackets (this body 292): `target` reusing the desired vector with matrix_transform_vector in place, a
+// rotated copy `predicted` after normalize_inline(&axis), speeds zeroed in an else arm, late `inverse_rate` 642 (2440) [225]
+// and with cross terms named 657 (2429) [211]; plus components read first in the to-frame helper 597 (2443) [151], without
+// named crosses 585 (2454) [165]; read as i, j, k with named predicted angles 585 (2442) [134]; other read orders 599/599/605/
+// 606; plus yaw and pitch as vector2f pairs (current, desired, speed, offset, new speed from 0xc7750's out argument, final
+// angles) 534 (2437) [103]: limits then takes ECX as retail and speed and angles overlay the frame-local current as retail.
+// Left: frame 0x84 against 0x80 (retail's order: offset sharing the lowest slot with the root and cosine temporaries, frame-
+// local current, desired, current, axis, target, motions), scheduling. On it: the to-frame current written in the arm 533
+// (2438) [107]; as a value-returning helper 617 (2475) [189]; scalar angles through pointer helpers 571 (2455) [145]; scalar
+// new speeds 586 (2442) [134]; an angle-limit helper for both clamps 585 (same code); flag declaration orders 671/585/643;
+// normalize3d 588 (2439); early offsets 585 (same code); to-frame and from-frame row orders 534 (same code); renames and
+// to-angles, direction-from-pair and dot3f helpers: same frame order. Without the test: a plain scope, do/while(false) 1050
+// (2825); the second call in the condition 1049 (2827); `!= false` 1065 (2844); forceinline or inline wrapper 1049/1049
+// (2824); the rewrite on the old 0xc7750 624 (2441), `current` on the stack and both callers lost. Earlier steps without the
+// test on the old 0xc7750: `target` reuse 563 (same code); in place 580 (2450); else-arm zeros 614 (2470), with both 638
+// (2446); direction in `target` 565, with in place 582 (2453), all 640 (2449); prediction rewrite 644/669/621; preloaded
+// components 578 (2451) and 646 (2508), ret 0x18. Body restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

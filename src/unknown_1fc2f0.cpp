@@ -492,6 +492,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 32 (same code). Compile-only, about 2,800 random orders of loads, chains, conversion, products, deltas,
 // scalar or struct chains and five correction shapes: none closer than the current form on the whole SSE
 // sequence.
+// P271: Consistent prediction/limit/normalization rate observation on the named-length
+// graph, existing rate/tick/delta producer masks 0..7, direct update parameter:
+// 100/105/100/105/100/97/100/97. Original body and helpers restored; tick/delta/correction homes remain.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

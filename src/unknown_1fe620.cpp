@@ -162,6 +162,9 @@ static __forceinline long real_to_long(real value);
 // DL231: Complete eligibility/true-first adjustment/whole displacement square subsets; all with double
 // square: 378/427/427/373/378/427/427/427. Frame 0x4c/0x48 and third-input/random-state carriers remain;
 // original executable source restored.
+// P262: Uniform side/first-output/second-output component orders ikj/jik/jki/kij/kji
+// 437/424/425/443/442; early output workspaces with ikj/jik/kji 437/424/442.
+// Original publication, workspace lifetimes, all arithmetic and complete body restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

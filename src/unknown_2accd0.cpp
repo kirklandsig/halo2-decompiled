@@ -794,6 +794,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 59 (m3 lane 10; compile-only, base 22, exact here): reasons for the fresh sums, each with two callers. An inline
+// signature-position helper (the sum returned; inline or forceinline, either sum order) used at the signature case
+// alone 22; with the total through it 22; in place 67, helper first in the sum 67. A forceinline seek-and-read helper
+// taking the parameters (the file is read twice, as retail) at the body and signature cases 27 aligned (235 instructions,
+// 155 positional), without the total local 60 (67); signature case only 22, without the total local 60 (67); its body as
+// early returns, both cases 35 (239), without the total 76, signature only without the total 71 (237).
+// Real --fast (0x2adb10 115 throughout): position helper with the total through it 34, total in place 88; seek-and-read helper at
+// both cases 161 (689 bytes), without the total 88, signature only without the total 88; early-return body at both cases 216 (699 bytes).
 // Round 56 (m3 lane 10; compile-only exact here, real --fast in brackets): retail's entry total and signature sum are
 // compiler temporaries (sum into a fresh EDX; body size ECX, header EDX, `lea esi`). The total converted in place (no
 // total local) with the signature position passed to a forceinline (file, position) seek helper gives both: 16 [28];
@@ -822,6 +830,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 259: Header/body/signature ReadFile results at their actual producers, seven subsets,
 // then all with native signature-finalization status: 34/34/34/34/34/34/34/34. All one-use
 // result forms restored; entry total and size/seek coalescing remain.
+// Round 333: Shared successful header/body progress producer, dword/real numerator,
+// named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
+// Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -972,7 +983,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 115 (was 115): with the address-taken scratch record and the two-pointer getter (see
+// score 102 (was 102): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -1103,6 +1114,21 @@ struct s_signed_file_write_parameters
 // P260: Scratch extension file extent retained for offset and remaining bytes,
 // before/after getter, both sum orders and both minimum orders: 244 each.
 // Frame grows to 0x1c; original observations, getter and complete body restored.
+// P270: direct-header-return graph with live signed-body position/count/both/data/
+// position+data/count+data/all, then buffer-before-count: 102/109/300/305/220/224/215/119.
+// Live seek position 102 retained; count-only 109 is below threshold. Other forms
+// restored; capacity staging and extension offset/buffer/count homes remain.
+// Round 534: sequential clear/transfer byte amount in header/extension, scratch output
+// declarations beside getter outputs, seven subsets then complete amount roles:
+// 102/241/241/102/102/241/241/241. Original complete body restored; capacity EAX/EBX and
+// extension buffer/offset homes remain.
+// N321: Repeated phase header extents across API consumers on the retained header-return/live-seek
+// graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
+// homes remain. Scores 138/229/291/255/309/303/320/323.
+// Original executable source restored.
+// N324: One real signed API seek-position workspace for header/scratch/signature, seven subsets then
+// declaration after publication 102/102/102/102/102/102/102/102. Original positions/body restored; capacity
+// staging and extension offset/buffer homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
@@ -1182,11 +1208,10 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 		}
 		else
 		{
-			dword position = parameters->header_size;
 			dword body_size = parameters->body_size;
 			const BYTE *body = (const BYTE *)parameters->body;
 			dword bytes;
-			if (SetFilePointer(parameters->file, position, NULL, FILE_BEGIN) == position &&
+			if (SetFilePointer(parameters->file, parameters->header_size, NULL, FILE_BEGIN) == parameters->header_size &&
 				WriteFile(parameters->file, body, body_size, &bytes, NULL) && bytes == body_size &&
 				XCalculateSignatureUpdate(parameters->signature_handle, body, bytes) == ERROR_SUCCESS)
 			{

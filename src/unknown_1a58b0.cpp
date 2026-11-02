@@ -654,6 +654,9 @@ void function_1a6d80(void)
 // local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
 // pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
 // pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
+// Round 85: count output before the call 6; both output pointers after it 6; count output before and valid
+// output after it 6; output references after it 6; valid store scope 6; count store scope 6; const output
+// parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
@@ -941,6 +944,15 @@ void function_25aba0(long actor_index);
 // kind-2 pops first with the stamp-first choice arm 131 (macro) / 38 (helper, 961 bytes);
 // `usable = function_1a80e0(...)` feeding one `level--` at the loop end 159 (it merges into kind-2's tail);
 // a goto from the enabled failure to the fallback pop 53 (the shared pop is laid out after the enabled tests).
+// Round 57 (lane 11, fast; choice pop stamp-first): one `if` per enabled test 175 (984 bytes, aligned 9: every
+// pop is retail's, state-one, kind-2 and next-handler split, choice fused; only the three in-place `dec; jmp`
+// remain where retail jumps to the fallback pop). So the compound test's shared pop block is what fuses a host: it
+// is absorbed into the tail of kind-2 (chain) or state-one, and that tail's load/dec/store are then alone in a
+// block. Every arm falling into one `level--` at the loop end 157; only the fallback and enabled failures sharing
+// it through a `usable` bool 159; `goto` the fallback pop 159 (absorbed into kind-2's tail, aligned 13); state-one and
+// kind-2 pops first 131; their lower level in a local computed before the stamp 119 (folded); the decrement
+// spelled `-= 1`, `+= -1`, `-1 + level`, `level + (short)-1`, `(short)(level - (short)1)` 119 each; dead trailing
+// stores after the pop `current = NULL` 119, `type = NONE` 119, `handler = NULL` with `continue` 134 (diagnostic).
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {
@@ -1326,6 +1338,9 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // block 18; a velocity pointer local 18; the point cast to const 18; the nested query's result in a point
 // declared before the clamp 128; the statement query before the body index read 97. Still BLOCKED-BY
 // 0x1d0a20 (src/impacts.cpp is held this round too).
+// Round 86 (KIMI2): entry/scoped multi-use object handle 2/2; body declaration before support 2;
+// clamp declaration first 2; returned point dereference/re-address 2; support/component role names 2;
+// header/unit role names 2; all four role names 2. Original body restored.
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {

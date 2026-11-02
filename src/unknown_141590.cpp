@@ -301,6 +301,21 @@ static inline void quaternion_transform_vector(
 // P260: Independent half-angle lexical homes before/between/after rotation, four
 // forms 267 each; with independent transform cross scalars 252 each. The latter
 // reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
+// Round 523: Actual quaternion/matrix identity transfers native/memmove, memcpy/memmove,
+// memmove/native, memmove/memcpy, memmove/memmove 285/285/319/319/306; both memmove with
+// independent halves/cross components/both 316/321/317. Matrix transfer alone gives frame
+// 0x20; original identities, paired halves, transform helper and full body restored.
+// Round 312: Alias-conditioned native/CRT vector input capture in the existing rotation helper,
+// original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
+// Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
+// paired halves and complete body restored. Quaternion/cross spill overlap remains.
+// M3 lane 4 r155 (fast): retail never reuses the quaternion's 16-byte home (+0x24) for the transform spills (its five spill
+// slots sit below it), ours packs two cross-term spills into the dead quaternion home. New: the zero-sine arms first (`if
+// (sine == 0.f) { cosine test } else { construction }`) 299 (1342 bytes); the identity matrix copy at entry 315 (1325 bytes),
+// right after the sine 315; the sine half computed before the cosine half 205; `cosine_half * sine_half * 2.f` 200 (same
+// code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
+// the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
+// existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -987,6 +1002,18 @@ void function_143250(
 // (10763 bytes, rotation EAX, ret 4, frame 0x30c); on the 648 form the leading terms as plain locals, with a matrix
 // pointer or a plain array 2238/2238 (10297 bytes, frame 0x2fc); plain leading locals keeping every term 2114 (10412).
 // Restored.
+// Round 519: Shared identical third-band real sum with complete basis/single-consumer/
+// reused copy-family masks 0..7: 1793/1928/1793/1916/1898/1975/1898/1964.
+// Native typed replay preserves all 83 matrix values and precision boundaries;
+// Full cleanup has frame 0x30c and EAX/ret 4 in preview but regresses and raises a caller score.
+// Original scalar, publication and input graphs restored; frame and homes remain.
+// P264: single-consumer real arithmetic owned by second-band product/sum/all,
+// third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
+// Original scalar graph, workspace, publication phases and complete body restored.
+// Round 482: Complete seven-row third-band producer-ready columns 0/1/2/3/4/5/6/all
+// give 1952/1805/1778/1767/1779/1786/1859/2210. Exact scalar sequence and all 49
+// matrix values retained in every trial; original publication graph and body restored.
+// Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

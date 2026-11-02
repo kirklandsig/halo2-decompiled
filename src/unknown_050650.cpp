@@ -504,9 +504,8 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 322): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
-// (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
-// schedules differ.
+// score 322 (was 322): frame 0xa8 agrees; first +0xa acquires pitch inputs before the default vector.
+// Normalization scratch at +0x2c versus +0xc displaces axis/result homes; trig and rotation schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
 // random/trig and vector schedules still differ.
@@ -622,6 +621,22 @@ struct s_collision_result_buffer_1697c0
 // initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
 // terms 337; both startup setters with squared terms 342. Original helper and body restored;
 // frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
+// P265: Separate normalization result, zero-before/zero-after/complete-before/root-default,
+// native sum 322/322/341/648; shared squared-length 322/322/341/648.
+// Original result boundaries and all body/helper text restored; scratch and axis homes remain.
+// Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
+// 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
+// Round 369: normalizer short-vector return/shared success exit/CRT output subsets
+// 1/2/4/3/5/6/7: 334/363/322/385/334/363/385; all with Boolean clear 384.
+// Exit forms use frame 0xa4 and demote the matched caller to 10; original helper, output copies,
+// result flow and complete body restored. Scratch/axis/result homes remain.
+// DH297: Test-produced success/failure-owned collision/immediate per-attempt admission,
+// subsets 1-7, then fraction-first fallback: 348/322/348/322/348/322/348/360.
+// Original Boolean result, collision graph, ten draws, helper bodies and complete sampler restored.
+// DH300: Complete normalizer input snapshots, native/setter/library/aggregate/immutable,
+// with float absolute, squared-norm or native output: eight 651s (outlined). Forced native/immutable/
+// squared snapshots 441/441/452; forced complete scalar inputs 329. Original normalizer and body restored;
+// frame-bottom scratch and pitch-axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -854,6 +869,19 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
 // each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
 // plain 323 versus baseline 257. Original result, presence and full body restored.
+// Round 469: Weapon-aim success-first/failure-first/two-use outcome/common failure join, bool/byte point presence: 270/264/265/258/270/264/265/258 (fast control 258). Original result graph and whole body restored; byte homes and case-tail predecessor remain.
+// P264: complete direction/output library contracts, native+memcpy/native+memmove/
+// memcpy+native/memcpy+memcpy/memcpy+memmove/memmove+native/memmove+memcpy/memmove+memmove
+// 258/333/258/258/333/421/421/415 (fast control 258); original transfers and body restored.
+// Round 137 (m3 lane 6, plain; --fast now scores the unchanged body 341 at 1404 bytes, so it cannot screen this
+// one; 0x297a50/0x297660/0x2980d0 stay matched): retail's exit at 0x296d22 stores result = 0 and is reached from
+// both remembered NONE tests, case 1's state < 1 and both normalize failures. A `failure: result = false; goto
+// done;` label after the return taking all of them 257; only the two case exits 256; only the normalize failures
+// 257; all of them with the normalize step as `if (!(normalize > 0)) goto failure; result = true;` 260;
+// reference and state declared inside case 2's and case 1's own blocks 257.
+// DH297: Eight complete direction/point/reference/object case-family orders
+// 361/332/356/392/369/364/384/375 (fast control 341; full 257). The 0,4,3,5,2,1,6
+// order is 360 plain at 1408/1444, rejected; original cases, predicates and full decoder restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
