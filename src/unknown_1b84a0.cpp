@@ -498,6 +498,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // result and native/aligned request: all regress. True-first restores AL production but moves actor
 // offset to EAX; original result and tail homes remain. Scores 112/270/131/268/112/270/131/268.
 // Original executable source restored.
+// Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
+// availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
+// Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

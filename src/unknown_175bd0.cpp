@@ -2074,6 +2074,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 476: direct per-case placement rejection, case orders 0123/0213/1023/2013,
 // named/direct final multiplication query: 164/156/164/156/184/172/184/172.
 // Original placement-result lifetime, type-query block and complete body restored.
+// Round 478: complete native zone-entry/cluster/both/const-both values with
+// cached/live zone selectors: 379/375/375/375 in both sets. Every producer
+// outlines; original complete zone helper, observations and body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3184,6 +3187,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 476: condition-owned location pointer, bool/byte/short/long tint,
 // cached/live mode: 93/98/99/99/108/108/111/109. Live-mode forms lose
 // the matched update caller; original location scope, carriers and body restored.
+// Round 478: single signed-node threshold in bool/byte/short/long storage,
+// cached/live mode, 111/111/111/111/97/97/97/97. Live threshold preserves the
+// matched caller but still regresses. Separate signed/bitwise tests on fields
+// or one native node word, cached/live: 94/109/105/113/94/109/96/115.
+// Original complete body restored; frame and system/color/definition homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3457,6 +3465,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 476: existing shared native point return, pointer/reference matrix and point
 // inputs, original/default-before-color scale: 340/340/340/340/277/277/277/277.
 // Both other shared users regress; original output contract, helpers and body restored.
+// Round 478: complete native coordinate snapshot with indexed conditional scaling,
+// long/short/byte ordinals and repeated scale observation: 387/402/402/387;
+// with default-before-directions scale 354/374/374/354. Both other shared point
+// users regress in every form; original complete helper and body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

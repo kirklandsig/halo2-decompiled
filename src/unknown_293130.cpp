@@ -271,6 +271,11 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 // each 30 (same code); that with (1 - cos) first 30. Diagnostics only: one/two/three dead products after
 // the vector copy 30/57/57 and at entry 30/57/57, only the i and k components named 53; none of them
 // gives retail's (i + k) + j dot.
+// Round 51 (m3 lane 14, fast, on the 30 form): the axis components named once instead of the vector's
+// 181 (1431 bytes); the projection as `dot` then `*= 1 - cos` 30 (same code); the cross terms with the
+// vector operands first 30 (same code); `field_18 = NONE` then `field_10 = field_1a = 0` 31; the axis
+// pointer in a caller local before the vector copy 62. Retail's dot loads a.i, a.k and v.k first and
+// v.j last; ours loads v.j right after its copy store and the dot's a.i last.
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {
