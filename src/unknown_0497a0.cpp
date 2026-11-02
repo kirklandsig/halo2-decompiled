@@ -187,6 +187,13 @@
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 75 (lane 12): retail stores both sines as floats and scales them in SSE (s1's fsin at its definition);
+// ours folds `* 0.03`/`* 0.025` into x87. Only a sine with several uses is stored: the waves per
+// component with the scale product repeated give retail's x87/SSE split but 678 (frame 0x50); with
+// the plain sixth product 664, with the entry shape pointers 624, with both 635. The trig factors (and
+// the 8.2x phase) as named doubles 651; named reals, an inline four-factor helper, sinf/cosf and the
+// global point are forward-substituted (compile-only screens). Retail keeps the factors on the x87
+// stack (fmul st(1)/st(2), fadd st(3), three late pops), order 8.2x, sin x, cos 7.8y, cos 7.75y.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
