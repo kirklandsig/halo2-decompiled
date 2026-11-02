@@ -1868,6 +1868,9 @@ void function_dfd70(long arg_159e6d)
 // direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
 // 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
 // snapshots also need a match. Original shared helper and complete target restored.
+// P269: existing native tag real fields +0x218/+0x21c, mutable/read-only tag and
+// biped roots, initialized/separate pointer declarations, masks 0..7:
+// 248/248/248/248/248/248/248/248. Original tag layout, helpers and body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

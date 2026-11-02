@@ -2022,6 +2022,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // memcpy 178/180/173; heading/both plus memmove 197/201. Four-point leads and literal-bound
 // reference forms rejected; original angle producer and complete body restored. Frame and vector
 // homes remain.
+// P269: native double heading/elevation and twice-used elevation-cosine subsets 1..7,
+// then both double inputs with complete aggregate result: 215/233/210/234/209/233/210/210.
+// Original helper and body restored; frame/angle/vector-copy homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {

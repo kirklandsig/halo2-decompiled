@@ -227,6 +227,9 @@ bool function_a7670(long object_index);
 // long/short-byte/short-short 258/195/300/305/304/299/305/304. All grow beyond retail length; original long
 // processing indices, eager searches, live body bound and consumed island index restored. Entry scratch,
 // scalar homes and admission register remain.
+// P269: native body-array snapshot at pending-island/retry boundaries, each with
+// bool/byte/short/long admission on consumed-index/live-bound/indexed-cleanup graph:
+// 275/275/280/280/275/275/280/280. Exact-only field-pointer forms restored; native homes remain.
 // @retail 0x278f00
 void function_278f00()
 {
