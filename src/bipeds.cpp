@@ -3878,15 +3878,18 @@ real magnitude3d(vector3f const *v);
 /* an actor riding a fast vehicle that is about to leave the ground (no
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
-// MiniMax R (11-01): no new form, no lower score: the tail's actor index still rides in ECX (retail moves it to EDI) because our LTCG knows magnitude3d (0x24590) preserves ECX; marking that helper inline in src/unknown_023540.cpp is the known fix, in a file I may not edit.
-// score 19 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
+// MiniMax R (11-01): earlier, the actor rode in ECX because LTCG knew magnitude3d preserved it; the helper file was closed.
+// score 2 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
 // 0x38c, 0x88-0x90, 0x84, 0x94), constants (0.5, 2.0, 0.0, 0.3, 0.6, 1.5707964), the sum < time test (comiss/jbe 0xe3459),
 // the normal copy over the direction slot (0xe366f-0xe3694) and the 0x54/0x55/0x56 selection all agree; no behaviour
-// difference. Frame 0x84 agrees; the actor index for 0x1fb7e0 stays in ECX across the
-// 0x24590 call (retail moves it to EDI and back: its callers do not trust 0x24590 to keep ECX), and
-// that 2-byte tail difference shifts six jumps to the exit. Round 35: both probes through 0xdf880
+// difference. Frame 0x84 agrees. Only the event-call setup remains: ours pushes both NONEs before `mov ecx, edi`; retail
+// pushes the first, moves the actor, zeroes EDX, then pushes the second. R75: the magnitude tested inside the upright arm,
+// selecting 0x55/0x56 there (19 -> 2 plain; the same with a named one-use angular_speed, not kept): the actor now has
+// retail's EDI home and the six shifted exits agree. Caller-local inline
+// declaration 19; split calls without it 20; one-use/two-use actor locals 2/2; split calls with it 20; inner conditional
+// expression 2; fallback event with it 60. Earlier actor-in-ECX description and Round 35: both probes through 0xdf880
 // (as 0xe30c0 does) 28 at retail length; the vehicle's 0x34c byte 27; the time comparison written
 // sum < time 21; the actor index as a named local 21 (same code); `falling` set before the flight
 // vector 19.
@@ -3951,9 +3954,9 @@ void __stdcall function_e3380(long arg_159e6d)
 				{
 					type = 0x54;
 				}
-				else if (vehicle->up.k > 0.6f && 1.5707964f > magnitude3d(&vehicle->angular_velocity))
+				else if (vehicle->up.k > 0.6f)
 				{
-					type = 0x55;
+					type = 1.5707964f > magnitude3d(&vehicle->angular_velocity) ? 0x55 : 0x56;
 				}
 				else
 				{

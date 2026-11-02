@@ -480,6 +480,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // register argument, 92; the players pointer named at the top is propagated, 85. CL-only, all folded: statistics,
 // delta and by_team qualifiers (16 forms), clamp forms (17: pin helpers, min/max, stores in the arms), the entry
 // in two steps (row pointer then `+= field`, offset in place, field first; 7).
+// Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
+// uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
+// plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
+// local 13. Original body and declarations restored.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

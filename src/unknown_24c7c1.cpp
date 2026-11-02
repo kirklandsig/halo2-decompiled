@@ -452,6 +452,9 @@ void __fastcall function_24cdaf(void)
 // read once into a long 43; saturation on the old value + 1 27; `value += 1` with an if clamp 6;
 // `hud->players + player_index` 6; `!= NULL` / `-= 1` countdown 6. Diagnostics: 1-8 unused locals
 // before the tick block 6 each; no countdown block 84 (tick roles unchanged); no saturation 54.
+// Round 77: assignment in the saturation condition 6; nested saturation assignment 6; pointer
+// assignment in the read/store 6/6; direct read with pointer store 6; pointer read with direct
+// store 6; tick update before the countdown 34; constant-first comparison 6.
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {

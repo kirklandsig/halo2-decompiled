@@ -1438,42 +1438,16 @@ void __stdcall function_205320(long group_index)
 	}
 }
 
-// score 18 (was 18): same instructions as retail, only registers differ after the first call: retail
-// loads the squad pool into EAX, builds the index in EDX and forms the squad with lea eax,[edx+ecx] (so the
-// test of the index can sit before it), then uses EDX/ECX for the object reload and EDX for the new index;
-// ours builds the index in EAX (add eax,ecx) and swaps ECX/EDX after it.
-// The first vehicle read once through a volatile pointer, before the object reload as retail orders
-// it, gives 16; not kept, since it isn't a byte match.
-// Tried: squad_get 18; array address 18; index times size plus data 18; index local 18; or operands swapped
-// 18; early return 18; squad declared at the top 18; object reload into a local first 18; field through a
-// long pointer 18; first vehicle saved before the store 19; inverted test 24; squad lookup at each use 33;
-// squad computed before the NONE test 38 (at the top 42); ternary 45; one store after the test 47;
-// index local updated in place 56/57.
-// Round 42: named scaled offset signed/unsigned 18/18; const squad, then both pointers 18/18;
-// identifier as a real short field 18; low-word helper 44; typed pointer increment/address-of-element 18/18;
-// low-word equality 21; early high-bits predicate 18. The pool/index registers and three-address lea remain.
-// Round 15: a link pointer to the first vehicle (0x201a50's form) 18; byte pointer squad 18; old squad
-// index in a local 18; header pointer local 19; high-word test by shift 18. Compile-only screens
-// reproduce ours exactly and ~20 squad/header/test forms (helper return, NULL-initialized squad, pool
-// local) all keep add eax,ecx; retail's other two sites of this lea (0x1f3430, 0x20d570) are unmatched.
-// Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
-// the existing object_get for both object lookups 18; that with squad_get 18; the reload through
-// object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
-// Round 36: the same register pattern (pool in EAX, index product in EDX, lea) is matched 0x204950's, where
-// the product is computed before the pool load, and unmatched 0x20d570's; compile-only, 1-8 unused locals at
-// three places and a pool/data local change nothing. Real (fast): one store of a full-index local 57 (129
-// bytes, callers inline it), the same assigned in both arms 43; the absolute index named at the top 41; the
-// scaled offset named at the top 40; squad_get again for the salt read 46.
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {
-	s_squad_vehicle_view *object = ((s_squad_vehicle_header *)g_4e0300->data)[object_index & 0xffff].object;
+	s_squad_vehicle_view *object = (s_squad_vehicle_view *)object_get(object_index);
 	if (object->squad_index != NONE)
 		function_201a50(object->squad_index, object_index);
 	if (squad_index != NONE)
 	{
-		s_squad_datum *squad = (s_squad_datum *)(g_51e9d8->data + (squad_index & 0xffff) * sizeof(s_squad_datum));
-		((s_squad_vehicle_header *)g_4e0300->data)[object_index & 0xffff].object->next = squad->first_vehicle_index;
+		s_squad_datum *squad = squad_get(squad_index);
+		((s_squad_vehicle_view *)object_get(object_index))->next = squad_get(squad_index)->first_vehicle_index;
 		squad->first_vehicle_index = object_index;
 		if (!(squad_index & 0xffff0000))
 			object->squad_index = (*(short *)squad << 16) | squad_index;
