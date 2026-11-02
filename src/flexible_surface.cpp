@@ -334,6 +334,8 @@ void function_117510(long index)
 // Round 41 (lane 13, --fast): per-use link fields 154 (742 bytes; ours colours delta j/k/i xmm5/xmm6/xmm4 and length
 // xmm2, retail xmm6/xmm4/xmm3 and xmm5); on it `real length`, `real squared, length`, `vector3f delta` or the link
 // pointer declared at function scope 154 each (scope reaches neither the re-read nor the colouring). All restored.
+// M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
+// 148/156/156/189/180/183/183/183. Original executable body restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -537,6 +539,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
 // 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
+// M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
+// 178/178/178/189/189/189/178/178. Original executable body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -680,6 +684,9 @@ void function_117dd0(long index, vector3f *wind)
 // applied as vector3f_add_scaled(&force, &tangent, -drag, &force) 189 (719 bytes); the dot passed straight to
 // vector3f_scale 63 (same code); both helper forms 66; the point-difference tangent with a written dot
 // `i*i + k*k + j*j` 97 (736 bytes). All restored.
+// Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
+// observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
+// Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {
@@ -768,6 +775,7 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 422 (was 422): frame 0x44 versus 0x2c; descriptor scans, application convention and outer vertex API expansion remain.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
 // Integer orientation 529; null-first lighting 522; per-scan results 530; real type

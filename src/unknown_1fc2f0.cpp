@@ -200,7 +200,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 32 (was 32): the limit test is written the other way round, so the comparison matches
+// score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
+// into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
+// Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -445,6 +447,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
 // (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
 // XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 151 (lane 4, fast): the squared length written out `k*k + j*j + i*i` 32 (same code); the correction
+// products written `scale * d.i`, `d.j * scale`, `d.k * scale` (retail's copy-then-in-place pattern) 32 (same
+// code: the products still sink into the sums); that with the delta through the existing scaled_difference3f
+// (state velocity, velocity, 1.0f) 57 (the i product stays in place, folded into its sum); the tick products
+// written `tick_scale * v.c` with the conversion at the top 32 (same code); each component's state copy placed
+// at the head of its own chain 46 (first difference +0x20); retail's tick and delta order (tick j, tick i,
+// delta i, delta j, tick k, delta k) after the chains 83 (first difference +0x2f).
 // Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
 // deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
 // then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
@@ -453,6 +462,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
 // orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
 // the root changes nothing.
+// DH269: On the named-length graph, native output/local/common base accumulations
+// 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
+// and common-expression publication 50/50. All regress; original body, includes,
+// parameter storage, length lifetime, delta order and correction producer restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
