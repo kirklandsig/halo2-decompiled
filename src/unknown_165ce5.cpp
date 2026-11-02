@@ -1646,6 +1646,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // then all addresses at admission: 222/457/459/225/459/457/236/239
 // (fast control 220, full 218). Original addresses and complete body restored;
 // frame, unit/mode homes and independent look divisions remain.
+// DH285: Native late-magnitude input assignment/memcpy/memmove/components at consumption,
+// then with uninitialized iteration-owned storage: 420/420/426/529/420/420/426/529 fast. Exact-only captures
+// restored; frame, unit/mode homes and independent look divisions remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
