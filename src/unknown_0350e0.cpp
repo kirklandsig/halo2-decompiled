@@ -2163,14 +2163,14 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 202): the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// score 57 (was 57): the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
 // x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
 // float copy (`magnitude`) used by the divide and `fabs((real)length)` so the 0.0001 constant stays a float
 // (retail: sqrt result moved into z's slot, `fst` to the float temp); the six -1..1 samples are `real`
 // (sample + sample - 1.0f), which gives retail's dword `fsub`; the entry+0xc fraction is evaluated before its
 // range, as retail does. What still differs: retail pushes ebx/ebp and esi/edi lazily inside the two count
-// guards (we push all four at the top, with a 4-byte larger frame; ours also loads the random globals and the
+// guards (we push all four at the top; both frames are 0xc; ours also loads the random globals and the
 // count above the second guard); `motion[1] = inverse * motion[1]` order (same code); the loop test reads the
 // count into edx instead of comparing against [ebx].
 // Tried: explicit `if (count > 0)` guard around the loop (257), count read once before the loop (116),
@@ -2181,6 +2181,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // loop random and count receiver 300. Exact-only receiver forms restored with the
 // full original body; lazy saves and the post-fstp memory compare remain.
 // Round 447: existing in-place scale, six distinct sample roles and motion-before-record cursor declarations, subsets 1..7: 57/57/57/64/64/64/64; six sample roles at entry 57. Original body restored; lazy saves and the split final count comparison remain.
+// Round 307: native external state/group/entry layouts, all seven subsets, 57 each;
+// Round 307: all three with native motion records 57. Original raw receivers, body and external types
+// Round 307: restored; delayed register saves and the split post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2346,11 +2349,11 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): frame 0xa0 and loop constants agree; first +0xb saves
+// score 132 (was 132): frame 0xa0 and loop constants agree; first +0xb saves
 // EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
 // also differs. Tried: all six
 // MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
-// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// Earlier: retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
@@ -2378,6 +2381,9 @@ s_cached_input_list g_5234e8[4];
 // graphs, reduced 148/133/147/132/126/135/148/133 (control 136). The native signed-short ordinal plus total
 // reaches 548 bytes in preview but plain is 142 at 562 bytes; restored. Original frame 0xa0 and
 // list/cursor/index register split remain.
+// Round 307: native full-width unsigned index/object/parent carriers, all seven subsets,
+// Round 307: 136 fast each; all three with view before count 149. Reduced control 136 at 538/548;
+// Round 307: original body restored. Full baseline remains 132 at 554/548; list/output/index homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -4198,7 +4204,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
-// score 138 (was 210): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// score 138 (was 138): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
 // calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
 // stores 1 into the slot after function_15680 in both arms of pass 3, and the three passes with
@@ -4226,6 +4232,10 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
 // 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
 // retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
+// Round 307: existing shared light-pass helper for culled/gated/unculled/both culled-gated/
+// Round 307: culled-unculled/gated-unculled/all families 179/198/192/183/189/210/186;
+// Round 307: first pass alone 171. Original caller and all shared helpers restored;
+// Round 307: late enabled stores, dead mode loads and the stub register convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

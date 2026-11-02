@@ -942,6 +942,10 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // (flag below it), so only the flag's one-byte size sends it to the lowest unit.
 // Round 39 (lane 2): repeat_state and the flag packed into one struct local matches (0); not kept, packing
 // locals into a struct is against the lane rules. A form that places the two the same way without the struct is the lead.
+// Round 307: tag flags captured once on the dual-ternary graph 139 fast (834 bytes);
+// Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
+// Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
+// Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

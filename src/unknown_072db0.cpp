@@ -1369,7 +1369,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 31 (was 61): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
+// score 31 (was 31): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
 // the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
@@ -1558,6 +1558,11 @@ struct s_rating_summary
 // Round 290: On explicit team lower-result production, separate team value/change/level carriers,
 // all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
 // summary scheduling and team counter/cursor homes remain, with exact frame and length.
+// Round 307: native indexed team/counter/both receivers on the adjusted-value graph 47/31/41 (counter is calibration);
+// Round 307: body-stepped team/counter/both 116/38/116; indexed-team with stepped counters 44;
+// Round 307: stepped team with indexed counters 116. Original body restored; formatter/count scheduling
+// Round 307: and the swapped team/counter homes remain.
+// Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
