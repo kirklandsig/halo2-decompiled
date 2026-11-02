@@ -3398,6 +3398,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
 // association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
 // restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
+// Round 347: Complete point row publication xzy/yxz/yzx/zxy/zyx, then xzy/zxy/yxz with default-before-
+// color scale: 303/102/131/303/127/262/264/270.
+// Original complete body restored; scale prefix and point-Y preservation remain; both matched helper users regress under every order.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

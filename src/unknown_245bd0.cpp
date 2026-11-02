@@ -411,6 +411,9 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // Original complete body restored; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
 // Round 345: Complete center/sphere and point input values with the existing sphere helper forced inline; native/library copies in all eight combinations: 221/262/221/262/221/262/221/262.
 // Original executable source restored; Frame 0x3c agrees; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
+// Round 347: Native Y normal operand before/after length, self-dot, K-I-J, K-J-I and reverse-dot
+// helpers, then complete operand at Y/containment: 4/4/4/4/4/10/10/4/4/4/61/61.
+// Original complete body restored; sphere X/Z square order and normal/reciprocal ownership remain; four-count forms archived.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

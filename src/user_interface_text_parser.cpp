@@ -627,6 +627,9 @@ done:
 // Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
 // Round 345: Parameter-owned selected string handle on the retained case graph crossed with shared-copy, direct-tag and missing-definition boundaries: 32/54/45/45/32/54/45/45.
 // Original executable source restored; Early EDI save, tag/selector schedule and scratch-address caching remain; switch-table data is excluded from executable gains.
+// Round 347: Default before each genuine case on the retained repeated-copy graph:
+// 32/32/32/32/32/32/32/32.
+// Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
