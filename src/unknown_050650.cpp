@@ -549,7 +549,7 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 333): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
+// score 322 (was 322): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
 // (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
 // schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
@@ -652,6 +652,14 @@ struct s_collision_result_buffer_1697c0
 // 322 plain (1424 B, retail's frame and prologue; the initialiser then dead and dropped, same code). On 322: the
 // single-exit normalize 341 (1449 B), the header normalize3d 340 (1447 B; both put the length temp at the frame
 // bottom as retail), bool clear 344 (1435 B), single-exit with bool clear 368, normalize3d with bool clear 367.
+// Round 242: Normalizer length/inverse-length and norm/reciprocal homes, four naming pairs
+// and two entry reciprocal declarations 322 each; existing length_sq3f and dot3f producers
+// 322/322. All original helpers restored; frame 0xa8 agrees, scratch/axis homes and
+// initialization/rotation schedules remain. Matched caller and shared rotation user unchanged.
+// Round 244: complete normalization outputs via shared scale with named/direct reciprocal,
+// shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
+// 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
+// normalization scratch/axis homes and initialization/rotation schedules remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -868,6 +876,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
 // goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
 // object index read before 0x210850 in both remembered branches 309 (1444 B).
+// Round 243 (fast control 341/1404, full 257/1448): direct false admission returns for
+// movement/pool/selected-reference/attention/object/default, actor admissions/all admissions
+// 396/343/363/343/347/338/343/338. Three-point default forms rejected; all original exits,
+// result producers and native point copies restored. Byte homes and direction-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1309,6 +1321,10 @@ struct s_actor_looking_structure_view
 // Round 121: score written forward-first (j,k,i) 23 (same code) / forward-first i,k,j 25; helper with cross i
 // before the projection (0x170d70's order) 23; cross terms in a vector3f local 62; the dot named before the
 // projection 23.
+// Round 73: all-component/axis-only/vector-only/score array views 23/23/23/23; both dot views 39;
+// candidate reference 139; reused axis-j scalar 158; staged projection j,i,k/j,k,i/i,j,k/i,k,j
+// 60/146/32/21; two-stage projection j,i/i,k/i,j/k,j/k,i/j,k 31/22/31/32/22/32;
+// two-stage loop score 124. A 2400 s permuter startup timed out before its baseline. Restored.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

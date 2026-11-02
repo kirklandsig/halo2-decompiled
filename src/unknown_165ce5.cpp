@@ -1592,6 +1592,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
 // All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
 // J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
+// Round 238: existing orientation-buffer/callback/idle-channel role-name subsets 1..7,
+// then all with uninitialized idle-channel storage owned by the iteration, eight 220 fast
+// (control 220, full 218). Every original declaration, name and complete body restored.
 // Round 45 (lane 13, fast control 220): retail gives the look values their own slots (-0x2c/-0x28) and
 // reloads g_510c54 between them; ours reuses the spring_a/b slots and shares 1/rate. mode renamed
 // weapon_mode 220 (slots unchanged); look values declared at assignment 220; in their own block with
@@ -1624,6 +1627,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 449: Consumed-result overlay-index/activity-at-setter/frame-expression subsets 1..7
 // 229/406/406/371/373/289/289; all plus direct scope-test result 301 (fast control 220, full 218).
 // Original complete executable source restored; opening structural differences remain.
+// Round 293: Complete default/history memcpy or memmove publications, four pairs with
+// original/confined history scopes: 220/417/404/438/220/417/404/438 (fast control 220, full 218).
+// Original body restored; frame, look and unit/mode homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

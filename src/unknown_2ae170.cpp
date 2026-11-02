@@ -575,6 +575,8 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 }
 
 // score 281 (was 281): Workspace frame/prologue and repeated conversion coalescing remain.
+// Aligned frame 0x144 versus retail 0x94, native zero-temporary copies and repeated conversion coalescing remain.
+// Earlier at 281: Workspace frame/prologue and repeated conversion coalescing remain.
 // Aligned 0x144 frame and zero-temporary/descriptor copies versus retail 0x94; repeated converter coalescing remains.
 // Earlier at 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Workspace frame/prologue and repeated conversion coalescing remain.
@@ -710,6 +712,14 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // Round 453: Complete initial-zero sharing between real descriptors, first/second pair roots,
 // first/second/third common roots and three chains: 298/298/303/303/303/303/303/303.
 // Original executable body restored.
+// Round 300: On explicit third sends, direct braced descriptor zeros, subsets 1..7,
+// 295/283/301/302/332/326/343 fast; all at first use 343 (control 297). Second-only confirms 280
+// plain versus 281: one-point gain rejected. Original native value constructors, full zeros, table,
+// helpers, observations and complete body restored; aligned 0x144/0x94 frame and conversion reuse
+// remain.
+// Round 239: On explicit third sends, single static table and first/second phase-owned descriptors,
+// seven subsets 315/289/333/300/336/358/383 fast; all plus both reused levels 432.
+// First phase alone 289 fast (control 297), 312 plain versus 281; frame 0xfc/0x94, original whole initializer restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {
@@ -908,6 +918,12 @@ inline real sound_effects_send_level(c_sound_effects *effects, s_sound_send_para
 // 307; long first-branch levels 309; send-first, inner-first, send-as-bits and first-branch helper
 // forms 296. One-argument bits-to-real helper 342; every sum through decibels_add 470 (1276 B).
 // Remaining there: our compiler makes all-memory sums x87 chains (regrouped); retail stays SSE.
+// Round 301: Right destination produced after first setting, second setting, first sum or first append
+// 384/395/395/395; left also produced at first append 393/400/400/400. Original producer timing
+// restored; frame 0xc agrees, selected-level/right-destination homes and integer/SSE staging remain.
+// Round 240: Successive scalar sum statements in buffer/front/both/rear/buffer-rear/front-rear/all
+// pairs, then all with a named repeated boosted result: 370/370/370/370/370/370/370/370.
+// Original grouping, scalar observations and complete body restored; dispatcher checked.
 // @retail 0x2aefe0
 void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {
@@ -1108,6 +1124,12 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 // offset bits 232 (854 B); no volatile bins 240; long bins, no volatile 242; front-level local 228;
 // offset bits, no volatile 237; bool flag with long bins, no volatile 247; bool flag 246; bool flag
 // with long bins 256; gains at use, bool flag, long bins 254. 240/242/228/237/247 lose the dispatcher.
+// Round 301: Offset captured after front, original/late gain crossed with switch/mode-one-first tail
+// 245/251/244/250; offset after rear 250/256/249/255. Original captures and tail restored; frame
+// 0x20/0x18, mode/input-level homes and second x87 tail sum remain.
+// Round 240: Successive scalar sums front/rear/both/both with tail results
+// on real/bit-held input: 224/224/224/224/230/230/230/230. New own-address forms exact-only;
+// all original scalar observations, grouping, qualifications and complete body restored.
 // @retail 0x2af450
 void c_sound_effects::add_effect_sends_split(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins)
 {

@@ -806,6 +806,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // `row++` everywhere or in the 7/8 arm 512 (same code); timer `seconds / 60, seconds % 60` as arguments 512
 // (same code); timer `minutes = field / 60; seconds = field % 60` 531 (2003 B: retail's unmerged timer arms
 // and 0x85c frame, but seconds keeps EDI and row moves to memory), seconds first 531; a `time` local 512.
+// DH round 268: native text storage for message/format/game/teams/main pair/auxiliary pair/
+// message+auxiliaries/format+auxiliaries 506/512/512/512/506/512/506/512. Only message
+// storage recovers EBP bias, still frame 0x860; six-point lead rejected. Original buffers and body restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

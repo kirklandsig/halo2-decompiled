@@ -592,6 +592,12 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // 353/351/349/347/355/353/351/349; original classifier, outputs and complete body restored.
 // Round 465: intact native normal at plane/entry/material/admitted scopes, each with existing/entry
 // queried-plane scope, 321 each on the scalar-origin graph. Original declarations and full body restored.
+// Round 221: material arm first through the common exit plus direct lookup-return consumption, with
+// separate/shared discarded coefficient outputs, 379/377; both at entry scope 379/377; the four graphs
+// with native byte validity 379/377/379/377. Frame grows to 0x4c and extents to 1288/1286 versus 1243.
+// All thirteen matched controls survive. Original independent coefficient outputs, geometry-first arm,
+// material receiver, Boolean validity, exits, normal/plane arithmetic and full body restored; frame 0x48
+// versus 0x44 and classifier/plane/output homes remain.
 // Round 45 (lane 13, fast): retail loads the shape data three times in the exclusion test and ends it
 // with setne/test. data as a dword/byte-pointer union with the byte test through the pointer 321 (one
 // shared load); pointer check and byte test as one && bool helper 319; the condition as a named bool 321
@@ -625,6 +631,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 451: Existing initial-entity/repeated-root/material-entity helper boundaries,
 // subsets 1..7 and complete graph with shared discarded coefficient: 343/350/360/321/343/350/360/362. Original traversals,
 // coefficient outputs, helper uses and full body restored; frame/classifier/plane homes remain.
+// Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
+// subsets 321 each; all with successive original-group normal/distance sums 321.
+// Original producers, helper contracts and complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

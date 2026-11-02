@@ -1380,7 +1380,7 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 
 /* puts the actors an ai index names into the free seats of a vehicle (or
    makes them walk to them), nearest first, best seat first */
-// score 32 (was 41): Frame 0x6ac and the 846-byte extent agree; iterator/candidate scheduling, leave-request registers and request/slot publication homes remain.
+// score 32 (was 32): Frame 0x6ac and the 846-byte extent agree; iterator/candidate scheduling, leave-request registers and request/slot publication homes remain.
 // Round 244: shared displacement dot 41; existing distance producer 278 (782 bytes);
 // pointer-result for traversal 274, with shared dot 274; capacity-first admission 45,
 // with traversal 278; existing request output/seat reference formals 41/41. All restored.
@@ -1410,6 +1410,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 269: Actual winning-seat pointer, early/late initialization, score/receiver update order and
 // nested/continue admission: eight forms 144 each, frame 0x6b0 versus 0x6ac. Original short
 // winner ordinal, requests and complete body restored; iterator/candidate and seat-load schedules remain.
+// Round 236: Complete cleared-slot family orders OEF/FOE/FEO/EFO, ordinary/chained flags:
+// 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
+// FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
+// flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
 // Round 491: native distance/actor/busy, busy/actor/distance, busy/distance/actor, actor/busy/distance,
 // distance/busy/actor publications 56/253/253/254/253/253/253/253 (last three use a two-consumer actor
 // index). Original publication and requests restored.
@@ -1423,6 +1427,14 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 336: shared collection ordinal long/dword/word/byte/signed-byte/const
+// long/const-dword/const-short 32/32/32/49/49/32/32/32; actual leave-request
+// conditional value long/dword/short/word/byte/signed-byte/const-long/const-short
+// 32/32/69/69/42/42/32/69. Original complete body restored; candidate schedule,
+// leave-request registers and request/slot publication homes remain.
+// Round 243: scalar count/ordinal/selection lexical names, four individual and four paired/complete
+// families, 32 each. Original names and entire executable body restored; candidate scaling,
+// leave-request transport and request publication still differ at the matching frame and extent.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2614,6 +2626,12 @@ struct s_scenario_scripting_view
 // Round 266: native-array differences at direct/resolved/both branches, each with original/loop
 // short counter, then both with typed point access without/with loop counter: 80/80/80/87/87/87/80/87.
 // Original search and includes restored; exact wrapper survives, actor/counter/data homes remain.
+// Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
+// each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
+// Original complete search and shared helper restored; actor/counter/data homes remain.
+// Round 238: resolved-point branch first, branch/loop output storage and separate/returned
+// resolver output crossed with original/loop short counter: 80/80/84/84/87/87/95/95.
+// Original branch priority, output/counter scopes and complete search restored; wrapper stays exact.
 // Round 491: native resolved/displacement/both initialized outputs 96/80/96; reused loop outputs 106; with
 // loop-owned short counter 83/87/84/95. Original outputs and complete search restored.
 // Round 280: paired conditional distance/index results, positive/complementary predicate,
@@ -2628,6 +2646,10 @@ struct s_scenario_scripting_view
 // Round 450: Existing difference-helper native start/end/both/result staging, original counter
 // then loop-owned short counter, 133/131/153/181/122/129/151/175. Original complete search and
 // shared helper restored. Actor/counter homes and delayed scripting observation remain.
+// Round 244: actor acquisition after lower/upper set admission, before search and per iteration,
+// each with early/loop-scope short counter: 89/96/90/95/91/95/98/94. Original acquisition
+// and loop restored; frame 0x18 agrees, actor/counter/set allocation remains. Wrapper
+// also rose 0 -> 1 in the first seven trials.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

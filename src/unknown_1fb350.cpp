@@ -461,6 +461,12 @@ extern "C" void _ReadWriteBarrier(void);
 // barrier 129; data_iterator.h's four-field iterator and data_datum_iterator_next_inlined with the pool local
 // 133; the iterator aggregate-initialised 122 (same code); `animation` declared in the while condition 122
 // (same code).
+// Round 41: retail materialises only the datum lookup's 0-or-pointer (EBP) and threads the unit test; the barrier
+// moved into the unit lookup right after the datum lookup (diagnostic) gives that branch shape exactly, 149
+// (475 bytes; the pool stays in EDI and g_4e0300 in EBP, retail spills both). The unit lookup's result in an
+// if/else 158 (460 bytes), without the barrier 161, with g_4e0300 read into a local first 152; the walk as a
+// `for` with the step as its first and next expressions 310 (the step is emitted twice); the object index read
+// at each use in the deletion test 127.
 // Lane 5 r130 (fast): ours loads g_4e0300 into EBP in the prologue and keeps it across the loop (reloaded
 // after calls); retail reads it at each use. The object array read only after the NONE test 154 (still
 // hoisted); the getter's result filled in an if/else, without the barrier 161; a four-field datum-iterator

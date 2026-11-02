@@ -109,6 +109,10 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 335: Native offset passes position/scale/scaled-input/affine 197/237/199/181;
+// affine-pass normalization orders ikj/jik/jki/kij/kji 180/180/180/179/181.
+// The affine graph reaches 996 bytes and first +0xa9, but regresses; original
+// offset producer, normalization and complete body restored at 85.
 // Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
 // `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
 // itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
@@ -138,6 +142,12 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // 226/219/273; complete field initializers 203/217/247; both through memcpy/memmove 273/261.
 // Native copies grow frame 0x3c to 0x48 or 0x54. Original field observations, scalar precision,
 // body and inherited inline boundary restored; half/reciprocal/projection allocation remains.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
+// Round 223: Native two-component perpendicular value with aggregate/field
+// construction, direct/stored projection and i/j publication order, all eight
+// combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
