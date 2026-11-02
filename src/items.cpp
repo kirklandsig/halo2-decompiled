@@ -1544,6 +1544,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // declaration, seven subsets, then failed-attachment arm first: 139/142/140/141/139/142/141/207.
 // One-point forms rejected; original paired setters, spin capture, release helper and
 // complete body restored. Return byte +0xe/+0xf and release/event homes remain.
+// P261: shared contact/event point at entry/active scope 137/137 (three-point gain, rejected);
+// with sentinel before/after point query 157/160 in either scope; separate points with
+// sentinel before/after 160/161. Paired setters, spin capture and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

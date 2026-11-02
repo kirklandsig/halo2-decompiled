@@ -333,6 +333,9 @@ struct s_free_state_23d260
 // Round 355: shared complete roll cross, direct/staged, on accumulated projection/rows,
 // with pitch observation and named projection complement subsets: 282/282/298/298/191/191/347/347.
 // Original body restored; zero/side normalization and up/roll allocation remain.
+// P261: complete native accumulated roll rows before shared-setter publication,
+// all six producer orders 291 each; direct complete publications 291/292.
+// Original interleaved row stores and full body restored; zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

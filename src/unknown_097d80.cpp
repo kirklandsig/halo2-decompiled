@@ -262,6 +262,9 @@ struct c_aggregate : c_child
 // M302: Common signed block ordinal across dispatch/cleanup, before/after arrays,
 // separate/shared query output and start/end bound order: 31/31/31/31/31/31/33/33.
 // Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
+// P261: shared callback/information output with all six error/total/output lexical
+// priorities 31 each; first two priorities before arrays 31/31. Frame 0x8020
+// recovered, but low loop homes exchange; independent outputs and full body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
