@@ -395,6 +395,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 275: Native current/next indices together, crossed with Boolean departure,
 // early heading and overlap CRT compaction 269/272/269/281/275/262/273/284. Every form loses
 // the matched caller; original word indices, helper and complete body restored.
+// Round 470: Distinct lowest/candidate/compaction ordinal identities, subsets
+// 1/2/4/3/5/6/7, then all with output ordinal named: 170/170/170/170/170/170/170/170. Original body
+// restored; extra frame word and count/departure/bound/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -718,6 +721,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // bitwise OR pairs, positive-test bool 288/304/318/315 and byte
 // 288/304/318/321. Original conditional collectors restored; count ECX,
 // prior-side byte and SIMD homes remain.
+// Round 359: Prior signed-distance state with test-assigned fraction, nonzero/zero first,
+// native/full-decision clamp and both denominator product parts: 270/270/270/270/255/255/255/255.
+// Original state and arithmetic graph restored; count/prior-side and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
