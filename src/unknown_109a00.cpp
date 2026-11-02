@@ -509,6 +509,13 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 292: Overlap-safe previous transform/velocity-pair/center transfers, subsets 1/2/4/3/5/6/7,
 // 236/229/220/219/223/243/256; all with existing center converter 248. Original complete file,
 // helpers, copies and caller restored; input register pair, physics spill and projection schedule remain.
+// Round 28 (lane 17, fast with 0xb7060): the search loop as a force-inlined helper 324 (813 bytes, both velocity
+// getters then stay out of line; head registers retail's and 0xb7060 matches), with the getters force-inlined too 132
+// (925, head and 0xb7060 back), plus the center through the converter 129 (928, entry on the stack). Diagnostics:
+// only both getters out of line, or only the default-body test removed, give retail's head (328, 269); either
+// `entry->active` or `entry->valid` test removed puts the entry on the stack (226, 192). Model index inline 135,
+// scaled locals inline 131, no body pointer 235, those together 131/235. Default-body forms (ternary, field in a
+// local, default-first, count in a local) by found-first and center converter: 112 to 265, converter 149 to 238.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

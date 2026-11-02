@@ -1182,7 +1182,11 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // the query and its callers 2. Round 55: the query's point parameter second, third, fourth
 // or fifth in its list (definition, declarations and calls) 2 each, first 2 (0x17b5d0 2); byte
 // flags parameter 2 (0xd2a50 12); its fifth parameter as a direction pointer passed NULL 2; the
-// retry test as a bool conversion 2, as `(flags & 1) == 1` 2.
+// retry test as a bool conversion 2, as `(flags & 1) == 1` 2. Round 27 (lane 17, fast): `flags &= ~1`
+// first in the retry block 2 (same code); `failed = true` in both arms of the flag test 2 (same code);
+// status declared at function scope 2 (same code); the point defined before the flag tests 66 (464
+// bytes); permuter 46 tries, best 2. Compile-only, every spelling of the retry value (xor, subtract,
+// hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
