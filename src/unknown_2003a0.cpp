@@ -530,6 +530,9 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // the early ordinal frame and scan/flags ownership remain.
 // DL236: Actual iterator flags as the persistent owner, crossed with scan-local ordinal, per-use alternate and count-field observations: 138/133/138/133/138/133/138/133. All restored; ordinal push-ECX home and scan allocation remain; early flag stores lengthen the body.
 // DL244: Published-next scan seed with inner/outer declaration, common/branch-owned next and direct mode outputs 92/92/89/89/94/94/91/91. All restored; early ordinal stack home versus persistent zero and parent/scan registers remain.
+// M320: Source palette selector in short/word/long/dword domains 129/130/128/131;
+// each with the scan-local short ordinal 107/106/108/105. NOT kept: source observations require a match.
+// Original body restored; the ordinal frame and scan/flags allocation remain.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -2383,6 +2386,9 @@ bool function_1df5d0(short team_a, short team_b);
 // restored; in-place health addition, node/pool ordering and maximum registers remain.
 // DL236: Shared population sample as ratio numerator and contribution, word/short/long/dword, original/named node: 178/178/179/179/180/180/182/182. All restored; frame/extent agree, in-place health add and node/pool ordering remain. Named-node sources were exact-only and never retained.
 // DL244: Complete conditional health value with word/short and actor/loop scopes 274/274/274/274; contribution selected first 284/284, with named node 285/285. All restored; frame 0x14 agrees, in-place health addition and node/pool ordering remain.
+// M320: Native unit-health object/field receivers at arm/traversal scope 39/39/39/39;
+// each with the explicit tracking node 92/92/92/92. NOT kept: one-use receivers require a match.
+// Original body restored; the merged health add and node/pool allocation remain.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
