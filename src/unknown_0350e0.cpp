@@ -1301,6 +1301,9 @@ long function_baf80(long object_index);
 // load does). Tried: the parent object as `long *` (as matched 0x17bab0 writes it) with `[parent & 0xffff]` 22,
 // a parent header pointer 22, `long parent_index = parent & 0xffff` 22, `if (model == NONE) return;` 12, a two-caller
 // inline model-index helper for the object and its parent 22.
+// Round 111: initial definition as `long *` 12; parent definition as `long *` 12; parent definition inlined 12;
+// parent slot as dword/long from the narrowed handle 12/12; a shared tag-table local 12; settings as a real
+// array 12; the read-only object/definition chain const 12; the parent slot masked again in its array subscript 12.
 // @retail 0x4baf0
 void function_4baf0(long object_index, real distance, byte *first, byte *second)
 {

@@ -2192,6 +2192,9 @@ void sound_update_locations(void)
 // per add, maximum local, fade-out locals, inverted fade test, transition-time local, continues, index scope) never
 // below 13: the three step adds come out copy/copy/in-place, in-place/copy/copy or copy/copy/copy, never retail's
 // copy/in-place/copy. Permuter (600 s, 63 tries) none below 13.
+// Round 111: candidate-environment cursor 13; fade-out environment cursor 25 (627 bytes), both cursors 25;
+// direct fade-out globals 111; direct request-element accesses 204 (641 bytes); unsigned selected slot 14
+// (only its bit-vector shift changes); fade-out environment declared after step 13; unsigned request counter 13.
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
