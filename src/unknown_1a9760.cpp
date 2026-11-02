@@ -160,6 +160,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
 // vector-mediated/direct first projection:
 // 187/187/187/187/187/187/187/187. Original complete executable source restored.
+// Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
+// named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
+// root before the offset loop 181. Original body restored at 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
