@@ -309,6 +309,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 292: Overlap-safe scalar-RGB/merge-record/four-channel input copies, subsets 1/2/4/3/5/6/7,
 // 1100/888/961/1214/1194/1077/1328; all with normalized-publication input copy 1552. All enlarge
 // frame/code; original helper bodies and source-weight capture restored. Palette/record/SIMD homes remain.
+// N295: Independent palette-input/metadata-default/weighted-state lifetimes before the provider,
+// subsets 1-7 625/718/755/618/625/625/625; all with signed-byte palette 749. Original order,
+// body and helpers restored; palette/record and SIMD accumulator homes remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
