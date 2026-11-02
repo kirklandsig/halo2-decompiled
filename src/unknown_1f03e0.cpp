@@ -852,7 +852,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 433 (was 590): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
+// score 433 (was 433): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
 // arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
 // chain exact (mixed reads, not kept).
@@ -989,6 +989,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
 // Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
+// Round 534: complete predicate/direct raw-bounded/general raw-bounded roles, seven
+// subsets then early uninitialized direct bounded workspace: 433/433/433/433/433/433/433/433.
+// Original complete body restored; damping carrier, raw/bounded homes and product sides remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
