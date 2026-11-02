@@ -1514,6 +1514,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // Round 296: Standard native-array release/damping multiplication and paired event-transfer
 // subsets 1..7 289/231/260/181/278/247/249; all with backward paired event transfer 247. Original
 // helper, setters, body and includes restored; return-byte, release RMW/tail and event homes remain.
+// N304: Spin field read at both uses before damping, bool/byte/short/long results
+// with bitwise/logical accumulation: 173/173/168/174/198/191/185/190. Bool/byte
+// recover return byte +0xf but regress; original two-use spin snapshot retained.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

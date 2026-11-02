@@ -310,6 +310,9 @@ struct s_block_candidate
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
+// N304: Actual allocation/category/predecessor spill-name subsets 1..7 all 347;
+// all names with limit-before-result 397 (1228 bytes, frame 0x1050). Original body
+// restored; missing frame dword and page/ring ownership remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

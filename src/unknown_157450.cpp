@@ -5666,6 +5666,9 @@ void __stdcall function_d6bc0(long object_index);
 // 144/189/189/239/239/245/245; all with read-only point receivers 245. Original body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
 // Object-point storage recovers frame 0x18 at 189/872 bytes but worsens the register lifetimes.
+// N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
+// with immutable kind, 144 in all eight forms. Original signed-word producers
+// restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

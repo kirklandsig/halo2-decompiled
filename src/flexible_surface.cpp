@@ -550,6 +550,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // source restored; frame, old-direction storage and seed/time/rotation/tail scheduling remain.
 // M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
 // 178/178/178/189/189/189/178/178. Original executable body restored.
+// N304: Uniform scalar direction/axis/cross product families, seven subsets
+// then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
+// frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -702,6 +705,9 @@ void function_117dd0(long index, vector3f *wind)
 // N302: Complete inertia coordinate loop, weighted inputs separate/fused, crossed with complete
 // tangent/force and final-point coordinate consumers: 114/185/208/168/114/185/208/168. Original
 // body restored; frame/cursor agree, weight publication and Verlet-X/vector scheduling remain.
+// N304: Six uniform scalar weighted-coordinate products, direct/snapshot inputs,
+// mutable/immutable terms and aggregate/setter outputs: 238/179/238/179/238/175/238/175.
+// Original body restored; frame/cursor agree, inertial-X and preheader scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {
