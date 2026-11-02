@@ -695,6 +695,7 @@ bool sound_driver_voice_create_buffer(
 // Round 354: Real submix/spatial output-field references and count-first mixbin stores
 // subsets 1..7, then spatial-first predicates: 82/158/170/74/85/156/168/166. Original actual output
 // slots, descriptors, pairs, SDK flags, modes and calls restored.
+// Round 357: Native-frame multi-use input-bin carrier, dword/long at admission/entry with playback-first then spatial-first predicates 71/71/71/71/182/182/182/182. Original parameter observations, descriptors and body restored; Boolean/zero/input allocation remains.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
