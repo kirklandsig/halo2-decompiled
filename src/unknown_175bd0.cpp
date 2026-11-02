@@ -2068,6 +2068,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // complete point and plane with named distance, mutable/const 379/379. Original zone producer
 // restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
 // Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
+// DH round 273: complete transform values in existing/distinct output, crossed with native node word
+// and iteration scope: 161/197/161/197/161/197/161/197. Original pointer-result ownership, node
+// observations, workspaces and body restored; early color home and frame remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3151,6 +3154,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // used node word and traversal-scope matrix, 110/140/110/140/110/140/110/140. Cached-mode forms retain frame
 // 0x4c and add copy work; per-call forms recover frame 0x54 but lose matched caller 0x176f60 (25). All
 // exact-only forms, input contracts, pointer-result ownership and complete original body restored.
+// DH round 273: native pooled-location pointer frontier with live mode/native node word/inactive-
+// return subsets: 170/181/170/181/161/177/161/177. All original handle cursors, mode observation, node
+// tests, successor result and executable body restored; frame and system/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
