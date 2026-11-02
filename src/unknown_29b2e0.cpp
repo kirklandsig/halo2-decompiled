@@ -52,6 +52,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 176 (was 244): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // Frame 0x2c and early J preload agree; root/yaw homes, one constant in XMM5 versus XMM4, and rotation registers remain.
 // Earlier at 244: frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -227,6 +228,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
 // with complete role names 255/255/255/255/255/255/255/255.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// M291: Existing staged rotation cross with result orders ijk/jik/kij/kji, without/with staged pitch axis (grouping exact-only):
+// 292/292/292/292/279/279/279/279. Original executable body restored.
 // Round 452: pitch-axis production at successful validation, after signed angles, after angular clamps or
 // after turn updates, original then shared cross: 407/370/364/284/401/351/345/263. Original late axis, helper
 // bodies and full source restored; unity register and magnitude/yaw/pitch homes remain.

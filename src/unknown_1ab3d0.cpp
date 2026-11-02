@@ -150,6 +150,11 @@ static __forceinline long real_to_long(real value);
 // slot_state->direction for all three direction reads 50 (472 B); a facing pointer for all three 6
 // (also before the helper call, or for k/j, or j/i with direction.i through the slot 6 each). A
 // one-file LTCG harness (exact: 2) over 136 spellings of the dot never loads direction.i first.
+// Round 134 (fast): the projection named at the block top and tested `< 0` 2; the direction pointer
+// assigned only from the helper's result 4; initialised from the helper call 4; a velocity pointer for
+// the helper's argument 4; a facing reference for the dot 6. Harness probes: parentheses (1-7) anywhere
+// in the function leave it at 2 (only around the i product: 6); unused locals only swap the j/i terms;
+// an earlier read of direction->i or of the facing's i (diagnostic) 80-117.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {
