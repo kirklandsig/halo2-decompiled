@@ -310,6 +310,7 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
 // Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
 // input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
+// M303: Shared bounded helper with library byte search, conditional/early return, original/direct source and flat/nested guards: 50 in all eight forms; shared find 37 and caller 84/75 regress, so helper and body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

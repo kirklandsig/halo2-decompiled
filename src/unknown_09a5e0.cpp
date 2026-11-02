@@ -2271,6 +2271,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
 // three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
 // object/offset homes and low-mask ownership remain.
+// M303: Positive-four countdown signed-char/byte/short/word at loop scope or entry: 155 in all eight forms; original long countdown and lifetime restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
