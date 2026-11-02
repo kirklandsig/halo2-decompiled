@@ -1235,7 +1235,8 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 137): unchanged this round: the entry still loads the class table into EDI where
+// score 137 (was 137): Frame 0xc agrees; table/index entry, elapsed/interpolation homes and the copied hold gain remain.
+// Earlier at 137 (was 137): unchanged this round: the entry still loads the class table into EDI where
 // retail uses EDX, the first branch still multiplies the fade-out time before the inverse (so the
 // elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
 // the hold branch still copies the ducking gain through a stack temporary our code folds away.
@@ -1333,6 +1334,9 @@ long function_2197f0(real gain);
 // 155/155, with shared hold addition 116/116. The 116 forms write the aggregate through its own
 // address and are restored without a match. Original helper, table receiver and full body restored;
 // frame 0xc agrees; elapsed/interpolation and copied hold-gain homes remain.
+// N314: Sequential composite time as base accumulator/release accumulator/complete time accumulator/
+// staged release-time producer, each with original/table-first entry: 137/146, 137/146, 137/145, 137/145.
+// All helpers, arithmetic associations, gain representation and complete original body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2887,6 +2891,13 @@ static inline short sound_voice_find_available_channel(char type)
 // subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
 // Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
 // eight, entry voice/global scheduling and early failure tail remain.
+// N314: Condition-controlled availability scan with assigned/direct exhaustion results, independent/chained
+// defaults and native byte/committed Boolean results: 134/138/64/128/134/138/64/128. The 64 form (plain,
+// 435/430: frame eight and the later failure tail recovered; entry registers, search exit checks, sentinel
+// sharing and status test remain) needs a second `result = true;` before the commit's goto, where result
+// is already true: a redundant store, not kept without a match (coordinator review 11-02). Without it the
+// same scan scores 134. On that graph, long private search input/complemented status/both 107/130/60.
+// Original helper, byte result and full body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3666,7 +3677,8 @@ struct s_128ca0
 
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
-// score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
+// Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3766,6 +3778,10 @@ struct s_128ca0
 // with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
 // Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
 // round trip between each pin argument's sum and the pin parameter.
+// N314: Packet field owns both unpinned gain producers before the existing clamp; original/inner reference/
+// shared scale/both 222/269/277/249, with shared branch gain workspace 222/269/277/249. Inner reference
+// alone recovers frame 0x494 and first +0x44 but regresses; the packet stores fold away. Original body,
+// gain homes, scale observations, helpers, countdown arms and protected call inputs restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

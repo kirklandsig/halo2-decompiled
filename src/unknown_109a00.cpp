@@ -406,7 +406,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
-// score 112 (was 112): retail takes the object index in eax and the entry
+// score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
+// Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last
 // difference), and orders the dot product's terms k, j, i (ours k, i, j;
 // the source order of the terms does not change the code). Retail copies the
@@ -534,6 +535,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // The larger existing helper stays out of line, shrinking the caller to 659..666 bytes and worsening
 // its caller to 11; exact-only boundary forms restored. Original default producer, search and center
 // transfer restored; frame 0x48, input register pair and physics/projection scheduling remain.
+// N314: Force expansion of the existing complete default/search selector and both velocity getters;
+// eager/late fallback with latch/early result 251/272/199/275, existing center conversion 241/264/254/268.
+// The selector now expands, but input roles and scalar/transfer scheduling regress; six forms worsen the
+// caller from 2 to 11. All complete-search ownership, helper qualifiers, center transfers and executable
+// body restored; original private selector, getters, caller inputs and arithmetic retained.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
