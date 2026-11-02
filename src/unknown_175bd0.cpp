@@ -2061,6 +2061,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
 // in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
 // query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
+// Round 288: Native placement rejection in bool/byte/signed-char/short/word/long
+// 139/139/139/168/168/164; true/false default rejection 139/139. Original positive
+// placement result, color observations, query carriers and full body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3161,6 +3164,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // DH round 273: native pooled-location pointer frontier with live mode/native node word/inactive-
 // return subsets: 170/181/170/181/161/177/161/177. All original handle cursors, mode observation, node
 // tests, successor result and executable body restored; frame and system/color homes remain.
+// Round 288: Single successor-return exit with result-first, live mode and complete
+// node-at-consumer subsets 0..7: 93/93/108/108/107/107/112/112. Live-mode and
+// node-at-consumer forms lose the exact caller; original body and input contract restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
