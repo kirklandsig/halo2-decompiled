@@ -531,6 +531,11 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // the clear through the existing bit_vector_fill re-measured with the shift/mask test 216/213 (still out of
 // line). With the mask test the set loads the word through the folded address and stores through a
 // separate `lea`, so the load is not fused with the store.
+// Round 115 (lane 7, fast): the node index named once after the second lookup for 0x1d90e0 and the set 44
+// (LTCG keeps it in ESI across the call; retail reloads the field), with the mask test 40 (542 bytes; the set
+// stays mask-first load/OR/store, so its shape follows the test's form, not the index's value number); the
+// model looked up at the 0x1d90e0 call 122, with the mask test 132; each arm's iterator stores first and the
+// graph looked up in the iterator call's argument 110.
 // Round 52: retail's inline clear is exactly the body of the existing bit_vector_fill (0x12afc0, out of line
 // in retail too), so retail likely called it here and LTCG inlined it, which also escapes the visited words
 // (lane 1's cause for retail's fused set). Our LTCG keeps it out of line: with bit_vector_test 213 (fast and
@@ -1655,6 +1660,11 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 243: Reused long/word/dword header ordinal and long byte offset,
 // at entry 491/469/491/489 and within controlled admission 495/461/495/476.
 // Original pool observations and body restored; frame/state/request/result homes remain.
+// Round 115 (lane 7, fast): slot bytes read through the unit local 450 (same code); the first depletion as one
+// assignment 481; `bool result = true;` without the default arm re-measured 483 (the unit index then arrives in
+// EDI); `controlling` read before the control/state pointers 444 (1793 bytes, a gain of 6 only), with bool
+// depleted/byte interruptible/flags declared in reverse/bool overlay 470/472/461/453; state before control 450.
+// Retail 0x110ab0 re-reads g_4e0300->data for the second slot block the same way with no store in between.
 // Round 273: Reused two-request primary membership bool/byte/short/long before the
 // predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
 // comparisons, case results and complete body restored; frame eight versus twelve remains.
@@ -1992,6 +2002,13 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 243: Complete two-use center predicate byte/short/long/dword storage
 // 790/848/786/786; complementary bool/byte/short/long 844/844/836/831. Long/dword gain
 // only four at 3392 bytes and are dropped. Original predicate, helper and complete body restored.
+// Round 115 (lane 7, fast; aligned = difflib count, 584 at 790): the overlay ratio as the product then
+// `ratio += 0.5f` 859 (retail's mulss/addss on one 0.5 register, aligned 577); the overlay `for` loop
+// re-measured 882 (first 0x11df30 inlined as in retail, frame 0xc8), with that ratio 867; the projection
+// reading its input in place 833 (3403 bytes, aligned 573), with the for loop 922, with the ratio 848; the
+// projection's copy written field by field 911 (aligned 561), with the for loop 856 (aligned 542: the
+// projection is then SSE in place as in retail), copy orders k,j,i / j,k,i with the for loop 859/857.
+// Retail's frame also holds unreferenced bytes at +0x28, +0x70 and +0x98..+0xa3 (after the basis vectors).
 // Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
 // all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
 // native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
