@@ -67,9 +67,8 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 	if (!function_1c5210(&matrix, &capsule, *(long *)(input + 0x18), *(long *)(input + 0x24))) *(dword *)out |= 2;
 	else *(dword *)out &= ~2;
 }
-// score 319 (was 319): Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
-
 // score 319 (was 319): Aligned 0x94 frame agrees; move/input register ownership, physics reloads and velocity null test remain.
+// Earlier: Aligned frame 0x94 agrees; move/input ownership, physics reloads and native velocity guard remain.
 // MiniMax lane C (run 36, 10-31): no new form, no lower score; the move and input pointers still
 // trade EBX and EDI, and ours still keeps the state pointer in ESI where retail reads it from its
 // stack slot; 1176 bytes against retail's 1164.
@@ -180,6 +179,9 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // Round 284: inactive-tail early return, activity bool/byte/short/long and separate
 // refreshed-object lifetime: 319/319/318/319 twice. One-point word-storage gain rejected;
 // original aligned helper and complete body restored. Entry pointer ownership remains.
+// DL231: Existing aligned capsule helper complete bool/byte/short/long results, direct predicate then
+// result-first: 330/330/330/330/330/330/339/334. Move/input/physics ownership, case-3 convention and
+// native velocity guard remain; original executable source restored.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {
