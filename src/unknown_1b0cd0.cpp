@@ -428,6 +428,8 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // top of the active branch 66. With a short index and the mode at the call the >= 7 block is
 // retail's except that the list is read from the stack (no EBX reload at the join) and the two
 // closing flag stores share `mov al, 1`.
+// Round 48: the index as `& 0xffff` 12, as a dword 12; the origin through a second actor_get of the
+// leader 149 (780 bytes); the point declared with forward/left 12; the 0x1b0e40 result named 12.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
