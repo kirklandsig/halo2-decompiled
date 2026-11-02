@@ -874,7 +874,7 @@ short __stdcall function_1c8df0(short source_cell, short target_cell, point3f co
 short function_25c9d0(long actor_index, long prop_ref_index, bool player, short sight,
 	void *point, byte *sample, long reported);
 short function_25cb60(long actor_index, long object_index, short type, void *sample,
-	void *point, long location, long sight);
+	void *point, long location, short sight);
 short function_25cca0(long prop_ref_index);
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range);
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
