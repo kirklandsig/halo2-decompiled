@@ -790,6 +790,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // observation and complete body restored; initial unit-call scratch rotation remains.
 // Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
 // pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
+// Round 353: Second-probe-only reverse producer, existing setter, scoped second output
+// and probe-output role names, 135/135/191/191/135/135/191/191. Original probe workspace
+// and complete body restored; unit-call scratch register and length/projection/query homes remain.
 // Round 507: Uniform three-use object radius after properties/delta/projection/positive
 // admission 221/221/216/215; opposite sum operands give the same four scores. Original
 // field observations and body restored; unit-argument and scalar homes remain.
