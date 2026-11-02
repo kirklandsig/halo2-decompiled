@@ -258,6 +258,11 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
 // declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
 // retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
+// Round 194 (fast): a `bool const valid` copied into success with the branch on valid 55 (351 bytes);
+// `success = opened & 1` with the branch on the long 41 (one point, not kept); `success = opened ?
+// true : false` 42; `success = 0 != opened` with the branch on success 55 (351 bytes); the long from
+// the array element with a const file copy declared after the success store 42. The memory re-test
+// still needs a volatile success byte (not allowed).
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

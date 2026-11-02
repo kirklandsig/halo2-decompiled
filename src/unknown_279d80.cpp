@@ -1985,6 +1985,12 @@ void function_27dd10(void)
 // and destination parameters swapped 2; the saved fraction declared first 2; the orchestration output
 // and cursor declarations swapped 2; a const in-place predicate 2; output selection as if/else 2;
 // a constant-initialized blend-weight local 2. All restored.
+// Round 194 (fast): the wrapper written out as three function_288572 calls, count declared last/first
+// 2/2, node index per pass 20, bit flags per pass 40, both 44; in function_288572 the destination index
+// declared at the inner body's top 2, with the last node 2, the frame-state saves declared before the
+// interpolation test 2, the inheritance read from the global 2, flags at function scope 2; in
+// function_288571 the later passes' count as a ternary copy 2 (0x281b60 39), as a clamped copy 2,
+// separate translation and scale copies 2 (0x288570 120). All restored.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
@@ -2070,6 +2076,10 @@ void function_2818e0(void)
 // lanes plus a sign store 256; a negative-zero scalar 308; an __m128 mask 235; a zero __m128 plus
 // a sign store 290; split dword initialization 2 (0x289580 78); quaternion fields 256; ordinary
 // inline multiply 480; the flag declaration split from its read 2.
+// Round 194 (fast, shared helpers): in function_288572 the destination index declared at the inner
+// body's top or with the last node, frame-state saves before the interpolation test, flags at function
+// scope 2 each; the later passes' count as a ternary or clamped copy in function_288571 39, as
+// separate translation and scale copies 2. All restored.
 // @retail 0x281b60
 void function_281b60(void)
 {
