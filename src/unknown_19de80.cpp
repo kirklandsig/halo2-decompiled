@@ -441,6 +441,9 @@ static inline bool teams_enabled_19e1c0()
 // local 691. Re-measured listed forms: long team with `best_score <=` 421, event teams read at each use 394.
 // Retail never gives `token` a register (re-read from its home before every compare, the first one hoisted
 // above `sub esp`), which is what keeps the four name/team tails apart.
+// Round 304: unsigned library copy counts published before copying, player/team/both/fallback/
+// player-fallback/team-fallback/all 499/511/649/401/508/532/647; all with ordinary result 693.
+// Original result, signed clamps, copy paths and complete body restored; frame and tail merging remain.
 // Round 449: Complete player/team/other token dispatch results, bool subsets 1..7
 // 454/454/454/454/454/454/454; all with ordinary final result 736 (fast control 390, full 390).
 // Original complete executable source restored; opening structural differences remain.
