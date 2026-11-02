@@ -114,20 +114,21 @@ struct s_decal_quad_17d9a0
 
 short function_120850(vector3f const *v);
 
-PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, real const *x, real const *y, s_decal_quad_17d9a0 *quad, point2f *out)
+inline void point2f_set(point2f *point, real x, real y);
+
+PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, real const *x, real const *y, long axis, bool side, point2f *out)
 {
-	point3f point;
-	short const *axes = g_440b94[quad->axis * 2 + quad->positive];
-	point.x = matrix->forward.i * *x + matrix->left.i * *y + matrix->position.x;
-	point.y = matrix->left.j * *y + matrix->forward.j * *x + matrix->position.y;
-	point.z = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
-	short horizontal_axis = axes[0];
-	short vertical_axis = axes[1];
-	out->x = ((real const *)&point)[horizontal_axis];
-	out->y = ((real const *)&point)[vertical_axis];
+	real point[3];
+	point[0] = matrix->forward.i * *x + matrix->left.i * *y + matrix->position.x;
+	point[1] = matrix->left.j * *y + matrix->forward.j * *x + matrix->position.y;
+	point[2] = matrix->forward.k * *x + matrix->left.k * *y + matrix->position.z;
+	point2f_set(out, point[g_440b94[axis * 2 + side][0]], point[g_440b94[axis * 2 + side][1]]);
 }
 
-// score 138 (was 138): frame 0xc and matrix/dot prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
+// score 46 (was 138): retail's length and every lookup, store and the tail; left are the products' load/memory sides (retail's
+// ranks: j fields > bounds[1,2] > i fields > bounds[0,3] > k fields; ours differ and move with symbol count), the plane store base
+// and the first corner's registers (the axis stays live in ECX, so the flag takes EAX). Earlier at 138: frame 0xc and matrix/dot
+// prefix agree; plane-store base, projection operands/publication and inverse schedule remain.
 // At 158: plane-distance store base and projection/edge scheduling remain; both indices long 179f, horizontal long 164f, vertical long 179f, captured-index Y-first 164f, plane view after normal copy 181f.
 // Read-only projection metadata 164; selector field inputs 164; output reference 164; shared
 // point construction 162; vertical index first 164; table row before point 158 (kept); complete
@@ -295,6 +296,25 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 457: Projection X/Y publication through the eight nonoriginal direct/memcpy/memmove pairs;
 // original points, selectors, plane and edge math preserved. Scores
 // 138/787/138/138/787/774/774/787. Original executable body restored.
+// Round 136 (m3 lane 5, fast with 0x120810/0x120850/0x17d900, plain confirmed): retail loads the side as a byte and the axis
+// with movsx at each later corner's start, as arguments evaluated before the products, then indexes the table for x and y;
+// the corner helper now takes them by value. By value (short, bool) with two lookups 173 (968, aligned 152 -> 115), x first 173,
+// byte side 173, side before axis 174, side + axis*2 173, named index 187, both long 191, (long, bool) 193 (956, aligned 106),
+// (bool, long) 193; products with *x first / forward-first rows 193; x/y value locals 197. Named x/y lookups (long, bool)
+// 176 (972), (short, bool) 158 (984), existing 0x120810 191, named index 187. With an if/else inverse and the edges (scalar,
+// vector2d_from_points2d, first length named) and a plane pointer: short scalar 158, +plane 179; short points 167 (992, aligned
+// 56), +plane 186, named 167, +plane 185; long scalar 179, +plane 198; long points 174 (983), +plane 193, named 174, +plane 186.
+// Long copy of a short param 165, its row local 162/180; short axis local in the body 167/174/164/169/161. `long axis =
+// function_120850(...)` with `quad->axis = (short)axis` keeps the first corner's sign extension out of the earlier one: 54;
+// stored after the flag 70/65; `quad->axis = f(); long axis = quad->axis` 174/167; short then long 168/169; chained 174/167.
+// All 16 orders of row terms and product operands 54 (same code). 77 random combinations of value order, store order,
+// corner pointer, tail, plane pointer, declaration place, out parameter place 46-95. Existing 0x120810 from the by-value
+// helper 159 (983, aligned 61: `movzx edx, byte` where retail has `mov al`), first length named 163, corner pointer kept 165,
+// reading the quad inside 163, point built in its first argument 163. `real point[3]` with x and y value locals 46, y first
+// 46, first length named 48/48; the same through the existing point2f_set 46 (kept: same code, no one-use locals); direct
+// stores 142 (964: both copies go through integer registers), y first 142; a corner local copied out 244 (1039); a
+// two-call component helper 144; a row pointer local 142. Forward/left pointer locals 64, with origin 60; references for
+// the coordinates 46; box fields 50, with pointers 62; rows z, y, x 79; rows y, x, z 71.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -302,22 +322,20 @@ void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_qu
 	quad->bounds = *(box2f const *)bounds;
 	quad->plane.n = matrix->up;
 	quad->plane.d = dot3f(&quad->plane.n, (vector3f const *)&matrix->position);
-	quad->axis = function_120850(&quad->plane.n);
-	quad->positive = ((real const *)&quad->plane.n)[quad->axis] > 0.0f;
-	point2f *corners = quad->corners;
-	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[2], quad, &corners[0]);
-	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[2], quad, &corners[1]);
-	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[3], quad, &corners[2]);
-	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[3], quad, &corners[3]);
-	quad->edges[0].i = corners[1].x - corners[0].x;
-	quad->edges[0].j = corners[1].y - corners[0].y;
-	quad->edges[1].i = corners[3].x - corners[0].x;
-	quad->edges[1].j = corners[3].y - corners[0].y;
-	real first_edge_squared = quad->edges[0].i * quad->edges[0].i + quad->edges[0].j * quad->edges[0].j;
-	quad->inverse_determinant =
-		first_edge_squared > 0.0001f &&
-		quad->edges[1].i * quad->edges[1].i + quad->edges[1].j * quad->edges[1].j > 0.0001f
-		? 1.0f / (quad->edges[1].j * quad->edges[0].i - quad->edges[0].j * quad->edges[1].i) : 0.0f;
+	long axis = function_120850(&quad->plane.n);
+	quad->axis = (short)axis;
+	quad->positive = ((real const *)&quad->plane.n)[axis] > 0.0f;
+	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[2], quad->axis, quad->positive, &quad->corners[0]);
+	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[2], quad->axis, quad->positive, &quad->corners[1]);
+	decal_project_corner_17d9a0(matrix, &bounds[1], &bounds[3], quad->axis, quad->positive, &quad->corners[2]);
+	decal_project_corner_17d9a0(matrix, &bounds[0], &bounds[3], quad->axis, quad->positive, &quad->corners[3]);
+	vector2d_from_points2d(&quad->corners[0], &quad->corners[1], (point2f *)&quad->edges[0]);
+	vector2d_from_points2d(&quad->corners[0], &quad->corners[3], (point2f *)&quad->edges[1]);
+	if (quad->edges[0].i * quad->edges[0].i + quad->edges[0].j * quad->edges[0].j > 0.0001f &&
+		quad->edges[1].i * quad->edges[1].i + quad->edges[1].j * quad->edges[1].j > 0.0001f)
+		quad->inverse_determinant = 1.0f / (quad->edges[1].j * quad->edges[0].i - quad->edges[0].j * quad->edges[1].i);
+	else
+		quad->inverse_determinant = 0.0f;
 }
 
 struct s_decal_mesh_edge
