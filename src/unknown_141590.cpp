@@ -292,6 +292,12 @@ static inline void quaternion_transform_vector(
 // independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
 // transform at 596 bytes; original helper, halves and complete body restored.
 // Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
+// DL228: plain forward/up/left field-table traversal, long/dword/short/word ordinals,
+// ordinary and forced existing helper: 279/279/745/745/279/279/745/745.
+// Original three in-place calls, helper and body restored; quaternion/spill homes remain.
+// M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
+// cross components:
+// 200/200/200/249/249/249/249/261. Original executable body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -970,6 +976,10 @@ void function_143250(
 // first-producer/final-consumer declaration order, double-first/real-first declarations,
 // numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
 // precision boundary and publication retained; complete original scalar graph/body restored.
+// Round 297: same-real one-use negative/literal-scaling/unequal-factor product families,
+// masks 1..7, 1767/1767/1767/1766/1766/1771/1771; complete graph with independent
+// original basis/matrix storage 2237. Squares and reused values retained; all executable
+// source restored. Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

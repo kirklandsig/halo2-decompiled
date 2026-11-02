@@ -171,6 +171,9 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // Round 37 (fast): the level passed without the byte cast 16; first/second declared before the
 // flags copy 16; index declared before the selected byte 16; category or instance read through the
 // original 206/201. Both causes stay BLOCKED-BY the held src/unknown_1321f0.cpp (0x2cbf0's prototype).
+// Round 118: active record for three call inputs 239; category row at the call/before the inner
+// loop 16/16; direct pointer arithmetic, category value and element address 16 each; active record
+// for every call input 215; active record from the feature read 239. Caller preserved; original restored.
 // @retail 0x133f70
 void function_133f70(s_133f70 const *record, bool arg_2)
 {

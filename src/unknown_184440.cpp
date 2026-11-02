@@ -263,6 +263,9 @@ __forceinline bool function_184448(long arg_0)
 // Round 463: complete normalizer output publication, scalar/native early result, direct/scalar/native
 // common result, then early scalar/common direct/common native with inverse declared first:
 // 965/1087/988/988/1062/965/988/1062. Original helper restored; frame excess remains.
+// Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
+// matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
+// basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

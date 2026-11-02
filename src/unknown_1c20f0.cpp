@@ -106,10 +106,13 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // own bytes give (point the only stack argument), with start computed before direction and result first:
 // this function and 0x26d100 match (fast) with every matched caller kept. BLOCKED-BY 0x270400 (two of
 // the call lines are in contributor code); without the reorder start/result first 37 on 0x26d100.
+// Round 195 (lane 3, fast): the point helper storing through x/y/z temporaries 164 (907 bytes); the end point
+// from the existing vector3f_add_scaled 23; end declared first in the loop block 23; node_index declared at
+// its call 23; the direction read through a pointer to the parameter dropped 23 (same code, kept).
+// 0x26d100's file is on another lane's list this round, so its reorder was not retried.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
-	vector3f const *const *direction_slot = &direction;
 	s_actor_view *actor = actor_get(actor_index);
 	s_structure_bsp_pathfinding_view *bsp = (s_structure_bsp_pathfinding_view *)g_4e0348;
 	s_pathfinding_data *pathfinding = NULL;
@@ -133,7 +136,7 @@ bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_ty
 	{
 		s_path_trace_result trace;
 
-		function_26c590(pathfinding, &actor->position, actor->unknown27c.unknown10, NONE, *direction_slot, 5.0f, NULL, &trace);
+		function_26c590(pathfinding, &actor->position, actor->unknown27c.unknown10, NONE, direction, 5.0f, NULL, &trace);
 		origin = trace.point;
 		distance = trace.distance;
 		if (function_1697c0(0x1808c2d, &origin, g_4687bc, actor->unknown018, NONE, &collision.result))

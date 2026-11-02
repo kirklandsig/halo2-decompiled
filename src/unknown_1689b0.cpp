@@ -1675,6 +1675,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Original vector storage, accepted word counters, helper and complete geometry restored.
 // Round 464: bounded short/word/char/byte inner-edge ordinals with cached/live caps:
 // 602/602/593/593/619/619/627/627. All regress; original long ordinal, cap sample, word counts and geometry restored.
+// Round 38 (m3 lane 2, fast): retail keeps the sums at F+0x44 and F+0x54 with the nearest distance between
+// them at F+0x50. Separate face/edge sum locals 594 (2896 bytes; the first sum at retail's F+0x54, the second
+// 4 bytes high); that with the edge sum renamed to sort first 594 and with the declarations swapped 594 (same
+// code each: names and declaration order do not move these slots); the nearest distance declared in the
+// prism loop at its reset 552 (same code), with separate sums 594.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

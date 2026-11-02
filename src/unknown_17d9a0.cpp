@@ -805,6 +805,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // Round 462: complete mode/radius/projection-plane input ownership, all seven subsets
 // 742/821/797/872/875/898/846; all with chained output counters 846. Original observations,
 // copies and body restored; exact frame, tag/count/plane homes and rotation spills remain.
+// Round 309: Scalar bitwise angle equality ikj/jik/jki/kij/kji 556/587/589/558/556;
+// operand-symmetric ijk/kji 555/557; mismatch-owned angle evaluation 552.
+// Original private angle gate, complete body and alias-safe rotation helper restored; tag/count/plane homes remain.
+// M293: Consumed grouping-plane, selection metadata, basis scalar phase scopes, seven subsets,
+// then all with initial face-count phase closed:
+// 552/552/552/552/552/552/552/552. Original complete executable source restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
