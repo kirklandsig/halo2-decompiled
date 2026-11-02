@@ -591,6 +591,14 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
 // for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 58 (m3 lane 1, fast; aligned = difflib count, base 199): the actor read through its address into a
+// function-scope local, as a volatile read: after the surface 323 (1288 bytes, aligned 135: EBX entry as retail,
+// but pathfinding arrives in ECX and the surface index in EAX), after the result 326, ahead of the surface 358
+// (1284 bytes, aligned 190), with the start-out alias dropped 320 (1284, aligned 117); as a plain read 280. The
+// surface table in a local read before the actor, then the index: 358 (1284; table/index registers are retail's,
+// pathfinding in EDX), plain read 280, table local alone 280. Register parameters entry/pathfinding/surface or
+// surface/pathfinding/entry 278/278, with the volatile read 323/323 (the arrival registers do not follow the
+// declared order), entry first with the plain read 280; a, b, c, d with the other five orders 299 each (EDX stays).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -57,6 +57,14 @@ s_player_state *function_16f3a0(long index);
 // Round 69: shared vector3f_add_scaled with separate / in-place output 28/28; expression x/y
 // with z read through the height's address 57, through the existing point setter 57; the union's
 // array view 28; in-place eye construction 28; immutable height 28; split negation 28.
+// Round 58 (plain; the fast build misscores the base as 66): a pointer local to the up vector 28; to the camera
+// storage for all case 4 reads 28; the positive height named with `(0.0f - height)` at the x and y uses and a
+// named negation for z, before or after y, 18/18 (611 bytes: x/y copy the height as retail, but z multiplies
+// in place and the field is loaded apart), with the negation at all three uses 18; unary minus at z 41; unary
+// minus at x/y 43 (a subtraction); a state pointer with the negated read at each use 57, with a named height
+// for z, before or after y, 57/57. Diagnostics: 2, 4, 6, 8, 16, 17 unused initialized locals before the eye 28;
+// 18, 19, 20, 24, 28, 32 57 (all three flip together, so a local's rank never separates z); later reads of up i/j or k 123/101 (no
+// flip); a separate global for up i/j 28. Retail needs z memory-first with a value x/y use height-first.
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {

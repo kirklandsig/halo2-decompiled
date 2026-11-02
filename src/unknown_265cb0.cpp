@@ -1191,6 +1191,22 @@ struct s_equipped_object_view
 // conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
 // a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
 // 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
+// Round 58 (m3 lane 1, fast, no volatile): the held reload comes from either a pool local read
+// before `held_index = NONE` and used only for the held lookup 15 (142 bytes; read after the
+// slot's if 28) or a second entry lookup for the selected byte 4; the order of `held_index = NONE`
+// against the selected load decides both halves (NONE first: held block exact, entry data EDX and
+// widened index ECX; NONE after: entry exact, held data first). On the second-lookup form: the
+// NONE store split from its declaration 15; object/selected/NONE in all six orders 4/15; result
+// first 36, result before selected 36; `(short)` selected 4; selected or object through
+// object_header_get / object_get 4/4/4 (both through object_get 27); thresholds and definition at
+// the block top, after the held lookup or inside the compare 4 each (15 each on the NONE-after
+// form); the held lookup through object_header_get / object_get 4/4 (15/15 NONE-after). The
+// 0x267370 form (object_get + function_cbd50, held object inline in the definition) 28, and with
+// the object read inside the argument 28; a pool local for the entry only 28; one inside the held block 28.
+// On the second-lookup form: a masked index local for both entry lookups 4; a pool local for the entry lookups
+// 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
+// threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
+// test nested 15 on the NONE-after form.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
