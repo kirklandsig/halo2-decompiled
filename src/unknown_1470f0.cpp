@@ -89,6 +89,9 @@ extern "C" void _ReadWriteBarrier(void);
 // owner-lookup helper 42; first bounds from start plus size 7. Fast: third end as a long add 9; third as
 // an offset compare 10; address-first equalities 13; the pool's page-array bounds 9; second and third
 // sharing the call on this body 27; the second end as start plus size 9.
+// Round 121: direct second dispatch 9; concrete direct second dispatch 9; concrete fallback return
+// declarations 9; concrete first assignment 9; direct chain with concrete first 27, concrete first/second
+// 27; first receiver local in the direct chain 27; distinct second receiver local on the shared graph 9.
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
