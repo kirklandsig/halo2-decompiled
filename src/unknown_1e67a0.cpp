@@ -703,6 +703,13 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
 // products, sample qualifier and complete body restored; constant/limit ownership and jitter
 // spills remain.
+// Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 104, st = with registers masked against
+// 49): movement and projection through vector3f_scale (direction), dot3f, vector3f_add_scaled and vector3f_add 177, al
+// 103, st 46; retail-order jitter (on/off, signs, scales, plain long) added straight into the velocity 239, al 101,
+// st 47, through vector3f_add 231, al 98, st 43; both 199, al 91, st 37 and 188, al 90, st 35 (1068 bytes, closest
+// shape; left: 1.0 in XMM4 for XMM3, limits.k and the z on/off and y spills, limits/direction frame slots swapped);
+// on that, direction or limits renamed to flip the name order, or both, 188/188/188 (slots do not move); direction summed through
+// length_sq3f 202; direction copied by component 248. None kept (the positional count stays above 132).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -953,6 +960,11 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL224: Final direction decision in bool/long/byte storage, bit before/after publication:
 // 173/166/173/166/173/166; selected direction pointer consumed twice, bit before/after publication
 // 213/215. All restored; sampled-vector slot and rotation/output schedule remain.
+// Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 97): the sample and rotated vector as
+// one local, with an in-place rotate helper (projection first or cross_i first) and the `up` parameter as axis,
+// `!(0.0001f > fabs(angle))` 204/204, `>=` 215/215; with `&state->up` as axis 165/165 (1383 bytes, al 123), `>=`
+// 197/197; retail still reads v.j/v.k into registers and multiplies by memory for the axis.j/k products. 120 random
+// spellings of that helper (sum order, operand sides, cross order, compile-only) stay flat: 37 of the 78 rotation lines differ. None kept.
 // DL226: Existing complete vector setter at goal output, rotated output and original-input
 // copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
 // Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.

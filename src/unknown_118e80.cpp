@@ -12,6 +12,7 @@
 #include "object_queries.h"
 #include <math.h>
 #include "vector_products.h"
+#include "normalize3d.h"
 
 /* the object as this reads it */
 struct s_forward_flags
@@ -976,162 +977,18 @@ void __stdcall function_d6bc0(long arg_0);
 void function_b75a0(long arg_0, point3f const *arg_1, vector3f const *arg_2, vector3f const *arg_3,
     s_location const *arg_4, bool arg_5);
 void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
-// MiniMax E (11-01): no new form, no lower score; left: the quotient spill across the candidate
-// query, the sweep/impact stack homes and the saved identifier widths (the protected owner-call
-// boundary is another file's).
-// score 156 (was 156): retail keeps the quotient in a register and computes the scaled direction
-// before the sweep query; ours spills the quotient, computes it after the query, and the sweep
-// and point homes are swapped. Computing the scaled direction before the query gives 292.
-// Frame 0x124 agrees; quotient/query, sweep/impact/location homes and word loads remain.
-// Round 67: query count declared after saved outputs 156; existing assignment helper after the
-// query 156 and before it 292; pre-query helper with later best fraction 283; explicit pre-query
-// stores with saved outputs before count 283; pre-query long saved words 285 and first/third/
-// second acquisition 285; query-first long saved words with first/third/second acquisition 153
-// (three-point gain restored).
-// Retail's homes (frame offsets): selected 0xc, best 0x10, second word 0x14, third 0x18, normal 0x1c,
-// first word 0x28, location 0x2c, point 0x34, sweep 0x40, count 0x4c; ours keep the count at 0x2c and
-// the sweep before the point (0x38/0x44). Round 83: sweep before the query 292 (its products now
-// schedule after a hoisted constant); count declared before the query 156; sweep declared before the
-// buffer 156; saved records declared before the sweep 156; descriptive sweep/impact names 156; first
-// and second word names swapped 156 (homes unchanged).
-// Round 44: short/long-unit adjacent word bitfields 151/339; first-third-second words 153;
-// word/handle acquisition order 218; normal between words 162; sweep in radius/center argument
-// evaluation 293/293; named radius on the current frame 151. Opening body restored.
-// Frame 0x124 agrees; quotient/query, sweep/impact/location homes, word loads and owner-call transport remain.
-// Earlier: Frame 0x124 agrees; quotient spill, sweep/impact/location homes and owner-call setup remain.
-// frame 0x124 agrees; query/sweep timing and owner-call setup differ.
-// frame 0x124 agrees; query/sweep timing and owner-call setup differ.
-// Complete request type 278; scale at each use 278; aggregate sweep 278;
-// point/normal/location copies first 278; target size optimization 536.
-// Query before sweep 159; distinct later-up output 288; double best fraction 255;
-// named radius field 278; const sweep with distinct later-up output 288.
-// Sweep/impact homes and store scheduling still differ.
-// targeted sweep name 278; sweep/impact names exchanged 278; completed normal reused 285; candidate
-// countdown 284; header flag at use 278.
-// Frame 0x124 agrees; quotient spill and sweep/impact homes remain. Native collision result 159; later best fraction 161; later quotient 281; candidate cursor 393; bool return 159 (fast).
-// Frame 0x124 agrees; quotient/sweep/impact homes and owner-call setup remain.
-// Long saved identifiers first 152, second 152, third 151 kept (plain); all three 154; early
-// fraction 161; first/third 157; second/third 157; first/second 158 (fast).
-// Quotient spill, sweep/impact homes and owner-call setup remain.
-// Sweep components before query i/j/k/ij/ik/jk each 159; all components 293;
-// aggregate sweep before query 293, with retained long third saved identifier.
-// Frame 0x124 agrees; quotient/sweep/location homes and word loads remain.
-// second identifier first 149; location home name 151; native request after lifetime gains 151; distinct
-// up after lifetime gains 180; location before identifiers 218; long first with second first 154; long
-// second with second first 154; both long with second first 150.
-// quotient spill, sweep/impact/location homes and owner-call setup remain.
-// Repeated quotient after query 287; native sweep array loop 731; exhausted-selection exit 290;
-// selected handle after tuple 162; normal before point 160.
-// Existing combined velocity helper 390; readonly candidate/tag/both 151/151/151; selected object before default index 151;
-// separate collision result 151; helper with readonly paths 390; result/object/tag lifetimes 151.
-// Private unscaled input/native in-place copy/shared in-place scale 337 each; point/location
-// between words 162/164; second word then point 161; identifier declarations 151; timer home name
-// 151. Quotient/sweep/impact homes and protected owner-call setup remain.
-// Candidate index short/word 366/366; native query count 153; reflection conditional 151; with native count
-// 153; ordinary while scan 151; fraction-first comparison 151; nested candidate admission 151. All restored.
-// Complete speed square/all component squares 151/151; each with saved-word lexical homes
-// 151/151; each with scalar homes 151/151; complete magnitude with both home groups 151;
-// complete speed square with existing out-of-place scale 151 (fast).
-// response flag result arms 361; complete reflection dot 151; shared reflection products 164; native reflection
-// vector 164; complete response vector 185; existing rounding helper 151; response arms and collision fill 361;
-// dot with native reflection vector 164; rounding with reflection products 163; rounding with reflection vector
-// 163; rounding with native query count 154; rounding/count/reflection products 166.
-// Numerator-first quotient 151; uniform sweep products 151; post-query native sweep copy 329;
-// quotient/products and quotient/copy 151/329; early sweep with products/quotient/both
-// 151/151/151.
-// Immutable speed/radius/quotient/all scalars 151/151/151/151; native entry success 397;
-// speed-test-produced success 317; immutable query count and candidate 151; native selected
-// collision record 345 at retail length, with wrong entry frame. All restored.
-// Probe/input/both workspace scopes 151/175/175; complete request library copies 151;
-// probe/input/both scopes with request copies 151/175/175; actual selected-header byte 151.
-// root accessor 151; candidate accessor 151; selected accessor 151; root candidate accessors 151; root
-// selected accessors 151; candidate selected accessors 151; all object accessors 151; all native header
-// 151.
-// Round 137: double speed/radius/quotient, speed-radius/speed-quotient/radius-quotient/all 334,339,332,259,332,329,261;
-// all with double selected fraction 337 (exact-only precision diagnostics; all restored).
-// Round 332: Candidate/collision/eligibility inline contracts, each and every
-// combination, 151; candidate/collision noinline pair 151. All restored.
-// Round 149: Native unsigned first/second identifier words and third full-word carrier, all combinations;
-// unsigned pair with second capture first [151, 151, 151, 151, 151, 151, 151, 149]; all restored.
-// Round 220: Collision/effect/both request declarations before the scan 200/200/200;
-// both at entry 203. Real request names, candidate-buffer name and both name groups 151/151/151;
-// combined pre-scan requests with names 200. Wider request lifetimes grow frame to 0x180;
-// original request ownership, query-first sweep and saved identifiers restored.
-// Round 199: Ordinary input/scalars/count/saved words/vector names/late quotient/early sweep/readonly
-// receivers 151/151/153/154/151/287/293/151. Consistent pool/header observations, alone, with word
-// order, with independent saved words and with early sweep: 346/339/346/339/348/341/291/275.
-// Round 201: Response storage: normal/sweep reorientation and sweep reflection 176/160/177; paired
-// direction/reflection 193/174; consumed-input left output alone/with sweep reflection 176/194; saved-
-// velocity left output 176. All restored.
-// Round 352: native stored-velocity fields with direct, scalar-first, named-product and combined
-// products 151 each; each with one three-use velocity snapshot 374 (frame 0x128). Original
-// external record, response expressions, query-first sweep and saved identifiers restored.
-// Round 80: sweep stored before the query 283 (count and location homes as retail, but the point and
-// sweep homes swapped and j/k folded as q*j/q*k where retail loads j/k); with the point/sweep renamed
-// 283; with the capture declarations first 283; through the existing vector3f_scale 283. The tail is
-// 0xb77d0's body, which retail inlines here: calling the existing 0xb77d0 391 (stays a call), with a
-// forceinline declaration 391. Original body restored.
-// Round 7: response minimum as a ternary, response products scale-first, speed test summed j/k/i 156
-// each (identical code); sweep before the query 283 (now the start through the call matches; the
-// sweep stores land at 0x3c not retail's 0x48 and the candidate loop gains a jump over its alignment),
-// with quotient-first products 283. The zero register (retail XMM3) decides the response arm.
-// Lane 9 r29 (fast): role names for every local 156 and names flipping the 12-byte/8-byte
-// alphabetical order 156 (identical code); sweep before the query with the captures declared
-// first 292 (1329 bytes); sweep declared beside the scale 156; separate response vector 156.
-// Round 12 (lane 10): sweep before the query with the maximum-fraction constant declared after it 283
-// (the constant's early load and slot then as retail; the extra count is our loop entry jumping over
-// 7 bytes of alignment where retail pads 6 and falls through, shifting every later line: retail
-// computes and stores the sweep one component at a time in one register, j and k loaded then
-// multiplied, where ours folds j/k as q*j/q*k); on that, component-first products 283 (same code),
-// point declared ahead of the sweep 283 (same code). On the current body: the sweep renamed to sort
-// before the point 156 and declared at the top of the block 156 (same code and homes: neither the
-// name nor the declaration order moves these slots). All restored.
-// DL175: Actual candidate-pointer countdown on query-first/long-third graph, with native short
-// remaining, pre-query sweep and readonly candidate subsets [281, 287, 208, 278, 281, 287, 208, 278].
-// Original indexed scan, query-first sweep and saved words restored.
-// Round 230: unsigned source-record first/second/both words 156/156/156;
-// signed full-width third bitfield, alone/with those source words, 156/156/156/156;
-// all three signed full-width short bitfields 156. Original source record and body restored;
-// owner-query argument setup now agrees; query/sweep, selected homes and merged word reads remain.
-// Round 240: speed-failure exit/complementary response/shared double scale and their pairs/all
-// 316/227/307/319/308/305/307; all with native query count 307. Original body restored;
-// frame 0x124 agrees, quotient/query and selected workspace homes remain.
-// Round 100 (lane 7): retail's sweep is i = q * v.i (copy q), j and k = v.j * q / v.k * q (load the
-// component, multiply q), each stored before the next, q never consumed; with the sweep before the
-// query every statement/operand order (48) and magnitude spelling (12) compiles to the same folded
-// q * v code (compile-only screen). Magnitude through length_sq3f 310; the tail test through
-// length_sq3f 156 and dot3f 156; the effect data as the file's typed damage-effect record 156; the
-// parameter-address statement removed 156 (kept).
-// Round 265: library response lower bound / negative-normal setter / response-velocity setter,
-// their pairs and all: 200/157/156/200/200/157/200; all with the existing sweep setter 200.
-// Original full body restored; quotient/query, selected homes and zero allocation remain.
-// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
-// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
-// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
-// homes, word loads and zero allocation remain.
-// Round 275: Existing scalar setters at selected point/normal/both/event-points/point-events/normal-events/all transfers 180/181/192/210/235/236/248; all with sweep setter 248.
-// Original executable source restored; quotient/query, selected homes, word loads and zero allocation remain.
-// Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
-// and all 156 each; all with selected point/normal/location library copies 156. Original
-// expressions and body restored; quotient/query, selected homes and word loads remain.
-// Round 298: Location/point/normal and point/location/normal selected geometry; identifiers
-// before/after geometry and handle first/last, eight combinations 167/164/169/169/170/168/169/169.
-// Original captures and complete body restored; quotient/query and selected homes remain.
-// Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
-// complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
-// with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
-// homes, word loads and zero allocation remain.
-// Round 333: Complete selected snapshot memmove with first/second signed-word domains
-// 333/334/334/339; native short-count counterparts 333/334/334/339. Query/sweep and selected homes
-// remain; original body restored.
-// Round 291: Positive-count end-pointer scan with short count/pre-query sweep/capture-order masks 0..7
-// 378/377/361/362/378/377/361/362. All enlarge the frame and extent; original indexed scan restored.
-// Round 293: Effect-request location/selected-point/original-center memmove subsets 1/2/4/3/5/6/7:
-// 219/206/203/211/212/219/225; all with selected-output memmove 340. Original body restored;
-// quotient/query and selected geometry homes remain.
-// N295: Native selected point/normal/location standard range-transfer subsets 1-7,
-// 344/357/337/272/356/365/348; all with matching effect-request ranges 333 (retail length).
-// Original body restored; quotient/query and selected geometry homes remain.
+static __inline real squared_length_jk(vector3f const *v)
+{
+    real length_squared = v->j * v->j;
+    length_squared += v->k * v->k;
+    return length_squared;
+}
+static __inline void vector3f_negate(vector3f const *v, vector3f *r)
+{
+    r->i = 0.0f - v->i;
+    r->j = 0.0f - v->j;
+    r->k = 0.0f - v->k;
+}
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {
@@ -1139,47 +996,49 @@ long function_119c10(long arg_0)
     long local_1 = NONE;
     vector3f local_2;
     function_ba1d0(arg_0, &local_2, NULL);
-    real local_3 = (real)sqrt(local_2.i * local_2.i + local_2.k * local_2.k + local_2.j * local_2.j);
+    real local_3 = (real)sqrt(squared_length_jk(&local_2) + local_2.i * local_2.i);
     if (local_3 > 0.0001f)
     {
         real local_4 = *(real *)((byte *)local_0 + 0x3c) + 0.1f;
-        real local_5 = local_4 / local_3;
-        real local_7 = 3.402823466e+38f;
-        long local_8[16];
-        long local_9 = function_bb050(1, 3, (byte *)local_0 + 0x28, &local_0->center, local_4, local_8, 16);
-        vector3f local_6;
-        local_6.i = local_5 * local_2.i;
-        local_6.j = local_2.j * local_5;
-        local_6.k = local_2.k * local_5;
-        short local_10;
-        short local_11;
+        real local_7;
+        long local_10;
+        long local_11;
         long local_12;
         point3f local_13;
         vector3f local_14;
         s_location local_15;
-        for (long local_16 = 0; local_16 < local_9; local_16++)
+        /* the scan's scope: its scaled velocity gives up its frame slot to the later output vector */
         {
-            long local_17 = local_8[local_16];
-            s_forward_object *local_18 = ((s_forward_object_header *)g_4e0300->data)[local_17 & 0xffff].object;
-            if (!TEST_FIELD_BIT(local_18->frozen)
-                && function_1df560(*(short *)((byte *)local_0 + 0x12e), *(short *)((byte *)local_18 + 0x138)))
+            vector3f local_6;
+            real local_5 = local_4 / local_3;
+            vector3f_scale(&local_2, local_5, &local_6);
+            local_7 = 3.402823466e+38f;
+            long local_8[16];
+            long local_9 = function_bb050(1, 3, (byte *)local_0 + 0x28, &local_0->center, local_4, local_8, 16);
+            for (long local_16 = 0; local_16 < local_9; local_16++)
             {
-                s_119c10 local_19;
-                local_19.field_24 = NONE;
-                if (function_1696d0(0x1800038, (s_biped_ground_collision *)&local_19, local_17,
-                    &local_0->center, &local_6, NONE, NONE) && local_19.field_0 == 4)
+                long local_17 = local_8[local_16];
+                s_forward_object *local_18 = ((s_forward_object_header *)g_4e0300->data)[local_17 & 0xffff].object;
+                if (!TEST_FIELD_BIT(local_18->frozen)
+                    && function_1df560(*(short *)((byte *)local_0 + 0x12e), *(short *)((byte *)local_18 + 0x138)))
                 {
-                    byte *local_20 = g_4e0300->data + (local_19.field_40 & 0xffff) * 12;
-                    if (!local_20[3] && local_7 > local_19.field_4)
+                    s_119c10 local_19;
+                    local_19.field_24 = NONE;
+                    if (function_1696d0(0x1800038, (s_biped_ground_collision *)&local_19, local_17,
+                        &local_0->center, &local_6, NONE, NONE) && local_19.field_0 == 4)
                     {
-                        local_1 = local_19.field_40;
-                        local_10 = local_19.field_44;
-                        local_11 = local_19.field_46;
-                        local_12 = local_19.field_5a;
-                        local_13 = local_19.field_8;
-                        local_14 = local_19.field_28;
-                        local_15 = local_19.field_1c;
-                        local_7 = local_19.field_4;
+                        byte *local_20 = g_4e0300->data + (local_19.field_40 & 0xffff) * 12;
+                        if (!local_20[3] && local_7 > local_19.field_4)
+                        {
+                            local_1 = local_19.field_40;
+                            local_11 = local_19.field_46;
+                            local_10 = local_19.field_44;
+                            local_12 = local_19.field_5a;
+                            local_13 = local_19.field_8;
+                            local_14 = local_19.field_28;
+                            local_15 = local_19.field_1c;
+                            local_7 = local_19.field_4;
+                        }
                     }
                 }
             }
@@ -1211,13 +1070,12 @@ long function_119c10(long arg_0)
                 function_d6bc0(arg_0);
             else if ((bool)((*(dword *)(local_21 + 0xbc) >> 5) & 1))
             {
-                local_2.i = 0.0f - local_14.i;
-                local_2.j = 0.0f - local_14.j;
-                local_2.k = 0.0f - local_14.k;
+                vector3f_negate(&local_14, &local_2);
                 vector3f local_26;
-                function_11d180(&local_2, &local_0->up, &local_2, &local_26, &local_6);
-                function_b75a0(arg_0, &local_13, &local_2, &local_6, &local_15, false);
-                function_b93b0(local_1, arg_0, (short)(local_11));
+                vector3f local_30;
+                function_11d180(&local_2, &local_0->up, &local_2, &local_26, &local_30);
+                function_b75a0(arg_0, &local_13, &local_2, &local_30, &local_15, false);
+                function_b93b0(local_1, arg_0, (short)local_11);
                 real local_27 = g_510c54->field_2_3 * 0.2f;
                 long local_28;
                 __asm
@@ -1229,15 +1087,13 @@ long function_119c10(long arg_0)
             }
             else
             {
-                real local_29 = (0.0f - (local_14.k * local_2.k + local_14.j * local_2.j + local_14.i * local_2.i)) * 1.7f;
+                real local_29 = (0.0f - dot3f(&local_14, &local_2)) * 1.7f;
                 if (0.4f > local_29)
                     local_29 = 0.4f;
-                local_2.i = local_14.i * local_29 + *(real *)((byte *)local_0 + 0x88);
-                local_2.j = local_14.j * local_29 + *(real *)((byte *)local_0 + 0x8c);
-                local_2.k = local_14.k * local_29 + local_0->value90;
+                vector3f_add_scaled((vector3f const *)((byte *)local_0 + 0x88), &local_14, local_29, &local_2);
                 function_b7740(arg_0, &local_2, NULL, false);
                 function_1c4b00(arg_0, &local_2, NULL, 1);
-                if (local_2.k * local_2.k + local_2.j * local_2.j + local_2.i * local_2.i > 0.0001f)
+                if (length_sq3f(&local_2) > 0.0001f)
                 {
                     function_b9b90(arg_0, false);
                     function_b7360(arg_0);
