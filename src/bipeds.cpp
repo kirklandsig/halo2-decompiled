@@ -2341,7 +2341,7 @@ bool __stdcall function_e1b60(long arg_159e6d, point3f const *point, real value)
 // (include/unknown_1cec30.h and src/unknown_1cec30.cpp), outside this lane's files; round 162
 // found that the member form matches both the caller and the callee there, so the fix only
 // waits for that file to be free
-// score 2 (was 2): only argument preparation before the extent call differs: mov ecx,esi precedes mov eax,ebx.
+// Earlier: only argument preparation before the extent call differs: mov ecx,esi precedes mov eax,ebx.
 // Shared main-index helper with short 34, with long 31; long ternary 76; shared point setter 52; long helper/setter 24;
 // typed body getter 61; short helper/setter 27; both typed body helpers/setter 24; typed three-use point source 2, kept; earlier uninitialized index declaration 2.
 // Setter result as point argument 2; returned pointer 2; returned reference 2; split extent declaration 2;
@@ -2352,6 +2352,10 @@ bool __stdcall function_e1b60(long arg_159e6d, point3f const *point, real value)
 // Round 162 (harness, both files): the extent query as a member of the component (this first, index parameter),
 // written with havok_component_rigid_body_get(index, this) or rigid_bodies[index]: 0 here and the callee unchanged.
 // Not applied: the callee's file was held by another lane this round.
+// Round 303: output storage at function/component scope, result storage at call/same enclosing scope,
+// point/value and origin/extent names: 2,2,2,2,2,2,2,2. Initializers and all reads stayed in place.
+// The 0x10 frame and +0x7d call-setup order remain; original body restored.
+// The earlier member-form fix requires an outside body change and was not applied this round.
 // @retail 0xe1a80
 void function_e1a80(long arg_159e6d)
 {

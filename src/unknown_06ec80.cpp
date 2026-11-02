@@ -57,6 +57,12 @@ struct s_6ec83
 // NONE as its declaration's initialiser 42, the pointer's 0 262 (both, harness, no gain); mask scoped
 // in an inverted guard 223; with the mask scoped: a players pointer local, the counter declared first,
 // the mask declared at the top and zeroed in the guard (harness, 217-219 positional, no gain).
+// Round 72 (lane 9, fast): names a_/z_ either way round and an upper-case pointer name 13; the short as
+// a ternary or an if/else 245 (981 bytes); the mask declared outside the guard (block or function top)
+// and zeroed inside it 223/223 (the same code as scoped); with the mask scoped: a players pointer local
+// 223, the counter declared outside 223, explicit NULL tests 223, explicit zero tests 223. Diagnostics:
+// a repeated pointer test 13 (folded); the memcpy under `if (local_2)` 68 (977 bytes, slots unchanged),
+// so the slots do not follow reference counts here.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
