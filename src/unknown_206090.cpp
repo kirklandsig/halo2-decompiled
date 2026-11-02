@@ -284,6 +284,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // transfer and separate/in-place normalized direction: 1417/1372/1465/1395;
 // 1357/1474/1485/1400. Native explicit selection with a separate direction gains six
 // at 6243 bytes, below the gate; pointer selection, original copies, all kernels and body restored.
+// Round 314: Captured magnitude through the existing k/j/i dot kernel, with original/
+// first/second/both shared scale tails, mutable or immutable capture, all 1403 at 6259
+// bytes. Original magnitude, normalizers, includes and body restored; frame remains 0x5cc.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

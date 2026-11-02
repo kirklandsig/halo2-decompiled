@@ -639,6 +639,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
 // with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
 // restored; word entry storage and the shared post-loop old-mask reload remain.
+// Round 314: Prior-playing field observations with dword/word old mask and original/plain
+// present storage 135/131/136/139; post-iterator prior-playing snapshot with the same four
+// graphs 135/131/136/139. Original entry snapshot, mask homes and qualifier restored.
 // @retail 0x158140
 void function_158140(void)
 {

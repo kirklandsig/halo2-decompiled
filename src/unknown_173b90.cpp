@@ -1109,6 +1109,9 @@ public:
 // each with staged cross, then both nested normalizers without/with staged cross:
 // 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
 // color/tag homes remain.
+// Round 314: Orientation case orders 021/102/120/201/210 on the zxy magnitude
+// graph, then 021/201/210 with staged cross, all 184. Original cases and cross calls
+// restored; normalized-j/default-cross and color/tag homes remain.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

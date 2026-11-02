@@ -1836,6 +1836,9 @@ void function_dfd70(long arg_159e6d)
 // Round 289: view-forward, basis-up, both, head-direction, forward/direction, up/direction, all three,
 // and complete head/hit frame identities all 248 at 1041 bytes. Original helper/body restored; every
 // checked shared-helper user and matched caller retained its score.
+// Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
+// forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
+// origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
