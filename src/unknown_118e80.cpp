@@ -698,66 +698,8 @@ bool function_119380(long arg_0, s_119380 *arg_1)
 
 
 void function_1e54d0(void *arg_0, long arg_1);
-bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
+bool function_bc380(long arg_0, long arg_1, short arg_2, long arg_3);
 
-// score 83 (was 83): retail puts the word at +0xb4 in CX and the word at +0xb6 in AX, so the size
-// reaches 0xbc380 as a 16-bit argument; our shared declaration takes a long, and the table base
-// and the looked-up object stay in other registers. Also: the object table base and the looked-up
-// object are kept in different registers, one word field is loaded zero-extended here and as a plain
-// word in retail, and the
-// value stored at the 0x134 slot is sign-extended differently. Retail passes the size to 0xbc380
-// as a 16-bit argument (xor eax, eax; mov ax, ...), which needs that callee's shared declaration
-// changed (BLOCKED-BY 0xbc380: a contributor's file declares it with a long size).
-// Round 81: success path inside if (!= NONE) with return false after 88
-// (registers right, false epilogue laid out last); return false at the guard 96 (laid out in
-// line); result from the guard test 108; || on the two bools 95; result set in both arms 88
-// Four-use long ordinal with retained/per-use tag and bitwise/logical predicates
-// 83/89/129/136; native word ordinal 151/164/144/155. Initial table/object and
-// result homes still differ; original body and shared allocator interface restored.
-// Round 414: Post-reset table/object/result homes, allocation-size acquisition and saved-key tests
-// remain. Native external input fields at selected/controller/allocation subsets 1-7 scored 83 each;
-// complete native input with promoted repeated selection 90. Original void input, callback declaration
-// and byte-offset reads restored.
-// Round 46: inner success return 132; positive guard with direct false exit and inner return 88;
-// separate predicate tests on that graph 95; initial/post-reset/post-allocation/final/all object getters
-// 95 each. Original body restored.
-// Round 104: false result in an else arm of the guard 88 (retail's registers and false epilogue, but that
-// block is laid out after the other out-of-line arms where retail puts it first); with || on the two
-// bools 98; the false arm written first 96 (laid out in line); the bools declared the other way 88; the
-// two state fields read the other way 88 (load order and compare order swap together).
-// Round 100 (lane 7): the animation block is 0x119650 inlined with constant arguments (mode and set
-// 0x7000001, 0.0 seconds, flags 2): calling the existing function gives retail's block code, but NONE
-// is then hoisted into EBX and the index left in its stack home (frame 8) 120; with the early false
-// return 119; with the success path inside `if (!= NONE)` 123. That success-path form alone 88 with
-// `||` on the two bools 95. The goto to the single exit replaced by an `if (!= NONE)` block 83 (kept).
-// Round I (MiniMax lane I, fast): the guard as `if (... != NONE) { ...; return local_4; } return false;`
-// with the +0xb6 word read into a one-use word local 35 (match-only form: retail zero-extends the word
-// with xor eax,eax before the load); the same without the local 81. On the 35 form the tail predicate as
-// `||` over two named bools 56, `|` over two named bools 48, `||` inline 56, `else if` with the call
-// duplicated 56, the guard inverted with an early `return false` 76. Original body restored.
-// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
-// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
-// same result arms with the existing animation helper 130/120. All restored; post-reset
-// table/object/result homes, native size load and saved-key tests remain.
-// Round 20 (lane 18, fast): the guard as `if (offset != NONE) { ...; return local_4; } return false;` with
-// the +0xb6 word in a one-use word local and `||` on the two named bools 56 (ours widens the word with
-// `mov ax; movzx eax, ax` where retail pre-zeroes with `xor eax, eax`, and folds the `||` into
-// cmp/jne/cmp where retail materializes both bools with setne and tests each); without the word local
-// 95; the two bools computed before the animation call 60 (stack bytes). Diagnostic, not kept: with
-// 0xbc380's size parameter `short` in its definition and our declarations, 0xbc380 matches byte for
-// byte and this guard form (no word local) is 50 with only the `||` tail left; byte-typed bools 50;
-// the `||` stored in a third bool 50. The `short` size also needs src/unit_object_type.cpp's
-// declaration (a contributor's file), so it stays held: BLOCKED-BY 0xbc380.
-// Round 288: native output selection/allocation/controller field-family subsets
-// 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
-// byte views, body and shared allocator interface restored.
-// Round 227: native controller/counters/selector/all field stores 83/83/83/83;
-// allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
-// same result arms with the existing animation helper 130/120. All restored; post-reset
-// table/object/result homes, native size load and saved-key tests remain.
-// Round 288: native output selection/allocation/controller field-family subsets
-// 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
-// byte views, body and shared allocator interface restored.
 // @retail 0x118510
 bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
 {
@@ -782,15 +724,18 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
     *(short *)((byte *)local_0 + 0x206) = 0;
     function_118f90((s_orientation_request_118f90 *)((byte *)local_0 + 0x13c));
     s_forward_object *local_3 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
-    bool local_4 = false;
+    bool local_4;
     if (local_3->animation_state_offset != NONE)
-    {
         local_4 = true;
+    else
+        local_4 = false;
+    if (local_4)
+    {
         short local_5 = *(short const *)((byte const *)arg_1 + 0xb4);
         if (local_5 != NONE)
         {
             *(long *)((byte *)local_0 + 0x134) = local_5;
-            local_4 = function_bc380(arg_0, 0x138, *(word const *)((byte const *)arg_1 + 0xb6), 0) != 0;
+            local_4 = function_bc380(arg_0, 0x138, *(short const *)((byte const *)arg_1 + 0xb6), 0) != 0;
             local_0 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
         }
         else
@@ -801,17 +746,7 @@ bool __stdcall function_118510(long arg_0, void const *arg_1, bool *arg_2)
             *(short *)((byte *)local_0 + 0x12e) = local_6;
             if (g_4e6948->state == 1 && (local_6 == 0 || local_6 == NONE))
                 *(short *)((byte *)local_0 + 0x12e) = *(short *)(local_1 + 0xc0);
-            s_forward_object *local_7 = ((s_forward_object_header *)g_4e0300->data)[arg_0 & 0xffff].object;
-            s_animation_state *local_8 = (s_animation_state *)((byte *)local_7 + local_7->animation_state_offset);
-            long local_9 = local_8->unknown70;
-            long local_10 = local_8->unknown7c;
-            if (local_8->animation_set(0x7000001, 0x7000101, 0x7000101, 0x7000001, 2, 0x3f))
-            {
-                bool local_11 = local_9 != 0x7000001;
-                bool local_12 = local_10 != 0x7000001;
-                if (local_11 | local_12)
-                    function_ba350(arg_0, 0.267f);
-            }
+            function_119650(arg_0, 0x7000001, 0x7000001, 0.0f, 2);
         }
         else
             *arg_2 = true;
