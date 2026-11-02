@@ -1158,6 +1158,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // settings/squad and before final settings guard: 341/341/341/341/340/336/254;
 // entry declaration with original initialization 254. Original lifetime/body restored;
 // sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
+// P266: Independent settings/perception/unit failure returns, seven nonempty subsets
+// using failed creation outputs, then all constant returns: 345/288/345/348/372/348/350/346.
+// Original shared failure exit, actor default and complete executable body restored.
 // Round 520: all six lexical orders of the native query-enabled/query-forced/squad
 // Boolean homes, then probability-home names at both endpoints: 254 each.
 // Original names and complete body restored; sentinel and squad/query homes remain.

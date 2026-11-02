@@ -845,6 +845,9 @@ static __forceinline long real_to_long(real value);
 // Round 232: Complete branch-owned direction distance 382; query scope/names/
 // declaration order 382/382/382; target-velocity receiver and scope/names/both 381/381/381/381.
 // Three-count best rejected; all executable code, query aliases and observations restored.
+// Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
+// dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
+// the object velocity pointer before the magnitude 381 (one count, not kept).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

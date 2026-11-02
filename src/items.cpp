@@ -647,11 +647,21 @@ struct s_item_collision_bsp
 // Round 309: Genuine uninitialized final-linear/final-angular/both-plane output declarations reserved at
 // entry, subsets 1..7, then all after admission: 213/211/213/211/213/211/213/213. Original declaration lifetimes
 // and body restored; plane width, plane joins and spin/speed homes remain.
+// Round 289: Consistent item/matrix/collision reads at each use, subsets 1..7, then all with
+// paired shared final sums: 459/328/443/308/474/331/447/474. All regress; original receivers,
+// observations, helper calls, protected plane interface and complete body restored.
 // Round 312: Both getter results consumed through actual returned plane inputs, with
 // scalar/native untransformed publication, original/setter transformed normals and both
 // plane declaration orders: 261/283/261/283/261/283/261/283. Native plane publication
 // grows frame to 0xa4; original producers and full body restored. Protected index width,
 // plane joins and spin/speed homes remain.
+// N315: Shared actual collision-instance pointer/readonly pointer/reference/readonly
+// reference, with separate/direct matrix fields, 211 each (1365/1361 bytes).
+// Original receivers, matrix observations and body restored; plane width, join and spin homes remain.
+// N317: Actual fallback-speed scalar reserved at workspace/entry, crossed with
+// earlier common-factor and axial-vector storage, all eight forms 211. Original
+// uninitialized declarations and complete body restored; protected plane width,
+// plane-join allocation and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1178,10 +1188,21 @@ struct s_item_flags_view_10b850
 // angular projection producers, subsets 1..7, then all unsigned counters: 862/871/970/856/866/833/929/929. Some loops
 // reach frame 0x148 but regress. Original output producers and body restored; frame, entry Boolean
 // and native workspace homes remain.
+// Round 289: Narrow initial query-ray lifetime with early collision constant, narrow flow-side
+// scope and complete rotation kij publication, eight subsets: 887/886/887/886/887/886/887/886.
+// Frame falls to 0x13c and extent 4068 but scores regress; exact-only query result, original scopes,
+// rotation helper and complete executable body restored.
 // Round 312: Actual private producer output pointers consumed at basis-cross, cross-normalizer
 // and carrier-add motion boundaries, subsets 1-7, then all with library matrix transfer:
 // 813 each. Matched cross-helper sibling preserved throughout; all helper interfaces,
 // consumers and entire body restored. Frame 0x154/0x12c and Boolean/native homes remain.
+// N315: Complete axial-dot producer, direct/successive accumulation, original/
+// early plain-cross phase and complementary-cosine node, masks 0..7:
+// 813/823/814/823/813/823/814/823. Original helper/body restored; frame and native homes remain.
+// N317: Successive destination rotation rows, two/three stores, immediate/early
+// complete cosine products and compound/explicit updates: 877/914/902/915/
+// 877/914/902/915. Frame stays 0x154; original helper and whole body restored;
+// entry Boolean publications and native collision/carrier/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1570,6 +1591,19 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P264: constant accumulator before object acquisition, bool/byte/short/long
 // 143/144/160/160; between object/tag acquisition 143/144/160/160.
 // Original result lifetime, paired point setters, two-use spin and body restored.
+// P269: shared contact/event point with owner memcpy/memmove at initialization, magnitude,
+// location joins 137/137/140/165/165/164; complete object/team/player publication at the
+// latter two joins 132/138; the magnitude-join field publication with the common active-scope
+// point reached 132 plain at 892/892. Not kept (coordinator): the same form as N315 (owner copy
+// written out as three field stores, the contact and event points folded into one local), a
+// steering form at exactly the keep bar. Body restored.
+// N315: Complete owner-field publication (P/O/T: player/object/team)
+// POT/PTO/OPT/OTP/TPO/TOP
+// 138/138/137/136/138/137; metadata/location joins 138/139. OTP and OPT
+// with a common contact/event output point, entry/active scope, 132/132/133/133.
+// Plain 132 at 892/892 with the shared point and OTP: not kept (coordinator: the owner struct
+// copy written out field by field in an order picked from six by score). Shared point alone not
+// measured. Return-byte +0xe/+0xf and release/event loads remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

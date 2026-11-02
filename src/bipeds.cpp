@@ -927,11 +927,27 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// P267: word flag writers (the existing word_flags_set) with case 5's 0x35c store in both arms of the
+// surface test / case 4's contact (0x354) stored before the position (0x364) / native decoded widths,
+// subsets 1/2/4/3/5/6/7: 32/30/211/27/225/213/225; all without the writers 229. Not kept (coordinator):
+// retail stores 0x35c once, between the flag test and its branch (0xddcd0), so the both-arms form is a
+// duplicated store, and retail stores 0x364 before 0x354 (0xdddbd, 0xdddc7), the source's present order,
+// so the case 4 swap is a score-picked order. The writers alone stayed under the keep bar in earlier rounds.
 // F321: complementary contact-discovery state in bool/byte/word/long storage,
 // then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
 // Original executable body restored; lookup receiver retention and store scheduling remain.
 // M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
 // M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
+// Lookup aggregate initialization at lookup/case/admission/object phases 186/217/204/204;
+// CRT clears at those phases 182/213/199/199. Shared word-bit publication for crouch,
+// contact, other and all flag groups 39/38/42/35; seven-count lead above 30 rejected.
+// N317: Current-crouch bounded state direct/successive 42/42; shared word flags
+// 35/35; branch-owned instance/contact-first publication 27/27; actual shared lookup
+// receiver 2/2 at 1481 bytes. Incoming field capture and receiver alias are exact-only;
+// the two crouch-add operands still reverse. Earlier uninitialized delta declarations
+// before object/gate/component/root, original/offset names, 2 each (eight forms).
+// Common real lookup/getter record declarations 42, joint publication 27; all other
+// lookup-user scores unchanged. Original body and all supporting declarations restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1863,10 +1879,20 @@ void function_dfd70(long arg_159e6d)
 // Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
 // forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
 // origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
+// Round 324: single complete mode dispatch orders 0123d/3012d/d0123/1203d/2103d/3201d/013d2/d3210
+// 392/375/392/393/393/378/388/375; shared user 610 -> 614 in all. Original helper restored.
+// Common origin setup once with mode orders 312d/123d/d312/1d23/2d31/321d/d213/231d:
+// 254 each; direct helper users unchanged, dispatcher 108 -> 109. Original helper restored.
 // Round 359: Forward/side/both scale observations 240/235/240; each with a complete
 // direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
 // 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
 // snapshots also need a match. Original shared helper and complete target restored.
+// Round 525: Single-exit mode-three/raised-eye branch after common origin acquisition, four crouch
+// result forms with native/memmove origin transfer: 248/248/251/251/273/273/274/274. Memmove loses a matched
+// helper user; both original helpers and the complete target restored. Frame/convention homes remain.
+// P269: existing native tag real fields +0x218/+0x21c, mutable/read-only tag and
+// biped roots, initialized/separate pointer declarations, masks 0..7:
+// 248/248/248/248/248/248/248/248. Original tag layout, helpers and body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2661,10 +2687,17 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
 // push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
 // with uniform per-use counts 544. Original indexed scans and body restored.
+// Round 324: complete centroid scalar storage in both input-read orders, each with/without
+// reciprocal and all weighted products beside their consumers: 562 each. Frontloaded
+// weighted products also 562, reverted. Original aggregate centroid and body restored.
 // M309: Existing position helper before/after mass query 530/548; native signed view
 // 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
 // restored). Deduplicated exits 531; per-path result 591; false-default/result-first
 // 542/542. Original complete body, owning field and helper declarations restored.
+// Round 326: Existing complete centroid/direction/fallback scale producers,
+// seven subsets, then all with the per-body impulse scale before lift: 530 each.
+// Original component producers and body restored; frame 0x44 versus 0x4c,
+// result byte, state width and centroid/impulse homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2890,7 +2923,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 561 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 561 (was 561): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
@@ -2917,6 +2950,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Full-width special/wall/left truth subsets 1/2/4/3/5/6/7 and all native bytes
 // fast 600/639/652/631/615/633/622/642 (control 642); special alone plain 561,
 // 2728/2712 bytes. Keep only long special; every producer, condition and call is original.
+// M313: Native orientation/shared short-hand getter/entry scalar declaration subsets, then branch scalar declaration; original body restored;
+// fast 600/616/616/600/600/616/616/616.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3209,9 +3244,19 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 514: native input memcpy/memmove with direct output 368/383; aggregate
 // input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
 // Original helper and body restored; matrix/pivot homes and scalar transport remain.
+// Round 324: last-use scopes for parent matrix/world pivot/child world, subsets 1-7,
+// then all with matrix declared before origin: 368 each. Original scopes restored.
 // Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
 // subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
 // Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
+// Round 326: Cached scale/shared scale producer/branch-owned scaled point in
+// the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
+// the native point declaration first 367. Two-point lead rejected; original
+// alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
+// Round 365: Shared world-offset/placement-difference-plus-origin/final-displacement
+// producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
+// sum 364. Exact-length 364/363 gains are below threshold. Original complete body
+// restored; matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3909,9 +3954,19 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // ranks, trigonometric homes and rotation/basis carriers remain.
 // M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
 // M306: Existing rotation helper force-inline on the original retained expression 145; restored.
+// Round 361: Existing rotation input/result by value, crossed with native axis
+// value, staged cross and shared dot: 329/402/329/412/318/490/319/463. Original
+// in-place helper and full body restored; normalization SIMD ranks and trig/rotation
+// homes remain. Alternate dot grouping was exact-only and is restored.
 // Round 470: Repeated forward-field receiver at first rotation/before normalization,
 // each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
 // normalization SIMD ranks and trig/rotation/basis homes remain.
+// Round 325: Actual sine/cosine/axis const-reference formals in the twice-used rotation,
+// nonempty subsets then all with vector reference: 145/145/145/145/145/145/145/145. Original helper and body
+// restored; normalization SIMD numbering and coefficient/rotation homes remain.
+// P268: Native angle/sine/cosine lexical home subsets 1/2/4/3/5/6/7, then all with
+// complete private projection/cross scalar identities: 145 each. Original helper/body restored;
+// normalized-axis SIMD ranks, trigonometric homes and rotation/basis carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4368,6 +4423,12 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
 // Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
 // callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
+// Round 361: Natural-input velocity setter/direct actor test/separate impulse,
+// subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
+// Every corrected form loses matched callers through the input convention; original
+// body restored. An unused-address preparation 198 is excluded, not a gain.
+// M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
+// fast 239/239/253/253/238/238/254/254.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4735,6 +4796,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Round 259: Direct animation-result initialization after the names store, complete shared orientation
 // setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
 // all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
+// M311: Actual animation-result/tag/state lexical-home subsets 1-7, all with late uninitialized motion:
+// 655/655/655/655/655/655/655/655 (fast control 655); restored.
+// M313: Uniform motion flags/placement mode/entry animation output subsets, all plus entry matrix declaration; restored;
+// fast 682/658/685/655/682/658/685/685.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

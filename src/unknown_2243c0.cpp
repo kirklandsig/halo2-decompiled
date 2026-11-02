@@ -409,6 +409,25 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 355: actual two-byte mapping records with nine-bit ordinals, first/second/both
 // 117/117/117; each with final grouped cache zeros 120/120/120; both with masked fallback
 // 152, with both boundaries 149. Original data views and body restored; fallback/stage/pass homes remain.
+// Round 40 (m3 lane 2, fast; all on the round 59 score-8 chain, restored; match-only forms). Left at 8: pass definition EDX (retail EAX), material index
+// ECX (EDX), material definition EDX (EDI), the zero's `xor` after the +8 read. Zeros before the material lookup 13, before the pass record read 60, before
+// the pass tag 18. The geometry pointer as a named local at five places 8 (forwarded), at entry 68 (551 bytes); bound to a const reference from a by-value
+// accessor before the pass tag or record read 33/33, before the material lookup 90 (552: index EDX as retail, material definition EAX), before or after the
+// zeros 8/8; with earlier zeros 97/97/38. Material definition named or bound, then the zeros, then its +8 read 95/95 (552: definition in EDI and the `xor` at
+// retail's place, index still ECX, the +8 read after the stores, the 0x1c620 setup flips). With the geometry bound first or after 68/68/82/82.
+// Grid 1 (geometry none/before material/before zeros/before pass; pass definition, material definition, records, pass tag each plain/bound):
+// 8/59/36/104/92/119/86/103/36/105/76/107/86/104/60/105
+// 90/118/112/104/62/117/88/103/112/105/76/107/88/104/60/102
+// 8/119/86/104/79/119/86/103/86/105/76/107/86/104/60/105
+// 33/111/87/112/107/110/107/111/87/113/107/114/107/112/105/109
+// Grid 2 (pass chain plain/definition bound/records bound/definition named/one reused local; geometry none/before pass/before material/before zeros/after
+// zeros; material inline/definition named across zeros/bound across zeros/+8 read named across zeros/+8 read bound across zeros):
+// 8/95/95/110/110/33/111/111/128/128/90/68/68/105/105/8/82/82/110/110/8/82/82/110/110
+// 36/90/90/110/110/87/113/113/114/114/112/92/92/113/113/86/90/90/106/106/86/90/90/106/106
+// 36/90/90/110/110/87/113/113/114/114/112/92/92/113/113/86/90/90/106/106/86/90/90/106/106
+// 8/95/95/110/110/33/111/111/128/128/90/68/68/105/105/8/82/82/110/110/8/82/82/110/110
+// 8/95/95/110/110/33/111/111/128/128/90/68/68/105/105/8/82/82/110/110/8/82/82/110/110
+// Then on the chain: the pass tag not named, const or dword 8/8/8; the material tag named 8, with the zeros after it 41.
 // DL238: Complete actual directory mutable/immutable/memcpy/memmove values 195/195/195/202; with
 // final grouped cache zeros 196/196/196/203. Original whole body, directory observations, helper,
 // cache/mask lifetime, includes and all calls restored; fallback EDX masking, stage/pass and

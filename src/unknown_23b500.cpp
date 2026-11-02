@@ -264,6 +264,11 @@ struct s_spawn_scenario_23aea0
 // `source + j * 0x1c - 4`, `source + j * 0x1c` and `source + j * 0x1c + 4`. 0x157450, 0x23ba10, 0x23b060, 0x23b500 and
 // 0x2bf740 stay matched. On that symbol a source walked by the batch without the bias 20, the type counter advanced
 // with the batch 6 (definition in ECX with `add ecx`), a named records pointer 25.
+// Round 84: the fused `(byte *)g_502258 + offset - 16` outer byte-offset/six-record setter loop recovers
+// retail's integer destination 0x18..0xa8 and bound, but keeps SSE tuple stores: 82 (486 bytes); local receiver
+// and point setter 82 each; per-record real source cursor 148; per-element byte destination 100; flat byte
+// destination 253; inner byte offset 210; batch/byte offsets 226; dual type/byte counters 91; scalar or dword
+// fields on the byte-offset loop 140 each; aggregate record copy 145. Original 61 body restored.
 // @retail 0x23aea0
 void function_23aea0()
 {

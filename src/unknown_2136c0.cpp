@@ -229,6 +229,9 @@ void function_213970(void);
 // DL235: Native complete progress reset with requested-language reads at each use,
 // native handle/NONE-chain/scalar-zero-chain subsets: 172/184/172/184/163/176/163/176.
 // All restored; protected separate storage still prevents the two retail bulk clears.
+// Round 528: Native progress/session/file-state zero-pair chains, seven subsets, then
+// all with paired header-state zeros: 131 each. Original independent resets restored;
+// separate storage allocations still prevent both complete retail clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
