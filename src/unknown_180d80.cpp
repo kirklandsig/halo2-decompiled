@@ -113,7 +113,7 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Earlier: BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // MiniMax R (11-01): no new form, no lower score (the permuter's 56 tries left it at 94; the
 // prologue differs only in the eax/ecx swap of the input pointer, and two 4-byte slots are swapped).
-// score 94 (was 94): BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
+// BLOCKED-BY 0x17cfa0 (its first index travels on the stack, retail's in
 // eax: `push -1` for `mov eax, -1` shifts every later offset by 3 bytes). A short strip-loop
 // index gives retail's prologue and count loop but 547 (the loop head's padding grows to a
 // jmp); local names for the count and vertex index 94; vertex index declared first 547;
@@ -157,6 +157,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // y, x, z 102.
 // Round 278: standard lower/upper/distance extrema subsets 1-7
 // 698/694/642/522/683/628/636; complete graph with short count 635. Original helpers restored.
+// P255: Existing interpolation provider with one blend/one publication/lower-bound capture/
+// ordinary each-use inputs 687/690/697/687; with emission count-pointer traversal
+// 659/678/664/659. Original helper and body restored; early mesh/count homes, creation
+// call and transform ranks remain. Earlier four-corner loop plan excluded before any trial.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

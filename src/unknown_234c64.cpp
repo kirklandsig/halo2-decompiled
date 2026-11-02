@@ -301,6 +301,13 @@ void c_window_channel::v9()
 // Round 43 (lane 10): plain parameters local with its own field_c store 3; the builder given the
 // first member's address 3; one base pointer for the callback and setter (callback result passed
 // directly) 25; early return with the request at function scope 13, declared after the test 3.
+// Round 152: the load result passed straight to set_next 25 (vtable read before the load call); a
+// value-initialised request 3; `screen` at function scope with the id array decayed 3; base
+// parameters storage with field_c cleared first, as the other callers do, 3; the load procedure read
+// into a local before the type clear 3. Every retail caller of 0x149f49 whose next instruction uses the
+// built request copies ECX (they call the local's own load); v10, which calls the member's load
+// (`call [esi + 0x2c]`), forms it again. Lead only: matched 0x2354aa also forms a request address
+// (its id, a different expression from the builder's argument) right after the call.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

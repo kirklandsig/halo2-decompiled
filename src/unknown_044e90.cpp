@@ -10,6 +10,7 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
@@ -176,6 +177,9 @@ struct s_visibility_bound_record
 // use and sign-mask capacity tests: scale test + flags 420 (1744) [94], scale test alone 427, flags alone 442, in place + flags + sign mask 445 (1760) [71], other combinations
 // 455-487. Plus: scale test in place 476; the query-data arms as if/else 484; bool false arm first 480 (1778) [71], with a two-step source pointer 480; table local at the top 447 (1744) [77].
 // Retail also reads the four capacities into registers once and re-reads them after each free, and pushes the sign-extended index at the visible-list calls.
+// Round 248: Complete independent scalar normal results joined after both transform arms,
+// loop/frustum/view/query declaration scopes with normal-first/distance-first publication: 459 each.
+// Original input plane, scalar lifetimes, publication and zero-scale behavior restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

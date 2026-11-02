@@ -79,6 +79,7 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 	out->left.k=axis_sine.i+jk;
 }
 
+// MiniMax S (11-01): no new form, no lower score.
 // score 219 (was 219): Frame 0x6c, length and setup prefix agree; axis-specific rotation/cosine spills, basis registers and the four-byte table placement remain.
 // Earlier at 219 (was 380): frame 0x6c and length agree; the rotation case bodies are scheduled differently
 // (retail squares k first and spills it, keeps the sine products in registers and reloads cosine), the
@@ -173,6 +174,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // squares and sines 503 (1704, frame 0x54) [76]; all values named then all stores 461 (1752) [98]; vector locals with a shared complement and k*complement
 // 396 (1844) [104]; the shared k*complement alone 220 (1836) [82]; complement alone 452 (1756) [72]; complement and k*complement 497/408 [95/82]; 28
 // dependency-respecting statement orders around retail's first case with k*complement, best 240 (1812).
+// Round 248: Native squared/sine aggregate initialization, singly/together and producer order,
+// mutable/readonly complete products: 455/485/443/486/455/485/443/486.
+// Original partial product vectors, helper and complete body restored.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

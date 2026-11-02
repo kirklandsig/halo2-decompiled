@@ -394,6 +394,8 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // getter 8; j declared in the outer loop's body or before it 8/8; type_a read first 28; a contact count local 865
 // (1222 bytes); the second body read through the global 227 (710 bytes). Only a real extra read of j in the j or k
 // loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
+// Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
+// copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -639,6 +641,10 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
 // subsets 321 each; all with successive original-group normal/distance sums 321.
 // Original producers, helper contracts and complete body restored.
+// Round 458: Complete actual transform input ownership, mutable/immutable, with
+// original/native plane input and original/memcpy normal publication:
+// 468/468/514/514/468/468/514/514. Original matrix observations, plane inputs and publication
+// restored; frame 0x48 versus 0x44, classifier and output homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

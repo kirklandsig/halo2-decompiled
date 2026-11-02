@@ -837,6 +837,9 @@ void c_session_client::function_06dbc0()
 // after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
 // whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
 // call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
+// Round 300: update consumer/provider/both inline declarations 43 each;
+// both force-inline 449. With the existing state-predicate call, the same
+// contracts give 100/100/100/400. All declarations and original body restored.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

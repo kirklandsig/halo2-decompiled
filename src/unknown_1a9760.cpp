@@ -157,6 +157,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // out 191, step loop 200, body in-place 195; pointer stepping 4 (three forms); accumulated sum in the loop 4; casts in the square sum 5/5/14/14/4/214/266;
 // accumulated squares 4/12/216; double root 5, fabs on the double 5/226, named fabs 4, degenerate bool 4, >= test 176; half-step constant named 4;
 // pointer to the flag 4; `do` loop 238; pointer to the direction source 196. A 600 s permuter run: none below 4.
+// M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
+// vector-mediated/direct first projection:
+// 187/187/187/187/187/187/187/187. Original complete executable source restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
