@@ -155,6 +155,10 @@ static __forceinline long real_to_long(real value);
 // `_random(...) > 32767` 435 (and/cmp 0x7fff0000, not retail's test/jbe); the third draw's bounds as an early
 // real_bounds copy 417 [388]; the second draw through function_259d0 like the other two 413 [298], with +0x38
 // as a named local read with the limits (used twice) 412 [291], plus the early real_bounds copy 437 [352].
+// Round 230: complete sixteen-real input values, native/library copies with bool/byte/short/long
+// adjustment outcomes, scores [493, 493, 493, 493, 493, 493, 491, 491].
+// Actual resolver definition inline/forceinline [466, 466], with all users checked; restored.
+// Original executable source restored. Frame 0x4c and early third-input/random-state ownership remain.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

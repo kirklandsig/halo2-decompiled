@@ -212,6 +212,9 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
+// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
+// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
+// stays recorded as not kept.
 // score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
 // which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
 // layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
@@ -366,11 +369,28 @@ void function_07b3e0(void)
 // its loop 58 (120 bytes: retail's found block with the dead `add` and data in ESI, one pool register); the datum
 // iterator (bool step) 58; the step reading the iterator's pool again after the scan 58; scan on the iterator field
 // with the datum on the step's copy 58; the iterator set up by an inline (iterator, pool) helper 58.
+// Round 149 (lane 4, fast): the scan and the datum index both on the global (no pool local) 45 (126 bytes);
+// the datum-iterator form with the final valid store through the iterator's pool 64 (114 bytes), the
+// record-pool iterator form likewise 64 (114); the absolute-index scan on the pool local with the datum
+// index on the global 65 (142); `++index` as the scan's start 39 (same code). qos_release (0x7b650) takes
+// the datum index only, so retail's `add ecx, esi` is the inlined step's datum pointer, not an argument.
 // Round 129 (m3 lane 6, fast): the scan and the datum index both reading the global at each use (no pool
 // local) 45 (126 bytes: LTCG hoists the two reads into one EBP and drops the final reload); with
 // index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);
 // diagnostic file-local step copies passing `iterator->data` to the scan and using a `data` copy for the
 // datum, and the reverse, 58/58 (the copies coalesce into one pool register, as the iterator form).
+// Round 285: separate next-search/found-index carriers long/long and dword/long
+// with pre/post-release advancement 61/65 (117/113 bytes); long/dword and dword/dword
+// 53/57 (125/121 bytes). Original cursor and body restored.
+// Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
+// existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
+// Round 243: one next-input cursor, long/int/dword/unsigned-int, through the original
+// scanner 65/65/57/57; dynamic-bound scanner counterparts 65/65/57/57. All shorten
+// and regress; original last-found cursor, shared helpers and terminal stores restored.
+// M287: Signed nonnegative/greater-than-NONE scan admission, cached/dynamic
+// existing scanner and immutable receiver combinations:
+// 53/39/53/39/53/39/53/39. Original sentinel loop restored;
+// split scan/datum pool residency and found-arm layout remain.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1301,6 +1321,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 2792 bytes); the matched accessors 0x193440/0x1933d0/0x1933a0/0x193400/0x1934d0/0x1934b0/0x193470 for
 // this file's helpers 904 (0x193300 too) / 840 with the capacity helper forceinline (2828 bytes, aligned
 // 447 against 515) / 869 with the loop getter; every helper `__forceinline` 906, with the loop getter 859.
+// Round 285: three multi-use pointer-home names independently and five joint lexical
+// orders 766 each; original pointer names, workspaces and body restored.
+// Round 333: Uniform identity memcpy/memmove with word cells 766/855, dword cells 844/876; scoped
+// ID counterparts 766/855/844/875. Frame/session/lookup remain; original transfers restored.
+// M287: Existing matched minimum/maximum/team selectors in seven subsets,
+// all with the existing limited selector:
+// 808/814/906/816/921/899/910/910. Original private selectors and body restored;
+// frame/session/initial lookup expansion remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

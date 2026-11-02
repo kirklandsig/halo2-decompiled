@@ -398,6 +398,24 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // place as retail, first difference +0x65, but the i/j stores, the k product and the correction differ);
 // that with the delta through scaled_difference3f(state velocity, velocity, 1.0f, delta) 59 (366 bytes; the
 // correction then forms all three products before the load-first adds as retail), with `(real)ticks` 56.
+// Round 48 (m3 lane 11, fast): every stage through the existing helpers (vector3f_add_scaled into a predicted
+// point, vector3d_from_points3d, vector3f_scale by the ticks, vector3d_from_points3d for the delta, the delta
+// scaled in place then vector3f_add) 57: retail's whole store/delta/sum shape, colours rotated as with the
+// 1.0f scaled_difference3f delta (ticks and k XMM4, i XMM2, j XMM3 where retail has XMM3/XMM4/XMM2); that
+// with the 1.0f scaled_difference3f delta 57; the delta copied per component then subtracted in place, k, i, j,
+// 34; the predicted point with a `long ticks` local and deltas k, i, j 30; that with the delta copied i, k, j
+// then subtracted k, i, j 29 (366 bytes). Screen only: local names, declaration order, ticks
+// or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
+// (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
+// XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
+// deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
+// then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain
+// order follows the delta order, while retail has j-first chains with an i, j, k delta (its k, j, i sum). A
+// compile-only screen of ~1150 forms (rate stage per component/staged/copied first/as a struct in all six
+// orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
+// orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
+// the root changes nothing.
 // Round 128 (m3 lane 6, fast; compile-only harness positional counts track the build at +4): the deltas through
 // the existing scaled_difference3f(state velocity, velocity, 1.0f, delta) on this body 57 (the stores, deltas and
 // (k + j) + i sum are then retail's instruction for instruction, only rotated: conversion/k delta XMM4, i delta XMM2,
@@ -427,6 +445,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // or rate locals, dot3f for the length, limit first, a separate correction vector, no parameter reference, and
 // (diagnostics) no else arm, no location test or no tail never move the helper form's colours (ticks stay in
 // XMM4); `delta = velocity;` then in-place subtractions 82-90.
+// Round 151 (lane 4, fast): the squared length written out `k*k + j*j + i*i` 32 (same code); the correction
+// products written `scale * d.i`, `d.j * scale`, `d.k * scale` (retail's copy-then-in-place pattern) 32 (same
+// code: the products still sink into the sums); that with the delta through the existing scaled_difference3f
+// (state velocity, velocity, 1.0f) 57 (the i product stays in place, folded into its sum); the tick products
+// written `tick_scale * v.c` with the conversion at the top 32 (same code); each component's state copy placed
+// at the head of its own chain 46 (first difference +0x20); retail's tick and delta order (tick j, tick i,
+// delta i, delta j, tick k, delta k) after the chains 83 (first difference +0x2f).
 // Round 61 (lane 16, fast): on round 59's scaled_difference3f form (ticks in XMM3 scaled in place, 57) the
 // deltas assigned i, j, k 53 (the velocity stores i then j and the k product placed as retail, but the chains
 // then run i, j, k), i, k, j 57, j, k, i 52, k, i, j 58, k, j, i 72, through vector3d_from_points3d 80: the chain

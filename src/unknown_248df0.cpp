@@ -142,6 +142,14 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 // vector3d_from_points3d with dot3f loads it first (i, k, j order) 69; a plain cross vector
 // moves the result to XMM1 (also in the compile-only screen): with case 13 returning its
 // fraction directly 152, cases 12 and 13 both 162, the fraction's `+ 1` returned early 210,
+// the fraction as a ternary 210.
+// Round 57 (m3 lane 1): case 12's roles follow the count of initialized locals before its
+// displacement stores (17-18 more with an i, j, k dot give retail's case 12, 26; nested
+// helper locals and bare declarations don't count); case 13's cross registers follow the first
+// mention of each camera field in the function (up.i named before case 12 gives retail's
+// registers, 71 at 880 bytes); no written cross order can give those ranks. i, j, k dot 30;
+// ticks-to-seconds helper for case 8 30; named effect index for cases 9/10 30; dot3f in
+// case 12 70; the first three together 30.
 // the fraction as a ternary 210. Round 69: case 12 dot3f in either argument order 70/70;
 // cross3f_staged plain 212, with the inherited qualified vector 31, plain with a named projection
 // 212; ordinary inline on the private implementation 1074 (17 bytes); case 13 dot3f in either

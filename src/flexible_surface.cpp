@@ -680,6 +680,9 @@ void function_117dd0(long index, vector3f *wind)
 // applied as vector3f_add_scaled(&force, &tangent, -drag, &force) 189 (719 bytes); the dot passed straight to
 // vector3f_scale 63 (same code); both helper forms 66; the point-difference tangent with a written dot
 // `i*i + k*k + j*j` 97 (736 bytes). All restored.
+// Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
+// observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
+// Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {
@@ -768,6 +771,7 @@ public:
 static inline byte *surface_tag(long index) { return g_4e3b44[index & 0xffff].bytes; }
 static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)(base + offset); }
 
+// MiniMax C (11-01): no new form, no lower score.
 // score 422 (was 422): frame 0x44 versus 0x2c; descriptor scans, application convention and outer vertex API expansion remain.
 // Earlier: frame 0x44 versus 0x2c; attribute scans and D3D call expansion differ.
 // Integer orientation 529; null-first lighting 522; per-scan results 530; real type

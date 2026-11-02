@@ -786,6 +786,39 @@ real g_55e618;
 // computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 196; on the copy form the
 // collision word stored before the start stores plus the impact before the position 100 (two-point gain,
 // not kept); the copy form in retail's computation order 211; keep computed after impact.index 197 (1536 bytes).
+// Round 53 (lane 10, fast): the reflection block is 14 bytes longer than retail's (0x367..0x466 against
+// 0x367..0x458); ours stores position.x before the normal's j/k reads, so it reloads them, where retail holds
+// the normal in xmm1/4/2 and stores the three position sums together. Position into a local point copied out
+// 286 (1594 bytes); the point copied from the collision and offset in place 335 (1618); the velocity pointer
+// with the local point 232 (1560); the sums in three locals stored after 245 (1570), with the velocity pointer
+// 189 (1536); the velocity pointer with real_point3d_set 188 (1536), with impact.index stored before it 188,
+// with perpendicular/tangent interleaved per component 179 (1537 bytes, retail's length: normal held in
+// registers, tangent.i/j spilled at +0x38/+0x3c as retail, but frame 0x118: ours keeps perp.k in xmm7 and
+// spills tangent.k where retail spills perp.k at +0xac, because ours multiplies normal * dot, copying the
+// normal, where retail multiplies dot * normal and reuses dot's register for perp.k); on that 179 form the
+// dot or the perpendicular products in the other text order 179/179 (same code), the dot read from the
+// particle fields 189, keep computed after the velocity pointer 188; the normal as a union member read
+// directly 605 (h0, copy form), 651 (on the 179 form).
+// Round 43 (lane 14, fast): collision record declared in the loop block 243 (1570 bytes), at the countdown block's
+// top 243; velocity pointer 195; pointer plus loop-block collision 184 (1536 bytes, frame 0x118: tangent +0x38, sweep
+// +0x44, cache +0x50, collision +0xa4 as retail, no perpendicular home, j/material/next slots rotated); that with
+// retail's computation order 170 (1547), with rows i, i, j, j, k, k 179 (1537 bytes); on the last: velocity pointer
+// before normal 191, keep before normal 179, both 190, normal before the coefficient loop 179, `normal->x * dot`
+// 179, `keep * field` 179, keep at each use 120 (1525, keep recomputed after the call). Ours keeps the normal as the
+// destination of every `dot * normal` product, so tangent.k spills where retail multiplies dot in place, spills perp.k
+// (+0xac) and keeps tangent.k (that spill is what gives retail its perpendicular home and the 0x124 frame).
+// Round 65 (lane 16, fast): velocity pointer with the position through the existing real_point3d_set (the three
+// sums held until the stores, as retail) 189 (1536 bytes, frame 0x118; velocity read twice through `lea esi` as
+// retail); final stores direct to the particle 188 (j/k stores then [ebp+0x2c]/[ebp+0x30] as retail); on that
+// dot3f 188, impact first 188, tangent declared first 188, perpendicular through vector3f_scale 188; the
+// perpendicular/tangent pairs interleaved per component 179 (1537 bytes; tangent.i/j spill to retail's +0x38/+0x3c
+// and the sweep sits at retail's +0x44, but ours spills tangent.k where retail spills perp.k, so the perpendicular
+// gets no home); on that dot3f/impact first/dot declared first/normal-first products 179 each, twelve dot term
+// orders 179 each (identical code), pair orders ikj/jik/jki/kij/kji 181/183/191/183/189; the normal through a
+// named header field 179 (identical), read as a direct field 651 (1749 bytes). Retail multiplies the perpendicular
+// with the dot as destination (dot * n), ours copies the normal (n * dot). Retail's six-statement order (perp.i,
+// tangent.i, perp.j, perp.k, tangent.j, tangent.k) on that pointer form 185 (1547 bytes; frame 0x124 and the
+// collision at +0xb0 as retail, but perp.j spills to +0x3c, tangent.j to +0xa8 and perp.k to +0x40).
 // Round 30 (lane 2, fast): retail loads every normal/point component and the placement's last argument
 // above the position stores and reuses the dot's normal registers for the position; ours reloads the normal
 // after each position store, so our particle stores may alias the collision record. The particle's +2 word read
@@ -801,6 +834,17 @@ real g_55e618;
 // points, not kept); the velocity pointer form re-measured 194 (1541 bytes), with the dot through a
 // forceinline pointer helper 194 (identical: the helper's loads still merge, so the twice-read velocity.i of
 // retail is not an inline-boundary effect).
+// Round 55 (lane 10, fast): the particle struct typed (flags word at +2, reals at +8 and +0x34, read as
+// fields with no flags pointer) 99 (the flags test after the call then hoists as retail); that with the
+// collision word stored before the start stores 97 (five points, not kept); on that typed body: the
+// velocity pointer with real_point3d_set and perpendicular/tangent interleaved 195 (1539 bytes), in retail's
+// computation order (perp.i, tangent.i, perp.j, perp.k, tangent.j, tangent.k) 182; the velocity pointer
+// alone 194; the velocity read at each use 198; real_point3d_set alone 242 (1570 bytes). On the untyped
+// body: the 179 form in retail's computation order 185 (1547 bytes, frame 0x124 again).
+// Round 441: actual shared collision normal member, plus native flags/kind/fraction
+// subsets 102/99/102/99; those four with the existing full response setter 191 each.
+// Three-point reductions rejected. Original particle type, shared collision header and body
+// restored; reflection spill ownership, sweep/collision homes and normal reloads remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

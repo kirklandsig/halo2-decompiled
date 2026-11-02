@@ -32,18 +32,18 @@ struct s_visibility_query_list
 };
 void __cdecl function_2dd930(void *data, s_visibility_plane_query const *query,
     s_visibility_query_list *second, s_visibility_query_list *first);
-template<long N> struct s_visibility_query_storage
+template<long N> struct __declspec(align(16)) s_visibility_plane_storage
 {
     s_visibility_query_list list;
     dword indices[N];
 };
 struct s_visibility_query_workspace
 {
-    s_visibility_query_storage<1024> first, second;
-    s_visibility_query_storage<2048> third;
+    s_visibility_plane_storage<1024> first, second;
+    s_visibility_plane_storage<2048> third;
     union
     {
-        s_visibility_query_storage<2048> fourth;
+        s_visibility_plane_storage<2048> fourth;
         transform4x3f transforms[255];
     };
 };

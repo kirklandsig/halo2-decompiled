@@ -39,6 +39,11 @@ bool function_1946f0(s_bitstream *stream)
 // Round 97: masked pointer dereference 2; clear-start index first alone 2; two-use buffer pointer 40;
 // current-byte pointer 46; two-use next-byte index 24; grouped remaining count 2;
 // buffer member only at the mask or only at the clear 2/2.
+// Round 70 (--fast): index and count declared at function scope 2; a named bit index 2; the mask named
+// in its block 2; the clear from `&data[index + 1]` 2; a named size for the count 2. Compile-only screens
+// (same code as the build here): no spelling, cast, integer address sum, scope, temp count or deleted
+// neighbour statement flips either lea; small probes give [index + data] only when the address is the
+// index's sole use (0x1957d0's shape) and [data + index] whenever the index is used again.
 // @retail 0x194710
 void function_194710(s_bitstream *stream, bool discard)
 {

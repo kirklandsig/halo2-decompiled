@@ -732,10 +732,29 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // other plain orders 56-63 (1261-1262), staged in any order 49 (1264); on 45 right declared first,
 // direction declared first, const previous_up 45 each; a forward pointer in the else branch 43 (the
 // else branch is then retail's; one-use pointer, kept only on a match).
+// Round 129 (lane 5, fast; `--fast` keeps the cross-file function_1f087b out of line (1224 B), so these use a
+// same-file copy, which gives the base's 45): the existing direction_from_angles in the else branch 156 (1264 B).
+// Second product as a staged helper, each row one expression (E) or accumulated (`x = p; x -= q;`, A), all six row
+// orders x eight styles: ijk EEE/AEE, jik EEE/EAE, jki EEE/EEA 45; k-first or k-before-j orders with the k row
+// accumulated 55 (1262 B: retail's own k, j, i order no longer recolours to 217, but previous_up.k loads into
+// xmm2 before the distance store and right.i/right.k swap xmm0/xmm2); the rest 217/222. First product as a
+// helper with per-row styles: on the base, direct ijk EEE 45, staged EEE 49, any accumulated row 214-225; jik
+// EEE 59 (1261 B), jik AAE/AAA 61, jki EEE/EEA/EAE 63 (1261 B); on the kji/k-accumulated second product,
+// direct EEE 55, staged EEE 56, the rest 203-221.
 // Round 127 (lane 6, fast): the second product into a local up, then copied before the normalize 253 (1290
 // bytes), normalized in the local and then copied 254 (1292); previous_up through the out-of-line player state
 // getter 367 (1244: retail inlines it here); diagnostic: the distance not stored 218 at retail's 1261 bytes (the
 // three bytes go, but the second product keeps our operand order: the store does not set it).
+// Round 151 (lane 4, fast with 0x1f0870 listed so the helper inlines; without it fast builds 1224 bytes): the
+// one extra byte is the second product's second `movss xmm, [forward.k]` load (retail loads forward.k once and
+// copies right's registers). Products (first, second): function_1f087b then cross3f 222 (1273 bytes), then
+// cross3f_staged 221 (1272); forward-first cross3f (forward x previous_up) then function_1f087b(right, forward)
+// 224 (1270); the first product from the direction local with function_1f087b second 43 (1261 bytes, first
+// difference +0x200, but the first product then reads the direction's stack copy and interleaves with the
+// forward copy where retail reads command->forward after it: a different shape, not kept); both products from
+// the direction local with function_1f087b second 229. On the 43 form: right declared first 43, const
+// previous_up 43 (same code each); the second product through scripted_cross_product 217, through cross_11e130
+// 217 (1261 bytes each).
 // Round 24 (lane 17, fast with 0x1f0870's file, which the reduced image needs to inline function_1f087b; it then
 // agrees with the full build at 45): diagnostic dead temps at the top (period 8, in pairs) on this body 45/45/49/49/
 // 219/219/49/49 for 0-7 (219 at 1261 bytes is a shifted allocation that also loses previous_up's load order), on

@@ -109,6 +109,41 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // to new registers before the stores: 187 (1002 bytes, env aligned 66 against 71); with local_5 assigned directly
 // [179, 1002 bytes]; with a perpendicular vector for the projection [166, 1015 bytes]; local_5 assigned directly
 // alone [66].
+// Round 335: Native offset passes position/scale/scaled-input/affine 197/237/199/181;
+// affine-pass normalization orders ikj/jik/jki/kij/kji 180/180/180/179/181.
+// The affine graph reaches 996 bytes and first +0xa9, but regresses; original
+// offset producer, normalization and complete body restored at 85.
+// Round 117 (m3 lane 8, fast): `local_6 *= -1.0` (a double) 75 at 996 bytes, but the negation becomes x87
+// `fmul qword` where retail multiplies by -1.0f in SSE, so it cannot match; it shows the else arm then loads -1.0
+// itself as retail does. `local_6 = 0.0f - local_6` 171; `local_6 = -local_6` 171; `*= -1` 85 (same code); the sign
+// test as `local_5 * local_6 < 0.0f` 85 (same code); /Op around the function (diagnostic) 241 (1024 bytes).
+// Round 71 (lane 12; env positional in brackets, 66 for this body): the perpendicular's j and k stores ahead of
+// local_5's copy gives retail's copy of the projection (`movaps`) but stores j, k, i [173, 995 bytes, aligned 57];
+// the local_6 sign test as `local_5 * local_6`, `local_5 = local_3.i = ...` chained, the unknown456 store first
+// [66 each]; the projection with the negated term first, grouped or not [66/66/74]. A separate `perpendicular`
+// vector (0 - j, i, k) for the projection, the else arm and local_6 shares local_3's slot and gives retail's
+// projection (0 - j first, i product in place) but no copy of local_5 and the -1.0 still hoisted: [165], --fast
+// 169 at 996 bytes; with local_5 declared first [165]; perpendicular filled j, k, i [166, 996 bytes]; the
+// projection i, j, k [166]; local_6 through a named offset vector, grouped or i, j, k [164/164], with the i, j, k
+// projection [171]. Diagnostic (not kept): normalize3d/dot3f/vector3d_from_points3d expanded under a scoped inline
+// window 211 (1015 bytes).
+// Round 231: unconditional direction copy with scalar/loop negative correction 168/168;
+// component if/conditional selections 204/220; reused side predicate 204; existing negative
+// scaler 178; negative/positive arm copy loops 85/213. Original producer and body restored.
+// Round 444: Double magnitude/inverse/both signed-projection domains, subsets 1/2/4/3/5/6/7,
+// then all with untruncated sqrt: 194/196/228/199/237/241/243/243. Original scalar precision, complete body and inline boundary restored.
+// Round 237: complete immutable normalization input with eager/branch-owned output, original/shared scale,
+// original/earlier magnitude 233/237/239/245/85/183/199/210
+// Original executable body and helpers restored.
+// Round 452: Common normalizer/default-vector boundary with retested/stored lateral classification, in-
+// place/separate requested distance and call/entry trace storage: 206/210/206/210/206/210/206/210. All
+// source, precision and inherited inline boundary restored; half/reciprocal/negation allocation remains.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
+// Round 223: Native two-component perpendicular value with aggregate/field
+// construction, direct/stored projection and i/j publication order, all eight
+// combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

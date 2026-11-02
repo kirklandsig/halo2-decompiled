@@ -349,6 +349,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
+// samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
+// loads before the pushes, and the permuter's 1806 tries never beat 7.
 // score 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
 // into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax
@@ -580,7 +583,7 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 	location->spatial.compressed_forward = vector3d_compress(g_4687b0);
 }
 
-// score 264 (was 279): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
+// score 264 (was 264): frame 0x84 versus 0x80: our build keeps the constant 1 in EBX from the datum flag test
 // (`test bl, al`, the type tests, the shift, b8d30's `push ebx`) and leaves a dead store of it in a stack slot,
 // so the object pointer goes to ECX; retail tests with immediates and loads `mov bl, 1` only after the b8d30
 // call. Retail also stores case 3's failure byte (`neg/sbb/inc`, slot shared with the audibility output) and
@@ -686,6 +689,14 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // provider calls, output publication and complete body restored.
 // Round 267: all five other flags/owner/byte entry-publication orders and three native shared-zero
 // chains each score 279. Original initial stores restored; frame 0x8c, datum/tag homes and one spill remain.
+// Round 38 (lane 15, fast; aligned = LCS-aligned differing instructions, 207 at 279): with the
+// root-location callee matching, the spatial/cluster addresses written at each use (no pointer locals)
+// give retail's ESI datum and EBP definition at retail's 1029 bytes but frame 0x84, 288 (aligned 236; the
+// extra dword is the constant 1 kept in EBX from the flag test and spilled, where retail keeps the object
+// in EBX); on that form: the object type read into a local 288; the flag test through TEST_FIELD_BIT 288;
+// the object pointer read before the type test 307 (frame 0x80 as retail, but case 2 is then laid out
+// before case 3 and the case-3 failure byte is no longer stored). The object pointer read early on the
+// original body 309. Original body restored.
 // Round 26 (lane 17): spatial/cluster addresses written at each use (no pointer locals) 288 alone (retail's ESI
 // datum and EBP definition, register-blind differences 91 -> 82), with the audibility output declared at the top
 // of the marker block 264 (kept; same structure, its store now precedes the marker lookup). On that: forward
@@ -695,6 +706,10 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // without its type compare 331 (frame 0x80), the shift on another constant 286: the early EBX constant stays.
 // On the kept form: audibility declared just before the marker 267; marker declared before its name 264; case 3's
 // forward vector declared before the audible store 264.
+// Y499: retained direct-output/audibility graph, failure-first/common exit/both
+// 261/260/261; reversed membership mask 257; with failure/common/both 263/264/263;
+// all with byte failure 263. Seven-point best is below the keep bar; original body restored.
+// Frame 0x84/0x80 and early constant-one spill remain.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

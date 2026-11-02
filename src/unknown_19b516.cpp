@@ -230,6 +230,10 @@ void c_widget::v16()
 // helper-fallback ternary entry 42; ternary entry and step 12; helper-fallback if/else step 35;
 // helper-fallback if/else entry 13; if/else entry and step 45; single-exit goto with if/else step 35.
 // Original executable body restored.
+// Round 116 (lane 8, fast): `register` widget 2; the step in an `else` arm of the eligibility test 2; the step
+// through a named `previous` local 2; `do { if (!widget) return; ... } while (true)` (diagnostic) 2; `break` with
+// the focus after the loop 37 (94 bytes). Retail's copy-then-test head is what follows a call result (13 such heads
+// in retail, all after calls); a test-before-copy head occurs only 4 times in all of retail.
 // @retail 0x22ec1b
 void c_widget::v17()
 {

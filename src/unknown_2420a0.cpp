@@ -524,6 +524,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 // count stays in ECX and the index in EAX where retail keeps the count in EAX and spills the index);
 // sqrtf 173. The table local at the loop top or in the marker block (169, 717 B) hoists the table to
 // EDI and moves the slot to EBP from the stack, so it is not retail's allocation either.
+// Round 45 (lane 11, plain; a fast image builds 0x19ec40 differently here, 203 for this body): the distance's
+// squares named (`dx_squared`, `dy_squared`) 173; the delta as a vector2f through dot_product2d 173; a named
+// squared distance 173 (all identical code); the x maximum written bound-first like y and z 152 (701 bytes, a
+// positional gain only: the x compare then loads the bound into a register where retail compares the distance
+// with the memory bound, so not kept), with the squares reversed 152, with the accumulated distance 152.
 // Round 126 (m3 lane 6, fast with 0x1e5bb0/0x1e2a90/0x29b00/0x19ec40 in the image; alone it builds 203 at 690 B),
 // all on the accumulated distance (aligned difference 58 -> 53, still 173): the inner index declared in its for 173,
 // at the marker block's top 173; with the y-first copy helper function_2417a1 for the marker position 172, plus the
@@ -542,6 +547,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 // the global at each use with the accumulated distance 200 (688 bytes). Retail keeps the table in EBP across
 // the inner loop and reuses it after the 0x19ec40 call (LTCG knows the call leaves g_51ec80 alone); ours
 // reloads the table for the x updates and borrows EBP for the entries base, so the index keeps a register.
+// Round 115 (fast with 0x19ec40 and its three callees; LCS-aligned distance in brackets, base 173 [58]): the
+// accumulated distance 173 [53]; the select's else arm through the global 200 [64], with the accumulated
+// distance 200 [59]; `if (marker_index == NONE) continue;` 173 [58], with the accumulated distance 173 [53];
+// count and the inner index declared before the query 173 [53]; no table local, the global at each use, with
+// the accumulated distance 200 [59] (688 bytes).
 // Round 20 (lane 17, fast with 0x19ec40's callees in the image): the existing y-first copy helper
 // function_2417a1 for the marker position with the accumulated distance 172 (copy and x87 code
 // retail's; the count still moves to ECX after the call where retail keeps it in EAX and spills j); on it:
@@ -1147,6 +1157,7 @@ void c_game_engine_markers::v21(long object_index)
 // mode read through g_4e6948's own view 119 and the absolute index inside the flag block 119; guard
 // returns for the mode, type and slot tests 40; the object fetched before the type test as in the
 // matched v24 119 (the object is then kept, where retail reloads it).
+// In short: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Summary of the same two causes: the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Earlier note (40): the entry swaps EAX/ECX for the object index and the header; retail computes the
 // Earlier summary: the entry swaps EAX/ECX for the object index and the header; retail computes the
@@ -1242,6 +1253,10 @@ void c_game_engine_markers::v21(long object_index)
 // a const unit pointer 119, a separate local for the event block's player-index re-read 119. Diagnostic: the unit
 // first with the team at each call reloads the options as retail but keeps the type test's object pointer (no
 // re-fetch of the slot), so the options hold follows the register pressure across the type test.
+// Round 126 (m3 lane 6, fast): on the per-arm team (119; the options pointer then held in EDX from entry, so the
+// players' data load folds): the type test's result in a short local 119, the players' data named once and indexed
+// by the absolute index 120, the event block reading the unit's player index at both uses 119, a char team per arm
+// 119; on the kept form the players' data local alone 87.
 // Round 186 (fast): on the team at each call, a second player pointer for the else arm's team 95
 // (431 bytes: retail's unfolded players-data load, player pointer before the flag test and team after
 // the compare, but the options pointer still held in EDX from entry, so the type test takes ESI/EDI),
@@ -1256,6 +1271,11 @@ void c_game_engine_markers::v21(long object_index)
 // on this body or on the team at each call; a slot-table local as in v24 (`g = g_51ec80`) 50, with the
 // team at each call 119; v30's per-arm team with a const player 119; early returns for the mode and the
 // type test 40 (same code), with the team at each call 119.
+// Round 115 (lane 8, one-file harness exact, 200-body random grid): guard returns for the mode, type and slot
+// tests 40 (same code); `!(flags[slot] & 1)` 40 (same code); `(word)` absolute index 40 (same code); arms
+// swapped 48; team at each call with the player before a `(word)` absolute index 86 (432 bytes, options still
+// in EDX from entry), team per arm the same 86; other per-call/per-arm forms 113-121. Only with the scaled
+// index shared by the type test and the slot fetch does ours put the index first in the type test's fetch.
 // Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
 // code); the absolute index computed inside the flag block 119; the effect team through the existing
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
@@ -1286,6 +1306,14 @@ void c_game_engine_markers::v21(long object_index)
 // before the flag test 89 (aligned 24 against 30: the player pointer and team now precede the test, but
 // the team load stays folded into the player arithmetic where retail materializes the pointer and
 // loads the team after the engine-type compare), with the player before the absolute index 89.
+// Round 151 (lane 4, fast): the type test called with `(word)object_index` 110 (440 bytes); the slot read
+// spelled out through the header array in place 40 (same code); on the team at each call: the player pointer
+// declared at function scope 119, the player as `data + sizeof(s_player_view) * absolute_index` 120 (the data
+// load still folds into the add); on the kept form, declared at function scope: the slot 40, the team 40, the
+// player pointer and absolute index 40 (same code each); the unit fetched at the top of the slot block (after
+// the slot test) 118 (428 bytes). Diagnostic: a minimal body (mode test, type test, slot
+// and unit fetch, two calls) keeps the entry swap (index EAX, header ECX), so the swap comes from the type test
+// and slot fetch alone.
 // Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
 // code); the absolute index computed inside the flag block 119; the effect team through the existing
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
@@ -2066,6 +2094,12 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // any later fix; on it the cause team through ctf_player_get 55, subtype and type locals in either
 // order 55. Diagnostics: a time test with one register operand puts it in EBX and the engine type
 // shares EBX; with the game time and the table both in registers ours moves the engine type to EBP.
+// Round 115 (one-file harness, equal to the full count here; the first and the last confirmed with --fast): the
+// getter at both game-time reads with `function_146650() + rounded` 55 again (LCS-aligned 27 against 33); the
+// subtype as `subtype = 7; if (flag) subtype = 13;` 57 (258 bytes; matched caller 0x241620 then differs);
+// both 64; guard return on the mode and range tests 53 (same code); one table local for the time test and the
+// final store 59, with the getter tail 60. Diagnostics: without the cause-player store the engine type takes
+// EBX (options in ECX, table in EDI); with a constant subtype the table and the engine type share EDI.
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {

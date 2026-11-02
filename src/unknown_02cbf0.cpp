@@ -212,6 +212,9 @@ static __forceinline long floor_to_long_inline(real value)
 // ahead of the bit, the word stays in eax); the bit named before that store 79 (same code); the
 // field masked and ORed in place with the bit read from it 79; the kind word as one expression 81;
 // the load test named before the kind word 82. All restored.
+// Round 33 (lane 2, fast): the word stored before the load test 78; stored before the call, the call
+// itself as the success test 79; the bit count as a long 64; the bit count read at each use 17; `bits != 0`
+// 17. The intensity spill slot stays BLOCKED-BY 0x133390 and 0x133520 (level pushed as a word there).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,
