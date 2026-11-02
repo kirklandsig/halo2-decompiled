@@ -309,7 +309,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 49 (was 113): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
+// score 49 (was 49): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
 // the actor table through EAX instead of ECX; SETNE, marker-call setup and tail homes remain.
 // Earlier (113, was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
@@ -494,6 +494,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 256: nullable marker-list at the query producer, branch/conditional output,
 // early result storage and limit-field observations: branch 236 each, conditional 233 each.
 // Original readiness Boolean, list construction, movement snapshot and complete body restored.
+// Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
+// availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
+// Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

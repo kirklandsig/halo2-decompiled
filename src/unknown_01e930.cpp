@@ -516,6 +516,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // N306: Finite allocation-choice domains, canonical/flag-valued, mutable/readonly and conditional/
 // per-arm movie open: 280/287/280/287/279/290/279/290. Original decision and complete body restored;
 // frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
+// N318: Existing clock contract without unused scratch, actual uninitialized start/elapsed/retry
+// storage at entry in all eight subsets, 299 each (1079 bytes, frame 0x30). Original clock
+// producer, storage and complete body restored; frame/status/clock/output and instruction policy gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
