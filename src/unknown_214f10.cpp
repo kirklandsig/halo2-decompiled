@@ -303,6 +303,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // element passed directly and no copy 44 (handle in EDI); on the file copy `success = (long)(handle test); if
 // (success)` 55; `success = handle test ? TRUE : FALSE; if (success)` 55 (351 bytes). Every form forwards the
 // stored byte to a register test.
+// P269: wide-result lexical success/completion, file/outcome and path/ordinal home subsets
+// 1/2/3/4/5/6/7, then all with reversed byte declarations: 42/42/42/42/42/42/42/42.
+// Original homes and body restored; handle ECX and stored-success memory retest remain.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

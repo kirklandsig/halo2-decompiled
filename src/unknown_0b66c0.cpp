@@ -320,6 +320,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // instead of start 43 (108 bytes, 0xb5f10 6), advanced before the clamp 47 (108 bytes, 0xb5f10 6); the clamp to
 // 0x1ff before `count++` 40 (same code); the length test first, then the sign tests 46 (92 bytes, 0xb5f10 6);
 // the function `static` 40 (same code).
+// Round 528: native int start/count and immutable destination formal, seven subsets
+// 40 each; complete native graph with exhaustive result arms 48. Original signature,
+// shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

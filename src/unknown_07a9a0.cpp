@@ -407,6 +407,9 @@ void function_07b3e0(void)
 // M302: Pre-stepped pointer/bool iterators with independent record-pool capture,
 // aggregate/field setup and either capture order: 126/126/126/126/144/144/144/144.
 // All exact-only forms rejected; original scan and terminal observations restored.
+// Round 363: Absolute cursor initialized before activation guard, long/dword/short/signed-char domain with
+// cached scanner 44/55/65/62; dynamic scanner 44/55/65/62. Original guard-owned cursor and full body restored;
+// split scan/datum pool residency remains.
 // @retail 0x7b430
 void function_07b430(void)
 {

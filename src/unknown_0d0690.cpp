@@ -1464,6 +1464,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 235: Complete selection-header value with native-entry/combined-mask/entry-false
 // result subsets 567/568/573/572/544/545/571/572. Frame 0x28 is recovered but type moves
 // to the stack; original scan inputs, result, helpers and complete body restored.
+// DH291: Library-copy primary-color/secondary-direction/ambient-direction publications,
+// seven subsets 529 each; complete transfers with dead bounded-color workspace reused for the
+// final ambient clamp 556. Original complete body and all helper/caller contracts restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2138,6 +2141,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
 // producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
 // Round 234: Decoded/encoded/both scalar roots at branch/data production, readonly data and native block controls 554 each (eight forms); first/middle/last samples 555; complete status/mesh/sample/vector/color role names 555. One-byte gains rejected; original complete body restored. Frame 0x90 agrees; status/mesh homes and selective helper expansion remain.
+// Round 363: Native four-weight decoder loop, long/short/word/byte ordinal with sample index first
+// 554/795/795/795; index last 550/775/775/775. Original decoder and complete body restored; status/mesh/sample
+// homes and helper expansion remain.
 // M314: First-path normal/base/both/lightmap/normal-lightmap/base-lightmap/all output declaration
 // lifetimes at entry 555/590/590/573/573/677/677; all with constant result first 677.
 // Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
