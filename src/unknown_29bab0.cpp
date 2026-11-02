@@ -182,6 +182,10 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 153 (lane 4, fast): collision flag declared first 750; input reference declared after the character
 // lookup 750, at its first use 750; collision flag between the actor and object lookups 750; heading pointer
 // declared const 750 (all the same code: retail still holds the object index in EDI and pushes EBX late).
+// DH271: Native component aggregates for heading/default pair/normalized input, masks 1/2/4/3/5/6/7, then
+// all with reversed independent defaults, 819/840/811/882/784/813/847/832. All new forms use direct input
+// and regress; original input observation, real vector copies, private helpers and full body restored. Early
+// input/object/heading and memory-product homes remain.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

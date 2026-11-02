@@ -630,8 +630,15 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 232: Twice-used team-bit producer with the inherited present qualifier removed, saved
+// team/playing masks in full/word storage: 107/136/72/147 with long team, 108/137/74/148 with
+// signed-byte team. All original observations and qualifiers restored; word-mask head and shared
+// post-loop reload remain.
 // Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
 // receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
+// N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
+// with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
+// restored; word entry storage and the shared post-loop old-mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4504,6 +4511,10 @@ void function_15fe20(long team_index, color3f *color);
 // Round 480: Filled team-color output objects, rival/own/both, with native publication
 // 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
 // complete individual palette copies 564. Original body restored; native color transfers remain.
+// Round 232: Native component-aggregate captures at rival team/own team/both/rival palette
+// 624/599/643/553; whole-color byte-copy captures at rival team/own team/both/all outputs
+// 65/405/46/46. One-use values restored without a byte match; native color transfers, NONE reuse
+// and byte shift remain.
 // Round 496: Standard forward color ranges, rival/own/both team/all four publications
 // 563/236/569/588; backward ranges 568/544/567/592. Original aggregate copies and body restored.
 // M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
@@ -4513,6 +4524,9 @@ void function_15fe20(long team_index, color3f *color);
 // default inside the block, if-form selection) 119 (2688 B); `1 << (byte)iterator.index` 87; both 118
 // (2688 B); NONE default before the unit test with engine_object_get and if-form 119 (2688 B); the byte
 // shift with the two individual-block reorders 84.
+// N295: Native object exchanges at rival/own team/individual palette subsets 1-7,
+// 564/536/561/478/567/539/589; complete standard range exchange 673. All exact-only forms
+// restored; native team-color transfers, shared NONE and shift-count residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5643,6 +5657,10 @@ void __stdcall function_d6bc0(long object_index);
 // Round 266: eight dependency-safe initial tag/preset/rate/scenario declaration orders
 // 233/231/231/233/233/231/231/231. Original input observations and full body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Round 232: Complete conditional modifier selection with short/short, short/long, signed-
+// byte/short and signed-byte/long kind/modifier carriers 159/144/156/160; branch-defined default
+// selection with the same carriers 159/144/156/160. Frame 0x14/0x18 and the independent timer
+// home remain.
 // Round 496: Countdown value owning both zero scheduling and positive expiry, short/long
 // storage with word/Boolean schedule and short/byte-kind plus word/long modifier:
 // 156/168/169/176/161/172/183/190. Original timer observations and body restored.
@@ -5652,6 +5670,10 @@ void __stdcall function_d6bc0(long object_index);
 // only for the countdown 176 (879 B; frame 0x18 but the new slot holds the index); the pointer defined before
 // a field zero test 176 (879 B); object pointer at the top of the loop body 229 (878 B); index at function
 // scope 144; countdown declared at the top of the loop body 144.
+// N295: Multiply-used placement-point/object-point/live-radius pointers, subsets 1-7,
+// 144/189/189/239/239/245/245; all with read-only point receivers 245. Original body restored;
+// frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Object-point storage recovers frame 0x18 at 189/872 bytes but worsens the register lifetimes.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

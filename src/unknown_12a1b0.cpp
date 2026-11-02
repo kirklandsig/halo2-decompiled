@@ -2289,6 +2289,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // bool/short per-track carriers 730/744, 786/743, 782/742; direct parameter bits at both
 // consumers 794/736 (exact-only). Reduced control 694, full 597. Frame/register and record/track
 // homes remain; original parameter-derived producer, widths and body restored.
+// Round 502: complete reused native class-word/request-mask payloads, short/word
+// and byte/word combinations 694/694/702/694/702/702/694/694 against reduced control 694.
+// Original parameter observations and complete body restored; entry/result and record/track homes remain.
 // Round 289: native previous/next transition carriers char/long, short/long, long/char,
 // long/short, char/char, short/short, char/short, short/char: 669/644/626/657/645/651/658/655.
 // Original state graph restored; entry truth ownership and record/track homes remain.

@@ -1154,7 +1154,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 33 (was 85): frame 0x1144 and extent agree; query/count homes, write argument order,
+// score 33 (was 33): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
 // frame 0x1144 and the entry prefix agree; size/count homes, write setup,
@@ -1419,6 +1419,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
 // All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
 // native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
+// DH271: Query/write-count/resize-result lexical identities, all seven subsets, then joint uninitialized
+// iteration-owned declarations, 33 each. The failure-only count-initialization graph keeps the same code
+// despite every new output-home identity. Original names, scopes, result producers, waits and native
+// handle/options tuples restored; query/count homes, write setup and checksum/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
