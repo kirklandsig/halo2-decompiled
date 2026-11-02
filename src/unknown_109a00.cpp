@@ -248,6 +248,10 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // previous velocity declared with the offset and the moved transform at its call 10; the delta as
 // `-change.i` 52. Compile-only screens of 128 local-declaration combinations (headers, platform index,
 // definition, velocity pointer, declaration places) found none that flips only the two x adds.
+// Round 26: both flagged sites are one x add each (the other flagged lines only shift by its one byte): ours
+// reverses retail's choice at each. The x add written change-first with `+=` for y and z 37 (1024 bytes); a second
+// read of the clock field for the change 163; the previous velocity through a local before the output copy 163;
+// products written scale-first 10; the delta's -1 first 10.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
