@@ -666,6 +666,9 @@ real function_267370(long object_index);
 // (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
 // cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
 // `carrier` declared at the top of the block 98 (same code).
+// DL234: shared predicate result from its final test, with direct cluster/entry keys
+// and a reused zone byte: 96/96/96/96/164/164/164/164; shared provider 0 -> 20/37 in the
+// first/last four. All rejected; header restored. Frame 0x90 agrees; NONE sharing and cross operands remain.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1014,7 +1017,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 254 (was 320): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// score 254 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
@@ -1111,6 +1114,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// DL234: current definition-table field at every use, guarded/conditional replacement,
+// inner/outer query storage and mutable/readonly metadata: 397/396/397/396/397/396/397/396.
+// Original observation and query-output lifetimes restored; sentinel and stack homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1782,6 +1788,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the second block 251 (same code); the loop as `for (short i = 0; i < 2; i++)` 251
 // (same code). Diagnostic (plain, reverted): src/character_tag_accessors.cpp renamed to link after this file, as
 // retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
+// DL234: actual grenade-reset admission produced as bool/byte/short/long, complete
+// condition or guarded result: 251 each. Original predicate and body restored; actor/options,
+// retained pool and scalar homes remain. Shared query summaries and all draw guards are unchanged.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
