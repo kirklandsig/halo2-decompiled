@@ -70,12 +70,14 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 629): Frame 0x108 and the prologue agree (success in retail's stack byte); our
-// early-true exit sits inline where retail places it last, then hit/basis/ray/root/rotation homes follow.
-// Before round 47: success retained in BL with EBX saved early instead of retail's stack byte.
-// Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
+// score 629 (was 629): Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Retail stores true directly in its result byte and returns immediate one on the inactive path.
 // Hit/basis/ray/root/rotation homes follow.
+// Frame 0x108 and the prologue agree (success in retail's stack byte); our
+// early-true exit sits inline where retail places it last, then hit/basis/ray/root/rotation homes follow.
+// Before round 47: success retained in BL with EBX saved early instead of retail's stack byte.
+// Frame 0x108 and the prologue agree (success in retail's stack byte); our
+// Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
 // Early constant minimum with long success 635, with early point copy 651; final products differ.
 // MiniMax H run 14: the cross helper 0x2922b1 with its sign flipped and the operands swapped at
 // all four calls (same results) 622; under the keep bar, not kept.
@@ -206,6 +208,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 259: all six cross-product parts named before subtraction, paired axis schedules
 // ijk/ikj/jik/jki/kij/kji and positive/negative arm schedules, 636 each. Original
 // helper, complete input/result snapshots and body restored; frame agrees, success/basis homes remain.
+// Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
+// cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
+// Original executable body and declarations restored; remaining allocation differences persist.
 // Round 47 (m3 lane 13): `if (!(range > 0.0f)) return true; else {...}` with the FLT_MAX minimum at the top
 // 618 plain (kept; retail's `mov al, 1` exit and early minimum store); the early return alone 623; as a guard
 // with the body at function scope 680; `if (range > 0) {...} else return true;` 679 (retail's exit last);
@@ -213,6 +218,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // the arg_6 test exact, divergence starts at the basis cross products); the range read once before the test
 // 619; read first inside the else 618 (still reloaded); cross-product operands swapped in the helper's first or
 // third part 618 (same code).
+// Round 288: Complete ray-margin snapshot at post-settings/active/post-basis/post-origin phases, each without/with the complete angle-limit observation,
+// 695/721/699/724/678/726/678/726 (fast). Original complete body, observations, helpers and call roles restored.
 // Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
 // cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
 // Original executable body and declarations restored; remaining allocation differences persist.

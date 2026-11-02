@@ -927,6 +927,20 @@ void function_25aba0(long actor_index);
 // retail, but the enabled failures cross-jump into a fused state-one pop again), pop first 29 (same code);
 // on the stamp-first form the kind-2 failure orders stamp/pop/state 134, state/stamp/pop 119,
 // state/pop/stamp 133, pop/stamp/state 134, pop/state/stamp 133.
+// Round 22 (lane 18): the loop-head flag as `if (level < 0) return;` 206 (rotated); the choice-pop and
+// next-handler-failure arms as one shared stamp/pop tail 321 (880 bytes); the start callback called through
+// the handler field (no local) 29 (same code); the first enabled test through slot_type_enabled 155 (its
+// `(word >> n) & 1` bit test differs, but kind-2's pop splits as retail). LEAD: an inline bool function of
+// slot_type_enabled's shape with this file's `word & (1 << n)` test, for the first enabled test, splits both
+// the state-one and kind-2 pops as retail (150); with the stamp-first choice arm too 143 (966 bytes) and only
+// the enabled failure differs: a fall-through `dec [mem]; jmp` after the third test, where retail's three
+// tests jump to the fallback pop. On that: if/return, result-bool and preset bodies 143-150 (the last test's
+// polarity never changes); the not-enabled pop chained into the dispatch 143; positive dispatch
+// `if (enabled) { chain } else level--;` 134 (the failures jump into the state-one arm, which fuses), with
+// `continue` in the state-one arm, the kind-2 arm, the else or both arms 119/134/119/134; state-one and
+// kind-2 pops first with the stamp-first choice arm 131 (macro) / 38 (helper, 961 bytes);
+// `usable = function_1a80e0(...)` feeding one `level--` at the loop end 159 (it merges into kind-2's tail);
+// a goto from the enabled failure to the fallback pop 53 (the shared pop is laid out after the enabled tests).
 // @retail 0x1a7cc0
 void __stdcall function_1a7cc0(long actor_index)
 {
