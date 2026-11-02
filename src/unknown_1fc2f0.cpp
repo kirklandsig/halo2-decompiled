@@ -460,6 +460,8 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
 // orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
 // the root changes nothing.
+// Round 247: Existing shared scaler native/scalar input capture crossed with complete scalar/native
+// output publication: 146/32/32/145/146/145/189/32; original body and helpers restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

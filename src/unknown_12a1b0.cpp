@@ -1248,7 +1248,7 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 127 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
+// score 110 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
 // calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
@@ -1342,6 +1342,9 @@ struct s_looping_detail_request
 // restored; detail retention and unwanted first-player expansion remain.
 // Round 291: Source/offset/velocity overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with native flag, 190/180/123/193/185/174/186/186. Four-point best rejected; original copies restored.
+// Round 247: Native request-offset output workspace with four complete publication orders and
+// early/late success: 110/110/110/110/110/110/110/110. Keep original field order and early success,
+// 110 plain at 508/508; detail retention, offset publication and first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1356,15 +1359,13 @@ bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_soun
 	if (sound->source.audible == 1)
 	{
 		source->audible = 1;
-		vector3f offset;
-		function_21ce60(detail, &offset);
-		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&offset, source);
+		function_21ce60(detail, &request->offset);
+		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&request->offset, source);
 		result = true;
 		request->flags = 0x2f;
 		request->looping_sound_index = looping_sound_index;
 		request->callbacks = &g_44a130;
-		request->offset = offset;
-		request->tracking_data_size = sizeof(offset);
+		request->tracking_data_size = sizeof(request->offset);
 	}
 	else
 	{
@@ -1681,6 +1682,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Original guards, request, frame and complete body restored.
 // Round 291: Native integer activity/mask domains long/short/word: 305/304/304/410/410/304/304/304.
 // One-point forms rejected; original dword mask/activity, request and range loops restored.
+// Round 247: Actual first-pass gain-output, second-pass sound and gain-input cursor subsets, then all
+// with full request extent: 442/406/384/460/453/432/432/432; original body and helpers restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

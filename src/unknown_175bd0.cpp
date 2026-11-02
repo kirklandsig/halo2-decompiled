@@ -3386,6 +3386,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 247: Complete staged point rows in row/column schedules, then with staged normal rows and the
+// default-scale prefix: 174/174/74/74/74/74/285/285; original body and helpers restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
