@@ -2271,6 +2271,7 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
 // three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
 // object/offset homes and low-mask ownership remain.
+// M303: Positive-four countdown signed-char/byte/short/word at loop scope or entry: 155 in all eight forms; original long countdown and lifetime restored.
 // Round 120 (fast): the masked entry offset named at its computation 154 (retail's SIB base again, one
 // point); the 0x2000 test nested in its own if 155 (same code); a `byte const *` unit pointer 155 (same
 // code); the slot-loop counters and cursor declared right after the 0xa5e70 call 279 (1081 bytes, every
@@ -2278,6 +2279,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // signed long 155 (same code). Retail's dead `add ebp, 0x214` is the unit pointer's EBP turned into the
 // field pointer in place, so retail's unit web ends in EBP at the 0x2000 block and is reloaded from its
 // stack home after the slot loop (EBP then holds the first slot mask); ours keeps the unit in EBP.
+// Round 317: Per-use native child metadata/count/fraction source groups 1..7, all with read-only child
+// view 304/257/292/243/273/315/347/347 fast. Exact-only source-observation graphs restored.
+// Indexed lookup, object/offset homes and low-mask ownership remain; original full body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

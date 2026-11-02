@@ -336,6 +336,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // ICWR/IWCR/IWRC/WICR/WRIC/CWIR/CWRI/CRWI (C RGB, I intensity, W weight, R remainder)
 // 775/775/775/748/748/616/614/612; two/four-point leads rejected. Original helpers and complete body
 // restored; palette/record and SIMD carriers remain.
+// N306: Native output combined/separate rejection, nested/intensity-first acceptance, each with
+// original/early-exit merge: 616/616/616/616/616/616/616/616. Original helpers and complete body restored;
+// palette/record and SIMD zero/contribution carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

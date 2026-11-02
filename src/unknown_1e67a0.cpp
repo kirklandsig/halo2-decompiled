@@ -717,6 +717,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 159/246/243/128/160/241/246; all with ordinary sample 279; scale plus velocity receiver,
 // with/without shared jitter add 128/128. Four-point leads rejected; original body restored,
 // constant/limit ownership and jitter spills remain.
+// Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
+// 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
+// Constant/limit XMM ownership, movement outputs and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

@@ -1121,6 +1121,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// Round 464: separate actual request records at case-entry/successful-producer scopes,
+// four phase pairs with each genuine case order: 254 each. Original shared request restored;
+// persistent sentinel and substitution/squad homes still differ at the matching frame and length.
 // DL234: current definition-table field at every use, guarded/conditional replacement,
 // inner/outer query storage and mutable/readonly metadata: 397/396/397/396/397/396/397/396.
 // Original observation and query-output lifetimes restored; sentinel and stack homes remain.
@@ -1816,6 +1819,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // N302: Shared two-consumer ammunition-reduction predicate bool/byte/short/long,
 // per equipment phase / per valid weapon: 278/278/246/245/255/255/326/328. Exact-only
 // observations and all original code restored; frame/input agree, pool/actor/options homes remain.
+// DH282: Complete probability-default/increased-selection/delay-default ownership, seven subsets then all
+// with native signed-word tick storage [251, 251, 251, 251, 251, 251, 251, 251]. Original executable body
+// restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

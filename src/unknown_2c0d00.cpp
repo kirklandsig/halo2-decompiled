@@ -307,6 +307,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // N303: Distinct first-second/first-third/second-third/all marker batches grouped at collection
 // or object scope: 908f each (control 931f, baseline 882 plain). Exact-only forms restored;
 // original separate buffers, query storage, qualifiers and full body retained.
+// Round 317: Native first/second/vehicle relative-vector subsets 1..7, all with shared marker dots
+// 916/916/911/921/913/913/929/917 fast. Original full body restored.
+// Paired-marker ordinary 918; original body restored.
+// Actor/unit and priority/query/marker homes and excess twelve frame bytes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1142,10 +1146,17 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 443: repeated native byte/word/long/dword side-index values at entry
 // 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
 // radius, traversal, predicates and complete body restored.
+// Round 352: Complete projection/orientation results phased/together, each with
+// first/sentinel/second/pair-first Boolean accumulation: 404/404/404/423/403/403/403/422. Frame
+// 0x30, zero/radius and vertex allocation remain; original geometry, helpers and traversal
+// restored.
 // Round 234: Planar start/end/both/origin/start-origin/end-origin/all input records 424/338/426/346/419/362/444; all via library copies 444. Frames 0x38/0x40/0x48 regress from 0x30 versus retail 0x28. Original full body restored; zero/radius schedule and vertex homes remain.
 // N303: Final vertex from the already selected endpoints: conditional/if-else/default-to/default-from
 // 361/361/369/369; default before geometry to/from 369/375; native word endpoints/all indices
 // 397/358. Original body restored; frame 0x30 versus 0x28 and geometry/vertex homes remain.
+// Round 317: Actual endpoint-word/point/node lvalue subsets 1..7, all plus first portal lvalue
+// 333/324/333/324/333/324/333/333 fast; all original receivers and body restored.
+// Frame 0x30 versus 0x28, zero/radius lifetime and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1565,6 +1576,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // DL237: Complete native query-source mutable/immutable/memcpy/memmove copies 495/495/495/504;
 // with existing origin setter 524/524/524/529. All restored; source-radius staging, persistent
 // zero and metadata homes remain.
+// Round 316: Eager classification short/word/long/dword with short/long links
+// 427/420/415/422/473/420/473/420; eager word with paired corner results
+// short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
+// original classification, Boolean corners and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

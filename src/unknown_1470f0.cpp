@@ -264,6 +264,13 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // first call block merges into the second's and the equality branch goes), with `>` 70; all three
 // ranges in that form 68; address-first comparisons with the named end 10; second and third ranges
 // address-first 14.
+// Round 58: the third range `>= || ==` 6 (-2, not kept); first and second plain with that third 43 (127 bytes); the named
+// first end with second and third `>= || ==` 64 (155 bytes); first in the test `>= || ==`, second plain, third `>= || ==` 73
+// (153 bytes). Compile-only (exact here, 8 = real 8), about 8,000 forms: test spellings, named and shared bounds, inverted
+// tests, per-arm allocator locals, inline bool helpers, casts, assignments in the test: none below 6. `>= || ==` in all three gives
+// retail's EAX bounds but turns the first call block's class/vtable to EAX/EDX (retail EDX/EAX), so the blocks don't merge.
+// Named first and second ends in nested blocks with the third `>= || ==` in the test: compile-only 8, only the named ends' lea
+// ahead of the jg (start EDX) still differs; the third range, the merged calls and the jne are retail's.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {

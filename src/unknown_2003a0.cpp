@@ -1708,6 +1708,11 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
 // search result stored in the iterator's index and tested there 113; distance test as a continue 2;
 // squad index read after the flag test 2.
+// Round 119: ordinary inline helper 216; existing datum helper in the shared step 110; existing squad
+// step reused 88; preincremented search input 2; index declared before the pool 2; step in the for
+// update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
+// the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
+// byte-return helper 2; boolean datum step directly in the caller 150.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
