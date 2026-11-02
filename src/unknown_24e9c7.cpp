@@ -252,6 +252,9 @@ struct s_24e9c7_bounds
 // geometry, observations and complete body restored; early spill/scalar homes remain.
 // Round 342: Across scalars scaled into the actual side displacement, upper/reverse scalar-pair and shared real half-width subsets: 125/125/133/133/123/123/132/132.
 // Original complete body restored; early across spill, shifted scalar homes and SSE schedule remain.
+// Round 344: separate real geometry height with long/double return carriers at producer, width
+// and draw boundaries, late real return carrier, then long carrier with early upper displacement:
+// 153/153/147/161/161/150/187/152. Original body restored; early spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
