@@ -279,7 +279,7 @@ static __forceinline void apply_second_pair_second_impulse(float const volatile 
 	*result += impulse;
 }
 
-static __forceinline solver_projection_31c940 project_second_pair_first_row(solver_linear_row_31e7b0 const *row,
+static __forceinline solver_projection_31c940 project_linear_axis(solver_linear_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &axis_linear)
 {
 	__m128 relative = _mm_sub_ps(a->linear, b->linear);
@@ -305,7 +305,7 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	__m128 first_linear_axis = terms[0];
 	float target_a = terms[0].m128_f32[3];
 	// Complete both SIMD projections before the coupled x87 errors.
-	solver_projection_31c940 projected_a = project_second_pair_first_row(((solver_linear_row_31e7b0 *)terms),
+	solver_projection_31c940 projected_a = project_linear_axis(((solver_linear_row_31e7b0 *)terms),
 		a, body_b, first_linear_axis);
 	solver_projection_31c940 projected_b = project_second_pair_second_row(((solver_linear_row_31e7b0 *)(terms + 3)),
 		a, *linear_b_pointer, *angular_b_pointer, terms[3]);
@@ -644,7 +644,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// score 1983 (was 2012): separate the second pair and retain its body-field captures.
+// score 1977 (was 1983): construct residual projections directly in their scalar homes.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1108,7 +1108,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 				do
 				{
-					row->linear.m128_f32[3] -= linear_velocity(row, a, b).value;
+					row->linear.m128_f32[3] -= project_linear_axis(row, a, b, row->linear).value;
 					++row; ++result; op += op[1];
 				} while (op[2] == 3);
 				terms = (__m128 *)row;
