@@ -3183,6 +3183,8 @@ struct s_voice_route_choice
 // radio 363/363/411/411; with shared headset player bit
 // 391/391/411/411. Original body restored; entry saves, cursor bias
 // and tail priority merge remain.
+// Round 520: native byte/word bitwise radio, with actual receiver/talker mask/both:
+// 363/432/395/438/391/409/394/408. Original bool result, masks and body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3456,6 +3458,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // original/independent packet cursor gives 143/161/167/162/144/161/167/162. All regress; original AND-not
 // removal, member domain, live header counts, cursor, calls and body restored. Channel/packet/member
 // ownership and route homes remain.
+// Round 520: native unsigned/short current member on original/word current-kind and
+// original/independent cursor graphs: 139/166/137/169/164/159/140/150.
+// Two-count word-kind lead remains below the keep floor; original body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

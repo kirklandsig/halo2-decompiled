@@ -323,6 +323,9 @@ struct s_object_damage_view
 // N308: Complete native history-record values in selection/attribution/assist, seven subsets,
 // 500/378/514/436/615/498/584; all by aggregate assignment 584. Original records and body
 // restored; scalar homes, amount-biased history cursor and credited-player validation remain.
+// P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
+// corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
+// Original domains and body restored; scalar homes and biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -900,6 +903,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // dx/dy (left, right, top, bottom) 2, (left, right, bottom, top) 2, (top, left, bottom, right) 19,
 // with long dx/dy 16; `8 + bounds->left` / `8 + bounds->top` 2; fields copied then inset in place
 // 298 (1135 bytes); the subtractions as `+ -8` 2.
+// Round 82: existing alternate predicate 2; existing player lookup 2; member copies with
+// adjacent insets 2; aggregate coordinates at the original place / between right and bottom
+// insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
+// bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
+// inset pass reproduced 298 (1135 bytes).
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

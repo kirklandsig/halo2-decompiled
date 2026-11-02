@@ -1223,6 +1223,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // seven subsets 1011/902/1007/828/1011/902/1007; complete graph with plain inheritance while 1007.
 // Several shared users regress; every helper and original body restored. Return/output/candidate
 // homes, class/NONE roles and persistent zero carrier remain.
+// Round 520: actual named-table pointer/reference before/after candidate construction,
+// original/native iterator: 828/828/828/828/826/826/826/826.
+// Field receivers do not match; two-count initialization gains rejected. Body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1399,6 +1402,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // DL229: unsigned resolved mode/class/type storage in seven subsets 828 each;
 // all with native iterator aggregate 826. Exact-only API casts and every key type restored;
 // class/NONE, result/candidate/output homes and later zero carrier remain.
+// DL239: Optional mode/class/type output publication via memcpy subsets 1..7, then all memmove:
+// 828/828/828/828/828/828/828/1059. Original complete body, output order, native identifier and
+// iterator restored; frame 0x2c agrees, class/NONE and result/candidate/output homes plus late
+// zero carrier remain.
 // N308: Shared resource base/native list metadata/empty-request return, seven subsets,
 // 1098/1436/1546/828/1098/1436/1546; complete graph with readonly metadata 1546. Several
 // shared users regress; all helpers and original body restored. Result/output/candidate homes,

@@ -982,6 +982,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
 // retail length at 587; the three-point gains are rejected. Original complete body restored;
 // frame 0x34 and direct/vector homes remain.
+// Round 311: General movement through the existing output-pointer scale, plain/shared difference and
+// ordinary/returned-output ownership 590 each; all four with native two-component direct delta 589 each
+// (one-point gain rejected). Original body restored; frame, flag homes and normalization continuations remain.
 // DL238: Native grounded/gravity-disabled/direct-disabled predicate subsets 1/2/3/4/5/6/7/all plus
 // damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
@@ -1650,6 +1653,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P258: Two-/three-step left-associated dot sums, original/early eligibility
 // and double/real movement: 229/223/229/223/224/226/224/226. Other dot users stay
 // 590/418; original helper, eligibility, magnitude and complete body restored.
+// P263: complete selected-normal/final-vector native/memcpy/memmove pairs
+// 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
+// Original transfers, magnitude, call sites and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
