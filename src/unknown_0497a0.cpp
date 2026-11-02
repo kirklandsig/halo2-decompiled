@@ -194,6 +194,9 @@
 // the 8.2x phase) as named doubles 651; named reals, an inline four-factor helper, sinf/cosf and the
 // global point are forward-substituted (compile-only screens). Retail keeps the factors on the x87
 // stack (fmul st(1)/st(2), fadd st(3), three late pops), order 8.2x, sin x, cos 7.8y, cos 7.75y.
+// Round 509: Native horizontal/vertical/depth output receivers, subsets 1/2/4/3/5/6/7,
+// 722/722/588/720/722/722/719; all with depth-offset receiver 728. Main receiver homes add
+// four frame bytes but regress; original complete body and output receivers restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1081,6 +1084,9 @@ void __stdcall function_43720(s_43740_input *input)
 // with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
 // 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
 // split tag below both parameters in retail's colouring is open.
+// Round 509: Native tag-field/tag-entry/bitmap-table receiver subsets 1/2/4/3/5/6/7
+// and all with the source array receivers 62 each. Original body restored;
+// early tag EAX/EBP split, signed-slot residence and shader-relative test remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

@@ -2208,6 +2208,9 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 73 (fast, current body): `squad_get` for the squad 80 (183 bytes: the depth-zero pragma keeps the header
 // getter out of line), with `actor_datum_get` too 102 (161 bytes); `iterator.actor_index` stored in the loop 64; the
 // loop as `for (;;)` with a break test 64; the +0x34 store from `iterator.squad_index` 65 (199 bytes).
+// Round 509: Actual flags/tick/stamp field-address lifetimes, subsets 1/2/4/3/5/6/7,
+// 64/64/64/64/64/64/64; all three with word flags 64 (201 bytes). No gain;
+// original complete body restored; squad spill, EBP handle and common loop head remain.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2346,6 +2349,9 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
 // with outer health workspace 39/39/153/153/39/39/153/153.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 509: Actual population/swarm/eligible counter receivers, subsets 1/2/4/3/5/6/7,
+// 38/39/44/46/51/52/43; all with health-total receiver 43. One-point lead rejected;
+// original body restored; in-place health add and node/pool lifetime remain.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2550,6 +2556,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
 // stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
 // (data reloaded each pass) as an escaped local would be.
+// Round 509: Persistent idle/remaining/last-seen timer field receivers, subsets
+// 1/2/4/3/5/6/7, 275 each; all with area bitmap receiver 302 (1119 bytes).
+// Original body restored; frame, iterator pool, point homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
