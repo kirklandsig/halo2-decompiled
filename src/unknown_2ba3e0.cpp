@@ -869,6 +869,9 @@ real g_55e618;
 // complete position setter and paired projection/tangent combinations
 // 102/209/245/224/194/195/188/179. Original union, shared result extent and full body restored;
 // sweep/collision homes and projection spills remain.
+// AC475: Canonical repeated mode-two truth bool/byte/short/word, original sentinel
+// 273/273/269/269; sentinel before start stores 271/271/269/269.
+// Original raw mode mask, sentinel order, reflection inputs and complete body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

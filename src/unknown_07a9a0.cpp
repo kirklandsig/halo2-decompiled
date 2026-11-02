@@ -1361,6 +1361,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M302: Independent all/eligible phase cells byte/word, word/byte, byte/byte,
 // byte/dword, each aggregate/library first clear: 823/830/816/826/831/839/835/850.
 // Original word workspace and both populations restored; frame/session/lookup remain.
+// M312: Actual capacity/team selector interior case priorities, five capacity/two team/one joint:
+// 766/766/766/766/766/766/766/766. Original body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

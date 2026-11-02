@@ -628,6 +628,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // indexed reference/direct producers 527/450/527/450, real-array pointer walks
 // 517/469/517/469. Original record layout, draw sequence and complete body restored;
 // late EBP preservation and random/blend/getter homes remain.
+// AC474: Complete admission/failure results across the effect lookup and existing flag store,
+// bool/byte/word/long: 436/436/448/448/425/425/432/431. Original direct exit and full body restored;
+// frame 0xb0 agrees, late EBP save and random/blend/geometry/getter homes remain.
 // Round 365: Plain native-array blend/contact/velocity traversals, subsets 1-7,
 // 376/374/374/376/376/374/580; all with short component ordinals 528. Original
 // complete body restored; late EBP save, escaped blend and random/getter homes remain.

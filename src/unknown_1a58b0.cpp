@@ -654,6 +654,9 @@ void function_1a6d80(void)
 // local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
 // pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
 // pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
+// Round 85: count output before the call 6; both output pointers after it 6; count output before and valid
+// output after it 6; output references after it 6; valid store scope 6; count store scope 6; const output
+// parameters 6; indexed valid output 6; count value named after the call 6. Opening body restored.
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
