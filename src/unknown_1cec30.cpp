@@ -923,7 +923,7 @@ void function_1d1540(s_havok_component *component);
 // passes it in EBX (no push ebx, a plain ret and a 0x88 frame), the entry copy is still a rep movsd
 // where retail uses movaps, and retail still tests m_fixed before flag5; the convention is decided
 // by the call cycle through the bodies outside this file.
-// score 81 (was 81): component arrives on the stack where retail passes it in ebx (no push ebx,
+// Earlier: component arrives on the stack where retail passes it in ebx (no push ebx,
 // plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
 // m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
 // set + body pointer + m_fixed first 88 at 230 (retail's code except the ebx parameter); that with
@@ -1005,6 +1005,7 @@ void function_1d1540(s_havok_component *component);
 // Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
 // 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
 // the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
+// Round 357: Common setter with byte/word/dword/long refresh results, constructor then aligned set copy 77/83/82/82/56/59/58/58. Original body restored; frame and component transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2340,6 +2341,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
 // k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
 // unscaled else), reloading only i; ours reloads all three in each arm.
+// Round 319: Native speed/velocity/normal-output role names, subsets 1/2/4/3/5/6/7 91/91/91/91/91/91/91; all with enclosing output declaration 91. Original names, declarations and body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

@@ -291,6 +291,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
 // 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
 // component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
+// Round 357: Direct-bounds mode secondary-UV producer then primary copy, four geometry-copy phases with union/member copies 263/253/304/308/263/253/304/308. Original body and input-before-store UV encoder restored; tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

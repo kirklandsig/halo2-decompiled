@@ -715,6 +715,14 @@ bool function_14480(long tag, short stage, short index)
     return result;
 }
 
+// score 17. Lead (lane 9 r74, --fast only, no plain or full check yet): a byte match with two calls to
+// 0x14390 in place of the goto, the count read at each use, no address-taken fallback (no volatile), and
+// the parameters in the order retail's callers set up: (short stage, long fallback, long tag,
+// short fallback_index, short index, real priority), with the calls in unknown_03f2b0.cpp and
+// unknown_023540.cpp updated in place. Its --fast effect: 0x2a8d0 251 -> 154, 0x44040 100 -> 76,
+// 0x19530 619 -> 587, 0x29b00 282 -> 366 (a positional shift; first difference unchanged). To check:
+// 0x44040 and both 0x19530 calls pass fallback 1 where retail passes 0; at 0x44040 retail also passes
+// fallback_index 1 and the bitmap as index.
 // @retail 0x144f0
 void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority)
 {

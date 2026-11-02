@@ -298,6 +298,9 @@ static inline void quaternion_transform_vector(
 // M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
 // cross components:
 // 200/200/200/249/249/249/249/261. Original executable body restored.
+// P260: Independent half-angle lexical homes before/between/after rotation, four
+// forms 267 each; with independent transform cross scalars 252 each. The latter
+// reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

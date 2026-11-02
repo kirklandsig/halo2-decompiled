@@ -3568,10 +3568,17 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // 184/185/184/185. Keep the indexed early eligibility guard, plain 76
 // at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
 // attach producers, reservations and call tuples stay fixed.
+// Round 307: Branch-owned native state/member receivers and plain identity cursor, seven subsets
+// plus complete nullable state: 101/77/98/121/105/122/134/134; paired native state/member
+// receivers in member admission, without/with cursor: 144/144. Original body restored;
+// eligibility/reject ordering and member/reservation scratch homes remain.
 // Round 316: Shared attach-failure negative/positive continuations, original/ordinary
 // success storage, original/scoped machine copy 143/143/126/126/145/145/153/153.
 // Exact-length negative continuation still regresses; original early admission,
 // independent failures, success qualifier and complete body restored.
+// Round 309: Unsigned full-bit member/channel carriers and twice-used membership result, subsets 1..7,
+// then complete byte presence: 76/76/76/155/155/155/155/155. Original native carriers, admission tests and body
+// restored; dispatch/reject layout and scratch roles remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
