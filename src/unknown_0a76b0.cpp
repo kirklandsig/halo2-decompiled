@@ -280,6 +280,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 271/271/271/271/279/279/279/279.
 // Frame 8 agrees; unit/name/actions register ranks and shared-call threading remain. Original executable
 // body restored.
+// AC468: Case-owned action receiver after the pure state query, crossed with branch-owned unit
+// and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
+// 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
+// frame 8 and incoming unit/name/actions ranks remain unresolved.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1338,7 +1342,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 136 (was 148): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
+// score 136 (was 136): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1372,6 +1376,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // restored; early pool load, second unit lookup and hand lifetime remain.
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
+// M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1616,6 +1621,7 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // same-block pool reload and weapon/mode homes remain.
 // M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
 // 165/158/172/151/150/155/151/144. Original executable body restored.
+// M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1804,6 +1810,7 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
 // DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
+// M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2201,6 +2208,9 @@ __forceinline char unit_action_round(real value)
 // Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
 // all with success at the final return 278. Sub-eight forms and all other trials restored.
 // DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
+// AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
+// with byte result 235/325/331; direct/byte predicate with long result 331/235.
+// Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4284,7 +4294,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 201 (was 201): the result is now retail's (per-case `result = b8d30 > 0 && f10f430`, body under
+// score 175 (was 201): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
+// Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
+// (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
 // away/left and frame-left xmm colouring (retail loads up before forward), the seat offset scaled with the
 // component as destination (1406 bytes against 1388) and the transform rows' sum order.
@@ -4313,6 +4325,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // cross first 204; up declared before forward 201.
 // M291: Existing staged crosses at all seven basis subsets, then all with entry frame lifetime:
 // 201/201/201/201/201/201/201/201. Original executable body restored.
+// AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
+// Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
+// 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
@@ -4362,7 +4377,6 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
 		transform4x3f frame;
 		point3f world;
-		point3f local;
 		quaternionf object_orientation;
 		quaternionf inverse_rotation;
 		quaternionf orientation;
@@ -4373,13 +4387,12 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 		frame.up = up;
 		frame.position = object_matrix.position;
 		unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
-		unit_action_untransform_point(&frame, &world, &local);
+		unit_action_untransform_point(&frame, &world, (point3f *)(seat_transform + 0x10));
 		function_141f60(&object_matrix.rotation, &object_orientation);
 		function_141f60(&frame.rotation, &inverse_rotation);
 		inverse_rotation.w *= -1.0f;
 		function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
 		function_11d820(&inverse_rotation, &orientation, &orientation);
-		*(point3f *)(seat_transform + 0x10) = local;
 		*(quaternionf *)seat_transform = orientation;
 
 		actions->hoist_ticks = *(short *)((byte *)request + 4);

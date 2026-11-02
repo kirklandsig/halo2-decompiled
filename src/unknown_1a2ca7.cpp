@@ -909,6 +909,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
 // so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
 // Earlier 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// Earlier (81, was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
 // BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
 // BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
 // that never writes EDX) all reload EDX, as for a callee built without LTCG; ours keeps the exclusion cursor in
@@ -1000,6 +1001,10 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // Round 122 (fast): stack-slot name order: the added count renamed to sort last/first 81/81; the player renamed to
 // sort first/last 81/81; the message renamed to sort first 81 (these slots are spills, so names do not move them).
 // Still BLOCKED-BY 0x63d00's register information (its file was another lane's this round).
+// Round 284: receiver after eligibility, with player/name/payload ownership subsets, 134 each
+// (eight forms); added-count home becomes +0x68 but sender/cursor allocation still differs.
+// Complete positive exclusion predicate bool/byte/short/long 127/127/128/132;
+// with the eligibility-bound receiver 140/140/144/142. Original body restored.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {

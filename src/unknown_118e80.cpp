@@ -1154,6 +1154,7 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // basis MOV/LEA, component loads and force publication remain.
 // Round 278: final frozen/flag/parent conjunction orders 021/102/120/201/210
 // 101/101/100/96/96; reversed timestamp predicate with 012/201/210 94/96/96. Restored.
+// M305: Complete physics-input owner/object-flags/input-flags/settings declaration orders 0132/0312/1023/1203/1230/2013/2103/3120 132/121/94/94/94/143/143/121.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
