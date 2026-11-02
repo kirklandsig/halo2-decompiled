@@ -119,6 +119,9 @@ static inline s_12eb00 *entry_at_index(s_12ed00 *table, long index)
 // Round 104: outer-index preincrement/compound increment 11/11; index renamed local_2/cluster_ordinal
 // 11/11; function-scope index before the result/between result and table/after the table 11/11/11;
 // initialized at its declaration 11; on that scope, result preincrement/full assignment 11/11. Restored.
+// Round 120 (fast; ours ends `ret 8` like retail): the result declared after the table 72; an early
+// `return 0` for a missing fog table 304; a const offset table 11; `continue` for a missing or empty
+// entry 11; the blend offset written out at each of its three uses 113. Restored.
 // @retail 0x12eb00
 long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *output)
 {
