@@ -9,6 +9,8 @@
 #include "sound_sources.h"
 #include "unknown_0259d0.h"
 #include "vector_products.h"
+#include "slot_handler.h"
+#include "unknown_1765e0.h"
 #include <xtl.h>
 #include <string.h>
 #include <math.h>
@@ -223,7 +225,7 @@ struct s_liquid_arc_definition
 	real far_distance;
 	byte unknown48[0x68 - 0x48];
 	long arc_count;
-	s_liquid_arc *arcs;
+	s_liquid_arc *arc_list;
 };
 
 /* the collision result of 0x1697c0 (0x5c bytes), as read here */
@@ -250,8 +252,6 @@ struct s_501e0;
 extern byte g_46713c;
 extern byte g_4670bc;
 extern short g_47d8e0;
-extern vector3f *g_4687a4;
-extern vector3f *g_4687b0;
 real function_30bf0(vector3f *v);
 void function_16b10(s_render_reset_state *state);
 byte *function_c4210(long index, long element_index);
@@ -261,8 +261,6 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 void function_1883e0(long tag_index, bool ignore_distance, point3f const *point, short element_index,
 	long entry_element_index, long index, long variant, long *first_value04, long *second_value04,
 	long *first_value, long *second_value, long *first_value0c, long *second_value0c);
-long function_1765e0(point3f const *point, vector3f const *direction, vector3f const *normal,
-	long tag_index, long mode, long deterministic);
 dword vector3d_compress(vector3f const *vector);
 long function_1895f0(s_sound_position const *position, real scale, long tag_index);
 dword function_13bc00(s_tag_data const *function, real input);
@@ -274,20 +272,7 @@ long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,
 	const s_noise_basis *basis, real amplitude, s_noise_point *points);
 
-/* rounds as the x87 does (fld/fistp) */
-static __forceinline long liquid_round(real value)
-{
-	long result;
-
-	__asm
-	{
-		fld value
-		fistp result
-	}
-	return result;
-}
-
-/* draws one queued liquid record: up to eight arcs of noise-displaced points
+/* draws one queued liquid record: up to eight copies of an arc of noise-displaced points
    for each element of the liquid definition, faded by the distance from the
    camera, each arc cut short where it hits something */
 // @retail 0x508d0
@@ -335,7 +320,7 @@ void __stdcall function_508d0(void *payload_data)
 
 	for (long i = 0; i < definition->arc_count; i++)
 	{
-		s_liquid_arc *arc = &definition->arcs[i];
+		s_liquid_arc *arc = &definition->arc_list[i];
 		if (arc->strip_count <= 0 || arc->copies <= 0)
 			continue;
 		s_random_draw *draw;
@@ -473,10 +458,10 @@ void __stdcall function_508d0(void *payload_data)
 						colour.blue = g_4686cc->blue;
 					}
 					colour.alpha = alpha;
-					long blue = liquid_round(colour.blue * 255.0f);
-					long green = liquid_round(colour.green * 255.0f);
-					long red = liquid_round(colour.red * 255.0f);
-					long opacity = liquid_round(colour.alpha * 255.0f);
+					long blue = real_to_long(colour.blue * 255.0f);
+					long green = real_to_long(colour.green * 255.0f);
+					long red = real_to_long(colour.red * 255.0f);
+					long opacity = real_to_long(colour.alpha * 255.0f);
 					points[k].flags = blue | green << 8 | red << 16 | opacity << 24;
 					points[k].width = noise_curve_value(&strip->width_curve, t);
 					points[k].amount = noise_curve_value(&strip->amount_curve, t);
