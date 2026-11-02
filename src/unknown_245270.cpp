@@ -142,22 +142,15 @@ PRIVATE __forceinline void function_244de2(real thickness, short count, point3f 
 	}
 }
 
-// score 6 (was 6): the sum of squares is emitted with the x87 terms in the
-// other order and the loads inside the second inlined call are ordered
-// differently; the frame, the two prism writes and the calls all match.
-// Zero-initialised then x, y 6; the direction's i/j copied and rotated through
-// a temporary 244 (y saved) / 224 (x saved); a separate projected direction 155;
-// y stored before x with a const view for the sum 136.
-// Round 31: the hand-written normalization replaced by the existing normalize2d_fast on a
-// vector2f 6 (identical code, kept); on that: y written before x 136 (x squared first but taken
-// from st0); the dot computed just before the first prism 92; the swapped corners exchanged the
-// other way 18; `-x` for `0.f - x` in the second prism 6. Compile-only: writing only x through a
-// pointer gives retail's square order and reload, but puts the second prism's loads in y, x,
-// distance order (retail y, distance, x); routing both prisms through function_24526f with a
-// plane local grows the frame.
-// Round 68: point2f normalization view 6; length local / condition-scoped length 6/6;
-// shared 2d dot / 3d add / both 6/6/6; lower corner copied from the first 6;
-// upper and lower shared setters together 203. Original body restored.
+/* the direction turned a quarter turn in the horizontal plane */
+PRIVATE __forceinline void function_244de0_perpendicular(vector3f const *direction, vector2f *perpendicular)
+{
+	perpendicular->i = -direction->j;
+	perpendicular->j = direction->i;
+}
+
+/* records an edge and, given a height, the edge lowered by it and a prism for each side of
+   the strip between the two */
 // @retail 0x244de0
 void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 	real arg_3, long arg_4, long arg_5, long arg_6, byte arg_7,
@@ -191,7 +184,8 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_0->field_1c = *arg_1;
 			local_0->field_28 = arg_3;
 		}
-		vector2f local_1 = { -arg_1->j, arg_1->i };
+		vector2f local_1;
+		function_244de0_perpendicular(arg_1, &local_1);
 		if (normalize2d_fast(&local_1) != 0.f)
 		{
 			real local_4 = arg_0->y * local_1.j + arg_0->x * local_1.i;

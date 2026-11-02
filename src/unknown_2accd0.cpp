@@ -815,6 +815,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 309: Natural HBS/HSB/BHS/BSH/SHB/SBH state if-chains
 // 210/216/210/224/229/219; consistent three-use state capture in HBS/SBH 212/220.
 // Original switch, byte-count storage, I/O, default and cleanup restored; total and seek/size allocation remains.
+// Round 249: Twice-used pointer in the current combined scratch getter, early/late observation and
+// classification crossed with flag/size output phases: eight forms all 161. Flag-before-size forms
+// also raise the other user from 129 to 138. Original helper/body restored; fresh total and
+// size/seek carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1074,6 +1078,9 @@ struct s_signed_file_write_parameters
 // 222/234/207; all four returns 307. The 0x18 frame stays; capacity staging and extension
 // buffer/offset residency still differ. Only the header success returns directly; all I/O,
 // empty-header and zero-capacity behavior and shared failure cleanup are preserved.
+// M293: Task result carries header completion: for assignment/for branches/while/failure break,
+// original then test-produced extension result:
+// 342/342/342/306/371/371/371/308. Original complete executable source restored.
 // Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
 // success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
 // result, success carriers and body restored; capacity scheduling and extension homes remain.

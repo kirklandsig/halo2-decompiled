@@ -660,6 +660,9 @@ struct s_collision_result_buffer_1697c0
 // shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
 // 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
 // normalization scratch/axis homes and initialization/rotation schedules remain.
+// Round 507: Normalized component publication ikj/jik/jki/kij/kji 321/320/319/324/324;
+// complete product publication ikj/jki/kji 322/320/325. Three-point best rejected;
+// original normalizer restored. Scratch, axis and rotation homes remain.
 // Round 312: complete squared-norm terms 334; initial best setter 346, both 347;
 // initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
 // terms 337; both startup setters with squared terms 342. Original helper and body restored;
@@ -880,10 +883,22 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
 // goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
 // object index read before 0x210850 in both remembered branches 309 (1444 B).
+// Round 233: Both normalization producers with false-default positive assignment,
+// bool/byte/short/long result: 267/263/380/372; provisional success with explicit unordered-safe
+// failure correction: 260/266/287/287. Original result graph and complete body restored; narrow
+// carriers retain frame 0x8c, wider carriers expand it to 0x90. Result/presence byte roles and
+// shared case-tail predecessor remain.
 // Round 243 (fast control 341/1404, full 257/1448): direct false admission returns for
 // movement/pool/selected-reference/attention/object/default, actor admissions/all admissions
 // 396/343/363/343/347/338/343/338. Three-point default forms rejected; all original exits,
 // result producers and native point copies restored. Byte homes and direction-tail predecessor remain.
+// Round 348: actual point presence true by default, cleared in direction-only cases,
+// bool/byte/short/long 355/355/347/347; actual direction-only complement with
+// false default 355/355/347/347. Calibrated fast control 258/1448 versus full
+// 257/1448; all exact-only predicate-lifetime forms restored with original cases.
+// Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
+// each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
+// plain 323 versus baseline 257. Original result, presence and full body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

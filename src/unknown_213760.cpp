@@ -1419,6 +1419,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
 // All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
 // native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
+// DL229: task-specific plain completion destinations for query/resize/write subsets, then close,
+// 58/58/50/58/50/50/105/94. Original common completion, separate counts and all I/O restored;
+// query/count homes and write/header joins remain.
 // Round 306: Function-owned query-size/write-count/completion declarations in seven subsets, then all
 // plus resize output: 33 each. Original iteration/block ownership, failure-only initialization, waits
 // and complete body restored. Frame 0x1144 and open prefix agree; swapped output homes and

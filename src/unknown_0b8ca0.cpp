@@ -234,6 +234,11 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // identical code, so the evaluation order of the lookup is not the cause) 4; the type read from the
 // header at each of its three uses 61; the component index re-read through OBJECT_GET 55. Matched
 // 0x11bce0 makes the same lookup with the data loaded after the index scaling, as ours does here.
+// Round 57 (lane 10): matched 0x1c4b00 has retail's order here (data into ECX, then the mask) with the
+// same getter spelling, because its next load takes EAX; matched 0x1ed340 has ours. An index local
+// inside the activation arm 4; a data local then a masked index local 4; the masked index local then
+// the data local 4; a scaled offset local 4; a typed elements local plus the masked index 4 (all the
+// same code). Nothing visible here keeps EAX busy across the data load.
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -1550,6 +1555,18 @@ done:
 // sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
 // definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
 // palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
+// Round 57 (lane 10): retail reads palette, size, offset, with the type in ECX, the definition copied
+// to ESI after its first read, and the palette added and the size multiplied late. All offsets long
+// with the palette at the call 32 (236 bytes); the same with a long index declared at each of seven
+// points 30/31/26/26/27/27/32 (236 bytes; after the definition: size in EAX, palette in EBX, index in
+// EDI as retail, but type ESI, definition ECX, no copy, which shifts the tail), the product either way
+// round the same; first table read in place of the definition local, on those, 31/26/26/27/27/32; table
+// read at each use 31/26/27/27; definition re-assigned after the palette read, at seven index points
+// 26/31/26/31/27/27/32 (the copy propagates); first table read in place on this body 17 (237 bytes);
+// the 0xb7300 helpers again with a long index at each point 26/23/23/26/23/23, with a short index
+// 23/23, the global passed to them 25/21/23/23, 23, scenario local kept for the name 25/21 (21: scenario
+// EBX and a dead block add); inline datum helpers over the definition 26/26/27/27/27/27, over the type
+// 31/27, an elements helper with an out size 31/27.
 // @retail 0xbb670
 long __stdcall function_bb670(short name_index, bool force)
 {
