@@ -1572,6 +1572,9 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // Round 253: First/second header access and failed-admission-return subsets 1/2/4/3/5/6/7:
 // 17/13/13/17/17/13/17; staged cross on graph-only workspace 13. All bodies restored;
 // frame/constructors agree, header SIB, join reload and cross/dot ranks remain.
+// P255: Existing object getter at both/first/second headers 17/13/17; paired dot helpers
+// 361, with both/first/second getters 365/361/365; reversed paired dots with both getters
+// 365. Original body restored; header SIB, join reloads and cross/dot ranks remain.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -3426,6 +3429,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // 134/144/157/144/155/134/168; all with byte flipping truth 176. The two-point forms
 // rejected; original complete body restored. Projection input ranks, trig homes and angle
 // residence remain.
+// P255: Common matrix-source copy/late pure flip test/complete scale-add up rotation
+// subsets 1-7 224/220/222/167/228/211/219; all with separate scaled-axis/add 219.
+// Original real-angle and complete body restored; projection/cross ranks and trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4685,7 +4691,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1126 (was 1134): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1126 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4707,6 +4713,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // P252: Full-width flip/boost/side-flip truth subsets 1/2/4/3/5/6/7: 1129/1126/1134/1175/1129/1125/1164; all
 // native byte truths 1134. Only full-width boost truth kept at plain 1126, 5043/5094 bytes, frame 0xf8. The
 // one-point side-flip addition and five-point flip-only form restored.
+// P255: Angular-output/quaternion-conversion/late-force lifetime subsets 1-7 all 1126;
+// consistent vector-role names 1126. Frame 0xf8 and index/vector/rotation homes remain; restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
