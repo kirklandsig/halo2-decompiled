@@ -303,6 +303,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // evaluator inputs, original/retail timestamp orders: 70/70/138/138/133/133/55/55. Minimal
 // timestamp-first plus reconciled particle evaluator input 55 kept plain at 870/870; pool and
 // array locals removed. Original duration results, helpers and all argument positions remain.
+// DH303: Native cached-record field with common pointer/flags/both/tested-result
+// completions 131/127/128/124/131/127/128/124. All regress; original
+// body and field declaration restored; folded compare and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

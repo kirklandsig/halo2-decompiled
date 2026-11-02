@@ -477,6 +477,9 @@ struct s_physics_component_walk : s_havok_component
 // section queries 146 (same code).
 // Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
 // conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
+// DH303: Promoted/branch/table neighbor producers, default first-body outcomes
+// and producer-scoped group receiver 181/163/289/318/316/318/292/303. Original method
+// restored; neighbor/key carriers and cold exits remain (one historical control excluded).
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
