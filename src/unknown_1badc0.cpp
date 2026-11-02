@@ -230,6 +230,9 @@ real normalize2d(point2f *arg_0);
 // bool/byte/short/long results 270/250/256/251; after actor lookup
 // 270/254/225/229. Original body restored; caller conventions regress, and
 // output EBX/EBP, native point/vector homes and shared false exit remain.
+// Round 473: One optional-output admission predicate across all three guards,
+// bool/byte/short/long at entry or after actor lookup: 253/253/290/287/249/249/262/259.
+// All restored; output EBP and point/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

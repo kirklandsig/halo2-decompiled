@@ -977,6 +977,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Original body restored.
 // Round 471: Selected normal/offset/origin observations, masks 1-7,
 // 515/386/494/515/584/511/565; complete selected-plane value 490. All restored.
+// Round 473: Native short/word/signed-byte/byte ordinals for the fixed two-plane
+// traversal, then the fixed output pair: 363/363/241/241/129/129/129/129.
+// Original ordinals restored; early coefficient/zero roles and projection staging remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
