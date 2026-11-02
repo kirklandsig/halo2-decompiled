@@ -232,7 +232,7 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // test and leaves the table global in EDX, reloading its data and recomputing the index for the
 // object; ours keeps the validity result in EBP and shares one header address between the flag test
 // and the object lookup, so the index arithmetic stays common.
-// score 49 (was 49): retail holds a bool result in BL from before the creation call, saves EBP
+// Retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
 // header address. With the bool result every header/object spelling still shares the address, and EBP
@@ -537,6 +537,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Round 462: multiply-used native absolute index with accepted-handle result at creation,
 // attachment, notification or accepted-branch entry: long/dword each 74/68/68/51.
 // Original validity result and independent source observations restored; BL/EBP and CSE remain.
+// Round 328: creation/header failure result bool/byte/short/long 83/83/64/61;
+// entry failure cleared after attachment in those domains 68/68/63/65.
+// Original validity result, independent observations and complete body restored; BL/EBP and CSE remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
