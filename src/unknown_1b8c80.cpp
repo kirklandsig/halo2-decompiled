@@ -252,6 +252,8 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // continue;` with the occupant code unnested 3; the definition-flags pointer declared after the object block 84;
 // the loop index at function scope 3; last_object_index declared after the seat array 3 (a repeat); a `long`
 // count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
+// Round 124: actor declared after the last-object local/seat array/count 3/3/116; object and team
+// rejections inverted 3/3; object and team tests nested 3/3; the else-if split into an else 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
