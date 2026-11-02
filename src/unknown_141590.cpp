@@ -963,6 +963,10 @@ void function_143250(
 // first-producer/final-consumer declaration order, double-first/real-first declarations,
 // numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
 // precision boundary and publication retained; complete original scalar graph/body restored.
+// Round 72 (lane 16, fast): single-use terms written into the next statement, first 420 and all 648 eligible 1775/1775
+// (10763 bytes, rotation EAX, ret 4, frame 0x30c); on the 648 form the leading terms as plain locals, with a matrix
+// pointer or a plain array 2238/2238 (10297 bytes, frame 0x2fc); plain leading locals keeping every term 2114 (10412).
+// Restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

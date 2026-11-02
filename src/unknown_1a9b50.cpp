@@ -534,6 +534,12 @@ extern point2f *g_468778;
 // Round 289: Complete facing value with actor-first/target position/target velocity values, masks
 // 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
 // observations, lookup order, early distance and complete body retained.
+// Round 72 (lane 16, fast; aligned register-blind distance in brackets, control [109]): actor first 413 [136]; a late
+// `&field_2d` pointer with constant exits 413 [109], with a result 413 [136], one expression exit 393 [116]; the facing
+// pointer declared inside the second test 416, on the original order 378; a named velocity pointer 398 [112]; both 398
+// [106] with retail's `xor ebx, ebx` prop and frame 0x44; dot3f in the three facing tests 407/398/398, all 407; early
+// rejection 398; slot typed parameter 398 (same code); struct copy of the 2D facing 406. Ours keeps arg_0/actor/slot in
+// ESI/EDI/EBP, retail in EDI/EBP/ESI, and that rotation dominates the positional score. Restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
