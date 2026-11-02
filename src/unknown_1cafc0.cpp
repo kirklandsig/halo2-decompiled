@@ -621,6 +621,12 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // 348/588/722/681/608/697/663/674; name-reference forms also regress other users. Both original
 // declarations and all executable source restored. Frame twelve agrees; graph/request register
 // homes and final byte normalization remain.
+// DL243: Corrected shared expansion with primary/alternate/fallback query-produced success subsets
+// 1..7 and all Boolean: 506/616/592/547/525/608/590/587. Earlier result trials had frame eight;
+// these disturb the now-matching prefix. Shared-request canonical urgent/other byte-bool/bool-
+// byte/byte-byte/word-bool/bool-word/word-word/long-bool/bool-long:
+// 348/382/382/348/382/382/348/382. Original entire body and both Boolean declarations restored;
+// frame twelve agrees, graph/request homes and final byte normalization remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

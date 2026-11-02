@@ -963,6 +963,9 @@ real normalize2d(point2f *v);
 // DL240: Coordinated force formal byte/signed-byte/word/short: 135/135/246/246; with direct
 // request return 182/182/253/253. Original Boolean formal, body and both declarations restored; DL
 // trajectory residence and shared return transport remain.
+// DL242: Canonical result == true / > 0 as bool 179/135, each with validity == true 180/138;
+// byte/signed-byte == true 163/163 and > 0 186/186. Original result domain, guards and body
+// restored; DL retention and folded false exit remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

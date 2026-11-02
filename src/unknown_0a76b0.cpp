@@ -4329,7 +4329,7 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 175 (was 201): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
+// score 175 (was 175): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
 // Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
 // (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
@@ -4363,6 +4363,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
 // Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
 // 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
+// DL241: Native up/frame-field/quaternion memcpy boundaries, seven subsets 173 each; all with a
+// real late relative-position workspace 199. Two-point leads rejected; original native output and
+// whole body restored. Frame 0x110 versus 0x11c, frame-left and point schedules remain. The real-
+// position form recovers all quaternion homes, so another quaternion-name search is not justified.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

@@ -919,10 +919,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
-// score 81 (was 81): unchanged this round: the component still arrives on the stack where retail
-// passes it in EBX (no push ebx, a plain ret and a 0x88 frame), the entry copy is still a rep movsd
-// where retail uses movaps, and retail still tests m_fixed before flag5; the convention is decided
-// by the call cycle through the bodies outside this file.
+// score 65 (was 81): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
+// than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
+// slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
+// body is fetched again. The convention still follows the call cycle outside this file.
 // Earlier: component arrives on the stack where retail passes it in ebx (no push ebx,
 // plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
 // m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
@@ -1006,6 +1006,11 @@ void function_1d1540(s_havok_component *component);
 // 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
 // the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
 // Round 357: Common setter with byte/word/dword/long refresh results, constructor then aligned set copy 77/83/82/82/56/59/58/58. Original body restored; frame and component transport remain.
+// DL242: Actual body-array slot pointer/reference with constructor flag/fixed guards 83/65,
+// aligned set 60/90 (60 loses matched 0x1d1b60); fixed-first whole-transform memcpy/memmove 65/78.
+// Keep constructor copy with two-use slot pointer and fixed-first guard, ordinary whole-program
+// confirmed; post-reset lookup retained. Component/index stack transport, 0x84/0x88 frame and
+// rep/SIMD copy remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1017,7 +1022,8 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 		inverse.transform_set_to_inverse(component->transform);
 		local.transform_compose_in_place(inverse);
 	}
-	if (TEST_FIELD_BIT(component->flag5) && havok_component_rigid_body_get(rigid_body_index, component)->m_fixed)
+	s_havok_component_rigid_body const *slot = &component->rigid_bodies[rigid_body_index];
+	if (slot->rigid_body->m_fixed && TEST_FIELD_BIT(component->flag5))
 	{
 		function_1d1260(component);
 		havok_component_rigid_body_get(rigid_body_index, component)->motion_transform_set(local);
@@ -1025,7 +1031,7 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 	}
 	else
 	{
-		havok_component_rigid_body_get(rigid_body_index, component)->motion_transform_set(local);
+		slot->rigid_body->motion_transform_set(local);
 	}
 }
 
@@ -2346,6 +2352,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // ownership, masks 1/2/3/4/5/6/7: 223/160/191/424/300/417/279; direction setter plus movement 186
 // at retail length. All regress. Original helper and body restored; early velocity j/k loads,
 // speed products and property zero remain.
+// DL242: Complete direction memcpy before normalization 211; library constant-vector
+// normal/fallback/velocity copy subsets 1..7 all 91. Original copy, normalizer, helper and body
+// restored; early velocity j/k and property-zero residence remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

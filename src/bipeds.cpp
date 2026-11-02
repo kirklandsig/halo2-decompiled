@@ -1138,7 +1138,7 @@ void function_1e6360(s_biped_physics_output *output, real height, long arg_159e6
 void function_1e67a0(s_character_physics_component *component, s_type_94656b *datum, byte a,
 	byte b);
 void function_1e67f0(s_type_94656b *datum,
-	s_character_physics_component *component, long animation_id, point3f *p1, point3f *p2, point3f *p3);
+	s_character_physics_component *component, c_type_709360 animation_id, point3f *p1, point3f *p2, point3f *p3);
 void function_1e6850(s_type_94656b *datum, byte a, point3f *p1, point3f *p2, real v);
 real function_1e9700(short row);
 real function_dfa60(long arg_159e6d);
@@ -1273,7 +1273,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 610 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// score 596 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
 // Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
@@ -1324,6 +1324,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P258: Per-use tag/state/both/component/tag+component/state+component/all
 // receivers 666/698/676/681/695/692/683; all plus use-site animation flags
 // 689. Original receivers, eye helpers and complete executable body restored.
+// DL242: Phase velocity reuse 608; packed-output library copy 616 and paired reuse 596 (exact-
+// only); getter inline alone 610, with reuse/copy/both 608/616/596; all plus facing library copies
+// 600. Native packed setter parameter/field 616, with phase velocity reuse 596. Result-object
+// rename, construction at producer and both each tie 596. The getter inline declaration is
+// restored. Keep the native packed-value setter contract with the shared velocity workspace;
+// ordinary whole-program confirmed. The sole call passes the existing four-byte object directly;
+// every setter body statement is unchanged. Frame and material/animation homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1337,7 +1344,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	long material = 0;
 	real boost;
 	point3f position;
-	vector3f ground_velocity;
+	vector3f velocity;
 	vector3f facing;
 
 	function_b9dd0(arg_159e6d, &position);
@@ -1345,12 +1352,12 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 
 	if (!rigid_body->m_fixed)
 	{
-		vector3f_assign(&ground_velocity, rigid_body->m_motion->m_linear_velocity(0),
+		vector3f_assign(&velocity, rigid_body->m_motion->m_linear_velocity(0),
 			rigid_body->m_motion->m_linear_velocity(1), rigid_body->m_motion->m_linear_velocity(2));
 	}
 	else
 	{
-		ground_velocity = *g_4687a4;
+		velocity = *g_4687a4;
 	}
 	if (field_bit_test(*(dword *)(definition + 0xbc), 11))
 	{
@@ -1405,7 +1412,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 		definition + 0x264, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
 		field_bit_test(*animation_flags, 2), field_bit_test(biped->flags_c0, 8), function_e4050(arg_159e6d),
 		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
-		&biped->forward, &biped->up, &biped->facing_goal, &facing, &ground_velocity, material);
+		&biped->forward, &biped->up, &biped->facing_goal, &facing, &velocity, material);
 	switch (biped->physics_mode)
 	{
 	case 1:
@@ -1426,7 +1433,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 		bool moved = false;
 		real distance = 0.0f;
 
-		ground_velocity = *g_4687a4;
+		velocity = *g_4687a4;
 		if (biped->unknown390 != NONE)
 		{
 			long root_index = function_baf80(biped->unknown390);
@@ -1439,7 +1446,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 				s_biped_header *header;
 
 				function_b9dd0(biped->unknown390, &target_position);
-				function_ba1d0(root_index, &ground_velocity, NULL);
+				function_ba1d0(root_index, &velocity, NULL);
 				if (function_183670(root->havok_component_index, biped->havok_component_index, &nearest_a, &nearest_b,
 					&distance))
 				{
@@ -1483,26 +1490,24 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 			target_position.z = facing.k * 0.3f + position.z;
 			biped->unknown434 = 0.3f;
 			distance = 0.3f;
-			ground_velocity = *g_4687a4;
+			velocity = *g_4687a4;
 			moved = true;
 		}
-		function_1e6850((s_type_94656b *)output, moved, (point3f *)&ground_velocity,
+		function_1e6850((s_type_94656b *)output, moved, (point3f *)&velocity,
 			&target_position, distance);
 		break;
 	}
 	case 4:
 	case 5:
 	{
-		vector3f velocity;
 		point3f body;
 		c_type_709360 current;
-		long animation_id;
 
 		function_e59e0(arg_159e6d, &velocity, &position);
 		havok_component_rigid_body_position_get(0, component, &body);
-		animation_id = *(long *)((s_animation_state *)state)->current_animation_get(&current);
+		((s_animation_state *)state)->current_animation_get(&current);
 		function_1e67f0((s_type_94656b *)output,
-			(s_character_physics_component *)&velocity, animation_id, &body, &position, (point3f *)&velocity);
+			(s_character_physics_component *)&velocity, current, &body, &position, (point3f *)&velocity);
 		break;
 	}
 	default:
