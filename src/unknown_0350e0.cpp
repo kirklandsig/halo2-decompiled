@@ -2587,6 +2587,8 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
 // Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
 // Round 308: helpers and body restored; prefix/state roles and decay base remain.
+// P272: Alias-safe full-record memmove capture/first-publication/second-publication subsets in the existing shared swap, then all with inline declaration: 481/484/509/499/510/509/463/463.
+// Original executable source restored; frame 0x30 agrees; prefix/state registers, ordinal homes and decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
