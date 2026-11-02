@@ -1202,6 +1202,14 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // test the first index leaves EBX for the stack and the index takes EDI (48), so the conditional arm
 // weighs into the tie. A 600 s fast annealing permuter run: 64 tries, none below 24 (its reduced image scores the
 // original 57, so it cannot see this tie).
+// Round 58: a bool-returning next with the body reading iterator.index 24; the same with a `long index` copy in the
+// body 24; the element pointer at function scope 24; the first index copied to a local 24; the register parameter
+// second / last (stack order unchanged) 24/24; a pointer to the state field 24; the element as a reference 24; a
+// pointer to iterator.index 24; next as `long next` with a test, as a double store, as a one-read local 49/47/54 (207/201/207
+// bytes; 0x21b870 32, 0x21bd00 71). Diagnostic, not keepable (0x126df0's body written out): an element local tested and used in
+// the loop gives retail's index EDI/element ESI but folds the state load (`mov al, [esi + edx + 2]; add esi, edx`) 35 (211
+// bytes), six other element spellings 35; the test through the macro with that local 24 (index ESI again).
+// A private next with pointers to the iterator's count/first/both 24/24/24, to its index (alone or with the others) 50 (212 bytes).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
