@@ -690,3 +690,44 @@ def test_validation_gate_preserves_retail_behavior(solver_images, accepted):
             assert output[0] == data
         outputs.append(output)
     assert outputs[0] == outputs[1]
+
+
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_angular_limit_shared_tail_rounding_boundaries(solver_images, precision):
+    # Retail rounds the positive error before applying mass, keeps the negative
+    # error extended, and joins both paths at one body update. Include values
+    # within one float ULP of cancellation and execute all three branch outcomes.
+    coverage = dict.fromkeys((0x31d8f2, 0x31d91d, 0x31d967), 0)
+
+    def as_float(bits):
+        return struct.unpack('<f', struct.pack('<I', bits))[0]
+
+    masses = (0x3eaaaaab, 0x3f000001, 0x3f7fffff, 0x3f800001)
+    for seed in range(128):
+        data = solver_case(10, 2)
+        put(data, STEP + 28, 'i', 1)
+        put(data, OPS + 40, 'I', 0x400)
+        if seed & 1:
+            put(data, OPS + 16, 'I', HEAP)
+        gain = as_float(0x3f000000 + (seed % 3 - 1))
+        scale = as_float(0x3f400000 + (seed % 5 - 2))
+        speed = as_float(0x3e800000 + (seed % 7 - 3))
+        put(data, STEP + 8, 'f', scale)
+        put(data, OPS + 28, '3f', -0.125, 0.125, gain)
+        for body in (HEAP, HEAP + 0x80):
+            put(data, body + 0x20, '4f', 0, 0, 0, 0)
+            put(data, body + 0x30, '4f', 0.25, 0.5, 0.75, 1)
+        put(data, HEAP + 0x20, 'f', speed)
+        phase = seed % 4
+        if phase == 2:
+            put(data, OPS + 28, '2f', 0.5, -0.5)
+        target = (1.0, -1.0, 0.0, -0.125 + speed * scale / gain)[phase]
+        if phase == 3:
+            bits, = struct.unpack('<I', struct.pack('<f', target))
+            target = as_float(bits + ((seed // 4) % 3 - 1))
+        put(data, TERMS, '4f', 1, 0, 0, as_float(masses[(seed // 4) % 4]))
+        put(data, TERMS + 16, '4f', 0, 1, 0, target)
+        snapshots = compare_case(solver_images, data, precision,
+                                 ('angular limit boundary', seed), coverage)
+        assert snapshots[0] == snapshots[1], (precision, seed)
+    assert all(coverage.values()), coverage

@@ -170,8 +170,37 @@ static __forceinline void solve_linear_friction(float target, float limit, float
 	apply_linear(impulse, row, a, b, result);
 }
 
-// score 2113 (was 2115): retain the first circular-friction square before
-// adding the second. Register allocation, stack homes, and shared tails differ.
+// Select the active angular limit before the shared body-update tail. The
+// lower error is stored to float before multiplication; the upper error keeps
+// the extended x87 value. The scalar result is rounded only for SIMD use.
+static __forceinline float select_angular_limit(double velocity, float const &target,
+	float const &lower, float const &upper, float const &gain, float const &mass,
+	bool &active, __m128 &scalar)
+{
+	float error = (target - lower) * gain - velocity;
+	if (error > 0.0f)
+	{
+		float const volatile &positive_error = error;
+		active = true;
+		float impulse = positive_error * mass;
+		scalar = _mm_set_ss(impulse);
+		return impulse;
+	}
+	error = (target - upper) * gain - velocity;
+	if (error < 0.0f)
+	{
+		active = true;
+		float impulse = error * mass;
+		scalar = _mm_set_ss(impulse);
+		return impulse;
+	}
+	active = false;
+	return 0.0f;
+}
+
+// score 2244: share the angular-limit update tail (250 bytes versus retail
+// 244, previously 327). The shifted later instructions raise the whole-function
+// score from 2113; register allocation, stack homes, and other paths still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -329,15 +358,29 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 10:
 			{
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
+				__m128 &velocity_b = b->angular;
 				do
 				{
-					float velocity = angular_velocity(row, a, b) * load_velocity_scale(step);
-					float error = (row->b.m128_f32[3] - operation_float(op, 4)) * operation_float(op, 12) - velocity;
-					if (error > 0.0f) apply_angular(error * row->a.m128_f32[3], row, a, b, result);
-					else
+					__m128 axis_a = row->a, axis_b = row->b;
+					__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(velocity_b, axis_b));
+					__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+					__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+					float projected;
+					_mm_store_ss(&projected, xyz);
+					bool active;
+					__m128 scalar;
+					float impulse = select_angular_limit(projected * load_velocity_scale(step),
+						row->b.m128_f32[3], operation_float(op, 4), operation_float(op, 8),
+						operation_float(op, 12), row->a.m128_f32[3], active, scalar);
+					if (active)
 					{
-						error = (row->b.m128_f32[3] - operation_float(op, 8)) * operation_float(op, 12) - velocity;
-						if (error < 0.0f) apply_angular(error * row->a.m128_f32[3], row, a, b, result);
+						__m128 inertia_a = a->inverse_inertia;
+						__m128 inertia_second = b->inverse_inertia;
+						__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a);
+						a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
+						__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_second);
+						velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+						*result += impulse;
 					}
 					++row; ++result; op += 16;
 				} while (*op == 10);
