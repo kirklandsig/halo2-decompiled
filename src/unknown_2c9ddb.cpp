@@ -135,6 +135,13 @@ extern long g_55c154;
 // Two load arms with the named count: 179 (`this` in ESI and spilled, EBX holds a zero constant, `saved`
 // and the &g_54e4a0 address in turn); with the count named for both calls 179; with the variant global as
 // its own extern symbol 179 (same allocation).
+// Round 149 (lane 4, fast; all on two load arms with the named destination, 179): a fresh local for the second
+// half's selection 179; the named destination shared by both arms' 0x238c69 calls 179; the game type read once
+// into a local for the three calls 168 (573 bytes; `this` moves to EDI unspilled, frame still unbiased); the
+// controller index read once into a local 176 (576); the default arm with its own failure call 179. In every
+// two-arm form the callee-saved registers rotate (`this` ESI and spilled, entry EDI, saved EBX, EBX also caching
+// zero in the first half and &g_54e4a0 in the second, where retail pushes immediates): retail's EBX `this`,
+// ESI entry, EDI saved only appear with the one-load body.
 // Round 69 (m3 lane 9, fast): retail's two load arms on the plain body 174 (595 bytes: EBX takes the constant
 // 1 in the first half and `saved` in the second, `this` moves to EDI and spills, unbiased frame); on it: the
 // first half's selection in its own local with a fresh `selected` in the second half 174, entry->variant read
@@ -363,6 +370,10 @@ void c_class_2c9e69::select_last_variant()
 // declarations 36; nested named condition 36; named condition with the inherited qualifier 36; empty condition with
 // direct named text 36; explicit/implicit assignment-condition receivers 36/36. Every form merges the loads into EDI.
 // Opening body restored.
+// Round 41: plain text 36 (154 bytes, the reload hoisted into the datum block); typed lookups with the name call's
+// result as the buffer argument 21 (the result moves to ESI, the receiver still re-read); name-arm copy only 13 (159,
+// remeasured: EDI for EBX); that with plain text 36; `variant == NONE && text` / `variant != NONE && text` 36 (159, the
+// second variant test is not threaded away); name-arm copy with the buffer at function scope 13.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {

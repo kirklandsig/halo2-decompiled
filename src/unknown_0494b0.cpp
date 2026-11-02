@@ -240,6 +240,9 @@ bool function_14480(long tag, short stage, short index);
 // retail copies it into ESI at entry, so LTCG leaves it on the stack. Caller forms leave 0x14560
 // unchanged: the calls in an if/else 7; the stage read through its address 24; a false-preset result
 // assigned in the if/else 7; an early return on success 24; the NONE test first in the if/else 11.
+// Round 70: nested success tests 41; nested failure tests 20; an inverted skip result 29;
+// the sampler call in both arms 23; a widened stage local 24; a widened bitmap-index local 25;
+// the default tag by array indexing 7; the ternary tested into a false-preset result 31.
 // @retail 0x47fd0
 bool function_47fd0(long tag, short stage, short index, byte flags)
 {

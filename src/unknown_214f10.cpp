@@ -240,6 +240,16 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // on the long-opened flow 54 (352 bytes); `success = INVALID_HANDLE_VALUE != file.handle; if (success == true)`
 // 54 (352 bytes); done declared outside the loop 42; `i != 2` 42; the file copy inside the branch with the
 // opened test on the array element 42.
+// Round 130 (lane 6, fast): `success = true;` cleared by `if (handle == INVALID) success = false;` then tested
+// 50 (threaded into two stores); the resize step as a forceinline helper taking success by value and passing its
+// address 83 (351 bytes, frame 0x100, the parameter's copy still forwarded); done without `volatile` (the waits
+// read it through their volatile pointer) 42 (same code); `if (!opened) continue;` 42; success set only inside
+// the open branch 58 (348 bytes).
+// Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
+// result and the call on the array element with no file copy, branching on success 55 (351 bytes);
+// `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
+// handle and constant 42 (same code); success set true inside the open branch over a false
+// initialiser 97 (348 bytes). Still only a volatile success byte gives the store and memory re-test.
 // Round 48 (lane 10, fast): no file copy, the long tested from the array element and the element passed to
 // 0x1a1310 directly 44 (the element's handle is then copied to EAX for the push, as retail, but held in ESI,
 // not ECX); `if (!opened) continue;` 42; on the no-copy form `success = (long)(element handle test); if
@@ -249,6 +259,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // (success)` and the element passed directly (`(bool *)&success`) matches byte for byte; the same with the
 // comparison stored without the `(long)` 48 (byte setne, no `xor edx, edx`), from a long local 48, as
 // `(bool)opened` 48, as a char store 48. The flag is written by the queued task like `done`.
+// Round 440: plain fixed-two-file do-while with short/word/byte ordinals and <2/!=2 latches, then while
+// with short/word ordinals 42/42/42/42/42/42/42/42. Every graph executes indices 0 and 1; all tie.
+// Original for loop, both waits, wide outcome, success store and completion qualification restored.
 // Round 47 (lane 11, fast): success initialised false at its declaration 83 (364 bytes); the long
 // result and the call on the array element with no file copy, branching on success 55 (351 bytes);
 // `success = !(file.handle == INVALID_HANDLE_VALUE)` 53 (352 bytes); the long result from dword-cast
@@ -258,6 +271,14 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // long from the element with the element passed and no copy 44; success from the element, branch on it, the copy
 // declared in the branch 55 (351 bytes); a dword result 42; `success = (bool)(opened & 1)` 41 (handle in ECX as
 // retail, but `mov dl, al; and dl, 1` and the register test remain: not kept).
+// Round 113 (m3 lane 7, fast): `bool const valid = handle test; success = valid; if (success)` 55 (351 bytes); the
+// file copy and success declared at function scope 42; the long open result declared at function scope 42; the handle
+// read into a `void *` local with the by-value file built from it in the branch 42 (same code each); a dword result
+// with `success = (byte)opened; if (opened != 0)` 43.
+// DL218: Advancing file cursor with short ordinal and pointer-extent less/equality bounds, each
+// wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
+// Handle ECX and stored-success memory test remain; original task values, waits, completion
+// qualifier and complete executable body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

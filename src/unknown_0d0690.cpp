@@ -1336,6 +1336,8 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
     return 0.0f;
 }
 
+// MiniMax D (11-01): no new form, no lower score; retail hands this function its block in eax
+// and its query in edx while ours swaps them, and the parameter order is not ours to change.
 // score 529 (was 529): Frame 0x2c versus 0x28, selection-result spill and block/query homes remain.
 // Round 36 (lane 1, fast, with matched 0x3db00; aligned/shape = difflib counts over the listing, base 527/271):
 // `record` stays a stack argument only while our allocator gives it EBP; when it gets ESI this function
@@ -1446,6 +1448,15 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 268: shared final color-scale scalar pairs 1-2/1-0/2-0/all, original luminance
 // workspace 567 each; split luminance producers 529/529/529/567. Frame stays 0x2c;
 // caller 364 and exact caller survive all eight. Original scalar graph and body restored.
+// Round 232: Ordered normalizer single-result zero/magnitude defaults, direct/shared
+// scale, forced/ordinary inline: 530 each (caller 457/413 versus 364). Original
+// returned-length contract, helper, all inputs and full body restored.
+// Round 235: uniform published-length field consumers with combined admission/entry-base/
+// late-result subsets 0-7: 577/562/569/564/571/571/577/570. All regress both caller
+// levels; original local length, selection, helper graph and complete body restored.
+// Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
+// subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
+// native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2086,9 +2097,33 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
 // sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
 // helper bodies, call roles and arithmetic grouping stay fixed.
+// Round 231: structure/model/both admission guards 817/618/642; the same guards with
+// test-produced shared status 817/798/776; both guards with special-material single
+// completion and test-produced/original status 816/797. Original admission and body restored.
+// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
+// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
+// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
 // Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
 // with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
 // restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 329: Three-entry sample-offset table, long/dword entries with initializer,
+// ascending assignments, descending assignments and plain indexed loop,
+// 603/603/555/575 each. No exact match; independent offset locals and full body restored.
+// Round 273: Complete encoded decoder input value/reference-copy/library-copy/native
+// five-short array copy 687 each; weights-first value/pointer-copy/reference-copy/library-copy
+// 699 each. Original decoder, separate samples, shared offsets and complete body restored.
+// Frame 0x90 agrees; status +0x30 versus +0x24 and mesh +0x2c versus +0x20 remain.
+// Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
+// with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
+// restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
+// Round 296: Per-format a/b/c/ab/ac/bc/abc sample offsets, then bc offsets with long dynamic validity.
+// Scores 589/600/593/598/588/597/606/627. Original complete body restored.
+// Round 231: structure/model/both admission guards 817/618/642; the same guards with
+// test-produced shared status 817/798/776; both guards with special-material single
+// completion and test-produced/original status 816/797. Original admission and body restored.
+// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
+// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
+// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

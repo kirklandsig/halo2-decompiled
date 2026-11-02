@@ -452,6 +452,12 @@ void function_144f0(long tag, short stage, long fallback, short fallback_index, 
 void function_1cf50(void);
 
 #pragma inline_depth(0)
+// MiniMax S (11-01): no new form, no lower score; 0x144f0 is still called with four stack arguments and the priority in XMM2 where retail passes the first three arguments in EAX/ECX/EBX; its definition is in src/unknown_01cf50.cpp.
+// score 100 (was 100): BLOCKED-BY 0x144f0 (unmatched, in src/unknown_01cf50.cpp): retail calls it with the tag
+// and two zeros in EAX/ECX/EBX and three stack arguments; our tree takes four stack arguments and the priority
+// in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
+// schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
+// below gain 2 at most).
 // score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
 // image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
 // call convention in src/unknown_01cf50.cpp.
@@ -1500,6 +1506,9 @@ struct s_133f70;
 // Round 122 (plain; fast scores 353 and misleads): type stored through one ternary 175 (aligned 80); named
 // flag-byte pointer 175; header before the count store 176; entry-table test nested 175; one shared cache-index
 // local for both 0x3ddd0 lookups 175.
+// Round 234: Complete twice-used encoded stamp, packed/expression or successive operations 359/359;
+// split/expression or successive parts 342/342; those four with native previous byte 283/283/286/286.
+// Original repeated stamp observations and body restored.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
