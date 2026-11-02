@@ -308,6 +308,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// Round 119 (lane 8, fast): the screen test folded into `if (dispose && get_screen() == this)` 227 (646
+// bytes); the key table read once 217 (650 bytes); that with the fraction first 217; the two unused key
+// pointers dropped 96 (identical code); dispose false at its declaration with both resets dropped
+// 96 (identical code).
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

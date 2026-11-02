@@ -541,6 +541,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // `iterator.index` at every use 443 (identical to the listed 443); the 0x25d510 step made an extern function and
 // inlined across files 443 (identical; 0x25d510/0x25d580/0x25dac0/0x25b440 still match); the single call with
 // 0x2641c0 inlinable 464, with the iterator walk too 483. All restored.
+// Round 119 (lane 8, fast with the file and 0x1e34e0): the three inline_depth pragmas dropped 560 (1768
+// bytes: 0x25d700 inlines where retail calls it); both progress updates as `field = field + call` 420
+// and as a named `progress` sum stored and tested 420 (same code: ours still folds `addss xmm0, [ebp+0x10]`
+// where retail loads the field into xmm1 after the call and adds xmm0); `update && sample` 421;
+// sample/update declared as separate bools at the loop-body top 421.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

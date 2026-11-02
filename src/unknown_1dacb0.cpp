@@ -1319,6 +1319,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // first request's loop heads take the alignment retail gives their joins); with a while/break loop 1049
 // (LCS 106); with the candidate after the lookup 1031; outputs declared after the iterator setup 826, with
 // the enclosing if 1038; entry pointer declared in the loop body 828.
+// Round 119 (lane 8, fast): retail gives found_mode's dead home (+0x4c) to the per-attempt candidate,
+// ours to iterator_mode. The three outputs initialized before the class test 979 (stored before the
+// branch, home unchanged); outputs and candidate renamed to sort after `result` 828 (same code: names do
+// not move these slots); the candidate declared at the loop-body top 967 (2825 bytes, constructed before
+// the iterate call); a pre-tested `while (result.index == NONE)` 828 (same code); that with the outputs
+// set after the iterator fields 826.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
