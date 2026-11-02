@@ -652,6 +652,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // accumulators 239/239; scalar accumulators with outer ring phase 233/233;
 // native output accumulators with phase 250/252. All restored; SSE ring conversion
 // and the rotation spill remain. Original helper and all input snapshots retained.
+// N301: Complete trace/distance/origin scope ends at point before collision, with
+// original/real short marker and aggregate/library fallback transfer 90/90/90/90;
+// each with the outer ring phase 143/143/143/143. All restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

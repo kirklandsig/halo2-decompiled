@@ -625,6 +625,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Boolean/short/long storage 402/359/356/354; initialized first 402/358/355/353.
 // All restored; frame 0x40 and length agree, but early root/actor ownership and
 // paired vector scheduling remain. Original result and helper retained.
+// N301: Complete positive switch-outcome result in inherited Boolean/plain Boolean/short/long
+// storage at dispatch 366/384/380/370; declared first 366/384/380/370.
+// All restored; early root/actor retention and paired-vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

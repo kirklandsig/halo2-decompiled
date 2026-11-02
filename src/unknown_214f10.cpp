@@ -292,6 +292,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DH277: two file-indexed success destinations, uninitialized/zeroed and wide/byte guards on local/direct
 // file flows 89/96/98/101/69/72/96/70. All exact-only table forms restored; original scalar outcome, file
 // value, waits and completion qualification retained.
+// N303: Native file/success operation result, both member orders at iteration/completed-open
+// scope: wide admission 48/48/48/48, published-byte admission 54/54/54/54. Exact-only
+// grouped results restored; handle ECX and success-byte memory test remain.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

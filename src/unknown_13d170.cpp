@@ -316,6 +316,9 @@ struct s_block_candidate
 // and callback expression restored.
 // Round 248: Native indexed-ring best/array/deletion-iterator entry storage, seven scope subsets
 // and all with coherent object-role names: 347 each. Original scopes, initialization and body restored.
+// N304: Actual allocation/category/predecessor spill-name subsets 1..7 all 347;
+// all names with limit-before-result 397 (1228 bytes, frame 0x1050). Original body
+// restored; missing frame dword and page/ring ownership remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

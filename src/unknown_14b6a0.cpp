@@ -399,6 +399,10 @@ void function_14bac0()
 // On that form: scenario read at each use 278 (1032) [39]; stamp local 259, plus index local 258 [37]; iterator declared at the outer scopes 259/259; named recipient 259;
 // pointer to the iterator 259; centre unscoped 259; for-increment reload of the pool 249 (no reload block above the head); reload dropped 263 (reload block above the head as
 // retail, 1032); reload after the block 258 (aligned 103); uncached pool reads through an inline next 258/262 [38]. Retail's spill/pool reload block sits above the loop head.
+// Round 297: complete standard marker-input/accepted-output/relocation-addition
+// native-array producers, masks 1..7, 241/268/274/299/310/310/330; all with
+// standard displacement subtraction 364. Original returned output, native point
+// copies, selected unit and body restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

@@ -1453,6 +1453,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // phase 281/281/277/277; entry bool/byte/short/dword 281/281/290/277. Original byte
 // result, status graph and argument observation restored. Two other reduced links
 // produced no comparison and are excluded; pool/state/count/return differences remain.
+// Round 297: existing generic header accessor at entry/paired slots/paired
+// counts, all seven subsets, 164 each; complete header graph with the existing
+// typed paired-slot accessor 164. Original body and includes restored; early
+// pool/state allocation, signed-count materialization and byte normalization remain.
 // Round 454: Nullable held-object lookups first/second/both, conditional and branch-produced
 // pointers 328/321/344/328/321/344; both with native success 320/320. Original queries, canonical
 // statuses, own-parameter observation, case sets and entire executable body restored; pool/state
@@ -1679,6 +1683,11 @@ bool __stdcall function_110ab0(long unit_index)
 // depletion and conditional-request families, seven subsets, then all at entry:
 // 487/491/499/483/475/499/511/511. Entry unit EDI/ret 8 and both caller scores regress;
 // executable differences also rise. Original result graph, defaults and body restored.
+// Round 297: finite depleted/base/overlay status domains, masks 1..7,
+// 481/488/488/430/485/492/492; full finite result domain 695. Overlay-only
+// 430 confirmed plain at 1793 bytes, but code differences remain 424; decoded
+// trailing-table differences fall 22 to 6. Table/extent-only gain rejected; all
+// original statuses, body and types restored. Frame eight versus twelve remains.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -3180,6 +3189,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // round, so the class return (frame 0x38) waits for the next round. The overlay test through the file's
 // channel-validity helper 44 (same code); the `type < 3` test as its own enclosing if 44; the force decisions
 // as an else-if ladder 44; play flags as a ternary 99; the selected mode as a ternary 205.
+// N303: Disjoint action/channel scratch unions, byte/word/dword at entry/set/paired scopes,
+// 17 each: frame 0x38 recovered, action still in channel scratch (exact-only). Native
+// two-byte/word decision records with byte-order and constant-init point/order combinations
+// 134/135/240/238/134/135/238/240. All grouped storage restored; original action/flag homes remain.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

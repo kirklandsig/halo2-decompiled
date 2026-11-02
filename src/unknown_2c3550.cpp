@@ -791,6 +791,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // short-long, long-short-bool, short-long-long, short-long-bool, short-short-long, short-short-bool
 // 707/761/682/748/707/768/699/755. All regress; original parent ordinal, signed native fields, result,
 // copies and body restored. Byte success, radius/pathfinding and scalar/geometry homes remain.
+// Round 300: Complete ten-byte obstacle/blocking CRT header resets and whole-step memmove
+// subsets 1/2/4/3/5/6/7, then all with Boolean success:
+// 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

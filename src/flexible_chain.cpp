@@ -386,6 +386,13 @@ void __stdcall function_1160c0(real dt)
 // Round 293: Initial-node position/direction/degenerate-axis fallback memmove subsets 1/2/4/3/5/6/7:
 // 371/380/363/400/373/382/402; all with rest-offset memmove 409. Original copies and file restored;
 // segment/previous/axis homes remain.
+// Round 298: Native initial-input/working-node/publication range-copy families
+// and pairs/all 393/251/362/403/387/349/363; all with fallback/rest-offset ranges 391.
+// Original copies, short induction, body and includes restored;
+// segment/axis/previous/rest-offset homes and rotation schedule remain.
+// Round 300: Complete indexed rotation consumer with ordinary/staged existing cross,
+// direct/complete axial phase and original/scaled-difference velocity:
+// 268/268/266/266/268/268/265/265. Original body and include set restored; segment/axis/previous/offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

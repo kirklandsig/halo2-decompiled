@@ -337,8 +337,14 @@ void function_117510(long index)
 // DH round 273: complete real link input value with immutable/local endpoint-field/native difference
 // subsets: 204/204/204/204/204/204/204/204. Original link pointer, both endpoint snapshots, root
 // arithmetic, pin observations and body restored; entry and correction homes remain.
+// Round 299: Native pinned-array base once per function/constraint, each with endpoint
+// snapshots/live fields and existing complete difference: 139/139/154/154/139/139/154/154. Every
+// original body restored; entry record/link allocation and pin-word/correction scheduling remain.
 // M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
 // 148/156/156/189/180/183/183/183. Original executable body restored.
+// N302: Actual link/first-point/second-point element references, seven subsets, then all with
+// live endpoint fields: 139/139/139/139/139/139/139/154. Original receiver/endpoint forms restored;
+// frame agrees, entry record/link allocation and pin/correction scheduling remain.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -552,6 +558,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // Direct publication ikj/jik/jki/kij/kji and staged ikj/jki/kji
 // 139/139/139/157/157/139/139/157. Original declarations and full body restored;
 // frame 0x28 and input/rotation/tail homes remain.
+// Round 299: Complete native-array rotation consumer; direct initialization result, staged cross,
+// projection-first and final-output-loop interactions 169/172/169/172/165/165/169/183. All original
+// source restored; frame, old-direction storage and seed/time/rotation/tail scheduling remain.
+// N304: Uniform scalar direction/axis/cross product families, seven subsets
+// then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
+// frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -704,6 +716,15 @@ void function_117dd0(long index, vector3f *wind)
 // M297: Actual current/history/both point-field workspaces, then each with shared
 // symmetric scaling, current with early weights, both/scales with early weights
 // [174, 221, 235, 174, 222, 207, 174, 207]. Original private point workspaces and publication restored.
+// Round 296: Standard native-array acceleration/force/paired-point input transfer subsets 1..7
+// 197/189/188/176/190/202/179; all with standard history/publication transfers 190. Original
+// complete body and include set restored; frame/normal.k cursor agree, preheader and vector scheduling remain.
+// N302: Complete inertia coordinate loop, weighted inputs separate/fused, crossed with complete
+// tangent/force and final-point coordinate consumers: 114/185/208/168/114/185/208/168. Original
+// body restored; frame/cursor agree, weight publication and Verlet-X/vector scheduling remain.
+// N304: Six uniform scalar weighted-coordinate products, direct/snapshot inputs,
+// mutable/immutable terms and aggregate/setter outputs: 238/179/238/179/238/175/238/175.
+// Original body restored; frame/cursor agree, inertial-X and preheader scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {

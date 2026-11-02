@@ -1123,6 +1123,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // M297: Without the redundant squad-index gate, inner/outer substitution outputs,
 // retained/omitted overwritten enabled default and guarded/conditional replacement
 // [384, 382, 384, 382, 395, 380, 395, 380]. Original gate, defaults and lifetimes restored.
+// N302: Complete paired equipment lookup loop, long/short/word/byte ordinal, defaults
+// at pair / at each producer: 345/369/369/369/336/369/369/369. Exact-only output pair and all
+// original code restored; frame agrees, sentinel/squad/substitution homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1801,6 +1804,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // M297: Current-only/secondary-only default-result, failure-exit and complete
 // branch-result producers, then mixed default/failure and failure/default
 // [279, 251, 251, 251, 251, 251, 278, 278]. Both original private queries restored.
+// N302: Shared two-consumer ammunition-reduction predicate bool/byte/short/long,
+// per equipment phase / per valid weapon: 278/278/246/245/255/255/326/328. Exact-only
+// observations and all original code restored; frame/input agree, pool/actor/options homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

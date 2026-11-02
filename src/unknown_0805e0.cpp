@@ -199,6 +199,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // Original record, helpers and complete body restored; eleven control matches survive.
 // M296: Cheap-flag-gated two-use identity, nested/continue admission and break/direct
 // success, then those four with single flag observation [43, 52, 43, 52, 43, 52, 43, 52]. Original admission restored.
+// N301: Cheap-gated complete native identity value, nested/continue with result/direct
+// completion 52/56/52/56; native identity pointer counterparts 43/52/43/52.
+// Value forms also regress both matched callers; all restored. Early ESI, successor and mask remain.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -709,6 +712,9 @@ void function_1537f0(s_profile_record *record);
 // and late/early links, each with separate/chained global sentinels:
 // 66/66/72/72/67/67/74/74. All restored; identity words still fold and
 // frame 0x98/source-header homes remain. Both original initializers retained.
+// N301: Pointer/no-source-tail invariant identity/source/both/native immutable identity
+// 83/79/82/79; each with the destination zero-tail before construction 85/82/88/82.
+// All restored; identity homes still fold and the native entry-end bound remains absent.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1193,6 +1199,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // matches survive; original entry, range, repairs and complete tail restored.
 // M296: Range-relative copy ordinals forward/reverse/both, then each with the real
 // range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
+// N301: Standard directional copy forward/backward/both 393/387/386;
+// direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
+// All restored; initial admission/removal and upper-bound register ownership remain.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
