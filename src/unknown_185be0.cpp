@@ -323,6 +323,10 @@ union s_185be7
 // DH round 268: independent byte/word scratch declarations, clear order and entry scope,
 // seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
 // Original scratch lifetimes, CRT clears and complete body restored.
+// Round 352: Settings/state acquisition after local-input clear or full output reset,
+// independently/together and both orders: 1012/743/1010/741/1012/1012/744/744. Original
+// acquisition order, helpers and complete body restored; control-root/NONE, settings/zero homes
+// and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

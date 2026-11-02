@@ -695,6 +695,9 @@ void function_1537f0(s_profile_record *record);
 // Round 343: Four-aligned profile/property sources with original/late mutable or immutable
 // identity: 53/74/53/74/53/74/53/74. Original types, includes, initializer tuple, pointer walk and
 // every byte restored.
+// Round 352: Native identity constructors with library/chained field zeros, per-visit/outer
+// lifetime and ordinary/forced expansion: 53/83/53/83/72/72/72/72. Identity homes still fold; all
+// constructors, original type, initializer calls and 350 visits restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

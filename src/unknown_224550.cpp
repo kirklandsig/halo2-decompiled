@@ -265,6 +265,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 350: Native-frame blend initialization after packing/in geometry arms/after cache
 // update/explicit frame outcomes 493/493/271/261; merged positive-sequence gate 483/483/375/394. Tint/UV
 // homes and blend residence remain.
+// Round 352: Pointer lower/upper/independent/continue clamp walks 522/527/522/522; indexed
+// upper/independent/continue/descending bounds 265/245/245/263. Frame homes and blend residence
+// remain; complete original callback and alias-safe UV helper restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

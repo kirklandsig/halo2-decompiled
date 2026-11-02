@@ -1138,6 +1138,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 443: repeated native byte/word/long/dword side-index values at entry
 // 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
 // radius, traversal, predicates and complete body restored.
+// Round 352: Complete projection/orientation results phased/together, each with
+// first/sentinel/second/pair-first Boolean accumulation: 404/404/404/423/403/403/403/422. Frame
+// 0x30, zero/radius and vertex allocation remain; original geometry, helpers and traversal
+// restored.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
