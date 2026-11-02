@@ -471,6 +471,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // P261: native long ordinal/items/data lexical home permutations 115 (six forms);
 // retained signed-byte ordinal with opposite lexical cursor priorities 80/80.
 // Complete helper/body restored; validity byte, cursor carriers and loop entry remain.
+// P263: positive validity byte/signed-byte/short/word/long/dword with native byte ordinal
+// 80/80/205/205/203/203; validity declared after ordinal/at entry 80/144.
+// Original helper and body restored; validity home and validation carriers remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

@@ -315,6 +315,9 @@ struct s_object_damage_view
 // N308: Complete native history-record values in selection/attribution/assist, seven subsets,
 // 500/378/514/436/615/498/584; all by aggregate assignment 584. Original records and body
 // restored; scalar homes, amount-biased history cursor and credited-player validation remain.
+// P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
+// corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
+// Original domains and body restored; scalar homes and biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
