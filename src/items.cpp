@@ -1500,6 +1500,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
 // paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
 // release/event homes remain. Earlier terminal-only short work preceded this graph.
+// Round 306: Joint contact and owner/event/position entry declarations in seven subsets, then the
+// complete reverse declaration order: 140 each. Original body and all workspaces restored; return byte
+// +0xe/+0xf, release RMW/tail and event/location homes remain. Both existing point setters and the
+// two-use spin capture are preserved.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

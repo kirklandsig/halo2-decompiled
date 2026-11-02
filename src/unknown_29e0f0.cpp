@@ -212,6 +212,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DL224: Group range-first/negative-first/split-range/split-bitmap eligibility 473/440/473/390;
 // the four with shared group bits 434/434/434/424. Original group observation, domains, helpers
 // and body restored; default/bitmap/endpoint homes, root roles and x87 scheduling remain.
+// Round 306: Native anchor/candidate/destination payloads, seven subsets 432/408/474/424/460/464/509;
+// complete library transfers 509. All regress and disturb frame or extent. Original pointer payloads,
+// metrics, signed-short scans, selected output cursor and full body restored at 390;
+// default/bitmap/endpoint homes and root-table roles remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

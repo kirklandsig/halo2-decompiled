@@ -70,7 +70,7 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 629): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// score 618 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
 // Input/minimum/hit homes, inactive-exit layout and later basis/ray/root/rotation homes differ.
 // Frame 0x108 agrees; success/hit/input/minimum homes, inactive-exit placement and axis schedules remain.
 // Earlier at 629: Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
@@ -236,6 +236,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
 // Original constant inactive return, private producers, in-place snapshots and complete body
 // restored; success/hit/input/minimum homes and axis schedules remain.
+// Round 306: Native output-vector memset with input memcpy/hit memset/final memcpy subsets:
+// 692/692/702/702/692/704/702/709. Output clear recovers the initial success home at 692, first +0x50,
+// but all forms regress. Original scalar stores, hit bytes, helpers, in-place snapshots, complete body
+// and includes restored at 618.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
