@@ -187,6 +187,10 @@ c_button_widget_45d5d0::c_button_widget_45d5d0(short valuef8, word user_flags) :
 // header and `goto found`; `widget` declared before a `for` that assigns it. Loop syntax never reaches the copy:
 // retail tests ESI after the merged phi copy (copies in the predecessors, merged after scheduling), ours
 // schedules the test ahead of the copy inside one block.
+// Round 30 (lane 17, fast, both twins): a compile-only build gives the same test-then-copy tail, so it is decided
+// before LTCG; only an if/else in the loop assigning `widget` in each arm gives retail's copy-then-test. With that
+// step: the same if/else at the entry 12 (entry value loaded straight into ESI); `widget = this` first 12; a ternary
+// entry 12; `widget = next` then the walk when NULL 43 (92 bytes); next_wrapped at the entry 37 (98, own entry test).
 // @retail 0x2c8f56
 void c_button_widget_45d5d0::v8()
 {
@@ -237,6 +241,10 @@ void c_button_widget_45d5d0::v8()
 // Round 66: full for-loop 2; split widget declaration 2; scoped for with the step in its body 2;
 // step computed before eligibility 40 (100 bytes); function-scope step result 2; direct previous/last-sibling
 // branches through a field snapshot 37 (98); explicit this at entry 2; qualified step call 2. Body restored.
+// Round 30 (lane 17, fast, both twins): a compile-only build gives the same test-then-copy tail, so it is decided
+// before LTCG; only an if/else in the loop assigning `widget` in each arm gives retail's copy-then-test. With that
+// step: the same if/else at the entry 12 (entry value loaded straight into ESI); `widget = this` first 12; a ternary
+// entry 12; `widget = previous` then the walk when NULL 43 (92 bytes); previous_wrapped at the entry 37 (98).
 // @retail 0x2c8fb4
 void c_button_widget_45d5d0::v9()
 {
