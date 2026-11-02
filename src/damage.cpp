@@ -703,6 +703,9 @@ void function_d6a70(long object_index)
 // original lookups 203 (633); fresh test only 190 (590); second pointer 162.
 // P272: Uniform direct primary-object fields, post-guard accumulator declaration and independent entry child iterator subsets, then complete workspace names: 219/159/159/219/219/159/219/219.
 // Original executable source restored; frame 0x4c versus 0x50, retained-pool/object/index and owner homes remain.
+// P274: Repeated header ordinal/shared parent index/accumulated last-child result,
+// subsets 1/2/4/3/5/6/7: 159/168/169/168/169/185/185; all with long result 174.
+// Original body restored; frame 0x4c versus 0x50 and pool/object/index/owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -964,6 +967,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // B374: twice-consumed inner radius maximum via macro/branches/lower/upper fallback,
 // outer expression or test-produced result: 230/230/235/234 twice; 767/782 bytes, frame still 0x1a4.
 // No match; original repeated selector and complete body restored.
+// P274: Object-array cursor/native short count/shared sequential verifier receiver,
+// subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
+// Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1071,6 +1077,12 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
 // Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
+// AC483: Native selected displacement, two workspace names, producer/entry storage and record/setter
+// publication: 357/364/357/364/357/364/357/364. Node-backed-only point setter with short/long team
+// and producer/entry center: 297/300/297/300; complete direction setters repeat 297/300/297/300.
+// That asymmetric producer recovers point/normal homes and 1535 bytes, but the fallback center is
+// at +0x4c instead of +0x40. On it, retained origin/direction/node/all field addresses: 295/357/355/354.
+// All forms regress; original body restored. Shared-add include clashes with the existing cross helper.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1521,6 +1533,13 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // B374: complete type-owned false before iterator initialization, OR/conditional/negative/positive
 // recursive joins 82/89/108/89; after initialization 102/108/125/110.
 // No exact match; original entry default, verifier boundary, loop and recursive tails restored.
+// Round 534: rejection-guard for initializer 70; direct successful search
+// returns 84/84; canonical byte/short/long/word/dword results
+// 66/95/104/95/104. Byte result gains four only; original body restored.
+// Initializer receiver and independent latch remain; iterator still owns the search test.
+// N324: Separate null/player rejection, scan-scoped iterator and result-admitted recursive calls, seven
+// subsets then result-first initialization 71/71/71/118/118/118/118/120. Original complete body restored;
+// initializer receiver and loop latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -2363,6 +2382,9 @@ struct s_unit_event
 // permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
 // call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
 // Original executable source restored.
+// P274: Native zero-then-type/type-in-value event initialization, crossed with actual
+// read-only info and existing inline declaration contracts: eight forms 477 at 1880 bytes.
+// Original body and both declarations restored; permutation stack/EAX ingress and call-cycle homes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4319,6 +4341,10 @@ PRIVATE inline long model_find_physics_node(byte *model, short physics_node)
 // DL244: Root/cursor/graph names and Boolean XOR 166 throughout; canonical bool/byte membership != or XOR 194, word 165/149, dword 166/166.
 // Word membership XOR 149 (803/803, whole-program plain, no lost match) NOT kept: the local type was picked by score from bool/byte/word/dword. Body restored at 166.
 // Native signed-list/entry-mask follow-ups 249/149/249/149/249/149/249/249, restored; frame 0x447c and root/iterator/list/query register gaps remain.
+// F332: Existing node-search index early return 150; indexed while result/early 166/150;
+// cursor for result/early 228/149, cursor while result/early 228/149, direct row inputs 229.
+// Indexed for early exits (plain 150, frame 0x4478, 782/803 bytes) NOT kept: the helper copies matched
+// 0x16d890, which keeps result + break, and the frame/length move away from retail. Body restored at 166.
 // @retail 0xdb810
 dword function_db810(long object_index, long node_index)
 {
@@ -4533,6 +4559,12 @@ struct s_damage_object_creation
 // B374: actual metadata cursor crossed with flag-byte cursor, ordinal-first initialization and
 // pre-capture cursor declaration: eight trials 209 at 799/808 bytes, first +0xa.
 // Original body restored; offset/definition and detached-mask homes remain despite the closer length.
+// Round 534: connectivity-mask workspace shared by root and piece scans, dword/long,
+// entry/producer declaration and sequential section/node count: 188/188/188/188/188/188/188/188.
+// Original complete body restored; offset, definition and detached/node homes remain.
+// N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
+// library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
+// and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
