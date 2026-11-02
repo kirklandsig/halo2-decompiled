@@ -1087,6 +1087,9 @@ struct s_signed_file_write_parameters
 // Round 311: Entry-owned uninitialized signature workspace/output-count/success subsets
 // 1/2/3/4/5/6/7 and all with file-signature identity 115/136/136/115/115/136/136/136.
 // Original phase scopes, header return, getter and complete body restored; capacity and extension homes remain.
+// P258: Test-produced task failures for scratch/direct/publication phases,
+// subsets 1..7 then all with API-width signature success:
+// 241/237/244/319/323/312/338/339. Original phase results, header return and body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
