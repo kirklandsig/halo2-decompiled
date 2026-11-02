@@ -726,6 +726,11 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // Round 71: on the swap order, a multi-use player-index local 32; direct unknown14/controller/both
 // 107/107/106; const value locals 32; collection declared at function scope or const 32/32;
 // inline swap and inline swap/apply-update 32/32. Original body and declarations restored.
+// Round 56 (lane 11, fast; positional/aligned, base 28/11): `&watcher->players` at every use with no collection local
+// 294/225 (1064 bytes, frame 0x8c); the occupied key as `(byte *)collection + i * size + 4` 28/11, `(byte *)players +
+// i * size` 28/11, `i * size + (byte *)players` 28/11, a dword-pointer index 28/11 (all same code); a named occupant
+// pointer at the top of the occupied block 45/29. Reading: the key's tree has the product on the left here, so its
+// offset + cursor stays grouped; retail groups the base with the offset, as if the product were a shared temporary.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

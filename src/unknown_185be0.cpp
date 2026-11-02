@@ -340,10 +340,27 @@ union s_185be7
 // subsets, then short copy ordinal: 731/690/839/690/839/845/845/854. Keep only the duration
 // source cursor, 690 plain at 3782/3777 bytes; the paired source cursor ties.
 // Sole caller 0x186ab0 remains 134/1486. Control-root/NONE, settings/zero and flag joins remain.
+// Round 237: Native copy destination button/duration/both cursors 690/691/691; inferred byte/word/both
+// flag destinations 858/848/864; complete exact-valued promoted angular coefficient
+// alone/with native destinations 1018/1075. Original helper, widths, scalars and body
+// restored; control-root/NONE, settings/zero homes and flag joins remain.
 // AC468: Shared input-five/four/seven branch ownership retaining the individual flag-helper calls,
 // seven subsets and all with selected-input ownership: 1121/1111/1152/1134/1155/1159/1150/1140.
 // The branches collapse stores and lose the native frame. Original helper calls, masks, observations,
 // two scans and retained duration cursor restored; root/NONE, settings/zero and flag joins remain.
+// AC474: Existing object-predicate positive/failure result ownership in bool/byte/word/long,
+// 826/826/829/835/852/852/846/872. Original conjunction and complete body restored; native frame,
+// control-root/NONE, settings/zero homes and flag joins remain.
+// AC477: Contiguous invalid-index/float-zero/short-zero reset fills, subsets 1..7, then
+// ordinary inline complete fill: 960/1021/1030/694/962/1021/1030/1030. Original reset and
+// complete body restored; control-root/NONE, settings/zero homes and flag joins remain.
+// Round 526: Actual held-input mask shifted through low bits, fixed/sparse termination,
+// word/dword remainder and indexed/cursor input 802/832/821/856/1109/1109/1125/1125.
+// Original two scans, duration cursor and complete body restored; control-root/NONE,
+// settings/zero homes and flag joins remain.
+// AC480: Native entry array, branch-owned angular output and shared two-coordinate difference,
+// subsets 1/2/4/3/5/6/7, then branch output with early uninitialized response vector: 690/839/764/839/764/855/855/839.
+// Original complete body restored; control-root/NONE and scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

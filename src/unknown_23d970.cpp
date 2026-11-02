@@ -759,6 +759,8 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // M297: Completed direction workspace reused for the first product, direct/staged; prior-up
 // workspace reused with the existing staged producers; direct forward normalization with
 // direct/staged/k-first first products and prior-up reuse [49, 45, 63, 56, 360, 360, 360, 364]. Original workspaces restored.
+// J239: prior-up setter 252; published-forward snapshot 226; both captures 258; forward setter 231; paired setters 245; paired aggregate capture with k-first product 258; paired setters with k-first product 245; paired setters with i-first product 245.
+// Original input snapshots, products and body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

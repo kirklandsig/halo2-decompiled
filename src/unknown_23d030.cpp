@@ -54,16 +54,26 @@ struct s_camera_output_23d790
 	real timer;
 };
 
-struct s_orbit_state_23d790
+/* the state both cameras of this file keep: the free camera's position, or the orbit
+   camera's distance, then the view angles the direction helper reads */
+struct s_camera_state_23d030
 {
-	real unknown00;
-	real distance;
-	real unknown08;
+	union
+	{
+		point3f position;
+		struct
+		{
+			real unknown00;
+			real distance;
+			real unknown08;
+		};
+	};
 	real yaw;
 	real pitch;
+	real roll;
 };
 
-PRIVATE __forceinline void orbit_direction_23d790(s_orbit_state_23d790 const *state, vector3f *direction)
+PRIVATE __forceinline void orbit_direction_23d790(s_camera_state_23d030 const *state, vector3f *direction)
 {
 	real cosine = (real)cos(state->pitch);
 	direction->i = (real)cos(state->yaw) * cosine;
@@ -76,7 +86,7 @@ void __stdcall function_23d790(void *state, void *input, void *output)
 {
 	s_player_control_camera camera;
 	s_camera_input_23d790 *controls = (s_camera_input_23d790 *)input;
-	s_orbit_state_23d790 *values = (s_orbit_state_23d790 *)state;
+	s_camera_state_23d030 *values = (s_camera_state_23d030 *)state;
 	s_camera_output_23d790 *command = (s_camera_output_23d790 *)output;
 	player_control_get_camera(controls->player_index, &camera);
 	command->position = camera.position;
@@ -116,14 +126,9 @@ byte g_51ec12;
 real g_470a24 = 1.f;
 extern byte g_51ec11;
 
-struct s_free_state_23d260
-{
-	point3f position;
-	real yaw;
-	real pitch;
-	real roll;
-};
-// score 102 (was 102): frame 0x4c agrees; zero/side normalization and up/roll allocation differ.
+// score 89 (was 89): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
+// the side/up/roll SSE colouring differ. Kept: both cameras share one state type and the forward vector comes from
+// this file's direction helper, which puts the side.i copy and the movement x87 block where retail has them.
 // Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
 // local-carrier form all compile to the same 102/103, and a named clamp or a named zero carrier give
 // 103, so the zero constant still lands in xmm3 against retail's xmm1.
@@ -336,10 +341,33 @@ struct s_free_state_23d260
 // Round 355: shared complete roll cross, direct/staged, on accumulated projection/rows,
 // with pitch observation and named projection complement subsets: 282/282/298/298/191/191/347/347.
 // Original body restored; zero/side normalization and up/roll allocation remain.
+// Round 360: complete inverse/transformed/world position accumulations, subsets 1/2/4/3/5/6/7,
+// 288/121/121/288/121/102/121; all with reused pitch observation 276. Original matrix rows,
+// publications and complete body restored; zero/side normalization and up/roll allocation remain.
+// P261: complete native accumulated roll rows before shared-setter publication,
+// all six producer orders 291 each; direct complete publications 291/292.
+// Original interleaved row stores and full body restored; zero/side/up allocation remains.
+// Round 137 (m3 lane 6, fast, plain where marked; 0x23d790/0x23d030 stay matched): the two matrix blocks as
+// file-local force-inline copies of 0x142570/0x1427f0 277 (1292 bytes, diagnostic: retail's matrix code already
+// agrees); `side.j = 0.f - forward.i` 102 (same code); the forward vector through the direction helper with the
+// state cast to the orbit state 245; with one shared state type instead 89 plain (1327 bytes, kept). On 89:
+// normalize3d 261 (x87 length exact, divss after lahf, zero XMM3); cross3f_staged(&side, forward, &up) 283, with
+// normalize3d 266; cross3f(&side, ...) with normalize3d 263; diagnostic: the sign-flipped
+// cross3f_staged(forward, &side, &up) gives zero XMM1 and the whole side block exactly (144; with normalize3d 48,
+// first difference +0x11d), so the up cross's operand shape sets the zero register; up rows k,i,j / j,k,i / j,i,k /
+// i,j,k / i,k,j 273/90/272/275/275, with normalize3d 266/270/262/260/261; side filled i,j,k / j,i,k / k,j,i /
+// i,k,j / j,k,i 89 each, with normalize3d 271/281/271/271/281. The correct cross3f_staged(&side, ...) gives retail's
+// side block shape (divss before lahf, side.k moved to XMM4) with every register renamed, but its products put side
+// first where retail's (and this body's) rows load forward first. The up rows computed into up_k/up_j/up_i before
+// the stores, stored k,j,i / i,j,k: 94 (1328 bytes) / 274, with normalize3d 259/258.
+// N320: Shared direction-helper pitch/yaw observations and scalar/native vector publication regress
+// the target and the matched second user. Original helper restored; zero, normalization and up/roll
+// allocation remain. Scores 291/128/280/304/101/307/295/345.
+// Original executable source restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
-	s_free_state_23d260 *camera = (s_free_state_23d260 *)state;
+	s_camera_state_23d030 *camera = (s_camera_state_23d030 *)state;
 	s_camera_input_23d790 *controls = (s_camera_input_23d790 *)input;
 	s_camera_output_23d790 *command = (s_camera_output_23d790 *)output;
 	if (controls->active)
@@ -353,10 +381,7 @@ void __stdcall function_23d260(void *state, void *input, void *output)
 			camera->roll = 0.f;
 	}
 	command->timer = 0.3f;
-	real pitch_cosine = (real)cos(camera->pitch);
-	command->forward.i = (real)cos(camera->yaw) * pitch_cosine;
-	command->forward.j = (real)sin(camera->yaw) * pitch_cosine;
-	command->forward.k = (real)sin(camera->pitch);
+	orbit_direction_23d790(camera, &command->forward);
 	vector3f side;
 	side.k = 0.f;
 	side.i = command->forward.j;

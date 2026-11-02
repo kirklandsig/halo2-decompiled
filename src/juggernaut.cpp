@@ -317,6 +317,10 @@ void c_juggernaut_engine::v15(long player_index)
 // Round 112: a separate short membership carrier 8; with masked membership, the count incremented
 // first 52, the accumulator written as `players = players | mask` 8, a word shift count 8, a globals
 // pointer 17, the difference inlined 8, a player-record pointer 8, and count declared before players 10.
+// Lane 16 round 74 (--fast, all on the masked-index test, which differs from retail only by EBX/ESI
+// swapped): a dword masked index 8; the keep path masking the player index 85; the masked index read
+// from the iterator with the iterator's index at each player-index use 8; an early continue 8; the
+// keep path shifting by the short masked index 82 (CSE'd with the test).
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

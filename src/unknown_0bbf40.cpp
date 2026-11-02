@@ -732,53 +732,8 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
-// score 5 (was 5): with a `long` parameter MSVC widens every 16-bit read of it, so
-// MiniMax lane E (11-01): no new form, no lower score; the short size parameter still needs the
-// four other declarations changed and 0x118510 kept at its own score.
-// score 5 (was 5): this round: with a `long` parameter MSVC widens every 16-bit read of it, so
-// the narrow load needs the parameter type changed, which changes the mangled name and breaks the
-// four other declarations (src/unknown_0b7b40.cpp, src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp,
-// src/unit_object_type.cpp) and still raises 0x118510: BLOCKED-BY 0x118510.
-// Earlier (score 5): the only difference left is the size parameter's load: retail reads it with a
-// 16-bit load (a short parameter), ours with a 32-bit one, which shifts every later byte by one.
-// With `short size` in the definition and in every declaration (src/unknown_0b7b40.cpp,
-// src/unknown_0b8ca0.cpp, src/unknown_118e80.cpp, src/unit_object_type.cpp) the function matches
-// byte for byte, but 0x118510 rises 83 -> 102 (its call site then loads the size into ECX where
-// retail uses EAX): BLOCKED-BY 0x118510.
-// Round 30 (lane C): declaring the third parameter `short` alone makes the reduced image match
-// byte for byte, but the full tree then fails to link (LNK2001: ?function_bc380@@YI_NJJJJ@Z is
-// still referenced by declarations in four other files), so the parameter stays `long`.
-// Forms (score 42 then): a shared absolute index 42; the header reused for the refreshed lookup
-// 68; a function-scope block pointer 42; allocator noinline 42; old size read before allocation
-// 81; size optimization 107; global optimization off 151; shared index, block scope and allocator
-// noinline together 42; full alignment power carried across allocation, signed/unsigned power x
-// short/long old size x outcome/allocation result 43, 102, 72, 109, 43, 102, 72, 109; a named
-// short length 42; the header table in its own local first 42; mask and extra declared at the top
-// 42; the header declared before the result 42; single exit 42; a pool-data local then
-// `&headers[index & 0xffff]` (0xbba20's form) 42; the header or the extent renamed 42 each; a
-// dword extent 42. With a short size parameter (score 40 then): mask and extent declared first
-// 89; a named object-slot pointer for the reallocation and the clear 40; shared absolute index
-// 40; single-exit result 40; mask and extent declared at the top, assigned in place 40; header
-// declared before the result 40; extent as mask + size 40.
-// Round 21 (lane 10): the existing object_get_0bbf40 for the refreshed object only 42, for both
-// object reads 8 (header and extent then take retail's EBP/EDI); plus a named new size 6, plus
-// `header->size += (short)extra` 7, both 5 (kept); the new size as extra + old_size 8 (same code).
-// Round 23 (lane 10): with the long parameter every 16-bit read of it is widened to a 32-bit
-// load: the test through a short pointer to the parameter 5; a named short length 5; `!(word)size`
-// 5; `(size & 0xffff) == 0` 6; `!(short)size` 5.
-// Round 202: entry normalization of size/offset/both/alignment/size-alignment/offset-alignment/
-// all domains 89/57/79/5/89/57/79; size normalization with the zero-size result producer 90.
-// Original parameters, body and result restored; formal narrowing still needs protected declarations.
-// Round 52 (lane 10, fast): the allocation arm first under `(short)size != 0` with the zero arm in the
-// else, single exit 62 (233 bytes); the zero arm's block from `header->object` 42; the new size written
-// into the reallocation call 7; the alignment shift without the byte cast 6; `return true` / `return
-// false` in place of the result 90 (214 bytes, the result byte leaves the frame).
-// Round 106: pointer-initialized short/word snapshots used at every size read 5/5;
-// a two-byte memcpy snapshot 5; signed/unsigned reference views 5/5; memmove 117;
-// memcpy only for the zero test 5; a pointer-initialized short with nonzero arm first 70.
-// Original parameter, case order and body restored; the initial size load remains dword versus word.
 // @retail 0xbc380
-bool function_bc380(long object_index, long block_offset, long size, long alignment_bits)
+bool function_bc380(long object_index, long block_offset, short size, long alignment_bits)
 {
 	bool result = false;
 	s_object_memory_header_ab *header = (s_object_memory_header_ab *)g_4e0300->data + (object_index & 0xffff);

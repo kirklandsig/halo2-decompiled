@@ -888,7 +888,7 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// score 90 (was 90): the difference is purely the register colouring of the two
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
 // ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
@@ -1048,9 +1048,18 @@ bool __stdcall function_2399da(long controller_index)
 // Round 347: Scalar selected identity shared by member copy and validity, late/producer capture crossed
 // with full member-presence and per-use permission: 147/147/155/155/158/158/151/151.
 // Original complete body restored; selected identity/rank ownership and the extra removal move remain.
+// Round 73 (m3 lane 16, fast): the 16 for 0xac050 as (member, controller, team) is not a gain: the last declared
+// parameter takes EAX, so the team goes in EAX and the identity is pushed, the identity/rank registers do not move and
+// only the `mov eax, ecx` goes (callee 13, 0x23955e 4, 0x2b278e 4). Retail's other callers set EAX after the pushes, but on
+// that evidence (controller, team, member) still looks the only order giving its EAX and stack layout. Identity test as two word reads
+// OR-ed 90 (same code); two word tests 102 (436 bytes); through a two-part integer view 90; rank store through a copy of
+// the properties 158 (487 bytes); rank store by memcpy 90 (same code); the remove arm's identity behind a null ternary 90.
 // Round 356: Complete selected/member 64-bit validity reductions, low-first/high-first/bitwise
 // halves alone and paired 170/170/164/143/143/176/176/164. Original validity and body restored;
 // selected-pointer/rank EAX/ECX ownership and the two-byte removal move remain.
+// Round 366: Complete authority comparison parts, bool/byte/short/long, original
+// admission or a separate complete admission result: 90/90/90/90/90/90/90/90.
+// Original comparisons and body restored; selected-pointer/rank registers remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -92,6 +92,11 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // at outer or function scope, denominator spellings 2; normal pointer 4-6, plane or d local 6, plane-distance helper
 // 6-8, scaled locals 6, `dx *=` 6, y output first 64; `+=` numerators give the first intersection exactly but flip
 // the second 4. Unused locals (diagnostic) rotate the second intersection's products only.
+// Round 83: defaulted classification distance 5; side-array pointer induction 208 (712 bytes);
+// side/previous/current pointers with a named projection 16, direct `points + current` 16,
+// without the defaulted distance 16, with an early defaulted projection 16; output base declared
+// after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
+// the three setup stores and first intersection's x product remain.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -390,6 +395,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 275: Native current/next indices together, crossed with Boolean departure,
 // early heading and overlap CRT compaction 269/272/269/281/275/262/273/284. Every form loses
 // the matched caller; original word indices, helper and complete body restored.
+// Round 362: Independent produced-length increment, crossed with short/native output ordinal, long/bool departure and memcpy/memmove.
+// 280/258/275/261/239/234/211/249. Original executable source restored.
+// Round 470: Distinct lowest/candidate/compaction ordinal identities, subsets
+// 1/2/4/3/5/6/7, then all with output ordinal named: 170/170/170/170/170/170/170/170. Original body
+// restored; extra frame word and count/departure/bound/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -713,6 +723,18 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // bitwise OR pairs, positive-test bool 288/304/318/315 and byte
 // 288/304/318/321. Original conditional collectors restored; count ECX,
 // prior-side byte and SIMD homes remain.
+// Round 359: Prior signed-distance state with test-assigned fraction, nonzero/zero first,
+// native/full-decision clamp and both denominator product parts: 270/270/270/270/255/255/255/255.
+// Original state and arithmetic graph restored; count/prior-side and SIMD homes remain.
+// Round 362: End-bounded input traversal, crossed with short/native mask ordinal, default/test-assigned fraction and loop-end/pre-append prior side.
+// 326/321/310/304/176/176/273/273. Original executable source restored.
+// Round 364: Coordinated long/int input-count contracts: direct 283/283; reused signed-word
+// count at entry 198/198 or alias join 199/199; entry word-normalized parameter 296/296.
+// All restored; count ECX, prior-side byte and SIMD homes remain.
+// Round 366: Actual crossing result before the epsilon collectors, bool/byte/short/long
+// 247/247/300/299; with prior state advanced at that producer 232/232/311/310.
+// Advanced bool/byte state recovers count ECX and both side-byte homes, but adds
+// crossing-result work and leaves SIMD homes different. Original complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -611,6 +611,14 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // publication, with/without all distance-product names 337/337/337/337; matrix-position field view on
 // those four graphs 620/620/611/611. All regress and shorten the body.
 // Original executable source restored; Original helper and body restored; frameless entry and diagnostic tests agree, plane-1 x-term and top/bottom distance/k-row scheduling remain.
+// Round 29 (lane 18, fast 28 agrees): compile-only, split statements keep their order on every plane and any
+// one-expression sum is canonicalised per plane whatever its term order; the first three terms grouped then x
+// gives z, y, d on planes 2-4 (retail 2-3) in any of the six group orders; the normal field-store order does
+// not matter, but direct field stores in place of vector3f_assign move later planes' orders (numbering).
+// Real: y + d * scale + z grouped then x 60; the same with planes 0/1 as direct field stores 599 (2838 bytes);
+// planes 2/3 as direct field stores 501 (2838); all four side planes direct 606 (2840); y + d * scale grouped
+// then z and x 36. The existing function_2477b1 for the normal rotation keeps the plane helper out of line
+// (six calls, compile-only).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
@@ -975,6 +983,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // negation orders and pointers 230-254; classification operand orders 222 (same code); 60 random combinations of
 // term, helper and negation forms 152-275. Permuter on the 19 form: 19 on the full image too, 73 tries, nothing better.
 // Original body restored.
+// Round 471: Selected normal/offset/origin observations, masks 1-7,
+// 515/386/494/515/584/511/565; complete selected-plane value 490. All restored.
+// Round 473: Native short/word/signed-byte/byte ordinals for the fixed two-plane
+// traversal, then the fixed output pair: 363/363/241/241/129/129/129/129.
+// Original ordinals restored; early coefficient/zero roles and projection staging remain.
+// P261: symmetric near/far coefficient captures, all six native component declaration
+// orders 269 each; joint row lifetime and immutable inputs 269/269 (1867 bytes).
+// All exact-only snapshots restored; coefficient preload, zero roles and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

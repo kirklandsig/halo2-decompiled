@@ -980,7 +980,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 115 (was 115): with the address-taken scratch record and the two-pointer getter (see
+// score 102 (was 102): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -1111,6 +1111,14 @@ struct s_signed_file_write_parameters
 // P260: Scratch extension file extent retained for offset and remaining bytes,
 // before/after getter, both sum orders and both minimum orders: 244 each.
 // Frame grows to 0x1c; original observations, getter and complete body restored.
+// P270: direct-header-return graph with live signed-body position/count/both/data/
+// position+data/count+data/all, then buffer-before-count: 102/109/300/305/220/224/215/119.
+// Live seek position 102 retained; count-only 109 is below threshold. Other forms
+// restored; capacity staging and extension offset/buffer/count homes remain.
+// N321: Repeated phase header extents across API consumers on the retained header-return/live-seek
+// graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
+// homes remain. Scores 138/229/291/255/309/303/320/323.
+// Original executable source restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
@@ -1190,11 +1198,10 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 		}
 		else
 		{
-			dword position = parameters->header_size;
 			dword body_size = parameters->body_size;
 			const BYTE *body = (const BYTE *)parameters->body;
 			dword bytes;
-			if (SetFilePointer(parameters->file, position, NULL, FILE_BEGIN) == position &&
+			if (SetFilePointer(parameters->file, parameters->header_size, NULL, FILE_BEGIN) == parameters->header_size &&
 				WriteFile(parameters->file, body, body_size, &bytes, NULL) && bytes == body_size &&
 				XCalculateSignatureUpdate(parameters->signature_handle, body, bytes) == ERROR_SUCCESS)
 			{

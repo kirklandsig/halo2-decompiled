@@ -1369,7 +1369,7 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 31 (was 61): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
+// score 31 (was 31): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
 // the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
@@ -1558,6 +1558,18 @@ struct s_rating_summary
 // Round 290: On explicit team lower-result production, separate team value/change/level carriers,
 // all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
 // summary scheduling and team counter/cursor homes remain, with exact frame and length.
+// Round 322: Native team receiver shared by player-summary/team passes, crossed with copy-result
+// termination, counter declaration scope and full lower-result arms: 65/68/65/68/65/68/65/68 at
+// retail length; first gap moves to +0x4c. Original complete body restored; summary scheduling and
+// team/counter homes remain.
+// Round 307: native indexed team/counter/both receivers on the adjusted-value graph 47/31/41 (counter is calibration);
+// Round 307: body-stepped team/counter/both 116/38/116; indexed-team with stepped counters 44;
+// Round 307: stepped team with indexed counters 116. Original body restored; formatter/count scheduling
+// Round 307: and the swapped team/counter homes remain.
+// Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
+// M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
+// M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
+// One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1897,6 +1909,20 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // N303: Actual cache-group/request-player/completion-player element references, seven subsets,
 // then complete returned-record/property/destination elements: 709 each. Original receiver
 // forms restored; frame agrees, initial user cursor base/home and slot expansion remain.
+// Round 523: Initial properties/identity/cache-publication memmove transfers, seven subsets
+// then all with properties before identity, 776/767/734/785/804/753/771/771. Cache-only and
+// identity/cache reach retail length; properties memmove loses self-alignment. Original
+// copies, input observations, cursor forms, helpers and complete body restored.
+// P263: equality-only library operands reversed consistently in cache/duplicate/completion
+// subsets 1/2/4/3/5/6/7, then all with team comparison: 713/709/709/713/713/709/713/715.
+// Original comparisons and body restored; initial cursor/slot and later homes remain.
+// M3 lane 4 r155 (fast; LCS-aligned base 344): retail's user loop passes the record pointer in ECX and the xuid pointer
+// (record + 1) through EDX/EAX like an inline helper's arguments. New: the identity copied through a const xuid pointer (also
+// the later copy's source) with online_logon_connected() 775 (2846 bytes, aligned 362); the user's valid flag typed byte or
+// char, team computed before `valid = true`, the availability loop through a player element pointer: 709 each (same code).
+// Re-measured: a record pointer with the xuid pointer 754 (aligned 364, twice: at the body top / beside the values pointer),
+// online_logon_connected() 729 (2862 bytes, aligned 343), with the record pointer 775. The slot helper's cmovne still needs
+// /arch:SSE (a file-flag decision).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

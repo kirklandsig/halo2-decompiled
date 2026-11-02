@@ -180,6 +180,16 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // if/else of two stores 78 (254 bytes); the null-view and already-complete tests merged into one guard 8;
 // the facing call in an else of its guard 7; named facing/point pointers for the call 7 (same code); a 600 s
 // permuter run (fast, anneal, 80 tries), none below 7.
+// Round 56 (lane 11, fast): the seven differences are one register-rotation step. A diagnostic extra dword load
+// and global store placed after the guard, in the 0x1f4f40 call's block, gives exactly retail's point EDX, in-place
+// type EAX, `push eax` before `mov eax, ebp`, and reference ECX (the two later temporaries take the next registers in
+// ECX, EDX, EAX order); the same probe before the guard takes EAX and moves nothing. So retail has one more dword
+// temporary before these, one that leaves no code. Forms: type in a local read between the guards 7; short/long/char
+// mode local after the guard 7/7/7; named facing/point pointers 7; state copy 7; index copy 7; bool true local 7;
+// readiness as embedded assignment 7; long readiness 65 (283 bytes; registers as retail, setne added); byte readiness
+// 61 (276; same); dword readiness with a byte store 8; bool readiness with embedded store 22; inline/forceinline
+// readiness helper 7/7, on the flag 7, with a result local 22; dead char/long/getter locals in the block 7/7/7;
+// a repeated type/flag/done test around the call 7/7/7. Next: a form whose extra temporary coalesces away.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
@@ -299,7 +309,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 49 (was 113): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
+// score 49 (was 49): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
 // the actor table through EAX instead of ECX; SETNE, marker-call setup and tail homes remain.
 // Earlier (113, was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
@@ -484,6 +494,13 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 256: nullable marker-list at the query producer, branch/conditional output,
 // early result storage and limit-field observations: branch 236 each, conditional 233 each.
 // Original readiness Boolean, list construction, movement snapshot and complete body restored.
+// N320: One function-result exit on the common-release graph, true/false defaults, early/late constant
+// result and native/aligned request: all regress. True-first restores AL production but moves actor
+// offset to EAX; original result and tail homes remain. Scores 112/270/131/268/112/270/131/268.
+// Original executable source restored.
+// Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
+// availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
+// Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -676,9 +676,21 @@ real function_267370(long object_index);
 // Original observations and body restored; early NONE sharing and cross operands remain.
 // Round 295: field-sized library fills for first/second/both invalid handles 357 each;
 // conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
+// DL239: Complete default-forward/stored-forward/up memcpy subsets 1..7 score
+// 98/96/96/98/98/96/96; all memmove 226. Two-point leads rejected; original whole body restored.
+// Frame 0x90 agrees; early NONE sharing, carrier and cross operand homes remain.
 // Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
 // 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
 // Early shared NONE and cross operands remain; every original destination and body restored.
+// DL241: Repeated native full-direction/carrier/holder Boolean field receivers, seven subsets then
+// immutable: 104/104/100/104/100/100/106/106. Shared zone success-default result with native
+// cluster/entry carriers: 326/379/373/169; provider 0 -> [60, 56, 59, 55]. All rejected; the
+// helper shifts early NONE to EBX without delaying it. Original body and entire header restored;
+// frame 0x90, late NONE ownership and cross operands remain.
+// DL243: Matched sample/eligibility/speed provider inline contracts, seven subsets: 98 each; all
+// three with uniform actor view at use 103. Inline 0x267370 raises its other user 0x266640 from
+// 194 to 565, so those forms also fail the shared-user rule. Original entire body and every
+// declaration restored; frame 0x90 agrees, early NONE sharing and cross operand homes remain.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1146,6 +1158,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // settings/squad and before final settings guard: 341/341/341/341/340/336/254;
 // entry declaration with original initialization 254. Original lifetime/body restored;
 // sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
+// P266: Independent settings/perception/unit failure returns, seven nonempty subsets
+// using failed creation outputs, then all constant returns: 345/288/345/348/372/348/350/346.
+// Original shared failure exit, actor default and complete executable body restored.
+// Round 520: all six lexical orders of the native query-enabled/query-forced/squad
+// Boolean homes, then probability-home names at both endpoints: 254 each.
+// Original names and complete body restored; sentinel and squad/query homes remain.
+// DL243: Matched creation/variant/equipment producer inline contracts, seven subsets: 254 each;
+// all three with uniform placement view at use 335. Original body, every field and all
+// declarations restored; sentinel EDI/ESI, substitution/squad homes and unrotated loop remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1837,6 +1858,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // default query results 348/352/356, current/secondary/both rejection results
 // 352/352/350, mixed default/rejection 352. Original body and both queries
 // restored; actor/options/pool residency and scalar homes remain.
+// DL241: Original indexed-query current/secondary long/dword slot-domain pairs
+// 269/268/272/269/268/272/272/272; numeric ordinal plus short/word/dword ticks 278 each, with real
+// pair initializer 277. All regress. Original two private query bodies, ordinal, tick storage and
+// complete body restored; actor/options/pool and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

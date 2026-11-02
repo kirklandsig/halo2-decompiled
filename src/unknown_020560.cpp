@@ -80,6 +80,9 @@ PRIVATE __forceinline long texture_floor(real value)
 // 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
 // bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
 // Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
+// Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
+// its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
+// named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -927,6 +930,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // call with the samples local after it 592 (2127 B); y, z, x loads with the if-form fraction 592.
 // Also round 136: delta through vector3d_from_points3d 547; scan 2's offset through vector3d_from_points3d, dot3f
 // and length_sq3f 547 (both same score at 2122 B).
+// DH294: Joint count/selected-ordinal/blend-fraction lexical priorities, seven subsets and all
+// with native vector-owner names, 547 each. Original names and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
@@ -1371,55 +1376,9 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 
 
 long __stdcall function_3bf20(s_slot *slot, byte *data);
+extern "C" void _ReadWriteBarrier(void);
+#pragma intrinsic(_ReadWriteBarrier)
 
-// score 6 (was 6): only the frame counter load differs: retail loads it after the global test
-// and before the slot pointer, ours after the slot's valid test (our build moves a load to its
-// only use). Retail reads the counter as if it were volatile: the read through a volatile pointer
-// at the top of the global block matches byte for byte (forbidden form, diagnostic only). Retail keeps the clamped amount in the dead key's second field with a store in each
-// clamp arm, which a direct field store gives (the union member) and a reference to the field
-// does not (it merges the stores). Tried: a plain amount 108 (frame 0x1c, own slot); the key
-// in its own block 108; that and the rest under `index != NONE` 101; the positive guard alone 92;
-// with a slot pointer 91; the global and valid tests nested, both else arms written out 87; the
-// frame computed before the slot pointer 99; the frame read before it 93; one clamped
-// assignment from a named product 87; the key built in an inline helper 108.
-// Round 271: independent amount with cleared/nonzero-only or full aggregate request
-// initialization, early/trailing lookup failure and direct/shared bit test:
-// 119/133/120/129/135/140/131/139. All retain frame 0x1c; original body restored.
-// Lane 8 r79: key and query as inline helpers 96-117; plain amount local 86 (frame 0x1c); with
-// this body: the frame computed before the slot pointer 75, the counter read first 72, read as an
-// __int64 copy, after the slot pointer, reassigned, 64-bit add or `+ 1` first: 6 each; permuter 6.
-// Round 20: the counter read at the storage block top with the set at the arm top 6 (the load
-// sinks), read before the storage test 6; written inside the bitset test 72 (the load stays, the
-// divide moves after the clamp); the bit test through function_0bfe60 90; the bit test before
-// the clamp 79.
-// Round 23 (lane 10): the existing bit-test helper (stays out of line) 90, with the counter read
-// at the top of the global block 88; the slot pointer before the global test 22; a const counter
-// copy before the slot pointer 6; the whole frame expression there 75; an inline query helper
-// taking the counter 106.
-// J197: validity from admission, ordinary/before-slot/early-row/after-slot: 78/78/74/78;
-// byte/long/short validity 78/103/106; default-false availability 79. Shared inline bit
-// test on the direct-key graph 6; with early counter capture 6, row at helper argument 73,
-// capture before global admission 6. Counter-load scheduling remains; opening body restored.
-// J199: direct slot fields with early/use-point counter 71/71; original graph
-// with default availability/amount/both 42/82/86; direct final disjunction 12;
-// default-true/default-false final results 40/40. Counter load still sinks; restored.
-// Round 20: the counter read at the storage block top with the set at the arm top 6 (the load
-// sinks), read before the storage test 6; written inside the bitset test 72 (the load stays, the
-// divide moves after the clamp); the bit test through function_0bfe60 90; the bit test before
-// the clamp 79.
-// Round 88: availability before validity, direct/shared bit test 77/77; blocked polarity
-// and row pointer 68/68; availability before the slot 90; full counter there 90;
-// inline target 6; const slot 6. Early dependencies move the divide and bit work; restored.
-// Round 16: the counter's low dword read through its address at the global block top 6 (still
-// moves to its use); the counter read first with the amount and availability defaults stored
-// before the slot test 84 (it still moves); the counter read first with the slot test inverted 6;
-// the counter read right after the lookup call 6; the global and slot tests joined by `&&` with
-// one else 22 (the slot pointer is then computed before the global test).
-// Round 131 (m3 lane 6, fast): the query as a forceinline helper returning validity with the amount
-// and availability through pointers, the counter read at its global block top 6 (the load still
-// sinks); the slot's validity in a bool local 80 (332 bytes); the counter read into the frame local
-// at the global block top, replaced by the set in the arm 6; the bit index as `/ 32` and `% 32` 108;
-// the bit named before the clamp 100.
 // @retail 0x3c270
 bool __stdcall function_3c270(dword value)
 {
@@ -1438,10 +1397,13 @@ bool __stdcall function_3c270(dword value)
         bool available;
         if (g_51f408)
         {
+            /* the frame counter is read before the slot is looked at */
+            long counter = (long)g_485aa0;
+            _ReadWriteBarrier();
             s_slot *slot = &g_51f40c.slots[index];
             if (slot->valid)
             {
-                long frame = ((long)g_485aa0 + 1) % 3;
+                long frame = (counter + 1) % 3;
                 key.amount = PIN(slot->f * g_5234c8, 0.0f, 1.0f);
                 valid = true;
                 available = (g_51f40c.bitsets[frame][index >> 5] & (1 << (index & 31))) == 0;

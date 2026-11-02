@@ -74,6 +74,14 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 }
 
 // score 107 (was 107): no frame; enable observations and maximum/register homes differ.
+// Lane 12 r78: MATCH (fast, plain and full check, lost []) with two changes together, not kept by the coordinator:
+// (1) the enable byte and the input counters declared as one struct symbol in globals.h (retail's record at 0x510cb0
+// reaches 0x51e8d4, so the region is one object); the padding of that trial struct overlaps the separately defined
+// 0x510cb0..0x511000 globals, so a real form must fold those in as fields; held like the 0x2136c0 struct globals.
+// (2) 0x196960's getter as a file-local forceinline used twice, the setter in the body, the increment before the
+// compare with nested clamp tests, `bool teams` set from the flag bit, player->team read at each use.
+// Without the struct symbol the best was 96 (layered getter/setter, first enable read through a const pointer);
+// the struct gave 53 and the teams form 0. All in the body, no helpers: 80 and 51.
 // Earlier 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
 // in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
@@ -315,6 +323,10 @@ struct s_object_damage_view
 // N308: Complete native history-record values in selection/attribution/assist, seven subsets,
 // 500/378/514/436/615/498/584; all by aggregate assignment 584. Original records and body
 // restored; scalar homes, amount-biased history cursor and credited-player validation remain.
+// P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
+// corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
+// Original domains and body restored; scalar homes and biased history cursor remain.
+// DL245: Frame 0x50 agrees; victim-team/credited-player/code homes and amount-biased history cursor remain. Dword consideration/hostility/friendly subsets 381/360/390/354/380/354/397; all word 412. Native unsigned cutoff/recent/both 353 each. Original Boolean, signed window and record graph restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -892,6 +904,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // dx/dy (left, right, top, bottom) 2, (left, right, bottom, top) 2, (top, left, bottom, right) 19,
 // with long dx/dy 16; `8 + bounds->left` / `8 + bounds->top` 2; fields copied then inset in place
 // 298 (1135 bytes); the subtractions as `+ -8` 2.
+// Round 82: existing alternate predicate 2; existing player lookup 2; member copies with
+// adjacent insets 2; aggregate coordinates at the original place / between right and bottom
+// insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
+// bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
+// inset pass reproduced 298 (1135 bytes).
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
