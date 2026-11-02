@@ -643,6 +643,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 261: complete native rotated-vector publication with scalar/native input snapshots,
 // split/original shared-dot projection and no/early ring phase 239/282/239/282/250/290/250/290.
 // All restored; SSE ring conversion and the unspilled rotation remain.
+// DH271: Byte/char/short/word remaining counts, each with original/named ring phase,
+// 90/143/90/143/90/143/90/143. Native remaining-count widths do not free the SSE conversion/rotation slot;
+// the named phase still grows the frame. Original complete body, rotation input snapshots, radius reference
+// and inherited local qualifier restored; radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
