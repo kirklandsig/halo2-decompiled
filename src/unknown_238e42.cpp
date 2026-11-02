@@ -1054,6 +1054,9 @@ bool __stdcall function_2399da(long controller_index)
 // that evidence (controller, team, member) still looks the only order giving its EAX and stack layout. Identity test as two word reads
 // OR-ed 90 (same code); two word tests 102 (436 bytes); through a two-part integer view 90; rank store through a copy of
 // the properties 158 (487 bytes); rank store by memcpy 90 (same code); the remove arm's identity behind a null ternary 90.
+// Round 356: Complete selected/member 64-bit validity reductions, low-first/high-first/bitwise
+// halves alone and paired 170/170/164/143/143/176/176/164. Original validity and body restored;
+// selected-pointer/rank EAX/ECX ownership and the two-byte removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

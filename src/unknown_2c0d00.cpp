@@ -1596,6 +1596,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // (1746 bytes, aligned 273); origin through the query, source after it, zero-init first 428/429; data as an if or if/else 429;
 // the count/data locals named 451; used shared with the no-data arm 469; scan as a for 548 (1858); type as long 487; out point pointer
 // 450-481 (aligned down to 245, 1757-1770); both conversions nested 410; z in a local +4; second edge store 442-449 (1770-1777).
+// DL237: Complete native query-source mutable/immutable/memcpy/memmove copies 495/495/495/504;
+// with existing origin setter 524/524/524/529. All restored; source-radius staging, persistent
+// zero and metadata homes remain.
 // Round 316: Eager classification short/word/long/dword with short/long links
 // 427/420/415/422/473/420/473/420; eager word with paired corner results
 // short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;

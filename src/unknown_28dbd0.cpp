@@ -222,6 +222,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Original executable body and helpers restored.
 // Round 291: Heading/paired transform/fallback-point overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with shared velocity scale, 264/299/206/280/275/313/296/296. Original full file and helpers restored.
+// Round 318: Complete cosine-plus-projection scalar subtotals on the added-cross/consumed-axis
+// graph in six producer orders, const subtotals and completed scalar outputs, eight at 228.
+// Original shared products, helper and full body restored; frame 0x11c versus 0x118 and
+// cross/trig homes remain.
 // Round 256: fused per-coordinate rotation weighting/publication, long/dword/short/byte
 // counters 225/225/216/216; separate axis scale with fused cross/direction/output
 // 229/229/257/257. Original separate shared scales, helper and complete body restored.

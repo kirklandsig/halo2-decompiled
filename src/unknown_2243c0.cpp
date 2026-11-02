@@ -409,6 +409,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 355: actual two-byte mapping records with nine-bit ordinals, first/second/both
 // 117/117/117; each with final grouped cache zeros 120/120/120; both with masked fallback
 // 152, with both boundaries 149. Original data views and body restored; fallback/stage/pass homes remain.
+// DL238: Complete actual directory mutable/immutable/memcpy/memmove values 195/195/195/202; with
+// final grouped cache zeros 196/196/196/203. Original whole body, directory observations, helper,
+// cache/mask lifetime, includes and all calls restored; fallback EDX masking, stage/pass and
+// unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

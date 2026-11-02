@@ -266,6 +266,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Eight name sets for success, minimum, hit flags and basis 666 each (same code). Next cause: low slots, retail
 // remaining/point cursor/success/offset/minimum/hit/basis/hit cursor/range, ours
 // remaining/offset/minimum/success/basis/hit/point cursor/hit cursor/range.
+// DH283: Native coordinate input/origin/projection producer subsets 1-7
+// 667/721/739/618/667/721/739; complete graph with aggregate hit initialization 730.
+// Original input copies, private producers, in-place snapshots and complete body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
