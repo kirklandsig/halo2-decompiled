@@ -631,6 +631,16 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
 // result storage 92/92/106/105; complementary rejection results 92/92/106/105.
 // Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
+// Round 121 (lane 8): compile-only, the reference's query runs first with an undefined free function, through
+// forceinline per-query wrappers, and with each pair in scoped named locals; only locals used twice (two calls in all)
+// put the candidate first. Real (fast): scoped named pairs under a bool result 67; a forceinline compare returning the
+// difference of two named queries 67; `inline` on the spread query's definition 192 (596 bytes, partly inlined); the
+// two tests as a bool result with `else if` 67; the two tests as rejecting `continue`s 100 (512 bytes).
+// A const reference bound to the candidate's first spread puts its query first: alone 64 (510 bytes + padding), with a
+// second one under a bool chain and the cost written candidate first 65, with `candidate.cost() < reference->cost()` in
+// the `||` form 64. Aligned, those differ from retail by one instruction: `cmp [esp+0x30], eax` where retail reloads a
+// spilled value (`mov ecx, [esp+0x30]; cmp ecx, eax`). A named copy of the reference 65. Lead: retail's order with a
+// spilled (not address-taken) first result.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
