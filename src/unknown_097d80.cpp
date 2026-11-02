@@ -247,6 +247,9 @@ struct c_aggregate : c_child
 // Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
 // cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
 // escaped-output and loop homes remain.
+// M292: Boundary table ends before cleanup, crossed with boundary-scope collection output,
+// completed information-query scope and real item traversal, masks 0-7:
+// 31/42/31/42/77/88/77/88. Original executable body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

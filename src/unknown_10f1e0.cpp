@@ -1995,6 +1995,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
 // all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
 // native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
+// M292: Exhaustive nonempty screen cases both/first, both/second, first/both, second/both, with
+// original/direct bounds fallback:
+// 853/886/859/858/856/894/861/861. Original executable body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

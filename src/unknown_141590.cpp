@@ -289,6 +289,9 @@ static inline void quaternion_transform_vector(
 // independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
 // transform at 596 bytes; original helper, halves and complete body restored.
 // Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
+// M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
+// cross components:
+// 200/200/200/249/249/249/249/261. Original executable body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

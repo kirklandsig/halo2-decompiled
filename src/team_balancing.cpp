@@ -958,6 +958,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
 // copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
 // as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// M292: Raw maximum-party index with strict/named-fill/conditional/inclusive producers,
+// original/expression-owned clamp:
+// 82/85/82/82/82/85/82/82. Original executable body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
