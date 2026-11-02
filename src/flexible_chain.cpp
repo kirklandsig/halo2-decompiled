@@ -405,6 +405,9 @@ void __stdcall function_1160c0(real dt)
 // Round 300: Complete indexed rotation consumer with ordinary/staged existing cross,
 // direct/complete axial phase and original/scaled-difference velocity:
 // 268/268/266/266/268/268/265/265. Original body and include set restored; segment/axis/previous/offset homes remain.
+// N316: Working attachment position/direction defaults, with scaled target and paired differences:
+// 265/200/273/268/194/273/303/303. Original conditional producers, helpers and body restored;
+// segment/axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

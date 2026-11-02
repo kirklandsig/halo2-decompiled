@@ -50,8 +50,8 @@ static __forceinline long floor_to_long_inline(real value)
 }
 
 // score 17 (was 17): left: the first word's OR order (retail ORs flags and category before the
-// kept top bits), the intensity spill slot (BLOCKED-BY 0x133390 and 0x133520: level is pushed as a
-// word there, held file), the kind-word block (retail shifts the kind in eax, copies it to esi and
+// kept top bits), the intensity spill slot (level is pushed as a word by 0x133390 and 0x133520; 0x2cbf0
+// declares it a word since r644, #1015, so this cause is open again; not re-measured), the kind-word block (retail shifts the kind in eax, copies it to esi and
 // stores the word after the loader's argument setup, just before the call) and the pool register
 // set before the bit-count test. Earlier rounds' notes follow.
 // Earlier at 17 (was 17): this round's source permuter over the body found no better form (22 tries in
@@ -79,7 +79,7 @@ static __forceinline long floor_to_long_inline(real value)
 // calls, thunk branches and global addresses cannot match.
 // Earlier at 36 (was 36): retail ORs the incoming flags and category before the kept top bits of the first
 // word; the scaled intensity spills to `outside`'s home (ours `level`'s: retail's callers push level as a
-// word, BLOCKED-BY 0x133390 and 0x133520, whose held file holds the byte declaration); retail builds the
+// word, then blocked by 0x133390 and 0x133520's byte declaration, a word since r644); retail builds the
 // new kind word in esi, takes the instance bit from a copy (`and eax, 0xffffff01`) and stores the word
 // just before the 0x449e0 call (ours stores it at once and passes the named bool through a stack byte);
 // retail sets edx to the state before the bit-count test.
@@ -105,7 +105,7 @@ static __forceinline long floor_to_long_inline(real value)
 // either order 80/80 [17/17].
 // packed-word load order (ours reads the old word first), the intensity
 // spill (ours in level's dead slot, retail in outside's: retail's callers push level as a
-// word, BLOCKED-BY 0x133390 and 0x133520, whose file holds the byte declaration), the new kind
+// word, then blocked by 0x133390 and 0x133520's byte declaration, a word since r644), the new kind
 // word (retail builds it in esi, takes the instance bit from a copy and stores the word just
 // before the 0x449e0 call; ours stores it at once and spills instance_bit to `mode`'s home),
 // the pool argument (retail sets edx before the bit-count test) and the flag-clear register
@@ -185,7 +185,7 @@ static __forceinline long floor_to_long_inline(real value)
 // word-one or-chains 46 (reassociated); a bitfield view for the kind store (diagnostic) 80.
 // packed-word load order (ours reads the old word first), the intensity
 // spill (ours in level's dead slot, retail in outside's: retail's callers push level as a
-// word, BLOCKED-BY 0x133390 and 0x133520, whose file holds the byte declaration) and the new kind word
+// word, then blocked by 0x133390 and 0x133520's byte declaration, a word since r644) and the new kind word
 // (retail builds it in esi and stores it after the push). The field-bit test of bit 6 is
 // not retail's code (retail: test al, 0x40); `& 0x40` gives it at 80 (1033 bytes), but the
 // kind-word block is then two instructions short and the tail shifts.
@@ -215,6 +215,12 @@ static __forceinline long floor_to_long_inline(real value)
 // Round 33 (lane 2, fast): the word stored before the load test 78; stored before the call, the call
 // itself as the success test 79; the bit count as a long 64; the bit count read at each use 17; `bits != 0`
 // 17. The intensity spill slot stays BLOCKED-BY 0x133390 and 0x133520 (level pushed as a word there).
+// Round 29 (lane 18, fast 17; the full build ends `ret 0x54` as retail, three register parameters): load and
+// instance named, then the word stored, then the call 79 (the word stays in eax and is stored at once); instance
+// named before load, same order 79; load named before the kind word 82; the state global read before the
+// added test 19 (its load moves above the branch); load named before the object tag (ahead of the 0x2d000
+// call) 214 (1006 bytes).
+// 17. The intensity spill slot then waited on 0x133390 and 0x133520 (level pushed as a word there; r644).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,

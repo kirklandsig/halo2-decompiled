@@ -536,7 +536,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 265): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// score 265 (was 265). Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
+// dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
+// normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
+// XMM4/XMM5/XMM6 and XMM3 where retail has XMM3/XMM6/XMM5 and XMM4; the side's home is one slot above retail's (u and the side
+// swapped), the vertex cursor and state width homes are swapped, and case 4's side length order (retail k first) remains.
+// Earlier (265): frame 0xa8 against retail's 0xac (ours now spills
 // case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
 // where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
 // pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
@@ -756,6 +761,19 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
 // Round 471: Emitted-pair capture, cursor step at lookup/color/tint/half-width/geometry/position/alpha/pixel,
 // 635/619/635/581/558/606/556/444. Original cursor and body restored.
+// M3 lane 4 r155 (fast, kept form plain 250): u_step/v_width as one vector2f (definition field typed vector2f) 254 (frame
+// 0xac, v + width at +0xac as retail); as a struct copy of the field 642 (2620 bytes); the sum written at the outer v store
+// (either operand order) 267; pixel-helper locals renamed twice 265 (same code). Case 0 second x, z, y then first (any of the
+// six first orders) 250 (kept: retail's loads and schedule); second z, x, y 252, y, z, x 252, x, y, z 458, first block first
+// 254-259. On 250: case 1/2 `dy *= inverse` first, `real dy, dx`, both, arms dx-first, `dy * dy + dx * dx` 250 each; x pair
+// before the y pair 254; `second, first` declared, normal declared first, half width after the outer pointer 250 each.
+// Then: case 1/2's dx/dy as one vector2f side (i the y difference, j the x difference) normalized by hand 230, through the
+// existing normalize2d_fast 230 (kept; side named aa_/zz_ or declared with the points 230, same code); case 0's normal through
+// the existing normalize3d 230 (kept: same code as the hand-written body); case 4's side and normal through normalize3d 473
+// (2580 bytes). On 230: side arms j first 228, x pair first 234, both 232, first.z before second.z 231.
+// Coordinator: not kept. The vector2f local exists to shape the frame (its i is dead, its j becomes v + width; a locals-
+// grouping form), and case 0's order was picked from 36 by score. The two existing normalize helpers alone (normalize2d_fast
+// on a side vector, normalize3d on case 0's normal) give 260 fast: a gain of 5, under the bar. Body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

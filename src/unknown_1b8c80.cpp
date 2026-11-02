@@ -1024,6 +1024,11 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 // actor is fetched and keeps the element record in ECX, ours loads the data
 // later into ESI and the record in EAX. Both read the actor pool global
 // first, so the difference is the order of the two data loads.
+// score 17 (was 17): the pool-data load and record/seat registers still differ before the seat query.
+// Round 123: object-index rename 17; buffers before lookups 17; shared target view 17;
+// returned-count helper 21, with an initialized count 21, a direct object field 21, or the
+// object local after the counters 21; split count initialization 17; early twice-read clump index
+// with the helper 122 (405 bytes).
 // @retail 0x1bb3a0
 short __stdcall function_1bb3a0(long actor_index, long joint_index, long a, long b)
 {

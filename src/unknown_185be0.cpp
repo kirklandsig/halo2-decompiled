@@ -348,6 +348,16 @@ union s_185be7
 // seven subsets and all with selected-input ownership: 1121/1111/1152/1134/1155/1159/1150/1140.
 // The branches collapse stores and lose the native frame. Original helper calls, masks, observations,
 // two scans and retained duration cursor restored; root/NONE, settings/zero and flag joins remain.
+// AC474: Existing object-predicate positive/failure result ownership in bool/byte/word/long,
+// 826/826/829/835/852/852/846/872. Original conjunction and complete body restored; native frame,
+// control-root/NONE, settings/zero homes and flag joins remain.
+// AC477: Contiguous invalid-index/float-zero/short-zero reset fills, subsets 1..7, then
+// ordinary inline complete fill: 960/1021/1030/694/962/1021/1030/1030. Original reset and
+// complete body restored; control-root/NONE, settings/zero homes and flag joins remain.
+// Round 526: Actual held-input mask shifted through low bits, fixed/sparse termination,
+// word/dword remainder and indexed/cursor input 802/832/821/856/1109/1109/1125/1125.
+// Original two scans, duration cursor and complete body restored; control-root/NONE,
+// settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

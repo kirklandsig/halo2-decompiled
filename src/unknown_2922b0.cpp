@@ -269,6 +269,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH283: Native coordinate input/origin/projection producer subsets 1-7
 // 667/721/739/618/667/721/739; complete graph with aggregate hit initialization 730.
 // Original input copies, private producers, in-place snapshots and complete body restored.
+// DH295: Joint query-count/ordinal/minimum lexical priorities, all six orders, then two
+// opposing orders with the reused per-ray length renamed: eight at 618. Original names
+// and complete body restored; success/input/minimum/hit and later vector homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

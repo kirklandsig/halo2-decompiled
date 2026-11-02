@@ -364,7 +364,7 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 	output->j *= horizontal;
 }
 
-// score 117 (was 139): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
+// score 117 (was 117): frame 0x28 versus 0x20; seed/time and rotation register roles remain.
 // Earlier (round 28 reached 104, not kept: its gain needs the rotation's cross product as scalar terms, which is
 // cross3f's body written inline and is kept only with a match; with cross3f the round's other changes give 163).
 // At 104: frame 0x1c versus 0x20 (retail spills cross j as well as k and keeps axis.i in memory, so its
@@ -492,6 +492,19 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N304: Uniform scalar direction/axis/cross product families, seven subsets
 // then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
 // frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
+// Round 328: actual random-angle/rotation/clamp phase scopes in all seven
+// subsets, then all with immutable complete rotation inputs, 117 each. Original
+// scopes and full body restored; frame 0x28/0x20 and seed/direction/cross homes remain.
+// P271: Consumer-scoped angle on retained projection/row/tail graph, independent
+// entry old/axis/cross declarations masks 0..7: 165/165/165/165/165/165/165/165.
+// Original body restored; frame and seed/direction/rotation homes remain.
+// Round 364: Real-coordinate-array transfers for direction/axis/both/both plus output,
+// long ordinals 167/183/190/190; short ordinals 117/141/141/152. Long axis forms shrink
+// the frame to 0x24, direction alone grows it to 0x30; all original transfers and body
+// restored; frame 0x28, seed/time and rotation homes remain.
+// DH round 290: sampled axis ordinal short/word/long/dword reused for all three native
+// component reads, aggregate producers 161/161/161/161; shared setter 173/173/173/173.
+// Original draws, native axis/direction captures, cross/dot, all rows and tail restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -642,6 +642,9 @@ done:
 // 01293487/01924387/10294387 score 34/34/36/36/34/36/36/38; executable rows
 // 29/29/29/31/29/29/29/33 versus 25. Original case order and full body restored.
 // Round 357: Complete if/else or conditional-expression name results, selected-name/numeric priorities and repeated/shared copy completions 57/57/57/57/68/68/68/68. Original switch, single scratch object and body restored; early EDI save and tag/scratch allocation remain.
+// Round 78 (m3 lane 12, fast; aligned counts stack-masked, the one-copy form aligned 21): on the one-copy form, the four scratch buffers as one
+// array 54, the buffer as a file static or a function static 54 (compile-only and real: the EBX hoist stays), a folding-looking `if (variant)` guard 60
+// (177 bytes, not folded), the selector read before the tag 54, the tag read in the translator call 45 (171 bytes, aligned 8: left only the hoist and the tag load).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -872,6 +872,11 @@ byte g_55e708;
 // the count arms in an inline helper 178 (stays a call), forced inline 146; a named fallback count 38. The picks do not
 // move with symbols here (unlike 0x17d9a0): retail's fallback arm takes EAX for the object and EDX for the count, then
 // `mov eax, edx`; ours takes EDX then EAX, coalesced.
+// Round 29 (lane 18, fast with the same list): the fallback count accumulated (`count += ...`) 38 (same code);
+// the fallback test `count <= 0` 38; the marker index as a for-loop counter 40; the marker index declared
+// before the count 50; the absolute index computed inside the outer test (the light lookup masking the
+// parameter itself) 38. In the loop retail loads the absolute index early (EDX) and the marker index after
+// three pushes (ECX), the amount in EAX; ours loads the marker index early (EDX), the absolute index late (EAX).
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
