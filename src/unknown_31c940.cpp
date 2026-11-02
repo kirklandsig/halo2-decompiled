@@ -646,12 +646,28 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// score 1974 (was 1977): keep both rounded residual projections before the error writes.
+// Solving and result publication use these values in separate phases.
+union solver_body_or_stride_31c940
+{
+	solver_velocity_31c940 *volatile a_home;
+	long stride;
+};
+
+union solver_velocity_or_kind_31c940
+{
+	float saved_velocity;
+	int kind;
+};
+
+// score 1968 (was 1974): reuse scalar storage across solving and writeback.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
 {
+	solver_body_or_stride_31c940 body_or_stride;
+	solver_velocity_or_kind_31c940 velocity_or_kind;
+
 	if (!g_480c60)
 	{
 		function_31c7d0();
@@ -661,11 +677,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	{
 		solver_step_31c940 *initial_parameters = step;
 		float saved_error = initial_parameters->error_scale;
-		float saved_velocity = initial_parameters->velocity_scale;
+		velocity_or_kind.saved_velocity = initial_parameters->velocity_scale;
 		unsigned char *op = operations;
 		__m128 *terms;
 		solver_velocity_31c940 *a;
-		solver_velocity_31c940 *volatile a_home;
+
 		solver_velocity_31c940 *volatile b;
 		float *result = impulses;
 		goto read_header;
@@ -680,7 +696,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			read_header:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
-				a = header->a; a_home = a; b = header->b;
+				a = header->a; body_or_stride.a_home = a; b = header->b;
 				// Keep one term cursor across the row kinds and restore A after calls.
 				terms = header->terms;
 				op += sizeof(*header);
@@ -988,7 +1004,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					}
 					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), a, b, result);
 					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
-					a = a_home; ++result; op += 16;
+					a = body_or_stride.a_home; ++result; op += 16;
 				} while (*op == 5);
 
 				break;
@@ -996,7 +1012,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 15:
 			{
 				solver_step_31c940 *parameters = ((solver_step_31c940 *const volatile &)step);
-				saved_velocity = parameters->velocity_scale;
+				velocity_or_kind.saved_velocity = parameters->velocity_scale;
 				saved_error = parameters->error_scale;
 				parameters->velocity_scale = operation_float(op, 8);
 				parameters->error_scale = operation_float(op, 4);
@@ -1004,12 +1020,12 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				break;
 			}
 			case 16:
-				step->error_scale = saved_error; step->velocity_scale = saved_velocity;
+				step->error_scale = saved_error; step->velocity_scale = velocity_or_kind.saved_velocity;
 				op += 4;
 				break;
 			case 14:
 				(*(void (__cdecl **)(__m128 *, void *))(op + 4))(terms, op + 8);
-				a = a_home;
+				a = body_or_stride.a_home;
 				op += op[1];
 				break;
 			}
@@ -1135,23 +1151,23 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	}
 
 	// Publish impulses and remaining error using each header's destination and
-	// stride. Contact friction records carry a separate result destination.
+	// body_or_stride.stride. Contact friction records carry a separate result destination.
 	unsigned char *op = operations;
 	__m128 *terms;
 	unsigned char *destination;
-	long stride;
+
 	float *result = impulses;
 	goto read_results_header;
 	for (;;)
 	{
-		int kind = *(signed char *)op;
-		switch (kind)
+		velocity_or_kind.kind = *(signed char *)op;
+		switch (velocity_or_kind.kind)
 		{
 		case 1:
 		read_results_header:
 		{
 			solver_header_31c940 *header = (solver_header_31c940 *)op;
-			stride = header->result_stride;
+			body_or_stride.stride = header->result_stride;
 			terms = header->terms; destination = header->results;
 			op += 24; break;
 		}
@@ -1161,10 +1177,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 			*(float *)destination = result[0];
 			*(float *)(destination + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			destination += stride;
+			destination += body_or_stride.stride;
 			*(float *)destination = result[1];
 			*(float *)(destination + 4) = row[1].linear.m128_f32[3] * step->inverse_time;
-			destination += stride;
+			destination += body_or_stride.stride;
 			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(2);
 			result += 2; op += 8; break;
 		}
@@ -1176,10 +1192,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				*(float *)destination = *result;
 				*(float *)(destination + 4) = terms[0].m128_f32[3] * *inverse_time_pointer;
-				destination += stride;
+				destination += body_or_stride.stride;
 				terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == kind);
+			} while (*(signed char *)op == velocity_or_kind.kind);
 			break;
 		}
 		case 4: case 9: case 10: case 12:
@@ -1189,10 +1205,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				*(float *)destination = *result;
 				*(float *)(destination + 4) = terms[1].m128_f32[3] * *inverse_time_pointer;
-				destination += stride;
+				destination += body_or_stride.stride;
 				terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == kind);
+			} while (*(signed char *)op == velocity_or_kind.kind);
 			break;
 		}
 		case 7:
