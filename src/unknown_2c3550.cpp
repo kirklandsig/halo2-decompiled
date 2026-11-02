@@ -772,6 +772,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // Round 261: all six relative lexical schedules of direction/previous-direction/world-start
 // 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
 // 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
+// DH272: Actual parent-chain node cursor with frame/group/success long-long-long, long-long-bool, long-
+// short-long, long-short-bool, short-long-long, short-long-bool, short-short-long, short-short-bool
+// 707/761/682/748/707/768/699/755. All regress; original parent ordinal, signed native fields, result,
+// copies and body restored. Byte success, radius/pathfinding and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
