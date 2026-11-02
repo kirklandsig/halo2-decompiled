@@ -215,6 +215,11 @@ static __forceinline long floor_to_long_inline(real value)
 // Round 33 (lane 2, fast): the word stored before the load test 78; stored before the call, the call
 // itself as the success test 79; the bit count as a long 64; the bit count read at each use 17; `bits != 0`
 // 17. The intensity spill slot stays BLOCKED-BY 0x133390 and 0x133520 (level pushed as a word there).
+// Round 29 (lane 18, fast 17; the full build ends `ret 0x54` as retail, three register parameters): load and
+// instance named, then the word stored, then the call 79 (the word stays in eax and is stored at once); instance
+// named before load, same order 79; load named before the kind word 82; the state global read before the
+// added test 19 (its load moves above the branch); load named before the object tag (ahead of the 0x2d000
+// call) 214 (1006 bytes).
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,
