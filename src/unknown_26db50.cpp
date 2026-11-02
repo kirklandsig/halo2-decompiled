@@ -652,6 +652,8 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // accumulators 239/239; scalar accumulators with outer ring phase 233/233;
 // native output accumulators with phase 250/252. All restored; SSE ring conversion
 // and the rotation spill remain. Original helper and all input snapshots retained.
+// DH280: Complete projected-axis/cosine-vector/sine-cross operand-priority subsets, then all with internal
+// cross-product sides commuted [90, 90, 90, 90, 90, 90, 90, 90]. Original executable body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

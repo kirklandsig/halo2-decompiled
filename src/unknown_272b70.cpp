@@ -2652,6 +2652,8 @@ struct s_scenario_scripting_view
 // each with early/loop-scope short counter: 89/96/90/95/91/95/98/94. Original acquisition
 // and loop restored; frame 0x18 agrees, actor/counter/set allocation remains. Wrapper
 // also rose 0 -> 1 in the first seven trials.
+// DH280: Actual consumed candidate ordinal short/long, original/loop-owned short traversal and raw/native
+// point access [89, 89, 86, 86, 89, 89, 86, 86]. Original executable body restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

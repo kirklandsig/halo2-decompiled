@@ -245,6 +245,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // word ordinal 726/726/726/726. Native countdown widths canonicalize; word ordinal loses the matching frame
 // and shrinks away from retail. Entire original body, hit/result producers, helpers and in-place snapshots
 // restored; success/input/minimum/hit homes remain.
+// DH280: Existing native cross/point/rotation publication subsets, then all with the native ray publisher
+// [618, 630, 630, 628, 623, 630, 624, 628]. Original executable body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
