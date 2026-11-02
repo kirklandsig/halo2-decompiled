@@ -491,6 +491,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Original native and scalar copies, radius lifetime and complete body restored; entry/index and point homes remain.
 // M316: Unsigned-word node cache with original masks; native node/count/query/transform lifetime combinations 209/207/188/211/209/209/207/209.
 // Entry/index spill and center/query/bound homes remain. Original executable body restored.
+// P275: Actual packed list-header extent/borrowed-storage bitfields at initialization,
+// release test and release extent, seven subsets and reversed packed-field initialization:
+// 182 each. Original header, release helper and body restored; entry/index and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

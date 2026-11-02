@@ -2368,6 +2368,9 @@ real magnitude3d(vector3f const *v);
 // Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
 // bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
 // Both exact controls survive; original body, math APIs and all rounding/grouping restored.
+// P275: Complete current/target/both input snapshots 246/288/266; same native vectors
+// normalized in place 245/287/265; both inputs captured at entry 272; both with early
+// normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
