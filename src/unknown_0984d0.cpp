@@ -497,6 +497,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // AC483: Only items/data cursor observed ordinarily with signed-byte/short/word/int64 ordinals:
 // 209/209/208/193/208/193/205/220. Original helper, both inherited local-slot observations and
 // complete body restored; validity home, cursor carriers and loop-entry reload still differ.
+// N327: One actual element ordinal reused by validation and notification; signed-byte/byte/short/long
+// storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
+// validation ordinal, separate long notification ordinal, helper and both inherited local-slot
+// observations restored. Validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

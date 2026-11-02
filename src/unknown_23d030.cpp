@@ -370,6 +370,10 @@ extern byte g_51ec11;
 // AC483: Existing planar side normalizer with planar/spatial fallback and original/setter/staged/direct
 // up publication: 268/285/282/282/229/261/127/259. The planar length tree is exact-match-only;
 // no match, so original side/normalization/rotation and complete body restored. Zero and up/roll allocation remain.
+// N327: Complete control-produced roll retained through both trig uses,
+// branch/conditional/default/additive updates with producer/entry result declarations:
+// 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and
+// complete body restored. Zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
