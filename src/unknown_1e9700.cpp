@@ -330,6 +330,9 @@ struct s_object_damage_view
 // 1/2/4/3/5/6/7, then all with earlier parameter-derived code: 353/463/355/463/355/463/463/463.
 // Selection chains grow frame to 0x54; original body restored. Scalar homes and biased history cursor remain.
 // DL245: Frame 0x50 agrees; victim-team/credited-player/code homes and amount-biased history cursor remain. Dword consideration/hostility/friendly subsets 381/360/390/354/380/354/397; all word 412. Native unsigned cutoff/recent/both 353 each. Original Boolean, signed window and record graph restored.
+// Round 372: positive engine/valid-selection/eligible-assist regions, subsets 1/2/4/3/5/6/7,
+// then common conditional slot fallback: 353/353/353/353/353/353/353/353. Original complete body
+// restored; scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
