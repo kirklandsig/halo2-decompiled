@@ -79,7 +79,7 @@ long __stdcall function_12d2f0(long a, long b, long c, long d);
 void function_12c600(void);
 double timing_ticks_to_seconds(__int64 ticks);
 bool function_2148b0(real *a);
-struct D3DTexture *function_23e340(short width, short height, short format,
+struct D3DTexture *function_23e340(long width, long height, short format,
 	void *(__stdcall *allocate)(long size, long alignment), long *size, void **data, struct D3DTexture *header);
 short function_1358c0(short format);
 void __stdcall function_3e0450(void *open, void *direct_sound);
@@ -344,7 +344,7 @@ PRIVATE inline __int64 bink_read_tsc(void)
 	volatile __int64 t = 0;
 	__asm rdtsc
 }
-// score 244 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
+// score 246 (was 244): frame 0x3c versus 0x40, allocation homes and SSE scheduling differ.
 // MiniMax S (10-31): no new form, no lower score. Retail zeroes its homes with ebx after an early
 // `xor ebx, ebx` and builds the allocation size as ((flags & 0x100) | 0x40) << 16; ours derives the same
 // size through a `large` bool and a ternary and zeroes the homes with eax. Our frame is one dword short.
@@ -494,6 +494,8 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // subsets 1/2/4/8/3/12/7/15: 244/244/244/244/244/244/241/239. Original early cleanup returns, complete body and file policy restored.
 // Round 446: complete native 64-bit size/retry/mode storage, seven subsets
 // 280/298/314/288/317/339/363; all with native skip storage 363. Original domains and complete body restored.
+// Lane 15 round 42: only 0x23e340's declaration changed (long width and height, its retail reads, now matched): the
+// call's `movsx` pushes are retail's, 244 -> 246 positional at 1102 bytes (retail 1098), aligned difference 109 -> 105.
 // Round 292: Actual allocation byte count reused for movie mode, equality/inequality/greater/inclusive
 // tests with conditional/per-arm open, 267/267/267/267/275/275/275/275. Original mode carrier,
 // helper bodies, clocks, calls and whole body restored; frame 0x3c/0x40 and output homes remain.

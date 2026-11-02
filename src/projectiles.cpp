@@ -1004,6 +1004,14 @@ real function_30bf0(vector3f *v);
 // frame, rounded-root scheduling and separate divisions remain.
 // M290: Independent/shared rounded polynomial-root storage with solver/entry declarations and original/shared horizontal-square storage:
 // 232/232/232/232/232/232/232/232. Original executable body restored.
+// Round 43 (lane 15, fast with 0xfa6a0, 0xfa580, 0x1f8100, 0x1f8160; ret 0x2c already agrees, 11 stack arguments; frame 0x28 against
+// retail's 0x30 is two_a and the discriminant base in memory): t2 with no float cast on its sqrt 232 (reciprocal stays); that with the
+// optimal time as `root * -1.0f / two_a` 232, `root / -two_a` 236, `-root / two_a` 236, `-1.0f * root / two_a` 232. CL-only: only a
+// double dividend or a divisor written as its own expression gives two x87 divisions; a branch or call between keeps the reciprocal.
+// Two_a written at both divisions 248 (970 bytes; gravity scale moves to an XMM argument, 0xfa6a0 44, 0x1f8100 8); with the clamp 276
+// (1012), with plain pointer reads too 278; the gravity scale read through its address on those 246 and 295 (1018; callers kept), plain
+// pointers 278 (0xfa6a0 34, 0x1f8100 5). The clamp alone 232 (986). Velocity written out instead of the scale helper 234 (983), with
+// the clamp 234 (986).
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1897,6 +1905,11 @@ real function_17c900(short function_type, real input);
 // orders, then mutable/immutable turn-scope ownership:
 // 348/348/348/348/348/348/348/348. Original vector reads restored;
 // stacked-index/output transport and normalization homes remain.
+// Round 43 (lane 15, fast with 0xf86f0; 0xf8eb0 946 throughout): normalize3d alone 344 (1454 bytes), a gain of 4, not kept; a
+// single-exit normalizer local to this function (three orders of the sum and the reciprocal, diagnostic) 346/346/346 (1454);
+// output at the three exits 377 (1477), with normalize3d 358 (1464); the salt in the wander branch 365 (1469), with normalize3d
+// 359 (1456); both 382 (1480), all three 345 (1467). Retail tests `ja` to the zero arm with j and k already in xmm2/xmm1 and
+// the zero in xmm4 from the entry; no plain form brings them there.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {
