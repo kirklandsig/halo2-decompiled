@@ -390,6 +390,47 @@ def test_friction_scalar_rounding_boundaries(solver_images, kind, precision):
         assert snapshots[0] == snapshots[1], (context, precision)
 
 
+@pytest.mark.parametrize('kind', [6, 9])
+@pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
+def test_scalar_friction_clamp_rounding(solver_images, kind, precision):
+    # Isolate scalar limiting from the vector updates. Each run has two rows,
+    # so the retained coefficient address and each row's independent target,
+    # mass and limit must survive the back edge. The impulse stays extended
+    # for accumulation while the adjusted row target is stored as float.
+    clamped, unbounded = (0x31dcdb, 0x31dceb) if kind == 6 else (0x31d819, 0x31d829)
+    coverage = {clamped: 0, unbounded: 0}
+    vectors = 3 if kind == 6 else 2
+    target_offset = 12 if kind == 6 else 28
+    mass_offset = 28 if kind == 6 else 12
+    for seed in range(128):
+        rng = random.Random(seed)
+        data = solver_case(kind, 2)
+        coefficient = rng.uniform(0.1, 2)
+        put(data, STEP, '7fi', 0, 1, 1, coefficient, 60, 0, 0, 1)
+        for body in (HEAP, HEAP + 0x80):
+            for offset in (0x10, 0x20, 0x30, 0x40, 0x50):
+                put(data, body + offset, '4f', 0, 0, 0, 0)
+        put(data, TERMS, '24f', *([0] * 24))
+        for row in range(2):
+            scale = 2.0 ** (seed % 41 - 20)
+            target = rng.uniform(0.2, 2) * scale * (-1 if (seed + row) % 2 else 1)
+            mass = rng.uniform(0.1, 2)
+            limit = abs(target * mass * coefficient) * (0.35 if (seed + row) % 3 else 4)
+            if seed % 17 == 0:
+                limit = 0.0
+            if seed % 19 == 0:
+                mass = -mass
+            put(data, TERMS + row * vectors * 16 + target_offset, 'f', target)
+            put(data, TERMS + row * vectors * 16 + mass_offset, 'f', mass)
+            put(data, OPS + 24 + row * 8, 'If', kind | 8 << 8 | vectors << 16, limit)
+            put(data, IMPULSES + row * 4, 'f', rng.uniform(-2, 2) * scale)
+        put(data, OPS + 40, 'I', 0x400)
+        context = ('scalar friction limiting', kind, seed)
+        snapshots = compare_case(solver_images, data, precision, context, coverage)
+        assert snapshots[0] == snapshots[1], (context, precision)
+    assert all(coverage.values()), (kind, precision, coverage)
+
+
 def mixed_case(seed):
     data = solver_case(12, seed)
     for start, end in ((0x1000, 0x3000), (0x4000, 0x7000)):

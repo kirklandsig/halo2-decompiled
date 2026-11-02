@@ -132,21 +132,42 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	float candidate = error_a * row[0].a.m128_f32[3];
 	if (candidate > 0.0f) apply_linear(candidate, row, a, b, result);
 }
-// The scalar limit is copied before projection; the friction coefficient's
-// address is retained across the run of consecutive linear-friction rows.
-static __forceinline void solve_linear_friction(float target, float limit, float const &friction_scale,
+
+// Retain the coefficient and B inertia addresses across consecutive rows.
+// Native scalar locals keep the projection between SSE and x87 without a copy.
+static __forceinline void solve_linear_friction(float target, float limit,
+	float const *const volatile &friction_scale_pointer,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
-	solver_velocity_31c940 *const volatile &b,
+	__m128 &angular_b, __m128 &linear_b, __m128 const *const volatile &inverse_b_pointer,
 	solver_step_31c940 *const volatile &step, float *result)
 {
-	float impulse = (target * friction_scale - linear_velocity(row, a, b).value * load_velocity_scale(step)) * row->a.m128_f32[3];
+	__m128 relative = _mm_sub_ps(a->linear, linear_b);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b));
+	__m128 v = _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+	float impulse = (target * (*friction_scale_pointer)
+		- projected * load_velocity_scale(step)) * row->a.m128_f32[3];
 	float magnitude = (float)fabs(impulse);
 	if (magnitude > limit)
 	{
 		float factor = limit / magnitude;
 		impulse *= factor; row->linear.m128_f32[3] *= factor;
 	}
-	apply_linear(impulse, row, a, b, result);
+	__m128 scalar = _mm_set_ss(impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_b = _mm_sub_ps(linear_b, delta_b);
+	__m128 angular_change_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_change_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_change_a);
+	angular_b = _mm_add_ps(angular_b, angular_change_b);
+	*result += impulse;
 }
 
 // Select the active angular limit before the shared body-update tail. The
@@ -223,8 +244,38 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	*result += impulse;
 }
 
-// score 2219 (was 2239): retain the header cursor home and separate the
-// bounded angular ratio from its multiply. Register allocation and stack homes differ.
+// Capture target and limit before projection, retaining the coefficient address
+// across consecutive rows. Only the SIMD copy of the impulse rounds to float.
+static __forceinline void solve_angular_friction_kernel(float target, float limit,
+	float const *const volatile &friction_scale_pointer,
+	solver_angular_row_31e7b0 *row, solver_step_31c940 *const volatile &step,
+	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const &inverse_b, float *result)
+{
+	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(velocity_b, row->b));
+	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
+	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
+	float projected;
+	_mm_store_ss(&projected, xyz);
+
+	float impulse = (target * (*friction_scale_pointer)
+		- projected * load_velocity_scale(step)) * row->a.m128_f32[3];
+	float magnitude = (float)fabs(impulse);
+	if (magnitude > limit)
+	{
+		float factor = limit / magnitude;
+		impulse *= factor; row->b.m128_f32[3] *= factor;
+	}
+	__m128 scalar = _mm_set_ss(impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	__m128 axis_a = row->a, axis_b = row->b;
+	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
+	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
+	*result += impulse;
+}
+
+// score 2114 (was 2219): native friction projections and retained field homes.
+// Register allocation, repeated broadcasts and stack layout still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -361,21 +412,14 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 9:
 			{
 				solver_angular_row_31e7b0 *row = (solver_angular_row_31e7b0 *)terms;
+				solver_velocity_31c940 *body_b = b;
+				float const *volatile friction_scale_pointer = &step->friction_scale;
+				__m128 *velocity_b_pointer = &body_b->angular;
+				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
 				do
 				{
-					// Keep the friction projection in a scalar object until the x87 expression.
-					// The update below still reloads the axes after limiting the target.
-					__m128 axis_a = row->a, axis_b = row->b;
-					solver_scalar_31c940 projected = sum_three_31c940(_mm_add_ps(
-						_mm_mul_ps(a->angular, axis_a), _mm_mul_ps(b->angular, axis_b)));
-					float impulse = (row->b.m128_f32[3] * load_friction_scale(step) - projected.value * load_velocity_scale(step)) * row->a.m128_f32[3];
-					float magnitude = (float)fabs(impulse);
-					if (magnitude > operation_float(op, 4))
-					{
-						float factor = operation_float(op, 4) / magnitude;
-						impulse *= factor; row->b.m128_f32[3] *= factor;
-					}
-					apply_angular(impulse, row, a, b, result);
+					solve_angular_friction_kernel(row->b.m128_f32[3], operation_float(op, 4), friction_scale_pointer,
+						row, step, a, *velocity_b_pointer, *inverse_b_pointer, result);
 					++row; ++result; op += 8;
 				} while (*op == 9);
 				terms = (__m128 *)row;
@@ -498,11 +542,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 6:
 			{
 				solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
-				float const &friction_scale = step->friction_scale;
+				float const *volatile friction_scale_pointer = &step->friction_scale;
+				solver_velocity_31c940 *body_b = b;
+				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
+				__m128 *volatile linear_b_pointer = &body_b->linear;
+				__m128 *volatile angular_b_pointer = &body_b->angular;
 				do
 				{
-					solve_linear_friction(row->linear.m128_f32[3], operation_float(op, 4),
-						friction_scale, row, a, b, step, result);
+					solve_linear_friction(row->linear.m128_f32[3], operation_float(op, 4), friction_scale_pointer,
+						row, a, *angular_b_pointer, *linear_b_pointer, inverse_b_pointer, step, result);
 					++row; ++result; op += 8;
 				} while (*op == 6);
 				terms = (__m128 *)row;
