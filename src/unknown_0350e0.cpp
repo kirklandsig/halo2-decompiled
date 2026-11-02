@@ -1994,7 +1994,8 @@ typedef char assert_direction_entry_size[(sizeof(s_direction_entry) == 0x34) ? 1
 typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 : -1];
 
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
-// score 177 (was 177): earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// score 177 (was 177): earlier 188; earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
 // Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
@@ -2013,6 +2014,10 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // Round 503: native entry/list/both 188/188/188; each with shared axes 181/181/181.
 // Both records with capacity checked after entry selection 177 (861/857), kept;
 // shared axes plus that capacity check 176, exact-only and restored. Frame and vector homes remain.
+// P266: Native paired entry angles with const-pointer/reference/value/mutable-pointer
+// input, value-vector output 192/192/182/192, output-pointer vector 223/223/205/223;
+// each uses the existing zero-pitch forward producer. Original fields, scalar inputs,
+// vector returns, helper, include set and caller restored; frame/vector-copy homes remain.
 // DL240: Local/forward/up whole-vector memcpy subsets 1/2/3/4/5/6/7: 177/177/173/177/177/177/173;
 // complete memmove 263. Four-point leads fail the keep gate and returned-value one-use diagnostics
 // do not match. Original body restored; frame 0x80 versus 0xc0 and angle/copy homes remain.
@@ -2020,6 +2025,12 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // memcpy 178/180/173; heading/both plus memmove 197/201. Four-point leads and literal-bound
 // reference forms rejected; original angle producer and complete body restored. Frame and vector
 // homes remain.
+// P269: native double heading/elevation and twice-used elevation-cosine subsets 1..7,
+// then both double inputs with complete aggregate result: 215/233/210/234/209/233/210/210.
+// Original helper and body restored; frame/angle/vector-copy homes remain.
+// N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
+// 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
+// angle/vector copies and draw homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2183,7 +2194,7 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// score 57 (was 57; earlier 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
 // Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
@@ -2210,6 +2221,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 307: native external state/group/entry layouts, all seven subsets, 57 each;
 // Round 307: all three with native motion records 57. Original raw receivers, body and external types
 // Round 307: restored; delayed register saves and the split post-fstp count comparison remain.
+// P267: coherent range-field observations/range lifetime/normalization lifetime,
+// subsets 1/2/4/3/5/6/7: 237/57/57/237/237/57/237; all with entry-fraction scope 237.
+// Direct-range forms reach retail length but regress; original ranges, scopes and complete body restored.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2436,6 +2450,9 @@ s_cached_input_list g_5234e8[4];
 // Round 307: native full-width unsigned index/object/parent carriers, all seven subsets,
 // Round 307: 136 fast each; all three with view before count 149. Reduced control 136 at 538/548;
 // Round 307: original body restored. Full baseline remains 132 at 554/548; list/output/index homes remain.
+// P268: Actual output-record identity/score/packed-flag field families, seven subsets,
+// then all with accepted-output cursor: 136 fast each on control 136 (full 132).
+// Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2696,6 +2713,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // score 517 (was 517): frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier counts 529 and 561; the logic matches retail block by block (walked statement by statement against
+// score 517 (was 517; earlier 529, 561): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
+// Earlier: the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
 // is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
 // state+0x18, view+0x104, view+0x120 (offset[1]), view+0x158 and state+0x2c. Reading the strength before the cycle test
@@ -2722,6 +2741,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Round 530: native acceleration vector alone, with shared add, divisor scale, add/divisor,
 // add/normalization, add/maximum, add/divisor/normalization and all scales: 517 each.
 // Caller stays 251; original scalars, helpers, observations and complete body restored.
+// P267: native long cycle/size/reset carriers, subsets 1/2/4/3/5/6/7: 515/511/519/516/518/513/519; all byte carriers 517.
+// Best lead is below the keep threshold; original flag types and complete body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3020,6 +3041,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 }
 
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
+// score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
+// Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
+// earlier 175, 194; the alpha is read from function_4baf0's second output (the byte pushed
 // score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
 // score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
@@ -3046,12 +3070,18 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // field reads 204/204/204; both with those reads and reversed cases/shared position lifetime 204/204. Frame
 // stays 0x18 versus 0x1c; initial alpha/kind scheduling and final fade scratch stores remain. Entire
 // original body, output roles and distance helper restored.
+// P266: Entry float ownership for elapsed, the first fade pair and final fade, all seven
+// nonempty subsets, then all with reversed declarations: 177 each. Producers stay at
+// their original observations; frame remains 0x18 versus 0x1c. All original scopes restored.
 // F320: native alpha/kind, position/region and output-byte role-name subsets 177 each (seven forms);
 // all names with entry-declared byte outputs 177. Frame 0x18 versus 0x1c and fade scratch homes persist;
 // all executable source restored.
 // Round 360: elapsed accumulation/native signed-byte kind/result-from-alpha-test subsets,
 // 177/208/177/208/177/208/208; all with byte result 213. Native byte kind reaches
 // 773 bytes but retains the smaller frame. Earlier counts 175/194; original body restored.
+// F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
+// fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
+// 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4293,7 +4323,8 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
-// score 138 (was 138): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// score 138 (was 138): earlier 210; the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
 // calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
 // stores 1 into the slot after function_15680 in both arms of pass 3, and the three passes with
@@ -4321,6 +4352,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
 // 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
 // retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
+// P266: Disabled-return pass epilogue with byte/bool/short/long state 222/222/242/230;
+// exclusive enabled/disabled epilogues with those domains 209/209/239/216.
+// All shared users regress; original common epilogue, helper and complete caller restored.
 // Round 360: complete conditional gate results in byte/bool/long/dword, shifted-bit/native-mask,
 // 207/207/241/241/207/207/241/241. Every shared user also regresses; original helper restored.
 // Earlier starting score 210; flag-store timing, dead mode loads and clear-call convention remain.
@@ -4328,6 +4362,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Round 307: culled-unculled/gated-unculled/all families 179/198/192/183/189/210/186;
 // Round 307: first pass alone 171. Original caller and all shared helpers restored;
 // Round 307: late enabled stores, dead mode loads and the stub register convention remain.
+// F327: Existing light-pass producer for individual modes 3/20/7, then
+// 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
+// Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
@@ -4540,7 +4577,7 @@ bool __stdcall function_296c0(long context);
 bool __stdcall function_29370(long context);
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused);
 void __stdcall function_2a8d0(long tag, long bitmap, real const *source, real const *destination, long mask, color3f const *color, real strength, bool blend, bool inverse, bool alternate_target, bool screen_target, bool simple, bool preserve_alpha);
-void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha, real first_angle, real first_scale, long second_bitmap, real second_alpha, real second_angle, real second_scale, bool screen_target);
+void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha, real first_angle, real first_scale, long second_bitmap, real second_alpha, real second_angle, real second_scale, bool screen_target);
 void __stdcall function_2a2f0(volatile long tag, volatile real alpha);
 PRIVATE __forceinline real filter_transition_time_289e0()
 {

@@ -308,6 +308,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1396/1405/1382/1417/1389/1373/1376/1398. Final mask includes moving-surface correction. All
 // regress; original body, float trees, captures and helpers restored. Frame 0x5cc versus 0x58c and
 // component/velocity/query homes remain.
+// Round 137 (m3 lane 6, fast control 1355 = plain): the velocity outputs declared one per line, angular first
+// 1355; the ray record and force vector declared at the first loop's top 1355; contact velocity at function scope
+// 1355; the two collected arrays declared at entry 1355; the two arrays in swapped order 1355 (all the same code:
+// no declaration moves a slot, so the extra 0x40 bytes are compiler temporaries, not declared locals).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

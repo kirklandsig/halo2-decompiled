@@ -51,8 +51,10 @@ bool function_aba40(real const *values)
 }
 
 
+/* inline, so its callers assume it clobbers every xmm register and edx, as 0x1f0870 does when it keeps
+   its history in ebx and the offset on the stack across this call */
 // @retail 0xa75d0
-bool __stdcall function_a75d0(vector3f *vector, real maximum)
+inline bool __stdcall function_a75d0(vector3f *vector, real maximum)
 {
 	real squared = length_sq3f(vector);
 	if (squared > maximum * maximum)

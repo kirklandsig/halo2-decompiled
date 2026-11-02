@@ -199,13 +199,36 @@ void function_1f1df0(long component_index, long material_index, vector3f const *
 
 struct s_shape_carrier_contact
 {
-	byte unknown00[0x10];
+	byte unknown00[8];
+	byte *settings;
+	byte unknown0c[4];
 	long object_index;
-	byte unknown14[0x58 - 0x14];
+	dword flags;
+	byte unknown18[8];
+	real speed;
+	byte unknown24[0x58 - 0x24];
 	transform4x3f transform;
-	byte unknown8c[0xe8 - 0x8c];
+	vector3f normal;
+	real damping;
+	vector3f facing;
+	byte flag_a8;
+	byte unknowna9[0xe8 - 0xa9];
 	point3f point;
+	byte unknownf4[0x100 - 0xf4];
+	vector3f up;
+	byte unknown10c[0x118 - 0x10c];
+	vector3f basis;
+	vector3f velocity;
+	real gravity;
+	byte unknown134[4];
+	vector3f input;
+	real acceleration;
+	real direct_acceleration;
 };
+typedef char assert_shape_carrier_contact_normal[(offsetof(s_shape_carrier_contact, normal) == 0x8c) ? 1 : -1];
+typedef char assert_shape_carrier_contact_point[(offsetof(s_shape_carrier_contact, point) == 0xe8) ? 1 : -1];
+typedef char assert_shape_carrier_contact_input[(offsetof(s_shape_carrier_contact, input) == 0x138) ? 1 : -1];
+typedef char assert_shape_carrier_contact_direct_acceleration[(offsetof(s_shape_carrier_contact, direct_acceleration) == 0x148) ? 1 : -1];
 
 struct s_shape_carrier_state
 {
@@ -810,18 +833,6 @@ real g_47ffb0 = 0.5f;
 real normalize2d(point2f *v);
 bool __stdcall function_a75d0(vector3f *vector, real maximum);
 
-PRIVATE inline vector3f shape_add(vector3f const &a, vector3f const &b)
-{
-    vector3f r; r.i = a.i + b.i; r.j = a.j + b.j; r.k = a.k + b.k; return r;
-}
-PRIVATE inline vector3f shape_subtract(vector3f const &a, vector3f const &b)
-{
-    vector3f r; r.i = a.i - b.i; r.j = a.j - b.j; r.k = a.k - b.k; return r;
-}
-PRIVATE inline vector3f shape_scale(vector3f const &a, real scale)
-{
-    vector3f r; r.i = a.i * scale; r.j = a.j * scale; r.k = a.k * scale; return r;
-}
 PRIVATE inline real shape_dot(vector3f const &a, vector3f const &b)
 {
     return a.k * b.k + a.j * b.j + a.i * b.i;
@@ -839,18 +850,24 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 }
 
 
-struct s_flags_1f0870
-{
-    dword enabled : 1;
-    dword unknown1 : 1;
-    dword direct : 1;
-    dword gravity : 1;
-    dword damping : 1;
-    dword unknown5 : 27;
-};
 
 
-// score 590 (was 590): frame 0x34 versus 0x30 and direct/vector homes remain; retail threads the
+// score 433 (was 590): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
+// direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
+// arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
+// chain exact (mixed reads, not kept).
+// This round (fast, positional, with aligned count stack-masked): two normalize calls and the ground arm after the return, as retail
+// 616 (the listed separate normalization; aligned 624 in a compile-only harness from 853); flags read from the field at each
+// use, one load 607; `(vector3f *)(out + 0xc)` at each use stops the store forwarding; 0xa75d0 inline, xmm and edx not kept
+// across it 340 at 3047 bytes; `input` pointer declared first; rotated point2f 439 before the inline; shared rotate/combine
+// helpers 638; speed declared before desired 500; `magnitude = speed * magnitude` as the scale 433 (ground chain exact).
+// On that 433 form: all 24 parameter orders 433 or 552 (3040 bytes; sides do not move; half lose 0x1f0450); facing pointer in the
+// direct arm 447, with the speed first 555, the speed first alone 549; every input read through the pointer 537 (2992 bytes),
+// through the field 450 (3050); the direct arm's read through the field alone 461, the low arm's 449, both 423 with one settings
+// local for the ground compares and field reads in the two interpolations (a mixed read, not kept); the settings local everywhere 464
+// (3035, aligned 211); the field at each use 433 (3037, aligned 270, kept).
+// On it: a new `speed` local for the scale 435 (3035), the scale as the helper's argument 473 (3031).
+// Earlier 590 (was 590): frame 0x34 versus 0x30 and direct/vector homes remain; retail threads the
 // flying test across the desired normalization (eight 0x30bf0 calls, the ground arm and the plain limited
 // arm laid out after the return), ours does not (seven calls, all arms in place).
 // Round 90: the body moved out of its one-caller forceinline wrapper, its volatile velocity stores, volatile
@@ -973,48 +990,37 @@ struct s_flags_1f0870
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
 // Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
 // @retail 0x1f0870
-void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
+void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
-#define settings (*(byte **)(state + 8))
-    dword mode = *(dword *)settings;
-    bool flying = ((mode >> 3) & 1) != 0;
-    dword flags = *(dword *)(state + 0x14);
-    s_flags_1f0870 const *flags_view = (s_flags_1f0870 const *)(state + 0x14);
-    bool gravity = TEST_FIELD_BIT(flags_view->gravity);
-    bool damping = TEST_FIELD_BIT(flags_view->damping);
-    bool direct = TEST_FIELD_BIT(flags_view->direct);
-    vector3f const &input = *(vector3f const *)(state + 0x138);
-    vector3f const &facing = *(vector3f const *)(state + 0x9c);
-    vector3f const &up = *(vector3f const *)(state + 0x100);
-    vector3f const &normal = *(vector3f const *)(state + 0x8c);
-    vector3f const &basis = *(vector3f const *)(state + 0x118);
-    vector3f *velocity = (vector3f *)(out + 0xc);
-    if (!(flags & 1))
+    vector3f const *input = &state->input;
+    bool flying = ((*(dword *)state->settings >> 3) & 1) != 0;
+    bool damping = ((state->flags >> 4) & 1) != 0;
+    bool direct = ((state->flags >> 2) & 1) != 0;
+    bool gravity = ((state->flags >> 3) & 1) != 0;
+    if (!(state->flags & 1))
     {
+        vector3f const *up = &state->up;
+        vector3f const *facing = &state->facing;
         vector3f left;
-        contact_cross(&up, &facing, &left);
-        real scale = *(real *)(state + 0x20);
-        real local_0 = input.i * scale;
-        real local_1 = input.j * scale;
-        real local_2 = input.k * scale;
-        velocity->i = facing.i * local_0;
-        velocity->j = facing.j * local_0;
-        velocity->k = facing.k * local_0;
-        velocity->i += left.i * local_1;
-        velocity->j += left.j * local_1;
-        velocity->k += left.k * local_1;
-        velocity->i += up.i * local_2;
-        velocity->j += up.j * local_2;
-        velocity->k += up.k * local_2;
+        contact_cross(up, facing, &left);
+        vector3f scaled;
+        vector3f_scale(input, state->speed, &scaled);
+        vector3f_scale(facing, scaled.i, (vector3f *)(out + 0xc));
+        vector3f_add_scaled((vector3f *)(out + 0xc), &left, scaled.j, (vector3f *)(out + 0xc));
+        vector3f_add_scaled((vector3f *)(out + 0xc), up, scaled.k, (vector3f *)(out + 0xc));
         gravity = false;
     }
     else if (direct)
     {
-        vector3f delta;
-        delta.i = (*(real *)(state + 0x20)) * (facing.i * input.i - facing.j * input.j) - current->i;
-        delta.j = (*(real *)(state + 0x20)) * (facing.j * input.i + facing.i * input.j) - current->j;
-        point2f limited = { delta.i, delta.j };
-        real step = *(real *)(state + 0x148) * g_510c54->rate;
+        point2f rotated;
+        rotated.x = state->facing.i * state->input.i - state->facing.j * state->input.j;
+        rotated.y = state->facing.j * state->input.i + state->facing.i * state->input.j;
+        real speed = state->speed;
+        point2f delta;
+        delta.x = speed * rotated.x - current->i;
+        delta.y = speed * rotated.y - current->j;
+        real step = state->direct_acceleration * g_510c54->rate;
+        point2f limited = delta;
         if (normalize2d(&limited) > step)
         {
             limited.x *= step;
@@ -1022,87 +1028,89 @@ void function_1f0870(byte *history, vector3f const *current, byte const *state, 
         }
         else
         {
-            limited.x = delta.i;
-            limited.y = delta.j;
+            limited = delta;
         }
-        velocity->i = current->i + limited.x;
-        velocity->j = current->j + limited.y;
-        velocity->k = current->k - *(real *)(state + 0x130) * g_510c54->rate;
+        ((vector3f *)(out + 0xc))->i = current->i + limited.x;
+        ((vector3f *)(out + 0xc))->j = current->j + limited.y;
+        ((vector3f *)(out + 0xc))->k = current->k - state->gravity * g_510c54->rate;
     }
     else
     {
-        real magnitude = (real)sqrt(input.i * input.i + input.j * input.j + input.k * input.k);
+        real magnitude = (real)sqrt(input->i * input->i + input->j * input->j + input->k * input->k);
         vector3f desired;
         if (flying)
         {
             vector3f left;
-            function_1f087b(&normal, &basis, &left);
+            vector3f forward = state->basis;
+            function_1f087b(&state->normal, &forward, &left);
             if (function_30bf0(&left) == 0.0f)
             {
-                function_1f087b(&normal, g_4687b0, &left);
+                contact_cross(&state->normal, g_4687b0, &left);
                 if (function_30bf0(&left) == 0.0f)
                 {
-                    function_1f087b(&normal, g_4687a8, &left);
+                    contact_cross(&state->normal, g_4687a8, &left);
                     function_30bf0(&left);
                 }
             }
-            vector3f forward;
-            function_1f087b(&left, &normal, &forward);
+            contact_cross(&left, &state->normal, &forward);
             function_30bf0(&forward);
-            desired.i = left.i * input.j + forward.i * input.i;
-            desired.j = left.j * input.j + forward.j * input.i;
-            desired.k = left.k * input.j + forward.k * input.i;
-            desired.k += input.k;
+            desired.i = state->input.j * left.i + forward.i * state->input.i;
+            desired.j = state->input.j * left.j + forward.j * state->input.i;
+            desired.k = state->input.j * left.k + forward.k * state->input.i + state->input.k;
+            function_30bf0(&desired);
         }
         else
         {
-            if (!(normal.k > 0.001f))
+            if (state->normal.k > 0.001f)
             {
-                vector3f left;
-                function_1f087b(g_4687b0, &basis, &left);
-                function_30bf0(&left);
-                real local_3 = -shape_dot(normal, basis);
-                vector3f forward;
-                forward.i = basis.i + normal.i * local_3;
-                forward.j = basis.j + normal.j * local_3;
-                forward.k = basis.k + normal.k * local_3;
-                real local_4 = -shape_dot(normal, left);
-                left.i += normal.i * local_4;
-                left.j += normal.j * local_4;
-                left.k += normal.k * local_4;
-                desired.i = left.i * input.j + forward.i * input.i;
-                desired.j = left.j * input.j + forward.j * input.i;
-                desired.k = left.k * input.j + forward.k * input.i;
-                desired.k = (desired.k + input.k) * 5.0f;
+                vector3f const *facing = &state->facing;
+                vector3f const *normal = &state->normal;
+                desired.i = facing->i * state->input.i - facing->j * state->input.j;
+                desired.j = facing->j * state->input.i + facing->i * state->input.j;
+                desired.k = state->input.k - (normal->j * desired.j + normal->i * desired.i) / state->normal.k;
             }
             else
             {
-                desired.i = facing.i * input.i - facing.j * input.j;
-                desired.j = facing.j * input.i + facing.i * input.j;
-                desired.k = input.k - (normal.j * desired.j + normal.i * desired.i) / normal.k;
+                vector3f left;
+                vector3f forward = state->basis;
+                contact_cross(g_4687b0, &state->basis, &left);
+                function_30bf0(&left);
+                vector3f const *normal = &state->normal;
+                real d1 = 0.0f - shape_dot(*normal, forward);
+                vector3f projected;
+                projected.i = (normal->i * d1 + forward.i) * state->input.i;
+                projected.j = (normal->j * d1 + forward.j) * state->input.i;
+                projected.k = (normal->k * d1 + forward.k) * state->input.i;
+                real d2 = 0.0f - shape_dot(*normal, left);
+                vector3f side;
+                side.i = normal->i * d2 + left.i;
+                side.j = normal->j * d2 + left.j;
+                side.k = normal->k * d2 + left.k;
+                desired.i = state->input.j * side.i + projected.i;
+                desired.j = state->input.j * side.j + projected.j;
+                desired.k = (state->input.j * side.k + projected.k + state->input.k) * 5.0f;
             }
+            function_30bf0(&desired);
+            if (*(real *)(state->settings + 0x58) >= desired.k)
+                magnitude *= *(real *)(state->settings + 0x4c);
+            else if (*(real *)(state->settings + 0x58) > desired.k)
+                magnitude *= 1.0f + (*(real *)(state->settings + 0x4c) - 1.0f) * (desired.k - *(real *)(state->settings + 0x58)) /
+                    (*(real *)(state->settings + 0x5c) - *(real *)(state->settings + 0x58));
+            else if (desired.k >= *(real *)(state->settings + 0x64))
+                magnitude *= *(real *)(state->settings + 0x50);
+            else if (desired.k > *(real *)(state->settings + 0x60))
+                magnitude *= 1.0f + (desired.k - *(real *)(state->settings + 0x60)) * (*(real *)(state->settings + 0x50) - 1.0f) /
+                    (*(real *)(state->settings + 0x64) - *(real *)(state->settings + 0x60));
         }
-        function_30bf0(&desired);
-        if (!flying)
-        {
-            if (*(real *)(settings + 0x58) >= desired.k)
-                magnitude *= *(real *)(settings + 0x4c);
-            else if (*(real *)(settings + 0x58) > desired.k)
-                magnitude *= 1.0f + (*(real *)(settings + 0x4c) - 1.0f) * (desired.k - *(real *)(settings + 0x58)) /
-                    (*(real *)(settings + 0x5c) - *(real *)(settings + 0x58));
-            else if (desired.k >= *(real *)(settings + 0x64))
-                magnitude *= *(real *)(settings + 0x50);
-            else if (desired.k > *(real *)(settings + 0x60))
-                magnitude *= 1.0f + (desired.k - *(real *)(settings + 0x60)) * (*(real *)(settings + 0x50) - 1.0f) /
-                    (*(real *)(settings + 0x64) - *(real *)(settings + 0x60));
-        }
+        magnitude = state->speed * magnitude;
+        vector3f scaled;
+        vector3f_scale(&desired, magnitude, &scaled);
         vector3f delta;
-        real speed = *(real *)(state + 0x20) * magnitude;
-        delta.i = desired.i * speed - current->i;
-        delta.j = desired.j * speed - current->j;
-        delta.k = desired.k * speed - current->k;
+        delta.i = scaled.i - current->i;
+        delta.j = scaled.j - current->j;
+        delta.k = scaled.k - current->k;
         vector3f limited = delta;
-        real step = *(real *)(state + 0x144) * g_510c54->rate;
+        real step = state->acceleration * g_510c54->rate;
         bool limited_step = function_30bf0(&limited) > step;
         if (limited_step)
         {
@@ -1114,38 +1122,49 @@ void function_1f0870(byte *history, vector3f const *current, byte const *state, 
             limited = delta;
         if (!limited_step || flying)
             gravity = false;
-        if (!state[0xa8] && *(long *)((byte *)g_51e9c4 + 0x18) - g_510c54->game_time <= 0)
+        if (!state->flag_a8 && *(long *)((byte *)g_51e9c4 + 0x18) - g_510c54->game_time <= 0)
         {
-            limited.i -= normal.i * 0.234f;
-            limited.j -= normal.j * 0.234f;
-            limited.k -= normal.k * 0.234f;
+            limited.i -= state->normal.i * 0.234f;
+            limited.j -= state->normal.j * 0.234f;
+            limited.k -= state->normal.k * 0.234f;
         }
         if (damping)
         {
-            real fraction = 1.0f - *(real *)(state + 0x98);
+            real fraction = 1.0f - state->damping;
             limited.i *= fraction;
             limited.j *= fraction;
         }
         if (gravity)
-            limited.k -= *(real *)(state + 0x130) * g_510c54->rate;
-        velocity->i = current->i + limited.i;
-        velocity->j = current->j + limited.j;
-        velocity->k = current->k + limited.k;
+            limited.k -= state->gravity * g_510c54->rate;
+        ((vector3f *)(out + 0xc))->i = current->i + limited.i;
+        ((vector3f *)(out + 0xc))->j = current->j + limited.j;
+        ((vector3f *)(out + 0xc))->k = current->k + limited.k;
     }
-    if (!((*(dword *)settings >> 2) & 1) && !(*(dword const *)(state + 0x14) & 4))
+    if (!(bool)((*(dword *)state->settings >> 2) & 1) && !(state->flags & 4))
     {
-        if (*(long *)(history + 0xc) != NONE && *(long *)(history + 0xc) == g_510c54->game_time - 1)
+        if (*(long *)(history + 0xc) != NONE && g_510c54->game_time - 1 == *(long *)(history + 0xc))
         {
-            vector3f change = shape_add(shape_subtract(input, *(vector3f *)(history + 0x10)), *(vector3f *)(out + 0x64));
+            vector3f difference;
+            difference.i = input->i - *(real *)(history + 0x10);
+            difference.j = input->j - *(real *)(history + 0x14);
+            difference.k = input->k - *(real *)(history + 0x18);
+            vector3f change;
+            vector3f_add((vector3f *)(out + 0x64), &difference, &change);
             real maximum = (real)sqrt(change.k * change.k + change.j * change.j + change.i * change.i) + g_47ffb0;
-            vector3f offset = shape_subtract(*(vector3f const *)(state + 0x124), *(vector3f *)(out + 0x64));
-            vector3f relative = shape_subtract(*velocity, offset);
+            vector3f offset;
+            offset.i = state->velocity.i - *(real *)(out + 0x64);
+            offset.j = state->velocity.j - *(real *)(out + 0x68);
+            offset.k = state->velocity.k - *(real *)(out + 0x6c);
+            vector3f relative;
+            relative.i = ((vector3f *)(out + 0xc))->i - offset.i;
+            relative.j = ((vector3f *)(out + 0xc))->j - offset.j;
+            relative.k = ((vector3f *)(out + 0xc))->k - offset.k;
             function_a75d0(&relative, maximum);
-            velocity->i = relative.i + offset.i;
-            velocity->j = relative.j + offset.j;
-            velocity->k = relative.k + offset.k;
+            ((vector3f *)(out + 0xc))->i = relative.i + offset.i;
+            ((vector3f *)(out + 0xc))->j = relative.j + offset.j;
+            ((vector3f *)(out + 0xc))->k = relative.k + offset.k;
         }
-        *(vector3f *)(history + 0x10) = input;
+        *(vector3f *)(history + 0x10) = *input;
         *(long *)(history + 0xc) = g_510c54->game_time;
     }
     if (gravity)
@@ -1153,7 +1172,6 @@ void function_1f0870(byte *history, vector3f const *current, byte const *state, 
     else
         *(dword *)out &= ~1;
 }
-#undef settings
 
 
 PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const *input, vector3f *out)
@@ -1223,7 +1241,7 @@ void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrie
             current.k += delta_velocity.k;
         }
     }
-    function_1f0870((byte *)history, &current, data, out);
+    function_1f0870((byte *)history, &current, contact, out);
     if (override_velocity)
     {
         vector3f_add((vector3f *)(out + 0xc), (vector3f *)(out + 0x64), (vector3f *)(out + 0xc));

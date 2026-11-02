@@ -309,6 +309,13 @@ static inline void quaternion_transform_vector(
 // original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
 // Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
 // paired halves and complete body restored. Quaternion/cross spill overlap remains.
+// M3 lane 4 r155 (fast): retail never reuses the quaternion's 16-byte home (+0x24) for the transform spills (its five spill
+// slots sit below it), ours packs two cross-term spills into the dead quaternion home. New: the zero-sine arms first (`if
+// (sine == 0.f) { cosine test } else { construction }`) 299 (1342 bytes); the identity matrix copy at entry 315 (1325 bytes),
+// right after the sine 315; the sine half computed before the cosine half 205; `cosine_half * sine_half * 2.f` 200 (same
+// code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
+// the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
+// existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

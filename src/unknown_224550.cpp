@@ -95,7 +95,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 232 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 232 (was 232): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -299,10 +299,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at every interpolation site 280/232/245; with branch-produced primary aspects
 // 279/262/239; complete stages with secondary-first reciprocals, original/branch
 // primary 239/245. Next-term stages kept at plain 232; other bodies restored.
+// AC477: Complete byte/signed-byte/short/word flip domain through producer, reused selector
+// and all UV encoders, original then zero-first result: 247/247/253/259/403/403/411/416.
+// Original selector domains, UV input captures and body restored; tint/second-UV homes remain.
 // Round 526: Native evaluated RGB apart from alpha/tint, publication before/after input
 // modulation, field/library transfers and original/entry seed workspace:
 // 236/236/486/486/236/236/498/498. Original tint/UV body and includes restored;
 // tint/secondary-UV homes and blend/reciprocal residence remain.
+// Round 325: Existing UV producer consumes its real four-element input array, pointer/reference
+// input and output with original/scalar pivot storage: 232/232/232/232/325/325/325/325. All alias-safe captures,
+// original contracts, workspaces and complete body restored; tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
