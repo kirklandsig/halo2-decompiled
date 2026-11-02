@@ -1112,7 +1112,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 588 (was 597): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 588 (was 588): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1141,6 +1141,9 @@ long function_10f5f0(long object_index);
 // M283: Ascending point cursor with indexed/postincrement/countdown/pointer-distance bounds 588/588/616/578;
 // with six-real output 588/588/616/578. Keep the indexed cursor, plain full confirmed 597 -> 588;
 // pointer-distance bounds introduce signed division per iteration, absent in retail, so are diagnostic only. Original buffer retained; frame 0x19ac/0x1984 and flag-result stores remain.
+// Round 251: Two-vector buffer, velocity name, state name, buffer/velocity, buffer/state, both names,
+// buffer/both names and six-real buffer/both names: 588 each. Original complete body and inherited qualifier
+// restored; frame and native flag-result stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2602,7 +2605,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 706 (was 719): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 706 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2624,6 +2627,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // 725/706; distinct output plus role names 707 for desired.up (the in-place-up comparison failed).
 // Current matrix before banked products with late sine 710; with late cosine/sine pair 709.
 // The distinct-output forms retain frame 0x104; selected desired.up uses 0xd0, versus retail 0xfc.
+// Round 251: Angular-output/banking/conversion lifetime subsets 1/2/4/3/5/6/7 with a distinct relative
+// transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
+// complete body restored; retail frame 0xfc and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3859,7 +3865,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 197 (was 206): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 197 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -3943,6 +3949,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // J224: Native override records 197; with live iterator index/live count/scalar role names 197/265/197.
 // True-first fallback 207; with records 207; with completed clamp-result assignment 203;
 // all three 203. Original executable source restored; frame and first +0x5a unchanged.
+// Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
+// construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
+// scalar/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

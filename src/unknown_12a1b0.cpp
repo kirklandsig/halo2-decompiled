@@ -1248,7 +1248,7 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 110 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
+// score 110 (was 110): return result first restores entry load allocation; the first-player expansion remains (retail
 // calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
@@ -1345,6 +1345,9 @@ struct s_looping_detail_request
 // Round 247: Native request-offset output workspace with four complete publication orders and
 // early/late success: 110/110/110/110/110/110/110/110. Keep original field order and early success,
 // 110 plain at 508/508; detail retention, offset publication and first-player expansion remain.
+// Round 251: Complete two-use camera-position value, mutable/const with original/audible-done/no-player-done
+// finalization, 168 in all six forms; native short count on the final two graphs 169/169 (reduced control
+// 124). Original whole body restored at full score 110; query expansion and detail retention remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
