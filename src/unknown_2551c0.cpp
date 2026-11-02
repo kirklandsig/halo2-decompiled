@@ -202,6 +202,9 @@ short __stdcall function_2551c0(long actor_index)
 // Round 48 (lane 10, fast): all three vector components named in the rotation helper (read at each of
 // their uses), declared k/j/i, k/i/j, j/k/i or i/k/j: 116/116/115/116 (816 bytes; the frame grows to 0x64);
 // the score's `dot + 1` named as an alignment local 56 (815 bytes).
+// Round 494: native slot data block with complete vector/axis/output component arrays 89;
+// vector/axis/both/output/vector-output/axis-output/all component-array roles
+// 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
 // Round 51 (lane 10, fast): the score's `dot + 1` named (`alignment`) 56 (815 bytes); `1.f - cosine` named in the
 // rotation helper 56 (815); the helper's dot named before the projection 56 (815: these three flip the projection
 // dot to i first and swap v.i/v.k between XMM4/XMM5, cross_j's early product becomes retail's); vector_k plus the
@@ -732,6 +735,8 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
+// pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // Round 327: Complete entry readiness in bool/byte/short/long storage, positive and
 // complementary graphs, 87 each at 963 bytes. Unit argument and scalar homes remain; two-point
 // gains rejected.

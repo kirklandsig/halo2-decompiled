@@ -1427,6 +1427,11 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 336: shared collection ordinal long/dword/word/byte/signed-byte/const
+// long/const-dword/const-short 32/32/32/49/49/32/32/32; actual leave-request
+// conditional value long/dword/short/word/byte/signed-byte/const-long/const-short
+// 32/32/69/69/42/42/32/69. Original complete body restored; candidate schedule,
+// leave-request registers and request/slot publication homes remain.
 // Round 243: scalar count/ordinal/selection lexical names, four individual and four paired/complete
 // families, 32 each. Original names and entire executable body restored; candidate scaling,
 // leave-request transport and request publication still differ at the matching frame and extent.
@@ -2638,6 +2643,9 @@ struct s_scenario_scripting_view
 // Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
 // each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
 // Original complete search and shared helper restored; actor/counter/data homes remain.
+// Round 450: Existing difference-helper native start/end/both/result staging, original counter
+// then loop-owned short counter, 133/131/153/181/122/129/151/175. Original complete search and
+// shared helper restored. Actor/counter homes and delayed scripting observation remain.
 // Round 244: actor acquisition after lower/upper set admission, before search and per iteration,
 // each with early/loop-scope short counter: 89/96/90/95/91/95/98/94. Original acquisition
 // and loop restored; frame 0x18 agrees, actor/counter/set allocation remains. Wrapper

@@ -1188,6 +1188,18 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // inline/ordinary, ordinary/inline, inline/inline, noinline/ordinary, ordinary/noinline,
 // noinline/noinline, inline/noinline, noinline/inline: 196/196/196/211/196/211/196/211 fast.
 // Case-18 noinline moves the input roles and loses the matched caller; all declarations restored.
+// Round 302: explicit late-case admission and unknown-type return, four group positions and both late orders
+// 211/211/211/211/212/212/211/211 against fast 196; each loses the caller.
+// Entry save lifetime and late-handler inlining remain; original dispatch restored.
+// Round 336: primary D(0,2,3,4),Q(8,9,10),S(12,13,14),P(22,23,24),C(5,6,7)
+// orders DQPSC/DSQPC/DSPQC/DPQSC/DPSQC/DQSCP/DQCSP/DCQSP:
+// 198/195/193/195/193/199/209/208 fast (control 196; full 153).
+// Three-point preview reductions rejected; original complete classifiers restored.
+// Delayed ESI save, late case layout and full-only handler expansion remain.
+// Round 267: shared connection lookup on the accepted primary root, successful/
+// failure-first lookup guards and inner orders 567/576/657/765: 212 each reduced,
+// against control 196 (full 153). All lose caller 0x7afd0 at three differences;
+// original classifier, separate lookups, native input roles and caller match restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

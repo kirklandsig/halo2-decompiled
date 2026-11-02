@@ -186,6 +186,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 408 (identical code; kept: retail's cursor and count-down are MSVC's strength reduction of this loop); with retail's
 // 16-bit counters (`inc bp`, `cmp bx, 2`): both short 471 (0x29a190 445 -> 699), endpoint index only 417 (1720 bytes),
 // candidate count only 458 (0x29a190 699); named dx/dy for the loop's point distance 411 (1738 bytes).
+// DH round 266: actual two-angle emission table with emission/candidate/endpoint byte-or-short
+// ordinals, all eight combinations 562/543/578/564/562/543/578/564. Plain emission
+// induction shrinks to 1556-1594 bytes and misses frame/entry/cleanup; original restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -480,6 +483,12 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 246: Complete reused obstacle center/radius/count observations on the ordinary-result
 // graph, masks C/R/CR/N/CN/RN/CRN, 750/733/776/770/813/787/828; all with radius
 // declared first 828. All restored; frame excess, eager radius and trace/pivot homes remain.
+// Round 338: both shared trig workspaces on the ordinary-result/in-place-scale graph,
+// with live radius/delegated clamp/shared difference subsets 730/784/774/876/730/784/774/876.
+// Original trig homes, radius, clamp, direction helper and full body restored; frame/trace homes remain.
+// Round 286: one result exit with bool/byte/short/long carriers 789/818/819/819;
+// selected-index-derived obstacle results with those carriers 780/812/808/808.
+// Frame 0x120 remains above 0x114; original result topology and whole body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

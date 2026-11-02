@@ -250,6 +250,9 @@ __forceinline bool function_184448(long arg_0)
 // 1025/1005/1100/992/1076/1056/1124; all three acquired after admission 1112.
 // Location captures raise caller 0x9cca0 from 9 to 12; all eight regress.
 // workspaces, transforms, random sequence and complete executable source; frame/homes remain.
+// DH round 268: complete dot-input vector/point/both captures 1018/1035/1081;
+// paired polygon projections through the same dot producer, original/vector/point/both inputs
+// 977/1020/1133/1236; complete product parts 1236. Original dot helper and body restored.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

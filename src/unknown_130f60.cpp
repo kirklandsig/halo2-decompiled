@@ -285,6 +285,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // 342/333/351/335/349/350/345; all with one complete shared color snapshot 467
 // (fast control 336, full 324). Three-point distance-only lead rejected; original
 // field observations, accumulations, helper and complete executable source restored.
+// DH round 268: accumulated-prefix CRT clears for first/second/both/third/first-third/
+// second-third/all 414/414/411/381/411/411/411; all with chained remaining stores 411.
+// Fast control 336 versus full 324; original complete clears, unit stores and body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

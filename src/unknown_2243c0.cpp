@@ -355,6 +355,12 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // cache zeros grouped 149 (head and stage in ESI as retail, but the tag table goes to ECX above the frame
 // where retail keeps it in EDI); the grouped zeros with the second ordinal read through a named element
 // pointer 120 (still fused); on the 149 form the sums written parameter first 149, the root handle named 149.
+// Round 495: Native standard predicate search with signed/unsigned result, cache-zero
+// boundary and fallback-mask combinations 199/199/203/203/211/211/210/210. Original body
+// restored; fallback normalization and stage/pass homes remain.
+// Round 231: On the saved-EDI entry graph, repeated shader input with grouped zeros/late
+// mask/reused stage-pass subsets 146/168/162/164/146/168/162/164. Late-mask forms lose the
+// matched wrapper; all restored. Fallback masking and stage/pass homes remain.
 // Round 277: standard find with original/final zeros and word/masked fallback 132/155/136/153;
 // standard equality-predicate search on the same four graphs 199/211/203/210. Original body restored.
 // Round 193 (lane 3, fast; control 117): the flags read at each use (in the call's mask and the cache
@@ -367,6 +373,13 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 495: Native standard predicate search with signed/unsigned result, cache-zero
 // boundary and fallback-mask combinations 199/199/203/203/211/211/210/210. Original body
 // restored; fallback normalization and stage/pass homes remain.
+// Round 336: both word ordinals loaded before mask/remainder, long/dword,
+// with original/final-handle normalization 117/117/152/117/117/117/152/117.
+// Original complete body restored; fallback EDX masking, stage/pass ownership,
+// unfused element loads and the early mask lifetime remain.
+// Round 338: reference-value identity with tag/stage/pass scalar lexical priorities,
+// including independent mapping declarations, 117 each in eight forms. Original
+// complete body restored; fallback EDX normalization and stage/pass/unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

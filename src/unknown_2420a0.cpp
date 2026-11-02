@@ -1306,6 +1306,14 @@ void c_game_engine_markers::v21(long object_index)
 // before the flag test 89 (aligned 24 against 30: the player pointer and team now precede the test, but
 // the team load stays folded into the player arithmetic where retail materializes the pointer and
 // loads the team after the engine-type compare), with the player before the absolute index 89.
+// Round 151 (lane 4, fast): the type test called with `(word)object_index` 110 (440 bytes); the slot read
+// spelled out through the header array in place 40 (same code); on the team at each call: the player pointer
+// declared at function scope 119, the player as `data + sizeof(s_player_view) * absolute_index` 120 (the data
+// load still folds into the add); on the kept form, declared at function scope: the slot 40, the team 40, the
+// player pointer and absolute index 40 (same code each); the unit fetched at the top of the slot block (after
+// the slot test) 118 (428 bytes). Diagnostic: a minimal body (mode test, type test, slot
+// and unit fetch, two calls) keeps the entry swap (index EAX, header ECX), so the swap comes from the type test
+// and slot fetch alone.
 // Round 20 (lane 17, fast): on the team at each call: the flag test through TEST_FIELD_BIT 119 (same
 // code); the absolute index computed inside the flag block 119; the effect team through the existing
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept

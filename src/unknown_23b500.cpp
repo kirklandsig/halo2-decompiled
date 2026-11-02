@@ -230,6 +230,9 @@ struct s_spawn_scenario_23aea0
 // bytes); before it, a signed `short` type loop 256 (278 bytes, not unrolled), a do-while type loop 254 (not
 // unrolled). Diagnostic (reverted): the stores aimed at a global defined in a /GL- file keep the pointer
 // induction, so LTCG's view of the symbol is not the cause.
+// Round 498: Source-record-difference destination ordinal, flat table with </!= bounds and
+// field/native tuple copies 346/225/209/225; complete scalar header 357/213/212/213. Record-owned
+// traversal loses the retail unroll or grows the frame/code; original types and body restored.
 // Round 242: Existing vector/point setters at defaults and overrides, mutable/read-only
 // inputs, eight 73s (one-use element alias, exact-only). Direct default vector setter
 // alone 61 plain (438/438, kept); override setter alone 109; both direct vector setters

@@ -757,6 +757,7 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
+// MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
 // score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
 // the mode and member index take esi; separate case 7 and 8 labels (retail's direct
 // table) with an inline compare-and-update helper 47, an inline id-compare helper 48,

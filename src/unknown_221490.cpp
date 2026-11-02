@@ -618,6 +618,9 @@ bool sound_driver_voice_create_buffer(
 // short result assigned at the block top with the 3D flag first 182 (599: both bools spill); the long result
 // at the block top 158, at the end of each success path 159, short there 182 (599); the long result at the
 // block top with `result = NONE` after the decrement 155.
+// Round 286: native success-scope first/spatial/both pair-array initializers 71/71/71;
+// with per-phase mixbin values 74. Spatial-first counterparts for the three array families
+// 182/182/182. Original arrays, descriptors, predicates and all SDK calls restored.
 // Round 226: actual result acquired before capacity admission, short/word/long/dword with
 // play/spatial predicate first: 160/180, 164/176, 171/171, 171/171. All disturb the matched
 // caller; original result lifetime, modes, storage and complete body restored at 71.
@@ -661,6 +664,9 @@ bool sound_driver_voice_create_buffer(
 // with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
 // code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
 // (anneal, 600 s, 67 tries): best 71.
+// Round 285: destructive spatial-first flag shift with short/word/long/dword result
+// 182/178/158/158; playback-first flag mask 71/75/158/158. Matched caller retained;
+// original flags, result and body restored.
 // Round 216: Selected count owns returned result, short/long domain with play/spatial producer order and receiver before/after predicates:
 // 160/167/180/182/160/167/180/182. Original executable source restored.
 // Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;
@@ -672,6 +678,13 @@ bool sound_driver_voice_create_buffer(
 // Round 333: Complementary nonspatial bool/byte, optional play normal/complementary
 // 154/156/154/156; nonspatial-first 152/155/152/155. Caller preserved; spatial/play and descriptor
 // carriers remain.
+// Round 336: descriptor-owned playback bit with play/spatial producer order,
+// native conditional/default field construction and nonzero/full-bit tests
+// 135/148/147/144/135/148/147/144. Original complete body restored; spatial/play and zero/input
+// carriers remain. Default-field forms are exact-only post-test flag forms.
+// Round 338: full-width six-bin loop on native block storage, spatial-first/per-phase
+// mixbins/count-before-clear subsets 71/182/71/182/71/181/71/181. Original complete body
+// restored; spatial/play and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

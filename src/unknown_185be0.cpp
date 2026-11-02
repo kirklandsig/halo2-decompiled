@@ -320,6 +320,9 @@ union s_185be7
 // selected input source retained alone/with current/previous/both angle returns 961/995/959/980;
 // both returns with complete two-coordinate correction 821. Every form regresses; original
 // input observation, direct output consumers and complete executable source restored.
+// DH round 268: independent byte/word scratch declarations, clear order and entry scope,
+// seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
+// Original scratch lifetimes, CRT clears and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

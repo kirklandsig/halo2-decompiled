@@ -158,11 +158,19 @@ struct s_visibility_bound_record
 // Round 233: fixed-six indexed input with plane/normal scopes loop/branch, frustum/branch,
 // view/branch, loop/frustum, loop/view, frustum/frustum, view/view and view/frustum
 // 415 each at 1742 bytes. Original cursor, all observations and complete body restored.
+// Round 302: frame remains 0x74a4; input-plane/query homes are eight bytes low and entry register
+// lifetimes differ.
+// Complete point helper with local/direct input, output at use/part entry and ordinary/inline declaration 626/648;
+// all eight regroup the float expressions and miss, so restored.
 // Round 240: Successive complete rotation-row/center-row/position-product statements, seven
 // subsets and all with coherent plane/query home names: 406/403/403/406/406/403/403/403.
 // Original operands, grouping, zero-scale handling and complete executable body restored.
 // On the successive center graph, uninitialized output storage before the bound copy/at part
 // entry: 403/403. Below-margin center gain and both lifetimes restored.
+// Round 267: actual destination-plane transform, indexed/pointer/reference with
+// assignment/library copies 485/485/476/476/476/476; indexed/pointer with existing
+// normal scaler 472/460. Original input-plane and output publication restored;
+// entry/table and plane/query homes remain at the 0x74a4 frame.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

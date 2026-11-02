@@ -1505,6 +1505,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // with separate/common color workspace: native zero 130 each, CRT zero 170 each. All eight
 // exact-only storage forms restored, including the temporary include; sampler and writers
 // unchanged. The mapped rescale word load remains.
+// Round 230: parallel named rescale additions, plain native channel clamps and complete color
+// initializers, seven subsets; all with short outer ordinals, scores [130, 350, 350, 131, 131, 350,
+// 350, 351].
+// Original executable source restored. The mapped post-sampler word-load form remains.
 // Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
 // native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
 // sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,

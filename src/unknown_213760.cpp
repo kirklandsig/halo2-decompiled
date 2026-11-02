@@ -1154,7 +1154,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
     data[0x198] = 0;
     data[0x1bc] = 0;
 }
-// score 85 (was 85): frame 0x1144 and the entry prefix agree; size/count homes, write setup,
+// score 33 (was 85): frame 0x1144 and extent agree; query/count homes, write argument order,
+// checksum register and header-validation joins remain. Earlier diagnosis before native handles:
+// the read-call value transport differed. The retained API and handle prefix now agree.
+// frame 0x1144 and the entry prefix agree; size/count homes, write setup,
 // checksum register and write/header validity joins remain.
 // Earlier: the read-handle declaration/caller contract differed; frame and extent agreed.
 // frame 0x1144 and extent agree; file displacement, request-copy
@@ -1404,6 +1407,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // with the close test as `INVALID_HANDLE_VALUE != file->handle` 114; the open given `(s_file_handle
 // *)&g_557c90[index]` 7; the read header declared and initialised before the range test 21; a write-handle local at
 // the top of the size-mismatch block 156 (915 bytes); `valid` declared at the loop top on the 7 and 6 forms 7/6.
+// Round 301: Failed-resize-only count initialization, success/failure-first arms at original,
+// pre-resize, pre-query and iteration declaration scopes: 33/123/33/123/33/123/33/123.
+// Keep original-scope success-first form, plain 33 at 930 bytes; write API initializes the actual
+// count on every submitted write. Frame 0x1144 agrees; count/query homes, write argument order,
+// checksum register and header-validation joins remain. All other declaration scopes restored.
 // Round 239: On the indexed-handle/direct write-count graph, native by-value query/resize/write
 // copies in seven subsets, then all four I/O copies, 84/84/89/82/89/89/89/84. All exact-only forms
 // restored; frame and entry prefix agree, size/count homes and write/checksum/result scheduling remain.
@@ -1444,7 +1452,7 @@ void function_213970(void)
                 bool resized;
                 function_1a1310(*handle, expected_size, 0, 6, &resized, &done);
                 cache_wait_for_completion(&done);
-                dword bytes_written = 0;
+                dword bytes_written;
                 if (resized)
                 {
                     s_cache_header empty_header;
@@ -1452,6 +1460,8 @@ void function_213970(void)
                     function_1a1050(*handle, &empty_header, 0x800, 0, s_file_write_flags(0), 0, 6, &bytes_written, &done);
                     cache_wait_for_completion(&done);
                 }
+                else
+                    bytes_written = 0;
                 if (bytes_written != 0x800 && handle->handle != INVALID_HANDLE_VALUE)
                 {
                     function_1a1550(*handle, 0, 6, &done);

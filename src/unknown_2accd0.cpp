@@ -748,6 +748,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // Lane 12 r72 (fast; 0x2adb10 in brackets): the signature case as `default:` with no `__assume(0)` arm
 // 177 (688 bytes); `parameters->task->state = 4;` ahead of the total 232; the body case's position
 // written at both uses with no local 213; the signature case's likewise 221 (694 bytes); the getter
@@ -760,9 +766,6 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
 // (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
 // follow the temp count.
-// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
-// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
-// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // Round 442: complete output-task/file-handle/signature-handle observations, seven subsets
 // 196/169/177/255/252/245/255; complete graph with conversion after state publication 255.
 // Original handles, observations and body restored; total and seek/size coalescing still differ.
@@ -1019,6 +1022,9 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
 // `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
 // memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
