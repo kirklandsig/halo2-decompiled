@@ -2077,6 +2077,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
 // tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
 // The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
+// Round 337: result, normalized-damage and paired vitality workspaces at enclosing scope,
+// seven subsets 5 each; all with the maximum-body workspace 5. Computations stayed at their
+// original sites. Original body restored; region-load and final owner-address schedules remain.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
