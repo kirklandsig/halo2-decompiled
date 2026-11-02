@@ -1041,7 +1041,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 }
 
 /* damages one object of the radius (and its children and siblings): the geometry to it, then the damage */
-// score 297 (was 343): frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
+// score 297 (was 297): frame 0x54 agrees; point/normal/center homes and cone/node allocation remain.
 // Earlier 343 at 1535 bytes: the stack layout (retail keeps the object offset of
 // the second lookup at esp+0x20, the cone and node scalars in different registers), the NONE-node copy
 // (retail builds &node_direction with lea in the copy), the order of the negated-normal stores, and the dot
@@ -1055,6 +1055,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // M272: both existing point-difference producer subsets 343/343/343; complete closest-point, node-center
 // and surface-normal names alone/with those subsets 343/343/343/343; all with native owner clear 297
 // (plain, 1536 bytes). Keep the native clear and both shared differences; frame/point homes still differ.
+// M315: node/complete geometry lexical roles 297/297; both native point setters 391,
+// with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
+// Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
+// Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -2320,7 +2324,7 @@ struct s_unit_event
 /* destroys a permutation of a region: hides it, starts its effects and
    area damage, and applies its side effects to the object (depletes the
    body, drops weapons, ejects riders, destroys attached children) */
-// score 472 (was 533): frame 0x38 agrees; permutation remains on the stack instead of EAX,
+// score 472 (was 472): frame 0x38 agrees; permutation remains on the stack instead of EAX,
 // with register homes/call setup and 1884/1868-byte length still differing.
 // Earlier 533 from 624: the body is statement for statement retail's (same size, same block order). What is left is
 // the calling convention and the register allocation that follows from it: retail takes only the permutation index
@@ -2337,6 +2341,9 @@ struct s_unit_event
 // M272: native __stdcall declaration alone/with section, seat, both indexed scans 531/531/531/531;
 // each with both drop results bool 472/472/472/472; bool results on the original declaration 545.
 // Keep the native declaration plus both bool results; original cursor loops and every call role remain.
+// M315: entry region/permutation before object and native ejection/seat cursor lifetimes,
+// subsets 1/2/4/3/5/6/7 then all with entry event: 558/472/472/558/558/472/558/558.
+// Original body restored; permutation transport, register homes and sixteen-byte excess remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
