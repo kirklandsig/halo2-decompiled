@@ -492,6 +492,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N304: Uniform scalar direction/axis/cross product families, seven subsets
 // then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
 // frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
+// Round 328: actual random-angle/rotation/clamp phase scopes in all seven
+// subsets, then all with immutable complete rotation inputs, 117 each. Original
+// scopes and full body restored; frame 0x28/0x20 and seed/direction/cross homes remain.
 // Round 364: Real-coordinate-array transfers for direction/axis/both/both plus output,
 // long ordinals 167/183/190/190; short ordinals 117/141/141/152. Long axis forms shrink
 // the frame to 0x24, direction alone grows it to 0x30; all original transfers and body

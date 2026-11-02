@@ -2600,6 +2600,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
 // Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
 // Round 308: helpers and body restored; prefix/state roles and decay base remain.
+// F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
+// subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
+// All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {

@@ -293,6 +293,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // M309: Reused self-object header/table 330/332; with uniform per-use state,
 // complete local role names, or both 330/332 each. All eight restored;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// F329: Retained masked self-header index, long/word domains crossed with four
+// disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
+// frame 8 and incoming unit/name/actions ranks remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2604,7 +2607,7 @@ long function_c8f60(long unit_index, short seat_index);
 /* puts a unit in a vehicle's seat: attached to the seat's marker, its
    weapon put away (or dropped), its seat animations, and the seat's
    occupant asked to leave */
-// score 293 (was 306): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
+// score 293 (was 293): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
 // the unit pointer (ours keeps the unit in ebp and spills the offset to the same slot), so the constant-1
 // stores and most reloads differ; retail also tests the 0x3dc state as a zero-extended long and has a dead
 // `lea` of the header's unit field. Earlier: score 306 (was 321).
@@ -2634,6 +2637,9 @@ long function_c8f60(long unit_index, short seat_index);
 // at both uses kept plain at 293 (1221/1209 bytes); original unit/header receivers and
 // transfers retained. Header/vehicle form 289 restored as a repeated computed address.
 // Entry vehicle promotion, unit/ordinal residence and state comparison width remain.
+// Round 328: actual unit-slot pointer/reference with native state and vector-zero
+// combinations 308/303/308/303 each. Frame 0xec and entry vehicle in EBP;
+// original native acquisition, scopes, observations and full body restored; residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -4408,6 +4414,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 326: Actual away/left/world entry declaration lifetimes, seven subsets,
 // then all with the actual entry frame: 175 each. All producer points unchanged;
 // original declarations and native output restored; frame 0x110 versus 0x11c remains.
+// Round 328: existing complete frame builder 325; scalar up/frame-axis/position
+// setter subsets 1-7: 267/265/297/208/255/257/296. Original native copies,
+// basis construction, helper graph and full body restored; frame and XMM homes remain.
 // M311: Returned object-transform/point-helper composition/reversed actual-case subsets 1-7, all with
 // entry frame: 374/175/374/175/374/175/374/374; restored.
 // @retail 0xecff0

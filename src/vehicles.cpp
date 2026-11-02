@@ -2965,6 +2965,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // separate native point-loop indices, subsets 1/2/4/3/5/6/7:
 // 1067/1102/1052/1091/1067/1102/1091; all with paired shared projections 1091.
 // Frame remains 0x80 versus 0x74. Complete original body and all evaluations restored.
+// F329: Shared normalized forward, shared lateral-axis storage and uniform definition
+// fields, seven subsets: 1053/1053/1176/1053/1188/1212/1197; all with shared-role
+// names 1197. Forward storage reaches retail length but uses frame 0x84. All restored;
+// original frame 0x80 versus 0x74 and force/velocity homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
