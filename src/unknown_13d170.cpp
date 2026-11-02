@@ -170,6 +170,7 @@ struct s_block_candidate
 	long pages;
 };
 
+// MiniMax S (11-01): the result/limit declaration swap reaches retail's frame but scores worse; no lower score.
 // score 347 (was 347): Frame 0x1050 versus 0x1054; page-offset/ring-tail allocation and policy blocks differ.
 // Round 32: retail lays the segment arms out in source order (none, block, gap, then the scan), but
 // ours moves the else arm past the scan; retail also uses the page offset (EBX) as its zero from
