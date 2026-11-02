@@ -774,6 +774,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 507: Uniform three-use object radius after properties/delta/projection/positive
 // admission 221/221/216/215; opposite sum operands give the same four scores. Original
 // field observations and body restored; unit-argument and scalar homes remain.
+// Round 300: exact-only recovered entry/radius/request graph with paired final
+// clearance producers, both declaration orders, mutable/const and conditional/
+// complete result arms: 17 each (eight forms); reuse of distance for its
+// normalized-length and adjusted-projection phases 17. Restored: the entry
+// graph still needs a one-use unit snapshot; sum/length/projection homes differ.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

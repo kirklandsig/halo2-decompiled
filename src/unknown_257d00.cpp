@@ -2229,6 +2229,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 305: Actor/command/state/completion initialization orders C-A-S-R, S-A-C-R, A-S-C-R, C-S-A-R,
 // S-C-A-R, R-A-C-S, R-S-A-C, R-C-S-A: fast 614/485/485/614/614/502/502/616 against control 485.
 // Original full 469 body restored; actor/state and point homes remain.
+// M294: Query/count-state arm orders 9/10/11/12, 9/11/10/12, 9/11/12/10, 10/9/12/11,
+// 10/12/9/11, 11/9/10/12, 12/9/10/11, 12/11/10/9:
+// 469/469/469/469/469/472/469/472. Original complete executable source restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -2026,6 +2026,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // AC460: Both blend products inside the positive-weight admission, canonical activity
 // bool/byte/short/long 881/881/857/861; both products inside the two-screen admission
 // 881/881/857/861. Original product lifetimes, activity and complete body restored.
+// M292: Exhaustive nonempty screen cases both/first, both/second, first/both, second/both, with
+// original/direct bounds fallback:
+// 853/886/859/858/856/894/861/861. Original executable body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

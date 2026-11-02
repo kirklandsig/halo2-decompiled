@@ -402,6 +402,8 @@ void function_07b3e0(void)
 // Round 310: Whole native pool reference/value with cached/dynamic scanners and signed/unsigned
 // cursors 39/54/39/54/75/86/75/86. Original pool pointer, cursor, shared helper calls and global
 // tail stores restored; split scan/datum residency remains.
+// M299: Independent native scan/record header captures, cached/dynamic scanners,
+// signed/unsigned cursors [77, 90, 77, 90, 81, 92, 81, 92]. Original header ownership restored.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1343,6 +1345,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Round 310: Native variant-byte flag/spread and identity-byte layout subsets 1..7 766 each; all
 // with dword histogram 844. Original actual layouts, histogram, selectors, protected lookup and
 // complete body restored; frame/session/lookup remain.
+// M299: Native short identity/player/group induction subsets
+// [871, 863, 865, 873, 881, 886, 885], all word 885. Original long counters restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

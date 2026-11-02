@@ -695,6 +695,9 @@ void function_117dd0(long index, vector3f *wind)
 // Round 505: Existing scaled-difference tangent producer, four weight/acceleration schedules
 // crossed with both dot input orders: 145/145/144/144/145/145/147/147, all 734 bytes.
 // Original difference/scale boundaries, weights, shared dot and full body restored.
+// M297: Actual current/history/both point-field workspaces, then each with shared
+// symmetric scaling, current with early weights, both/scales with early weights
+// [174, 221, 235, 174, 222, 207, 174, 207]. Original private point workspaces and publication restored.
 // @retail 0x118140
 void function_118140(long index)
 {

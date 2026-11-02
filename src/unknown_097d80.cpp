@@ -256,6 +256,9 @@ struct c_aggregate : c_child
 // DL233: One real block pointer across dispatch/cleanup, before/after arrays, separate/shared
 // query output and joint/separate dispatch bounds: 31/31/31/31/31/31/33/33. Shared output
 // recovers 0x8020 but exchanges the low loop homes; original complete body and outputs restored.
+// M292: Boundary table ends before cleanup, crossed with boundary-scope collection output,
+// completed information-query scope and real item traversal, masks 0-7:
+// 31/42/31/42/77/88/77/88. Original executable body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

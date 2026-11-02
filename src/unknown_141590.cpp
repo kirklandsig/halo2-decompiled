@@ -295,6 +295,9 @@ static inline void quaternion_transform_vector(
 // DL228: plain forward/up/left field-table traversal, long/dword/short/word ordinals,
 // ordinary and forced existing helper: 279/279/745/745/279/279/745/745.
 // Original three in-place calls, helper and body restored; quaternion/spill homes remain.
+// M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
+// cross components:
+// 200/200/200/249/249/249/249/261. Original executable body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

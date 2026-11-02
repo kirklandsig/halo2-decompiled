@@ -290,6 +290,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Fast control 336 versus full 324; original complete clears, unit stores and body restored.
 // DL230: whole-output initialization orders 132/213/231/312/321; reordered clears 213/231/312 before common unit stores: 354/338/354/346/345/370/370/370.
 // Entry ESI save, unit-constant carrier and accumulation schedules remain; original executable source restored.
+// M292: Existing double-factor opposite scale with direction/angle CRT and double reciprocal
+// masks 0-7 (fast control 336; full 324):
+// 392/392/392/392/393/393/393/393. Original executable body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

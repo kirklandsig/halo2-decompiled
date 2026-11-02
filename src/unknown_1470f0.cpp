@@ -172,6 +172,8 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // entry 19 each (before the dispatch change).
 // Round 459: Branch-admitted primary/secondary/physical receiver capture subsets on shared dispatch, then all with inclusive endpoint arms (exact-only)
 // 11/11/11/42/42/42/42/41. Original executable source restored.
+// M299: Independent repeated primary/secondary endpoint and physical-start ownership
+// subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {

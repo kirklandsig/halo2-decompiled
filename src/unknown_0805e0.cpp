@@ -197,6 +197,8 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // Round 343: Real admission bitfields: dword bit2/bit4/both, word/byte both,
 // then Boolean dword/word/byte both 43/43/43/43/44/50/52/44.
 // Original record, helpers and complete body restored; eleven control matches survive.
+// M296: Cheap-flag-gated two-use identity, nested/continue admission and break/direct
+// success, then those four with single flag observation [43, 52, 43, 52, 43, 52, 43, 52]. Original admission restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1184,6 +1186,8 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // Round 343: Direct-head/long-adjustment admission char/word/long/dword 49/392/384/384;
 // complementary room state bool/byte/word/long 58/58/391/383. All control
 // matches survive; original entry, range, repairs and complete tail restored.
+// M296: Range-relative copy ordinals forward/reverse/both, then each with the real
+// range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

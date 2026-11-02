@@ -290,6 +290,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // transfer and separate/in-place normalized direction: 1417/1372/1465/1395;
 // 1357/1474/1485/1400. Native explicit selection with a separate direction gains six
 // at 6243 bytes, below the gate; pointer selection, original copies, all kernels and body restored.
+// M298: Separate collected membership and compatible-contact searches; body/head
+// membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
+// [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -243,6 +243,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // in place then to the result 241; 27 row/cross spellings with a named or inline cross, temps: 178 (same code), input copy inside the helper 282 up;
 // other dot groupings 177-206, accumulated 204-206; named complement 178; shared cross helper inside the rotation 213 (1707, frame 0x24), for the second
 // axis 239, both 237; renames of the vectors or pitch 178 (seven forms). Retail's frame shows the rotations on the first copy's slot (+0x20).
+// M293: First clamp limit before yaw/after yaw/after gain/after signed target pitch,
+// conditional then if-else producers: 344/290/279/282/344/290/279/282. Original lifetime restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

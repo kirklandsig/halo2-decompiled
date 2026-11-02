@@ -1128,6 +1128,9 @@ public:
 // 268/215/268/256/213/257/268/213. Original executable body restored.
 // Round 459: Shared perpendicular setter on zxy magnitudes, staged-cross/position-copy/fixed-basis-copy combinations
 // 184/184/184/184/184/184/184/184. Original executable source restored.
+// M299: Actual forward/up/left output-axis pointer subsets
+// [296, 184, 277, 184, 296, 184, 277], all before particle lookup 275.
+// Original axis addresses, workspace lifetime and complete body restored.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1595,6 +1598,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
 // original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
 // complete body restored; eligibility width and availability/view carriers remain.
+// M299: Attachment effect-first/nullable-conditional/complete/nested results,
+// original and shifted-word flags [72, 132, 134, 134, 113, 116, 87, 86].
+// One-point form rejected; original attachment result and eligibility restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

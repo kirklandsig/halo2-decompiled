@@ -520,6 +520,11 @@ real function_30bf0(vector3f *vector);
 // inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
 // length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
+// Round 295: isolated complete plane products in yzx/xyz/xzy/zyx declaration orders,
+// mutable/const, each 191 (1310 bytes). Original plane expression and native copy restored.
+// Round 300: positive projection before upper clamp, combined/nested admission and
+// in-place/named clipped fraction 269/269/287/287; with live object handle
+// 263/263/269/269. Original admission, fraction and handle observations restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1936,6 +1941,10 @@ real function_2683f0(long actor_index, long node_index, short type)
 // 394/194/394; with early constant results 391/191/391; both with native second
 // search counter 402, plus early results 399. The 191 form gains only three and
 // is restored; byte homes, direction preloads and entry operands remain.
+// Round 295: all-axis normalized direction scalars before contact or velocity normalization,
+// mutable/const and forward/reverse declaration orders, each 194. Original consumers restored.
+// M297: Complete product terms named uniformly in all three scoring dots, six
+// declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

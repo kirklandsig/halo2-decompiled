@@ -1078,6 +1078,9 @@ struct s_signed_file_write_parameters
 // 222/234/207; all four returns 307. The 0x18 frame stays; capacity staging and extension
 // buffer/offset residency still differ. Only the header success returns directly; all I/O,
 // empty-header and zero-capacity behavior and shared failure cleanup are preserved.
+// M293: Task result carries header completion: for assignment/for branches/while/failure break,
+// original then test-produced extension result:
+// 342/342/342/306/371/371/371/308. Original complete executable source restored.
 // Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
 // success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
 // result, success carriers and body restored; capacity scheduling and extension homes remain.
