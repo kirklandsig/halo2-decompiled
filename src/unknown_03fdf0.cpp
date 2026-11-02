@@ -455,6 +455,14 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
 // with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
 // (same codes: mode is already on the stack and cache_index's register does not move).
+// Round 135 (m3 lane 5): retail's only caller (0x404b0) passes cache_index in EDX with mode pushed. The indexed form
+// is retail's code but for the head (aligned 30 against this form's 55): retail loads the count into AX with the
+// zero in ECX, loads first into EDI and spills it (reloaded as the index), keeps mode in EBP from entry and the
+// entries in EDX. Parameters as (mode, cache_index) at the definition and the call 54 (LTCG still uses EAX; 0x404b0
+// 155 -> 186); indexed 144 (492 bytes); indexed with `long index = first;` right after `current = first` 156 (493;
+// compile-only it gives retail's AX/ECX/EDI head, but LTCG moves cache_index to EAX and leaves mode on the stack);
+// block form with that index 168 (491); indexed with n and index both early 167 (492); indexed with the selection
+// first 170 (490).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
