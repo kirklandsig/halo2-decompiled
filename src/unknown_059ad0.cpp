@@ -3501,7 +3501,7 @@ void function_61050(c_class_58d20 *session, long channel_index,
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 76 (was 119): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
+// score 76 (was 76): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
 // Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
 // split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
 // copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
@@ -3568,6 +3568,10 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // 184/185/184/185. Keep the indexed early eligibility guard, plain 76
 // at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
 // attach producers, reservations and call tuples stay fixed.
+// Round 307: Branch-owned native state/member receivers and plain identity cursor, seven subsets
+// plus complete nullable state: 101/77/98/121/105/122/134/134; paired native state/member
+// receivers in member admission, without/with cursor: 144/144. Original body restored;
+// eligibility/reject ordering and member/reservation scratch homes remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
