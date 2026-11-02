@@ -956,6 +956,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // Round 529: existing point-difference helper with native vector workspace, crossed with
 // complete player-scan lifetime, paired squared extents and complete-record library copy:
 // 206/206/206/206/206/206/206/206. Frame and first expanded verifier remain; original body restored.
+// Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
+// with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
+// Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1476,7 +1479,7 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 
 /* whether an object, or anything seated in or attached to it, is a unit (a
    player's unit, if players_only) */
-// score 70 (was 187): frame 0x18 and entry homes agree; first +0x39 enters a shorter iterator loop.
+// score 70 (was 70): frame 0x18 and entry homes agree; first +0x39 enters a shorter iterator loop.
 // The verifier is called out of line; preheader/latch placement and result-tail scheduling remain, 233/246 bytes.
 // Earlier 187: the compiler inlines 0xbadc0 (the datum lookup and the type test) at the unit check in the
 // iterator loop; retail calls it (`mov eax,child_index; push 3; call 0xbadc0`). That is the only real difference:
@@ -1502,6 +1505,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // result/iterator lifetime subsets 99/99/99/99; common recursive result tails 71/78/71/78.
 // Nested admission/positive player arms and their for initializers 206 each (verifier expands).
 // Guarded admission with common recursive results kept: 70 plain, 233/246 bytes, first +0x39.
+// Round 532: result-owned iterator termination with bool/byte/short/long carriers, guarded success
+// or comparison-produced success: fast 71/67/95/104/58/57/93/98 against unchanged fast 71.
+// Byte predicate measures 246 bytes but none matches; result-tested flags restored. First-call receiver and latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4483,7 +4489,7 @@ struct s_damage_object_creation
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
-// score 188 (was 221): frame 0x13e0, handle ESI and first-mask EDI agree; first +0x37 is the offset home.
+// score 188 (was 188): frame 0x13e0, handle ESI and first-mask EDI agree; first +0x37 is the offset home.
 // Definition/detached-mask/node and copy homes remain; 776 bytes against retail 808.
 // Earlier 221: caching `info->unknowne0` as the loop bound (retail does not reload it; 235 -> 221) and
 // making detached_nodes signed (`test / jle` as retail; same score). Left is register allocation: retail keeps
@@ -4498,6 +4504,9 @@ struct s_damage_object_creation
 // lifetimes 221/188/221/188/221/188/221/188. Earlier detached-mask initialization alone
 // with original creation and other lifetimes 188, confirmed plain; kept at 776/808 bytes.
 // Frame 0x13e0, handle ESI and first-mask EDI recovered; offset and later homes remain.
+// Round 532: entry detached bitmap, shared marking/node ordinal on the recovered frame, complete
+// scalar role names, seven subsets 211/188/211/188/211/188/211; full workspace names 211.
+// Entry bitmap is 797/808 bytes, first +0xa; all others retain displaced homes. Opening body restored.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
