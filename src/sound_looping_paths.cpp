@@ -258,6 +258,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // count declared before the targets 886. The same list as a named {count, indices[64]} type used directly
 // (no references) 875 too; no existing type in src/ or include/ holds this list, so a new one would only
 // move homes: lead only.
+// DH round 290: sequential record-count, sound-index-list and outer-ordinal identities,
+// seven nonempty subsets, then all with one inner-search ordinal: 887/886/887/886/887/886/887/887.
+// Original separate workspaces, phase initializers, loop domains and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
