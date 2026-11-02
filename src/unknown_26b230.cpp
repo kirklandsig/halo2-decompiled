@@ -1992,6 +1992,9 @@ void function_269250(long clump_index, long actor_index);
 // 87 (same code); in-arm with the activity snapshot before the walk struct 126 (same code).
 // Also round 136 (plain), on the datum-index in-arm form: team mismatch as `continue` 128; selection and best
 // declared outside the actor loop 128; activity read from the global in the walk call 128.
+// DH292: Common final transfer after intact selected/created merge arms, selected/separate destination,
+// existing/creation-first priority: clump identity 146/151/147/152; native datum identity
+// 193/192/188/187. Original separate transfers, common score and entire body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2252,6 +2255,10 @@ void function_269250(long clump_index, long actor_index)
 // Round 235: Native current-clump receiver with declared prop identity/head and native node
 // identity subsets, eight forms 89 each. Entire 0x24-frame body restored;
 // category-byte homes, deletion completion and pool-register roles remain.
+// DH292: Per-prop false mutation result bool/byte/short/long 85/85/242/243; ownership-produced
+// result 137/137/247/249. False Boolean with group/unit and unit/group chained initializers
+// 83/85, also 83/85 with native node datum. Six- and four-point forms rejected;
+// original whole-group result, categories, deletion, node and tracking walks restored.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

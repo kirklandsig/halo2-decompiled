@@ -2061,6 +2061,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // 790/824/840/840/846/838/838/849; complete native component transfers and returned-value snapshots.
 // Mixed primary transfer/secondary value reaches frame 0xd4 at 846, first +0x23, but regresses.
 // Original escaped angle outputs, default values, helpers and complete body restored.
+// Round 137 (m3 lane 6, fast control 790 = plain): ours calls 0x11df30 twice where retail inlines the first (two
+// fpatan) and calls the second; every other callee count agrees. bounds_112070 as plain inline 1064 (3171 bytes,
+// kept out of line), project_112070 as plain inline 1146, both 1378; a `__forceinline` redeclaration of 0x11df30
+// 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
