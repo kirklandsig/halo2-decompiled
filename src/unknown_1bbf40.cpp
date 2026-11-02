@@ -674,6 +674,15 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Round 463: complete indexed actor observations at each use, reused low index long/word,
 // canonical bitwise/logical/conditional/join-defined special graphs: 310/304/326/299/287/295/294/250;
 // original actor receiver, predicate and complete executable source restored.
+// Round 45 (m3 lane 15, fast; al = aligned count against this body's 31): `bool special = type == 6 && byte;` 200 (872 bytes)
+// but al 23: everything is retail's (NONE in EBX, frame 0x34, the flag in the dead slot) except that the flag stays in
+// memory over the tail and the tail is laid out after the true path; retail keeps it in CL there (`mov cl, 1; jmp` over
+// the scan, the slot reloaded into CL at the scan's exit). 36 forms of that flag (bool, byte or char; declared at its
+// definition, before the tag lookup or at the top; `&&`, if/else, ternary, `!!`), the prop test nested, and a pointer to
+// the flag or to allow_exit (diagnostic): the same code. A second read of the flag at the last test (diagnostic, wrong
+// value) gives retail's layout with the flag in BL, 47 at 865 bytes, because that read crosses the prop call; a second
+// read before the call (diagnostic) folds away. Stored through a pointer at its definition 210 (877 bytes, al 16; retail's
+// layout, flag in memory, no threading). Retail's flag has some use or weight this source lacks.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

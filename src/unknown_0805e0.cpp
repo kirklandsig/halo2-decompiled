@@ -208,6 +208,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
 // loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
 // not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
+// Round 45 (m3 lane 15, fast, with 0x1a303b/0x2b393c; al = aligned count against this body's 23; each with a separate
+// successor local stepped at the loop's end): while or guarded do-while, `result = true; break;` 51 (al 31; no hoist);
+// `result = tests; if (result) {copy; break;}` 59 (135 bytes, al 31; hoist as retail, ECX index and successor); early returns
+// 49 (al 24; flags and identity registers retail's, EAX index and successor where retail has a hoisted mask and EBX); each
+// with the entry declared outside the loop, or read through an inline index getter, the same code. Retail's register plan
+// needs the mask hoisted first, which only the forms with a live result give.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
