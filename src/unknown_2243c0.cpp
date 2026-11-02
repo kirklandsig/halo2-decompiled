@@ -380,6 +380,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 338: reference-value identity with tag/stage/pass scalar lexical priorities,
 // including independent mapping declarations, 117 each in eight forms. Original
 // complete body restored; fallback EDX normalization and stage/pass/unfused-load homes remain.
+// Round 340: existing cache-update method on the root-local/EDI-entry graph,
+// early/late mask, original/final zero boundary and native callback-context combinations
+// 117/149/120/151/117/149/120/151. Late masks lose the thunk; every body/type restored.
+// Fallback EDX normalization and stage/pass/unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

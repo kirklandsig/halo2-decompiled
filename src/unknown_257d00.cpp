@@ -1726,6 +1726,9 @@ void function_b7360(long object_index);
 // 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
 // is rejected; original complete case order and body restored. Pool/actor/output
 // ownership and the forty-byte length gap remain.
+// Round 341: Consistent actor-object fields with a shared short/long/byte/word completion,
+// failure-first 502/495/565/502, success-first 535/536/548/535. The long failure form reaches
+// 1848 bytes but worsens allocation; original callback and observations restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
