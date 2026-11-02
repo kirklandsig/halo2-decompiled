@@ -532,6 +532,9 @@ void function_245400(s_source_245400 const *source, long index,
 // and coordinate-before-translation subsets 209/209/209/209; one scale observation
 // 213/213/213/213, also raising matched helper user 0x245400 to 44. Complete helper
 // and body restored; frame 0x24/0x2c, matrix lifetime and independent side homes remain.
+// Round 467: Existing point helper consumed by explicit destination/final conditional selection,
+// phase/entry point storage and point production after/before direction: 209/211/209/211/210/209/210/209.
+// Frame and independent side homes remain; original helper and complete body restored.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
