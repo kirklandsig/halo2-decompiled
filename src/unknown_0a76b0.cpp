@@ -2818,6 +2818,10 @@ void function_a8b10(long unit_index);
 // extra temps (a load and store) just before or inside the second `!is_vehicle` block give retail's
 // registers (one extra temp does not; two before the 0xd4 test rotate that chain instead), so retail
 // makes two more free-choice allocations (or one fewer) between the 0xd4 chain and the slot read.
+// Round 114 (reduced baseline 88, with its known extra reload): the seat snapshot before the guard 75
+// (132 plain); a weapon-slot local, a const unit pointer, and actor-only/player-only locals 88 each;
+// the retained unit for the weapon read, and one refreshed unit shared with the owner read, 86 each;
+// the seat declared last 101; conditional state initialization 169; conditional action initialization 128.
 // @retail 0xea8e0
 void __stdcall function_ea8e0(long unit_index, bool hurried)
 {

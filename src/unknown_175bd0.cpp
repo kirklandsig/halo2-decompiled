@@ -1874,6 +1874,9 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
 // Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
 // Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
+// Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
+// reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
+// with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
