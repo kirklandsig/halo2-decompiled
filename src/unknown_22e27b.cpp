@@ -347,6 +347,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
 // 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
 // frame/timing and original shared fraction restored.
+// DH276: complete retention outcome in Boolean/byte/short/native storage
+// 102/102/212/210; each with complementary continuation 224/224/213/211.
+// All restored; frame 0x10 and timing agree, direction/frame/flag and
+// lookahead/fraction ownership remain. Original policy outcomes retained.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

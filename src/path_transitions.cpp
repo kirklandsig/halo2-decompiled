@@ -613,6 +613,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // compared with 0.5 before the clamp (not equivalent, diagnostic) 367 (1264 bytes). Retail's case 5 passes the
 // entry-loaded actor straight to 0x270400 in EAX (its register parameter); retail's caller 0x270d90 sets ECX, EAX,
 // EDI interleaved with the pushes, so it gives no parameter-order evidence.
+// DH276: complementary failure outcome at dispatch in inherited Boolean/plain
+// Boolean/short/long storage 402/359/356/354; initialized first 402/358/355/353.
+// All restored; frame 0x40 and length agree, but early root/actor ownership and
+// paired vector scheduling remain. Original result and helper retained.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

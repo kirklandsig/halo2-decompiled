@@ -648,6 +648,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // the named phase still grows the frame. Original complete body, rotation input snapshots, radius reference
 // and inherited local qualifier restored; radius schedule, ring conversion and rotation spill remain.
 // DH274: Native entry ordinal snapshots as short/word/long/dword, each with nested sector success or missing-sector continuation, 222/222/222/222/200/200/200/200. All exact-only forms restored; ring conversion and rotation spill remain.
+// DH276: mutable scalar row/phase accumulators 215/215; native output row/phase
+// accumulators 239/239; scalar accumulators with outer ring phase 233/233;
+// native output accumulators with phase 250/252. All restored; SSE ring conversion
+// and the rotation spill remain. Original helper and all input snapshots retained.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

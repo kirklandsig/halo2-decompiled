@@ -690,6 +690,10 @@ void function_1537f0(s_profile_record *record);
 // order on the pointer walk 53 (same code); flags and timestamp as two stores on the pointer walk 62 (253); the index
 // loop with both 80 (236). The compile-only build cannot inline 0x1537f0 (another file), so it does not reproduce this.
 // DH274: Native full-byte bitfields at the four source header bytes, separately, as low/high pairs, together, and together with a signed first word: eight scores 53. Every file sibling also ties its preview. Original type/body restored; three identity homes and frame 0xa0 remain unresolved.
+// DH276: current pointer walk with adjacent link library fill, late/early flags
+// and late/early links, each with separate/chained global sentinels:
+// 66/66/72/72/67/67/74/74. All restored; identity words still fold and
+// frame 0x98/source-header homes remain. Both original initializers retained.
 // @retail 0x7f930
 void function_7f930(void)
 {
