@@ -927,6 +927,8 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
+// M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3868,6 +3870,8 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // weighted companions 149/206/175/210; complete vector-sum publication with input/output
 // and native sum receivers 238/219/222/220. Original helper/body restored; normalization SIMD
 // ranks, trigonometric homes and rotation/basis carriers remain.
+// M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
+// M306: Existing rotation helper force-inline on the original retained expression 145; restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
