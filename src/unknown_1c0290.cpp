@@ -273,33 +273,6 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 	return true;
 }
 
-// score 26 (was 26): the slot pointer and the actor index are loaded into the
-// opposite registers here (index ECX, slot EAX; retail EAX/ECX, so retail scales the
-// index before the actor-table load and its `and` is one byte shorter), and the reset
-// stores are scheduled in another order (retail keeps the two NONE stores between the
-// zero stores). 0x1b3ee0 has the same entry difference.
-// Round 272: native slot-data block 26; with one clock 34, chained false stores 26,
-// readonly actor 26, late actor 36, actor at use 36; existing reset with data/full slot 85/85.
-// Round 70: array-index actor lookup 26; slot declared first 26; reset stores in retail's
-// order 26 (identical code: the order is the scheduler's); existing reset function through a
-// forceinline declaration 85 (stays a call: its file is /Ob1); prop copy first 37.
-// Round 89: the reset's actor address offset-first, as an array element or through actor_get 26 each;
-// bool result single exit 26; const state/actor 26; chained time stores 34. Matched 0x1b4490 has the
-// same head without the reset and gets retail's eax/ecx: the offset's life into the reset decides it.
-// BLOCKED-BY 0x1f86a0 (retail inlines it at link time; its /Ob1 file keeps ours out of line).
-// Round 11 (lane 17): the existing 0x146650 game-time getter for both reads 26; time stores first 35
-// (133 bytes); all 120 orders of the five slot stores 26 or more; 0x1f86a0 itself inlined at link time
-// (its file built without /Ob1, a diagnostic only) 26, as is its body as a forceinline copy, so the
-// reset's form is not the cause. The reset's five zero stores decide it: with one zero store (or only
-// the NONE stores) the entry takes retail's EAX index / ECX slot.
-// Round 109: two-use actor index local 26; scoped slot 26; masked reset index 26; reset-only formal
-// read 26; reset in the return expression 26; reset before actor 36, after flags 41, before prop 33;
-// permuter initial build timed out at 2400 s.
-// Round 195 (lane 3, fast): every store through a cast of `slot` (no state local) 26; that with the actor read
-// at its use 36 (133 bytes); a two-use game-time globals local 29, with the slot declared first 29; the actor as
-// a reference 26. Compile-only: the reset address spelled offset-first, as an array element or as pointer
-// arithmetic, and 0-9 unused probe locals, all keep the index in ECX; the reset with at most two zero stores
-// gives retail's EAX index, so the allocator ties slot and index on the reset's length, not on numbering.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {

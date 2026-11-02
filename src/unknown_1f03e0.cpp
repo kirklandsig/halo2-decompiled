@@ -1664,6 +1664,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P263: complete selected-normal/final-vector native/memcpy/memmove pairs
 // 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
 // Original transfers, magnitude, call sites and complete body restored.
+// Round 482: Fallback-owned movement truth, block comparison/call comparison/implicit
+// call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
+// Original motion sample precedes every reset in all forms; root/predicate lifetimes
+// and complete body restored. Zero width, reset homes and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
