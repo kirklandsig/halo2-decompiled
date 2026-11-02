@@ -91,6 +91,11 @@ void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, lon
 // instead of initialised 195; the record declared first 23; the object through the existing
 // object_get 23 (identical code; kept: it replaces that helper's body written out). All identical
 // code except the tag arms: the lookup's colouring does not follow any local form tried.
+// Round 116 (fast scores; 23 fast is the plain 21): retail's colours fit pool, data, index allocated in that
+// order round-robin (EAX, ECX, EDX, then a fresh EAX for the record), ours fit index, data, pool (EAX, ECX,
+// EDX, the record added in place). The entry as `tag->entries + arg_1` 23; the record block moved after the
+// event data clear 23 (both identical code); the entry computed after the record block 199; the index as
+// `(word)arg_0 * sizeof` 221; the tag as one ternary 195.
 // @retail 0x20d570
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 {

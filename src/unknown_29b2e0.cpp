@@ -39,7 +39,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 {
     real sine = (real)sin(arg_2);
     real cosine = (real)cos(arg_2);
-    real projection = (arg_1->i * arg_0->i + arg_1->k * arg_0->k + arg_0->j * arg_1->j) * (1.0f - cosine);
+    real projection = ((arg_1->i * arg_0->i + arg_1->k * arg_0->k) + arg_0->j * arg_1->j) * (1.0f - cosine);
     real cross_i = arg_0->j * arg_1->k - arg_0->k * arg_1->j;
     real cross_j = arg_0->k * arg_1->i - arg_0->i * arg_1->k;
     real cross_k = arg_0->i * arg_1->j - arg_0->j * arg_1->i;
@@ -51,7 +51,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 244 (was 244): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
+// score 176 (was 244): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // Frame 0x2c and early J preload agree; root/yaw homes, one constant in XMM5 versus XMM4, and rotation registers remain.
 // Earlier at 244: frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -236,6 +237,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // conditional/selection, each with current conditional/selection, 244/244/244/244; complete target
 // arms/selection with the same current forms 276/276/276/276. Original separate target lifetime,
 // native clamps and full body restored; root/yaw homes and constant/result registers remain.
+// Round 27 (m3 lane 18, fast): the deltas computed and clamped in place on the angle locals: 244 -> 201 (1715 bytes; yaw and pitch code then
+// has retail's registers and homes); both rotations in place on one vector, no separate input: 201 -> 178 (1711); the dot grouped (i + k) + j:
+// 178 -> 176. Separate delta locals 211 (1721); hand conditional clamps 295; rotations on the first copy with a final copy 194, first copy as input only 198,
+// in place then to the result 241; 27 row/cross spellings with a named or inline cross, temps: 178 (same code), input copy inside the helper 282 up;
+// other dot groupings 177-206, accumulated 204-206; named complement 178; shared cross helper inside the rotation 213 (1707, frame 0x24), for the second
+// axis 239, both 237; renames of the vectors or pitch 178 (seven forms). Retail's frame shows the rotations on the first copy's slot (+0x20).
+// M293: First clamp limit before yaw/after yaw/after gain/after signed target pitch,
+// conditional then if-else producers: 344/290/279/282/344/290/279/282. Original lifetime restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
@@ -264,18 +273,20 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         real local_13 = local_2->field_30 > 0.0f ? local_2->field_30 * 0.01745329238474369f : 1.5707963705062866f;
         local_8 = PIN_126660(local_8, -local_13, local_13);
         local_9 = PIN_126660(local_9, -local_13, local_13);
+        local_8 -= *(real *)((byte *)local_0 + 0x658);
         real yaw_limit = 6.2831854820251465f;
         if (local_2->field_34 > 0.0f) yaw_limit = local_2->field_34 * 0.01745329238474369f;
-        real local_16 = local_8 - *(real *)((byte *)local_0 + 0x658);
-        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_16)) yaw_limit *= arg_4;
-        local_8 = *(real *)((byte *)local_0 + 0x658) + PIN_126660(local_16, -yaw_limit, yaw_limit);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x658) * local_8)) yaw_limit *= arg_4;
+        local_8 = PIN_126660(local_8, -yaw_limit, yaw_limit);
+        local_8 += *(real *)((byte *)local_0 + 0x658);
+        local_9 -= *(real *)((byte *)local_0 + 0x660);
         real pitch_limit = 6.2831854820251465f;
         if (local_2->field_34 > 0.0f) pitch_limit = local_2->field_34 * 0.01745329238474369f;
-        local_16 = local_9 - *(real *)((byte *)local_0 + 0x660);
-        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_16)) pitch_limit *= arg_4;
-        local_9 = *(real *)((byte *)local_0 + 0x660) + PIN_126660(local_16, -pitch_limit, pitch_limit);
-        vector3f rotation_input = *arg_2;
-        function_29b6c0(&rotation_input, g_4687b0, local_8, &local_7);
+        if (!(0.0f > *(real *)((byte *)local_0 + 0x660) * local_9)) pitch_limit *= arg_4;
+        local_9 = PIN_126660(local_9, -pitch_limit, pitch_limit);
+        local_9 += *(real *)((byte *)local_0 + 0x660);
+        local_7 = *arg_2;
+        function_29b6c0(&local_7, g_4687b0, local_8, &local_7);
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);
         vector3f local_18;
         local_18.i = local_17->k * local_1->forward.j - local_17->j * local_1->forward.k;

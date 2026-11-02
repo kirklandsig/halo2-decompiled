@@ -522,6 +522,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
 // chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
 // remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
+// R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
+// mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
+// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
+// payload memset 36/36; individual long/short sentinel memsets 3/3;
+// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -778,30 +783,6 @@ void __stdcall function_d6bc0(long object_index)
 }
 
 /* whether a damage event can affect an object */
-// score 15 (was 26): `result` must be a variable that is set true in one branch, or it is folded away and the
-// parameters move to registers (data on the stack, in ebp, is retail's). With the flag-8 test swapped (team call in
-// the then arm, `result = true` in the else) the layout is retail's except one `mov bl, 1` block before the false
-// epilogue: retail sends that path to the shared `mov al, 1` epilogue too (219 against 217 bytes).
-// Earlier: what still differs is layout: retail
-// shares one `mov al, 1` epilogue between the type test, the flags & 8 test and the team test, we emit one inline
-// before the team call and reach the other through `mov bl, 1`. Tried: all `return true` (convention reverts, 85),
-// `result = true` at every site (35, `mov bl, 1` tail), `return player_index != NONE` without the bool local (50).
-// Round 39 (lane 13, --fast): `if (!(flags & 8) || team) result = true` 33, with `return true` 88 (folds), `result =
-// !(flags & 8) || team` 63; nested flag-8 test with `result = true` / else `return true` 29 (217 bytes); unit branch
-// assigning result without returning, with the original / `||` return / nested return / nested result team 51/62/62/53;
-// unit `result = ...; return result;` 26, with `||` or nested return 88/88; type test `result = true` in an else-if chain
-// with `||` / nested result 35/35, two-arm else-if 33, `result = team` 74/74; type test inverted with `||` result /
-// nested result 35/35, with `||` return 15, `result = true` first with `||` return 38, one combined condition 35. On 15
-// (kept): `result = true; return result;` 88, type-test else `return true` with the team result forms 28/29/29,
-// result declared first / second 83/83.
-// Round 473: success paths type/flags/team as set/return/return 51, return/set/return 51, set/set/return
-// 36, set/return/set 26, return/set/set 33; first result on set/return/return 72; dword on
-// return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
-// predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
-// restored; shared true epilogue and stack parameter convention remain coupled.
-// Round 339: True-default result with failure-owned gates, player early-return/assignment and
-// direct/conditional team result 80/73/88/71; entry result 78/96/88/92.
-// Original false-default body restored; shared true exit and parameter homes remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -819,26 +800,21 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 			if (unit)
 				player_index = unit->player_index;
-			bool is_player = player_index != NONE;
-
-			return is_player;
+			result = player_index != NONE;
 		}
-
-		dword flags = definition->flags14;
-
-		if (!((flags & 1) && object_index == data->owner.object_index))
+		else
 		{
-			if (!((1 << object->type) & 3))
-				return true;
-			if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
+			dword flags = definition->flags14;
+
+			if (!((flags & 1) && object_index == data->owner.object_index))
 			{
-				if (flags & 8)
-				{
-					if (function_1df560(object->team, data->owner.team))
-						return true;
-				}
-				else
+				if (!((1 << object->type) & 3))
 					result = true;
+				else if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
+				{
+					if (!(flags & 8) || function_1df560(object->team, data->owner.team))
+						result = true;
+				}
 			}
 		}
 	}
@@ -1572,7 +1548,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
-// score 87 (was 96): accumulator/flag register homes and both unmatched callee conventions remain.
+// score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
+// its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
 // accumulator pointer in ecx (reusing it for the 0xda110 call's last argument) and the exclusive-flag value in eax, ours
 // the reverse; the permutation pointer is loaded as `edi = permutations; movss [edi + eax + 8]; add edi, eax` where ours
@@ -1588,6 +1565,11 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // Round 268: permutation bound before first field test 87 (kept); pending word 96; both 87;
 // canonical exclusive bool 104; permutation/exclusive 96; pending/exclusive 104; all 96;
 // all with permutation before destroyed-bit admission 174. Plain whole-image check confirms 87.
+// Round 28 (lane 17, plain): `inline` on 0xd9d60 / on 0xda110 82/82; their declarations swapped 83 (0xda110 1868
+// bytes, 528; 0xdaaa0 151). Declaration order moves the walk (callees follow the TU's declaration order). 0xd6a70
+// before 0xc98a0 in the unit file: 57 (0xd9d60 8, 0xda110 1868 bytes), but 0xd6bc0, 0x11a320, 0x1039a0, 0xd9640,
+// 0xee910 lost and 0x176780 inlined into 0xd8cb0; 0xd6800 as __stdcall recovers only 0xd6bc0. 0xbd020 first there
+// and 0x146bf0 first in the 0xb8ca0 file: 57 with 27 lost. 0xd6800 first with __stdcall: 82, none lost, 0xca0b0 rises.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -2023,6 +2005,18 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
 // separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
 // both gates/names 5; all forms 215. Original body restored; scheduling remains.
+// Round 28 (lane 17, fast): the guard as an inline taking (info, entry) 227 (870 bytes; retail's `mov eax, [edi]` above
+// the je and [eax + ecx + 4], but definition in EAX, info in EBP, the object spilled), a result-style inline 204 (877),
+// an entry local before the guard 227; each with `(void)&definition` 227/204/227. Definition read once through its
+// address, at the call / category / flag 224 each (back on the stack, info still in EBP), on the original guard 5.
+// Object before info 227, 224 with that read; entry declared at the top 227, 224; flags through the field 228, 223.
+// The first 0xdb090 argument through the field: entry local 26 (871, aligned 3), inline 25 (871, aligned 2: only
+// `mov ecx, [edi + 4]` against `mov ecx, ebx`, and the lea), with the address read 25, result-style 206. On the entry
+// form, the object field for the re-lookup 196, count through the field 186, test through the field 202. With info as
+// the argument: `-=` written out 227, inline parameters swapped 227, nested flag test 227, result in a named bool 227.
+// A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
+// tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
+// The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)

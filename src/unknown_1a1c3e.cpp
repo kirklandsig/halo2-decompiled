@@ -312,6 +312,12 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // one path); a global store in 0x1df560 (diagnostic) changes nothing (26). The array pointer in a local at the
 // rider block start 26 (sunk); the same local for the first lookup only 26; an unsigned mask 26; a char team
 // local 121; a byte result 26.
+// Round 152: retail's first lookup leaves the pool global in eax (scaled index ecx, data and then the
+// mask in edx), and its no-call branch targets the instruction after the rider block's global reload
+// (0x1a1edc, past 0x1a1ed7), possibly a late pass acting because eax still holds the value (not tested); ours
+// puts the global and data in ecx and the mask in eax, so nothing survives. The friendly test as a bool
+// `!= NONE && call` local 26, as a flag set under the 0x12c test 26; the type in a long local 26, in a
+// char local 26; a short mask 26.
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {
@@ -423,6 +429,9 @@ __forceinline short function_1a1fb0(short height)
 // Round 70 (--fast): a byte type 9; the clamp as a nested ternary 44 (216 bytes); each height
 // initialised from the clamp 9; an early return for the NONE object 9; the type mask named once
 // (as motion_sensor_object_type does) 60 (213 bytes, the mask held in ebx).
+// Round 76: helper parameter name 9; view declared after the type call 9; initial blip read before
+// the type call 24; primary/secondary direct clamp initialisation 9/9; primary separate clamp output 9;
+// helper const input with a separate result 9; named state 9. Original body restored.
 // @retail 0x1a1faf
 void motion_sensor_blip_set_type(long local_player_index, long object_index, s_motion_sensor_blip *blip)
 {

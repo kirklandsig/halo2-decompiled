@@ -497,6 +497,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // top 15, bare beside the unit index 15; the settings factor first in the cooldown product 15. The
 // two webs' instructions are identical in both builds, only their registers swap; the callee
 // 0x110ab0 (unmatched, src/unknown_10f1e0.cpp) builds differently in the reduced image.
+// Round 117: direct state-callee calls 15; a second actor lookup for the timestamp 127; repeated
+// actor lookups for the final prop index 139; a repeated node lookup 80; one shared state result
+// 95; a shared options pointer 57; separate tick/rate clock views 15; constant-first sentinel
+// comparisons 15; the settings result assigned inside its guard 15. Original best body restored.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {
