@@ -1129,7 +1129,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 588 (was 588): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 565 (was 588): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1169,6 +1169,10 @@ long function_10f5f0(long object_index);
 // M309: Actual returned matrix input, original/returned physics-state receiver,
 // with original/six-real output extent: 590/622/590/622; completed final result
 // 597/622/597/622. All restored; frame 0x19ac and native flag-result homes remain.
+// P268: Ordinary changed result retained, 588 -> 565 plain at retail length. With per-use
+// alternate/existing byte setters/both: 571/649/653; reversed relational operands give
+// 565/571/649/653. On ordinary changed, six-real buffer with names/velocity/both phase
+// scopes: 565 each (ties, restored). Frame 0x19ac and native flag-result stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1176,7 +1180,7 @@ bool __stdcall function_efde0(long vehicle_index)
 	s_vehicle *vehicle = VEHICLE_GET(vehicle_index);
 	byte *definition = VEHICLE_DEFINITION_GET(vehicle);
 	bool stopped = function_f1320(vehicle_index);
-	volatile bool changed = false;
+	bool changed = false;
 	word flags_c0 = vehicle->flags_c0;
 	vector3f linear_velocity;
 
@@ -3488,6 +3492,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // complete forward product parts 131; with shared subtraction/native fallback copy/both
 // 133/149/152. Five-point producer form rejected. Original complete body restored;
 // projection i-product, cross ranks and angle/trig homes remain.
+// P268: Rotated output forward/up/both field receivers after/before the matrix copy:
+// 141/193/184/141/193/184; both with complete forward/forward-and-up product parts
+// 194/195. Original body restored; projection/cross ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4278,6 +4285,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // all with a native tag-entry receiver 1012. Projection forms are match-only
 // for grouping; no candidate qualifies. Original complete body restored.
 // The 0x18 frame agrees; entry definition and zero/result/constant residence remain.
+// P268: Actual limit-record native field families (kind/spin/engine, speeds, steering/turn),
+// seven subsets 765 each; complete typed const-record reference 1019 (2676 bytes).
+// All types/observations/body restored; entry definition and zero/result/1.0 homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

@@ -3913,6 +3913,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 470: Repeated forward-field receiver at first rotation/before normalization,
 // each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
 // normalization SIMD ranks and trig/rotation/basis homes remain.
+// P268: Native angle/sine/cosine lexical home subsets 1/2/4/3/5/6/7, then all with
+// complete private projection/cross scalar identities: 145 each. Original helper/body restored;
+// normalized-axis SIMD ranks, trigonometric homes and rotation/basis carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
