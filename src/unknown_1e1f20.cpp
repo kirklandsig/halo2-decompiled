@@ -800,6 +800,8 @@ void swarm_leader_detach(long actor_index);
 // Y499: native cleanup/prop-iterator/actor-iterator phase scopes, seven subsets and
 // all with terminal receiver role name, eight 266 against fast control 266 (ordinary 281).
 // Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
+// M305: Native terminal parallel-table bound walk, for/while, less/not-equal and pointer declaration orders
+// 270/269/270/269/270/269/270/269 fast versus unchanged fast 266 (ordinary 281).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
