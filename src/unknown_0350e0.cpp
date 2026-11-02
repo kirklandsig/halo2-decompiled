@@ -1684,6 +1684,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
 // result home remains.
 // Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
+// F339: Whole local declaration orders ryxvp/rpxyv/rvpyx/yxrpv/pvyxr/xyrvp/
+// vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
+// 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
+// home and frame 0x14 versus 0x18 remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3128,9 +3132,6 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
-// earlier 175, 194; the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -3167,6 +3168,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
 // fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
 // 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
+// F339: Existing shared scalar-clamp producers for temporal/guarded-first/final
+// fades, seven subsets, then the final producer consumed directly:
+// 177/177/177/177/177/177/177/177. Original body and shared helper restored; the four-byte frame
+// gap and initial/final scratch scheduling remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
