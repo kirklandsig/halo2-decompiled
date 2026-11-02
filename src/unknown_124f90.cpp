@@ -632,6 +632,11 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // 2 (the stores follow source order, `inc esi` stays after `inc edi`; not kept); `g_4e6378 + index++`
 // 3; the inner counter declared before the for 3; a per-type count local used for the sum and the
 // bound 49 (the bound then sits in a register); `(char)type` 3; `++i` 3.
+// Round 73 (fast; the compile-only build hoists the g_4e6378 load the LTCG build reloads each pass, so
+// it cannot screen this): a pointer to the per-type count for the sum and the bound 3; the voice pointer
+// as `g_4e6378 + voice_index` with the index advanced in its own statement 3; a long type counter 28;
+// the bound as a short member of the counts struct 3; `system->voice_count +=` 3, with the two final
+// stores through system too 59 (561 bytes).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1427,6 +1432,12 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // gain copied into an s_decibels_view and added in place 16; the add in place on the converted gain's long 16.
 // One-file LTCG probe (exact here): a struct-returning converter, by-value struct operands and a float-
 // consistency pragma (diagnostic) all keep the fold or move the conversions below the class gain call.
+// Round 73 (fast): a real local for the converted gain before the class gain call, then a real sum over
+// a decibels_add inner 15 (class-first inner 16); the converted gain stored straight into a real 15; a
+// by-value outer decibels_add with a class-first inner 27 (LTCG hoists the class gain call above the
+// upper conversion); one result long redefined by `decibels_add(result, decibels_add(class call, gain))`
+// 27, gain-first 27, through decibels_sum 16. Compile-only, 23 tail forms (in-place `+=` on a real or a
+// long, calls inside the arguments, accumulators, either argument order) all fold the converted gain.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -1565,6 +1576,10 @@ void looping_sound_controller_release(long index);
 // Round 33 (lane 13; LTCG harness, base 5 = 5; the decrement already uses DL as in retail): the whole
 // decrement cast to byte 5; an early-return form for no effect 33; the controller pool global typed as a
 // record pool (no cast) 5; a `(word)` controller index 31; `(count + 0xff) & 0x7f` 5.
+// Round 73 (fast; both callees match retail byte for byte, so their register summaries agree): the
+// controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
+// through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
+// the unknown03 test nested 40; `(word)` controller index again 31.
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -2410,6 +2425,12 @@ real g_547f14;
 // Round 72 (plain): direct class-field loudness after forced 16; loudness from the pre-flag class base 7;
 // inner-seeded class sum / in-place class sum 7 each; an audible bool after forced 67 (468 bytes); a two-view
 // decibel-return union 7; a real const-reference sum helper 35; a forceinline class-lookup sum helper 35.
+// Round 73 (plain): a word flags local used by both flag tests 7; that local first with the sum inside
+// the `||` condition 42; the forced bool computed before the sums 42; the inner sum as a decibels_add
+// long with a loudness local before the forced bool 39; the class gain base first with a loudness local
+// before the forced bool 35. Compile-only diagnostic (not a keepable form): when the inner sum stays live
+// after the add, VC gives retail's exact pre-test `movss xmm1, base ... addss xmm1, xmm0`, so in retail the
+// inner sum is a register value VC does not reuse for the result.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2485,6 +2506,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // short 15 (BLOCKED-BY 0x219070: only its movsx and the flag0 order are left); that with a short
 // range-index local 53; a short range-index local alone 53; the flags pointer (diagnostic) 13;
 // a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
+// Round 73 (plain): flag0 set before the start-time store 18; `delay + SOUND_SYSTEM->time` 17;
+// `sound->flags |= 1` for flag0 17, before the start-time store 18; `delay + time` with flag0 first 18.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -3751,6 +3774,17 @@ struct s_128ca0
 // bounds 278/293; with both reference sums 278/293 (frame 0x494, first +0x44).
 // Original record declaration, body, gain helpers and every call restored; the two
 // extra argument homes and clamp joins remain. One incomplete-image comparison excluded.
+// Round 73 (fast; positional score (length) / LCS-aligned count, base aligned 147): the controller count
+// defaulted to 0xff and overwritten (retail's single store at the join) 234 (1045) / 144, a NONE char
+// default 275 (1040) / 162; that join with this file's decibels_pin single-exit 251 (1027) / 154; join,
+// single-exit pin and `decibels_pin(decibels_add(local_6, converted permutation gain bits))` at both pin
+// sites 228 (1043) / 142, the decibels_add operands the other way 258 (1086) / 148; pin and arguments
+// without the join 231 (1052) / 145; round 154's opening (shared scale local, pitch-bounds pointer, gain
+// seeded from arg_1 and updated in place) 245 (1052; exact to +0xba) / 110, with join, pin and arguments
+// 255 (1041) / 105 (42 aligned lines closer: the lead); that opening without the scale local 269 / 118,
+// with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
+// Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
+// round trip between each pin argument's sum and the pin parameter.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
