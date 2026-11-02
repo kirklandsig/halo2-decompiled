@@ -336,6 +336,9 @@ struct s_free_state_23d260
 // Round 355: shared complete roll cross, direct/staged, on accumulated projection/rows,
 // with pitch observation and named projection complement subsets: 282/282/298/298/191/191/347/347.
 // Original body restored; zero/side normalization and up/roll allocation remain.
+// Round 360: complete inverse/transformed/world position accumulations, subsets 1/2/4/3/5/6/7,
+// 288/121/121/288/121/102/121; all with reused pitch observation 276. Original matrix rows,
+// publications and complete body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

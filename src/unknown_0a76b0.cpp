@@ -2577,6 +2577,9 @@ long function_c8f60(long unit_index, short seat_index);
 // admission 315/315/324; long ordinal with every lookup on one pool receiver,
 // inside/before admission 307/311. Complete original body restored; entry EBX
 // vehicle promotion and unit/ordinal residence remain, with the original 0xf0 frame.
+// Round 360: admission/parent early failure guards and full-width result subsets,
+// 341/325/321/359/333/336/365; all with byte reset 369. Original admissions,
+// Boolean storage and complete body restored; entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
