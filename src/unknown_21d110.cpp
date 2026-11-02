@@ -443,6 +443,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 283: shared start with a multiply-used effect-admission fact, bool/byte/short/long,
 // nested lifecycle 223/223/205/207; combined success/failure lifecycle 223/223/205/207.
 // All eight sensitive callers preserved; original body and expansion policy restored.
+// Round 232: Separate common finalization retaining distinct start providers, success/failure
+// first 191/190; with a twice-used allocation-success value 183/185; entry result plus
+// settings/created_sound_index local names 191/190/183/185. The allocation value moves state to
+// ECX, but frame eight/four and state/tag homes remain. Original body restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

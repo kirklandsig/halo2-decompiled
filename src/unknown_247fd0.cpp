@@ -269,6 +269,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // non-inline random function (diagnostic: LTCG inlines it and the compare still splits) 133; the 0x137bd0 lookup
 // before the field_3c store 73, between the field_3c store and the count increment 73; field_10 first with the
 // lookup first 133; the child pointer declared bare at the top of the loop body 70 (same code).
+// Round 232: Two-consumer cache-array address at use/before reconciliation 70/70; with a twice-
+// used child-lifetime value 78/78; reconciled current-record evaluator input 138/138; both
+// changes 139/139. Frame 0x10 agrees; timestamp/fifth-draw scheduling and child register
+// allocation remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
