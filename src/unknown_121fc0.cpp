@@ -202,6 +202,15 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 299: Standard endpoint/count-based native pointer-table initialization, with independent
 // counters before the table and zero read-count interactions: 238/239/238/239/225/225/225/225. All
 // original source/includes restored; outer EBP preservation and read-size/count/cursor homes remain.
+// Round 29 (lane 17, fast): register-masked aligned difference 8 of 224, nearly all from EBP's save (every slot in the block is
+// 4 off). The async read's out-locals declared volatile (diagnostic, not kept: no new volatile this round): done 128, success 128,
+// both 128, size 102 (masked 4: retail's three reads around the clamp and the slot order, leaving only EBP's save and restore),
+// size with done or success or both 102/102/102. The flag store in both arms of the success test 127, on the volatile size 101;
+// the store in an else arm with the success arm's own store 127/101; a `do ... while (false)` with `if (!success) break` 128/102 (EBP
+// still saved in the first tokenizer's block in all of these). Compile-only: a NULL token walked after the test, a goto to the
+// flag store, a token from a conditional, the token at block or function scope, an uninitialized token with two success tests, a
+// for walk, a do walk, the whole block in a do/for once, an early return of the done path all leave the save late; only a real use
+// of the token after the block moves it to the block's top, which retail's immediate flag store does not show.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
