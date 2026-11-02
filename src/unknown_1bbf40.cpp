@@ -660,6 +660,16 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // lead's code with allow_exit in BL), the bitwise flag 156; `allow_exit = true` before the seat call: bitwise
 // 48, if/else 200; at the scan's start: if/else 200, bitwise 48. Retail's join of the scan exits (the CL
 // reload at 0x1bc16f) is not an allow_exit store.
+// Round 456: Native seating-permission short/word/long/dword carriers, entry defaults
+// 180/180/180/180; defaults after actor acquisition 180/180/180/180. Original Boolean permission,
+// special predicate, iterator, points and full body restored; NONE/special register ownership remains.
+// Round 458: Actual Boolean state-field domain on the retained bitwise/proximity graph,
+// normalized bool, then native bool/byte/char/short/word/long/dword predicate carriers:
+// 47/193/193/193/57/57/190/190. Original byte declaration, predicate and body restored;
+// NONE EBP/EBX and special BL/CL remain.
+// Round 463: complete indexed actor observations at each use, reused low index long/word,
+// canonical bitwise/logical/conditional/join-defined special graphs: 310/304/326/299/287/295/294/250;
+// original actor receiver, predicate and complete executable source restored.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

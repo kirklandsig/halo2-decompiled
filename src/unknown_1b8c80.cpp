@@ -1504,6 +1504,15 @@ void function_1f86a0(long actor_index);
 // the masked byte at [esp+0x13] as retail, but the flags byte is CSE'd into BL for the 0x40 test and the entry stays in
 // memory), with the 0x40 test through a bit-6 bitfield 244, through the slot view 234 (865 bytes); the mask local with
 // the 0x40 test through the slot view 235 (866 bytes), through a bit-6 bitfield 134 (same code).
+// Round 513: Complete per-iteration flags captured as byte/word/dword, loop/function
+// carriers, with typed member payload first and on the outer dword graph:
+// 134/134/235/233/134/235/233/233. Original body and data declarations restored.
+// Round 462: fallback-failure guard, absent-selection guard, both, both with common
+// cleanup-result exit, each with native/original slot payload: 232/232/138/138/232/232/237/237.
+// Original payload and exits restored; frame, mask spill and entry/root carriers remain.
+// Round 465: admission field captured before the root calls, bool/byte/short/long,
+// each with native/original payload: 225/225/225/225/214/214/225/225.
+// Original field observation restored; frame, mask spill and entry/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

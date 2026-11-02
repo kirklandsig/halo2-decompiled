@@ -3324,6 +3324,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
 // at selector production 243/31/957/243. Original body restored; selector order,
 // span/constant reload pairs and shift/clip quantizer homes remain.
+// Round 315: Shared quantizer complete result, lower-default, conditional and upper-default
+// graphs on the recovered state-call graph 31/787/31/690; each with paired native input
+// expression names 31/787/31/690. Original helper/body restored; selector scheduling,
+// post-bias reload order and quantizer shift/clip homes remain.
+// Round 462: opacity-selector/lower-adjustment/quantizer-sample lexical homes, all seven
+// nonempty subsets 31 each; all with color-selector declaration first 939. Original names,
+// selector producers and shared quantizer restored; reload pairs and shift/clip homes remain.
+// Uniform parallel scale/gain product operand directions, seven subsets and all with the
+// cutoff product reversed, 31/31/31/31/31/31/31/31; original product inputs restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

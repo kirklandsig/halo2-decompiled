@@ -611,6 +611,25 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 302: native word store owned by existing pixel helper, pointer/reference output and inline/force-inline:
 // byte parity 107/107/107/107; full parity 208/208/208/208. Original helper and decoder restored;
 // alpha widening, literal assembly and two-run reuse remain.
+// DL231: Shared first packed-pixel output, full-width helper/word fills/common first count combinations:
+// 188/196/195/195/188/200/199/199. Alpha extension, literal assembly and two-run reuse remain; original
+// executable source restored.
+// Round 249: Standard fill_n/fill independently at switch/ordinary word-fill boundaries:
+// 173/165/246/173/138/199/194/214. All but ordinary fill also disturb the matched caller in
+// preview. Original loops/header/helper/decoder restored; parity extension, literal assembly and
+// run-two reuse remain.
+// N round 296: Standard endpoint/count-based fill contracts independently in switch/ordinary
+// run families, all eight nonoriginal combinations 138/165/173/214/199/173/194/246. Original
+// decoder, helper and includes restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 299: Native literal word/dword byte views, high/low-first and original/full helper parity:
+// 141/141/137/137/183/183/180/180. Exact-only representation forms and the entire original helper/body
+// restored; alpha extension, literal assembly and run-two reuse remain.
+// N302: Literal owns two payload bytes, skip after publication / read-consuming cursor,
+// crossed with full parity and native word fill values: 131/135/207/202/119/125/211/207. Original
+// decoder/helper restored; alpha extension, literal assembly and run-two reuse remain.
+// N306: Native byte header/class and word run spans, seven subsets, then all with signed-word
+// runs: 85/186/189/171/180/174/176/176. Original carriers, helper and decoder restored; alpha widening,
+// literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

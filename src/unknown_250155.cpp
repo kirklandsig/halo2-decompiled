@@ -1493,6 +1493,9 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // in their fors 83, both maxima through the CRT's __max 83, every loop counter for-scoped 83, the branches swapped
 // (`mode == 3 || (mode >= 1 && !teams)` first) 83 (all the same code). Retail's homes follow the names
 // (index_count -8, item_count -0xc, player_count -0x10, this -0x14); ours put item_count at -8 whatever the names.
+// Round 349: branch-local append cursors with selected-end tail filling, first/second/both
+// 150/154/178; with indexed tails 151/146/164; both with count published after pointer/indexed
+// filling 168/155. Original array, counts and complete body restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2687,6 +2690,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // as one chain `*text_a = *text_b = *bitmap_a = *bitmap_b = NONE;` 93 (925); the last loop's indices declared at
 // function scope 95 (same code); the `case 0: case 2:` arm first 95 (same code); bitmap_b stored before bitmap_a in
 // the arms 96.
+// Round 349: all first-loop player reads through the populated item value4, with separate
+// display ordinal/unsigned local-search/direct initial flags in eight subsets:
+// 284/285/284/285/274/275/274/275. The intervening range setter leaves value4 unchanged; all forms restored.
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

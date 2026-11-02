@@ -1527,6 +1527,13 @@ struct s_territory_tag
 // chain in a small inline getter 43; the condition as a conditional 0xb7930 argument 65; the chain
 // walked through one reassigned byte pointer 43; the chain's last step as data[0].item_tag 43; the
 // marker index read once into a short local for the test and the copy 84 (281 bytes).
+// Round 71, fast: the whole test in a getter with its own result, as the argument or into a local 24/24; named
+// tag, data, or both 24/24/24, with the copy helper 43/43/43; the peer in a local before or after the NONE
+// 24/24, with the helper 43/43; the helper alone 43; the index set in an else arm 41, with the helper 65 (271
+// bytes), inverted test with the helper 65 (271); the chain through one reassigned pointer 24, with the helper
+// 43; through tag_index itself with the helper 43; a named globals index with the helper 43; a getter for the
+// tag 24, with the helper 43; a getter for the data 24, with the helper 43; nested getters with the helper 43,
+// forceinline 24. Registers rotate from the chain on: fixing the middle pointer fixes all of the second half.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

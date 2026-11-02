@@ -203,55 +203,7 @@ PRIVATE void function_297600(long actor_index)
 
 real normalize2d(point2f *vector);
 
-static inline real actor_looking_normalize2d(point2f *vector)
-{
-	real x_square = vector->x * vector->x;
-	real magnitude = (real)sqrt(x_square + vector->y * vector->y);
-	if (!(fabs(magnitude) < 0.0001f))
-	{
-		real scale = 1.f / magnitude;
-		vector->x = vector->x * scale;
-		vector->y = scale * vector->y;
-		return magnitude;
-	}
-	return 0.f;
-}
-
 /* A switch selects whether the vertical component is compared. */
-// score 2 (was 2): the x87 square addition is before the final reference-component store instead of after it; frame and final dot agree.
-// Earlier: the horizontal dot now matches retail instruction for instruction; the last
-// difference is the scheduler's placement of the x87 add: retail sums the two squares after the
-// reference's second component is stored, ours sums them before that store.
-// Vector parameters
-// swapped, aggregate 2D copies and the 3D result assignment (kept). The aim renamed 40; declarations
-// swapped 39; forceinline/shared first normalization 40/40; a product accumulation 20; a commuted sum 14;
-// the final comparison assigned 25; nested comparison/single product local 6/6; product operands swapped 8;
-// reversed terms and operands 8; helper terms/shared magnitude/named square 8/8/8; squared accumulation 10;
-// dot3f 8; an early final return 83; shared normalization with reversed terms 8; indexed vector2f locals 8;
-// comparison operands reversed 8; an explicit false arm 27; single-product operand swaps 8/8.
-// Native copies with complete/original result graphs 4/6; complete projected aggregates 28; complete parallel product/comparison variants
-// 66/66/65/66; both external normalizations 122; native copies with uniform operands/named parallel products 6/6/6/6; single-worker 100-trial
-// search from native copies/result 4, no improvement. Four-difference forms restored under the retention gate.
-// Complete single-exit dimensional result 4 (two-point gain, restored); horizontal-first dispatch 71; both workspaces
-// at function scope 6; named native vector2f components 6; complete named dot 6; both named products 14; single-exit
-// byte/integer results 57/62; direct horizontal success on that graph 62; full conjunction assignment 83;
-// single exit plus y-first normalization stores 8; single exit plus native fast normalization 4 (restored).
-// Single exit with the horizontal sum's term and operand orders 12/12/6/12, parenthesised terms 4, a
-// named dot 68, named factors 47, pointers to the locals 38; none better than the plain single exit.
-// Round 398: paired real squares, uniform scalar inputs, both, squares plus sum; each with original/conditional reference-projection lifetime
-// 8/38/122/128/122/128/8/38; all restored.
-// Round 113: unnamed helper square 6; helper with an else-zero single exit 2 (same code); sqrtf 2;
-// brace-initialised reference copy 23; `>=` epsilon test 34; permuter (48 variants) none below 2.
-// Lane 13 r20: the leaf order follows the first source mention of each field (only the final dot names them);
-// a split x term gives x first but faddp first, a single tree gives the store first but the dot's order; retail
-// needs reference x then aim y first, which one dot cannot spell. Both through normalize2d 122 (inline declaration
-// 122; kept out of line even from a non-/Ob1 file 122); single tree with aim member copies y,x 10 / x,y 12; helper
-// defined after the caller single/named 6/2; single tree with the dot's y term first 6, reference-first 4.
-// Round 91: native fast normalization with horizontal term/operand orders 12/12/12/6/4/6/6;
-// the existing magnitude helper in the private normalizer 6; all restored.
-// Round 121: reference copy made after the aim test (nested ifs) 39; components read into named locals in the
-// private normalizer 6; header normalize2d_fast + dot_product2d on vector2f copies 38 (258 bytes); dot with the y
-// term first 8; one named squared magnitude 6. Compile-only: every 3D dot term/operand order gives identical code.
 // @retail 0x296d60
 PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f const *aim, bool three_dimensional)
 {
@@ -262,12 +214,15 @@ PRIVATE bool function_296d60(real cosine, vector3f const *reference, vector3f co
 	}
 	else
 	{
-		point2f aim_horizontal = *(point2f const *)aim;
+		vector2f aim_horizontal = *(vector2f const *)aim;
 		point2f reference_horizontal = *(point2f const *)reference;
-		if (actor_looking_normalize2d(&aim_horizontal) > 0.f &&
-			normalize2d(&reference_horizontal) > 0.f &&
-			reference_horizontal.x * aim_horizontal.x + aim_horizontal.y * reference_horizontal.y > cosine)
-			result = true;
+		if (normalize2d_fast(&aim_horizontal) > 0.f &&
+			normalize2d(&reference_horizontal) > 0.f)
+		{
+			real aim_y = aim_horizontal.j;
+			if (reference_horizontal.x * aim_horizontal.i + reference_horizontal.y * aim_y > cosine)
+				result = true;
+		}
 	}
 	return result;
 }
@@ -660,6 +615,13 @@ struct s_collision_result_buffer_1697c0
 // shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
 // 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
 // normalization scratch/axis homes and initialization/rotation schedules remain.
+// Round 507: Normalized component publication ikj/jik/jki/kij/kji 321/320/319/324/324;
+// complete product publication ikj/jki/kji 322/320/325. Three-point best rejected;
+// original normalizer restored. Scratch, axis and rotation homes remain.
+// Round 312: complete squared-norm terms 334; initial best setter 346, both 347;
+// initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
+// terms 337; both startup setters with squared terms 342. Original helper and body restored;
+// frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -876,10 +838,22 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // 0x1ffe00 call loses its pushes); the remembered branch first (`if (state < 1 || state > 2) { if (unknown00 == NONE)
 // goto done; ... }`) in case 2 341 (1404 B), in case 1 (`state < 1` to done first) 305 (1440 B), both 305; the
 // object index read before 0x210850 in both remembered branches 309 (1444 B).
+// Round 233: Both normalization producers with false-default positive assignment,
+// bool/byte/short/long result: 267/263/380/372; provisional success with explicit unordered-safe
+// failure correction: 260/266/287/287. Original result graph and complete body restored; narrow
+// carriers retain frame 0x8c, wider carriers expand it to 0x90. Result/presence byte roles and
+// shared case-tail predecessor remain.
 // Round 243 (fast control 341/1404, full 257/1448): direct false admission returns for
 // movement/pool/selected-reference/attention/object/default, actor admissions/all admissions
 // 396/343/363/343/347/338/343/338. Three-point default forms rejected; all original exits,
 // result producers and native point copies restored. Byte homes and direction-tail predecessor remain.
+// Round 348: actual point presence true by default, cleared in direction-only cases,
+// bool/byte/short/long 355/355/347/347; actual direction-only complement with
+// false default 355/355/347/347. Calibrated fast control 258/1448 versus full
+// 257/1448; all exact-only predicate-lifetime forms restored with original cases.
+// Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
+// each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
+// plain 323 versus baseline 257. Original result, presence and full body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1325,6 +1299,16 @@ struct s_actor_looking_structure_view
 // candidate reference 139; reused axis-j scalar 158; staged projection j,i,k/j,k,i/i,j,k/i,k,j
 // 60/146/32/21; two-stage projection j,i/i,k/i,j/k,j/k,i/j,k 31/22/31/32/22/32;
 // two-stage loop score 124. A 2400 s permuter startup timed out before its baseline. Restored.
+// Round 58: forward's k cleared through an inline pointer helper with the score as written 27, written i,k,j / k,i,j / k,j,i 21
+// (the selected-direction sum becomes retail's, the loop score j,k,i; one-caller helper, -2, not kept); a named forward.j at the score
+// 69; score via dot3f 33; named direction i/j/k at the score 124/128/142 (928 bytes); pointers to forward's i/j/k at the score 23/25/33,
+// to the direction's i/j/k 33/33/33. Compile-only rotation region (control 15): 432 statement and sum orders, 270 score/selected/helper
+// combinations and 577 one-use named leaves: none below 15, dot stays k,j,i. Pointers to fields in the helper (per use, 5,250-step search) do
+// move the dot to retail's j,i,k: compile-only 9, real 17 at best (pointers at all uses but the dot's j and k vector terms, the axis j of
+// cross i, the axis k of cross j and the i and k result rows; mixed per use, not kept), its 24 one-use neighbours none lower; left there the
+// axis j load ahead of the copy and the score's order; other searches real 25/25/135 (928 bytes). Pointers at every use of axis i+j 29, axis
+// k+vector j+k 127, axis k+vector j+i 128, axis k+i+vector i 139, axis j+vector j 33, axis j+vector k 29, vector k+axis j 31, axis k 138,
+// axis j 140, axis j+k 144, all of the axis 61 (928 bytes where a three-figure count). The score i,k,j never appeared in about 2,300 compile-only forms.
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

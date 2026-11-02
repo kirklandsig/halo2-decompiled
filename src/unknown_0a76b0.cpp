@@ -268,7 +268,7 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
-// score 271 (was 279): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
+// score 271 (was 271): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
 // takes unit_index in esi and keeps name in edi, which function_e6960's type argument clobbers, so name is
 // reloaded at the join and VC cannot thread the switch's two function_e68c0 cases into retail's single
 // shared call; the c7070 chain's calls also merge differently.
@@ -276,6 +276,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // index) 271; actions read at each use 337; no unit local 344; next_state/next_action declared first 278;
 // the e70b0 count arms the other way round 278 (fewer structural differences, positional worse); count
 // declared at function scope 277.
+// Round 346: shared-call cases last/first/reversed/reverse-last, with original/early conditional outputs:
+// 271/271/271/271/279/279/279/279.
+// Frame 8 agrees; unit/name/actions register ranks and shared-call threading remain. Original executable
+// body restored.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1799,6 +1803,7 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // weapon lookup through `unit` 121. Diagnostic (not kept): an unused header local on that form 87 (336: retail's
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
+// DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2195,6 +2200,7 @@ __forceinline char unit_action_round(real value)
 // J224: Complete frame-to-seconds parts 234; native short frame domains 279; both 278.
 // Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
 // all with success at the final return 278. Sub-eight forms and all other trials restored.
+// DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2540,6 +2546,10 @@ long function_c8f60(long unit_index, short seat_index);
 // goto-free form); on it the 0x3dc state in a named long tested twice 304 (aligned 156 -> 151); the vehicle
 // lookup before is_vehicle 308; unit declared at function scope, assigned after the test, 306; is_vehicle
 // with the file's `1u <<` flag (retail's shr) 306 (aligned 155).
+// Round 346: parent result with outer result, byte result and existing vector zero setters:
+// 304/331/307/338/304/331/307/338.
+// Frame 0xf0 agrees; vehicle/index/unit-pointer ranks, state comparison and late result scheduling remain.
+// Original executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

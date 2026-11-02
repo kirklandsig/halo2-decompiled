@@ -223,6 +223,16 @@ short __stdcall function_2551c0(long actor_index)
 // Round 494: native slot data block with complete vector/axis/output component arrays 89;
 // vector/axis/both/output/vector-output/axis-output/all component-array roles
 // 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
+// Round 348: indexed slot payload on the complete setter graph 171; complete direction,
+// best-copy and rotation-output setter subsets 166/111/166/178/153/188/166.
+// Original helper and copies restored; early cross products and score-dot schedule remain.
+// Round 351: Complete mutable output-row bases, row/field accumulators and paired
+// projection accumulation, first with the native slot payload: 150/131/68/130/134/42/133/133.
+// On the 42 graph, complete rowwise/phasewise cross accumulators without/with
+// cosine complement 73/73/126/126. The 42 form gains only one; all original source restored.
+// Round 275: Complete sequential/interleaved cross accumulators, crossed with the
+// cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
+// Original helper, payload view and complete body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -735,6 +745,22 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 27 (lane 17, fast): the lead. The guard split with the unit read into a named long before the
+// 0x110ab0 test, as matched 0x1ae440/0x1a9ec0 write it (a one-use local, so match-only) 42: the argument
+// takes EAX and the scratch rotation disappears; with it the target lookup before the vector copies 22,
+// the request stores short, long, type 19 (type, short, long and short, type, long 19; long, type, short and
+// type, long, short 22), the object size in a named local used by both sums 17 (the sum then loads the field
+// first as retail). Left at 17: the first length, the sum, the adjusted projection and the 0x26bfa0/timing
+// outputs sit in other slots (retail 0x14 sum, 0x18 length and projection, 0x1c index and distance; ours
+// 0x10, 0x14, 0x1c, 0x18), and the lateral reload and the side maximum swap XMM2/XMM3. No gain on it: the
+// radius declared before the target 19; a named maximum, reversed compare and fallback sum spellings 19 each;
+// the sum as `length + (size + radius)`, `projection < ...`, radius first in one or both sums, 0.6f first 19
+// each; renames of the length, projection and side outputs 19 each; side outputs reordered 19 (13/14 swapped
+// 21), declared at the heading or 0.95 block top 19; the side outputs as an array 66; the adjusted projection
+// as a copy or as a new variable from the last subtraction 17; projection, index and timing declarations moved
+// 17; a named reach with a repeated sum 25, used in both 196; a named lateral copy 17; the unit also passed
+// to later uses 227/234; the unit radius in a variable 167; the side defaulted to zero first 117. Without the
+// named unit: target lookup first 94 (964 bytes), store order 89, both 94.
 // Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
 // pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
 // Round 327: Complete entry readiness in bool/byte/short/long storage, positive and
@@ -748,6 +774,17 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // observation and complete body restored; initial unit-call scratch rotation remains.
 // Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
 // pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
+// Round 353: Second-probe-only reverse producer, existing setter, scoped second output
+// and probe-output role names, 135/135/191/191/135/135/191/191. Original probe workspace
+// and complete body restored; unit-call scratch register and length/projection/query homes remain.
+// Round 507: Uniform three-use object radius after properties/delta/projection/positive
+// admission 221/221/216/215; opposite sum operands give the same four scores. Original
+// field observations and body restored; unit-argument and scalar homes remain.
+// Round 300: exact-only recovered entry/radius/request graph with paired final
+// clearance producers, both declaration orders, mutable/const and conditional/
+// complete result arms: 17 each (eight forms); reuse of distance for its
+// normalized-length and adjusted-projection phases 17. Restored: the entry
+// graph still needs a one-use unit snapshot; sum/length/projection homes differ.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

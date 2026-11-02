@@ -207,6 +207,22 @@ real normalize2d(point2f *arg_0);
 // Round 451: Existing state-spill declaration at entry/after actor/near entry/after input,
 // with captured/direct global receiver: 211/211/211/211/211/211/211/211. Original declaration, receiver, stores and full body restored;
 // output EBP and point/vector homes remain.
+// Round 463: optional adjusted result at the geometry join, positive/complementary
+// bool/byte/short/long carriers 236/236/238/237/236/236/235/236; exact-match-only flags.
+// Original direct optional stores and complete executable body restored.
+// Round 120 (fast with the callees and the three matched callers, all still matching): `return false`
+// moved to the end under an if/else 211 (same code); a single-exit bool result (false by default, set
+// true in the found arm and at the end of the far path) 249 (1005 bytes: the output pointer then stays in
+// EBP and the false return is the last block, as retail; LCS-aligned 123 -> 107); with the result set
+// true before the out-pointer test 248 (1011 bytes, aligned 100: retail's `mov al, 1` ahead of that test
+// and its shared false epilogue); on that, a named second copy of the input point for the to-center
+// difference 240 (1034 bytes, aligned 114); the to-center vector initialised from the input and
+// differenced in place 240 (1034 bytes, aligned 115). Lead: the single-exit result plus a fix for the
+// center/vector scheduling (retail copies the input a second time into +0x28 and differences in place).
+// Round 465: ordered native squared-length fold, long/short/signed-byte/int
+// ordinals, original/joined optional-index guard: 267/237/237/267/284/236/236/284.
+// Joined guards change the convention and lose three caller matches. Original sum,
+// guard and complete body restored; output EBP and point/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

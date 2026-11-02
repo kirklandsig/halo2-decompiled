@@ -62,7 +62,7 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 	arg_2->k = arg_0->k * arg_1;
 }
 
-// score 345 (was 345): frame 0x58 versus 0x64 and magnitude/vector/query homes remain; actor EAX and stack input now agree.
+// score 345 (was 345): frame 0x58 versus 0x64 (query output vector shares the magnitude copy slot) and magnitude/vector/query homes remain; actor EAX and stack input now agree.
 // Earlier transport comparison: retail takes the first argument in EAX, keeps a frame of 0x64 and returns with ret 0x20, ours uses the fastcall ECX/EDX pair, a frame of 0x5c and ret 0x1c; the declaration lives in another file and the signature may not change, so the prologue, the argument homes and the frame size cannot be reproduced.
 // MiniMax D: the requested direction read through its own address (a stack argument, as
 // retail's) 366, not kept (an address-taken read needs a byte match); the magnitude summed in
@@ -232,8 +232,22 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Round 301: Direct shared clamp expansion at turn, complete final vector and both 345/345/345; separate
 // turn/speed values alone or with each clamp boundary 351/351/351/351; separate values and private clamp
 // forwarding to the shared expression 351. Frame remains 0x58 versus 0x64; restored.
+// Round 120 (fast with the callees; convention agrees, so the slot forms were re-measured): the frame
+// difference is one slot: the query's output vector shares +0x2c with the magnitude's input copy, where
+// retail gives it its own +0x5c. A named copy of *arg_2 for the magnitude 345 (same code, still shared);
+// magnitude helper zero assigned in place 421 (1854 bytes); planar helper zero assigned in place, zero
+// arm first 357 (1863 bytes); both 427; planar in place with the scale arm first 354 (1863 bytes,
+// LCS-aligned 229 -> 201: retail's single planar homes and branch order; the lead); with the in-place
+// magnitude too 426 (retail's magnitude branch and single home; definition/magnitude homes 0x10/0x14
+// swapped and the sum i-first where retail is k-first). Restored.
 // Round 304: function-scope planar storage subsets 1-7, then all three at settings scope in reverse
 // declaration order: 345 each. Every initializer stayed at its original read; original body restored.
+// DH round 279: Initial working/output/query vector producers after the matched position provider, seven
+// subsets then native in-place planar result [344, 421, 423, 348, 345, 409, 411, 419]. Original executable
+// body restored.
+// DH281: Complete magnitude input-component declaration orders ijk/ikj/jik/jki/kij/kji, then K/J/I input
+// storage with planar single-root and both single-root results [343, 343, 345, 345, 345, 345, 354, 426].
+// Original executable body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
