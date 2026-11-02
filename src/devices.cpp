@@ -1119,6 +1119,10 @@ bool function_108530(long device_index, long name)
 // body restored; initial-velocity register and ramp-down residency remain.
 // DH round 262: immediate phase-distance selections 125/121/125; conditional phase derivatives
 // 121/121/121; both producer families 125, with field-owned cruise speed 141 (529 bytes). All restored.
+// Round 305: complete immutable bounded-time producers with mutable/cruise-const/
+// half-const/all-const phase nodes give 142/157 in each local/field cruise pair.
+// All eight are 500/523 bytes and change caller allocation; original argument, clamp,
+// phase lifetimes and field publication restored. Initial velocity residency remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1605,6 +1609,9 @@ bool function_0b6760(s_index_pair const *pair);
 // qualifiers restored; frame/index/header/state/result homes remain.
 // DH round 262: byte/short/long/dword active-channel counts 320/409/411/411; entry initialization
 // 320/409/411/411. Frame remains 0x1c versus 0x20; original activity result and complete body restored.
+// Round 305: finite first-motion/integration/second-motion completion domains,
+// subsets 1..7, 389/327/407/344/395/341/423; all with finite activity 433. Original
+// bool carriers, activity, inherited qualifiers and body restored; frame/homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
