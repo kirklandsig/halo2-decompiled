@@ -1746,6 +1746,9 @@ void function_b7360(long object_index);
 // 472/309/487/309/486/323/499/499. All regress; complete callback and transfers restored.
 // Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
 // 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
+// Round 525: Shared case-seven/eight admission, either payload first, native bool/byte/short/long
+// moving result: 473/473/473/473/476/476/476/476. Original separate admissions, result widths, cases and
+// complete callback restored; pool/input/output ownership and the 24-byte deficit remain.
 // F327: Complete single-exit zero/two storage before/after acquisitions,
 // short/long/byte/dword 457/457/543/457 in either position. Original callback
 // restored; actor/output entry carriers and the 24-byte deficit remain.
@@ -2253,6 +2256,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 359: Complete spatial/countdown arm priorities 4/0/7/5, 7/4/0/5, 0/4/7/5,
 // 5/4/7/0, 0/5/4/7, 7/0/5/4, 5/7/0/4, 0/7/4/5: 469/473/469/478/478/492/476/473.
 // Original arms and full body restored; actor/state ownership and first-point home remain.
+// Round 361: Complete case-one/fallthrough group after arms 4/7/0/5/9/10/12/11:
+// 625/618/618/624/620/628/618/613 (fast control 485; full 469). Original full
+// case graph and body restored; actor/state ownership and first-point home remain.
+// Round 363: Complete native CRT vector publications turning/state/current, subsets 1/2/4/3/5/6/7
+// 485/485/485/485/485/485/485; all with facing input copy 485 (fast control 485; full baseline 469). Original
+// transfers and body restored; actor/state registers and first-point home remain.
+// Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
+// existing actor perception view: 485 each (fast control 485; full 469). Original complete
+// record layout, observations and executable body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

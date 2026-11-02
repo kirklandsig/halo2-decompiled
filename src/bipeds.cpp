@@ -927,11 +927,27 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// P267: word flag writers (the existing word_flags_set) with case 5's 0x35c store in both arms of the
+// surface test / case 4's contact (0x354) stored before the position (0x364) / native decoded widths,
+// subsets 1/2/4/3/5/6/7: 32/30/211/27/225/213/225; all without the writers 229. Not kept (coordinator):
+// retail stores 0x35c once, between the flag test and its branch (0xddcd0), so the both-arms form is a
+// duplicated store, and retail stores 0x364 before 0x354 (0xdddbd, 0xdddc7), the source's present order,
+// so the case 4 swap is a score-picked order. The writers alone stayed under the keep bar in earlier rounds.
 // F321: complementary contact-discovery state in bool/byte/word/long storage,
 // then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
 // Original executable body restored; lookup receiver retention and store scheduling remain.
 // M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
 // M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
+// Lookup aggregate initialization at lookup/case/admission/object phases 186/217/204/204;
+// CRT clears at those phases 182/213/199/199. Shared word-bit publication for crouch,
+// contact, other and all flag groups 39/38/42/35; seven-count lead above 30 rejected.
+// N317: Current-crouch bounded state direct/successive 42/42; shared word flags
+// 35/35; branch-owned instance/contact-first publication 27/27; actual shared lookup
+// receiver 2/2 at 1481 bytes. Incoming field capture and receiver alias are exact-only;
+// the two crouch-add operands still reverse. Earlier uninitialized delta declarations
+// before object/gate/component/root, original/offset names, 2 each (eight forms).
+// Common real lookup/getter record declarations 42, joint publication 27; all other
+// lookup-user scores unchanged. Original body and all supporting declarations restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1135,7 +1151,7 @@ void function_1e6360(s_biped_physics_output *output, real height, long arg_159e6
 void function_1e67a0(s_character_physics_component *component, s_type_94656b *datum, byte a,
 	byte b);
 void function_1e67f0(s_type_94656b *datum,
-	s_character_physics_component *component, long animation_id, point3f *p1, point3f *p2, point3f *p3);
+	s_character_physics_component *component, c_type_709360 animation_id, point3f *p1, point3f *p2, point3f *p3);
 void function_1e6850(s_type_94656b *datum, byte a, point3f *p1, point3f *p2, real v);
 real function_1e9700(short row);
 real function_dfa60(long arg_159e6d);
@@ -1270,7 +1286,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 610 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// score 596 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
 // Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
@@ -1321,6 +1337,13 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P258: Per-use tag/state/both/component/tag+component/state+component/all
 // receivers 666/698/676/681/695/692/683; all plus use-site animation flags
 // 689. Original receivers, eye helpers and complete executable body restored.
+// DL242: Phase velocity reuse 608; packed-output library copy 616 and paired reuse 596 (exact-
+// only); getter inline alone 610, with reuse/copy/both 608/616/596; all plus facing library copies
+// 600. Native packed setter parameter/field 616, with phase velocity reuse 596. Result-object
+// rename, construction at producer and both each tie 596. The getter inline declaration is
+// restored. Keep the native packed-value setter contract with the shared velocity workspace;
+// ordinary whole-program confirmed. The sole call passes the existing four-byte object directly;
+// every setter body statement is unchanged. Frame and material/animation homes still differ.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1334,7 +1357,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	long material = 0;
 	real boost;
 	point3f position;
-	vector3f ground_velocity;
+	vector3f velocity;
 	vector3f facing;
 
 	function_b9dd0(arg_159e6d, &position);
@@ -1342,12 +1365,12 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 
 	if (!rigid_body->m_fixed)
 	{
-		vector3f_assign(&ground_velocity, rigid_body->m_motion->m_linear_velocity(0),
+		vector3f_assign(&velocity, rigid_body->m_motion->m_linear_velocity(0),
 			rigid_body->m_motion->m_linear_velocity(1), rigid_body->m_motion->m_linear_velocity(2));
 	}
 	else
 	{
-		ground_velocity = *g_4687a4;
+		velocity = *g_4687a4;
 	}
 	if (field_bit_test(*(dword *)(definition + 0xbc), 11))
 	{
@@ -1402,7 +1425,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 		definition + 0x264, 9, field_bit_test(biped->flags_c0, 6), turning, TEST_FIELD_BIT((biped->control_flags >> 3) & 1),
 		field_bit_test(*animation_flags, 2), field_bit_test(biped->flags_c0, 8), function_e4050(arg_159e6d),
 		field_bit_test(biped->flags_348, 1), biped->unknown39d != 0, g_51e9c4->unknown0, boost, &biped->control, &position,
-		&biped->forward, &biped->up, &biped->facing_goal, &facing, &ground_velocity, material);
+		&biped->forward, &biped->up, &biped->facing_goal, &facing, &velocity, material);
 	switch (biped->physics_mode)
 	{
 	case 1:
@@ -1423,7 +1446,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 		bool moved = false;
 		real distance = 0.0f;
 
-		ground_velocity = *g_4687a4;
+		velocity = *g_4687a4;
 		if (biped->unknown390 != NONE)
 		{
 			long root_index = function_baf80(biped->unknown390);
@@ -1436,7 +1459,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 				s_biped_header *header;
 
 				function_b9dd0(biped->unknown390, &target_position);
-				function_ba1d0(root_index, &ground_velocity, NULL);
+				function_ba1d0(root_index, &velocity, NULL);
 				if (function_183670(root->havok_component_index, biped->havok_component_index, &nearest_a, &nearest_b,
 					&distance))
 				{
@@ -1480,26 +1503,24 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 			target_position.z = facing.k * 0.3f + position.z;
 			biped->unknown434 = 0.3f;
 			distance = 0.3f;
-			ground_velocity = *g_4687a4;
+			velocity = *g_4687a4;
 			moved = true;
 		}
-		function_1e6850((s_type_94656b *)output, moved, (point3f *)&ground_velocity,
+		function_1e6850((s_type_94656b *)output, moved, (point3f *)&velocity,
 			&target_position, distance);
 		break;
 	}
 	case 4:
 	case 5:
 	{
-		vector3f velocity;
 		point3f body;
 		c_type_709360 current;
-		long animation_id;
 
 		function_e59e0(arg_159e6d, &velocity, &position);
 		havok_component_rigid_body_position_get(0, component, &body);
-		animation_id = *(long *)((s_animation_state *)state)->current_animation_get(&current);
+		((s_animation_state *)state)->current_animation_get(&current);
 		function_1e67f0((s_type_94656b *)output,
-			(s_character_physics_component *)&velocity, animation_id, &body, &position, (point3f *)&velocity);
+			(s_character_physics_component *)&velocity, current, &body, &position, (point3f *)&velocity);
 		break;
 	}
 	default:
@@ -1866,6 +1887,12 @@ void function_dfd70(long arg_159e6d)
 // direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
 // 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
 // snapshots also need a match. Original shared helper and complete target restored.
+// Round 525: Single-exit mode-three/raised-eye branch after common origin acquisition, four crouch
+// result forms with native/memmove origin transfer: 248/248/251/251/273/273/274/274. Memmove loses a matched
+// helper user; both original helpers and the complete target restored. Frame/convention homes remain.
+// P269: existing native tag real fields +0x218/+0x21c, mutable/read-only tag and
+// biped roots, initialized/separate pointer declarations, masks 0..7:
+// 248/248/248/248/248/248/248/248. Original tag layout, helpers and body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2931,6 +2958,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // seven subsets: 611/604/669/598/643/669/669; all with direct cross producer 643
 // (unchanged reduced control 600; full 561). The 598 form gains only two. All restored;
 // frame 0x78, flight scalar/byte homes and wall-vector scheduling remain.
+// M313: Native orientation/shared short-hand getter/entry scalar declaration subsets, then branch scalar declaration; original body restored;
+// fast 600/616/616/600/600/616/616/616.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3232,6 +3261,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
 // the native point declaration first 367. Two-point lead rejected; original
 // alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
+// Round 365: Shared world-offset/placement-difference-plus-origin/final-displacement
+// producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
+// sum 364. Exact-length 364/363 gains are below threshold. Original complete body
+// restored; matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3929,12 +3962,19 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // ranks, trigonometric homes and rotation/basis carriers remain.
 // M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
 // M306: Existing rotation helper force-inline on the original retained expression 145; restored.
+// Round 361: Existing rotation input/result by value, crossed with native axis
+// value, staged cross and shared dot: 329/402/329/412/318/490/319/463. Original
+// in-place helper and full body restored; normalization SIMD ranks and trig/rotation
+// homes remain. Alternate dot grouping was exact-only and is restored.
 // Round 470: Repeated forward-field receiver at first rotation/before normalization,
 // each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
 // normalization SIMD ranks and trig/rotation/basis homes remain.
 // Round 325: Actual sine/cosine/axis const-reference formals in the twice-used rotation,
 // nonempty subsets then all with vector reference: 145/145/145/145/145/145/145/145. Original helper and body
 // restored; normalization SIMD numbering and coefficient/rotation homes remain.
+// P268: Native angle/sine/cosine lexical home subsets 1/2/4/3/5/6/7, then all with
+// complete private projection/cross scalar identities: 145 each. Original helper/body restored;
+// normalized-axis SIMD ranks, trigonometric homes and rotation/basis carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4391,6 +4431,12 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
 // Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
 // callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
+// Round 361: Natural-input velocity setter/direct actor test/separate impulse,
+// subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
+// Every corrected form loses matched callers through the input convention; original
+// body restored. An unused-address preparation 198 is excluded, not a gain.
+// M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
+// fast 239/239/253/253/238/238/254/254.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4758,6 +4804,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Round 259: Direct animation-result initialization after the names store, complete shared orientation
 // setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
 // all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
+// M311: Actual animation-result/tag/state lexical-home subsets 1-7, all with late uninitialized motion:
+// 655/655/655/655/655/655/655/655 (fast control 655); restored.
+// M313: Uniform motion flags/placement mode/entry animation output subsets, all plus entry matrix declaration; restored;
+// fast 682/658/685/655/682/658/685/685.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
