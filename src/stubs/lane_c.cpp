@@ -240,8 +240,6 @@ struct c_shape_library_base_a
 
 #include "agent_table_2e5d50.h"
 
-// @stub 0x2e5e70
-void s_1c3a40::function_2e5e70(long arg_0, long arg_1) {}
 
 
 

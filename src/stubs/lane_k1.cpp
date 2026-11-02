@@ -208,14 +208,7 @@ public:
 };
 
 
-// motion objects 0x311940 builds
-class class_31ad80 { public: class_31ad80(void const *position, void const *orientation); };
 
-
-// @stub 0x31ad80
-class_31ad80::class_31ad80(void const *position, void const *orientation)
-{
-}
 
 
 
