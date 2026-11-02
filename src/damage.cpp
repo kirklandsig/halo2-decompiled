@@ -1531,6 +1531,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // returns 84/84; canonical byte/short/long/word/dword results
 // 66/95/104/95/104. Byte result gains four only; original body restored.
 // Initializer receiver and independent latch remain; iterator still owns the search test.
+// N324: Separate null/player rejection, scan-scoped iterator and result-admitted recursive calls, seven
+// subsets then result-first initialization 71/71/71/118/118/118/118/120. Original complete body restored;
+// initializer receiver and loop latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4550,6 +4553,9 @@ struct s_damage_object_creation
 // Round 534: connectivity-mask workspace shared by root and piece scans, dword/long,
 // entry/producer declaration and sequential section/node count: 188/188/188/188/188/188/188/188.
 // Original complete body restored; offset, definition and detached/node homes remain.
+// N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
+// library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
+// and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

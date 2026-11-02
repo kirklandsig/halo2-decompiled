@@ -2998,6 +2998,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // fields, seven subsets: 1053/1053/1176/1053/1188/1212/1197; all with shared-role
 // names 1197. Forward storage reaches retail length but uses frame 0x84. All restored;
 // original frame 0x80 versus 0x74 and force/velocity homes remain.
+// N322: Scalar control/upright-target/upright-error storage, subsets 1/2/4/3/5/6/7:
+// 1095/1076/1076/1061/1053/1069/1061; all plus scalar lateral storage 1077.
+// Control/error storage reaches retail length with frame 0x84 but regresses; original body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4851,7 +4854,8 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1095 (was 1095): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1087 (was 1095): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4886,6 +4890,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // DH294: Quaternion axis before magnitude via memcpy/setter, original/shared scale and either
 // outcome order: 1101/1095/1101/1095/1101/1095/1101/1095. Keep the existing setter and original
 // scaling/test order, plain 1095 at 5072/5094 bytes; frame 0xf8, index/rotation homes remain.
+// N322: Weighted bank-axis/driver-tilt/angular-target producer subsets 1/2/4/3/5/6/7:
+// 1103/1087/1105/1114/1108/1087/1100; all with full torque scale 1100. Keep only
+// the shared driver-tilt weighting, plain 1087 at retail length; frame 0xf8 versus 0xd8 remains.
 // M316: On pre-magnitude axis graph: sequential facing/current, current/state and desired/tensor matrix ownership subsets 1/2/4/3/5/6/7, all with consumed flip output 1119/1095/1170/1119/1165/1170/1170/1169.
 // Reuse reaches frame 0xd4 rather than retail 0xd8; entry index/offset and matrix/vector homes remain. Original executable body restored.
 // @retail 0xf4800
@@ -5115,9 +5122,8 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 			desired.forward.i = sine * desired.up.i + cosine * desired.forward.i;
 			desired.forward.j = desired.forward.j * cosine + desired.up.j * sine;
 			desired.forward.k = cosine * desired.forward.k + desired.up.k * sine;
-			desired.up.i = backward.i * sine + desired.up.i * cosine;
-			desired.up.j = backward.j * sine + desired.up.j * cosine;
-			desired.up.k = backward.k * sine + desired.up.k * cosine;
+			vector3f_scale(&backward, sine, &backward);
+			vector3f_add_scaled(&backward, &desired.up, cosine, &desired.up);
 		}
 	}
 	if (!flipping || vehicle->unknown350 != 3)

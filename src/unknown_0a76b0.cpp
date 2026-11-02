@@ -2267,8 +2267,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235 (was 235): Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
-// Frame 0x14 agrees; pool/index/type/name homes remain.
+// score 235 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2312,6 +2311,7 @@ __forceinline char unit_action_round(real value)
 // M317: Channel entry lifetime/function-owned animation/conditional animation acquisition subsets
 // 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
 // Pool/index/type/name and result-byte homes remain. Original executable body restored.
+// N323: Dual-use mode-two selection in bool/byte/short/long, each with original/default-first combo results: 320/337/320/337/322/340/319/337. Original body restored; pool/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

@@ -900,7 +900,9 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// score 42 (was 42): walked against retail block by block (calls, argument order, offsets, constants, conditions,
+// score 42 (was 42): Frame 0xb8 agrees; lookup-address rematerialization adds two bytes;
+// crouch operands and contact/flag publication schedules remain.
+// Earlier: walked against retail block by block (calls, argument order, offsets, constants, conditions,
 // case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
 // biped has no havok component (0xddf46 is the NONE branch's target, 0xdd9bf); it is now outside the if.
 // What still differs: crouch sum loads the biped's crouch first (retail 0xddb25 loads crouch_change first; swapping
@@ -952,6 +954,7 @@ extern long *g_51e9cc;
 // crossed with shared word flag publication and outer velocity workspace ownership:
 // 45/45/38/38/45/45/38/38. Four-point best above 30 rejected; original predicate,
 // declarations, flag stores and complete body restored. Lookup and crouch schedules remain.
+// N323: Upper-first complete crouch sum: ternary/direct-field branches/mutable else-if/successive bounds, each without/with shared word flags: 47/40/295/295/47/40/47/40. Original complete body restored; lookup receiver rematerialization and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1914,6 +1917,7 @@ void function_dfd70(long arg_159e6d)
 // forward-up names / native tag-table receiver, subsets 1/2/4/3/5/6/7, then all
 // with head declared after collision: 228/222/222/228/228/222/228/228. The 222
 // form restores ret 0x14 but needs exact bytes; all bodies and helpers restored.
+// N323: Normalized-direction early admission, complete collision-result join and native point setter, seven subsets then complete height-delta producer: 249/249/248/249/249/249/249/249. All original helpers/body restored; shared users regress and offsets/forward/up homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
