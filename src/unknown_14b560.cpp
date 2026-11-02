@@ -1679,6 +1679,9 @@ struct s_unit_player_assignment
 // makes the same 0x1682bf call with our schedule.
 // Round 135: `inline` on 0xb58c0, 0x1872d0, 0x1682bf, 0x13ac42, all four: 17, 17, 17, 17, 17; the
 // existing remap helper directly in the 0x1682bf argument list 17, through a local 17.
+// Round 125: direct player subscript 17; typed getter at the second lookups 17 and at all four 17;
+// const unit_index 17; const player_index 17; unit renamed assignment 17; chained latch reset 19;
+// engine-globals getter 17; unsigned old-unit target 17; const player pointer 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
