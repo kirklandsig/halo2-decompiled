@@ -1883,6 +1883,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
 // slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
 // Original shared accessor, request workspace, result graph and complete body restored.
+// Round 373: Post-transfer notification owner captured once, bool/byte/short/long
+// give results with original/compound take result: 97/122/129/130/114/135/141/142. Original observations,
+// result ownership and whole body restored; frame/result and pooled roots remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -4452,6 +4455,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 371: Actual result byte/short/word/long at original declaration,
 // 308/317/317/317; the same with entry false initialization 308/317/317/317.
 // All restored; native frame, basis and point/quaternion homes remain.
+// Round 373: Actual quaternion/position record receiver as pointer/reference, direct/late
+// position and native/library quaternion publication: 175/173/201/199/175/173/201/199. NOT kept: two-point
+// leads are below threshold; original byte receiver and whole body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

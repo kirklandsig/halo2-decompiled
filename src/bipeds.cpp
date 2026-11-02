@@ -1356,6 +1356,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 0xfc. Original getter use, value graph and complete body restored. Scores
 // 608/608/608/608/628/628/628/628.
 // Original executable source restored.
+// Round 373: Complete walking-speed selection in positive/nested/excluded/split admissions,
+// original material default 668/657/668/540; material default at its selection
+// 699/694/699/589. NOT kept: 540 moves the frame farther from retail (0xf4 versus
+// 0xfc); 589 gains only seven and moves length away. Original complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3301,6 +3305,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 371: Native travel-limit decision before original target copy,
 // byte/short/word/long 372/376/376/375; complementary truth representation
 // 372/376/376/375. Original predicate and body restored; matrix/pivot homes remain.
+// Round 373: Complete up/left/forward product lifetimes in every transform row,
+// seven subsets then complete row projections: 370/370/370/370/369/370/895/895. NOT kept: product
+// temporaries do not reproduce retail; original helper/body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4019,6 +4026,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 371: Rounded sine/cosine wider storage and named cosine-complement,
 // subsets 1/2/4/3/5/6/7: 182/231/175/276/192/240/286; all with angle
 // producer declaration 286. Original real coefficients, helper and body restored.
+// Round 373: Native int/unsigned-int/dword/short/word/char/byte publication ordinals
+// and plain output cursor: 145/145/145/145/145/145/145/175. Original loop/helper/body restored; normalized
+// axis SIMD ranks and coefficient/rotation homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
