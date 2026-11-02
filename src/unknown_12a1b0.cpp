@@ -2307,6 +2307,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 248: Existing find/create boundary, reused lower-pitch value and plain energy-input cursor,
 // seven subsets then both gain-input cursors: 668/597/668/680/745/680/745/723.
 // Original late lookup/create pair, pitch observations, indexed gain loops and complete body restored.
+// P252: Fixed four-gain ordinal as short/word/byte/signed byte 722 each; the same four with the complete
+// normalization scale produced after energy 746 each (unchanged reduced control 694, full baseline 597).
+// Original ordinal, scale lifetime and complete body restored; entry truth, record/track homes and loop
+// alignment remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

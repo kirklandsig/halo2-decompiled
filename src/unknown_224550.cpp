@@ -267,6 +267,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Six-point primary gain below gate; original tint/UV bodies and arithmetic restored.
 // Combining the new primary-aspect result pair with secondary-first/vertical-first/primary-vertical
 // reciprocal orders and secondary spans first: 245/245/248/246; all complete bodies restored.
+// P252: Existing UV producer with one joint origin/extent test per axis, y-first then x-first,
+// origin-first/extent-first and flipped/unflipped arm order: 410/411/439/439/420/420/447/447. Original
+// helper, complete callback and all in-place input-before-store captures restored; tint/second-UV homes and
+// blend residence remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

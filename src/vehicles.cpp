@@ -2861,7 +2861,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
-// score 1052 (was 1053): Frame 0x80 versus 0x74; velocity and force homes still differ.
+// score 1052 (was 1052): Frame 0x80 versus 0x74; velocity and force homes still differ.
 // Existing inverse transform 1137; forward transform and accumulation 1053 kept;
 // both 1238; shared cross products 1130; inverse/cross 1134; forward/cross 1056;
 // all three 1222; all with mass scales 1254. Plain confirms the shared in-place
@@ -2883,6 +2883,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // all 1126; all with one real velocity scratch buffer 1127. Live-zero forms use frame
 // 0x7c versus retail 0x74 but regress. Original complete executable body restored;
 // two incomplete-image comparisons excluded and completed on exact archived sources.
+// P252: Low-byte flag payload/full-width driven/full-width paired direction truths, subsets 1/2/4/3/5/6/7:
+// 1053/1052/1095/1099/1080/1110/1080; all native byte carriers 1053. Subsets 4/3/5/6/7 shrink the frame to
+// 0x7c but regress; original complete body and 0x80 frame restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4171,7 +4174,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 765 (was 817): Frame 0x18 agrees, 16 bytes short; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
+// score 765 (was 765): Frame 0x18 agrees, 16 bytes short; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
@@ -4187,6 +4190,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Round 496: One tag-table receiver for every definition lookup 765, plain kept; complete arm-owned
 // results 839, with the table 768; result graph with long/byte forced state 842/839; one
 // recognized-name exit 833; table/result with long forced/one exit 765/766. Only the table receiver retained.
+// P252: Channel result/forced state, blend/reverse scalar and native vector-output role-name subsets
+// 1/2/4/3/5/6/7 765 each; all with the pure forced-state constant declared first 765. Original complete body
+// restored; frame 0x18, entry definition and zero/result SSE allocation remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4668,7 +4674,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1134 (was 1166): Frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1126 (was 1134): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4687,6 +4693,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1179; state rotation in facing workspace 1148; all rotation workspaces 1179; inertia in consumed matrix
 // workspace 1197; all workspaces with flip output 1192; all workspaces with in-place output 1197; shared
 // quaternion-axis setter 1134; shared torque setter 1135. Original body restored.
+// P252: Full-width flip/boost/side-flip truth subsets 1/2/4/3/5/6/7: 1129/1126/1134/1175/1129/1125/1164; all
+// native byte truths 1134. Only full-width boost truth kept at plain 1126, 5043/5094 bytes, frame 0xf8. The
+// one-point side-flip addition and five-point flip-only form restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4701,7 +4710,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	vector3f target;
 	vector3f force;
 	bool flipping;
-	bool boosting;
+	long boosting;
 	long i;
 
 	if (vehicle->unknown351 > vehicle_round(g_510c54->field_2_3 * g_4678b8))
