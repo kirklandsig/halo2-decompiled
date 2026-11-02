@@ -522,6 +522,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
 // chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
 // remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
+// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
+// payload memset 36/36; individual long/short sentinel memsets 3/3;
+// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
