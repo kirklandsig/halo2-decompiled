@@ -149,6 +149,10 @@ void function_26c180(long actor_index);
 // Round 44 (lane 10, fast): flag8 as `!(equal || unknown)` 29; the 0x2605d0 result in a reference
 // local passed on to 0x2626b0 29; plain `long other_index; bool flag;` locals 31; the entry declared
 // before the request 29; flag8 as `equal ? false : !unknown` 27 (sete, still reloaded).
+// Round 49 (lane 14, fast): the reference test named 29; the output struct's members used directly without
+// the references 29; the entry declared after the outputs 29; the bool output as the struct's first member
+// 31; the reference test's operands swapped 30; the scratch release before the flag stores 47 (444 bytes).
+// Re-measured: flag8 as an if/else 49 (442 bytes); scratch acquired after the output declarations 29.
 // BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
 // @retail 0x1b0540
 void function_1b0540(long actor_index, s_follow_search_state *state)

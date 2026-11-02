@@ -688,6 +688,10 @@ bool sound_driver_voice_create_buffer(
 // Round 340: shared creation HRESULT on native descriptor scopes, spatial/play
 // producer order, status-selected result and entry/success status declaration combinations
 // 71/182/191/192/71/182/191/192. Original body restored; spatial/play and zero/input homes remain.
+// Round 313: One actual SDK descriptor reused across both current native phases, separate/reused
+// pair array and shared/per-phase mixbins 82/146/82/146; spatial-first counterparts
+// 180/208/180/208. Original descriptors, arrays, predicates and complete body restored;
+// spatial/play and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -833,7 +837,7 @@ extern "C" void _ReadWriteBarrier(void);
 // 173 at 638 bytes). The nine fields zeroed one by one 82 (the zero goes to EDI); the room as a sum then `-=`
 // 99; `lRoom = lRoomHF = PIN(...)` 23; both barriers removed 28; memset of sizeof(DSI3DL2BUFFER) 21.
 // Compile-only (same registers as the full build): `= { }`, memset first, the voice pointer after the memset,
-// a forceinline memset wrapper and ZeroMemory all keep the zero's allocation.
+// a forceinline memset wrapper and the zero-memory macro all keep the zero's allocation.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

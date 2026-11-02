@@ -407,6 +407,13 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // helper 20, before the pointer result 20; caller room with an unchecked pointer 54, with the checked
 // pointer 54; a caller index across a bool reservation 51; a conditional pointer return 20; the slot
 // declared before the name call 20.
+// Round 57 (lane 10): retail's scratch pairs elsewhere in the body stay as ours only with the pointer
+// helper; every bool helper rotates them. Bool helpers over a count local with an index copy, the new
+// count stored first, an index helper as a local or nested, the index helper over `count++`, room and
+// index helpers with memcpy or a struct assignment, an element pointer taken before the store, a named
+// result in the caller: 51 each (662 bytes; bool CL, count EAX, list EDX; the copy never survives); a
+// false-preset result with the room test in the `if` 54 (654 bytes). One read of the list through its
+// address: on the pointer helper 20, on two of the bool helpers 51/51.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

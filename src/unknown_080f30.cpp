@@ -302,6 +302,12 @@ struct s_pending_message_storage : s_pending_message_header
 // read without a local 14 (0x1241b0 lost, 0x862e0 148); const start 14; a named second reading 14.
 // A one-link harness of this file shows the same 0x1c frame for start passed in as the helper's
 // first parameter, with or without pumps at the top, and for joined size/page tests.
+// Round 26 (all on a copy of the helper in this file, header untouched): a second named copy of start 14; the
+// elapsed time or the elapsed seconds through their own helpers taking start 14/14; start as an inner helper's
+// parameter 14; start and the pump count both as its parameters 105 (286 bytes, frame 0x14: the request moves to
+// the stack, as for the pump count initialised at the helper's top 105); a pump count declared at the top and set
+// at the loop 14. Packing follows live ranges, not scope: that last form still gives the first time stamp's slot to
+// the pump count.
 // @retail 0x80e10
 bool function_80e10(s_pending_message_storage *request, void **output, long *size)
 {

@@ -1843,6 +1843,9 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // 210/215/193/208/212/191/193/191; native block-copy equivalents 9/9/9/101/101/101/9/101.
 // Setters lose the matched caller; native copies retain it but do not fix entry or index hoisting.
 // Round 260: a 600 s bounded search, 55 attempts (7 failed), none below 9.
+// Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
+// reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
+// with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2039,6 +2042,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // complete point and plane with named distance, mutable/const 379/379. Original zone producer
 // restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
 // Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
+// DH round 273: complete transform values in existing/distinct output, crossed with native node word
+// and iteration scope: 161/197/161/197/161/197/161/197. Original pointer-result ownership, node
+// observations, workspaces and body restored; early color home and frame remain.
 // Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
 // 128/138/138/128/138/128/128/128. Original case order, body and zone producer
 // restored; early color/query ownership and frame 0x40 versus 0x44 remain.
@@ -2052,6 +2058,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // moves the location index out of the parameter home. Colour A loaded at the function top flips it 32 (but above set_location
 // where retail loads it after); colour order, long/const colour A, byte/char/long tint, declarations apart from the reads,
 // reads around the spawn stores, block scoping, a colour helper 37 and named tag/settings temps do not (42-46).
+// Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
+// in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
+// query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3146,6 +3155,12 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 117 (fast with 0x176f60): spawn cursor re-measured 90 (aligned 35); colour A before the spawn local 90; colour B
 // first 90 (aligned 34); long cached mode 89 at 337 bytes, with colour B first 89 (aligned 34); colour A read at the function top 102
 // (326 bytes, 0x176f60 25). The system/next-index register swap and the mode cached where retail reads it per call remain.
+// Round 312: negative tint/multiplication/both query outcomes 113/112/130;
+// paired byte/signed-char/short/word/long storage 130/130/147/147/147.
+// All inverse-outcome forms restored; caller convention, frame, system/successor and color homes remain.
+// DH round 273: native pooled-location pointer frontier with live mode/native node word/inactive-
+// return subsets: 170/181/170/181/161/177/161/177. All original handle cursors, mode observation, node
+// tests, successor result and executable body restored; frame and system/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3385,6 +3400,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 457: Actual position/forward/up inputs through memmove in all seven subsets, then all
+// three plus color; original observations, scale selection, transforms and render arguments
+// retained. Scores 353/350/341/351/340/339/306/257. Original executable body restored.
+// Round 247: Complete staged point rows in row/column schedules, then with staged normal rows and the
+// default-scale prefix: 174/174/74/74/74/74/285/285; original body and helpers restored.
 // Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
 // association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
 // restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
@@ -3395,6 +3415,13 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Written-out transform: x/y by name and z through a pointer 353, all by name 354, y only 363 (frame 0x84: the helper's
 // out pointers give retail's frame). Compile-only: field-by-field position copy names z too (z in the scale register); a
 // y store after the copy leaves a real store; a C++ reference to position, a separate output and memcpy keep y in place.
+// Round 312: plain output-row loops in point/direction/both 131/74/344; with
+// default-first scale 270/270/297; point loop with complete named basis products
+// 125, with default-first scale 270. The named-product forms also lose the matched
+// shared user 0x17a380. All helper input captures, original row stores and body restored.
+// Round 347: Complete point row publication xzy/yxz/yzx/zxy/zyx, then xzy/zxy/yxz with default-before-
+// color scale: 303/102/131/303/127/262/264/270.
+// Original complete body restored; scale prefix and point-Y preservation remain; both matched helper users regress under every order.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
