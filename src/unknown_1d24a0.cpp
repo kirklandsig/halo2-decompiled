@@ -229,6 +229,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original repeated producers, short scale loop, accepted angular consumers and complete body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 448: Early captured bit-25/26 options 993/993/989; late captured bit-2/1
+// options 949; the three combinations 907/907/907, complete role names 907.
+// Original option lifetimes and all kernels, response sharing and body restored.
 // Round 50 (m3 lane 11, fast): retail's byte slots hold local_17 (record bit 2) at +9 and local_1 at +0xa where
 // ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
 // local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the

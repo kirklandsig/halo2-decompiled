@@ -768,6 +768,8 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // callback observations and complete executable body restored; second reload remains.
 // Round 444: Plain callback transport with complete loop/variant/rate decisions at their tests,
 // bool subsets 1/2/4/3/5/6/7 then full long decisions: 128/128/134/128/134/134/134/128. Original tests, callback slot and body restored.
+// Round 448: Complete identity-test bool results at dispatch guard subsets 1-7
+// and all four guards 93 each. Original direct tests, callback slot and body restored.
 // Round 237: graph/animation/event lexical homes, seven nonempty subsets 93/93/93/93/93/93/93;
 // all three with earlier uninitialized declarations 93
 // Original executable body and helpers restored.

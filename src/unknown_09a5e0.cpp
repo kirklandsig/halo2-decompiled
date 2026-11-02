@@ -2258,6 +2258,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Native object/offset and low-mask homes remain; original tests, stores and body restored.
 // DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
 // 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
+// Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-
+// slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
+// three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,
+// object/offset homes and low-mask ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

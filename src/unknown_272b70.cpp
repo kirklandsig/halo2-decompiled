@@ -2625,6 +2625,9 @@ struct s_scenario_scripting_view
 // Round 236: Complete native input/product/both/full-result nodes in the existing squared-length helper,
 // each with original/loop-owned short counter: 80/87/80/87/80/87/80/87.
 // Original complete search and shared helper restored; actor/counter/data homes remain.
+// Round 450: Existing difference-helper native start/end/both/result staging, original counter
+// then loop-owned short counter, 133/131/153/181/122/129/151/175. Original complete search and
+// shared helper restored. Actor/counter homes and delayed scripting observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -692,6 +692,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
 // DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
 // 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
+// Round 450: Complete limit/weighted-acceleration/projection product-node subsets 1..7, then all
+// with ordinary bit sampling: 132/132/132/132/132/130/130/164. Weighted+projection and all-node
+// forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
+// products, sample qualifier and complete body restored; constant/limit ownership and jitter
+// spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
