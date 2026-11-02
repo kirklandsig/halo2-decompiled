@@ -1556,6 +1556,9 @@ void function_2422d0(long slot)
 // stay); `short slot` 7; nested tests through a table-entry pointer with `continue` 7; one && test with `continue` 7;
 // a named team entry pointer 7; the table value named in the test 7; the flag cleared after the reject store 9
 // (with a named eligibility bool 9); `++i` 7.
+// This round: team-entry field reference 104 (267 bytes); register index/object/both 7 each;
+// accepted field reread 54; rejected field reread 50; both field rereads 104; nested two-use
+// table-entry pointer 7; force-inline object getter 7. Original body restored.
 // @retail 0x2423f0
 bool function_2423f0()
 {
