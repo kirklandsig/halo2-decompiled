@@ -660,6 +660,10 @@ struct s_collision_result_buffer_1697c0
 // shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
 // 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
 // normalization scratch/axis homes and initialization/rotation schedules remain.
+// Round 312: complete squared-norm terms 334; initial best setter 346, both 347;
+// initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
+// terms 337; both startup setters with squared terms 342. Original helper and body restored;
+// frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

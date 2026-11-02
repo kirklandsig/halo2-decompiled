@@ -280,6 +280,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 309: Direct absolute force/range/nonnegative-root predicate subsets 1..7
 // 1415/1389/1411/1388/1419/1386/1407; paired strict open intervals 1442.
 // Original conditional magnitudes, both root guards, captures, private helpers and complete body restored; frame/home differences remain.
+// Round 312: actual selected friction vector, default/explicit selection with native/setter
+// transfer and separate/in-place normalized direction: 1417/1372/1465/1395;
+// 1357/1474/1485/1400. Native explicit selection with a separate direction gains six
+// at 6243 bytes, below the gate; pointer selection, original copies, all kernels and body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

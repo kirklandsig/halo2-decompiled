@@ -3813,20 +3813,21 @@ void __stdcall function_e40d0(long arg_159e6d, long *names)
 /* turns a vector about a unit axis (Rodrigues) */
 PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real sine, real cosine)
 {
-	real dot = (v->i * axis->i + v->k * axis->k + v->j * axis->j) * (1.0f - cosine);
+	real projection_i = v->i * axis->i;
+	real projection_j = v->j * axis->j;
+	real projection_k = v->k * axis->k;
+	real dot = (projection_i + projection_k + projection_j) * (1.0f - cosine);
 	vector3f cross;
 
 	cross3f(axis, v, &cross);
-	v->i = v->i * cosine + axis->i * dot + cross.i * sine;
-	v->j = v->j * cosine + axis->j * dot + cross.j * sine;
-	v->k = v->k * cosine + axis->k * dot + cross.k * sine;
+	for (long component = 0; component < 3; ++component)
+		v->n[component] = v->n[component] * cosine + axis->n[component] * dot + cross.n[component] * sine;
 }
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 171 (was 171): the normalize block now agrees with retail but for its xmm numbering (j/k in xmm5/xmm4,
-// retail xmm4/xmm3); the frame is 0x30 (retail 0x24: the rotate helper's cross spills) and the rotation/basis SSE
-// carriers still differ.
+// score 145 (was 171): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,
+// followed by rotation/basis carriers and trigonometric homes. Earlier frame 0x30 had cross spills.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
 // Direct rotation output 235; scalar cross terms 246; all shared cross producers 184 (plain);
 // shared normalizer 240 (restored grouping); explicit rotation output 251; weighted producers 265;
@@ -3866,6 +3867,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // header helper would let this body use it.
 // Round 289: staged rotation/side/up cross subsets 1/2/4/3/5/6/7 give 171/171/180/171/180/180/180;
 // all staged plus a native input snapshot 215. Original helper/body restored; frame and SIMD carriers remain.
+// Round 312: indexed rotation publication 179; complete dot products 167 (four-point lead, restored);
+// both 145 plain, retained; indexed axis/cosine/both weighted vectors 150/207/198;
+// indexed parallel component terms 145; cross-first named-dot indexed form 175.
+// Existing twice-used helper only; original arithmetic association and in-place input safety preserved.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
