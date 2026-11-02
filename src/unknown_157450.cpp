@@ -636,6 +636,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // post-loop reload remain.
 // Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
 // receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
+// N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
+// with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
+// restored; word entry storage and the shared post-loop old-mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4517,6 +4520,9 @@ void function_15fe20(long team_index, color3f *color);
 // M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
 // all outputs via memset 671. Original output objects, return-pointer copies and complete body restored;
 // frame 0x48c and early homes agree, but native team-color transfers, sentinel reuse and byte shift residency remain.
+// N295: Native object exchanges at rival/own team/individual palette subsets 1-7,
+// 564/536/561/478/567/539/589; complete standard range exchange 673. All exact-only forms
+// restored; native team-color transfers, shared NONE and shift-count residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5656,6 +5662,10 @@ void __stdcall function_d6bc0(long object_index);
 // 156/168/169/176/161/172/183/190. Original timer observations and body restored.
 // M283: Retained divisor/scenario/preset lexical spill-home subsets 1-7 score 144 each; all three with the initial tag receiver renamed 144.
 // Original names and body restored; frame 0x14/0x18, independent timer home and entry-base reloads remain.
+// N295: Multiply-used placement-point/object-point/live-radius pointers, subsets 1-7,
+// 144/189/189/239/239/245/245; all with read-only point receivers 245. Original body restored;
+// frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Object-point storage recovers frame 0x18 at 189/872 bytes but worsens the register lifetimes.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
