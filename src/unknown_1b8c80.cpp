@@ -248,6 +248,10 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // 0xc8200 test nested under `!function_1b8d80(...)` 3; `result |= function_c8200(...)` there 31; the
 // c8200 arguments read through `(&seats[i])->` 3; a block-scoped seat pointer for the c8200 arguments 73
 // (380 bytes). A one-file LTCG harness is not exact here (349-361 bytes).
+// Round 54 (m3 lane 11, fast; 0xc8200 now matches): the count from a direct 0xc8a40 call 3; `if (bit11)
+// continue;` with the occupant code unnested 3; the definition-flags pointer declared after the object block 84;
+// the loop index at function scope 3; last_object_index declared after the seat array 3 (a repeat); a `long`
+// count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -631,6 +635,10 @@ extern "C" void _ReadWriteBarrier(void);
 // the state declared `register` (as 0x1b8070's) 6, without the barrier 41, actor first without it 41.
 // Without the barrier the only causes are the slot load (retail: entry block) and, from it, our register
 // compare of +0x26c where retail compares memory (ECX is busy there).
+// Round 54 (m3 lane 11, fast): without the barrier, `byte flags` read at the top 44, `point3f const *point` at the
+// top 44, an early return for a busy actor 46 (212 bytes), the NONE test in a named bool 44; the state after the
+// actor with the barrier after both 6. Matched retail callbacks load a parameter in the entry block only when two
+// sibling paths use it (0x1b22e0, 0x29f370, 0xa9120).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1485,12 +1493,26 @@ void function_1f86a0(long actor_index);
 // 134 (same code); the iterator's actor index stored before the unit test 139; the iterator declared
 // first 134 (same code); diagnostic (reverted): the unit's lookup written in place with the header table
 // as the subscript base 134 (same code, so the head's early header load is not evaluation order).
+// Round 54 (m3 lane 11, fast; "al" = difflib-aligned, base al 109): `same` from `(selection->flags & 0x20)` with
+// the byte mask declared after it 244 (868 bytes, al 90: frame 0x14, retail's F+3 mask spill and F+4/F+8/F+0xc
+// homes, but the CSE'd flags byte takes BL for the 0x40 test); the mask first but unused in `same` 244 (al 90);
+// the decline test reading the flags 244 (al 90); the first with the 0x40 test through `state->flags` 234 (al 93,
+// mask back in BL), as `(selection->flags >> 6) & 1` 244 (al 90); no mask local, 0x40 through the slot 234.
 // Round 56 (m3 lane 10, fast): `bool specified = (flags & 0x20) != 0` 241 (863 bytes); `long` or `dword` specified 248
 // (873 bytes); `same` testing the field with the mask local only in the decline 244 (868 bytes), the reverse 244; `byte
 // const` or `unsigned char` specified 134 (same code); no mask local (0x20 at both uses) 244 (868 bytes: frame 0x14 and
 // the masked byte at [esp+0x13] as retail, but the flags byte is CSE'd into BL for the 0x40 test and the entry stays in
 // memory), with the 0x40 test through a bit-6 bitfield 244, through the slot view 234 (865 bytes); the mask local with
 // the 0x40 test through the slot view 235 (866 bytes), through a bit-6 bitfield 134 (same code).
+// Round 513: Complete per-iteration flags captured as byte/word/dword, loop/function
+// carriers, with typed member payload first and on the outer dword graph:
+// 134/134/235/233/134/235/233/233. Original body and data declarations restored.
+// Round 462: fallback-failure guard, absent-selection guard, both, both with common
+// cleanup-result exit, each with native/original slot payload: 232/232/138/138/232/232/237/237.
+// Original payload and exits restored; frame, mask spill and entry/root carriers remain.
+// Round 465: admission field captured before the root calls, bool/byte/short/long,
+// each with native/original payload: 225/225/225/225/214/214/225/225.
+// Original field observation restored; frame, mask spill and entry/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

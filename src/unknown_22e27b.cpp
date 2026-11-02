@@ -168,8 +168,9 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 96 (was 96): the advance loop still rotates the direction, frame and flags through
-// EAX, ECX, EDX and EDI where retail keeps its own order; the else branch matches exactly.
+// score 9 (was 9): frame, timing and loop registers now agree at 657/657 bytes; one boundary
+// exit span and interpolation key-table/current-frame scheduling remain.
+// Earlier at 96: advance direction/frame/flags rotated through EAX/ECX/EDX/EDI; inactive arm exact.
 // Earlier note: Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
 // EDX rotated (direction EAX for ECX, frame/flags ECX for EDX, the flag-2 test EDX for EAX), and retail
 // divides the fraction before the key differences. Round 87: fraction before the keys/between keys and
@@ -347,6 +348,18 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
 // 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
 // frame/timing and original shared fraction restored.
+// Round 232: Active count/mode/flags subsets 96/96/96/214/214/214/214; all with earlier
+// fraction 9. Earlier key acquisition 9; shared current frame and byte-result/lifetime forms
+// 40/40/40/40/40/40/40; minimal flags/fraction 9; entry-wide flags 226; flags captured in
+// both exclusive policy arms 9, plain whole-program confirmed. Keep the uniform branch-local
+// flag observations and earlier fraction; all other declarations and helpers remain original.
+// DH276: complete retention outcome in Boolean/byte/short/native storage
+// 102/102/212/210; each with complementary continuation 224/224/213/211.
+// All restored; frame 0x10 and timing agree, direction/frame/flag and
+// lookahead/fraction ownership remain. Original policy outcomes retained.
+// Round 354: Full-width current/next address indices and later key acquisition subsets
+// 1..7, then readonly keys: 216/12/217/9/82/9/82/82. Original short lookahead, key observations,
+// shared fraction, frame/timing and helper calls restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
@@ -355,6 +368,7 @@ void c_class_1a2c81::update(dword time)
 
 	if (animation.value8 > 0 && animation.value20 > 0 && animation.end_time <= g_54d5b8)
 	{
+		word playback_flags = animation.valuee;
 		long elapsed;
 		dword next_time;
 		long frame_time;
@@ -371,12 +385,12 @@ void c_class_1a2c81::update(dword time)
 			dispose = false;
 			if (frame < 0)
 			{
-				dispose = (animation.valuee & 2) && type == 0;
+				dispose = (playback_flags & 2) && type == 0;
 				if (dispose)
 				{
 					break;
 				}
-				restart = type == 0 && ((animation.valuee & 1) || (animation.valuee & 2));
+				restart = type == 0 && ((playback_flags & 1) || (playback_flags & 2));
 				switch (animation.value14)
 				{
 				case 0:
@@ -396,12 +410,12 @@ void c_class_1a2c81::update(dword time)
 			}
 			else if (frame == animation.value8)
 			{
-				dispose = (animation.valuee & 2) && type == 0;
+				dispose = (playback_flags & 2) && type == 0;
 				if (dispose)
 				{
 					break;
 				}
-				restart = type == 0 && ((animation.valuee & 1) || (animation.valuee & 2));
+				restart = type == 0 && ((playback_flags & 1) || (playback_flags & 2));
 				switch (animation.value14)
 				{
 				case 0:
@@ -424,7 +438,7 @@ void c_class_1a2c81::update(dword time)
 			{
 				break;
 			}
-			if (!(animation.valuee & 8))
+			if (!(playback_flags & 8))
 			{
 				animation.valuea = frame;
 			}
@@ -488,8 +502,8 @@ void c_class_1a2c81::update(dword time)
 				elapsed = 1;
 			}
 			keys = (s_widget_animation_key *)animation.target;
-			vector3d_from_points3d(&keys[animation.valuea].offset, &keys[next].offset, &delta);
 			t = (real)elapsed / (real)frame_time;
+			vector3d_from_points3d(&keys[animation.valuea].offset, &keys[next].offset, &delta);
 			function_x697631(&keys[animation.valuea].offset, &delta, t, &animation.offset);
 			keys = (s_widget_animation_key *)animation.target;
 			animation.scale = (keys[next].scale - keys[animation.valuea].scale) * t + keys[animation.valuea].scale;
@@ -497,8 +511,9 @@ void c_class_1a2c81::update(dword time)
 	}
 	else
 	{
-		dispose = (animation.valuee & 2) && type == 0;
-		restart = type == 0 && ((animation.valuee & 1) || (animation.valuee & 2));
+		word playback_flags = animation.valuee;
+		dispose = (playback_flags & 2) && type == 0;
+		restart = type == 0 && ((playback_flags & 1) || (playback_flags & 2));
 	}
 	if (dispose && get_screen() != this)
 	{

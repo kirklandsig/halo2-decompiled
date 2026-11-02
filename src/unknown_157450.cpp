@@ -639,6 +639,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
 // with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
 // restored; word entry storage and the shared post-loop old-mask reload remain.
+// Round 314: Prior-playing field observations with dword/word old mask and original/plain
+// present storage 135/131/136/139; post-iterator prior-playing snapshot with the same four
+// graphs 135/131/136/139. Original entry snapshot, mask homes and qualifier restored.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4157,6 +4160,14 @@ static __forceinline long nonnegative_15ce70(long value)
 // M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
 // 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
 // first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
+// Round 315: Native interval-loop quotient, next-interval and repeated earliest-bound expression
+// ownership in seven subsets 456/456/456/456/456/456/456; all with the earliest bound
+// before division 603. Original expression graph and body restored; extra frame word and
+// attacker/category/NONE/decision homes remain.
+// DH272: Signed-byte category/modifier/award subsets 1/2/3/4/5/6/7 give 520/491/517/532/611/582/578; all
+// signed-word 567. Modifier alone recovers frame 0xe0 at 491. On that graph, complete pure decode after
+// elapsed/penalties/ticks/at classification gives 554/566/565/508. All regress; original domains, lifetimes,
+// event workspaces and body restored. Frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
@@ -5674,6 +5685,9 @@ void __stdcall function_d6bc0(long object_index);
 // 144/189/189/239/239/245/245; all with read-only point receivers 245. Original body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
 // Object-point storage recovers frame 0x18 at 189/872 bytes but worsens the register lifetimes.
+// N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
+// with immutable kind, 144 in all eight forms. Original signed-word producers
+// restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

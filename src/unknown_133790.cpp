@@ -166,6 +166,9 @@ void function_133720(s_bit_vector_pool *arg_1, bool arg_2)
 // Round 37 (fast): index stored before the object lookup 14; arg_2 used directly (no index copy) 13;
 // the mode flag computed after the depth division 183; the lists entry read once 157; index copy
 // declared before the lists entry 13. Still BLOCKED-BY 0xbd610 (stub).
+// Round 78 (fast): scratch first output 127; index at its consumer 147; mutable object pointer 13;
+// source point reference 175; object/index local names 13/13; explicit point assignment 13;
+// record radius reference 13; const object binding 13. Original body restored.
 // @retail 0x133790
 bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *arg_4, long arg_5, bool arg_6)
 {

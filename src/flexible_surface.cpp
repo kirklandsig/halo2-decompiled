@@ -467,6 +467,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
 // 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
+// DH round 273: native real tail trigonometric results at first/second/third/fourth/first-pair/last-
+// pair/all producers 155/139/155/139/155/155/138; all with real double-product arguments 163.
+// Precision-only forms restored; frame and seed/rotation staging remain.
 // M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
 // 178/178/178/189/189/189/178/178. Original executable body restored.
 // Round 154 (lane 4, one-link harness, exact here, then plain): dot3f(&axis, &old), the j and k rows projection-first and a
@@ -478,6 +481,17 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // (axis k/j xmm1/xmm2, global i/k/j xmm3/xmm4/xmm5) and spilled cross j/k are still open.
 // Symmetric rows on the kept form: old-first 158 (882), cosine-first 158 (882), projection-first 134 (881); retail's own adds put the
 // old i product first and the axis j and k products first, which the kept rows follow.
+// Round 508: Source-local forceinline cross with publication ijk/ikj/jik/jki/kij/kji
+// 139/139/139/139/157/157; staged-cross declaration with ijk/jki 139/139.
+// Direct publication ikj/jik/jki/kij/kji and staged ikj/jki/kji
+// 139/139/139/157/157/139/139/157. Original declarations and full body restored;
+// frame 0x28 and input/rotation/tail homes remain.
+// Round 299: Complete native-array rotation consumer; direct initialization result, staged cross,
+// projection-first and final-output-loop interactions 169/172/169/172/165/165/169/183. All original
+// source restored; frame, old-direction storage and seed/time/rotation/tail scheduling remain.
+// N304: Uniform scalar direction/axis/cross product families, seven subsets
+// then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
+// frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

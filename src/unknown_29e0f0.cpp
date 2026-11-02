@@ -212,10 +212,22 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DL224: Group range-first/negative-first/split-range/split-bitmap eligibility 473/440/473/390;
 // the four with shared group bits 434/434/434/424. Original group observation, domains, helpers
 // and body restored; default/bitmap/endpoint homes, root roles and x87 scheduling remain.
+// DL229: twice-used validator status feeds admission and pass acceptance: raw short/long/word/dword
+// 428/426/428/426; normalized bool/byte/short/long 392/406/424/426. Exact-only flag producers
+// restored; selected defaults, root roles and endpoint/bitmap/x87 homes remain.
+// Round 306: Native anchor/candidate/destination payloads, seven subsets 432/408/474/424/460/464/509;
+// complete library transfers 509. All regress and disturb frame or extent. Original pointer payloads,
+// metrics, signed-short scans, selected output cursor and full body restored at 390;
+// default/bitmap/endpoint homes and root-table roles remain.
 // DH271: Signed-byte-narrowed anchor carried in short with bool/byte/short/long accepted state
 // 457/457/448/456; long anchor with those states 453/453/433/442. All preserve original byte narrowing but
 // regress and grow the frame/extent; original complete body restored. Selected-default, root-register and
 // bitmap/endpoint homes remain.
+// DH round 279: Shared per-iteration candidate-point address before/after stop guard, native group and
+// scalar point-bitmap interactions [442, 445, 452, 470, 459, 474, 492, 509]. Original executable body
+// restored.
+// DH281: Admitted-group/nearest-selection/candidate-validation lexical ownership, seven subsets then all
+// with full-width signed group [390, 390, 390, 390, 390, 390, 390, 461]. Original executable body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

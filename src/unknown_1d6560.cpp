@@ -192,6 +192,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
 // 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
 // the matched caller (13). Original separate flag cases, both type reads and body restored.
+// Round 504: actual byte flag3 with repeated/shared type and primary/secondary
+// result defaults 96/94/100/91/104/91/108/91. Shared-type forms lose 1d5bf0 (13);
+// original byte layout, both type reads, result arms and complete body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -298,7 +301,9 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
+// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// neighbor/key homes and remaining cold-block placement differ.
+// Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
 // through the group pointer, count and first body), the section loops load the component's object index after
 // both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
@@ -444,6 +449,12 @@ struct s_physics_component_walk : s_havok_component
 // eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
 // References canonicalize; direct fields grow or rotate allocation. Original method and
 // both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
+// Round 305: Terminal continuation, positive neighbor admission and empty-group return, seven boundary
+// subsets, 172 each; all with shared section ordinal 172. Frame 0x18 agrees; neighbor/key homes and
+// cold exit placement remain. Original method restored.
+// Round 345: Complete section-open/closed predicates in bool/byte/word/long storage: 146 each.
+// Direct complementary predicate, false comparisons and separate query rejection guards: 172 each.
+// Native bool predicates at their original computation kept; terminal scan now falls into the entry latch.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
@@ -504,8 +515,9 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                 for (long j = 0; j < entry->section_count; ++j)
                 {
                     s_physics_entry_section *section = &entry->sections[j];
-                    if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                        !function_db4c0(component->object_index, section->key_a, section->key_b))
+                    bool section_open = !function_db540(component->object_index, section->key_a, section->key_b) &&
+                        !function_db4c0(component->object_index, section->key_a, section->key_b);
+                    if (section_open)
                     {
                         *active = true;
                         break;
@@ -529,8 +541,9 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                         for (j = 0; j < entry->section_count; ++j)
                         {
                             s_physics_entry_section *section = &entry->sections[j];
-                            if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                                !function_db4c0(component->object_index, section->key_a, section->key_b))
+                            bool section_open = !function_db540(component->object_index, section->key_a, section->key_b) &&
+                                !function_db4c0(component->object_index, section->key_a, section->key_b);
+                            if (section_open)
                                 break;
                         }
                         if (j >= entry->section_count)
@@ -625,12 +638,15 @@ PRIVATE __forceinline void physics_mass_frame(transform4x3f const *matrix, hkTra
 PRIVATE inline void physics_mass_identity(hkTransform *out)
 {
     __m128 zero = _mm_setzero_ps();
-    out->m_rotation.m_col0.m_quad = zero;
-    out->m_rotation.m_col1.m_quad = zero;
-    out->m_rotation.m_col2.m_quad = zero;
-    ((real *)&out->m_rotation.m_col0)[0] = 1.0f;
-    ((real *)&out->m_rotation.m_col1)[1] = 1.0f;
-    ((real *)&out->m_rotation.m_col2)[2] = 1.0f;
+    hkVector4 *column0 = &out->m_rotation.m_col0;
+    hkVector4 *column1 = &out->m_rotation.m_col1;
+    hkVector4 *column2 = &out->m_rotation.m_col2;
+    column0->m_quad = zero;
+    column1->m_quad = zero;
+    column2->m_quad = zero;
+    ((real *)column0)[0] = 1.0f;
+    ((real *)column1)[1] = 1.0f;
+    ((real *)column2)[2] = 1.0f;
     out->m_translation.m_quad = zero;
 }
 
@@ -642,33 +658,6 @@ PRIVATE __forceinline void physics_mass_copy(byte const *body, s_physics_mass_ar
     array->data[i].mass.inertia = *(hkRotation const *)(body + 0x50);
 }
 
-// score 4 (was 4): retail loads the 1.0f constant after it stores the array pointer, and
-// loads the allocator global before it stores the centre; ours does both the other way round.
-// Round 26: g_480118 defined in a /GL- library file instead of src/globals.cpp fixes the second
-// (LTCG counts an LTCG-defined global as aliased by pointer stores): 2, not kept (a global's
-// definition moved for a gain without a match).
-// Vector set 454; repeated zero intrinsic 4; explicit quad stores 197; direct lane stores 4;
-// explicit centre store 4; centre memcpy 125; plain copy inline 4; const centre 4; transform set 4.
-// Round 26: allocator local between the mass and centre copies 4; forceinline identity 4; mass
-// array built by an inline constructor 4; on 2: count read before the allocator local 2, a first-entry
-// pointer for the identity 2, aggregate declared before the array 2, zero intrinsic per identity
-// store 2, identity columns set one at a time 2.
-// Round 206: shared allocator interface at first/list/both/all sites 4/4/4/4;
-// shared allocator getter at all sites 4; block allocator interface at first/list/all 4/4/4.
-// Round 18 (lane 14, compile-only screens, which reproduce both swaps): size/capacity chained either way 4;
-// aggregate zeroed by an s_physics_mass constructor 4; identity zero via an hkVector4 local 4, 1.0s via
-// m128_f32 lanes 4; aggregate scalar zeros chained/swapped 4/4, one named __m128 zero 4; allocation without
-// the allocator local 4; identity on array.data->transform 4; identity through a reference 4.
-// Round 92 (plain): identity before size 23, between size/capacity 22; pointer-return identity 4;
-// initial allocator for the list 339; list allocator for release 102; list allocator before the
-// aggregate call 85; value-initialized array 345; one allocator throughout 340. Original restored.
-// Round 31 (lane 15, fast): g_480118 defined in the allocator's own /GL- file (0x2d6fc0's) 2, with the
-// allocator read between the mass and centre copies 2; that read alone 4; identity by reference 4; chained
-// capacity/size 4. Compile-only screens (they reproduce both swaps) keep the 1.0 load first for: identity
-// right after the allocation, size/capacity first, capacity before size, set_ss/named one/column-pointer/
-// m128_f32/rotation-reference identities, a nested rotation identity, a zero-quad local, aggregate zeroed
-// by a helper, a named data pointer, sizeof element size; only copy-before-identity (50 others differ) or a
-// barrier after the data store (array.data reloaded) give retail's store-first order.
 // @retail 0x1d5ec0
 c_havok_reference_counted *__stdcall function_1d5ec0(s_havok_component *component,
     s_physics_model_owner *owner, char const *kinds, char *output, long *output_count,

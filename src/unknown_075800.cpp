@@ -1063,6 +1063,7 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // keep 2,4,0,3 at plain 193, retail length. Lookup orders 7,5,6 / 6,7,5 give 196/195;
 // acknowledgment first in residual phase 196; unified observed order 218. All call inputs preserved.
 
+// score 153 (was 153): register inputs, the delayed ESI save and the late case layout still differ.
 // Direct orders 0,4,2,3 / 0,4,3,2 / 2,0,4,3 / 2,3,0,4 give 193/196/193/195 fast;
 // 2,3,4,0 / 3,0,2,4 / 4,0,2,3 / 4,2,0,3 give 194/193/193/191 fast.
 // Last order is 193 plain, tying baseline; fast control 191. All rejected.
@@ -1200,6 +1201,18 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // failure-first lookup guards and inner orders 567/576/657/765: 212 each reduced,
 // against control 196 (full 153). All lose caller 0x7afd0 at three differences;
 // original classifier, separate lookups, native input roles and caller match restored.
+// Round 456: Native-input primary family orders DQPCS/DCSPQ/DCPSQ/DCPQS/DCSQP/
+// DPCQS/DPCSQ/DSCPQ, fast 205/206/205/208/208/208/205/206. D direct, Q query, S session, P peer, C connection;
+// original complete classifiers restored; delayed save and late expansion remain.
+// Round 247: Native-input root with one three-use link observation, scoped/shared results,
+// success/failure guards and direct/common completion: 257/257/257/257/257/257/257/257; original body
+// and helpers restored.
+// Round 72 (lane 16, plain unless marked): every case in one switch in retail's code order 217 at 420 bytes: `push esi`
+// is then delayed past the range check as retail, but type is ECX, address EAX and message on the stack (caller 0x7afd0
+// 3). On it (fast): an early unsigned range return 218, a signed range test 207 (432 bytes), a named type 218, a dword
+// switch 218, one extra type test 209 (428 bytes), all the same convention; an unused address parameter on the three
+// connection handlers 217 (plain, same code). The six parameter orders with the caller in the reduced image give type EAX
+// there, 213/214 at 460 bytes, but the plain check does not agree, so screen this function plain. Restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

@@ -38,7 +38,7 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // low-bit materialization and team scratch rank differ.
 // Earlier: the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
 // MiniMax S (11-01): still 86: the pool data pointer is loaded before the masked index and kept across 0xcbd50/0x101280, where retail loads it again after them.
-// score 86 (was 86): the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
+// Earlier: the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280
 // (other files), and MSVC always loads the limit product's cap global before the scale global whatever
 // order the source writes them in; the flag test still uses `not dl; test dl, 1` where retail uses
 // `not al; and al, 1`, and the team is still copied into edx where retail uses ecx.
@@ -169,6 +169,9 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // named local first 86; the seconds in a named local first 86. Diagnostic: 1-7 dead long temps 86 each.
 // Round 278: standard cap/floor with built-in or native long predicates, all eight
 // non-original combinations: 174/225/270/293/275/276/298/306. Original clamps and body restored.
+// Round 349: cap then compound tick-rate product, with native stored-short count,
+// entry rejection result and final team after the notification, eight subsets 86/86/86/86/254/254/254/254.
+// The compound product alone compiles identically; original producer and all lifetimes restored.
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {

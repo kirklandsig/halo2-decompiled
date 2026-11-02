@@ -94,6 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
 // score 245 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
@@ -262,6 +263,31 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
 // 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
 // regress; complete original body and alias-safe helper restored.
+// AC460: Existing UV producer with two-use positive axis decisions in bool/byte/short/long
+// 367/367/402/367; complete complementary decisions 397/397/421/398. Original conditional
+// expressions, helper and all in-place input captures restored; tint/UV homes remain.
+// Round 308: Native bitmap-default copy primary to secondary with original/input-RGB/seed-RGB/both loops
+// 347/347/350/347; reverse default ownership 348/348/351/348. The caller-owned tint frame
+// remains 0x60, but the swapped homes persist and the copy grows code to 1952 bytes.
+// Original separate default stores, RGB statements and helper input captures restored.
+// Round 350: Native-frame blend initialization after packing/in geometry arms/after cache
+// update/explicit frame outcomes 493/493/271/261; merged positive-sequence gate 483/483/375/394. Tint/UV
+// homes and blend residence remain.
+// Round 352: Pointer lower/upper/independent/continue clamp walks 522/527/522/522; indexed
+// upper/independent/continue/descending bounds 265/245/245/263. Frame homes and blend residence
+// remain; complete original callback and alias-safe UV helper restored.
+// Round 248: On the native frame/cache graph, branch-produced primary aspects, paired named secondary
+// ratios and cross-phase inverse blend, seven subsets plus inverted primary: 239/245/239/530/529/530/529/529.
+// Six-point primary gain below gate; original tint/UV bodies and arithmetic restored.
+// Combining the new primary-aspect result pair with secondary-first/vertical-first/primary-vertical
+// reciprocal orders and secondary spans first: 245/245/248/246; all complete bodies restored.
+// P252: Existing UV producer with one joint origin/extent test per axis, y-first then x-first,
+// origin-first/extent-first and flipped/unflipped arm order: 410/411/439/439/420/420/447/447. Original
+// helper, complete callback and all in-place input-before-store captures restored; tint/second-UV homes and
+// blend residence remain.
+// Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
+// 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
+// component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
