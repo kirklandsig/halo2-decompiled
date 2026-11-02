@@ -639,6 +639,18 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
 // with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
 // restored; word entry storage and the shared post-loop old-mask reload remain.
+// Round 196 (fast): present not volatile with the dword mask through the pointer 102 (378 bytes, aligned
+// 14 against 21): EBP globals, EDI pool, present in memory with retail's `mov ebx; or ebx, esi; mov`
+// update and retail's hoisted engine index, so the volatile is not what keeps present in memory; left
+// are the word entry and its reload. The same with a word mask 63 (384 bytes, aligned 36): present
+// takes EDI and globals is re-read, in each of five declaration orders 63/63/63/63/63, stored through
+// the fields 63, as one masked store 63, a short mask 63, updated in place 63, a chained zero 63; the
+// mask compared first 104; a word compare 68. Direct reads, dword/word mask 140/139 (368 bytes); both
+// masks through one word pointer 139. The iterator in a scoped block: volatile 32, word pointer 63,
+// word/dword direct 139/100, volatile word pointer 77, volatile word direct 129. Present and playing
+// in a local struct or a two-element array, read through the pointer 61 (aligned 34), direct 139.
+// The whole body in a scoped block, word direct/pointer 139/63; the accumulators and what follows in
+// a scoped block with the masks outside it 139.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -1547,49 +1559,21 @@ struct s_item_collection
 	short spawn_time;
 };
 
-// score 5 (was 5): the tick count is sign extended into eax here and into edx in retail, and the tag
-// table base takes edx (retail ecx), as if the ticks were live through the whole fallback arm.
-// collection object reference 5; positive fallback 5; selection scope 5;
-// nested positive groups 5; object plus scope 5; valid-selection result 25;
-// native-short valid selection 29; object plus positive fallback 5. Integer join still differs.
-// Full record expressions with arm conversions 5; with short ticks 34;
-// record and fallback field references 20; spawn reread with arm conversions 30;
-// spawn reread with early fallback widening 6; full expressions and long spawn 34;
-// arm conversions with long fallback 19; both duration fields reread 5.
-// Shared duration-field address 27; selected short/long snapshot 31/36; explicit source arms 13;
-// direct field conversion 27; record reference 27; positive field guards 23; field scope 27.
-// Outer scenario/equipment/root-entry receivers and tag base at entry/selection/fallback/
-// root-entry/table-fallback 5/5/5/38/17/12/38/12. Arms swapped 20; group tag local 5; tag index
-// local 17; default after the spawn read 5; fallback ticks before its zero test 6 (ticks in ecx).
-// Ticks initialised to 0 5; int ticks 5; collection pointer local 5; one reassigned short spawn
-// time 31; zero default with a final test 21; dword ticks 30; plain conversion instead of the
-// rounding helper keeps the same registers.
-// Round 43: the group test as a two-case switch 5; ticks declared before the default 5; one
-// else-if chain assigning the collection time in its condition 5; a return per source 84 (169
-// bytes); a named result at the single exit 5; the ten other orders of the equipment/seconds/
-// spawn-time/ticks declarations 5 each.
 // @retail 0x15ac50
 long function_15ac50(long index)
 {
 	s_scenario_netgame_equipment *equipment = &((s_scenario_netgame_equipment_view *)g_4e0350)->equipment[index];
 	real seconds = 30.0f;
-	short spawn_time = equipment->spawn_time;
-	long ticks;
-	if (spawn_time)
+	if (equipment->spawn_time)
 	{
-		ticks = spawn_time;
+		seconds = (real)equipment->spawn_time;
 	}
-	else
+	else if ((equipment->group_tag == 'itmc' || equipment->group_tag == 'vehc') && equipment->tag_index != NONE)
 	{
-		if ((equipment->group_tag != 'itmc' && equipment->group_tag != 'vehc') || equipment->tag_index == NONE)
-			goto done;
-		short collection_time = ((s_item_collection *)g_4e3b44[equipment->tag_index & 0xffff].bytes)->spawn_time;
-		if (!collection_time)
-			goto done;
-		ticks = collection_time;
+		s_item_collection *collection = (s_item_collection *)g_4e3b44[equipment->tag_index & 0xffff].bytes;
+		if (collection->spawn_time)
+			seconds = (real)collection->spawn_time;
 	}
-	seconds = (real)ticks;
-done:
 	return real_to_long(seconds);
 }
 
@@ -2378,31 +2362,9 @@ static __forceinline bool score_teams_enabled()
 
 static __forceinline void add_clamped_score(short *score, short delta)
 {
-	long value = delta;
-	value += *score;
-	if (value < -30000)
-		value = -30000;
-	else if (value > 30000)
-		value = 30000;
-	*score = (short)value;
+	*score = (short)PIN(*score + delta, -30000, 30000);
 }
 
-// score 5 (was 5): the two operands of the clamped score are sign extended into swapped registers,
-// and the peer lookup keeps them in different ones.
-// Helper parameter order swapped 5; helper taking long delta with the cast inside 5; single
-// expression sum 5; score-first sum 5; value returned and stored by the callers 5; dword index 5;
-// nested index28 test 5; player declared before index 5; score address as base plus index 99;
-// branch order swapped with the tests merged 111; clamp and notify as one helper shared with
-// 0x15b3a0 5 (either parameter order); ternary clamp store 5; the field added directly, either
-// operand first 5/5; engine tests through g_55e4d0[globals->engine_index] 5/5/5; player pointer
-// after the add 97, at its use 104. Retail's 0x1e9ce0 has the same engine-test swap, and 0x2422d0
-// rotates three identical engine tests through EAX, ECX, EDX (scratch rotation, not spelling).
-// Round 43: the add and notify through the existing function_1e9ce0 call 142 (kept out of line);
-// the helper as plain inline 121 (called); a long delta parameter with `*score + (short)delta` 5;
-// a named old-score local in the helper 5; a statistics pointer for both score reads 5. In matched
-// 0x15b3a0 (an `inc` add) retail's next engine test is EAX/ECX as here; with a two-operand add
-// retail shares the result register with delta, and the test turns to ECX/EAX. Globals declared
-// before the result with the player before the index 5.
 // @retail 0x15b7c0
 bool function_15b7c0(long delta, long player_index)
 {
@@ -2916,20 +2878,6 @@ void function_158090(long player_index, short old_team)
 	}
 }
 
-// score 12 (was 12): the player index and the player table base are kept in swapped registers, and
-// the peer lookup after it reloads them the other way round. The swap comes with the data pointer
-// held across the event initializer: read as an expression after it, every register is retail's
-// but the load sinks below the initializer stores. Tried: an unsigned index parameter 12;
-// the table read before the peer call 31; a const table pointer 12; the existing dirty-slot helper 12;
-// the existing cause setter forced inline 69; inline depth one 12; the existing initializer forced
-// inline 73; global optimization off 120. The team through engine_player_get 14; a pool pointer
-// local 14; the players local declared at function scope 12; the event declared first 12; a player
-// reference 35; a second index local 12. Round 124: the team through the header's event_player_get
-// 14 (every register retail's, mark-dirty block too, but the data load sinks below the init stores);
-// a player pointer from it before the event 35; the index local declared before the players local 12;
-// players as a byte pointer read by byte offset 12; the existing out-of-line cause setter called
-// plainly 69; the two cause stores swapped 40; a 600 s permuter run from the event_player_get form
-// (44 variants), none below 14.
 // @retail 0x157de0
 void function_157de0(long player_index)
 {
@@ -2938,12 +2886,13 @@ void function_157de0(long player_index)
 		if (g_4e6948->mode != 4 && function_x340af0())
 			function_158140();
 		game_engine_get()->p7(player_index);
-		s_engine_player *players = (s_engine_player *)g_4e8c24->data;
-		s_event event;
-		game_engine_event_initialize_inline(&event, 0, 11);
-		event.cause_player_index = player_index;
-		event.cause_team = players[player_index & 0xffff].team;
-		function_19eb30(&event);
+		{
+			s_event event;
+			game_engine_event_initialize_inline(&event, 0, 11);
+			event.cause_player_index = player_index;
+			event.cause_team = engine_player_get(player_index)->team;
+			function_19eb30(&event);
+		}
 		function_196470();
 		game_engine_player_mark_dirty((short)player_index, 0x200);
 	}
@@ -3203,20 +3152,6 @@ void function_15ba20(void)
 		function_15b3a0(winner, few_teams);
 }
 
-// score 16 (was 16): the event fields are stored in a different order than retail, and the player
-// lookup keeps the index in a different register. Tried: an unsigned index parameter 16; the shared
-// input-counter helper 16; the force-inline input-counter helper 16; the table read before the peer
-// call 68; the existing cause setter forced inline 70; the existing initializer forced inline 79;
-// size optimization 125; global optimization off 86; team through event_player_get 16 (aligned 9);
-// cause team stored before the cause player 56 (with event_player_get 56); engine_player_get
-// pointer before the event 50, after the initializer 56; team read into a local 56. Retail stores
-// type and f first and loads the data pointer before the NONE stores; every form keeps the
-// initializer's store order (as the matched 0x162d00 and 0x2bc420 do).
-// Round 43: cause team set before the cause player 56; the team through engine_player_get 16; the
-// existing cause setter as a plain call 70 (kept out of line; the zero stores then lead, as in
-// retail); the shared initializer forced inline 16 (0x157de0 then 12); a no-alias diagnostic and the
-// initializer's stores written directly (diagnostic only) both 16 with identical code, so the late
-// player-data load is not an alias or inlined-pointer effect.
 // @retail 0x157ed0
 void function_157ed0(long player_index)
 {
@@ -3226,11 +3161,13 @@ void function_157ed0(long player_index)
 		if (g_4e6948->mode != 4 && function_x340af0())
 			function_158140();
 		game_engine_get()->p8(player_index);
-		s_event event;
-		game_engine_event_initialize_inline(&event, 0, 24);
-		event.cause_player_index = player_index;
-		event.cause_team = ((s_engine_player *)g_4e8c24->data)[index].team;
-		game_engine_event_send_inline(&event);
+		{
+			s_event event;
+			game_engine_event_initialize_inline(&event, 0, 24);
+			event.cause_player_index = player_index;
+			event.cause_team = engine_player_get(player_index)->team;
+			game_engine_event_send_inline(&event);
+		}
 		function_196470();
 		if (g_510ca0 && !g_510ca1)
 		{
@@ -4922,6 +4859,12 @@ bool function_158eb0()
 // ours evaluates the index first. A long mode local after the flag 37 (the mode goes straight to EAX,
 // 144 bytes); the mode local in place of the flag 37; `(bool)` on the global for that local 44; the
 // flag read before the count 5; the score named and the count moved after the call 5.
+// Round 196: the index read into a local after the flag 5; the flag and call in a scoped block with
+// the score outside it 5; the flag, call and test in a scoped block 5; the count, flag, named score
+// and test in a scoped block 5; a named index and a named score 5. Matched 0x15c6f0 (flag in AL, then
+// `xor ecx, ecx`) shows the first free register goes to the mode when nothing is read before it, so
+// retail's mode is evaluated before the index: the parameters declared with the mode last would give
+// that, in a held file.
 // @retail 0x158f50
 bool function_158f50()
 {
