@@ -123,7 +123,8 @@ struct s_free_state_23d260
 	real pitch;
 	real roll;
 };
-// score 102 (was 102): this round's side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
+// score 102 (was 102): frame 0x4c agrees; zero/side normalization and up/roll allocation differ.
+// Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
 // local-carrier form all compile to the same 102/103, and a named clamp or a named zero carrier give
 // 103, so the zero constant still lands in xmm3 against retail's xmm1.
 // the side vector's i and j roles were swapped and the shared `normalize3d`
@@ -313,9 +314,19 @@ struct s_free_state_23d260
 // Round 337: immediate up-component accumulations, separate/shared scratch, producer/entry
 // declarations, then each with complete roll-cross accumulation: 256/254/256/254/288/289/288/289.
 // Original body restored; zero/side normalization and up/roll allocation remain.
+// Round 38 (m3 lane 2, fast with 0x23d790/0x11d090, both matched throughout; masked-aligned counts in
+// brackets, base 102 [85]): retail's side block is matched 0x11d090's own code, with 0x11d090's fallback
+// vector as constants. Calling 0x11d090 for the side and up 512 (1130 bytes: it stays a call), with a
+// `__forceinline` redeclaration 512 (still a call); the forward vector through this file's direction helper
+// taking the yaw/pitch pair by a pointer to the yaw (both callers) 279 [69] (the forward/side x87 then
+// retail's except normalize_inline's i-first length; zero XMM3); that with 0x11d090's j-first side form
+// 270 [80], with normalize3d 267 [82] (as round 29's s_view_angles forms).
 // Round 340: coordinated roll-cross/row/trig workspace names on the retained
 // accumulated-row graph, seven subsets and all six cross/row declarations at entry, 102 each.
 // Original body restored; zero XMM3/XMM1 and side/up/roll allocation remain.
+// Round 351: Complete camera-angle observation ownership on the accumulated projection/row graph;
+// 324/135/365/266/361/252/362/362. Pitch-only recovers zero XMM1, first +0x89,
+// but regresses to 135. Original executable source restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

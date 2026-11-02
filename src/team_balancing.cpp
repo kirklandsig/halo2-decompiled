@@ -623,6 +623,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
 // pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
+// M294: Existing cost weighted products/accumulator/staged weighting/raw query parts,
+// in-class then forced expansion:
+// 67/67/67/67/67/67/67/67. Original complete executable source restored.
+// M296: Single current-team count observations A/B/both, mutable then const,
+// then both with reverse declaration priority [75, 151, 154, 75, 151, 154, 154, 154]. Original per-use count reads restored.
 // Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
 // result storage 92/92/106/105; complementary rejection results 92/92/106/105.
 // Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
@@ -971,6 +976,11 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
 // copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
 // as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// M292: Raw maximum-party index with strict/named-fill/conditional/inclusive producers,
+// original/expression-owned clamp:
+// 82/85/82/82/82/85/82/82. Original executable body restored.
+// M296: Sixteen-slot shared short/word/byte/char ordinals, then separate short/long,
+// long/short, short/short and word/word [79, 79, 78, 78, 79, 76, 79, 79]. Original long induction restored.
 // Round 56 (m3 lane 10; one-file LTCG harness, exact here; the first form confirmed --fast): `int next_party` 34; `int
 // parties[]` 34; `dword parties[]` 34; `(long)next_party` in the fill 34; next_party declared after the index 34; a
 // forceinline fill helper (first, last, value) 34, plain inline 34, (pointer, count, value) 56; a static next_party 60
