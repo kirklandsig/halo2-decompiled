@@ -291,6 +291,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
 // 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
 // component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
+// Round 311: Returned seed-color unpack output with scalar/seed-loop/input-loop/both RGB consumers,
+// branch-local buffer 431/431/431/431, entry buffer 483/483/483/483. Original producer use and full body
+// restored; tint/secondary-UV home order and blend residency remain.
 // Round 357: Direct-bounds mode secondary-UV producer then primary copy, four geometry-copy phases with union/member copies 263/253/304/308/263/253/304/308. Original body and input-before-store UV encoder restored; tint/secondary-UV homes remain.
 // Round 288: Complete previous/next/both interpolation-product stages, both coordinates
 // at every interpolation site 280/232/245; with branch-produced primary aspects

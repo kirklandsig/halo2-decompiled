@@ -965,6 +965,9 @@ struct s_flags_1f0870
 // then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
 // retail length at 587; the three-point gains are rejected. Original complete body restored;
 // frame 0x34 and direct/vector homes remain.
+// Round 311: General movement through the existing output-pointer scale, plain/shared difference and
+// ordinary/returned-output ownership 590 each; all four with native two-component direct delta 589 each
+// (one-point gain rejected). Original body restored; frame, flag homes and normalization continuations remain.
 // DL238: Native grounded/gravity-disabled/direct-disabled predicate subsets 1/2/3/4/5/6/7/all plus
 // damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.

@@ -582,6 +582,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // P262: Complete sample/update/sampled-once lexical priorities, all six native Boolean
 // orders 412 each; signed prior-state word on sample-first/update-first flag graphs 413/413.
 // Original flags, signed-long state, workspaces, cases and complete body restored.
+// N313: Equal-size motion/query workspace lexical ranks motion/query_result, body_motion/context,
+// motion_sample/sample_context and sample_motion/query_result, each with promoted/native signed
+// saved state: 412/413 in all four pairs. Native state recovers the word store but regresses one;
+// workspace ranks leave the frame and homes unchanged. Original names, full saved-state domain,
+// qualifier and body restored; frame 0xa4 versus 0xa0 and stacked actor remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
