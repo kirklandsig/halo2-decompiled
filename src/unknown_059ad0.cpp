@@ -3551,6 +3551,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 482: Independent added/replacement channel results, shared/long/const-long
 // producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
 // Control 119 with related caller retained; original channel join and body restored.
+// Round 504: shared-result failure/all exits with existing/ordinary result and true/false
+// defaults 180/198/180/119/137/164/137/129 (calibrated reduced). Original early exits and
+// full body restored; attach scratch rotation and separate reject tails remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,

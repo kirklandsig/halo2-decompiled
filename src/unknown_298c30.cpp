@@ -486,6 +486,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 286: one result exit with bool/byte/short/long carriers 789/818/819/819;
 // selected-index-derived obstacle results with those carriers 780/812/808/808.
 // Frame 0x120 remains above 0x114; original result topology and whole body restored.
+// Round 504: shared planar/edge-distance/normalized-sweep differences, seven subsets
+// 723/719/719/723/723/719/723; full graph with native sector-result records 723.
+// Original helpers, native workspaces and body restored; frame 0x124/0x114 remains.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
