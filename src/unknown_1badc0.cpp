@@ -198,6 +198,9 @@ real normalize2d(point2f *arg_0);
 // Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
 // point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
 // Original scalar expressions, publication and complete body restored; output/vector homes remain.
+// Round 341: Conditional projection admission with shared center parts, separate adjusted
+// root and entry point declaration, masks 0-7: 211/255/211/255/211/255/211/255.
+// Output EBX/EBP and point/vector homes remain; original complete body restored.
 // Round 449: Complete projected-interval/nearby-length/far-separation admission results, bool subsets 1..7
 // 211/211/211/211/211/211/211; all with native long results 211 (fast control 211, full 211).
 // Original complete executable source restored; opening structural differences remain.

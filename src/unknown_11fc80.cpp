@@ -148,6 +148,17 @@ static inline real distance_squared(point3f const *a, point3f const *b)
 // Round 38 (fast): the four root/mid axis pointers at the top of the function 297, the root ones
 // only 302, the mid ones only 280; at the top of the inner block 279, the root ones only 292. In
 // the second cross retail loads the higher-offset component first in all six products.
+// Round 37 (fast): the first root cross writing &root->up 14 (the root part then matches, the
+// mid crosses flip); also its normalize through &root->up 14; the normalize alone 2; second cross
+// with &root->forward 2; first cross inputs direct 18; the same three forms for mid 14 each; no
+// root/mid/any pointer locals 41/51/59; new_mid through the file's point-plus-scaled-vector
+// helper 10, with the &root->up first cross 8 (root part and new_mid exact, 8 in the mid
+// crosses); &root->up first cross with new_mid.z (or .y) read as root->forward.k 1 (mid crosses
+// fixed, that read's base register differs). Compile-only harness (exact here): every 1-3 of the
+// 25 pointer-local uses written direct, best 1 (above); from the helper form best 4; mid_forward or
+// mid_up declared earlier 21-30; mid_left before each earlier statement 8-56; a shared axis
+// rebuild helper for root and mid 2 (with the point helper 4); unused-local probes (diagnostic
+// only) show the helper form needs mid_forward's numbering moved by 3-5 (mod 8).
 // @retail 0x120220
 void function_120220(
 	transform4x3f *target,

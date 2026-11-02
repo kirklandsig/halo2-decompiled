@@ -1407,6 +1407,9 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // damage_flags name 10; owner before scale 17; owner/late bit 35; both names/late bit 32; flags before
 // disjoint publications 17. Original body restored; aggregate-copy registers and final flag-store schedule
 // remain.
+// Round 303: one initial clear of the three controlled bits, positive branches in abc/acb/bac/bca/cab/cba
+// order 51,51,52,52,52,52; combined/separate conditional contributions 67,67.
+// Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
@@ -4161,7 +4164,9 @@ bool function_d5de0(long object_index)
 		}
 	}
 
-	changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, (byte const *)info,
+	/* retail passes the character's vitality properties ([esp+0x14] at
+	   0xd6598, NULL for a unit no actor drives), not the damage info */
+	changed |= function_d8b50(&object->unknownf8, &object->unknown100, (char *)&object->unknown109, bounds,
 		TEST_FIELD_BIT(object->damage_flags.body_depleted));
 	if (TEST_FIELD_BIT(object->damage_flags.unknown11))
 	{
@@ -4173,7 +4178,7 @@ bool function_d5de0(long object_index)
 		return true;
 	}
 	return changed | function_d8b50(&object->unknownf4, &object->unknownfc, (char *)&object->unknown108,
-		(byte const *)info, TEST_FIELD_BIT(object->damage_flags.shield_depleted));
+		bounds, TEST_FIELD_BIT(object->damage_flags.shield_depleted));
 }
 
 /* an object's render model sections by list (unknown_181a80.cpp) */

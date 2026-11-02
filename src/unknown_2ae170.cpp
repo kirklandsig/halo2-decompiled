@@ -574,7 +574,8 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 	settings->mixbins.dwMixBinCount++;
 }
 
-// score 281 (was 281): Aligned frame 0x144 versus retail 0x94, native zero-temporary copies and repeated conversion coalescing remain.
+// score 281 (was 281): Workspace frame/prologue and repeated conversion coalescing remain.
+// Aligned frame 0x144 versus retail 0x94, native zero-temporary copies and repeated conversion coalescing remain.
 // Earlier at 281: Workspace frame/prologue and repeated conversion coalescing remain.
 // Aligned 0x144 frame and zero-temporary/descriptor copies versus retail 0x94; repeated converter coalescing remains.
 // Earlier at 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
@@ -708,6 +709,9 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // front/rear level locals 315; memcpy with explicit sends 412 (941 B). Without the zeroing our LTCG
 // reuses the first set's (-64, 0, -64) conversion in sets 2 and 3 across the SetMixBins/SetVolume
 // calls (2 and 1 calls there, retail 5 and 5): it treats 0x12aff0 as pure, retail as opaque.
+// Round 453: Complete initial-zero sharing between real descriptors, first/second pair roots,
+// first/second/third common roots and three chains: 298/298/303/303/303/303/303/303.
+// Original executable body restored.
 // Round 300: On explicit third sends, direct braced descriptor zeros, subsets 1..7,
 // 295/283/301/302/332/326/343 fast; all at first use 343 (control 297). Second-only confirms 280
 // plain versus 281: one-point gain rejected. Original native value constructors, full zeros, table,
