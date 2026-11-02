@@ -2318,6 +2318,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // DH295: Complete per-use component getters with retained/at-use settling count, promoted/native
 // main-body result and entry/at-use tag: 74/99/74/89/86/103/87/101. All restored;
 // extra EBP, native body transport and flag scheduling remain.
+// M319: Full native component-index ownership at admission/getter, long/dword,
+// crossed with original/promoted-shared/native-shared/native-explicit body:
+// 63/73/75/73/63/73/75/73. All restored; extra EBP, body transport and flag stores remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3308,6 +3311,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 371: Native travel-limit decision before original target copy,
 // byte/short/word/long 372/376/376/375; complementary truth representation
 // 372/376/376/375. Original predicate and body restored; matrix/pivot homes remain.
+// M317: Sequential parent/rotation, origin/placed and pivot/target workspace reuse subsets 1/2/4/3/5/6/7, all
+// with consumed-direction reuse; root relocation offset with aggregate copy/point setter:
+// 369/401/395/401/395/428/428/428/396/379.
+// Matrix/origin and paired point/property homes remain. Original executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4493,6 +4500,9 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // frame/state-result lifetime and input convention remain.
 // Complementary bool/byte results recover frame 0x28 at 232, but lose the two
 // matched callers at 61/14 through the natural register input; restored.
+// M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
+// long/short contact truth: 317/228/228/228/228/228/228/231/228.
+// State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

@@ -851,6 +851,9 @@ static __forceinline long real_to_long(real value);
 // Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
 // dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
 // the object velocity pointer before the magnitude 381 (one count, not kept).
+// Round 318: Progressive returned admission at short-circuit boundaries, first/last/all flag
+// partitions in bool/byte, then first/last in long; 517/517/517/526/526/526/543/543. Original
+// whole body and helpers restored.
 // Round 331: Query and later planar directions share one consumed vector at
 // direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
 // each. Original workspaces, entry/result graph, query aliases and entire body restored; early
