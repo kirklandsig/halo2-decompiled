@@ -167,16 +167,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	float const volatile &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
 	volatile float impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
-	if (impulse_a > 0.0f)
-	{
-		if (impulse_b > 0.0f)
-		{
-			apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
-			apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
-			return;
-		}
-	}
-	else
+	// Unordered first impulses also enter the second-row fallback.
+	if (!(impulse_a > 0.0f))
 	{
 		float candidate = error_b * axis[-1].m128_f32[3];
 		// The second-row fallback accepts unordered results in retail.
@@ -185,6 +177,12 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 			apply_linear(candidate, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 			return;
 		}
+	}
+	else if (impulse_b > 0.0f)
+	{
+		apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
+		apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
+		return;
 	}
 	float candidate = error_a * axis[-4].m128_f32[3];
 	if (candidate > 0.0f) apply_linear(candidate, ((solver_linear_row_31e7b0 *)(axis - 5)), a, b, result);
@@ -665,7 +663,7 @@ union solver_velocity_or_kind_31c940
 	int kind;
 };
 
-// score 1966 (was 1967): stage the first rounded error between row projections.
+// score 1964 (was 1966): handle the first pair's fallback before joint updates.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
