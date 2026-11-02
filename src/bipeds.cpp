@@ -4742,6 +4742,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Round 259: Direct animation-result initialization after the names store, complete shared orientation
 // setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
 // all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
+// P271: Complete orientation memcpy at biped-forward/output-forward/up, subsets
+// 1/2/3/4/5/6/7, then complete memmove: 655/655/655/655/655/655/655/628.
+// Complete memmove 621 plain at 2264/2190 bytes NOT kept: it adds three out-of-line CRT copy
+// calls retail does not make (a score-picked copy form). Struct assignments restored at 648.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

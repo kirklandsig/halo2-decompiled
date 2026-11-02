@@ -2025,6 +2025,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // P269: native double heading/elevation and twice-used elevation-cosine subsets 1..7,
 // then both double inputs with complete aggregate result: 215/233/210/234/209/233/210/210.
 // Original helper and body restored; frame/angle/vector-copy homes remain.
+// P271: Complete existing entry pointer/reference/value/mutable-pointer input,
+// each with native vector return/output production and shared zero-pitch forward:
+// 192/192/200/192/223/223/205/223. Original producer, type position and body restored; frame/copy homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
