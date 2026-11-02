@@ -2647,6 +2647,12 @@ long function_c8f60(long unit_index, short seat_index);
 // at both uses kept plain at 293 (1221/1209 bytes); original unit/header receivers and
 // transfers retained. Header/vehicle form 289 restored as a repeated computed address.
 // Entry vehicle promotion, unit/ordinal residence and state comparison width remain.
+// DH298: Reset output from the state-name test 264; final success from occupant
+// admission 305, both 274; short-circuit result 299, with reset 276; native long
+// branch/short-circuit/both-with-reset 296/296/288. NOT kept: the 264 form re-tests
+// `state_name == NONE` after the block to set reset, while retail stores 1 inside it
+// (0xea58f, no setcc); a redundant test picked by score is kept only with a match. Body
+// restored at 293.
 // Round 328: actual unit-slot pointer/reference with native state and vector-zero
 // combinations 308/303/308/303 each. Frame 0xec and entry vehicle in EBP;
 // original native acquisition, scopes, observations and full body restored; residence remains.
@@ -4435,6 +4441,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 330: consumed away/forward, side/frame-left and object/world position storage,
 // subsets 1-7 then all with native memcpy transfers 174/183/182/223/222/204/204/202. Original body restored;
 // frame and basis/point homes remain; original quaternion operands retained.
+// DH298: Complete forward/inverse point products and parallel row-pair sums,
+// seven subsets 175/175/173/175/173/173/173; all with late relative position 199.
+// Every form also raises the other helper caller from 0; both helpers and body restored.
+// Frame 0x110 versus 0x11c and point/basis scheduling remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

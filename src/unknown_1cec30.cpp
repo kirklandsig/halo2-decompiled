@@ -1014,6 +1014,9 @@ void function_1d1540(s_havok_component *component);
 // Round 330: early native slot pointer/reference, constructor/set copy, before-copy then
 // after-copy-before-inverse acquisition 86/85/86/85/88/85/88/85. Original body restored;
 // frame/component transport remains; two early-constructor forms lose matched 0x1d1b60.
+// DH298: Copy after inversion, assignment/set/memcpy/memmove with inverse at use
+// 140/140/84/99; inverse at entry 140/140/84/99. All regress and are restored; fresh
+// post-reset lookup and matched caller survive; frame and argument transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
