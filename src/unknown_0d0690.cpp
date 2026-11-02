@@ -2124,6 +2124,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
 // native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
 // producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
+// Round 234: Decoded/encoded/both scalar roots at branch/data production, readonly data and native block controls 554 each (eight forms); first/middle/last samples 555; complete status/mesh/sample/vector/color role names 555. One-byte gains rejected; original complete body restored. Frame 0x90 agrees; status/mesh homes and selective helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

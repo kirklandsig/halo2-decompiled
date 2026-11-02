@@ -1978,6 +1978,7 @@ void function_269250(long clump_index, long actor_index);
 // observations and body restored.
 // Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
 // all plus pre-search created-result storage 89. Original declarations and body restored.
+// Round 234: Native candidate/team/both/activity-before-construction/candidate-activity/team-activity/all input observations 195/100/224/87/195/100/224; all via library copy 224. Timing alone ties, all other forms regress. Original complete body restored; frame 0x3c agrees, pool/selection and x87/SSE homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
