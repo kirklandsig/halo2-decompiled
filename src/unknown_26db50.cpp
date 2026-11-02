@@ -657,6 +657,18 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // N301: Complete trace/distance/origin scope ends at point before collision, with
 // original/real short marker and aggregate/library fallback transfer 90/90/90/90;
 // each with the outer ring phase 143/143/143/143. All restored; ring conversion/spill remain.
+// Round 29 (lane 17, fast), on the 96 form (register-masked aligned difference 20 against 37 for the current body; left are
+// the radius copy through integer registers, which moves the sector load, the dot's (k + j) + i for retail's (j + i) + k,
+// and i, j, k in xmm5/4/3 for retail's xmm4/3/5): dot as `(j + i)` then `+= k` 218 (1083 bytes); three accumulated terms 102
+// (1086); i, j, k defined k first 96; dot written j, i, k with named components 96; radius declared then assigned 96; through
+// a pointer local 96; through an inline getter 96; plain radius re-measured 222 and sector index first 263 (repeats, read
+// for their heads: sector first also moves the object lookups, so it is not retail's source order); the direction copied
+// field by field in all six orders 242/242/242/243/243/243 (1081), with the dot written j, i, k 237/237/238/238/238/238
+// (1085); a named double base distance 96; the distance through an inline helper 96; a named (real)ring 96.
+// The ring loop as a forceinline helper taking the radius by value (no reference; retail's movss-then-fld is the shape of a
+// by-value float parameter elsewhere), on the 96 form 271 (1067 bytes), radius named in the caller 222 (1083), sector read in
+// the helper 222 (1083), without the phase 243 (1074); on the current rotation with the phase 262 (1079), without 235 (1092).
+// The radius still copies through integer registers in all six.
 // DH282: Complete repeated scalar-input immutable declaration orders ijk/ikj/jik/jki/kij/kji, then kij/jik
 // with the native outer ring phase [90, 90, 90, 90, 90, 90, 143, 143]. Original executable body restored.
 // @retail 0x26d570

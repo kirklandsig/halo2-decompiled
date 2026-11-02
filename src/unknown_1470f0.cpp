@@ -89,6 +89,9 @@ extern "C" void _ReadWriteBarrier(void);
 // owner-lookup helper 42; first bounds from start plus size 7. Fast: third end as a long add 9; third as
 // an offset compare 10; address-first equalities 13; the pool's page-array bounds 9; second and third
 // sharing the call on this body 27; the second end as start plus size 9.
+// Round 121: direct second dispatch 9; concrete direct second dispatch 9; concrete fallback return
+// declarations 9; concrete first assignment 9; direct chain with concrete first 27, concrete first/second
+// 27; first receiver local in the direct chain 27; distinct second receiver local on the shared graph 9.
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
@@ -174,6 +177,10 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // 11/11/11/42/42/42/42/41. Original executable source restored.
 // M299: Independent repeated primary/secondary endpoint and physical-start ownership
 // subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
+// Round 122: secondary/fallback/shared/all void-return expressions 21/21/11/11; plain shared return 21;
+// secondary and fallback done exits 11; secondary-only done exit 11; secondary receiver before its bounds 11;
+// concrete primary global declaration 11. Concrete secondary declaration did not compile at its explicit base
+// destructor; primary declaration without the complete type did not compile at an external upcast.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {

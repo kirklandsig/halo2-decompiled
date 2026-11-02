@@ -197,6 +197,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 1/2/3/4/5/6/7 give 395/401/401/451/451/449/449; complete graph with named squared sum 449. Original point
 // storage, expressions and every helper restored. Frame and cleanup agree; normalized XY/magnitude homes and
 // center retention remain.
+// Round 44 (lane 15, fast): retail takes the loop's distance on x87 from the centre point's memory home, with dx and
+// dy live on the x87 stack, and keeps the outer counter in EBX with a dword spill compared through bx. Double dx/dy
+// 437 (1712 bytes, aligned 243, masked 111, against 235 and 111); with both 16-bit counters 488 (1669, masked 108);
+// centre built through an output-pointer inline 395 (same code), with double dx/dy, dy first 437; the difference
+// through a named point 450 (1751); centre built from the input copy 398.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
