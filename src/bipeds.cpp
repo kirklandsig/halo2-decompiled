@@ -1513,7 +1513,7 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // MiniMax D (11-01): the mode byte now has a byte home (mode_byte) beside its long copy, so the 4/5 tests widen it
 // into eax and the 3 test keeps it in cl as retail does; the 0.5 scale goes through the existing vector3f_scale and
 // the magnitude is written i, k, j, which fixes the x87 squares.
-// score 20 (was 77): the two jne targets and the spin.i product (retail multiplies the angle into axis.i, ours into
+// score 20 (was 20): the two jne targets and the spin.i product (retail multiplies the angle into axis.i, ours into
 // a register copy) still differ, beside the reduced image's call and global addresses.
 // (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
 // in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
@@ -1588,6 +1588,10 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // axis scale then copy, position/linear/away declared elsewhere: spin.j stays angle-first. Mode spellings screened
 // (no local; unsigned long/int/short/word/dword/char/unsigned short locals, each with the local or the field for 3;
 // nested; const): narrow compares or the re-coloured velocity scale; only the byte+long pair gives both.
+// Round 514: spin without the initial zero copy 228; complete product setter 20,
+// without the copy 228; all three named product parts 20, without the copy 228;
+// sequential same-group angle with rows/setter/product parts 31/31/31 at 942 bytes.
+// Original body restored; early axis.i load versus angle-copy product remains.
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -1842,6 +1846,9 @@ void function_dfd70(long arg_159e6d)
 // Round 289: view-forward, basis-up, both, head-direction, forward/direction, up/direction, all three,
 // and complete head/hit frame identities all 248 at 1041 bytes. Original helper/body restored; every
 // checked shared-helper user and matched caller retained its score.
+// Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
+// forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
+// origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -3163,6 +3170,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // role names separately and all together 368/368/368/368; complete scaled-point setter
 // 421, with all role names 421; setter plus default pivot selection 424, with all names 424.
 // Original helper, selection and executable body restored; origin/matrix and paired point homes remain.
+// Round 514: native input memcpy/memmove with direct output 368/383; aggregate
+// input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
+// Original helper and body restored; matrix/pivot homes and scalar transport remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3809,7 +3819,7 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 
 /* turns a tumbling biped by its angular velocity over a tick, keeping its
    facing and up square */
-// score 145 (was 171): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,
+// score 145 (was 145): frame 0x24 and retail length agree; first +0x4f is normalization SIMD numbering,
 // followed by rotation/basis carriers and trigonometric homes. Earlier frame 0x30 had cross spills.
 // Earlier (score 184 (was 184)): frame 0x24 and entry saves agreed; axis copy/norm order, early normalization loads.
 // Direct rotation output 235; scalar cross terms 246; all shared cross producers 184 (plain);
@@ -3854,6 +3864,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // both 145 plain, retained; indexed axis/cosine/both weighted vectors 150/207/198;
 // indexed parallel component terms 145; cross-first named-dot indexed form 175.
 // Existing twice-used helper only; original arithmetic association and in-place input safety preserved.
+// Round 315: Complete sine-weighted cross on the retained indexed-dot graph, with no/cosine/axis/both
+// weighted companions 149/206/175/210; complete vector-sum publication with input/output
+// and native sum receivers 238/219/222/220. Original helper/body restored; normalization SIMD
+// ranks, trigonometric homes and rotation/basis carriers remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -3890,7 +3904,7 @@ real magnitude3d(vector3f const *v);
    ground under it, or none along its flight) says so, at most once every
    half second: falling (0x54), flipping over (0x56) or a jump (0x55) */
 // MiniMax R (11-01): earlier, the actor rode in ECX because LTCG knew magnitude3d preserved it; the helper file was closed.
-// score 2 (was 19): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
+// score 2 (was 2): Logic walk (2026-10-31) against retail 0xe3380-0xe36fd: callees (0xb9dd0, 0xddf60 + 0x1697c0 = the
 // inlined 0xdf880 with offset 0.4 (0x45dd30) and length 8.0 (0x45dc18) at 0xe347a-0xe352f, 0x24590, 0x30bf0, 0x1fb7e0 with
 // eax type/ecx actor/edx NULL and two pushed NONEs at 0xe36e4-0xe36ec), offsets (0xbc bit 6, 0x12c, 0x12a, 0x7c, 0x244, 0x34c byte,
 // 0x38c, 0x88-0x90, 0x84, 0x94), constants (0.5, 2.0, 0.0, 0.3, 0.6, 1.5707964), the sum < time test (comiss/jbe 0xe3459),
@@ -3919,6 +3933,9 @@ real magnitude3d(vector3f const *v);
 // 0xd1e10 761->791, 0x185be0 731->918, 0x1aa0d0 375->402, 0x1d24a0 920->942, 0x2c0d60 899->953), so
 // restored; actor index local 19; magnitude compared as `magnitude3d(...) < 1.5707964f` 19; long type 19;
 // the type as one ternary 19.
+// Round 514: long falling/byte event/both 214/33/222; shared complete flight scale 2,
+// with long falling/byte event/both 214/33/222; uninitialized event at entry 2.
+// Original body restored; final actor move versus second argument push remains.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {

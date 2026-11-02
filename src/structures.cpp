@@ -693,7 +693,15 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 /* the collision record's object index, re-read at each use as retail does (no local copy) */
 #define COLLISION_OBJECT_14A8E0 (*(long *)((byte const *)collision + 0x40))
 
-// score 70 (was 70): frame 0x58 and initial model/collision homes agree; bounds timing,
+// score 4 (was 4): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
+// second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
+// them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
+// Round 39 (lane 2): 0x11e800 declared (p, a, b, c, u, v), retail's setup order at this call read right to left, at
+// its definition, this file's declaration and both calls: 0 (plain; 0x11e800 129 -> 126, 0x14ac60 stays 172), not
+// kept because 0x11e800 is contributor code. Caller forms with 0x11e800 unchanged (fast): vertices + 1 and + 2 4; named
+// second and third vertex pointers 4; a named point pointer 4; named u and v pointers 4; a named result 4.
+// Earlier at 70: frame 0x58 and initial model/collision homes agree; bounds timing,
 // lookup-address reuse and triangle-test registers differ.
 // Earlier: with the part list read through its 0x48-byte range records and the part offset read
 // at each use, the model/collision registers (EBX/EDI swapped), lookup address (retail keeps it

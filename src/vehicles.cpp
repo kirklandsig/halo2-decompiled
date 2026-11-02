@@ -860,6 +860,10 @@ __forceinline long vehicle_round(real value)
 // angular output as axis workspace 30, with byte mode 174. Post-reader mode
 // byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
 // direct/staged before rate clamp 194/194, after clamp 223/223.
+// Round 80: side cross from the axis copy 113 (731 bytes); scale coefficient from axis.k 51;
+// the two-flip form with axis.k 57, with the side cross from axis 116 (730), with both 124 (728);
+// projection through axis then copied back 73 (775), on the two-flip form 72 (775), with the
+// velocity call selecting its output 157 (795). Restored.
 // Round 134 (lane 6), at 8: a pointer-returning cross helper at both crosses 8; the file's own vehicle_cross at both
 // crosses 8; the positive test with the clears in an else 12; a two-level nested test with the clears under
 // `if (!result)` 12; the pointer-returning cross with the angular scale after the projection 33. Compile-only screen
@@ -2515,6 +2519,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
+// Round 81: contact-definition/contact/both names 10 each; `axle_torque` 10; `const delta` and
+// `real *const spin` 10 each; a local advance name 10; torque/braking declarations swapped 10;
+// definition/contact/both pointer arithmetic 10 each; a spin reference and helper advance/spin names 10 each;
+// throttle/torque joint declarations in either order 10 each; the wrap helper defined after its caller 10.
+// Opening body restored.
 // Round 134 (lane 6), at 10: the wrap helper's ternary as if/else 54 (993 bytes); the loop counter declared in
 // the for statement 10; the gear arm as `torque = 0.0f; if (gear != NONE) torque = ...;` (0xf1cd0's shape) 198
 // (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
