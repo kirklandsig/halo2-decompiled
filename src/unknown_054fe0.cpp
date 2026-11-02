@@ -1440,6 +1440,11 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // M288: Existing membership helper in collection/update/both 232/216/247; name-copy
 // return used for its terminator 183 (one-point gain, rejected); with collection/update/both
 // 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
+// Round 59 (m3 lane 1, fast): the record defaults in an inline initialiser taking the record 184, forceinline 184 (the
+// zero stays hoisted, same code); no `current` with the 16-byte and 12-byte groups as memsets 224 (930 bytes, aligned
+// 55: retail's `test edi, edi`), the 12-byte memset first 224 (aligned 51: retail's EAX block for the 16-byte group, the
+// 12-byte zero still in EDX where retail has ECX); on that the mask read from the field 224, the parameters pointer renamed
+// to sort before owner 224, the team compared as a long 224. Owner, name count and the requested cursor still differ.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

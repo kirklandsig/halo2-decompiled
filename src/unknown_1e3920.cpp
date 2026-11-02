@@ -1364,6 +1364,8 @@ void function_1e3b60(long actor_index);
 // keeps the three flags in stack bytes. Tried there: sample/update as two assignments 26 (0x262ba0
 // 424), declared after the node call 26, update declared first 26 (422), sampled_one before
 // maximum 26, the update test nested 26.
+// Round 58 (fast): the global store before the actor lookup 26; the swarm field in a local 26; the
+// actor test as a bool local 26; the clear through a pointer to +0x41c 34; the arms swapped 40.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)

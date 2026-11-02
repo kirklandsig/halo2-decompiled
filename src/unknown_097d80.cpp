@@ -247,6 +247,12 @@ struct c_aggregate : c_child
 // Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
 // cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
 // escaped-output and loop homes remain.
+// Round 59 (m3 lane 1, fast and a one-file LTCG harness, control 31): an inline wrapper holding the output and
+// taking the total by pointer 32, a forceinline one taking it by reference 32; v5's output declared void * 31, v5
+// without an inline body 31, v5's inline body writing its output 31; the status held in a local until the total is
+// added 32. Frame 0x8024 in each. Diagnostic, harness only: a defined direct callee that only writes through its
+// pointer gives retail's frame 0x8020 and produced in the shared slot 0x10, an undefined one or a function pointer
+// does not, so under LTCG the slot needs the callee proven not to keep the pointer, which a virtual call never gets.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
