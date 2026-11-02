@@ -1216,6 +1216,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // DH285: Native-input non-direct-first primary families QDSPC/QDPSC/SDQPC/SDPQC/
 // PDQSC/PDSQC/CQSPD/CPQSD: 192/194/191/189/191/189/204/205 fast. Original complete dispatch restored;
 // delayed ESI save, late case layout and full-only handler expansion remain.
+// Round 287: Original family positions, query priorities 8-10-9/9-8-10/9-10-8/10-8-9/10-9-8,
+// peer priorities 23-24-22/24-22-23, then reversed query/session/peer interiors: 192/196/194/192/194/196/196/194 fast.
+// Original classifiers restored; delayed ESI save and full-only late-handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
