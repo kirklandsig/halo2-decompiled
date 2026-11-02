@@ -639,6 +639,12 @@ real function_267370(long object_index);
 // argument 107; the held bit as one bool expression 194; a named location pointer for the zone test
 // 100. Diagnostic (fast only, unfaithful here): `(short)NONE` in the shared zone helper leaves the
 // `or edi, -1` / `cmp ax, di` sharing unchanged.
+// Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
+// alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
+// shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
+// clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
+// chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
+// the zone helper's compares 98 (same code: the constant is shared either way).
 // Round 147 (m3 lane 4, plain checks; --fast differs only at the 0x28f8d0 call, an aligned diff shows 28 real
 // instructions left): a compile-only build of this file without /GL gives retail's immediate zone compares and
 // `or ecx, -1` at the resets, so the NONE sharing comes from the LTCG allocation, not the spelling. The shared
@@ -647,12 +653,19 @@ real function_267370(long object_index);
 // 352; typed byte fields for 0x265/0x267 98 (same code); the zone result in a named bool 100; `left` declared
 // before the up copy 98; type read before the parent 129. Re-measured: without `(void)&actor_index` 98 (same
 // code, removed: it only took the parameter's address); the parent ternary with the found arm first 102.
+// Round 282: native up values mutable/const 195/195; normalized left value 193;
+// up plus left mutable/const 237/237; native axis alone/with up/with both 175/235/264
+// (calibrated fast). Original frame 0x90, early NONE sharing and cross operands retained.
 // Round 38 (m3 lane 14, fast with 0x1e2a90 in the list, which builds this body as the full build does, 98;
 // alone the image gives 416): aligned only 29, the positional count is the one-instruction shift of the
 // shared `or edi, -1`. The resets as `actor->unknown274 = actor->unknown26c = NONE;` before/after the word
 // clear 99/99; the 0x274 reset copied from the 0x26c field 101; re-measured on the faithful image: carrier
 // chosen before the resets 376, both NONE resets after the carrier choice 372; diagnostic: `(short)NONE` in
 // the zone helper's compares 98 (same code: the constant is shared either way).
+// Lane 18 round 24 (fast, with 0x1e2a90 in the list): the shared zone helper with early `return false` exits 385
+// (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
+// cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
+// `carrier` declared at the top of the block 98 (same code).
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1001,7 +1014,8 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 320 (was 320): Frame 0x118 agrees; persistent sentinel EDI/ESI and squad/substitution homes remain.
+// score 254 (was 320): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
 // frame 0x118 agrees; entry sentinel, squad and substitution/result homes differ.
@@ -1088,6 +1102,15 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // with the advance under `if (ternary) ... else break;` 423). Unit field read at each use: two sequential
 // guards 310 (a repeated test), one guard 333. VC places the unit arm right after the perception arm
 // whatever the source order (goto-ordered arms, cleanup first, an inlined unit arm, a switch on the bit).
+// Lane 18 round 24 (fast; plain confirms 254): kept: the placement mode as a switch (retail's `dec ecx; je; dec ecx;
+// jne` dispatch), the actor's unit field read at each use with retail's three -1 tests (switch, weapon block,
+// 0xb9c60), and the squad flag as a bool set from bit 10 under `if (squad)` (retail's byte home, the callees' bool
+// parameter): 320 -> 304 -> 254. Tried: the switch alone 322; field reads and guards without the switch 348; with one
+// guard 331, two guards 325; a `unit` local for the case-1 calls 304 (same code: our LTCG reloads the field where
+// retail holds EBX across 0xb9dd0); on 254: ternary substitution result 348; palette count at each use 258; with int
+// grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
+// the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
+// `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1111,7 +1134,9 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 				flags = (byte *)function_1e4990(character_index);
 			}
 		if (!flags) goto done;
-		long flag = squad && (*(dword *)(squad + 0x20) & 0x400) != 0;
+		bool flag = false;
+		if (squad)
+			flag = (*(dword *)(squad + 0x20) >> 10) & 1;
 		byte const *data = (byte const *)placement;
 		if (*flags & 1)
 		{
@@ -1158,46 +1183,53 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 				direction.k = (real)sin(*(real *)(data + 0x18));
 				function_1f34b0(actor_index, &position, &direction, *(real *)(data + 0x38), NONE);
 			}
-			long unit = *(long *)(actor + 0x18);
-			if (unit != NONE)
+			if (*(long *)(actor + 0x18) != NONE)
 			{
-				short mode = *(short *)(data + 0x3e);
 				byte request[0x20];
-				if (mode == 2)
+				switch (*(short *)(data + 0x3e))
+				{
+				case 2:
 				{
 					byte *movement = (byte *)function_1e4a50(*(long *)(actor + 0x54));
 					if (movement && (*movement & 0x20))
 					{
 						*(long *)request = 0x2c;
 						request[4] = true;
-						function_e6900(unit, (s_unit_request *)request);
+						function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
 					}
+					break;
 				}
-				else if (mode == 1)
+				case 1:
 				{
 					vector3f forward;
-					function_b9fc0(unit, &forward, NULL);
+					function_b9fc0(*(long *)(actor + 0x18), &forward, NULL);
 					forward.k = 0.0f;
 					if (function_30bf0(&forward) > 0.0f)
 					{
 						*(long *)request = 0x22;
-						function_b9dd0(unit, (point3f *)(request + 4));
+						function_b9dd0(*(long *)(actor + 0x18), (point3f *)(request + 4));
 						*(real *)(request + 0x10) = forward.i * -1.0f;
 						*(real *)(request + 0x14) = forward.j * -1.0f;
 						request[0x18] = true;
-						function_e6900(unit, (s_unit_request *)request);
+						function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
 					}
+					break;
 				}
-				byte *object = *(byte **)(g_4e0300->data + (unit & 0xffff) * 12 + 8);
-				long weapon = function_cbd50(unit, (char)object[0x212]);
+				}
+			}
+			if (*(long *)(actor + 0x18) != NONE)
+			{
+				byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
+				long weapon = function_cbd50(*(long *)(actor + 0x18), (char)object[0x212]);
 				if (weapon != NONE)
 				{
 					byte *weapon_object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
 					byte *local_67e06b_3 = g_4e3b44[*(long *)weapon_object & 0xffff].bytes;
 					if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor[0x22a] = true;
 				}
-				if (data[0x1c] & 0x10) function_b9c60(unit, true);
 			}
+			if (*(long *)(actor + 0x18) != NONE && (data[0x1c] & 0x10))
+				function_b9c60(*(long *)(actor + 0x18), true);
 			function_a7b30(unit_index);
 		}
 		else
@@ -1745,6 +1777,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // that LTCG cannot prove pure. Removing the 0x1e1a00, 0xc6f80 or weapon calls (diagnostics) does not make ours
 // hold the pool. Forms: ticks as a short 251; a named group index for the counter 251; the grenade test by De
 // Morgan 251; the weapon pair declared before the unit 251; `fraction = fraction * 0.5f` 251 (all same code).
+// Lane 18 round 24 (fast): both private slot queries result-first (retail's query shape) 280; the tail through the
+// existing element_502420_get 251 (same code); a `long` two-weapon counter 278 (1191 bytes, frame 0x10); the unit index
+// read once into a named local for the second block 251 (same code); the loop as `for (short i = 0; i < 2; i++)` 251
+// (same code). Diagnostic (plain, reverted): src/character_tag_accessors.cpp renamed to link after this file, as
+// retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

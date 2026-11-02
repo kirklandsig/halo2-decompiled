@@ -286,6 +286,22 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 16 (m3 lane 17, fast): loop frame assigned after the per-pass disposal reset 96 (same code); long
 // next time 96 (same code); long loop frame 213 (655 bytes); the restart break inside each boundary branch
 // 96 (same code); the loop frame built as `frame = valuea; frame += direction;` 96 (same code).
+// Round 50 (m3 lane 11, fast), all on the fraction-after-clamp form (207; true-only restart there 197 at
+// 645 bytes, aligned 10, only the two false stores missing): restart cleared then set true-only 193 (656
+// bytes); restart as if/else, inverted if/else, nested on the type test, ternary 207 each; restart cleared
+// before a nested type test 210; restart byte/char/long/short 207/207/229/231; dispose byte/char/long/short
+// 207/207/198/200; dispose declared first 207; dispose initialised 207; boundary dispose true-only 207, with
+// the true-only restart 197.
+// Round 42 (lane 14, fast): fraction first (diagnostic base) 207; the fraction written as the
+// interpolation helper's argument and again in the scale (no t local) 153 (660 bytes); diagnostics
+// (a throwaway store before the loop, inside it or at the end) never move the loop's first scratch off
+// EAX, so the rotation is not a temporary count. On fraction first: restart as `if (type == 0) restart =
+// (bit 1 || bit 2); else restart = false;` 207; `restart = false;` then `if (type == 0 && (...)) restart =
+// true;` in both boundary blocks 193 (656 bytes): next time stays at [ebp-0xc] and the loop head is
+// retail's (direction ECX, frame EDX, flags EDX/EAX, zero in EBX), but the false store comes before the
+// test (retail stores it on the false path) and the timing setup computes next time first; on that form
+// the elapsed assignment first / between frame time and next time 198/193. Inline restart and disposal
+// predicates taking (type, flags), restart/disposal/both 255 (614 bytes)/207/255.
 // Round 128 (m3 lane 6, fast; control 96): in the loop retail holds the direction in ECX, the frame and then
 // the flags in EDX and the shared `& 2` bit in EAX (compared again as `cmp ax, bx` for the restart). The `& 2`
 // bit named in both boundary blocks for the disposal and restart tests: `word` 209 (663 bytes, narrowed through
@@ -315,6 +331,21 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// Round 494: one native restart mask at all policy sites, with disposal/restart operand
+// priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
+// Mask forms shorten away from retail and regress; all original policy tests and body restored.
+// J228: existing indexed scaled-difference helper with shared scaled-point/scalar interpolation
+// subsets 281/281/283/283; each with fraction first 261/261/263/263. The delta loop stays
+// rolled under size optimization and grows the frame/body. Original helpers and body restored.
+// Round 328: Complete playback case orders 021/120/201/210 across all four
+// switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
+// case order restored; direction/frame/flags and interpolation carriers remain.
+// Round 494: one native restart mask at all policy sites, with disposal/restart operand
+// priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
+// Mask forms shorten away from retail and regress; all original policy tests and body restored.
+// Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
+// 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
+// frame/timing and original shared fraction restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

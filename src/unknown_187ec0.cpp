@@ -662,9 +662,14 @@ dword vector3d_compress(vector3f const *vector);
 #include "unknown_1765e0.h"
 long function_189400(s_sound_position const *position, long object_index, long tag_index, real scale);
 
+// score 77 (was 77): still BLOCKED-BY 0x1883e0's 4th/5th parameter types (their declarations in
+// src/impacts.cpp and src/projectiles.cpp). Round 71 (lane 9, fast): the compressed forward in a named local
+// 77; the velocity source through a named pointer 77; `(short)entry_element_index` at the 0x1883e0 call 95
+// (346 bytes); g_47d8e0 in a short local before that call 77; the sound position declared in the block that
+// fills it 77; the effect point declared before the two arrays 77.
 // MiniMax R (11-01): no new form, no lower score; retail's point/forward register split still comes
 // from the call sites in other files, so the frame and the two scans stay as they are.
-// score 77 (was 77): retail's own clone takes the point in EAX and the forward vector in ECX and
+// Earlier, 77: retail's own clone takes the point in EAX and the forward vector in ECX and
 // pops eight stack arguments, ours takes the forward in EDX and pops seven; that split comes
 // from the call sites, which are in other files (unit_object_type.cpp, unknown_0a76b0.cpp,
 // items.cpp, unknown_246f10.cpp). Retail also calls 0x1883e0 with twelve stack arguments where
@@ -709,6 +714,16 @@ long function_189400(s_sound_position const *position, long object_index, long t
 // first 77; the fills paired by index re-measured 76. With 0x1883e0's 4th/5th parameters as the material
 // class (diagnostic) 56 (346 bytes): this takes retail's inputs, so the input split follows 0x1883e0's
 // convention; left are the second scan (retail: dword index in EDI, scale in EBP) and the `or esi, -1` slot.
+// Round 131 (lane 5, fast): effect value read once through its address 89 (346 bytes; forward then arrives
+// in ECX as in retail and the stack count is retail's, but EBX holds the effect value from entry where
+// retail loads 0x1883e0's tag into it); the six defaults as one plain loop 342 (536 bytes); on the address
+// form a dword/long second scan 87/87 (344 bytes: retail's indexed loop with scale hoisted after the
+// compression call, registers rotated: index ESI, NONE EBP, scale EDI); that with the location copied
+// before the velocity 88. Still BLOCKED-BY 0x1883e0's declarations. Original body restored.
+// Round 25 (lane 17, fast): effect point as `point + forward * 0.01f` 77, as `0.01f * forward + point` 77, as an
+// aggregate initializer 77; the first scan on a `long` index to a literal 3 77; both arrays NONE-initialized in
+// their declarations 77 (all the same code). 0x1883e0 is in this file; the block is its declarations in
+// src/impacts.cpp (held change) and src/projectiles.cpp, which name the old parameter types.
 // @retail 0x188180
 void function_188180(point3f const *point, vector3f const *forward, long tag_index, long object_index, long index, long variant,
 	long entry_element_index, long effect_value, s_location const *location, real scale)

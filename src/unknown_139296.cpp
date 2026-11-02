@@ -1239,6 +1239,14 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // of both loops exact); all three indexed 118; chained mask zeroing with the indexed first loop 122;
 // indexed first, sibling second, for-form third 3 (only the third xor-before-guard); indexed first and
 // third with the sibling second 118. Two later zero guards (or indexed zero starts) keep the zero live.
+// Round 26: VC keeps the zero across loop 1 once it has ten 32-bit zero uses (four masks, two for an indexed
+// or sibling loop 1, two per sibling later loop; the for form of loop 1 counts one): with one mask left
+// uninitialised (diagnostic) the indexed first loop and sibling later loops are exactly retail's loops.
+// Indexed first, sibling later 118; one shared index and count for three indexed loops 118, counts in
+// blocks 118; dword later offsets with sibling/indexed first 118/118; sibling first with its offset declared
+// first 118, indexed with `long i;` first 118; sibling first offset named offset/aa_offset 118/118; masks
+// chained 122; a mask copied from another 118; indexed first with index do-whiles (`while (++i < count)`)
+// later 131, all three as index do-whiles 163 (no down-counter).
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

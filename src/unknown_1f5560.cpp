@@ -310,6 +310,8 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// MiniMax D (11-01): the state in a plain short local 90 and the same read written out in the
+// initialiser 90: the load is zero-extended and the spill stays a dword; no lower score.
 // Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
 // matches (0, plain): an array of one steering the state's word stack home is the same form as the
 // one-member struct below (Y201, MiniMax G), so it is reverted; the body stays at 11.
@@ -820,6 +822,9 @@ real normalize2d(point2f *v);
 // MiniMax R (11-01): no new form, no lower score; retail's trajectory call still passes eleven
 // stack operands where ours passes ten plus EDX, and retail keeps the trajectory result in DL
 // (`mov dl, al`, then `mov byte ptr [esp + 0x5c], dl`) where ours stores AL directly.
+// MiniMax D (11-01): the fast flag's test moved into the valid arm 301, a separate trajectory
+// variable 278, `force = force || fast` 253: the result stays memory-homed in every form; no
+// lower score.
 // score 135 (was 135): frame 0x48 agrees and the code matches retail to the first trajectory call;
 // retail then caches the trajectory result in DL (spilled around calls, `mov al, dl` on the short
 // exits, no store after the request) where ours keeps it only on the stack, so the unit-state table

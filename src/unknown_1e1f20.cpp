@@ -631,7 +631,7 @@ void function_1e1740(long actor_index, long object_index);
 void function_26dc20(long actor_index);
 void swarm_leader_detach(long actor_index);
 
-// score 281 (was 285): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
+// score 281 (was 281): frame 0x1c versus 0x20, entry actor displacement and cleanup stack homes remain.
 // Earlier: Frame 0x20 agrees; early actor-pool allocation, cleanup and slot homes remain.
 // frame 0x1c versus 0x20, early actor/pool allocation,
 // cleanup countdown and slot homes remain.
@@ -781,6 +781,19 @@ void swarm_leader_detach(long actor_index);
 // (same code); every actor read through a fresh actor_get with no actor local 310 (1012 bytes, but
 // aligned 153 against 190: frame 0x20, index EDI, callback ECX and the spilled offset are then all
 // retail's, and only retail's cached actor pointer in EBP is missing).
+// Round 67 (lane 16, plain each): every function in 0x258600's callee closure (0x258540, 0x258480, 0x16ba40) is
+// matched, so that lead is not a stub or unmatched body there; 0x2628f0 (a direct callee) and deeper 0x1e3b60,
+// 0xcc810, 0x203bf0 and 0x28f8d0 are unmatched. A named bool for the definition bit (`bool counted = definition
+// && ...; if (counted)`) 285 (identical code); the memory test through the entry actor with the body re-derived
+// 352 (1028 bytes: frame 0x20 and the cursor spilled to +0x14 as retail, but the actor offset and index fold into
+// one `index * 0xb6 + i` multiply instead of retail's spilled offset plus an i*12 IV); that with a short memory
+// index 371 (1044 bytes); the bit tested as `*definition & 8` 285; 0x203ed0's argument as `value != 0` 285.
+// Y488: native actor members at 0x10/0x1c/0x3f4, seven subsets and
+// all with short bounded cleanup ordinal, eight 261 against fast control 261.
+// Real type and complete body restored; ordinary 285, frame/actor/cleanup homes remain.
+// Y499: native cleanup/prop-iterator/actor-iterator phase scopes, seven subsets and
+// all with terminal receiver role name, eight 266 against fast control 266 (ordinary 281).
+// Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {

@@ -504,6 +504,9 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // cosf/sinf for the forward vector 60 (1105 bytes). A harness grid of 256 such spellings
 // (angles copy, update test, sin/sinf, cos/cosf, acos/acosf, fabs/fabsf) gave no form with retail's
 // product operands and both rows.
+// Round 33 (lane 2, fast with 0x170d70 in the image, which keeps the helper inline): NULL/0 file
+// and line in both draws 13; a seed pointer local for both draws 124; double sine/cosine locals 45;
+// the flag set before the draws 150 (1110 bytes); `cross < 0.0f` 13.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

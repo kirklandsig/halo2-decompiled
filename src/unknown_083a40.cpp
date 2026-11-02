@@ -723,6 +723,9 @@ void simulation_player_collection_swap(s_type_c67652 *collection, long player_in
 // on the swap order 32 (same code as `(i + collection->players)`, `&...key[0]` and `key + 0`, harness);
 // the key copies as 12-byte struct assignments (diagnostic cast) 28 (same code); the occupied key from
 // the loop-top `player` 291 (harness, either swap order); `if (occupied == true)` 110 (harness).
+// Round 71: on the swap order, a multi-use player-index local 32; direct unknown14/controller/both
+// 107/107/106; const value locals 32; collection declared at function scope or const 32/32;
+// inline swap and inline swap/apply-update 32/32. Original body and declarations restored.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {

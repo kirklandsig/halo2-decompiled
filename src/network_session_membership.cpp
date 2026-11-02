@@ -720,6 +720,8 @@ union s_60403
  long field_00;
 };
 
+// MiniMax I (11-01): no new form, no lower score; the entry's EBX/EBP choice follows which of the
+// two pointers the body weighs more, and no source order I tried flips it.
 // score 149 (was 149): the member's changed test is one condition, so the body has retail's
 // 1497 bytes; what still differs is the current/previous register rotation (retail EBX previous,
 // EBP current), the mapping-loop count homes and the discriminator's carrier (retail: a lone
@@ -798,6 +800,11 @@ union s_60403
 // Round 37 (m3 lane 14, fast, positional/aligned): previous header as if/else 364/117; a named previous
 // count for the two old-member loops 366/156 (1482 bytes); the map entry as a value local 218/110; the third
 // loop's old player as a ternary initializer 339/115 (1519); the old member through new_to_old[i] 175/105.
+// Round 191 (lane 3, fast): the old member written at each of its three uses 152 (entry unchanged:
+// current EBX); the header ternary with the pointer arm first 151 (a repeat of round 181's); the
+// discriminator declared before the old member 149 (same code); the emission loop's skip as one
+// changed-test block 149 (same code); the retained loop's player declared before the old player 152.
+// The matched sibling 0x609e0 tests `!previous ||` in every delta; retail's member loop has no such test.
 // Round 51 (lane 1, fast): the member loop's arms swapped (`!= NONE` first) 348 (1513 bytes); a member
 // cursor stepped by the loop 443 (1561); `retained |= 1 << i` 149 (same code); the inner mapping bound
 // compared first 149; the old index named before the old member pointer 149. Retail keeps previous in EBX
