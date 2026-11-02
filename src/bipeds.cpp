@@ -1855,6 +1855,10 @@ void function_dfd70(long arg_159e6d)
 // Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
 // forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
 // origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
+// Round 359: Forward/side/both scale observations 240/235/240; each with a complete
+// direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
+// 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
+// snapshots also need a match. Original shared helper and complete target restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -3189,6 +3193,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 514: native input memcpy/memmove with direct output 368/383; aggregate
 // input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
 // Original helper and body restored; matrix/pivot homes and scalar transport remain.
+// Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
+// subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
+// Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4334,6 +4341,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // 240/228/176/228/240/228/167; complete dot/norm products 228.
 // All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
 // The 176 form also uses a register argument and ret instead of retail ret 4; restored.
+// Round 359: Natural input with all three twice-used ground components, reversed raw copies,
+// existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
+// Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
+// callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
