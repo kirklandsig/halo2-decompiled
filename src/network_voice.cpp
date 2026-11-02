@@ -1678,6 +1678,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // policy gates 104/132; common eager availability 123, with one mode observation 123;
 // eager native-word muted 106; common eager/native-word 122; common eager/conditional muted 122.
 // Eager gates combine the two tests; snapshots still defer or combine loads. Original restored.
+// DH round 265: complementary eager unavailable bool/byte/short/long, separate/shared policy gates:
+// 101/101/97/99/111/111/94/116. Original complete body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3161,6 +3163,8 @@ struct s_voice_route_choice
 // Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
 // radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
 // three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
+// DH round 265: recovered byte-radio frame with rejected-route/split-nearest/plain-while subsets 1..7, then all with a choice receiver:
+// 363/428/428/363/363/428/428/428. Original complete body restored.
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.
@@ -3416,10 +3420,16 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 485: Native wire header/relay/direct records, seven subsets 139 each;
 // all records with independent cursor 164. Actual record types and full body restored;
 // channel/cursor/member ownership and route homes remain.
+// Round 285: uniform packet-kind byte/word/long/dword observations with original cursor
+// 150/137/154/154, with independent cursor 143/140/152/152. Word form recovers entry
+// channel/cursor homes but gains only two and is 17 bytes short; complete body restored.
 // Round 64 (lane 9, fast; 0x564c0 matched each time): a packet cursor `data + 2` advanced at the loop's end
 // 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
 // the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
 // member bit cleared before the talker test 161 (469 bytes).
+// Round 241: Route output initialized at relay entry/member result/member-set/after local delivery
+// 163/163/163/139; the same boundaries with an independent packet cursor 165/167/168/168.
+// Original route initialization, live count reads and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

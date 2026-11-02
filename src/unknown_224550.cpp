@@ -94,7 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
-// score 245 (was 381): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 245 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -247,10 +247,21 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // reciprocals before the a ones 239 (not kept: an order of independent values, 6 under the keep bar); with by before bx 242; reciprocals by, bx, ax, ay 239;
 // bx, by, ay, ax 239; b extents and reciprocals before the a pair 239; by before bx alone 247; the
 // flip before the extents 249; the flip after the width 325.
+// Round 25 (lane 18, fast): extents/reciprocals in retail's schedule order (ax, ay, by, inv_ax, inv_ay, bx,
+// inv_bx, inv_by) 251; aspect defaults before the flip 319; reciprocal sums before the second aspect test 309;
+// blend after the frame bounds copies 275; the flip helper reading the bounds into locals 245 (same code);
+// its ternaries as if/else 245 (same code). Diagnostics: blend through a pointer local 245 (copy-propagated);
+// the 0x10000 arms swapped 410. Home order follows reference weight measured on the final code: with uv_b's
+// flip removed uv_b has 18 references to the tint's 21 and takes the top slot (retail's order); unconditional
+// tint updates cut the tint to 13 and it stays on top. Retail has the same 30/21 counts as ours but puts the
+// tint lower, so its weights are frequency-scaled: look for the branch shape that lowers uv_b's weight.
 // Round 284: native three-channel RGB clamp with separate alpha, phased/fused
 // input modulation, ascending/descending ordinals and alpha last/first:
 // 383/381/391/389/399/399/506/498. Original complete producer and callback restored;
 // frame 0x50 versus 0x60 and tint/UV overlap remain.
+// Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
+// 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
+// regress; complete original body and alias-safe helper restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

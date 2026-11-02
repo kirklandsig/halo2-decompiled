@@ -2148,6 +2148,7 @@ void sound_update_locations(void)
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
+// MiniMax R (11-01): a 99-second permuter run over the three step adds finds nothing below 13.
 // score 13 (was 13): retail adds the clamped unknown14 step in place and the fade-in step through a
 // copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
 // Earlier, at 14 (from 17): retail adds the clamped unknown18 step through a copy
@@ -3932,6 +3933,8 @@ PRIVATE inline void function_1275d8(quaternionf const *arg_0, vector3f const *ar
 	arg_2->k = (rotation_i * arg_1->j - rotation_j * arg_1->i) * local_2 + rotation_k * local_1 + local_0 * arg_1->k;
 }
 
+// MiniMax R (11-01): retail's 0x11d6a0 call still sets edx, ecx, eax where ours sets edx, eax, ecx;
+// the callee's own file is not mine, so the order cannot be produced from here.
 // score 535 (was 535): Frame 0x130 versus 0xe8; native rotation, environment and listener-index homes remain.
 // Const reverb 551; outer records 551; shared cross product 635; direct blend reads 555; entry counter 552.
 // Output-before-inputs callee order 551 (callee 15 to 11); all call argument roles preserved.

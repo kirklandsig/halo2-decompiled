@@ -747,6 +747,9 @@ bool function_bc380(long arg_0, long arg_1, long arg_2, long arg_3);
 // byte and this guard form (no word local) is 50 with only the `||` tail left; byte-typed bools 50;
 // the `||` stored in a third bool 50. The `short` size also needs src/unit_object_type.cpp's
 // declaration (a contributor's file), so it stays held: BLOCKED-BY 0xbc380.
+// Round 288: native output selection/allocation/controller field-family subsets
+// 83/83/83/85/85/85/85, all with native reset timer 85. Original record layout,
+// byte views, body and shared allocator interface restored.
 // Round 227: native controller/counters/selector/all field stores 83/83/83/83;
 // allocation/no-allocation result arms 109, with branch-assigned absent-state false 88;
 // same result arms with the existing animation helper 130/120. All restored; post-reset
@@ -1111,6 +1114,9 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 277: Complete computed sweep/opposite-normal/response-velocity scalar results, each, pairs
 // and all 156 each; all with selected point/normal/location library copies 156. Original
 // expressions and body restored; quotient/query, selected homes and word loads remain.
+// Round 298: Location/point/normal and point/location/normal selected geometry; identifiers
+// before/after geometry and handle first/last, eight combinations 167/164/169/169/170/168/169/169.
+// Original captures and complete body restored; quotient/query and selected homes remain.
 // Round 226: existing scale/sum response producers with native stored velocity, pre-query sweep,
 // complete selected-output memmove and timer rounding: 169/308/348/326/170/308; memmove/rounding
 // with native query count, query-first/pre-query 347/324. All restored; quotient/query, selected
@@ -1118,6 +1124,11 @@ void __stdcall function_b93b0(long arg_0, long arg_1, short arg_2);
 // Round 333: Complete selected snapshot memmove with first/second signed-word domains
 // 333/334/334/339; native short-count counterparts 333/334/334/339. Query/sweep and selected homes
 // remain; original body restored.
+// Round 291: Positive-count end-pointer scan with short count/pre-query sweep/capture-order masks 0..7
+// 378/377/361/362/378/377/361/362. All enlarge the frame and extent; original indexed scan restored.
+// Round 293: Effect-request location/selected-point/original-center memmove subsets 1/2/4/3/5/6/7:
+// 219/206/203/211/212/219/225; all with selected-output memmove 340. Original body restored;
+// quotient/query and selected geometry homes remain.
 // @retail 0x119c10
 long function_119c10(long arg_0)
 {

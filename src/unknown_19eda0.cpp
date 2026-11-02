@@ -388,7 +388,8 @@ PRIVATE inline long polygon_round_19f(real value)
 // score 316 (was 316): the distance to the centre is now computed and compared in double, so the
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
-// score 316 (was 379): the distance to the centre is now computed and compared in double, so the
+// score 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade
 // bound is still one product where retail has two and the frame is 0x34 versus 0x30.
@@ -440,6 +441,9 @@ PRIVATE inline long polygon_round_19f(real value)
 // perimeter slot. uv loop indexing the block array each pass 374 (count in the test 374); fade if/else 436; inner
 // radius at its use 430; on the uv form: bottom by fields 374, bottom right after the index 375 (step in EBP,
 // pointer spilled instead), edge with one cast 374, top from the vertex 377, top.z assigned 375.
+// Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
+// results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
+// Original factor literal, bound, inherited parameter home, cursor and complete body restored.
 // Round 42 (lane 14, fast; "aligned" = differing lines after a sequence alignment, base 157): retail's 1.5 is
 // not a literal but a .data float at 0x47ff94 (between g_47ff90 and g_47ff98, read only here). With
 // `real g_47ff94 = 1.5f;`, the distance as `real distance = (real)sqrt(...) - radius;` and the bound written

@@ -144,6 +144,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 260: Native i/k/j norm with real-absolute/shared-scale/single-result combinations
 // 792/786/792/786/791/785/791/785 on direct input. Original promoted products, input access, helpers and
 // entire body restored.
+// DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
+// subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
+// DH round 264: Direct input and native normalized-input setter with zero-default/magnitude-default/
+// canonical-magnitude/entry-result normalizer exits 807/754/811/750; matching float-absolute
+// forms 807/754/811/750. All at retail length but frame 0x8c; original input, helper and body
+// restored; early handle/heading and memory-product homes remain.
 // Round 47 (m3 lane 13, fast, input reference kept; without it the input moves to EAX, frame 0x8c): the shared
 // normalize3d() from include/normalize3d.h gives retail's normalizer instruction for instruction (memory squares,
 // fst/fabs, dword epsilon, in-place mulss, zero store; homes 4 off) 771 (aligned 421 -> 413); the planar input and
@@ -158,12 +164,21 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // input/heading and normalizer memory-product homes remain.
 // Round 288: On native normalized-input setter/direct input: mode default/history coefficient/both/correction root/mode+root/history+root/all/all with shared addition; shared addition alone and with mode/history/root/mode+history/mode+root/history+root,
 // 822/807/822/750/822/807/822/813/749/822/755/749/813/822/755 (fast). Original complete body, observations, helpers and call roles restored.
+// Round 298: Uniform existing bound macro/direct input with normalized-input setter, staged cross
+// and real absolute API in all eight combinations 804/750/750/809/807/750/748/816. Two-point gain
+// rejected; original input, helpers and body restored. Frame/input/heading and norm homes remain.
 // DH round 262: direct-input normalized setter with branch planar target/input/heading lexical-home
 // subsets, then all with the planar magnitude identity, eight 750 at 3499 bytes. Frame 0x8c; all restored.
 // DH round 264: Direct input and native normalized-input setter with zero-default/magnitude-default/
 // canonical-magnitude/entry-result normalizer exits 807/754/811/750; matching float-absolute
 // forms 807/754/811/750. All at retail length but frame 0x8c; original input, helper and body
 // restored; early handle/heading and memory-product homes remain.
+// Round 500: direct input and normalizer output orders ikj/jik/jki/kij,
+// 804 each; with real absolute-length storage 748 each (two-point gains rejected).
+// Original input access, helper and full body restored; early input/heading homes remain.
+// DH round 266: heading/response/spare initialization after input normalization, subsets
+// 1/2/4/3/5/6/7 and all with reversed defaults: 834/827/796/831/831/850/837/837.
+// Direct-input lifetime graphs miss early heading and memory-product homes; original restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

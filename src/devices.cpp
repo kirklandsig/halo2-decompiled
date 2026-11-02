@@ -1103,6 +1103,8 @@ bool function_108530(long device_index, long name)
 // division (no local) 136 (525 bytes); the velocity computed before the inner block's stores 136 (the
 // target, duration and ramp-up then passed in registers, ret 0x10; 0x108600 31 -> 19 at ret 0xc,
 // 0x108670 13 -> 34).
+// DH round 262: immediate phase-distance selections 125/121/125; conditional phase derivatives
+// 121/121/121; both producer families 125, with field-owned cruise speed 141 (529 bytes). All restored.
 // Round 216: Bounded up/down-time producers and local/field cruise-speed ownership; then standard minimum/maximum duration/ramp floors and upper bounds:
 // 128/128/142/142/137/137/138/138/143/148/163/151/166/167/181/217. Original executable source restored.
 // Round 229 (lane P): both phase-distance outputs at common final stores, initialized at reset,
@@ -1588,6 +1590,8 @@ bool function_0b6760(s_index_pair const *pair);
 // on this body the same 303 (1510 bytes); the b3 byte tested `<= 0` 294 (retail's `ja`, same count); the
 // state as one conditional expression 300 (1512 bytes). Retail's result byte never crosses a call on any
 // path, so its stack home is not register pressure from a live range.
+// DH round 262: byte/short/long/dword active-channel counts 320/409/411/411; entry initialization
+// 320/409/411/411. Frame remains 0x1c versus 0x20; original activity result and complete body restored.
 // Round 229 (lane P): native header type-byte field unmeasured; original record and body
 // restored after the check stalled. Frame/index/state/result homes remain as above.
 // Round 276: actual header/device byte members 294/294; with ordinary index,
