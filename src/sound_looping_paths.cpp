@@ -269,6 +269,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC485: intrinsic raw-decibel/linear bit transfers and exhaustive logarithmic producer,
 // subsets 1..7, then common pin result: 884/916/916/866/864/903/903/936; exhaustive log result 866 kept.
 // Bit captures/pin restored; entry zero and target/query/count homes remain.
+// AC488: first-query positive index/tag/duplicate admission subsets 1/2/4/3/5/6/7,
+// then capacity break in the bounded query: 866/866/866/924/866/866/924/924. Original graph and body restored;
+// entry zero, target/primary/query-array homes and choice carriers remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -3007,6 +3007,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P274: Complete walking up/forward/desired-facing input values, subsets 1/2/4/3/5/6/7,
 // fast 645/663/651/699/666/675/720 (control 605); all with entry declarations 720.
 // Original body restored; flight/result-byte homes and vector scheduling remain.
+// AC488: shared mode-result, separate walking-state admission and flight-zero branch
+// subsets 1/2/4/3/5/6/7: 600/600/608/600/608/608/608; all with walking-only state receiver 611.
+// Reduced control 600, full 561; original complete body restored. Flight scalar/result-byte
+// homes and vector scheduling remain; existing matched flight contract preserved.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
