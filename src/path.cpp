@@ -498,6 +498,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
 // in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
 // the short count with the split increment 367.
+// Round 233: Node-array base and CRT memmove step/fallback point-transfer masks 1-7:
+// 430/377/378/307/418/389/374; all with short link count 377. Every node-base graph loses matched
+// caller 0x270930. Original complete body, link memcpy and signed bounds restored; frame
+// 0xe8/0xe4, initial acquisition and memory flag homes remain.
 // Round 70 (m3 lane 16, fast): retail's [esp+0xf] byte behaves like an address-taken bool (no constant propagation):
 // `special` as an address-taken local, false at the else arm's start and set by an if (diagnostic) gives retail's
 // special sequence exactly (`mov byte ptr [esp+0xf], 0` beside the count test, `mov cl, 1; je` / `mov cl, [esp+0xf]`)

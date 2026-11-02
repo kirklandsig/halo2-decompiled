@@ -1427,6 +1427,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 233: Native load parameter char/signed-char/byte/short/word/int/long/dword
+// 32/32/32/74/74/32/32/32. Definition and sole shared declaration changed together; original bool
+// contract, declaration and complete body restored. Iterator scaling, leave-selector registers and
+// request publication remain.
 // Round 336: shared collection ordinal long/dword/word/byte/signed-byte/const
 // long/const-dword/const-short 32/32/32/49/49/32/32/32; actual leave-request
 // conditional value long/dword/short/word/byte/signed-byte/const-long/const-short

@@ -303,6 +303,7 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Round 23 (lane 18, plain; fast misleads here, 931 fast against 882 plain): aligned before straight 882;
 // the 0x26c flag before the dot 883; self unit chosen right after its fetch 881; the range pair before
 // the ignore/block priorities 881; range maximum read before the minimum 882 (one-point moves, not kept).
+// Round 234: Native header/sphere/both/filter-word/header-filter/sphere-filter/all observations 888/880/946/925/930/880/946; all with library sphere copy 946. Sphere forms reach retail length but frame 0x2cc4 versus 0x2cac and gain only two; rejected. Header frame 0x2ce4. Original complete body restored; actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1138,6 +1139,7 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 443: repeated native byte/word/long/dword side-index values at entry
 // 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
 // radius, traversal, predicates and complete body restored.
+// Round 234: Planar start/end/both/origin/start-origin/end-origin/all input records 424/338/426/346/419/362/444; all via library copies 444. Frames 0x38/0x40/0x48 regress from 0x30 versus retail 0x28. Original full body restored; zero/radius schedule and vertex homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

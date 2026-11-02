@@ -171,6 +171,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
 // private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
 // 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // Round 495: Nonzero scans with negative-seeded index or complete bit length,
 // zero-before/after result selection and long/short counts: 101/94/114/95/100/98/112/93.
 // Original helper and body restored; coordinate promotion and count homes remain.

@@ -227,6 +227,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
 // planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
 // Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
+// Round 233: CRT memmove planar-normal transfer, long/bool/short/byte success: 460/544/462/520;
+// with actual multi-use vertex-table owner: 446/545/439/526. Copy-only long/short reach retail
+// frame 0x64 but regress; all eight lose fourteen matches. Original complete body restored;
+// full/planar normal homes, byte state and separate output tails remain.
 // Round 70 (lane 16, fast): retail reaches the hit block only from the edge loop's break, runs `++count`, then
 // re-tests `hit` (no-hit tail) before the loop condition; one no-hit tail serves both "no first edge" and "no hit";
 // every tail but the final one returns a constant, and the final one reads a stack byte that is only ever stored 0
