@@ -280,6 +280,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 505: Existing impact initializer, calculation/contact/phase/entry descriptor scopes,
 // each with original/existing-setter position: 1401/1401/1358/1358/1383/1383/1439/1439.
 // Contact-scope five-point gain rejected; original field construction and all body scopes restored.
+// DL227: Real collected-array duplicate/active search cursors, index/relational/sentinel pairs
+// 0-1/0-2/1-0/1-1/1-2/2-0/2-1/2-2: 1415/1415/1432/1432/1432/1433/1433/1433. Original searches
+// restored; frame 0x5cc and component/velocity/contact homes remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

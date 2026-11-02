@@ -372,6 +372,12 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // statement orders on the 203 form: each `*=` written out, scale local 205, vector3f_scale with a scale local 205, normalize_inline 213; the hit point
 // through real_point3d_set 62, a forceinline point helper 58 (on 58); side index, row pointer and named axes before the hit point 19/87/114/117 (on 19);
 // four caller-side argument temporaries 2 each.
+// DL227: Existing shared difference: complete first/second/both point inputs 431/390/566;
+// corresponding scalar inputs 192/192/192; staged scalar/vector outputs 192/466. Original shared
+// helper and body restored; frame 0x84, retained-origin/edge homes and ray loads remain.
+// DL233: Whole-plane native/library publication, zero-d before/after normalization, producer/entry
+// plane storage: 257/257/259/259/257/257/259/259. Original plane/output body restored;
+// origin retention and edge homes still leave frame 0x84 versus 0x90.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
