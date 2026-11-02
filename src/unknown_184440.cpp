@@ -253,6 +253,13 @@ __forceinline bool function_184448(long arg_0)
 // DH round 268: complete dot-input vector/point/both captures 1018/1035/1081;
 // paired polygon projections through the same dot producer, original/vector/point/both inputs
 // 977/1020/1133/1236; complete product parts 1236. Original dot helper and body restored.
+// Round 455: Existing point/plane input capture through native field initialization,
+// point/plane/both, memcpy point/plane/both, memmove point/plane:
+// 1021/1007/1022/965/965/965/1109/1039. Both field inputs give frame 0x11cc at 4506/4590 bytes; regresses.
+// Original native copies, transform helpers and complete body restored.
+// Round 458: Actual external face-plane/polygon-vertex transfers, native/memcpy/memmove
+// pairs excluding native/native: 965/1021/965/965/1021/989/989/1027. Original source transfers and
+// existing in-place transforms restored; frame 0x11d4 versus 0x11cc remains.
 // Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
 // matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
 // basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.

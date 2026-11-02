@@ -59,6 +59,17 @@ static inline s_player_datum *player_get(long player_index)
 // Round 102: an independent source index 3; guard/source ownership swapped 3; the source index declared separately 3,
 // at function scope 3, inside the guard 3; a source reference with that copy 3; record before pointer with it 3;
 // the copy initializer with it 3. All compile to the baseline's three instructions.
+// Round 152 (a compile-only screen reproduces this body exactly; scores from --fast): the index read through
+// a `long const *` to it, with the direct copy 16, with the pointer 3. Direct forms (index loaded into esi):
+// memcpy from the table element 16; integer address arithmetic 16; a NONE-defaulted index 16; the record
+// declared outside the test 16; the index tested again after the copy 16, in a ternary after it 16. A byte
+// offset local 14 (`lea esi, [ecx + table]`); an early return 32; a player pointer local read at each use 18
+// (110 bytes); `if (record.flag1a) result = true` 19 (115 bytes). With the pointer, all 3: the record at
+// function scope; an unsigned or const index; `index` reused; a NONE default with a joined `index != NONE &&`
+// test; a player index local; the pointer declared first at block or function scope; everything declared at
+// the top; integer arithmetic; memcpy; a byte source pointer. Eight name permutations gave identical
+// listings, and /O1 or /Os (compile-only diagnostic) the same allocation. The pointer before the test 5.
+// Retail keeps the index in ecx and builds the pointer from a copy, as if the index were still live.
 // @retail 0x187ec0
 bool function_187ec0(void)
 {

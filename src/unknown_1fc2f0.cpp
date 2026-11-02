@@ -471,6 +471,15 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
 // and common-expression publication 50/50. All regress; original body, includes,
 // parameter storage, length lifetime, delta order and correction producer restored.
+// Round 461: Final tracked velocity/location native/memcpy/memmove pairs, excluding both
+// native, with direct tracked parameter: 99/102/99/99/102/100/100/109.
+// Original complete transfers, prediction/correction graph and parameter storage restored.
+// Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
+// then all with correction publication, without the own-parameter address read:
+// 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
+// Round 309: Without the own-parameter address read, indexed correction accumulation,
+// location-first admission and word-order subsets 1..7: 99/100/100/99/99/100/100;
+// all with short ordinal 121. Original prediction, parameter storage, helper and complete body restored; tick/delta/correction allocation remains.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

@@ -430,8 +430,8 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
-// score 420 (was 420): the frame is 0xa4 against retail's 0xa0; retail takes the actor
-// index in EAX where ours loads the argument from the stack. The body is 1624 bytes
+// score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.
 // Earlier at 426 (was 426): frame 0xa4 versus 0xa0; actor input and workspaces differ.
@@ -561,6 +561,17 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // exact-only flags restored; frame 0xa4 and stacked actor input remain.
 // Round 263: Independent native-long sample/update/sampled-one subsets 433/424/430/425/452/425/430; all long with ordinary maximum 445.
 // Original while traversal, Boolean flags, maximum qualifier, workspaces and complete body restored.
+// DH round 273: independent spatial/timer/publication view lifetimes 420/420/420/420; existing typed
+// views with shared/spatial/timer/all receivers 420/420/420/420. Every original receiver, field access
+// and executable statement restored; actor input and frame remain.
+// DH276: spatial-first orders 20413/20143/20314/20341/21043/21403/21304/21340
+// 420/426/418/433/418/423/413/422. On 21304, native byte sample/update/both
+// 413/413/413; native signed prior-state carrier 412, plain-confirmed and kept.
+// The seven-point order alone and two-point orders were rejected; keep only the
+// combined form at 1620/1616 bytes. Frame 0xa4, stacked actor and flag homes remain.
+// DH round 279: Spatial-first case priorities 24013/24031/24103/24130/24301/24310/23401/23410 on the
+// retained signed prior-state graph [423, 434, 421, 417, 448, 421, 447, 425]. Original executable body
+// restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
@@ -577,7 +588,7 @@ void function_262ba0(long actor_index)
 		s_prop_datum *node = prop_ref_get(index);
 		byte *p = (byte *)node;
 		next = *(long *)(p + 0x2c);
-		short old_state = *(short *)(p + 0x24);
+		long old_state = *(short *)(p + 0x24);
 		bool sample = false, update = false;
 		function_263670(node);
 		if (!sampled_one && *(short *)(p + 0xc) >= *(short *)(actor + 0x50) && actor[0x48])
@@ -609,32 +620,6 @@ void function_262ba0(long actor_index)
 		byte *view;
 		switch (*(short *)(p + 0x24))
 		{
-		case 0:
-			if (*(short *)((byte *)prop_get(*(long *)(p + 8)) + 4) == 1 && !g_470f10[*(short *)(p + 0x18)].kind)
-			{
-				function_25c230(actor_index, index, 0);
-				*(real *)(p + 0x10) = 1.0f;
-			}
-			else if ((char)p[0x26] > 0)
-			{
-				*(real *)(p + 0x10) += function_2683f0(actor_index, index, (char)p[0x26]);
-				if (*(real *)(p + 0x10) >= 1.0f)
-				{
-					function_25c230(actor_index, index, 0);
-					if ((char)p[0x27] < 1 && function_25da40(node)) function_25c860(index);
-					*(real *)(p + 0x10) = 1.0f;
-				}
-			}
-			else *(real *)(p + 0x10) = 0.0f;
-			break;
-		case 4:
-			if (!p[0x27]) { function_25c860(index); *(real *)(p + 0x10) = 0.0f; }
-			else
-			{
-				*(real *)(p + 0x10) += function_2683f0(actor_index, index, (char)p[0x26]);
-				if (*(real *)(p + 0x10) >= 1.0f) function_25c230(actor_index, index, NONE);
-			}
-			break;
 		case 2:
 			if (!function_25da40(node)) goto release_tracking;
 			else if ((char)p[0x27] > 0) function_25c230(actor_index, index, NONE);
@@ -688,6 +673,32 @@ void function_262ba0(long actor_index)
 				long decrement = index == *(long *)(actor + 0x338) ? (view[0x69] ? 2 : 0) : (view[0x69] ? 3 : 1);
 				*(short *)(view + 0x8e) -= (short)decrement;
 				if (*(short *)(view + 0x8e) < 0) goto release_tracking;
+			}
+			break;
+		case 0:
+			if (*(short *)((byte *)prop_get(*(long *)(p + 8)) + 4) == 1 && !g_470f10[*(short *)(p + 0x18)].kind)
+			{
+				function_25c230(actor_index, index, 0);
+				*(real *)(p + 0x10) = 1.0f;
+			}
+			else if ((char)p[0x26] > 0)
+			{
+				*(real *)(p + 0x10) += function_2683f0(actor_index, index, (char)p[0x26]);
+				if (*(real *)(p + 0x10) >= 1.0f)
+				{
+					function_25c230(actor_index, index, 0);
+					if ((char)p[0x27] < 1 && function_25da40(node)) function_25c860(index);
+					*(real *)(p + 0x10) = 1.0f;
+				}
+			}
+			else *(real *)(p + 0x10) = 0.0f;
+			break;
+		case 4:
+			if (!p[0x27]) { function_25c860(index); *(real *)(p + 0x10) = 0.0f; }
+			else
+			{
+				*(real *)(p + 0x10) += function_2683f0(actor_index, index, (char)p[0x26]);
+				if (*(real *)(p + 0x10) >= 1.0f) function_25c230(actor_index, index, NONE);
 			}
 			break;
 		}

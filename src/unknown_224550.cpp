@@ -94,6 +94,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 	out[0]=x; out[1]=y; out[2]=dx; out[3]=dy;
 }
 
+// MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
 // score 245 (was 245): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
@@ -262,6 +263,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
 // 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
 // regress; complete original body and alias-safe helper restored.
+// AC460: Existing UV producer with two-use positive axis decisions in bool/byte/short/long
+// 367/367/402/367; complete complementary decisions 397/397/421/398. Original conditional
+// expressions, helper and all in-place input captures restored; tint/UV homes remain.
+// Round 308: Native bitmap-default copy primary to secondary with original/input-RGB/seed-RGB/both loops
+// 347/347/350/347; reverse default ownership 348/348/351/348. The caller-owned tint frame
+// remains 0x60, but the swapped homes persist and the copy grows code to 1952 bytes.
+// Original separate default stores, RGB statements and helper input captures restored.
+// Round 350: Native-frame blend initialization after packing/in geometry arms/after cache
+// update/explicit frame outcomes 493/493/271/261; merged positive-sequence gate 483/483/375/394. Tint/UV
+// homes and blend residence remain.
 // Round 248: On the native frame/cache graph, branch-produced primary aspects, paired named secondary
 // ratios and cross-phase inverse blend, seven subsets plus inverted primary: 239/245/239/530/529/530/529/529.
 // Six-point primary gain below gate; original tint/UV bodies and arithmetic restored.
