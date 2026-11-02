@@ -272,6 +272,17 @@ struct s_24e9c7_bounds
 // Round 355: reused output-corner receivers for each corner, upper/lower pairs and all
 // corners 125/125/125/125/125/125/125; all with early upper displacement 123.
 // Two-point reduction rejected; original body restored, early spill/scalar homes remain.
+// Round 40 (m3 lane 2, fast; all restored): the perpendicular point scaled by size and then by the half width through an inline scale helper
+// 144 (745 bytes, aligned 121); side from the size products, then through that helper 134 (752, aligned 118: the across products stay ahead of
+// the height conversions as retail, the pair homes at -0x10 under result -8; retail has result -0x10 under the pair -0xc); scaled in place with
+// no helper 139 (742, aligned 116); `0.0f -` early across 138 (739); corner sums written offset first 125 (same code), with those forms 139/134.
+// Compile-only frame screen on the helper form: side declared at function top, side or result renamed to sort first or last, result assigned
+// late: pair -0x10 and result -8 in all eight.
+// Round 40, continued (fast): unnamed values: size written out at both products 143 (739), with `0.0f -` 149 (736), across written into the side products 125, scale
+// written out 141 (740), height not named 125, half width at each use 139 (738), several of these 151 (729). Corner copies ahead of the offsets: first corner before up
+// 138 (740), all four before up 128 (743, aligned 114), first before size 124, all four before size 131, first before side 138, the points declared earlier 125/125.
+// Grid (corner copies in place/all before up/first two before up/all before side, each with unary or `0.0f -` across and unary or `0.0f -` offsets): 125/139/138/147,
+// 128/128/138/138, 137/137/138/138, 129/139/138/147; best aligned 111 at the 129.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

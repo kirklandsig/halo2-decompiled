@@ -2282,6 +2282,17 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 317: Per-use native child metadata/count/fraction source groups 1..7, all with read-only child
 // view 304/257/292/243/273/315/347/347 fast. Exact-only source-observation graphs restored.
 // Indexed lookup, object/offset homes and low-mask ownership remain; original full body restored.
+// Round 40 (m3 lane 2, fast; all restored): named object offset 154 (index-first load as retail, aligned 94); memcmp for the 0x2000 test 214 (288
+// instructions, aligned 94), with the offset 213 (aligned 93: retail's two loads and register compare, only the dead `add ebp, 0x214` missing, the
+// slot loop gains an alignment jump). On the offset: a block-scope field pointer with memcmp, with memcmp and memcpy 213/213; the field read into a
+// local whose address goes to memcmp 212 (1081 bytes, aligned 102, the value goes to the stack); two named values compared 154; pointers to both
+// fields 154; a by-value pointer accessor bound to `long const *const &` with memcmp, compared directly, named values 213/154/154 (214/155 without
+// the offset): the pointer folds, no dead add. A second pointer local holding the unit for the tail, at entry, at the tail or as the first read
+// 154/154/154 (155 without the offset, 213 with memcmp; coalesced, same code). Head block: `(short)0xffff` compare 154, `(word)` compare 155, a
+// reinterpreting read of the long 154, a word local 264.
+// Round 40, continued (fast): the first slot mask written out at each use 222 (1066 bytes), the second 155, both 222; arg_3 and arg_1 used directly, singly or together
+// 155/155/155; all four 222. Compile-only (350 random forms of offset, 0x400 and 0x800 declaration orders, 0x2000 test, loop declarations, child defaults, slot pointer, tail
+// declarations, plain 0x400000 test): aligned 156 at best against a control of 160, no structural move.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
