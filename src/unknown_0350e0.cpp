@@ -1797,6 +1797,9 @@ real game_time_get_seconds();
 // Initialized result plus member API 492 (2285/2285 bytes) NOT kept: the clamp graph alone
 // regresses (567) and the gain needs the member vertex call beside this body's C-style
 // D3DDevice_ calls, a combination picked by score. Body restored at 507; frame and output homes remain.
+// Y538: Existing member depth-state API at both/enable/disable sites 507/507/507;
+// with member vertex command 512/512/512; full member graph with opacity arms 511,
+// paired trigonometric admission 529. All restored; frame 0x90 versus 0x94 and output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2828,6 +2831,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Local next-value clamp with the rate read at all three uses 500 (2052/2035 bytes, frame 0x64)
 // NOT kept: retail loads the rate once (fld [eax+0xa8] at 0x375a1, held across the three steps)
 // and the clamp alone ties 517. Body restored at 517; frame and velocity/loop homes remain.
+// Y538: Last-consumer acceleration/speed/projection scope subsets 1/2/4/3/5/6/7
+// give 533/517/517/533/533/517/533; all with the existing position receiver before
+// old-position capture 526. All restored; frame 0x60 and stored-velocity/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -4466,6 +4472,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // DH299: Complete branch-owned fog maximum crossed with raw mode-eight gate,
 // per-use source-group fields and native payload-byte count: 142/193/142/193/234/217/234/217.
 // Original maximum producer and callback restored; late enabled stores, dead mode loads and clear convention remain.
+// Y538: Existing selected-bit admission with completed enabled result before depth in
+// byte/bool/short/long 257/235/240/212; after depth 234/262/198/239. Every shared user
+// regresses. Original helper/caller restored; late pass bytes, dead mode loads and clear convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
