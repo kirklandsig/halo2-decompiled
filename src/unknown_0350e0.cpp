@@ -1758,6 +1758,9 @@ real game_time_get_seconds();
 // Round 344: native tag/count/visibility admission subsets 525/507/525/507/525/507/507;
 // all admissions with the member vertex API 512 (2285 bytes). Original body restored;
 // frame 0x90 versus 0x94, tag/output homes and EBX/EBP roles remain.
+// F321: entry-owned hash/sample/draw scratch subsets 1/2/4/3/5/6/7 give
+// 507/507/530/507/530/530/530; all with the member vertex API 535 (2308 bytes).
+// Original executable body restored; frame/output homes and EBX/EBP roles remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2653,6 +2656,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // its three combinations and complete projection input staging: 556/589/645/526/545/593/644/539.
 // Original projection helper and complete body restored; frame 0x60 versus 0x38, stored velocity
 // acquisition and loop pointer ownership remain.
+// F321: shared phase/reciprocal/previous-position workspaces in subsets
+// 1/2/4/3/5/6/7 give 518/517/517/518/572/571/572; all with complete point
+// and projection role names 572. Original executable body restored; frame and velocity reloads remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

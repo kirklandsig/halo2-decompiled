@@ -927,6 +927,9 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// F321: complementary contact-discovery state in bool/byte/word/long storage,
+// then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
+// Original executable body restored; lookup receiver retention and store scheduling remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
