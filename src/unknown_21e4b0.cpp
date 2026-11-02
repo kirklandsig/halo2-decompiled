@@ -2,6 +2,7 @@
 #include "pool_storage.h"
 #include "unknown_11c920.h"
 #include "sound_driver.h"
+#include "unknown_21e230.h"
 #include "globals.h"
 #include "crc.h"
 #include <float.h>
@@ -12,22 +13,21 @@ struct s_sound_effect_buffers;
 struct s_sound_i3dl2_parameters;
 struct s_sound_send_parameters;
 struct s_sound_mixbin_source;
-struct s_mixbin_settings;
 
 struct s_sound_effect_settings
 {
-	real level00;
-	real level04;
-	real level08;
-	real level0c;
-	real level10;
-	real gain;
+	s_decibels level00;
+	s_decibels level04;
+	s_decibels level08;
+	s_decibels level0c;
+	s_decibels level10;
+	s_decibels gain;
 	real unknown18;
-	real level1c;
-	real level20;
-	real level24;
-	real level28;
-	real level2c;
+	s_decibels level1c;
+	s_decibels level20;
+	s_decibels level24;
+	s_decibels level28;
+	s_decibels level2c;
 	byte unknown30[0x10];
 };
 
@@ -38,7 +38,7 @@ public:
 	virtual void v1() {}
 	virtual void set_i3dl2(s_sound_i3dl2_parameters *parameters, long unused);
 	virtual void add_effect_sends(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins);
-	virtual void add_send(long mixbin, long mode, real gain, s_mixbin_settings *mixbins);
+	virtual void add_send(long mixbin, long mode, s_decibels gain, s_mixbin_settings *mixbins);
 	virtual void add_source_mixbins(s_sound_mixbin_source *source, bool rear, long mode, s_mixbin_settings *mixbins);
 	virtual void add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins);
 	void add_effect_sends_direct(s_sound_send_parameters *parameters, bool rear, long mode, s_mixbin_settings *mixbins);

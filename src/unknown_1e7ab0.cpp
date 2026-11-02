@@ -160,12 +160,8 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
  return *(byte **)(headers + (object_index & 0xffff) * 12 + 8);
 }
 
-PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byte *headers)
-{
- long unit_index = player->unit_index;
- byte *unit = request_unit(unit_index, headers);
- return function_cbd50(unit_index, *(signed char *)(unit + 0x212 + slot));
-}
+#define request_weapon(player, slot, headers) \
+ function_cbd50((player)->unit_index, *(signed char *)(request_unit((player)->unit_index, (headers)) + 0x212 + (slot)))
 
 // Round 30 (lane D): the permuter's best variant scores 601 against its own 608 baseline (seven points,
 // below the retention margin) and it adds volatile qualifiers and swapped call arguments, so it is not
@@ -175,7 +171,9 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // state pointer into EDI (base + index * 0x1b0), then reuses ESI for the player index and the player
 // pointer; ours folds the base into the add and keeps the state in ESI. The 0x54 frame, the EDX type
 // argument and the 2308-byte length agree.
-// score 620 (was 620): retail loads the state table into ESI and the state pointer into EDI, then reuses
+// score 118 (was 620): every instruction but a register rotation among EAX, ECX and EDX, which starts at the entry
+// getter (retail table ECX, result EAX; ours the reverse) and runs through the later temporaries.
+// Earlier: retail loads the state table into ESI and the state pointer into EDI, then reuses
 // ESI for the player index and the player pointer and keeps the unit pointer in EBX; ours folds the base
 // into the add and keeps the state in ESI, and retail returns from inside each switch case.
 // Round 134: retail's case layout is 10-14, 2, 4, 15, 18, 0, 1, 31, 17, 30, ...: cases 0/1/31 after 18
@@ -332,29 +330,32 @@ PRIVATE inline long request_weapon(s_player_request_view *player, long slot, byt
 // Round 292: Common admissions in cases 15/18, 5/6 and 7/8, subsets 1/2/4/3/5/6/7,
 // 696/617/625/690/701/655/667; all with ordinary player carrier 827. Three-point best rejected;
 // original cases, body and qualifiers restored. State/player/unit residency and case tails remain.
+// Round 76 (lane 12): retail's case layout from the jump table 650; with shared labels for 25/28 and 26/27/29 651; plain player 701
+// (2132 bytes, the weapon lookup stops inlining); the lookup as a macro so 0xcbd50 stays a call 654; player index
+// set to NONE first 539; plain blocked 511; case 2 as an if with the store inside 171 (2308 bytes); case 7 as 0x1e83c0's
+// `(x & 1) || (x & 2)` on the word 118, kept. On it: case 7 short/`!= 0`/named/cast/bool/long/bitfield/shared-constant
+// 171 each before the split test (all keep the byte load); macro spellings 118/118/124/118; the unit pointer named as in
+// 0x1e83c0 118, with a named index too 193; getter locals swapped 118; entry declared apart 118, initialised NULL 118;
+// player index declared apart 118; player index before the result 118.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {
  s_local_player_state_view *state = &((s_local_player_state_view *)g_51e9c0)[local_index];
  byte *data = (byte *)state;
  bool result = false;
- long player_index;
+ long player_index = NONE;
  if (local_index != NONE) player_index = g_4e8c20->entries[local_index];
- else player_index = NONE;
  s_entry_420 *entry = entry_420_get(type);
  if (player_index != NONE && entry &&
   (!(*((byte *)entry + 0x10) & 1) || g_4e6948->state != 2))
  {
-  s_player_request_view *volatile player = (s_player_request_view *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c);
+  s_player_request_view *player = (s_player_request_view *)(g_4e8c24->data + (player_index & 0xffff) * 0x21c);
   long unit_index = player->unit_index;
   if (unit_index != NONE)
   {
    byte *unit = request_unit(unit_index, g_4e0300->data);
    switch (type)
    {
-   case 0: result = (state->field_194 & 1) != 0; break;
-   case 1: result = ((state->field_194 >> 1) & 1) != 0; break;
-   case 31: result = ((state->field_194 >> 2) & 1) != 0; break;
    case 10:
     if (!function_13cb40() && *(short *)(unit + 0x1fc) != NONE && *(long *)(unit + 0x14) != NONE && function_1e8eb0(unit_index, NONE, true))
     { result = true; if (*(long *)(data + 0x80) != 10) data[0x1a0] = false; }
@@ -375,8 +376,8 @@ bool function_1e7ab0(long local_index, long type)
     if (function_1e7a60(local_index, 16) == 0 && function_c8860(unit_index) != NONE) result = true;
     break;
    case 2:
-    result = !function_13cb40() && function_1e7a10(local_index, 12) && *(long *)(unit + 0x14) == NONE;
-    if (result && *(long *)(data + 0x80) != 2) data[0x1a0] = false;
+    if (!function_13cb40() && function_1e7a10(local_index, 12) && *(long *)(unit + 0x14) == NONE)
+    { result = true; if (*(long *)(data + 0x80) != 2) data[0x1a0] = false; }
     break;
    case 4:
     if (!function_13cb40())
@@ -392,7 +393,7 @@ bool function_1e7ab0(long local_index, long type)
       {
        s_unit_child_iterator iterator;
        function_d0590(&iterator, parent);
-       volatile bool blocked = false;
+       bool blocked = false;
        while (function_d05c0(&iterator))
        {
         if (iterator.seat_index != NONE && iterator.unit_index != unit_index &&
@@ -410,6 +411,9 @@ bool function_1e7ab0(long local_index, long type)
    case 18:
     if (request_weapon(player, false, g_4e0300->data) != NONE && !motion_sensor_enemy_nearby(local_index) && function_1e7a10(local_index, 15)) result = true;
     break;
+   case 0: result = (state->field_194 & 1) != 0; break;
+   case 1: result = ((state->field_194 >> 1) & 1) != 0; break;
+   case 31: result = ((state->field_194 >> 2) & 1) != 0; break;
    case 17: if (state->field_19b > 0 && *(short *)(unit + 0x1fc) == NONE) result = true; break;
    case 30:
     if (g_4e6948->state == 2 && function_15eaf0() && function_162fd0(local_index) != NONE)
@@ -440,11 +444,11 @@ bool function_1e7ab0(long local_index, long type)
    case 9:
     if (request_weapon(player, true, g_4e0300->data) != NONE && function_100f00(request_weapon(player, true, g_4e0300->data))) result = true;
     break;
-   case 25: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
+   case 25:
    case 28: if (function_1e8eb0(unit_index, 3, false)) result = true; break;
    case 24: if (function_1e8eb0(unit_index, 1, false)) result = true; break;
-   case 26: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
-   case 27: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
+   case 26:
+   case 27:
    case 29: if (function_1e8eb0(unit_index, 4, false)) result = true; break;
    case 22:
     if (*(real *)(unit + 0xf0) < 0.25f || (*(long *)(data + 0x80) == 22 && function_1e7a10(local_index, 21))) result = true;
@@ -464,7 +468,7 @@ bool function_1e7ab0(long local_index, long type)
     }
     break;
    case 7:
-    if (*(word *)(data + 0x140) == 1 && (data[0x14c] & 3) && *(word *)(data + 0x148) >= 3) result = true;
+    if (*(word *)(data + 0x140) == 1 && ((*(word *)(data + 0x14c) & 1) || (*(word *)(data + 0x14c) & 2)) && *(word *)(data + 0x148) >= 3) result = true;
     break;
    case 8:
     if (*(word *)(data + 0x140) == 1 && (data[0x14c] & 12) && state->field_197 >= 3) result = true;

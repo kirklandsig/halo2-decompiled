@@ -1198,6 +1198,9 @@ void __cdecl function_24970(s_histogram_state *state)
 // none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
 // in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
 // subtraction readback plus final memset 35; a named post-store zero used twice 17.
+// Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
+// the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
+// compare and the locals in the value 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -3321,6 +3324,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
 // at selector production 243/31/957/243. Original body restored; selector order,
 // span/constant reload pairs and shift/clip quantizer homes remain.
+// Round 462: opacity-selector/lower-adjustment/quantizer-sample lexical homes, all seven
+// nonempty subsets 31 each; all with color-selector declaration first 939. Original names,
+// selector producers and shared quantizer restored; reload pairs and shift/clip homes remain.
+// Uniform parallel scale/gain product operand directions, seven subsets and all with the
+// cutoff product reversed, 31/31/31/31/31/31/31/31; original product inputs restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

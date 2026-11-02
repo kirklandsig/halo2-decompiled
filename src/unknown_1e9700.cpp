@@ -305,6 +305,13 @@ struct s_object_damage_view
 // Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
 // then consistent existing inline validation: 375/396/509/494/509/526/557/515.
 // Original complete executable body restored.
+// Round 305: Record-pointer selection, assist admission and both award-prefix scans, seven subsets:
+// 461/379/465/370/480/398/485; all with native short teams 494. Original body restored; frame/scalar
+// homes and the biased history cursor remain.
+// Round 308: Long/dword/short/word event-code carriers 423/423/453/453;
+// with both team results short 454/454/456/456. Every code remains in 0..255 and all
+// callback arguments stay unchanged. Wider carriers disturb the entry and do not recover
+// retail result homes; original byte code, long teams and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -466,6 +473,20 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
 // through its address without volatile 85; the volatile read after the index 83 (statistics is
 // then hoisted), inside the subscript or as a row offset 85 (folded).
+// Round 43 (lane 15, fast; a CL-only copy with counter in ECX and player in EDX reproduces the folded add):
+// the plain field stops folding (retail's `mov edx, [esp+8]` first line, the plain read hoisted) as soon as
+// the engine globals pointer is a named local defined in the entry block: at the top, after the index or after
+// the entry 24 each (only that global's load then sits at the top instead of the clamp's join, plus the engine
+// test swap). Defined at the join 54 (254 bytes); so what keeps the field unfolded with the load at the join is
+// still open. The engine index read into a local before the store gives retail's ECX/EAX test 12 (its load then
+// sits ahead of the store); after the store 13; the peer read before the store 14; peer and value28 locals 14;
+// the engine pointer through the getter after or before the store 13/13. Statistics first 85; statistics then
+// field first 85 (all callers updated; retail's calls set ECX then EAX and do not order the stack arguments
+// against them). Plain first read with the later read through a plain or volatile reference or volatile cast 85;
+// both reads volatile 85 (diagnostics, reverted); the team call passing 0 (diagnostic) moves the field to a
+// register argument, 92; the players pointer named at the top is propagated, 85. CL-only, all folded: statistics,
+// delta and by_team qualifiers (16 forms), clamp forms (17: pin helpers, min/max, stores in the arms), the entry
+// in two steps (row pointer then `+= field`, offset in place, field first; 7).
 // Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
 // uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
 // plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer

@@ -101,6 +101,15 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // Round 104: the 1.0 assignment return 117; both true paths as assignment returns 117; the early lookup
 // through enabled with the 1.0 assignment return 164; preincrement enabled 117; enabled & 1 / != false
 // 117/117; a direct dispatch test with a scan-local found 82; that with the assignment return 118. Restored.
+// Round 135: without the merge (a real store in the early arm, diagnostic, 141) the 1.0 store sinks
+// between the pops as retail, but the `return enabled` block stays ahead of the 1.0 block, retail
+// has it last. All paths through one bool, store first 115, then the 1.0 case as the name test's
+// else 148; result set before the store 117; early `return true` with result = enabled at the join
+// 117; a named bool from the name tests with `return one` 86, enabled = one 102; one store of
+// one ? 1 : 0, 153; three-name test 145, 105; 1.0 as else `return true` 117, enabled = true 23, plus
+// return enabled 117; a separate `return enabled` per exit 126, 126, as else 95, through enabled 126, 126;
+// early `index = 0` or `enabled = true` 117, 117 (gone before the merge); enabled set ahead of the
+// 1.0 store 117; `return *value != 0` 117; a switch on the name, eight case orders, 104 each (368 or 363 bytes).
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

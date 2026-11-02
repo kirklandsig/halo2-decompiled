@@ -77,6 +77,14 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // early object local 149f/103p; the call too 114f/116p; the object local read in the
 // positioned branch only 160f/147p; the call and started dispatch in a by-value inline
 // helper 127f/57p (521 bytes; the playback label call then runs before the variant push).
+// Round 134 (plain): `object = *object_reference` inside the playback call's arguments, `object` for the test and
+// dispatch 85 (the NONE request's zero stores change); a named local read through the reference before the call
+// for all three uses 85 (it takes ESI, the sound index EDI); the call and dispatch in a by-value inline helper
+// taking the label 135 (482 bytes); no reference with the object-marker half of the description in an inline helper
+// 152 (frame 0x88); the started test through the reference, the dispatch plain 28. A one-file LTCG harness (this
+// file, the callees' files, the ballast) gives the reduced image's 118, not the full build's 21. Retail reads the
+// object index once after the 0x18d5b0 call into EBX (a memory-resident parameter with its load reused across
+// the call); the address-taken reference forces a second read after the call, plain reads enregister it in EBP.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

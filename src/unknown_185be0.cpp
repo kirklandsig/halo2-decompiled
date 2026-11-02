@@ -323,6 +323,15 @@ union s_185be7
 // DH round 268: independent byte/word scratch declarations, clear order and entry scope,
 // seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
 // Original scratch lifetimes, CRT clears and complete body restored.
+// Round 506: single held-input/filter-copy traversal, live/maintained masks with
+// dword/word bits and long/short ordinals 1148/1136/1130/1109/1148/1136/1133/1112.
+// Frames grow to 0xe4/0xe8; original two scans, masks and complete body restored.
+// Round 305: Exponent declarations before range scalars, parent lookup, active lookup and function
+// entry: real 731 each; complete double power overload 951 each, frame 0xe8. Original overload, read
+// point and full body restored; root/NONE, scalar homes and flag joins remain.
+// M294: Consumed range/filter-copy-mask/angular-output scopes, seven subsets,
+// then all with immutable controlled index:
+// 731/731/731/731/731/731/731/731. Original complete executable source restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
