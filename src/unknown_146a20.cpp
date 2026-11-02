@@ -58,6 +58,10 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
+// the object before the two following stores (our build drops that store, which comes from the
+// header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
+// the constructed arm where ours reloads it at the join.
 // score 34 (was 34): the base vtable store is still dropped and the pool placement
 // still reloads g_479888 at the join where retail reloads it on the constructed arm.
 // Earlier headers, merged: unchanged that round (34); a one-file LTCG probe keeps the
@@ -242,6 +246,14 @@ bool g_47f05b;
 // member array for the buffer; `__assume` on fields, the vtable and globals; dead or forwarded reads of fields; a
 // second polymorphic base. Only a real load of a global between the two vtable stores keeps the store (the load
 // stays in the code, so retail's reason is another read that disappears later).
+// Round 298: Native member-array fill/fill_n, first-three/full-four ranges,
+// each with body/member-list fixed-base initialization: 56 each (eight forms).
+// All add a constructor call and worsen other users: 0x146b80 57,
+// 0x146e30 169, 0x22c3e0 230/201. Entire original shared header restored;
+// the intermediate vtable store and successful-arm reload remain.
+// Round 300: Passive refcount header initialized by its abstract owner before/after the
+// native reverse four-word pass, long/int/short/signed-char indices:
+// 33/33/54/54/35/35/54/54. All worsen other constructor users; original header/body restored. Intermediate vtable store and arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

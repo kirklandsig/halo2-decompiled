@@ -766,6 +766,12 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // gives retail's EBX/ESI/EDI and retail's code up to the player loop (97): only the folded mask read and the
 // player loop's argument temporaries (out ECX, summary EDX for retail's EAX/ECX) remain, so retail's form looks
 // like that opening plus the `for` copy with the session ranked below the index.
+// Round 43 (lane 15, fast with both callers): the two stored addresses passed to an inline presence helper 22
+// (same code: the arguments are propagated back, the second lea stays after the je); the 0x6e910 call through an
+// inline wrapper taking the session 22 (same code), with the variant read inside the wrapper 55 (session ESI); the
+// pair named in the flag block ahead of a `missing` flag 218 (361 bytes); preset pair with the variant named just
+// before the member count 46; preset pair with a plain `for` copy loop 108 (477 bytes; both callers lost in each
+// preset form).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1057,6 +1063,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // memset's return as the destination 215 (697); destination assignment in the for initializer 195; declaration
 // before the clear with assignment after it 9; declaration and assignment after the clear 9; the base also used
 // by the request 9; the destination formed before the close call 191 (704). Original restored.
+// Round 152: with the destination declared in the branch (195) the state pointer or `joining` takes ebx
+// for the whole function and the count is spilled; retail reloads the state from its stack home. In the
+// branch: a row pointer `dword (*)[3]` 195; the mask read into a local first 357 (559 bytes); the pointer
+// step before the count 216 (728 bytes); the state reread through a volatile view of its home for the
+// call 198 (`joining` takes ebx) or through `*const *` 195; the count declared at the top 195, after the
+// close call 201, just before the branch 198, assigned zero inside the branch 201.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

@@ -519,6 +519,12 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
 // only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
 // not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
+// Round 26: a local gets the movsx but folds the add, the direct argument keeps the add but loads 16 bits. Long or
+// short team local 31 each; side getter by clump pointer with a short or long local 31/31; side wrapper taking a
+// short or long team 31/31; team in a block scope 31; an unused short or long read before the direct argument 3/3;
+// a pointer to the field 25; a long read through `*&` 31; clump computed before the result test 12, with a long or
+// short team 31/31; before the first call with a short team 31; a long team getter by pointer or by index 3/3;
+// `clump->team + 0` 3; a pool local with a long team 31.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -1973,11 +1979,12 @@ void function_269250(long clump_index, long actor_index);
 // in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
 // and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
 // argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
-// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
-// all plus pre-search created-result storage 89. Original declarations and body restored.
 // Round 231: Produced actor/group/both pointer for scopes 87/335/335; readonly actor 87, with
 // those scopes 87/335/335; all with entry uninitialized score 335. Original common score graph,
 // observations and body restored.
+// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
+// all plus pre-search created-result storage 89. Original declarations and body restored.
+// Round 234: Native candidate/team/both/activity-before-construction/candidate-activity/team-activity/all input observations 195/100/224/87/195/100/224; all via library copy 224. Timing alone ties, all other forms regress. Original complete body restored; frame 0x3c agrees, pool/selection and x87/SSE homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2223,11 +2230,14 @@ void function_269250(long clump_index, long actor_index)
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
-// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
-// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
 // Round 231: Disjoint-category unit deletion reaches existing completion, original/native node
 // with original/reversed/chained category initialization 188/188/186/186/186/186/188/188. All
 // reach 760 bytes; original continuation and body restored.
+// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
+// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
+// Round 235: Native current-clump receiver with declared prop identity/head and native node
+// identity subsets, eight forms 89 each. Entire 0x24-frame body restored;
+// category-byte homes, deletion completion and pool-register roles remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

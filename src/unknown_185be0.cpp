@@ -142,7 +142,7 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 731 (was 731): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 690 (was 731): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -323,6 +323,23 @@ union s_185be7
 // DH round 268: independent byte/word scratch declarations, clear order and entry scope,
 // seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
 // Original scratch lifetimes, CRT clears and complete body restored.
+// Round 352: Settings/state acquisition after local-input clear or full output reset,
+// independently/together and both orders: 1012/743/1010/741/1012/1012/744/744. Original
+// acquisition order, helpers and complete body restored; control-root/NONE, settings/zero homes
+// and flag joins remain.
+// Round 506: single held-input/filter-copy traversal, live/maintained masks with
+// dword/word bits and long/short ordinals 1148/1136/1130/1109/1148/1136/1133/1112.
+// Frames grow to 0xe4/0xe8; original two scans, masks and complete body restored.
+// Round 305: Exponent declarations before range scalars, parent lookup, active lookup and function
+// entry: real 731 each; complete double power overload 951 each, frame 0xe8. Original overload, read
+// point and full body restored; root/NONE, scalar homes and flag joins remain.
+// M294: Consumed range/filter-copy-mask/angular-output scopes, seven subsets,
+// then all with immutable controlled index:
+// 731/731/731/731/731/731/731/731. Original complete executable source restored.
+// Round 257: Actual button/duration source cursors and held-input source cursor, seven
+// subsets, then short copy ordinal: 731/690/839/690/839/845/845/854. Keep only the duration
+// source cursor, 690 plain at 3782/3777 bytes; the paired source cursor ties.
+// Sole caller 0x186ab0 remains 134/1486. Control-root/NONE, settings/zero and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
@@ -486,8 +503,16 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             }
         }
         local_8 = local_1->field_c;
+        word const *duration_source = local_2.field_10;
         for (long local_24 = 0; local_24 < 16; local_24++)
-            if (!(local_8 & (1 << local_24))) { local_3[local_24] = local_2.field_0[local_24]; local_4[local_24] = local_2.field_10[local_24]; }
+        {
+            if (!(local_8 & (1 << local_24)))
+            {
+                local_3[local_24] = local_2.field_0[local_24];
+                local_4[local_24] = *duration_source;
+            }
+            ++duration_source;
+        }
         bool local_9 = function_185be3(local_1->field_0) && function_e4050(local_1->field_0);
         if (local_3[10] == 1)
         {

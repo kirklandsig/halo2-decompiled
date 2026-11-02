@@ -344,7 +344,7 @@ void function_737b0(c_helper_a *helper)
 }
 
 // @retail 0x746b0
-long function_746b0(long previous, long current, long first, long second)
+long function_746b0(long current, long previous, long first, long second)
 {
 	long result = 0;
 	long difference = current - previous + 127;
@@ -505,7 +505,7 @@ long __stdcall function_74720(const s_match_rating_collection *collection, long 
 				_ReadWriteBarrier();
 				long local_2 = *(volatile long *)&local_0.field_0;
 				long local_3 = *(volatile long *)&local_0.field_4;
-				total += function_746b0(other_skill, local_2, local_3, local_1);
+				total += function_746b0(local_2, other_skill, local_3, local_1);
 				count++;
 			}
 		}
@@ -573,14 +573,8 @@ struct s_match_player_rating_collection
 	s_rating_counters_team team_counters[16];
 };
 
-// score 16 (was 22): retail holds the entry skill sign-extended in ESI (movsx at the load, mov ebx,esi for the call); a 32-bit local gives that movsx but MSVC then picks EBX for it and moves the team-mode byte to CL, so the whole frame shifts.
-// Also tried with a 32-bit skill: the call reading the field instead 24 (the compare narrows back to 16 bits); the local at the loop top 104; team mode declared first 113; a const team mode 113; locals renamed 113; an unsigned 32-bit skill 113;
-// declared at function scope 113; team mode as byte or char 113; team mode read from the collection in the loop 113 (in both places 105); the compare reading the field 99; declared inside the condition's block 103;
-// loads and tests in one condition 104; the tests as continues 113; the key and active tests split from the rest 113; the selected skill read from the entry at the call 103; the key read from the collection 117;
-// the call passing (long)other_skill 16; other_team read before the tests 65; an int skill 113; a long skill with the field compared 99; a long skill and long team mode 92.
-// Round 103: the other rank as a ternary 106; the fields read through collection->players[i] without the entry pointer 16 (same code), with a 32-bit skill 113;
-// the id typed as the XUID it is with the guest test as XOnlineIsUserGuest 16 (same code), with a 32-bit skill 113; permuter 47 variants, none better.
-// Diagnostic: a 32-bit skill without its NONE test lets team mode keep BL (118; the load then sinks to the call).
+/* the rating change for a player: the average of what each active opponent is worth, kept within the
+   configured bounds and within what the player's value can take */
 // @retail 0x74800
 long __stdcall function_74800(const s_match_player_rating_collection *collection, long selected)
 {
@@ -602,7 +596,7 @@ long __stdcall function_74800(const s_match_player_rating_collection *collection
 		const s_match_player_rating_entry *entry = &collection->players[i];
 		if (entry->key == key)
 		{
-			short other_skill = entry->skill;
+			long other_skill = entry->skill;
 			if (entry->active && entry->team != NONE && !(entry->flags & 3) && other_skill != NONE)
 			{
 				long other_team = entry->team;
@@ -613,7 +607,7 @@ long __stdcall function_74800(const s_match_player_rating_collection *collection
 					other_rank = entry->rank;
 				if (i != selected && other_team != team)
 				{
-					total += function_746b0(other_skill, skill, rank, other_rank);
+					total += function_746b0(skill, other_skill, rank, other_rank);
 					count++;
 				}
 			}
@@ -1375,7 +1369,8 @@ struct s_rating_summary
 };
 
 #pragma inline_depth(0)
-// score 61 (was 61): the player loop matches since round 49 (m3 lane 1); left: the summary block's key
+// score 31 (was 61): the player loop matches since round 49 (m3 lane 1); round 27 below fixed the team loop's arms and registers. Earlier 61: left: the summary block's key
+// the player loop matches since round 49 (m3 lane 1); left: the summary block's key
 // and session order and the identity formatter called before strncpy's count is pushed, and in the team loop
 // the counters/team cursor slots (ours 0x14/0x18, retail 0x18/0x14; retail carries the counters cursor in
 // ECX into the loop head and stores it there, ours keeps it in memory) and the lower zero (retail sets it
@@ -1545,6 +1540,18 @@ struct s_rating_summary
 // inlines where retail calls it (0x73ca0 in this file keeps it out of line); with a null test after
 // it 441, without __stdcall 407. Lead: retail's source is that helper form; what keeps the getter
 // out of line is still unknown.
+// Round 27 (lane 17, fast; harness of this file reproduces the team loop): 61 -> 31, kept: the team value
+// read inside the skill test, the key stored before the session, and a named `adjusted` (value + change)
+// used by both rating calls with the lower rating as a ternary (retail's arm layout: EBX stays the collection,
+// then level). `value += change` before the calls with the ternary 92; `value = value + change` 94 (harness);
+// the sum written at each use, `change + value` same code. Left: the identity formatter runs after pushing
+// strncpy's count (one-use local for its result, match-only: 25) and the team loop's cursors: retail stores
+// both at the head (tail-merged from the preheader and latch, the counters cursor in ECX at the latch) and homes
+// them teams +0x14, counters +0x18; ours takes the counters cursor into ESI at the latch and stores it there
+// (1216 bytes, 4 long), homes swapped. No effect on that: per-loop value/change/level/lower declarations, one
+// index declared outside, count outside, reordered switch cases, the counters read directly or into locals
+// (+1), the counters pointer at the loop top, identity local, early continues (harness 38 each, control 38).
+// Switch with merged case labels 64 (1190 bytes; harness).
 // Round 443: native complete team-counter value, original/admission storage,
 // crossed with key-before-session and per-arm lower results, 383/383/389/389
 // in either scope. Original pointer, summary order, lower and full body restored.
@@ -1595,8 +1602,8 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
                 s_rating_summary summary = { 0 };
                 summary.values[0] = function_199290((byte *)collection);
                 summary.values[1] = function_199250((s_address_table *)collection, g_4cf7cc);
-                summary.session = *(const ULONGLONG *)((byte *)collection + 0x130);
                 summary.values[2] = key;
+                summary.session = *(const ULONGLONG *)((byte *)collection + 0x130);
                 const XUID *identity = (const XUID *)((const byte *)player + 2);
                 strncpy(summary.identity, function_1537a0((const byte *)identity), 64);
                 summary.identity[63] = 0;
@@ -1648,18 +1655,19 @@ void __stdcall function_741f0(s_match_player_rating_collection *collection, s_qu
             if (collection->teams[i].active && memcmp(collection->teams[i].unknown0c, g_440070, 12) != 0)
             {
                 short skill = collection->teams[i].skill;
-                value = collection->teams[i].value;
-                if (skill != NONE && value != NONE)
+                if (skill != NONE)
                 {
-                    change = function_74720((const s_match_rating_collection *)collection, i);
-                    value += change;
-                    level = function_74970(value, skill);
-                    lower = 0;
-                    if (value >= 0)
-                        lower = function_74970(value, 0);
-                    const s_rating_counters_team *stats = &collection->team_counters[i];
-                    function_73e00(lower, batch, (const XUID *)collection->teams[i].unknown0c, change,
-                        stats->first, stats->second, stats->third, level, 3, players);
+                    value = collection->teams[i].value;
+                    if (value != NONE)
+                    {
+                        change = function_74720((const s_match_rating_collection *)collection, i);
+                        long adjusted = value + change;
+                        level = function_74970(adjusted, skill);
+                        lower = adjusted >= 0 ? function_74970(adjusted, 0) : 0;
+                        const s_rating_counters_team *stats = &collection->team_counters[i];
+                        function_73e00(lower, batch, (const XUID *)collection->teams[i].unknown0c, change,
+                            stats->first, stats->second, stats->third, level, 3, players);
+                    }
                 }
             }
         }
@@ -1885,6 +1893,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // Round 57 (m3 lane 1, fast): on online_logon_connected() (729, aligned 479): the delay ternary
 // 729 (aligned 477); a user record pointer 775 (2846 bytes, cursor xuid-based in EBX); pointer +
 // ternary 775; pointer + identity memcpy from it 775; pointer + property copy first 774.
+// Round 234: Native user/request-descriptor/both/completed-record/user-completed/descriptor-completed/all values 828/718/824/741/845/741/837; all with descriptor assignment 837. All regress. User frame 0x190 and descriptor frame 0x6d8 versus retail 0xc0. Original full body restored; initial cursor/slot and later request/completion homes remain.
+// N303: Actual cache-group/request-player/completion-player element references, seven subsets,
+// then complete returned-record/property/destination elements: 709 each. Original receiver
+// forms restored; frame agrees, initial user cursor base/home and slot expansion remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

@@ -861,6 +861,14 @@ real g_55e618;
 // subsets 102/99/102/99; those four with the existing full response setter 191 each.
 // Three-point reductions rejected. Original particle type, shared collision header and body
 // restored; reflection spill ownership, sweep/collision homes and normal reloads remain.
+// Round 310: Complete dot-product expression parts in all six orders 103 each; keep at the
+// projection boundary 103; that with native velocity capture 219. Original expression, factor
+// lifetime, velocity snapshot and complete body restored; sweep/collision homes and reflection
+// spills remain.
+// Round 254: Native complete collision record without byte-storage union; velocity pointer,
+// complete position setter and paired projection/tangent combinations
+// 102/209/245/224/194/195/188/179. Original union, shared result extent and full body restored;
+// sweep/collision homes and projection spills remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

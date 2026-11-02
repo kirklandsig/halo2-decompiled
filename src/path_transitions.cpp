@@ -608,11 +608,29 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 0x270d90 313); on it the start-out alias dropped for a const_cast at each use 299, a case-5 block copy
 // of the actor 299 (propagated), case 2 reading the state's pathfinding at each use 299, one vertices base
 // for the corners 295; on the base order first/second through the existing vector3d_from_points3d 297.
+// Round 58 (m3 lane 1, fast; aligned = difflib count, base 199): the actor read through its address into a
+// function-scope local, as a volatile read: after the surface 323 (1288 bytes, aligned 135: EBX entry as retail,
+// but pathfinding arrives in ECX and the surface index in EAX), after the result 326, ahead of the surface 358
+// (1284 bytes, aligned 190), with the start-out alias dropped 320 (1284, aligned 117); as a plain read 280. The
+// surface table in a local read before the actor, then the index: 358 (1284; table/index registers are retail's,
+// pathfinding in EDX), plain read 280, table local alone 280. Register parameters entry/pathfinding/surface or
+// surface/pathfinding/entry 278/278, with the volatile read 323/323 (the arrival registers do not follow the
+// declared order), entry first with the plain read 280; a, b, c, d with the other five orders 299 each (EDX stays).
 // Round 74 (m3 lane 12, fast): the radius test inverted with the 0.5 arm first 277; a named upper bound
 // `1.f - margin` 278; the clamp as one nested ternary 278; `fraction < margin` for the lower test 278; the margin
 // compared with 0.5 before the clamp (not equivalent, diagnostic) 367 (1264 bytes). Retail's case 5 passes the
 // entry-loaded actor straight to 0x270400 in EAX (its register parameter); retail's caller 0x270d90 sets ECX, EAX,
 // EDI interleaved with the pushes, so it gives no parameter-order evidence.
+// DH276: complementary failure outcome at dispatch in inherited Boolean/plain
+// Boolean/short/long storage 402/359/356/354; initialized first 402/358/355/353.
+// All restored; frame 0x40 and length agree, but early root/actor ownership and
+// paired vector scheduling remain. Original result and helper retained.
+// DH281: Existing shared point-on-line scalar-product declaration orders, six forms 278; complete
+// coordinate results with/without scalar products 268, rejected because the matched helper user regresses
+// [278, 278, 278, 278, 278, 278, 268, 268]. Original executable body restored.
+// N301: Complete positive switch-outcome result in inherited Boolean/plain Boolean/short/long
+// storage at dispatch 366/384/380/370; declared first 366/384/380/370.
+// All restored; early root/actor retention and paired-vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

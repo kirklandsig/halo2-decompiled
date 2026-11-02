@@ -107,6 +107,10 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // `if (!result || !call) result = false; else result = true;` 113; the inner update as
 // `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
 // `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
+// Round 195 (lane 3): both indexes for-scoped 18; the entry value through an inline getter 18; the `&&`
+// status form with for-scoped indexes 113 (386 bytes), with the entry value in a local 95 (388 bytes);
+// `released + i` with for-scoped indexes 18. Compile-only, every one of ~75 forms (wrappers, getters,
+// locals, a real call in an argument) loads the receiver chain before the arguments.
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -316,7 +320,7 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	long local_1 = arg_1[0];
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
-// score 115 (was 115): frame 0x1c agrees; validation items/data carriers and entry past the items reload differ.
+// score 80 (was 115): frame 0x1c agrees; native byte validation ordinal reduces the diff; items/data carriers and loop entry remain.
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
@@ -455,6 +459,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // Round 261: existing element producer reports failure, neither/size/handle/both input producers
 // 137/134/138/115; with full-width rejection 202/200/202/91. The 91 flag form remains exact-only.
 // Original helper and body restored; items/data carriers and loop-entry reload remain.
+// DL234: request handle read consistently at every use, retained/direct slot and inherited/plain
+// cursor observations: helper 232/215/237/200; direct validator 231/213/237/200. Original
+// handle lifetime, helper and both inherited local-slot reads restored; frame and carriers remain.
+// M303: Native signed validation ordinal char/short/long/int64, case/entry lifetime:
+// 80/143/197/195/115/144/219/209. Signed-byte case ordinal kept after plain/full audit.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
@@ -467,7 +476,7 @@ void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 	case 3:
 	{
 		bool local_6 = true;
-		long local_7 = 0;
+		signed char validation_index = 0;
 		if (local_0->info.count > 0)
 		{
 			long const *local_10 = (long const *)local_0->info.items;
@@ -479,9 +488,9 @@ void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 				if (!function_98fb1(this, local_12, local_13))
 					local_6 = false;
 				local_11 += 0x10;
-				local_7++;
+				validation_index++;
 				local_10++;
-			} while (local_7 < local_0->info.count);
+			} while (validation_index < local_0->info.count);
 		}
 		if (!local_6)
 			return;

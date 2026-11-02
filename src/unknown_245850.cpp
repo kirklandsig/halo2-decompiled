@@ -29,9 +29,13 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
-// score 14 (was 14): the plane index is loaded with a 16 bit move where retail sign extends it
-// (every retail caller of 0x14a300 does `movsx edx`), and two float sums emit their products in
-// a different order: point->z (retail fk*x + uk*z first) and local_3.k (retail lk*j + fk*i first).
+// score 1 (was 1): only the plane index is loaded with a 16 bit move where retail sign extends it.
+// Round 117: shared scalars with plane, point or matrix union views 11 each; the returned plane
+// pointer 100; the existing in-place rotation helpers 203 each; the existing point setter 145;
+// shared scalars with separate point input/output pointers 5; successive local_3.j accumulation 1;
+// the two grouped z-row alternatives 106 each.
+// Earlier: two float sums emitted their products in a different order: point->z (retail fk*x +
+// uk*z first) and local_3.k (retail lk*j + fk*i first).
 // Tried: all 12 orders/groupings of local_3.k (14 or 20); point->z grouped `a + (b + c)` (14-16),
 // left to right (98: x is multiplied in place, one instruction fewer); a `long` plane index in
 // bsp3d_get_plane and its five declarations (116 here, 573 bytes; 0x14a300 still matches,
@@ -57,6 +61,9 @@ struct s_245850
 // retail, j row's first two products swapped), with it the 8 j-row spellings 11-26 and the other
 // five plane copy orders 15-30. A long plane index needs declarations in items.cpp and
 // unknown_181a10.cpp (other lanes' files this round).
+// Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
+// 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
+// field, shared scalars and every transform/call restored; short lookup contract remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
@@ -69,27 +76,33 @@ void function_245850(long arg_0, s_source_245400 const *arg_1,
 	bsp3d_get_plane((s_bsp3d const *)arg_1, local_0->field_00, &local_3);
 	if (arg_2)
 	{
+		real local_5;
+		real local_6;
+		real local_7;
 		for (short local_4 = 0; local_4 < local_2; ++local_4)
 		{
-			point3f *point = &local_1[local_4];
-			real local_5 = point->x;
-			real local_6 = point->y;
-			real local_7 = point->z;
+			point3f const *point = &local_1[local_4];
+			point3f *out = &local_1[local_4];
+			local_5 = point->x;
+			local_6 = point->y;
+			local_7 = point->z;
 			if (arg_2->scale != 1.f)
 			{
 				local_5 = arg_2->scale * local_5;
 				local_6 = arg_2->scale * local_6;
 				local_7 = arg_2->scale * local_7;
 			}
-			point->x = local_5 * arg_2->forward.i + (arg_2->up.i * local_7 + arg_2->left.i * local_6) + arg_2->position.x;
-			point->y = arg_2->forward.j * local_5 + arg_2->up.j * local_7 + arg_2->left.j * local_6 + arg_2->position.y;
-			point->z = arg_2->left.k * local_6 + (arg_2->forward.k * local_5 + arg_2->up.k * local_7) + arg_2->position.z;
+			out->x = local_5 * arg_2->forward.i + (arg_2->up.i * local_7 + arg_2->left.i * local_6) + arg_2->position.x;
+			out->y = arg_2->forward.j * local_5 + arg_2->up.j * local_7 + arg_2->left.j * local_6 + arg_2->position.y;
+			out->z = arg_2->up.k * local_7 + arg_2->left.k * local_6 + arg_2->forward.k * local_5 + arg_2->position.z;
 		}
-		real local_6 = local_3.j;
-		real local_7 = local_3.k;
-		real local_5 = local_3.i;
+		local_6 = local_3.j;
+		local_7 = local_3.k;
+		local_5 = local_3.i;
 		local_3.i = arg_2->left.i * local_6 + (arg_2->forward.i * local_5 + arg_2->up.i * local_7);
-		local_3.j = arg_2->left.j * local_6 + (arg_2->forward.j * local_5 + arg_2->up.j * local_7);
+		local_3.j = arg_2->forward.j * local_5;
+		local_3.j += arg_2->up.j * local_7;
+		local_3.j += arg_2->left.j * local_6;
 		local_3.k = arg_2->up.k * local_7 + (arg_2->forward.k * local_5 + arg_2->left.k * local_6);
 		local_3.d = arg_2->position.x * local_3.i + (arg_2->position.z * local_3.k + arg_2->position.y * local_3.j) + arg_2->scale * local_3.d;
 	}

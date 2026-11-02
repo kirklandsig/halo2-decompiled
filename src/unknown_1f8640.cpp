@@ -528,6 +528,16 @@ struct s_1f8a70_actor
 // last 459 (1612). Left on that form: retail lays the route test and compare chain directly after case 5, with
 // cases 6 and 7, the zero test and the failure block after it; ours has them after case 7. Also left: `xor bl, bl` kept
 // across 0x1f86a0, unit mode at frame +2 read through the returned pointer, and `setne al` in the zero test.
+// DL227: Complete result carriers on the dword selector graph: byte entry/late 376/379,
+// signed-byte 376/379, short 410/413, word 410/413. Original result and body restored; frame
+// 0x84, early false and unit-output/route/result homes remain; recorded mode-three value question
+// unapplied.
+// DL229: complete destination-case orders 246753/247653/264753/267453/274653/276453/245763/254763
+// 379/375/379/379/375/379/379/379. Original case graph, dword selector and body restored;
+// frame, early pool/data staging and unit-output/result homes remain.
+// DL234: complete complementary route outcomes in bool/byte/short/long, initialized at
+// entry 411/411/418/419 or at the route phase 438/438/445/446. All exact-only forms rejected;
+// original result and body restored. Frame 0x84, early false and unit-output/route/result homes remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

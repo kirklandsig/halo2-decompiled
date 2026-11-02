@@ -227,6 +227,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 	}
 }
 
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
+// test and leaves the table global in EDX, reloading its data and recomputing the index for the
+// object; ours keeps the validity result in EBP and shares one header address between the flag test
+// and the object lookup, so the index arithmetic stays common.
 // score 49 (was 49): retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
@@ -524,6 +529,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // local before the header test 77; an object pointer named in the unflagged arm 77; the NONE and flag tests as
 // breaks out of a `do ... while (false)` 75; the store and attach through the existing 0xbb780 with the update
 // through the existing v23 70 (176 bytes, v23's NONE test stays); that on the long result 57 (181 bytes).
+// Round 462: multiply-used native absolute index with accepted-handle result at creation,
+// attachment, notification or accepted-branch entry: long/dword each 74/68/68/51.
+// Original validity result and independent source observations restored; BL/EBP and CSE remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
