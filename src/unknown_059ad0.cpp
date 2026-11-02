@@ -3740,6 +3740,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
 // each with original reply order or member before id: 101/94/101/94/101/94/101/94.
 // Seven-point gain rejected; original executable source restored.
+// Round 516: Twice-used host index initialized before/after state read,
+// original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
+// message/reply allocation remain.
+// Scores 104/104/104/104/97/97/97/97; original executable body restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
