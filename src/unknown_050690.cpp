@@ -155,7 +155,6 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 	return result;
 }
 
-// MiniMax I (11-01): no new form, no lower score.
 // score 626 (was 626): frame 0x1490 versus aligned 0x1474; mode stack home versus CL remains.
 // Earlier 638 from 693: ESP realignment and mode convention still differ; native pair results improve length.
 // ESP realignment and mode convention still differ; native pair results improve length.
