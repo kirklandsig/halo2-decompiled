@@ -237,6 +237,11 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Retail's byte homes: transition +0x11, reset +0x12, result +0x13 (after four pushes). Retail also calls
 // get_data_4a00 (0x5b080, its only out-of-line call site; 0x7e210 and network_session_client.cpp inline it)
 // where ours inlines it. Restored.
+// Round 467: Shared signed entry-state/balance-output workspace with entry declaration,
+// Boolean reset and early property default subsets: 441/441/466/466/455/455/467/467.
+// Secondary-state spill appears, but frame grows to 0x3ec; original workspace/body restored.
+// M304: Roster bound/matched-count/ordinal descriptive name combinations, eight at 439/1589.
+// Original scalar identities and body restored; frame, result/state homes and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

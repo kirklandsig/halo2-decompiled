@@ -387,6 +387,17 @@ void __stdcall function_1160c0(real dt)
 // Round 293: Initial-node position/direction/degenerate-axis fallback memmove subsets 1/2/4/3/5/6/7:
 // 371/380/363/400/373/382/402; all with rest-offset memmove 409. Original copies and file restored;
 // segment/previous/axis homes remain.
+// Round 154 (lane 4, relink screen of the reduced image, exact at 179): target through vector3f_add_scaled(&previous, &delta,
+// scale, &target) 173 (6 points, not kept; with j/k rows reordered, the lerp as target*(1-stiffness), direction through
+// vector3d_from_points3d 173 each). Segment index as a named long, `segments + (...)`, const segment, count local, reversed test,
+// operands of the stiffness product swapped 179 each; index with an if short/long 319/179; two-arm segment assignment 297 (1379);
+// named segments base 174; ticks before stiffness 177; segment before node 279. Names of offset and previous, declaration order,
+// offset at outer scope 179 (homes do not move). Rotation through a forceinline pointer helper with written cross terms 236 (1370,
+// frame 0xa8, homes nearly retail's), in-place trig args plus dot3f squared 217 (frame 0xa4, offset below delta); dot3f either
+// order, cross3f, either final add, normalize3d 271 (1390). normalize3d(&axis) in place of the written normalize 178; dot3f squared,
+// `/= length` rows, vector3f_scale rows 173 (same code). Dead-mention diagnostics on axis and offset (scratch only) 172 at best.
+// Left: segment takes ECX where retail takes EDX, which rotates ECX/EDX through the call setup; axis below the scalars and previous
+// below offset in the frame; axis k kept in memory where retail loads it.
 // Round 298: Native initial-input/working-node/publication range-copy families
 // and pairs/all 393/251/362/403/387/349/363; all with fallback/rest-offset ranges 391.
 // Original copies, short induction, body and includes restored;
