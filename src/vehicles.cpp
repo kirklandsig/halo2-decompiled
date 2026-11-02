@@ -4071,6 +4071,8 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // F327: Four-use component index, completed true-arm return and both 176/176/176;
 // native byte quantization alone/with either/both 178 each; all with twice-used change
 // 178. Original complete body restored; found-index retest and collision/result allocation remain.
+// Round 368: Two-use admitted world value, conditional/branch producer with completed fallback/clamp
+// subsets: 176/176/220/220/182/182/218/218; original complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

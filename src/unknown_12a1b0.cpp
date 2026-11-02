@@ -1256,8 +1256,8 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 110 (was 110): return result first restores entry load allocation; the first-player expansion remains (retail
-// calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
+// score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
+// instead of retail's temporary/copy, and the first-player query still expands.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
 // the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
@@ -1367,6 +1367,8 @@ struct s_looping_detail_request
 // Round 473: Complete failure-valued bool/byte/short/long completion, with
 // request/native-local audible offsets: 144/144/143/142/168/168/168/167.
 // All restored; first-player expansion and detail/offset homes remain.
+// Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
+// 154/173/155/162/136/169/151/149; original complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

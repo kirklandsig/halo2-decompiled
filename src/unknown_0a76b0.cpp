@@ -290,6 +290,8 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // M309: Reused self-object header/table 330/332; with uniform per-use state,
 // complete local role names, or both 330/332 each. All eight restored;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// Round 368: Reused current-state read before the pure query/actions lookup, long/dword and
+// mutable/input-only actions: 346/346/346/346/345/345/345/345; original complete body restored.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1363,7 +1365,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 95 (was 136): frame 0x18 agrees; entry table/hand homes and second unit load remain.
+// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1407,6 +1409,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // and conditional/branch event: 136/203/144/142/139/205/95/188. Keep the real array,
 // direct bounded hand and branch event with the original long slot: plain 95, 606/604 bytes.
 // All other full-image measurements stay unchanged; entry table and second unit load remain.
+// Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
+// 95/96/95/96/94/95/94/95; original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
