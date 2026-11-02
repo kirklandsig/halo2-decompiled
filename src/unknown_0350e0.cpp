@@ -104,6 +104,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
 // Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
 // Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
+// J240: Sequential reused/scoped matrix 488/486; with complete vector setter 488/486; with symmetric
+// reused sine products 467/469; both 467/469. Every trial frame is 0x6c versus retail 0x90. Original frame
+// 0x98, concurrent angles and vector publication homes remain; original body and both helpers restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1675,6 +1678,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // F323: Independent result home and frame 0x14 versus 0x18 remain; complete original body restored.
 // Whole case orders 01324/02413/13240/24130/43210/31420/12340/04231
 // 195/205/195/205/201/222/193/250; every original case expression and helper preserved.
+// J240: native output staging in the existing perpendicular helper 247; double atan2 carriers 218; one
+// result exit 247/218; full helper input snapshot 314/226; snapshot with one exit 314/225. Frame/output
+// lifetime still differs; restored original body and helper after all eight trials worsened 193.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3062,9 +3068,6 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
-// earlier 175, 194; the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -3101,6 +3104,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
 // fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
 // 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
+// J240: Pure ordinal long/dword/word 177/177/203; with final logical result 168/168/192; shared point
+// 168/192. Minimal original lookups plus only the logical result 168 (retail length 773) NOT kept:
+// `result = result && !(alpha <= 0.0f)` re-tests result, which retail does not (0x3dace: one comiss,
+// then xor dl, dl). Body restored at 177; frame and fade scratch homes remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
