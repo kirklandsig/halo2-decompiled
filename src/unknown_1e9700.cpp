@@ -860,6 +860,10 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // both screen offsets read into named locals first 44; horizontal edges inset and
 // offset before the vertical ones 52. The compile-only harness gives retail's load
 // order for the current source, so the swap comes from link-time scheduling.
+// Round 72 (lane 9, fast): the window offset through a file-local forceinline helper with short
+// dx/dy (left, right, top, bottom) 2, (left, right, bottom, top) 2, (top, left, bottom, right) 19,
+// with long dx/dy 16; `8 + bounds->left` / `8 + bounds->top` 2; fields copied then inset in place
+// 298 (1135 bytes); the subtractions as `+ -8` 2.
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

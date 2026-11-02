@@ -351,6 +351,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Origin retention and edge homes remain; original copies, stores and body restored.
 // DL220: Scalar origin with native difference constructors, crossed with scalar start, ray constructor and staged cross:
 // 192/195/192/195/192/195/192/195. Original complete body restored; original frame and register homes remain.
+// DL225: joint component traversal of edge pairs in both store orders 193/192; with offset
+// 255/255, with ray direction 193/192, with both 267/267. All restored; original helpers,
+// frame 0x84 and retained-origin/edge homes remain.
 // Round 450: Existing dot-helper complete products/partial sum/accumulation/native inputs,
 // original then shared polygon count, 192/253/253/320/193/269/269/315. Original complete shape
 // query and shared dot helper restored; frame 0x84 and retained-origin/edge homes remain.
