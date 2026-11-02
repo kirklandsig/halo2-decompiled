@@ -2997,6 +2997,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // (two-point lead, restored). Full baseline 561 retained; flight/result/vector homes remain. Scores
 // 605/625/610/605/618/603/605/618.
 // Original executable source restored.
+// P274: Complete walking up/forward/desired-facing input values, subsets 1/2/4/3/5/6/7,
+// fast 645/663/651/699/666/675/720 (control 605); all with entry declarations 720.
+// Original body restored; flight/result-byte homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

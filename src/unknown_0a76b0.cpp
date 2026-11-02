@@ -2676,6 +2676,9 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 330: marker inverse in place, native seat-quaternion output and shared request,
 // subsets 1-7 then all with guarded full-width state 287/311/320/305/300/318/320/317. Original body restored;
 // entry vehicle/unit/ordinal residence remains.
+// P275: Whole header produces the initial unit and refreshes at the later original header
+// observation; guarded full-width state, quaternion-only scope and sequential request
+// subsets 0-7: 293/296/293/296/305/308/305/308. Original body restored; entry vehicle/unit homes remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

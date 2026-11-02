@@ -2383,6 +2383,9 @@ real magnitude3d(vector3f const *v);
 // Round 533: Complete projected-axis/cosine-aligned/sine-tangent expression parts,
 // subsets 1/2/4/3/5/6/7 and all with scalar/vector role names: 170/171/170/170/170/171/170/170.
 // Original products and body restored; raw-length/dot/angle homes and rotation allocation remain.
+// P275: Complete current/target/both input snapshots 246/288/266; same native vectors
+// normalized in place 245/287/265; both inputs captured at entry 272; both with early
+// normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

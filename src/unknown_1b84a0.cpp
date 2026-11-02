@@ -501,6 +501,12 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
 // availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
 // Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
+// Round 273: existing state/marker declaration contracts ordinary/inline 49,
+// ordinary/force 1393, inline/ordinary 49, inline/inline 49,
+// inline/force 1393, force/ordinary 49, force/inline 49,
+// force/force 1393. State contracts worsen shared callers; forced marker
+// inlining expands the target. Original declarations and complete body restored;
+// table/result producer, marker setup and late actor/reference/slot cycle remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
