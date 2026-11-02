@@ -397,6 +397,8 @@ void function_07b3e0(void)
 // (107). Re-measured (listed forms): scan and datum index both on the global 45 (126); absolute-index scan
 // on the pool local with the datum index on the global 65 (142); find scan on the global with the datum
 // index on the pool local 64 (141); the calling iterator step 94 (84).
+// M290: Native char/short/byte/word ordinals for the real 32-slot pool, preincremented input, cached/dynamic scanner:
+// 76/67/76/69/76/67/76/69. Original executable body restored.
 // @retail 0x7b430
 void function_07b430(void)
 {
