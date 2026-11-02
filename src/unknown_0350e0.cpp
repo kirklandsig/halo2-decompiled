@@ -2497,6 +2497,8 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
+// Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -4428,6 +4430,8 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F327: Existing light-pass producer for individual modes 3/20/7, then
 // 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
 // Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
+// Round 536: Shared cull call owned by nested result/explicit call arms/inside-range arms/normal-cull arms, then the same four with the raw caller gate: 214/138/138/138/217/191/191/191 fast.
+// Original helper and complete caller restored; enabled stores, mode loads and clear-call convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
