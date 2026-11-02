@@ -189,6 +189,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 59 (135 bytes; compile-only it hoists the mask into AL and builds the entry in place, but next shares the index
 // register), the same with the result declared after the index 59, with `else index = next` 59; a named `admitted`
 // bool with early returns and a successor local 49.
+// Round 343: Real admission bitfields: dword bit2/bit4/both, word/byte both,
+// then Boolean dword/word/byte both 43/43/43/43/44/50/52/44.
+// Original record, helpers and complete body restored; eleven control matches survive.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -684,6 +687,9 @@ void function_1537f0(s_profile_record *record);
 // zeroed after the record initializer in an index loop 78 (238); the links as four statements in retail's store
 // order on the pointer walk 53 (same code); flags and timestamp as two stores on the pointer walk 62 (253); the index
 // loop with both 80 (236). The compile-only build cannot inline 0x1537f0 (another file), so it does not reproduce this.
+// Round 343: Four-aligned profile/property sources with original/late mutable or immutable
+// identity: 53/74/53/74/53/74/53/74. Original types, includes, initializer tuple, pointer walk and
+// every byte restored.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1155,6 +1161,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
 // with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
 // the declarations reversed, upper assigned first and the count path upper first 370.
+// Round 343: Direct-head/long-adjustment admission char/word/long/dword 49/392/384/384;
+// complementary room state bool/byte/word/long 58/58/391/383. All control
+// matches survive; original entry, range, repairs and complete tail restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

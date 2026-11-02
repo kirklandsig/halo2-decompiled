@@ -7110,6 +7110,10 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // without/with complete from-frame input value, 613/685/647/625/647/625/647/625. Best value-only form
 // reaches retail 2483 bytes at 613, but all eight lose exact callers (43/210); all original helpers,
 // body, parameter delivery and entry speed zeros restored.
+// Round 343: Complete input value/scalar staging with early wrap bool/byte/word/long:
+// 648/648/637/645/673/673/655/676; all lose exact callers 43/210.
+// Early wrap alone bool/word 725/719. Entire helper, frame inputs, arithmetic,
+// parameter delivery and entry speed zeros restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
