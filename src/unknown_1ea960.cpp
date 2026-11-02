@@ -5,7 +5,7 @@
 
 // @flags /O2 /Gr
 
-#if 0 // Disabled: activating it may cost neighbouring matches (not checked with the original compiler).
+#if 0 // Disabled: the destructors and 0x455fc0's virtual functions are declared, not defined, and activating it may cost neighbouring matches.
 #include <new>
 // The shapes are constructed in place, in the tag's own data. Each class is named by its
 // retail virtual table. Every one starts with the same header: the table, the word 0x80 at +6
@@ -140,7 +140,7 @@ public:
 	c_shape_455f8c(long saved_value) : c_shape_header((void *)saved_value) {}
 };
 
-// @retail 0x1ea9c0
+// @retail 0x1ea9c0 disabled
 void function_1ea9c0(long tag_index, long restore)
 {
 	byte *definition = g_4e3b44[tag_index & 0xffff].bytes;
