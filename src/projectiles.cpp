@@ -1002,6 +1002,10 @@ real function_30bf0(vector3f *v);
 // solved-coefficient storage:
 // 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
 // frame, rounded-root scheduling and separate divisions remain.
+// Round 250: rounded solved-root receiver with conditional long/short/real sign 232/241/261;
+// branch-produced long/short/real sign 262/254/261; default negative/positive integer sign 261/261.
+// Exact-only receivers restored; latter six forms lose five matched callers. Original pointer
+// contract, frame 0x28/0x30, rounded horizontal root and separate-division gap remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

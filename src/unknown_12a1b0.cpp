@@ -1684,6 +1684,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // One-point forms rejected; original dword mask/activity, request and range loops restored.
 // Round 247: Actual first-pass gain-output, second-pass sound and gain-input cursor subsets, then all
 // with full request extent: 442/406/384/460/453/432/432/432; original body and helpers restored.
+// Round 250: standard fill_n for sounds/gains/both 547/565/564; fill 547/563/564;
+// both complete initialization phases reversed with fill_n/fill 564/564. Original arrays,
+// initializer lists and header set restored; frame/playback/NONE and range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

@@ -1501,8 +1501,8 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 40 (was 40): Frame 0x9c and extent agree; two header SIB operands, join reloads, cross/dot operand
-// ranks and constructor/graph-load scheduling remain.
+// score 13 (was 40): Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
+// order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
 // channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
@@ -1560,6 +1560,8 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // M283: Frame 0x9c and extent agree; first +0x2d is header SIB ownership, with join reloads and constructor/graph scheduling still different.
 // Native header ordinal long with normal/early iterator/early channel/both constructors 114/518/552/530;
 // word ordinal with the same lifetimes 205/527/590/561. All eight bodies restored; original 40 retained.
+// Round 250: native value construction for channel/iterator/function-channel, seven subsets 40 each;
+// graph-only iterator/channel scope 13 plain, 2027 bytes; remaining SIB/reload/cross/dot ranks.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -1627,17 +1629,19 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 
-		s_graph_iterator3c iterator;
-		c_animation_channel function_channel;
-
-		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
-			if (state->channel_play(&function_channel, iterator.animation_id, 0))
-			{
-				byte value = ((byte *)vehicle->unknown398)[iterator.index];
+			s_graph_iterator3c iterator;
+			c_animation_channel function_channel;
 
-				callback(vehicle_index, graph, &function_channel, value == 0xff ? 1.0f : value * (1.0f / 255.0f), 0.0f,
-					1.0f, user);
+			while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
+			{
+				if (state->channel_play(&function_channel, iterator.animation_id, 0))
+				{
+					byte value = ((byte *)vehicle->unknown398)[iterator.index];
+
+					callback(vehicle_index, graph, &function_channel, value == 0xff ? 1.0f : value * (1.0f / 255.0f), 0.0f,
+						1.0f, user);
+				}
 			}
 		}
 		for (i = 0; i < 3; i++)
@@ -2320,6 +2324,9 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // J225: shared period receiver 101; torque call then multiply 101; period and torque assignment 101; shared
 // drive fraction 132; period and drive fraction 132; shared control length 101; period, drive fraction and
 // length 132; native byte gear and torque assignment 114. Original body restored.
+// Round 250: complete paired side-torque stages, named turn parts and named drive products 101 each;
+// gear-only scope alone and with each producer 101; scoped contact ordinal with stages/gear 101.
+// Original body and spin helper restored; NONE edge, zero/product carriers and spin staging remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3348,7 +3355,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 145 (was 154): Staged cross, native up receiver and complete rotation setters kept; projection/trig schedules remain.
+// score 136 (was 145): Fallback up setter with staged cross, native up receiver and rotation setters kept;
+// projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
 // coordinated external force-inline 326, with wide angle 359; all original contracts restored.
@@ -3394,6 +3402,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 226: complete rotated forward/up through vector3f_assign 145 (827 bytes), plain confirmed;
 // input setters 230, both setter groups 215, enclosing axis 154, axis with inputs/rotations/both
 // 230/145/215, all vector setters 220. Original grouping, precision and all row expressions retained.
+// Round 250: existing setters independently at initial up/fallback up/negative axis and combinations
+// 186/136/207/144/186/138/204; all with forward setter 220. Fallback up setter alone kept plain,
+// 136 at 828/806; original values/precision retained. Projection/cross ranks and trig homes remain.
+// Projection-only workspace scope on the fallback-setter graph 136 (tie, restored).
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3416,7 +3428,7 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 	up->k -= projection.k;
 	if (function_30bf0(up) == 0.0f)
 	{
-		*up = *g_4687a8;
+		vector3f_assign(up, g_4687a8->i, g_4687a8->j, g_4687a8->k);
 	}
 	cross3f_staged(up, &facing->forward, &facing->left);
 	if (flipping)
