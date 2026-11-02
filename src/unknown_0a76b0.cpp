@@ -1398,6 +1398,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// M311: Unsigned bounded hand bool/byte/word/unsigned-int, each Boolean/direct long argument:
+// 189/184/189/184/136/144/148/203; restored.
 // Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
 // direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
 // extra frame word, second entry lookup and hand transport remain.
@@ -1652,6 +1654,8 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
 // 165/158/172/151/150/155/151/144. Original executable body restored.
 // M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
+// M313: Full primary/selected mode scope/plain interruption-table subsets, all with short slot; original body restored;
+// fast 157/138/157/323/334/323/334/334.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2262,6 +2266,10 @@ __forceinline char unit_action_round(real value)
 // M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
 // with Boolean active test 297/299; both 295/297. All regress and are restored;
 // pool/index/type/name register ownership and result-byte home remain.
+// M311: Native bounded event type short/word/char/byte, original/numeric actual-case order:
+// 243/243/243/243/270/270/270/270; restored.
+// M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
+// fast 326/379/549/338/382/552/556/559.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4397,6 +4405,8 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 326: Actual away/left/world entry declaration lifetimes, seven subsets,
 // then all with the actual entry frame: 175 each. All producer points unchanged;
 // original declarations and native output restored; frame 0x110 versus 0x11c remains.
+// M311: Returned object-transform/point-helper composition/reversed actual-case subsets 1-7, all with
+// entry frame: 374/175/374/175/374/175/374/374; restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

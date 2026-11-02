@@ -2916,7 +2916,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 561 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 561 (was 561): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
@@ -2943,6 +2943,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Full-width special/wall/left truth subsets 1/2/4/3/5/6/7 and all native bytes
 // fast 600/639/652/631/615/633/622/642 (control 642); special alone plain 561,
 // 2728/2712 bytes. Keep only long special; every producer, condition and call is original.
+// M313: Native orientation/shared short-hand getter/entry scalar declaration subsets, then branch scalar declaration; original body restored;
+// fast 600/616/616/600/600/616/616/616.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4418,6 +4420,8 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // subsets 1-7 and all with relative setter: 216/241/229/229/217/241/229/262.
 // Every corrected form loses matched callers through the input convention; original
 // body restored. An unused-address preparation 198 is excluded, not a gain.
+// M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
+// fast 239/239/253/253/238/238/254/254.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4785,6 +4789,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Round 259: Direct animation-result initialization after the names store, complete shared orientation
 // setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
 // all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
+// M311: Actual animation-result/tag/state lexical-home subsets 1-7, all with late uninitialized motion:
+// 655/655/655/655/655/655/655/655 (fast control 655); restored.
+// M313: Uniform motion flags/placement mode/entry animation output subsets, all plus entry matrix declaration; restored;
+// fast 682/658/685/655/682/658/685/685.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
