@@ -857,6 +857,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
 // 238; both 246; distance dot with position first 236 (same code), with the j-first sum 238. Unused-local
 // probes +1/+2/+3/+4/+8/+12 236/245/369/236/236/385 (diagnostic). Original body kept.
+// Round N284: Projection zero-first, absent-object-first and unfinished-FOV-first branch
+// subsets 1..7 score 236/260/260/236/236/260/260; all with nested FOV guards 260.
+// Original native normal copy, branch graph, captures and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

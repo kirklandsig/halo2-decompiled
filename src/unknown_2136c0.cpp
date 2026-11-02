@@ -168,6 +168,12 @@ void function_213970(void);
 // word 131; the version update before the language query 128 (three points, dropped); block B's string and
 // request clears first, then its header, then block A 131; the file array cleared per element in a loop
 // 131. Repeats as checks: the language getter at both uses 129; block A's NONE store between its clears 131.
+// Round 42 (lane 14, fast): grouped by retail block, block A's clears and NONE store, then block B's clears
+// and its scalars in address order 131; block B (clears, scalars) before block A 131; block B's scalars
+// between its header clear and its string/request clears 145 (242 bytes); the first form with the existing
+// wrapper 0x11cae0 at the test and the store 129 (232 bytes, two points); the zero scalars first, then the
+// five clears, then the NONE/flag stores in block order 131. Still BLOCKED-BY the separate definitions in
+// src/unknown_12be90.cpp and src/unknown_2141f0.cpp (both held by other lanes this round).
 // Round 126 (lane 5, fast): the language local on the left of its comparison 131; the NONE/enable stores
 // ahead of the scalar zero stores 131; the version as a named const local 131; the dirty flag set before
 // each preference store 131; the handle reset first among the scalar stores 131 (all the same code). The
@@ -178,10 +184,21 @@ void function_213970(void);
 // compare-and-set helper for both preference updates under the pragma 131 (same code), with a forced-inline
 // redeclaration of the getter 131 (the getter still called); the NONE/flag stores after the language query 131;
 // the dirty flag set before each field store 131; block A's NONE store right after block A's clears 131.
+// Round 259: Language result after string/copy-state/completed/total/session-words/handle/first-file-state/second-file-state resets
+// 126/148/149/149/149/149/149/149. Original body and producer sites restored.
 // Round 69 (lane 12, fast): the progress record cleared by copying a zeroed local record 135 (232 bytes); the language
 // test through a named `changed` bool 131; the two requests cleared one memset each 144 (237 bytes); the enable flag
 // stored after the last NONE store 131; the copies cleared before the files 131. Still BLOCKED-BY the block
 // definitions (src/unknown_213760.cpp and the other block-A files, src/unknown_12be90.cpp).
+// Round 217: standard whole-array path/request/storage-record initializers, seven subsets,
+// then all endpoint initializers: 166/178/184/206/226/232/239/243. Original library clears and complete body restored.
+// Round 283: previous language/version/both at their comparisons, mutable/immutable, all six 131; both
+// immutable before query 141; both with per-use requested language 139. Exact-only captures restored;
+// protected two-block allocation and original body retained.
+// DL220: Plain member-level array resets using library payload clears and native endpoint stores, seven subsets; all with reversed member publication:
+// 169/178/202/171/195/204/227/227. Separate allocation still prevents both complete bulk clears. Original body restored.
+// DH round 262: language after header payload/first sentinel, with native progress/handle reset
+// subsets 131/175/168/187 and 131/172/165/184. Original resets, getter site and complete body restored.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

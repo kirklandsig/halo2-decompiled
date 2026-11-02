@@ -970,6 +970,28 @@ struct s_bitmap_texture_view
 	dword level_addresses[3];
 };
 
+// MiniMax R (11-01, third round): no new form, no lower score. The masked level address is still
+// loaded into EDX where retail reuses the base register, which is dead after that load. This
+// round: a permuter run over the function (17 tries, annealed, full image and reduced image)
+// found nothing below the baseline of 3; every variant it kept scores 3 or worse. The register
+// choice is therefore not steerable from the source.
+// MiniMax R (11-01, second round): no new form, no lower score. The masked level address is still
+// loaded into EDX where retail reuses the base register, which is dead after that load. This
+// round: the six orders of the three header stores (data, lock and common) and the texture
+// reached through a local pointer all give the same three instructions (3), as do the ten ways
+// of spelling the masked store (a cast on the address, a cast on the whole expression, an
+// unsigned mask, a field pointer, the address in a local, the array through a pointer local, the
+// mask first, the element read through a cast, a cast on the mask and a double cast).
+// MiniMax R (11-01): no new form, no lower score. The masked level address is still loaded into
+// EDX where retail reuses the base register, which is dead after that load. This round: the
+// masked value computed before the branches and stored at the end changes the frame (166/170);
+// the masked value in a local, the store through a field pointer, the store through a dword cast
+// of the field, the array reached through a cast, a cast index, a cast around the masked value
+// and a second store of the size all leave the three instructions unchanged (3).
+// MiniMax R (11-01): no new form, no lower score. The masked level address is still loaded into
+// EDX where retail reuses the base register, which is dead after that load: the raw address in a
+// named local, the cast around the whole expression, the masked value in a named local and the
+// zero-padded mask literal all give the same three instructions.
 // score 3 (was 3): the plain (full) check agrees with the fast one; the whole difference is the
 // masked level address loaded into EDX where retail reuses the base register, which is dead after
 // that load.

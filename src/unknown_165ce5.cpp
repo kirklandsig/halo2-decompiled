@@ -1592,6 +1592,35 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // N round 257: Actual tag coefficients as array/two spring records, at-use if/conditional defaults and complete two-use observations 220/220/551/551/220/220/551/551.
 // All original record fields, coefficient producers, smoothing tuples and body restored; fast control 220, full 218.
 // J218: Bounded signed-byte/short/dword/word weapon ordinals, each alone and with both rate-expression nodes on the direct zoom graph: 399/399/421/421/218/218/421/421. Original complete body restored.
+// Round 45 (lane 13, fast control 220): retail gives the look values their own slots (-0x2c/-0x28) and
+// reloads g_510c54 between them; ours reuses the spring_a/b slots and shares 1/rate. mode renamed
+// weapon_mode 220 (slots unchanged); look values declared at assignment 220; in their own block with
+// their two spring calls 220; computed then clamped in a second statement 223; spring defaults declared
+// before the unit/mode lookups 236. Original body restored.
+// Round 40 (m3 lane 15, fast control 220, full 218): ours stores the two clamped look values into spring_a/spring_b's
+// dead slots (-0xc/-0x8) where retail gives them -0x2c/-0x28, and retail reloads [0x510c54] after the yaw store (two
+// divisions). Look values renamed, two name pairs, 220/220, spring_a/b renamed 220 (same code); pitch as
+// `-(y / rate)` 459 (2196 bytes, reciprocal still shared); pitch clamped before yaw 221.
+// Round 23 (lane 18, fast control 220): the d03b0 overrides as one chained assignment 220 (same code);
+// the zoom flags preset true and cleared under `if (zoom > 0.1f)` 224; the look history read through a
+// point view 220; the zoom flag as `zoom <= 0.1f` 417 (2190 bytes); the four spring overrides as
+// conditional expressions 220 (same code). Diagnostic: both look locals' addresses taken as a no-op 220
+// (no effect: retail's separate look homes and reloaded rate are not an address-taken local).
+// Slot map (ours/retail): unit+flags -0x18/-0x1c, mode -0x1c/-0x18, zoom shares spring d (-0x14) in ours
+// and unit's home in retail, the active byte shares unit's home in ours and spring d's in retail.
+// Round 443: complete overlay-clear/start/idle decision results, seven bool
+// subsets and the complete long set, 220 each (fast control 220, full 218).
+// Original decision expressions, clock reads and complete body restored.
+// Round 284 (fast control 220, full 218): separate tail expiration decrement/idle
+// increment/both 220 each; complete two-weapon active mask alone/with decrement/
+// with increment/with both 223 each; both plus final resource guard 223. Original
+// complete body restored; frame, unit/mode and independent look homes remain.
+// Round 445: Native double raw-input/interval domains, with late-magnitude combinations and
+// independent quotient intervals: 510/547/532/518/536/540/550/505.
+// Original complete executable body restored.
+// Round 294: invariant aiming/look/both spring defaults before admission or user
+// receiver 233/235/239 each; all before unit lookup, abcd/badc order, 236/236
+// (fast control 220, full 218). Original default lifetimes restored; frame 0x28/0x2c remains.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

@@ -181,6 +181,7 @@ static __forceinline long function_925c2()
     return local_0;
 }
 
+// MiniMax I (11-01): the user flags are still loaded into eax where retail loads them into the dying user pointer register ecx; a conditional-expression user pointer (both polarities, with and without a record cursor), the flags and the pointer in function-scope locals and the mask test first all leave the code as it was.
 // score 14 (was 14): this round: compiling the file without whole-program optimisation (/GL- in the
 // file's flags) drops the register calling convention retail's code uses, so every function in the
 // file stops matching; the flags in a named local and the two tests split into two ifs stay

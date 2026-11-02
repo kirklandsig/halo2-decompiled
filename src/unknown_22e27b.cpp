@@ -292,11 +292,28 @@ static inline real interpolate_linear(real a, real b, real t)
 // before a nested type test 210; restart byte/char/long/short 207/207/229/231; dispose byte/char/long/short
 // 207/207/198/200; dispose declared first 207; dispose initialised 207; boundary dispose true-only 207, with
 // the true-only restart 197.
+// Round 42 (lane 14, fast): fraction first (diagnostic base) 207; the fraction written as the
+// interpolation helper's argument and again in the scale (no t local) 153 (660 bytes); diagnostics
+// (a throwaway store before the loop, inside it or at the end) never move the loop's first scratch off
+// EAX, so the rotation is not a temporary count. On fraction first: restart as `if (type == 0) restart =
+// (bit 1 || bit 2); else restart = false;` 207; `restart = false;` then `if (type == 0 && (...)) restart =
+// true;` in both boundary blocks 193 (656 bytes): next time stays at [ebp-0xc] and the loop head is
+// retail's (direction ECX, frame EDX, flags EDX/EAX, zero in EBX), but the false store comes before the
+// test (retail stores it on the false path) and the timing setup computes next time first; on that form
+// the elapsed assignment first / between frame time and next time 198/193. Inline restart and disposal
+// predicates taking (type, flags), restart/disposal/both 255 (614 bytes)/207/255.
 // Round 128 (m3 lane 6, fast; control 96): in the loop retail holds the direction in ECX, the frame and then
 // the flags in EDX and the shared `& 2` bit in EAX (compared again as `cmp ax, bx` for the restart). The `& 2`
 // bit named in both boundary blocks for the disposal and restart tests: `word` 209 (663 bytes, narrowed through
 // DL), `short` 209, `long` 111 (655 bytes; the flags then load into EDX as retail but the bit takes ECX and is
 // compared 32-bit), `dword` 111; the flags as a `long` local in both blocks 208 (651 bytes).
+// Round 131 (m3 lane 6, fast): fraction right after the elapsed clamp re-measured 207 (post-loop registers
+// and order become retail's; next time takes EBX and the per-pass zero goes); the disposal test in the
+// loop condition (`while (!dispose && time >= next_time)`, no per-pass reset) 166 (652 bytes), with the
+// fraction first 212 (645 bytes); the restart predicate of all three sites as a `static inline` helper 294
+// (577 bytes, kept out of line by /O1), as `__forceinline` 96 (same code), with the fraction first 207;
+// the restart and disposal predicates both forceinline 96, with the fraction first 207; a 600 s permuter
+// run (54 tries) none below 96.
 // Round 50 (lane 10, fast): fraction first (t right after the elapsed clamp) with the expression restart 207 and
 // with the true-only restart 197 (645 bytes) again: retail's loop registers need the fraction first, and next time
 // then leaves its stack home for EBX unless one boundary block lacks the restart's `else` (the zero/dispose
@@ -314,6 +331,18 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// J228: existing indexed scaled-difference helper with shared scaled-point/scalar interpolation
+// subsets 281/281/283/283; each with fraction first 261/261/263/263. The delta loop stays
+// rolled under size optimization and grows the frame/body. Original helpers and body restored.
+// Round 328: Complete playback case orders 021/120/201/210 across all four
+// switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
+// case order restored; direction/frame/flags and interpolation carriers remain.
+// Round 494: one native restart mask at all policy sites, with disposal/restart operand
+// priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
+// Mask forms shorten away from retail and regress; all original policy tests and body restored.
+// Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
+// 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
+// frame/timing and original shared fraction restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
