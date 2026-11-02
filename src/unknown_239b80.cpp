@@ -392,6 +392,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // the matched caller; original word indices, helper and complete body restored.
 // Round 362: Independent produced-length increment, crossed with short/native output ordinal, long/bool departure and memcpy/memmove.
 // 280/258/275/261/239/234/211/249. Original executable source restored.
+// Round 470: Distinct lowest/candidate/compaction ordinal identities, subsets
+// 1/2/4/3/5/6/7, then all with output ordinal named: 170/170/170/170/170/170/170/170. Original body
+// restored; extra frame word and count/departure/bound/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

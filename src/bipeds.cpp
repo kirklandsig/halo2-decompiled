@@ -927,6 +927,9 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// F321: complementary contact-discovery state in bool/byte/word/long storage,
+// then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
+// Original executable body restored; lookup receiver retention and store scheduling remain.
 // M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
 // M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
 // @retail 0xdd990
@@ -2653,6 +2656,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
 // push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
 // with uniform per-use counts 544. Original indexed scans and body restored.
+// M309: Existing position helper before/after mass query 530/548; native signed view
+// 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
+// restored). Deduplicated exits 531; per-path result 591; false-default/result-first
+// 542/542. Original complete body, owning field and helper declarations restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2878,7 +2885,7 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 600 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// score 561 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
 // Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
@@ -2901,6 +2908,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // D/B/DB/S/DS/BS/DBS/direct-rate+BS fast 649/656/643/646/632/654/639/654
 // (control 642); expanded 651/650/604/648/618/639/634/639 (control 649).
 // DB plain 615; BS plain 639. Original threshold, tests and state receiver restored.
+// F323: Frame 0x78 agrees; first +0x4e is the flight exit span, with scalar homes and vector scheduling still different.
+// Full-width special/wall/left truth subsets 1/2/4/3/5/6/7 and all native bytes
+// fast 600/639/652/631/615/633/622/642 (control 642); special alone plain 561,
+// 2728/2712 bytes. Keep only long special; every producer, condition and call is original.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -2931,7 +2942,7 @@ bool __stdcall function_e01d0(long arg_159e6d, long *names)
 		}
 		else if (biped->physics_mode != 5 && *(long *)(state + 0x70) != 0x6000084)
 		{
-			bool special = *(long *)(state + 0x70) == 0x7000039;
+			long special = *(long *)(state + 0x70) == 0x7000039;
 			bool wall = TEST_FIELD_BIT((*(dword *)(definition + 0x264) >> 3) & 1);
 			vector3f facing;
 			real sine;
@@ -3897,6 +3908,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // value, staged cross and shared dot: 329/402/329/412/318/490/319/463. Original
 // in-place helper and full body restored; normalization SIMD ranks and trig/rotation
 // homes remain. Alternate dot grouping was exact-only and is restored.
+// Round 470: Repeated forward-field receiver at first rotation/before normalization,
+// each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
+// normalization SIMD ranks and trig/rotation/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4345,6 +4359,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // 240/228/176/228/240/228/167; complete dot/norm products 228.
 // All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
 // The 176 form also uses a register argument and ret instead of retail ret 4; restored.
+// DL239: Natural parameter with native complete relative/kick/actor-ground vector producer subsets
+// 1..7, all plus common result exit: 174/204/191/204/191/178/222/222. Original complete body
+// restored; frame 0x24/0x28, state-base/result and vector homes remain.
+// Ordinary lower-score forms lose matched 0xe4680 and 0xecfc0; all restored.
 // Round 359: Natural input with all three twice-used ground components, reversed raw copies,
 // existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
 // Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched

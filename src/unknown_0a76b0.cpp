@@ -284,6 +284,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
 // 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// M309: Reused self-object header/table 330/332; with uniform per-use state,
+// complete local role names, or both 330/332 each. All eight restored;
+// frame 8 and incoming unit/name/actions ranks remain unresolved.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1388,6 +1391,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
+// direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
+// extra frame word, second entry lookup and hand transport remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1827,6 +1833,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
 // DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
+// F321: complementary give result in bool/byte/word/long storage, each with
+// original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
+// Original executable body restored; frame/result and pool/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
@@ -2228,6 +2237,9 @@ __forceinline char unit_action_round(real value)
 // AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
 // with byte result 235/325/331; direct/byte predicate with long result 331/235.
 // Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
+// M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
+// with Boolean active test 297/299; both 295/297. All regress and are restored;
+// pool/index/type/name register ownership and result-byte home remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
