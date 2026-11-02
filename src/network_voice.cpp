@@ -2315,6 +2315,9 @@ long voice_players_share_team(long other, long player)
 // which globals a callee writes.
 // Round 71: global test with inline membership 56; inline session/both 56 (membership 97, rejected);
 // mask before mode 56; inner mode getter 56; mask outside 25; const mode 56; force-inline mode 56.
+// Round 121 (lane 8, fast): g_4c9878, g_476fc8 or both defined in the /GL- voice-mail file 25/25/25, with the global
+// test 56/56/56; their addresses held in a data pointer (diagnostic) 25, with the global test 56 each. BLOCKED-BY
+// 0x59670: the 56 form needs the session lookup under 0x53de0 to end the global's availability.
 // Original body and helper declarations restored.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)

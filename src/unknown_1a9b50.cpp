@@ -537,6 +537,12 @@ extern point2f *g_468778;
 // Round 456: Facing fallback/secondary direction/planar-test memmove transfers, subsets 1..7
 // 378/381/410/381/386/387/420; all plus three request planar transfers 414.
 // Original copies, early distance, lookup order, arithmetic trees and full body restored; persistent actor/settings/prop homes remain.
+// Round 72 (lane 16, fast; aligned register-blind distance in brackets, control [109]): actor first 413 [136]; a late
+// `&field_2d` pointer with constant exits 413 [109], with a result 413 [136], one expression exit 393 [116]; the facing
+// pointer declared inside the second test 416, on the original order 378; a named velocity pointer 398 [112]; both 398
+// [106] with retail's `xor ebx, ebx` prop and frame 0x44; dot3f in the three facing tests 407/398/398, all 407; early
+// rejection 398; slot typed parameter 398 (same code); struct copy of the 2D facing 406. Ours keeps arg_0/actor/slot in
+// ESI/EDI/EBP, retail in EDI/EBP/ESI, and that rotation dominates the positional score. Restored.
 // Round 304: primary/secondary displacement production in all six uniform coordinate orders,
 // then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
 // @retail 0x1aa0d0
