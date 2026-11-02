@@ -284,6 +284,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
 // 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// M309: Reused self-object header/table 330/332; with uniform per-use state,
+// complete local role names, or both 330/332 each. All eight restored;
+// frame 8 and incoming unit/name/actions ranks remain unresolved.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2211,6 +2214,9 @@ __forceinline char unit_action_round(real value)
 // AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
 // with byte result 235/325/331; direct/byte predicate with long result 331/235.
 // Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
+// M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
+// with Boolean active test 297/299; both 295/297. All regress and are restored;
+// pool/index/type/name register ownership and result-byte home remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

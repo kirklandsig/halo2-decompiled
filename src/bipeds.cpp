@@ -2649,6 +2649,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
 // push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
 // with uniform per-use counts 544. Original indexed scans and body restored.
+// M309: Existing position helper before/after mass query 530/548; native signed view
+// 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
+// restored). Deduplicated exits 531; per-path result 591; false-default/result-first
+// 542/542. Original complete body, owning field and helper declarations restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

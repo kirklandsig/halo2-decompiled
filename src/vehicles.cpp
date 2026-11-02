@@ -1157,6 +1157,9 @@ long function_10f5f0(long object_index);
 // Round 251: Two-vector buffer, velocity name, state name, buffer/velocity, buffer/state, both names,
 // buffer/both names and six-real buffer/both names: 588 each. Original complete body and inherited qualifier
 // restored; frame and native flag-result stores remain.
+// M309: Actual returned matrix input, original/returned physics-state receiver,
+// with original/six-real output extent: 590/622/590/622; completed final result
+// 597/622/597/622. All restored; frame 0x19ac and native flag-result homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -3909,7 +3912,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 197 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 176 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -3996,6 +3999,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
 // construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
 // scalar/world/fallback homes remain.
+// M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
+// 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
+// at 176 by the full check; frame/length unchanged, zero and vector staging closer.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4055,13 +4061,13 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				}
 
 				s_vehicle_ray ray;
-				real reach = 0.0f - length;
 
 				ray.point = marker.matrix.position;
 				ray.vector = vehicle->up;
-				ray.point.x += ray.vector.i * offset;
-				ray.point.y += ray.vector.j * offset;
-				ray.point.z += ray.vector.k * offset;
+				vector3f_add_scaled((vector3f const *)&ray.point, &ray.vector, offset,
+					(vector3f *)&ray.point);
+				real reach = 0.0f - length;
+
 				ray.vector.i = ray.vector.i * reach;
 				ray.vector.j = ray.vector.j * reach;
 				ray.vector.k = ray.vector.k * reach;
