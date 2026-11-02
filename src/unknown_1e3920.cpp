@@ -1014,7 +1014,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 254 (was 320): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// score 254 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
@@ -1111,6 +1111,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// N302: Complete paired equipment lookup loop, long/short/word/byte ordinal, defaults
+// at pair / at each producer: 345/369/369/369/336/369/369/369. Exact-only output pair and all
+// original code restored; frame agrees, sentinel/squad/substitution homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1782,6 +1785,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the second block 251 (same code); the loop as `for (short i = 0; i < 2; i++)` 251
 // (same code). Diagnostic (plain, reverted): src/character_tag_accessors.cpp renamed to link after this file, as
 // retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
+// N302: Shared two-consumer ammunition-reduction predicate bool/byte/short/long,
+// per equipment phase / per valid weapon: 278/278/246/245/255/255/326/328. Exact-only
+// observations and all original code restored; frame/input agree, pool/actor/options homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -339,6 +339,9 @@ void function_117510(long index)
 // original body restored; entry record/link allocation and pin-word/correction scheduling remain.
 // M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
 // 148/156/156/189/180/183/183/183. Original executable body restored.
+// N302: Actual link/first-point/second-point element references, seven subsets, then all with
+// live endpoint fields: 139/139/139/139/139/139/139/154. Original receiver/endpoint forms restored;
+// frame agrees, entry record/link allocation and pin/correction scheduling remain.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -696,6 +699,9 @@ void function_117dd0(long index, vector3f *wind)
 // Round 296: Standard native-array acceleration/force/paired-point input transfer subsets 1..7
 // 197/189/188/176/190/202/179; all with standard history/publication transfers 190. Original
 // complete body and include set restored; frame/normal.k cursor agree, preheader and vector scheduling remain.
+// N302: Complete inertia coordinate loop, weighted inputs separate/fused, crossed with complete
+// tangent/force and final-point coordinate consumers: 114/185/208/168/114/185/208/168. Original
+// body restored; frame/cursor agree, weight publication and Verlet-X/vector scheduling remain.
 // @retail 0x118140
 void function_118140(long index)
 {
