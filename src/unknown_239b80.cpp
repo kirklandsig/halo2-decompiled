@@ -260,6 +260,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
 // score 203 (was 203): Frame 0x14 agrees; count/departure homes, scan bound, equality and compaction differ.
+// Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
+// after the index store 203; departure as `if (!left_start && !points2d_equal(...)) left_start = true;` 227
+// (767 B); NONE exit tested before the current/heading updates 273 (753 B); the two equality exits joined
+// with `||` 203. Retail's compaction is the CRT call 0x320890 and its hull loop has no entry guard.
 // Round 27 (lane 9): memmove for the compaction (retail calls the CRT) with a bool flag and the heading set before the scan gives
 // retail's count home +0x10, scan bound EDX and early heading/flag stores, but points takes EBP and the flag lands in points' home
 // (retail: indices in EBP, the flag in its home) 265 (759 B); with the flag declared first 265; long flag 242; memcpy kept 250;
@@ -343,6 +347,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // flag: Boolean departure, heading first, memmove, `||` update and `current` at function scope 253
 // (746 bytes); direct returns 262; short hull count 257; `current` at function scope 245, with the
 // Boolean departure 215; the heading at function scope 231. Original body restored.
+// Round 51 (lane 11, fast): on round 105's done-flag form (153; ours keeps count coalesced with current in
+// ESI across the classifier call and reloads points into EBX after it, retail keeps points in ESI and
+// reloads current = count from memory): short hull count without casts 249 (754 B, caller 0x239d50 80);
+// the index store split from the increment 153; that store before best_distance 153; the hull test before
+// the done flag 201. On the original: the departure flag declared first at function scope, long/bool,
+// 224/218 (767 B; retail's flag sits in the index argument's home, ours gives that home to the hull count).
+// Round 480: Shared native point-difference distance/angle/both producers
+// 203/213/213; with squared-length sum 203/213/213; paired squared terms
+// with/without the named sum 213/213. Original body restored; count/departure homes remain.
 // Round 41 (lane 14): retail's first departure test compares the y term with `fxch; fcompi; jb` (the exit
 // test does not). Boolean departure with heading first and the `||` update 264, with memmove 273 (748 B,
 // points/indices in EBP/EBX); that with `|=` 295; long departure with `||` and memmove 236; done-flag
@@ -350,6 +363,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 480: Shared native point-difference distance/angle/both producers
 // 203/213/213; with squared-length sum 203/213/213; paired squared terms
 // with/without the named sum 213/213. Original body restored; count/departure homes remain.
+// Round 495: Standard duplicate search with long/short result and short/long outer
+// ordinal 243/243/235/235; overlap CRT forms 261/251/268/268. Original body restored;
+// count/departure homes and persistent bound allocation remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -509,6 +525,18 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 
 // score 129 (was 129): Retail length and the mask update agree; retail keeps the previous side in memory
 // aligned frame and stride/prior homes agree; prior-side byte and SIMD homes differ.
+// Round 132 (m3 lane 5, fast): the previous side's register is the one cause of the entry and loop-head
+// differences. `previous_inside = inside;` moved from the loop end to just before `if (inside)` spills it
+// (its life then crosses the append's `shl cl` shifts): count is then loaded once into ECX (`mov ecx,[count];
+// movsx edi,cx ... test cx,cx`), `points` is loaded into ECX at the loop head and the pad is `mov edi,edi`, all
+// as retail, but the copy merges into the inside test (157); with the fraction as if/else as well, retail's
+// XMM4/XMM5 constants and the shared zero-fraction block (164; zero XMM1, dy/fraction XMM2/XMM0 remain).
+// No form with the copy at the loop end spilled it: `points[i]` at each use (no `current`) 129 (same code);
+// the previous side declared uninitialised with the flags 129; both sides declared first 129; on the if/else
+// fraction those and `inside` at function scope 249 each; a separate source pointer for the alias copy
+// 170/172 (points arrives in ECX); zero-denominator arm first 198, on the moved copy 223; if/else-if clamp
+// 249, on the moved copy 164. Diagnostics: a volatile previous side 246; a two-element side array 147
+// (scalar-replaced, back in CL).
 // Earlier: Retail length and the mask update agree; retail keeps the previous side in memory
 // (ours CL across the back edge, one instruction short from the side test on), loads count once into ECX
 // for the scaled index and the guard, and keeps zero in XMM2. Earlier: count/stride/prior homes remained
@@ -616,10 +644,31 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // `points` into ECX at the loop head (ours into EDI, coalesced with the current point), so ECX is never free across
 // the loop there and the previous side stays in memory; a `(void)&` on the previous side, both sides or count changes
 // nothing (env).
+// Round 51 (lane 11, fast): `if (count > 0)` directly around the for loop 211 (893 B): count is then loaded once
+// into ECX (`movsx edi, cx` stride, `test cx, cx` guard), the previous side goes to memory and the loop head
+// takes ECX, all as retail (aligned 85 -> 38); with the fraction as if/else (or a ternary) 92 (890 B, aligned 32,
+// eps/one in XMM4/XMM5): left are the zero in XMM1 (retail XMM2), the intersection registers permuted (retail
+// dy XMM0, denominator/fraction XMM1), `i = 0` stored after the guard (retail before `jle`) and count hoisted
+// into ECX for `result = count`. The guard repeats the loop's first test, so it needs a match. On that graph:
+// dx written at its uses 147 (887 B, aligned 27, zero XMM2); dy at its uses 300; both 289; dx first 95;
+// outputs y first 97; clamp as if/else-if 92; denominator terms swapped 92; `fraction = 0.f` default before the
+// deltas 97; fraction/dx/dy declaration orders 92/95/92/92; vector2f delta j-i/i-j/initializer 91/94/94;
+// polygon_difference_23a220 deltas 94; clipped store after denominator/clamp/deltas 286/250/99; `result =
+// count` after the copy 264; NONE arm first 96; index `= 0` before the guard 249 (129, the original code, without the else).
+// Without the guard: `if (count > 0)` around the previous point too 274; `if (count != 0)` 265; index at
+// function top with the guard 263; guarded do/while 128; while loop / function-scope index 129 each; previous
+// distance from points[count - 1] 268; count read through its address 129; 1-6 unused locals 129 (diagnostic);
+// previous side volatile 149 (diagnostic, count still read twice; reverted).
+// Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
+// 278/278/278/278 and conditional collection 302/278/278/278. All restored;
+// native count ECX, prior-side byte and SIMD homes remain.
 // Round 41 (lane 14): no matched game function has retail's `mov ecx,[count]; movsx edi,cx ... test cx,cx`
 // entry (retail scan). On the if/else fraction (249, 880 B): if/else-if clamp 249; clamp inside the nonzero
 // arm 249; `short last = count - 1` 273; previous side declared before the previous point 249; loop test
 // `i != count` 249; `points + count - 1` 249. Zero-denominator arm first (`== 0.f`) 198 (887 B).
+// Round 294: uninitialized current-point/distance/both declarations before the loop
+// or at entry, 129 each; both with the current-side declaration at those scopes
+// 129/129. Original declaration scopes and body restored; count ECX/prior-side byte remain.
 // Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
 // 278/278/278/278 and conditional collection 302/278/278/278. All restored;
 // native count ECX, prior-side byte and SIMD homes remain.
