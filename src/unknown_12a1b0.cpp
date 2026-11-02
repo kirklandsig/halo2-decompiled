@@ -2346,6 +2346,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
 // Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
 // Round 308: and record/track ownership remain.
+// DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
