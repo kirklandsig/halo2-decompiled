@@ -134,6 +134,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 452: Common normalizer/default-vector boundary with retested/stored lateral classification, in-
 // place/separate requested distance and call/entry trace storage: 206/210/206/210/206/210/206/210. All
 // source, precision and inherited inline boundary restored; half/reciprocal/negation allocation remains.
+// Round 499: Complete squared-magnitude products in ijk/ikj/jik/jki/kij/kji order
+// 91/85/91/101/95/95; native inner-pair/completed-sum values 91/91. Original root producer and
+// body restored; half/reciprocal/projection scheduling remains.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

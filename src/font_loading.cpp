@@ -565,6 +565,9 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 470: signed helper/destination/both 85/85/85; signed fill carriers alone,
 // with helper/destination/both 109 each; all with signed color 109. All restored;
 // alpha extension, literal assembly and run-two reuse remain.
+// Round 489: signed byte alpha input with word/long helper result, long/word fills
+// and byte/full parity, eight combinations 201/205/205/205/201/209/205/205.
+// Original alpha type, helper, fill values and complete decoder restored.
 // Round 324: persistent color as word/short, each with original/full parity and
 // long/word fill pixels, 94/107/201/208/94/107/201/201. Original helper and body
 // restored; alpha extension, literal assembly and run-two reuse remain.

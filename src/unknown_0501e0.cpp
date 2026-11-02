@@ -223,6 +223,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 483: coherent radius from output/producer, branch/common publication
 // and original/immediate clamp consumption 266/266/257/257/259/258/259/259.
 // All regress; initial stores, alias-sensitive reads, original helper/body restored.
+// Round 497: Real coefficient-array termination !=/< with forward/up/right owners
+// 379/379/379/379/378/378; all three streams without an ordinal 375/375. Original helper and body
+// restored; frame and coefficient/input/result homes remain.
 // Round 131 (m3 lane 6, fast): each view transformed right after its own offset loop 309 (1079 bytes);
 // with each depth limit right after its view 295 (1094 bytes); the view vectors declared before the
 // offsets 221 (same code); the blend divisor as `local_4 + local_5` 221 (same code); the depth limits
@@ -232,6 +235,12 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // spills nothing in the second view, ours keeps the second offset's i in xmm7 and spills a second-view partial
 // sum at [esp+8]. Segment vector declared at function scope after the offsets 221, before them 221, after the
 // views 221, at the top of the projection block 221; view vectors declared with the offsets 221 (same code).
+// Round 499: First/second/both source-coordinate cursors with long/dword ordinals
+// 222/222/223/222/222/223; both source-end !=/< forms 276/582. Original input walks and body
+// restored; extra frame word and coefficient/result homes remain.
+// Round 500: native ordinal !=3/<=2 with long/dword/short/word domains
+// 409/221/401/221/400/399/400/399. Equality bounds change unrolling but regress;
+// extra frame word and coefficient/input/result homes remain. Original helper/body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -210,6 +210,9 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
 // Round 71 (lane 12): a compile-only /FAs screen names each home: a spilled 8-byte point always homes below
 // bitmap_index, a spilled scalar above result (so retail's -0xc/-8 are two scalar homes, -0xc never used, as if
 // two spilled scalars were later merged into one slot), and none of 48 across/side/up/back point-or-scalar shapes

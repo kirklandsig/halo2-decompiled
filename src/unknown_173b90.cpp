@@ -1311,6 +1311,9 @@ static inline void cross_product3d_174420(vector3f const *a, vector3f const *b, 
 // separate-tag/group-first declarations 135/135/135/135; definition rejection with the
 // same four declaration graphs 135/135/135/135. Original nested body restored; tag/group
 // ownership, definition bit five and callback reloads remain.
+// Round 500: native camera/request/position lexical-home subsets, all seven,
+// then all with displacement identity, 135 each on the recovered child-tail graph.
+// Original names/body restored; tag/group ownership, flag extraction and callback reloads remain.
 // @retail 0x174420
 void __stdcall function_174420(long system_index, bool view_pass, bool camera_relative, bool force_visible)
 {

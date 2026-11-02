@@ -52,6 +52,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 }
 
 // score 244 (was 244): frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // local_11 where retail packs them with the yaw at +0xc, the XMM numbering from the 1.0 constant on and the
 // rotations' register and slot assignment differ; the clamps now have retail's shape.
 // Earlier (255, was 267): frame 0x2c agrees (1707 bytes against 1706); the sqrt/acos temporaries sit at +0x14
@@ -218,6 +219,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // register as retail); on 244: each turn delta clamped in place before the add 264 (1719 bytes); each delta
 // computed before its limit 269; a separate pitch delta local 244 (same code); the first rotation reading
 // arg_2 with no copy 323 (0x29b990 lost); the XY vector initialised before the second copy 242.
+// Round 498: Closed angle/clamp, yaw-rate and pitch-rate regions in all seven nonempty
+// combinations, with independent deltas, 244 each; all regions with complete role names 244.
+// Root/acos +0x14 versus yaw +0xc and XMM allocation remain; original body restored.
 // Round 272: Entry declarations target/current/target+current/XY/target+XY/current+XY/all; all
 // with complete role names 255/255/255/255/255/255/255/255.
 // Original executable body and declarations restored; remaining allocation differences persist.

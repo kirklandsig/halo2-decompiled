@@ -622,6 +622,8 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // then hoists as retail's); the volatile present declared first 39. Diagnostic: the word form keeps
 // retail's entry but reloads the spilled word at each use (movzx in the compare, `mov esi` dword in
 // the update), where retail reloads it once into ECX at the loop exit with playing in EDX.
+// Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
+// receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
 // Round 39 (fast): the present update written `(1 << team) | present` 32 (same code), on the word mask 77; the
 // word mask with `(flags & 2) == 0` 77, updated in place then stored through the pointer 77; the word mask read and
 // stored straight through globals 129 (375 bytes, either test order, `|=` or the bit-first form), the dword mask
