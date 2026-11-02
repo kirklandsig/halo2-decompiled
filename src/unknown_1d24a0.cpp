@@ -264,6 +264,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 241: In-place direction-to-residual storage at radial/planar/angular sites,
 // singles/pairs/all 946/934/939/954/962/954/963; all with shared radial/planar differences 963.
 // Original separate direction/residual vectors, short scale loop and complete body restored.
+// Round 245: existing component upper-bit field at admission/activity/publication, seven
+// subsets 904/902/904/902/904/902/904; all with test-produced activity result 999.
+// Original component flag observations and publication, helpers, solver-response sharing
+// and complete executable source restored; entry/frame and activity/vector homes remain.
 // Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
 // pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
 // entry/frame and activity/record/vector homes remain.
