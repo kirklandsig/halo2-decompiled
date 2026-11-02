@@ -364,6 +364,9 @@ public:
 // walked byte pointer for the child table 243; pool read at each use 54; pool local before the loop 137; count read at the
 // test 242. The link arm reading the location through the parameter or its own local: on indexed + retest + salt 248/248,
 // retest + salt 248, salt 176, alone 54 (copy-propagated), indexed with its own local 59.
+// Round 353: Traversal head assigned after list publication, crossed with sentinel chaining,
+// independent ordinal declaration and native while latch, 95/96/95/96/95/96/95/96.
+// Original allocation/link values and complete body restored; child setup, pool/NONE and index homes remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

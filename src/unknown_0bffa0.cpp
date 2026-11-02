@@ -1761,8 +1761,8 @@ void function_c1400()
 
 
 // @retail 0xc0350
-long function_c0350(long tag_index, long object_index, long node_index, vector3f const *up,
-    point3f const *position, vector3f const *forward, real scale)
+long function_c0350(long tag_index, long object_index, long node_index, point3f const *position,
+    vector3f const *forward, vector3f const *up, real scale)
 {
     long result = record_pool_allocate(g_4e030c);
     if (result != NONE)

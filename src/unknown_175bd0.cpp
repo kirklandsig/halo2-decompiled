@@ -185,6 +185,8 @@ extern s_unknown_13bf00 *g_510c50;
 /* the clusters whose effects are visible */
 
 #define OBJECT_GET(index) ((s_effect_object *)((s_effect_object_header *)g_4e0300->data)[(index) & 0xffff].object)
+/* a location's node index without its high flag bit; NONE stays NONE */
+#define EFFECT_NODE_INDEX(node_index) ((node_index) == NONE ? NONE : (node_index) & 0x7fff)
 
 static inline transform4x3f *effect_object_node_matrix(long object_index, short node_index)
 {
@@ -407,7 +409,7 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index); /*
 void function_b7930(void *data, long tag_index, long object_index, s_effect_owner const *owner); /* stubs/lane_o.cpp */
 bool function_a7640(s_effect_object_placement *data);
 void __stdcall function_a7870(long object_index); /* stubs/lane_o.cpp */
-long function_c0350(long tag_index, long object_index, long node_index, vector3f const *up, point3f const *position, vector3f const *forward, real scale);
+long function_c0350(long tag_index, long object_index, long node_index, point3f const *position, vector3f const *forward, vector3f const *up, real scale);
 bool __stdcall function_16a8e0(long name, point3f const *point, real radius, long object_index, long unknown, point3f *origin, real *radius_reference);
 void __stdcall function_179880(s_effect_datum *effect, long effect_index);
 void __stdcall function_179e80(s_effect_datum *effect);
@@ -1220,63 +1222,30 @@ done:
 
 __declspec(noinline) void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *matrix);
 
-// score 11 (was 11): the node index is masked after the branch that tests the high bit, retail masks it before the call
-// Round 44 (lane 1, fast): the copy through the file's effect_object_node_matrix 37 (esi shrink-wrapped);
-// the copied index as `short` 28 (effect esi/index edx as retail, re-test not threaded); the copy kept and
-// `node_index` re-tested 28 (the copy in the test's block stops threading); the threaded ternary with the
-// parameter as its NONE arm 35, with a `long` index 35 (threaded as retail, but effect edx/index esi); the
-// index masked into a variable before the high-bit test and passed to the call 47 (96 bytes: the convention
-// moves to effect eax/node ecx and 0x17af30 goes to 29). Threaded forms always colour the effect first.
-// Also: `short index = node_index;` at the top with `if (node_index != NONE) index = node_index & 0x7fff;` after
-// the call 38, `short index = NONE;` at the top 40 (both thread the re-test with retail's effect esi/index edx,
-// but the copy or the `or edx, -1` stays at entry instead of on the NONE path); one index assigned in the call
-// branch and by the threaded ternary 35 (the call branch's value becomes its own web).
-// Round 111: outer NONE guard around the special case with a copied long index 29 (105 bytes); copied-index
-// special/fallback arms with one exit 23; threaded index with a const effect 35; threaded index with a two-use
-// hosted identifier 35; threaded index with memcpy 35; copied index with memcpy 11; dominating long copy before
-// the original special guard 29; outer NONE test on the copied index 41. Original body restored.
 // @retail 0x17aec0
 void function_17aec0(short node_index, s_effect_datum *effect, transform4x3f *matrix)
 {
     if (node_index != NONE && (node_index & 0x8000) && effect->unknown58 != NONE)
     {
-        function_1664da(effect->unknown58, effect->object_index, node_index & 0x7fff, matrix);
-        return;
+        function_1664da(effect->unknown58, effect->object_index, EFFECT_NODE_INDEX(node_index), matrix);
     }
-    long index = node_index;
-    if (index != NONE)
-        index &= 0x7fff;
-    s_effect_object *object = OBJECT_GET(effect->object_index);
-    transform4x3f const *nodes = (transform4x3f const *)((byte *)object + object->nodes_offset);
-    *matrix = nodes[(short)index];
+    else
+    {
+        short index = EFFECT_NODE_INDEX(node_index);
+        s_effect_object *object = OBJECT_GET(effect->object_index);
+        transform4x3f const *nodes = (transform4x3f const *)((byte *)object + object->nodes_offset);
+
+        *matrix = nodes[index];
+    }
 }
 
-// score 13 (was 13): the node index is masked in ecx in retail, ours loads it from the stack into ecx and masks it later.
-// Tried (r27b): the plain form without the volatile reread, with or without the node local, 37 (the node
-// moves to eax and the flag to cl); a `short const *` reference to the node keeps it on the stack but
-// swaps the flag and matrix registers (cl/eax, retail al/ecx) 32.
-// Tried (r35): the qualified snapshot with a later plain parameter read 13; the direct fallback 31;
-// the initial read through its address 13; a C++ reference 32; an overwritten snapshot 37;
-// memcpy without the reread 37; `(void)&node_index` with either snapshot form 37.
-// Tried (r105): parameters reversed (matrix first, flag last; definition and the 0x178bc0 call)
-// with the node read once through its address 31 (flag cl, matrix on the stack), with the
-// current body 13 (0x178bc0 2: its setup follows the declared order), plain 37; a word or
-// long node parameter, plain body, 37.
-// Round 44 (lane 1, fast): the `node` copy dropped (parameter read directly) 13 (same code); the condition
-// inverted 13 (same code); the copy as memcpy 13; a `word` node parameter (0x178bc0 pushes a zero-extended
-// word) 13; the reread moved into the copy's initialization (one read, all uses on the copy) 37 (the node
-// becomes an eax argument again, 0x178bc0 50); diagnostic only, the reread moved to the 0x17aec0 call 31
-// (convention kept, the node then takes ecx and `push esi` is shrink-wrapped).
 // @retail 0x17af30
 void function_17af30(bool field_b4, short node_index, s_effect_datum *effect, transform4x3f *matrix)
 {
-	short node = node_index;
-
-	if (field_b4 && node != NONE && (node & 0x8000) && effect->unknown58 != NONE)
-		/* the node reread from its stack slot here: retail takes the flag in al and the matrix in ecx */
-		*matrix = *function_1664a5(effect->unknown58, effect->object_index, *(short const volatile *)&node_index & 0x7fff);
+	if (field_b4 && node_index != NONE && (node_index & 0x8000) && effect->unknown58 != NONE)
+		*matrix = *function_1664a5(effect->unknown58, effect->object_index, EFFECT_NODE_INDEX(node_index));
 	else
-		function_17aec0(node, effect, matrix);
+		function_17aec0(node_index, effect, matrix);
 }
 
 __declspec(noinline) void function_17af80(long effect_index, long particle_system_index);
@@ -2079,6 +2048,16 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
 // 128/138/138/128/138/128/128/128. Original case order, body and zone producer
 // restored; early color/query ownership and frame 0x40 versus 0x44 remain.
+// Round 117: retail reads the system from its stack home again before the colour call and into EBX before 0x175270, and
+// reads the definition from its home before the loop and at its bottom, holding it in EDI across the next-location call.
+// Non-volatile: early colour locals with multiplied() as the argument 178; a plain local copy of the system 178, without the
+// colour locals 135; with a named multiplied 184; the system read through a pointer to the parameter 178. Diagnostics
+// only, volatile reads of the own parameters, reverted: system at the colour call 137 (EDI/ESI, frame, length as retail); plus the
+// zone field read at each use 159 (aligned 26); plus definition at its first read 43 (552/552, aligned 19), that first read
+// through a named local 42 (aligned 17). Left there: colour A in EBX with the tint spilled, retail the reverse, which also
+// moves the location index out of the parameter home. Colour A loaded at the function top flips it 32 (but above set_location
+// where retail loads it after); colour order, long/const colour A, byte/char/long tint, declarations apart from the reads,
+// reads around the spawn stores, block scoping, a colour helper 37 and named tag/settings temps do not (42-46).
 // Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
 // in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
 // query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
@@ -2740,10 +2719,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 	}
 }
 
-// score 30 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
-// 0x17e670), the attached light call's register arguments (computed before its pushes, retail after: ours forms
-// forward with add ecx, retail with lea edx and keeps the location pointer live) and the sound arms' scratch
-// registers remain. Round 85: `effect` declared before `up` gives retail's EAX up (38 -> 30, kept);
+// score 23 (was 30): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
+// 0x17e670) and the sound arms' scratch registers remain. Earlier 30: the attached light call's register arguments
+// (computed before its pushes, retail after: ours forms forward with add ecx, retail with lea edx and keeps the
+// location pointer live), fixed by 0xc0350's order in round 117. Round 85: `effect` declared before `up` gives retail's EAX up (38 -> 30, kept);
 // Frame 0x100, length and prologue agree; protected decal transfer, attached
 // light argument scheduling and sound scratch carriers remain.
 // Earlier 30 (was 38): Frame 0x100, length and prologue agree; the decal call's register arguments (BLOCKED-BY
@@ -2836,6 +2815,14 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // Tried: detached sound point copied member-wise 60; location field by field 73; detached arm first with
 // the test inverted 30 (same code); tag index local before the fill 35; the record as one aggregate
 // initializer 47 (as struct-order statements, re-measured 47; 40 on top of the 0xc0350 order).
+// Round 117: 0xc0350 as (tag, object, node, position, forward, up, scale) per the attached call's setup 23 (kept). Lead,
+// not kept because 0xbf600 has a call to it: 0x189060 as (object, value, position, direction, scale, tag) with velocity
+// before location in the detached arm 2 (scale evaluated before the address arguments, which also rotates the detached
+// arm's scratch registers; only the decal call is left, and 0xbf600, 0xceee0, 0xf6670 stay put, its matched callers
+// match); that order alone 29; (object, value, direction, scale, position, tag) 55, with velocity first 28. On the current
+// order: velocity first 40; a compress local before the velocity copy 14, stored after location 21 (one-use local); velocity
+// pointer 40; matrix pointer in the attached sound call 23, with velocity first 40; position and forward pointers with
+// velocity first 40; node ternary in the argument list with velocity first 40; tag local with velocity first 40.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -2844,7 +2831,7 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 	case 'char':
 		if (part->tag_index != NONE && !(location->node_index != NONE && (location->node_index & 0x8000)))
 		{
-			long node_index = location->node_index == NONE ? NONE : location->node_index & 0x7fff;
+			long node_index = EFFECT_NODE_INDEX(location->node_index);
 
 			function_1ca290(part->tag_index, function_1469f0(effect->event_delay), effect->object_index, node_index, part->velocity_lower, part->velocity_upper, &location->matrix);
 		}
@@ -2914,19 +2901,19 @@ void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_
 	case 'ligh':
 		if (effect->object_index != NONE && !detached)
 		{
-			long node_index = location->node_index == NONE ? NONE : location->node_index & 0x7fff;
+			long node_index = EFFECT_NODE_INDEX(location->node_index);
 
-			function_c0350(part->tag_index, effect->object_index, node_index, &location->matrix.up, &location->matrix.position, &location->matrix.forward, scale);
+			function_c0350(part->tag_index, effect->object_index, node_index, &location->matrix.position, &location->matrix.forward, &location->matrix.up, scale);
 		}
 		else
 		{
-			function_c0350(part->tag_index, NONE, NONE, up, point, forward, scale);
+			function_c0350(part->tag_index, NONE, NONE, point, forward, up, scale);
 		}
 		break;
 	case 'snd!':
 		if (effect->object_index != NONE && !detached)
 		{
-			short node_index = location->node_index == NONE ? NONE : location->node_index & 0x7fff;
+			short node_index = EFFECT_NODE_INDEX(location->node_index);
 
 			function_189060(effect->object_index, node_index, scale, &location->matrix.position, &location->matrix.forward, part->tag_index);
 		}
@@ -3165,6 +3152,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // used node word and traversal-scope matrix, 110/140/110/140/110/140/110/140. Cached-mode forms retain frame
 // 0x4c and add copy work; per-call forms recover frame 0x54 but lose matched caller 0x176f60 (25). All
 // exact-only forms, input contracts, pointer-result ownership and complete original body restored.
+// Round 117 (fast with 0x176f60): spawn cursor re-measured 90 (aligned 35); colour A before the spawn local 90; colour B
+// first 90 (aligned 34); long cached mode 89 at 337 bytes, with colour B first 89 (aligned 34); colour A read at the function top 102
+// (326 bytes, 0x176f60 25). The system/next-index register swap and the mode cached where retail reads it per call remain.
 // Round 312: negative tint/multiplication/both query outcomes 113/112/130;
 // paired byte/signed-char/short/word/long storage 130/130/147/147/147.
 // All inverse-outcome forms restored; caller convention, frame, system/successor and color homes remain.
@@ -3418,6 +3408,13 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
 // association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
 // restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
+// Round 117: `position.y` needs a by-name reference that emits no code. `(void)position.y;` before the transform call with
+// the default-first scale (declared after the position copy, `scale = scale_b * scale`) MATCHES byte for byte; not kept, a
+// redundant statement: what natural source names the field is still open. With the scale default after the colour copy 2.
+// Unused read/unused pointer/self-compare give the same block in the compile-only screen; contrary to the round 105 note.
+// Written-out transform: x/y by name and z through a pointer 353, all by name 354, y only 363 (frame 0x84: the helper's
+// out pointers give retail's frame). Compile-only: field-by-field position copy names z too (z in the scale register); a
+// y store after the copy leaves a real store; a C++ reference to position, a separate output and memcpy keep y in place.
 // Round 312: plain output-row loops in point/direction/both 131/74/344; with
 // default-first scale 270/270/297; point loop with complete named basis products
 // 125, with default-first scale 270. The named-product forms also lose the matched

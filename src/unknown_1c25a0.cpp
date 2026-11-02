@@ -930,6 +930,10 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // declaration 1; byte callee result 1; the other caller's function_146da0 declaration first 1;
 // callee declared before function_278f00/function_146bf0 1; function_146bf0/callee/function_278f00
 // order 1; callee after both 1. Original declarations restored.
+// Round 55 (lane 11, fast): 0x146bf0 declared first in this file 1; 0x278f00 declared first 1; 0x146da0 then
+// 0x146bf0 declared first 1; this body moved into src/unknown_1c39c0.cpp (diagnostic) 1; 0x1c4040's definition
+// moved to the end of this file 1. Its other caller 0x146bf0 stays built ahead of it; the declarations that move
+// that sit in src/unknown_278f00.cpp and src/unknown_146a20.cpp, both other lanes' files this round.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {

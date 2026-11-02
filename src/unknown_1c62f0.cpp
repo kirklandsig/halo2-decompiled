@@ -793,6 +793,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // On the mask form: variant local 90 (532, aligned 8); plain pointer 124 (532); plain first read with volatile second and
 // third 85 (same); rate test through the flags local 81 (531, aligned 12: no re-read where retail re-reads after the call,
 // not kept); parameter at the first read 124.
+// Round 256: named wrapped-frame subtraction, producer/declaration and conversion
+// orders, real carrier 93/93/93/93; double carrier 91/91/91/91 (531 bytes,
+// two-point gain rejected, precision exact-only). Original complete body restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)
