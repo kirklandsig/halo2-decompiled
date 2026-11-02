@@ -14,6 +14,12 @@ void function_12c600(void);
 double timing_ticks_to_seconds(__int64 ticks);
 
 /* the time stamp counter */
+// Lane 17 r29 (11-02), a lead: with local_0 non-volatile and made address-taken by a dead `if (0) __asm lea eax, local_0`
+// before the rdtsc, 0x199740 (3), 0x12d400 (2) and 0x6a8a0 (2) match and 0x80e10 goes 14 -> 13, but 0x18f260 4 -> 12,
+// 0x146e30 120 -> 124 and 0x862e0 22 -> 24 (their frames grow: start's spilled high half and the pump counter no longer
+// share its slot); no match lost in the 183 functions of the 9 includers. Not kept: the dead asm only steers the compiler.
+// A live `__asm mov eax, dword ptr local_0` before the rdtsc keeps retail's frames at 0x199740/0x18f260/0x862e0 but emits a
+// mov retail lacks; plain/array/struct/LARGE_INTEGER/memset forms lose the stores. Wanted: a live form that takes the address.
 static __forceinline __int64 function_80e13(void)
 {
 	volatile __int64 local_0 = 0;

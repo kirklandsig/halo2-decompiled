@@ -1157,6 +1157,29 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 317: Actual endpoint-word/point/node lvalue subsets 1..7, all plus first portal lvalue
 // 333/324/333/324/333/324/333/333 fast; all original receivers and body restored.
 // Frame 0x30 versus 0x28, zero/radius lifetime and endpoint/history homes remain.
+// Round 73 (m3 lane 16, fast; positional/aligned; 324 stands, every gain below needs the flag, so nothing is kept without
+// a match). Base F = direct offsets (`origin->x + normal.x * radius`, `* (0.0f - radius)`), the three-if crossing flag
+// declared before the normal: 363/134 (1288), float block identical to retail apart from the shift. On F: first_vertex
+// first 361/132; end pointer before start 347/143 (1312); vertex1 read first 366/138; select by if/else 363/134; vertex =
+// vertex1 then if 367/134; widened side named 321/135; first_vertex + side 319/133; end + side 307/144; all three 305/142.
+// G = F + first_vertex first + end first (345/141): one variable for vertex1 and vertex 334/162; count first 345; ring
+// through a pointer local initialised from edge 212/98 (1292: vertex shares EBX with vertex1 as retail); in the ring's
+// body or after the forward test 345; with `edge = &edges[i]` kept and `walk = edge` at the bottom 204/97 (1312); any ring
+// read through edge instead of walk (seven masks) 345; edge address-taken in the ring (three placements) 345; first
+// comparison on bool 204; second on bool 316/178; helper re-reading the node word 204 (same code). H = 204 + surface index
+// read inside the test 204/96 (retail's load after the first jump); on H: the selected vertex read from the edge 166/79
+// (edge ESI, table EDI as retail, but word temps); vertices at every use 276/143; from/to at use 225/136; from/to as two
+// ternaries 320/77 (edge ESI), to first 222/79, vertex1 first 341/64 (vertex1/vertex EBX, edge ESI, vertex0 lost to the
+// widened side); a 30-form grid of from/to spellings best 183/87; walk from the table 385; chained tail 212; two-ifs and
+// for-increment tails 204; long count 205; count before first_edge 202/95. Single-variable ring on H (345/140): only this
+// form gives retail's edge store and reload at the ring's bottom, so the pointer local is not retail's; named long index
+// for `!forward` 277/112 (vertex1 EBX, vertex0 EDI, edge memory, but the test folds to setne); on one read only 345; byte
+// or bool index 353; first_edge at the loop top 320/158; first_edge or count declared elsewhere 345; first-edge pointer
+// compare 369; named next edge 345/355; named open result or ring node 345; both 380. Retail keeps edge ESI, vertex EBX,
+// vertex0 and node index and ring index EDI, and spills first_edge, count and the widened side: ours always spills vertex
+// or edge instead of first_edge. Plain subsets on the kept body: first_vertex first 322; surface in test 321; end first
+// 341; ring pointer 353; first_vertex + surface 319; first_vertex + end 339; end + surface 338; those three 336; pointer
+// + first_vertex 351; pointer + surface 352; pointer + end 342; all four 339.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1573,6 +1596,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // (1746 bytes, aligned 273); origin through the query, source after it, zero-init first 428/429; data as an if or if/else 429;
 // the count/data locals named 451; used shared with the no-data arm 469; scan as a for 548 (1858); type as long 487; out point pointer
 // 450-481 (aligned down to 245, 1757-1770); both conversions nested 410; z in a local +4; second edge store 442-449 (1770-1777).
+// DL237: Complete native query-source mutable/immutable/memcpy/memmove copies 495/495/495/504;
+// with existing origin setter 524/524/524/529. All restored; source-radius staging, persistent
+// zero and metadata homes remain.
 // Round 316: Eager classification short/word/long/dword with short/long links
 // 427/420/415/422/473/420/473/420; eager word with paired corner results
 // short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;

@@ -1929,6 +1929,17 @@ struct s_filter_rows
 // here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
 // an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
 // inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
+// Round 74 (lane 9, fast): a second read of the tag compared with the first (`long tag = slot->tag; if (tag !=
+// slot->tag) tag = 0;`, a diagnostic: the test is always false, so not keepable) MATCHES: this read is the
+// only difference, and what keeps the add is a second read in the same block that folds away late. 0x1cb70's
+// result in a dead local before the bind 17; after the bind with `| 1` 17; `& 0` as the bind's last argument
+// 29 (1052 bytes); a tag local, then 0x1cb70 on a re-read 17; `inline` on 0x1cc30's definition (temporary)
+// with function_1cc30(12) 17, also on 0x1cb70's 28 (0x1cc30 itself then 66). Compile-only, all fold:
+// references to the slot or field, by-value slot and 8-byte union copies, one-read accessors (member or free),
+// nested inlines, the index through a local or short, a dead second argument, a switch or ternary on a
+// constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
+// 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
+// index. So a state of the caller picks it, not the helper's source.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2491,6 +2502,14 @@ dword __cdecl function_131fc0(real alpha);
 // Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
 // kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
 // clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
+// Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0, whose convention is now
+// found: it matches as (short stage, long fallback, long tag, short fallback_index, short index, real
+// priority) with two calls to 0x14390 in place of the goto, the count read at each use, no address-taken
+// fallback and no volatile. Its file is left alone this round. This function's count under each callee form:
+// fallback read directly 266; plus an address-taken priority 268; direct without the volatile 266; two calls
+// 156 (1729 bytes, first +0x280); two calls in order (tag, fallback, stage) 267; (fallback, tag, stage) 267;
+// (stage, tag, fallback) 154 (first +0x32b); (stage, fallback, tag) 154; (fallback, stage, tag) 156; with the
+// matching 0x144f0 154.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2704,18 +2723,18 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
             *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
         real red[16], green[16], blue[16];
-        long level = 5 - order;
-        if (level > layout->level_count - 1) level = layout->level_count - 1;
-        long stride = layout->groups * (layout->columns * 3 + 4);
-        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
-        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
-        long bytes = total * stride * sizeof(real);
         if (!use_samples)
         {
             vector3f direction = { 0.0f, 0.0f, -1.0f };
             spherical_harmonics_evaluate_directional_light(&direction, layout->order,
                 1.0f, 1.0f, 1.0f, red, green, blue);
         }
+        long level = 5 - order;
+        if (level > layout->level_count - 1) level = layout->level_count - 1;
+        long stride = layout->groups * (layout->columns * 3 + 4);
+        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
+        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
+        long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
@@ -2728,17 +2747,48 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
                 word available_samples = *(word const *)(pair + 2);
-                short samples = available_samples > 2 ? 2 : available_samples;
-                if (!samples) continue;
+                if (!available_samples) continue;
                 real const *source = (real const *)((byte const *)vertices + 0x44 + *(short const *)pair * 0x30);
                 transform4x3f matrix;
+                matrix3x3 rotation;
+                real rotated_red[16], rotated_green[16], rotated_blue[16];
+                real determinant;
                 function_0235a0(source, &matrix);
-                for (short sample = 0; sample < samples; ++sample)
+                if (use_samples)
                 {
-                    if (sample) function_0235a0(source + 12, &matrix);
+                    point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 0);
+                    if (position)
+                    {
+                        byte *bsp = *(byte **)(structure + 0x84);
+                        function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
+                            (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                    }
+                }
+                determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
+                function_143600((real const *)&rotation, 3, red, rotated_red);
+                function_143600((real const *)&rotation, 3, green, rotated_green);
+                function_143600((real const *)&rotation, 3, blue, rotated_blue);
+                function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                output += stride;
+                if (available_samples > 1)
+                {
+                    function_0235a0(source + 12, &matrix);
+                    determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                    determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                    determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
                     if (use_samples)
                     {
-                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, sample);
+                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 1);
                         if (position)
                         {
                             byte *bsp = *(byte **)(structure + 0x84);
@@ -2746,15 +2796,6 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                                 (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
                         }
                     }
-                    real determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
-                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
-                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
-                    determinant -= matrix.forward.i * matrix.left.k * matrix.up.j;
-                    determinant -= matrix.forward.j * matrix.left.i * matrix.up.k;
-                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
-                    matrix3x3 rotation;
-                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
-                    real rotated_red[16], rotated_green[16], rotated_blue[16];
                     function_143600((real const *)&rotation, 3, red, rotated_red);
                     function_143600((real const *)&rotation, 3, green, rotated_green);
                     function_143600((real const *)&rotation, 3, blue, rotated_blue);
@@ -2875,6 +2916,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
 // in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
 // coordinate arrays declared second-first 282; declared just before the bounds 282.
+// Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0; see the form that matches it
+// in 0x2a8d0's note. This function's count under each callee form: fallback read directly 283; plus an
+// address-taken priority 280; direct without the volatile 283; two calls 366 (2044 bytes, a positional shift,
+// first still +0x17); two calls in order (tag, fallback, stage) 345; (fallback, tag, stage) 346; (stage, tag,
+// fallback) 366; (stage, fallback, tag) 366; (fallback, stage, tag) 365; with the matching 0x144f0 366.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
