@@ -965,6 +965,9 @@ struct s_flags_1f0870
 // then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
 // retail length at 587; the three-point gains are rejected. Original complete body restored;
 // frame 0x34 and direct/vector homes remain.
+// Round 311: General movement through the existing output-pointer scale, plain/shared difference and
+// ordinary/returned-output ownership 590 each; all four with native two-component direct delta 589 each
+// (one-point gain rejected). Original body restored; frame, flag homes and normalization continuations remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {

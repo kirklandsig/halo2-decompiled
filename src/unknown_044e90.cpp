@@ -180,6 +180,9 @@ struct s_visibility_bound_record
 // Round 248: Complete independent scalar normal results joined after both transform arms,
 // loop/frustum/view/query declaration scopes with normal-first/distance-first publication: 459 each.
 // Original input plane, scalar lifetimes, publication and zero-scale behavior restored.
+// Round 311: Complete fallback bound value, const value and library copy 434/434/434;
+// with native fallback transform values 467/467/467; value/const bounds with library transform copies
+// 467/467. All actual record observations restored; entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

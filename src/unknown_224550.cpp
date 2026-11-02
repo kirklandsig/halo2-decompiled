@@ -288,6 +288,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
 // 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
 // component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
+// Round 311: Returned seed-color unpack output with scalar/seed-loop/input-loop/both RGB consumers,
+// branch-local buffer 431/431/431/431, entry buffer 483/483/483/483. Original producer use and full body
+// restored; tint/secondary-UV home order and blend residency remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
