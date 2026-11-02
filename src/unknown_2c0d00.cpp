@@ -1611,6 +1611,11 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 427/420/415/422/473/420/473/420; eager word with paired corner results
 // short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
 // original classification, Boolean corners and complete body restored.
+// Round 331: Consumed trace/world start and destination positions shared separately/both 435/438/405;
+// in-place second-tangent output alone/with start/with destination/with both 424/440/445/444; all with
+// paired short corner results 454. Best: both positions shared (start/target hoisted to the step scope,
+// the else arm's start/end reusing them) 405 plain, frame 0xf4 versus 0x10c, 1709 bytes. NOT kept: locals
+// shared across arms to steer the frame are kept only with a match; body restored at 420.
 // Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
 // circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
 // Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
