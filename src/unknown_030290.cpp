@@ -391,6 +391,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // copying them (no shared snapshot) 285 (893 bytes); with the displaced point's y first 298 (884); with each row
 // summed right, forward, up 285 (893); the displaced point's y first alone 218; rows summed right, forward, up alone
 // 195 (same code). Retail passes out in EBX and d in ESI (camera ECX, a EDX; scale, perspective, negate on the stack).
+// Round 513: Complete native transform input/output library transfers, input memcpy/memmove,
+// output memcpy/memmove, then both APIs in all four pairs: 248/294/334/295/690/685/687/692.
+// Input memcpy recovers frame 0x2c but regresses; original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
