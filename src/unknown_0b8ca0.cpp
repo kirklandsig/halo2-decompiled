@@ -1449,7 +1449,7 @@ void function_b92d0(long object_index, s_object_marker const *old_parent, transf
 void function_108a40(long *placement);
 long __stdcall function_bc280(short size);
 void __stdcall function_bc300(long index);
-bool function_bc380(long index, long field, long size, long alignment);
+bool function_bc380(long index, long field, short size, long alignment);
 bool function_bf9a0(long index, long *render_model, long *arg_0e6cbc_2);
 void function_b8b70(long index);
 bool object_dispatch_create(long index, long placement, long failed);

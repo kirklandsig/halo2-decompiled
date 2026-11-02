@@ -611,6 +611,14 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // publication, with/without all distance-product names 337/337/337/337; matrix-position field view on
 // those four graphs 620/620/611/611. All regress and shorten the body.
 // Original executable source restored; Original helper and body restored; frameless entry and diagnostic tests agree, plane-1 x-term and top/bottom distance/k-row scheduling remain.
+// Round 29 (lane 18, fast 28 agrees): compile-only, split statements keep their order on every plane and any
+// one-expression sum is canonicalised per plane whatever its term order; the first three terms grouped then x
+// gives z, y, d on planes 2-4 (retail 2-3) in any of the six group orders; the normal field-store order does
+// not matter, but direct field stores in place of vector3f_assign move later planes' orders (numbering).
+// Real: y + d * scale + z grouped then x 60; the same with planes 0/1 as direct field stores 599 (2838 bytes);
+// planes 2/3 as direct field stores 501 (2838); all four side planes direct 606 (2840); y + d * scale grouped
+// then z and x 36. The existing function_2477b1 for the normal rotation keeps the plane helper out of line
+// (six calls, compile-only).
 // @retail 0x163db0
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {

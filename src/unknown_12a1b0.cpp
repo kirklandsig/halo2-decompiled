@@ -1359,6 +1359,10 @@ struct s_looping_detail_request
 // Round 253: Final-position offset production with native count, source flag member and byte-result
 // subsets 0-7: 161/161/161/161/164/164/164/164. All original storage and source restored;
 // frame ownership regresses and the first-player query still expands.
+// DL241: Counted actual first/next-query dispatch, long/short/word/dword visits with
+// native/temporary audible output: 195/199/199/194/217/222/222/216. All regress; original two-
+// stage selection and body restored. Entry frame/copy agree; first-player expansion and detail
+// retention remain.
 // Round 469: One counted first/next-player traversal, short/word/long/dword visit counter, then enclosing selected-player lifetime: 121/121/129/131/121/121/129/131. Original two-stage selection restored; query expansion remains.
 // Round 473: Complete failure-valued bool/byte/short/long completion, with
 // request/native-local audible offsets: 144/144/143/142/168/168/168/167.
@@ -1709,6 +1713,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 308: boundary 479/486/452/438/494/469/469/488 reduced (control 479); sound/detail plain 421,
 // Round 308: playback word plain 467 against full 305. Original real types and complete body restored;
 // Round 308: frame 0x11c versus 0x128 and playback/NONE/range homes remain.
+// Round 137 (m3 lane 6, plain; --fast is not usable here, its reduced image scores 477 on the request trial):
+// the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
+// playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
+// plain 9-step loop 335; `long selected` 427 (1908 bytes).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
