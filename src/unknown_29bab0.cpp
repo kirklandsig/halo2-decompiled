@@ -193,6 +193,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // setter, real absolute API and single normalizer exit combinations
 // 812/813/815/817/768/829/768/829. Original input access, helper and body restored; early
 // input/heading and normalization homes remain.
+// DH282: Complete double squared-magnitude producer with repeated component inputs, all square parts and
+// single-result completion, seven nonempty subsets then all with k/j/i component declaration priority [750,
+// 750, 805, 798, 798, 798, 801, 801]. Original executable body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
