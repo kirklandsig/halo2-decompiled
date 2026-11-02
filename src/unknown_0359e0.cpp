@@ -171,6 +171,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
 // private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
 // 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // Round 495: Nonzero scans with negative-seeded index or complete bit length,
 // zero-before/after result selection and long/short counts: 101/94/114/95/100/98/112/93.
 // Original helper and body restored; coordinate promotion and count homes remain.
@@ -200,6 +203,12 @@ PRIVATE inline long swizzle_log2(dword value)
 // 98; y_bits declared first 77; the minimum as `if` 77, with y first 81. x and y used directly 119, with the arms tail 124
 // (log2_floor, x copied in 32 bits to EBX, y stacked), private logarithm 128. Retail's 16-bit `mov si, cx` stays out of reach;
 // the branch minimum still needs an object without /arch:SSE (a build-flag lead, not changed here).
+// Round 503: present high-bit scan predicate, original/no zero guard, scan/count update
+// order, shifted predicate 82/82/98/98; masked predicate 89/89/96/96. All controls
+// remain matched; original helper/body restored. Early promotion and count homes remain.
+// Round 505: Shared low-band producer with optional high-band insertion, short/long low mask,
+// OR/add joins and symmetric y-shift production: 104/104/104/104/103/105/103/105.
+// All remain 270 bytes; original branch producers and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

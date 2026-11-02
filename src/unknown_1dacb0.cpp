@@ -1213,6 +1213,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // (2825 bytes; on the array form 988), the store-order permutations of the iterator 818-972. Left: retail's NONE reloaded after
 // the je (`or eax, -1`), ECX carrying the id from the loop to the 0x1dd9d0 call, the second request's EBX/EBP roles and the late
 // zero carrier.
+// M294: Per-attempt scalar candidate graph/index short/short, short/long, long/short, long/long,
+// defaults before/after lookup:
+// 1012/1012/1012/1012/1012/1012/1012/1012. Original complete executable source restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1386,6 +1389,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // (2825 bytes; on the array form 988), the store-order permutations of the iterator 818-972. Left: retail's NONE reloaded after
 // the je (`or eax, -1`), ECX carrying the id from the loop to the 0x1dd9d0 call, the second request's EBX/EBP roles and the late
 // zero carrier.
+// DL229: unsigned resolved mode/class/type storage in seven subsets 828 each;
+// all with native iterator aggregate 826. Exact-only API casts and every key type restored;
+// class/NONE, result/candidate/output homes and later zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

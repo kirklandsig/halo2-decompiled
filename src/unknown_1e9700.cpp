@@ -305,6 +305,13 @@ struct s_object_damage_view
 // Round 445: Existing shared validated-record provider in selected/fallback/assist subsets,
 // then consistent existing inline validation: 375/396/509/494/509/526/557/515.
 // Original complete executable body restored.
+// Round 305: Record-pointer selection, assist admission and both award-prefix scans, seven subsets:
+// 461/379/465/370/480/398/485; all with native short teams 494. Original body restored; frame/scalar
+// homes and the biased history cursor remain.
+// Round 308: Long/dword/short/word event-code carriers 423/423/453/453;
+// with both team results short 454/454/456/456. Every code remains in 0..255 and all
+// callback arguments stay unchanged. Wider carriers disturb the entry and do not recover
+// retail result homes; original byte code, long teams and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -480,6 +487,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // register argument, 92; the players pointer named at the top is propagated, 85. CL-only, all folded: statistics,
 // delta and by_team qualifiers (16 forms), clamp forms (17: pin helpers, min/max, stores in the arms), the entry
 // in two steps (row pointer then `+= field`, offset in place, field first; 7).
+// Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
+// uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
+// plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
+// local 13. Original body and declarations restored.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)

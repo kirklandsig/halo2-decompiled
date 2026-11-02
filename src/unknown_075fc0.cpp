@@ -137,6 +137,11 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // combinations 453/426/418/449/434/437/457; joint budget arm 457. Fallback flag alone
 // recovers frame 0x34 at 418; with indexed channel fields 426, plus branch window 410.
 // Original complete state graph and body restored; observer/result/counter homes remain.
+// Round 306: Late selected-limit, packet-allowance and pacing defaults, seven subsets
+// 448/436/455/453/477/446/478; all plus late frequency default 490. All regress; original body and
+// capacity/result/counter lifetimes restored at 408. Frame 0x3c versus 0x34 and
+// observer/result/counter homes remain. Late selected limits alone 448 and late pacing alone 453
+// recover frame 0x34 but lose the early default stores; their combination over-shrinks it.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

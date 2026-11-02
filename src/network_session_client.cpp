@@ -1063,6 +1063,12 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // memset's return as the destination 215 (697); destination assignment in the for initializer 195; declaration
 // before the clear with assignment after it 9; declaration and assignment after the clear 9; the base also used
 // by the request 9; the destination formed before the close call 191 (704). Original restored.
+// Round 152: with the destination declared in the branch (195) the state pointer or `joining` takes ebx
+// for the whole function and the count is spilled; retail reloads the state from its stack home. In the
+// branch: a row pointer `dword (*)[3]` 195; the mask read into a local first 357 (559 bytes); the pointer
+// step before the count 216 (728 bytes); the state reread through a volatile view of its home for the
+// call 198 (`joining` takes ebx) or through `*const *` 195; the count declared at the top 195, after the
+// close call 201, just before the branch 198, assigned zero inside the branch 201.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

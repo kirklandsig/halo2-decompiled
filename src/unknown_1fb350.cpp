@@ -29,21 +29,8 @@ void function_1fb350(void)
 }
 
 /* whether a recorded animation that has not finished plays on the object */
-PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0);
+PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0, s_record_pool *pool);
 
-// score 12 (was 12): ours keeps the global pointer in ESI, retail keeps it in EDI.
-// Round 34: early result return 54, also with one parameter address read 54; assignment-return 54;
-// read-only or unsigned parameter 12 each; read-only record pointer 12; condition-scoped record 12;
-// predicate-assigned result 29.
-// Round 15: walk record {animation, iterator} 12; result declared after the iterator setup 13;
-// body moved after its helpers 12; two continue tests 12; step result initialized first 12.
-// Compile-only screens reproduce ours exactly; declaration/setup orders, nested tests, swapped
-// compare, goto exit, stdcall, a pool local, pool read at each use in the step all keep ESI;
-// only an object index held in EBX from entry (0x1fb760's case) moves the pool to EDI.
-// Round 139: the step through the non-volatile shared iterator 41 (pool to EBX); the loop
-// condition `!result && step` with the result assigned from the test 29; the result set from the
-// flag inside the object test 30; the object index read through its address 12; the iterator
-// aggregate-initialised 13; a 600 s permuter run (61 tries), none below 12.
 // @retail 0x1fb6f0
 bool recorded_animation_playing(long object_index)
 {
@@ -54,7 +41,7 @@ bool recorded_animation_playing(long object_index)
 	iterator.data = g_4f5724;
 	iterator.index = NONE;
 	iterator.datum_index = NONE;
-	while ((animation = (s_recorded_animation *)function_1fb762(&iterator)) != 0)
+	while ((animation = (s_recorded_animation *)function_1fb762(&iterator, g_4f5724)) != 0)
 	{
 		if (animation->object_index == object_index && !(animation->flags & 1))
 		{
@@ -84,20 +71,21 @@ PRIVATE __forceinline long function_1fb761(s_record_pool *arg_0, long arg_1)
 	return local_0;
 }
 
-PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0)
+/* the next datum: the scan reads the iterator's pool and the element reads `pool`, as retail's two
+   pool homes in 0x1fb510 show */
+PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0, s_record_pool *pool)
 {
-	s_record_pool *local_0 = arg_0->data;
-	long local_1 = function_1fb761(local_0, arg_0->index + 1);
+	long local_1 = function_1fb761(arg_0->data, arg_0->index + 1);
 	byte *local_2;
 	if (local_1 != NONE)
 	{
-		local_2 = local_0->data + local_0->size * local_1;
+		local_2 = pool->data + pool->size * local_1;
 		arg_0->index = local_1;
 		arg_0->datum_index = (*(short *)local_2 << 16) | local_1;
 	}
 	else
 	{
-		arg_0->index = local_0->maximum_count;
+		arg_0->index = pool->maximum_count;
 		arg_0->datum_index = NONE;
 		local_2 = 0;
 	}
@@ -115,7 +103,7 @@ s_recorded_animation *recorded_animation_find(long *datum_index, long object_ind
 	iterator.data = g_4f5724;
 	iterator.index = NONE;
 	iterator.datum_index = NONE;
-	while ((animation = (s_recorded_animation *)function_1fb762(&iterator)) != 0)
+	while ((animation = (s_recorded_animation *)function_1fb762(&iterator, iterator.data)) != 0)
 	{
 		if (animation->object_index == object_index)
 		{
@@ -491,6 +479,11 @@ extern "C" void _ReadWriteBarrier(void);
 // 160; the datum index after the unit lookup 156, from the element's salt 99; a permuter run (one try in 431 s)
 // found only an argument swap in the second set_flag call (98, wrong arguments, dropped). Left on that form:
 // retail keeps the object index in EAX, the datum index in EDI and the object pool in EBX; ours ECX, EBX, EBP.
+// Round 26 (retail's two pool homes): the step's element read through a second pool read (0x1fb6f0's match) here
+// through the global 155 (481 bytes), through the iterator's pool and the scan through the global 157 (475 bytes),
+// through a pool local after the iterator's assignments 163 (481 bytes: two homes as in retail, frame 0x10). The
+// iterator's pool passed as the element's pool stays 122 (kept). Retail hoists the high-water read here; 0x1fb6f0 and
+// 0x1fb760 reload it, which is what the scan's volatile read gives them.
 // @retail 0x1fb510
 void function_1fb510(void)
 {
@@ -500,7 +493,7 @@ void function_1fb510(void)
 	iterator.data = g_4f5724;
 	iterator.index = NONE;
 	iterator.datum_index = NONE;
-	while ((animation = (s_recorded_animation *)function_1fb762(&iterator)) != 0)
+	while ((animation = (s_recorded_animation *)function_1fb762(&iterator, iterator.data)) != 0)
 	{
 		s_recorded_animation_object *unit = recorded_animation_unit_try_and_get(animation->object_index);
 		_ReadWriteBarrier();
