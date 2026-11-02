@@ -212,9 +212,6 @@ void function_07b3e0(void)
 	g_4cf8d8 = data_new_inlined("transport qos attempts", 0x20, 8, 0, g_468758);
 }
 
-// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
-// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
-// stays recorded as not kept.
 // score 39 (was 39): retail's second pool register is the only thing missing from the iterator form,
 // which reproduces retail's found block (compare, dead datum add, immediate tail stores) and block
 // layout byte for byte but keeps one pool register, 58 at 120 bytes. A file-local step that scans
@@ -391,6 +388,15 @@ void function_07b3e0(void)
 // existing scanner and immutable receiver combinations:
 // 53/39/53/39/53/39/53/39. Original sentinel loop restored;
 // split scan/datum pool residency and found-arm layout remain.
+// MiniMax E (11-01): no new form, no lower score; retail's second pool register needs the LTCG inline
+// of 0x16bb70/0x16bc00 from src/unknown_16b570.cpp (/Ob1 there), so the 11-point two-pool-local form
+// stays recorded as not kept.
+// Round 49 (lane 14, fast): the scan through the out-of-line 0x16bc00 with the inline datum index 74 (103
+// bytes), with the out-of-line 0x16bb50 datum index 91 (87); both on the global with the inline/out-of-line
+// datum index 74/92 (103/86); the 0x16bc00 scan on the pool local with the datum index on the global 70
+// (107). Re-measured (listed forms): scan and datum index both on the global 45 (126); absolute-index scan
+// on the pool local with the datum index on the global 65 (142); find scan on the global with the datum
+// index on the pool local 64 (141); the calling iterator step 94 (84).
 // @retail 0x7b430
 void function_07b430(void)
 {

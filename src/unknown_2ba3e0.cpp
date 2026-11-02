@@ -494,6 +494,11 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // and run reversed in retail. Loop over the index parameter with the head in a local 79 (1524 bytes);
 // index/head names 10 (same code); change zeroed i first 19; change declared at the loop top 10 (same
 // code); unsigned index 10 (same code).
+// Round 49 (lane 14, fast): 1-8 unused locals at entry never move the back-edge reloads (10/142/16/10/23/23/110/
+// 110 from float operand orders), so their order is no numbering tie; the attraction center written at its
+// use 10; the distance estimate named 10; the attraction scale and add as two statements 10; the separation
+// radius/scale named before the call 303 (1523 bytes); the 0x2b9a00 property named before its call 236
+// (1521 bytes); re-measured: a separate speed-squared value 10.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
