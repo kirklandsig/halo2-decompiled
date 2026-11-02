@@ -375,6 +375,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 249/260; one native count for all admitted phases 274. Follow-ups restored.
 // Round 351: Heading/departure/current lifetimes on the retained native output-ordinal graph;
 // 204/215/254/244/209/245/244/228. Original executable source restored.
+// Round 275: Native current/next indices together, crossed with Boolean departure,
+// early heading and overlap CRT compaction 269/272/269/281/275/262/273/284. Every form loses
+// the matched caller; original word indices, helper and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -682,6 +685,22 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Round 480: Unified polygon side-presence mask, byte/word/dword/long, branched
 // 278/278/278/278 and conditional collection 302/278/278/278. All restored;
 // native count ECX, prior-side byte and SIMD homes remain.
+// Round 27 (lane 17, harness exact): lead. `if (count > 0)` before the for (repeats the loop's test, match-only)
+// gives retail's entry: count once in ECX, both side flags in memory, points in ECX at the loop head (211, aligned
+// 36); with the fraction as if/else 92 (890 bytes, aligned 29, constants XMM4/XMM5 as retail). Left on that: zero,
+// lateral and denominator in other XMMs (ours zero XMM1 set after the entry distance, retail XMM2 set first), `i = 0`
+// after the jump (retail before it), a count reload at the tail. On it: zero arm first 228; clamp in the nonzero arm 96;
+// `0 <= distance` for either side and denominator spellings 92; dx before dy 95. Without the guard: `i` before a guarded
+// for/while/do-while 129/129/128; if/else fraction 249 (880 bytes); current after the distance through points[i] 249; named
+// size 249; `short last` 273; sides in a `bool[2]` 259 (frame +8, element 1 still CL); volatile previous side (diagnostic,
+// removed) 246. What it takes is a third read of count near the loop; no natural source for it found.
+// Round 507: Complete paired coordinate differences or absolute errors, xy/yx and
+// first/neighbor peer priorities, 129/143/147/151 each. Count ECX, prior-side byte and
+// SIMD homes remain; original equality helper and complete body restored.
+// Round 300: independent positive/negative Boolean accumulators with logical/
+// bitwise OR pairs, positive-test bool 288/304/318/315 and byte
+// 288/304/318/321. Original conditional collectors restored; count ECX,
+// prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

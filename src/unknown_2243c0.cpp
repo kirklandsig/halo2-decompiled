@@ -380,6 +380,18 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 338: reference-value identity with tag/stage/pass scalar lexical priorities,
 // including independent mapping declarations, 117 each in eight forms. Original
 // complete body restored; fallback EDX normalization and stage/pass/unfused-load homes remain.
+// Round 59 (m3 lane 1, fast; all restored, one-use reference forms stay match-only). Chain, each on the last: head, stage and
+// pass elements each bound to a `void const *const &` temporary from block_element_224db0, the four cache zeros grouped after
+// the material lookup 102 (the stage and pass alone 118); fallback masked and the fallback and tables lookups through a
+// by-value forceinline tag accessor bound the same way 99; flags read just before 0x173ba0 89 (551 bytes, arg_0 goes on the
+// stack through EBP); the tag read a second time for the group test (arg_0 back in EBX from EAX) 106 (544 bytes, aligned 10);
+// the material index for 0x1c590 bound to `long const &` from a by-value accessor 8. Left, 7 lines: retail overwrites the index
+// base with the loaded definition pointer (EAX at the pass definition, EDI at the material definition, the zero's xor just
+// before the shift), ours takes a fresh EDX. On 8: pass definition bound by reference 36, material definition 92 (552 bytes),
+// both 86; material tag bound first 36; pass records bound 8, reused local 8, nested block elements 8, bound 36; zeros between
+// the material index and its lookup 41, before the lookup statement 13, as a memset 97; through a local pointer 8, an inline
+// clearing helper 8; a const-reference tag parameter 8; argument copies 36, 92, 86; bound ordinal sums 131, 110, 110, 111;
+// random combinations of these forms (with reads of the 0x9c field at each use) 10 at best.
 // Round 340: existing cache-update method on the root-local/EDI-entry graph,
 // early/late mask, original/final zero boundary and native callback-context combinations
 // 117/149/120/151/117/149/120/151. Late masks lose the thunk; every body/type restored.

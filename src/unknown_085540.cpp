@@ -951,6 +951,13 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
 // wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
 // the reader's local non-volatile 250 (its zero stores vanish).
+// Round 135: allocation helper shapes: elapsed declared at its top 22; elapsed test as a nested inline
+// helper taking start 22; start declared then assigned 22. Reader: memset of a local, a volatile, a
+// long[2], a LARGE_INTEGER 250, 250, 250, 250 (621 bytes, the zero stores vanish).
+// Round 114: separate allocation scopes 22; one combined allocation-output declaration 22;
+// a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
+// `+= 1` for either count 22; result declaration split from its initialization 22;
+// the header scoped to the write/serialization block 22.
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -1252,6 +1259,9 @@ bool function_68670(byte *source, long size, void *block);
 // the copy count from header.size too 79.
 // M291: Complete outgoing-message aggregate/full memset initialization, each with native/separate sequence and function/loop received-header lifetimes:
 // 110/137/131/131/110/137/131/131. Original executable body restored.
+// AC460: Actual outgoing message/decoded-block/both workspaces at loop scope, both orders,
+// 118/118/118/118 (553 bytes, entry allocation regresses); the same function-scope forms
+// 72/72/72/72. Original workspace lifetimes, header, payload and complete body restored.
 // Round 350: Positive payload delta word/int with native header/payload/both cursor
 // addition-then-remainder stores: eight forms 72 each. Header/sequence homes, DX size and forwarded
 // cursor remain.

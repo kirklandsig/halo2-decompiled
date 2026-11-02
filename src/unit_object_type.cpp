@@ -7068,11 +7068,13 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 	out->k = frame->up.k * v->k + frame->left.k * v->j + frame->forward.k * v->i;
 }
 
+real function_50650(real cosine);
+
 /* turns a direction toward a desired one within yaw and pitch limits (in
    a frame, when given), keeping an angular velocity: plans both angles'
    motions under a speed limit and an acceleration (0xc7300), evens them
    (0xc75d0), steps them (0xc7750), snapping when both are done */
-// score 653 (was 653): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
+// score 563 (was 563): frame 0x8c versus retail 0x80; input/vector homes and prediction/call scheduling remain.
 // MiniMax D (11-01): no new form tried, no lower score.
 // Earlier 700 (was 723): frame 0x94 versus retail 0x80, input staging, vector homes and prediction/call scheduling remain.
 // Paired role names 723; angular-velocity value 700 (kept); complete direction values 653; shared axes rotation 697;
@@ -7120,6 +7122,13 @@ static void unit_vector_from_frame(vector3f *out, transform4x3f const *frame, ve
 // 648/648/637/645/673/673/655/676; all lose exact callers 43/210.
 // Early wrap alone bool/word 725/719. Entire helper, frame inputs, arithmetic,
 // parameter delivery and entry speed zeros restored.
+// DH274: existing clamped arccosine 601; direct axis 600, with early reciprocal 591;
+// native copied axis normalized in place 574, with early reciprocal 563 (plain kept);
+// either axis scaled before trigonometry 600/574; reciprocal without native axis 591;
+// native axis/reciprocal without clamped producer 615. Original transform helpers retained.
+// DH277: complete prediction field/scalar accumulators and radial/cosine terms 566/566/563/556; with shared
+// cross 585/585/585/595. Seven-point cosine-term lead at 2479/2483 rejected below eight; original body and
+// transform helpers restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
@@ -7200,22 +7209,22 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 	real speed = (real)sqrt(angular_velocity.i * angular_velocity.i + angular_velocity.k * angular_velocity.k + angular_velocity.j * angular_velocity.j);
 	if (!(0.0001f > (real)fabs(speed)) && speed != 0.0f)
 	{
+		real inverse_rate = 1.0f / rate;
 		real inverse = 1.0f / speed;
-		vector3f axis;
+		vector3f axis = angular_velocity;
 		vector3f predicted;
 		real angle = speed * rate;
 		real sine = (real)sin(angle);
 		real cosine = (real)cos(angle);
 
-		axis.i = inverse * angular_velocity.i;
-		axis.j = angular_velocity.j * inverse;
-		axis.k = angular_velocity.k * inverse;
+		axis.i = inverse * axis.i;
+		axis.j = axis.j * inverse;
+		axis.k = axis.k * inverse;
 		real along = (axis.i * local_263186.i + axis.k * local_263186.k + axis.j * local_263186.j) * (1.0f - cosine);
 		predicted.i = local_263186.i * cosine + along * axis.i -
 			(local_263186.j * axis.k - local_263186.k * axis.j) * sine;
 		predicted.j = axis.j * along + local_263186.j * cosine - (local_263186.k * axis.i - axis.k * local_263186.i) * sine;
 		predicted.k = axis.k * along + local_263186.k * cosine - (axis.j * local_263186.i - axis.i * local_263186.j) * sine;
-		real inverse_rate = 1.0f / rate;
 		yaw_speed = ((real)atan2(predicted.j, predicted.i) - current_yaw) * inverse_rate;
 		pitch_speed = ((real)atan2(predicted.k, (real)sqrt(predicted.i * predicted.i + predicted.j * predicted.j)) -
 			current_pitch) * inverse_rate;
@@ -7292,7 +7301,7 @@ void function_c7840(transform4x3f const *frame, vector3f *current, vector3f cons
 	velocity->j = direction.k * next.i - direction.i * next.k;
 	velocity->k = direction.i * next.j - direction.j * next.i;
 	function_30bf0(velocity);
-	real turn = (real)acos(dot) / rate;
+	real turn = function_50650(dot) / rate;
 	if (turn > max_speed)
 	{
 		turn = max_speed;

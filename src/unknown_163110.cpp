@@ -958,6 +958,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 451: Complete classification-distance/clipped-distance/negative-reciprocal expression
 // nodes, subsets 1..7 and complete nodes with reciprocal first: 249/115/249/115/249/115/249/249. Original expression boundaries
 // and complete body restored; coefficient preload, XMM zero and projection homes remain.
+// Round 456: Near-normal/far-normal/input-point memmove transfers, subsets 1..7
+// 458/469/346/401/422/457/475; all plus complete intersection publication 470.
+// Original transfers, arithmetic trees, helpers and full body restored; coefficient preload and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
