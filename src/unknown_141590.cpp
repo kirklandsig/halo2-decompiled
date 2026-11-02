@@ -301,6 +301,10 @@ static inline void quaternion_transform_vector(
 // P260: Independent half-angle lexical homes before/between/after rotation, four
 // forms 267 each; with independent transform cross scalars 252 each. The latter
 // reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
+// Round 523: Actual quaternion/matrix identity transfers native/memmove, memcpy/memmove,
+// memmove/native, memmove/memcpy, memmove/memmove 285/285/319/319/306; both memmove with
+// independent halves/cross components/both 316/321/317. Matrix transfer alone gives frame
+// 0x20; original identities, paired halves, transform helper and full body restored.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

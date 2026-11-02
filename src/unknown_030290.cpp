@@ -394,6 +394,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 513: Complete native transform input/output library transfers, input memcpy/memmove,
 // output memcpy/memmove, then both APIs in all four pairs: 248/294/334/295/690/685/687/692.
 // Input memcpy recovers frame 0x2c but regresses; original alias-safe helper and body restored.
+// Round 523: Direct inverse factors with complete raw/scaled copy/branch/conditional/native-point
+// families, field/coherent scale, 213/227/262/301/301/277/679/226. Final form reaches 955 bytes
+// but not the frame/homes; original alias-safe helper, inverse defaults and full body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

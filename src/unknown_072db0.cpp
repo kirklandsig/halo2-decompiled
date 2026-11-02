@@ -1897,6 +1897,10 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // N303: Actual cache-group/request-player/completion-player element references, seven subsets,
 // then complete returned-record/property/destination elements: 709 each. Original receiver
 // forms restored; frame agrees, initial user cursor base/home and slot expansion remain.
+// Round 523: Initial properties/identity/cache-publication memmove transfers, seven subsets
+// then all with properties before identity, 776/767/734/785/804/753/771/771. Cache-only and
+// identity/cache reach retail length; properties memmove loses self-alignment. Original
+// copies, input observations, cursor forms, helpers and complete body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
