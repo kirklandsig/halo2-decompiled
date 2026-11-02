@@ -1430,6 +1430,9 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 // damage_flags name 10; owner before scale 17; owner/late bit 35; both names/late bit 32; flags before
 // disjoint publications 17. Original body restored; aggregate-copy registers and final flag-store schedule
 // remain.
+// Round 303: one initial clear of the three controlled bits, positive branches in abc/acb/bac/bca/cab/cba
+// order 51,51,52,52,52,52; combined/separate conditional contributions 67,67.
+// Original copy, flag graph and body restored; aggregate registers and final store schedule remain.
 // @retail 0xdbfb0
 void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool b, bool c)
 {
