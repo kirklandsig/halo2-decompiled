@@ -263,6 +263,10 @@ __forceinline bool function_184448(long arg_0)
 // Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
 // matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
 // basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.
+// Round 318: Existing point/plane transforms return completed native values: point 1024, plane
+// 1016, both in ijk/ikj/jik/jki/kij/kji producer orders 1086 each.
+// Original native input copies, in-place helpers and full body restored; frame 0x11d4 versus
+// 0x11cc remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

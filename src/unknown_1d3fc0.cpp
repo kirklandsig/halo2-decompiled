@@ -208,6 +208,11 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 222: named rotation member 110; complete matrix receiver in loop/branch/entry
 // 149/149/149; direct forward/up/both consumers 160/169/181; native helper component
 // array on the named-member graph 110. Original private helper and complete body restored.
+// Round 318: Up-before-forward evaluation with complete squared-dot magnitude, native shared
+// scale, early short return or j-square magnitude staging, each with direct k in
+// dot/projection: 71/71/71/71/71/71/124/124.
+// All mixed observations are exact-only and none matches; original four-use helper and complete
+// body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
