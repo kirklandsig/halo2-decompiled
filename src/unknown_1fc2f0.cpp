@@ -462,6 +462,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // the root changes nothing.
 // Round 247: Existing shared scaler native/scalar input capture crossed with complete scalar/native
 // output publication: 146/32/32/145/146/145/189/32; original body and helpers restored.
+// Round 249: Native current/previous/both source-position copies 127/127/162; coordinate
+// initializers current/previous 97/93, mixed 147/147, both 114. Original source observations and
+// body restored; tick/rate register reuse remains.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

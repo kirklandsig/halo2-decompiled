@@ -797,6 +797,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 246: Byte/short/bool/word common task results, declared before the request
 // view or after total conversion, 269/264/257/252/269/264/257/252. Original returns
 // and cleanup restored; fresh total EDX and seek/size ESI/EDI allocation remain.
+// Round 249: Twice-used pointer in the current combined scratch getter, early/late observation and
+// classification crossed with flag/size output phases: eight forms all 161. Flag-before-size forms
+// also raise the other user from 129 to 138. Original helper/body restored; fresh total and
+// size/seek carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

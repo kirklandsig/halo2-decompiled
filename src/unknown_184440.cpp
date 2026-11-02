@@ -253,6 +253,9 @@ __forceinline bool function_184448(long arg_0)
 // DH round 268: complete dot-input vector/point/both captures 1018/1035/1081;
 // paired polygon projections through the same dot producer, original/vector/point/both inputs
 // 977/1020/1133/1236; complete product parts 1236. Original dot helper and body restored.
+// Round 249: Matrix input snapshots in existing point/plane transforms: point matrix 1110, plane
+// matrix 1152, both 1248; reused point scale 992, with plane matrix 1129; complete point
+// basis/translation 1199, plane 1181, both 1398. Original helpers restored; frame excess remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
