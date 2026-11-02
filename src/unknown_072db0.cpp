@@ -1563,6 +1563,7 @@ struct s_rating_summary
 // Round 307: stepped team with indexed counters 116. Original body restored; formatter/count scheduling
 // Round 307: and the swapped team/counter homes remain.
 // Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
+// M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

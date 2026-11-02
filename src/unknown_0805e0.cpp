@@ -208,6 +208,7 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
 // loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
 // not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
+// M310: Eager pure-Boolean cache/identity/player pairs, seven subsets, then complete eager eligibility [56, 86, 97, 51, 75, 104, 115, 123]. Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1226,6 +1227,7 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // flag, function-scope copy index 55; with `removed < position` upper, upper first, `g_4cf978 > position` 55; mixed
 // read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
 // `removed <= position` lower, count path lower first 62.
+// M310: Exact native copy endpoints: source-forward/reverse/both, destination-forward/reverse/both, mixed source/destination and destination/source [368, 377, 368, 371, 373, 370, 373, 371]. Original body restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

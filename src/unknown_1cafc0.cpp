@@ -617,6 +617,7 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // differs too); the primary lookup's test inverted (fallback arm first, success in the else) 567 (1766 bytes);
 // the found set stored after success 350.
 // Round 319: Request-boundary native found-name values mutable/const/assigned 504/504/504; scalar request orders mode-class-type/mode-type-class/class-mode-type/class-type-mode/type-mode-class 390/390/353/352/350. Original queries, graph, helper expansion and body restored.
+// M310: Uniform graph owner observations through existing member/direct tag producers, byte/bool status and native completed success/failure [744, 716, 737, 716, 744, 716, 737, 716]. Original body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

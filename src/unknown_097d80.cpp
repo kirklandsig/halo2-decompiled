@@ -267,6 +267,7 @@ struct c_aggregate : c_child
 // Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
 // M304: Seven-cell cleanup item ordinal signed-char/byte/short/word with separate/shared query
 // output: 92/102/92/102/77/81/77/81. Original long ordinal, independent outputs and body restored.
+// M310: Native signed-int status/total/boundary storage, seven subsets, then all with signed-int traversal ordinals [31, 31, 31, 31, 31, 31, 31, 31]. Original body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
