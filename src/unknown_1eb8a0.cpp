@@ -332,6 +332,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // DH277: complete native component-square products at activation/displacement/sample sites, subsets 1-7,
 // 683/642/671/642/683/642/671; complete ordered sums 668. Unlike whole squared-length names, all product
 // terms were explicit; all restored with original 0x24 frame, inputs, counter qualifier and exact caller.
+// Round 60 (m3 lane 1, fast, caller 0x1eb6f0 checked): dot3f for the three dot products with d 641 (2872 bytes, d
+// keeps EBX), with the operands reversed 641, with q's too 667; alone at the activation alignment / the 0.866 test /
+// the settling align 642/643/640; the speed factor selected at the top of the activation block 671, before t with the
+// clamp as one ternary chain 716, before t with the cap at both uses 718 (all three lose the caller: the fast byte takes
+// CL, so a leaves ECX); diagnostics (reverted forms): every use of d through a `vector3f *const &` 673, d's pointee
+// through a const reference 686 (d keeps EBX in both). Retail reloads q into EBX after the first normalize call (EBX
+// is a copy scratch in the activation block) and reads d from its slot at each use.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

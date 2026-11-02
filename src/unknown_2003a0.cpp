@@ -525,6 +525,9 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // [74, 92, 75, 92, 74, 92, 75, 92]. Original type, ordinal lifetime and body restored.
 // DH278: Separate short/long parent traversal with early/scan-local ordinal and compound/separate ordered exits 74/74/92/92/141/141/98/98.
 // Complete opening body restored; no qualifying keeper.
+// Round 356: Bulk zero of the three contiguous Boolean outputs with scan-local ordinal,
+// live count and live alternate subsets: 82/94/82/94/82/94/82/94. Complete original body restored;
+// the early ordinal frame and scan/flags ownership remain.
 // DL236: Actual iterator flags as the persistent owner, crossed with scan-local ordinal, per-use alternate and count-field observations: 138/133/138/133/138/133/138/133. All restored; ordinal push-ECX home and scan allocation remain; early flag stores lengthen the body.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
@@ -2210,6 +2213,14 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 509: Actual flags/tick/stamp field-address lifetimes, subsets 1/2/4/3/5/6/7,
 // 64/64/64/64/64/64/64; all three with word flags 64 (201 bytes). No gain;
 // original complete body restored; squad spill, EBP handle and common loop head remain.
+// Round 56 (lane 11, fast; on 0x203d70's loop, 71 at 191 bytes, the eight missing bytes are the squad's spill into the
+// parameter's home and its back-edge reload, aligned 56): the post-loop flag and tick stores through a forceinline
+// helper on the squad 71; those and the return through helpers 71; a named index copy for both uses 71; the arm's
+// store and two calls as a forceinline helper with the actor passed 71, with the actor fetched again 79 (213 bytes).
+// All restored; the index still loses EBP to the squad pointer.
+// On the current body (fast): the actor looked up before the index copy 64; a field pointer for the +0x34 store 64;
+// the flag byte in a named local for the test 64; the iterator's next through a named reference 64; the next actor
+// read into a local before its store 64 (all same code).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2359,6 +2370,9 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 509: Actual population/swarm/eligible counter receivers, subsets 1/2/4/3/5/6/7,
 // 38/39/44/46/51/52/43; all with health-total receiver 43. One-point lead rejected;
 // original body restored; in-place health add and node/pool lifetime remain.
+// Round 356: Native short/long/real denominator owners and both named real ratio operands,
+// original/named tracking node: 39/39/83/47/92/92/132/84. Original field observations and body
+// restored; in-place health addition, node/pool ordering and maximum registers remain.
 // DL236: Shared population sample as ratio numerator and contribution, word/short/long/dword, original/named node: 178/178/179/179/180/180/182/182. All restored; frame/extent agree, in-place health add and node/pool ordering remain. Named-node sources were exact-only and never retained.
 // @retail 0x203360
 void function_203360(long squad_index)
@@ -3041,6 +3055,11 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // M298: Native admission bit-six bool/direct/nonzero and complete-word mask,
 // then once-owned bool/long bit and word/long mask [186, 50, 50, 50, 189, 191, 187, 172].
 // Original shared record and every admission observation restored.
+// Round 56 (lane 11, fast; aligned 2: the reload, and the loop pad it shifts): the two 0x1fb8a0 follow-ups through one
+// inline/forceinline `if (event != NONE)` helper 50/50; the first follow-up as an `&&` expression statement 50, as a
+// ternary 50; a named has-task bool for the follow-up test 50. Diagnostics: the follow-up block given a second call
+// 137 (594 bytes; loads the index into EBX, so the block is out of EBP's region, not only a missed copy); the index
+// read through its address in the trigger loop 50; a volatile read there 50, at the walk 49 (580 bytes), both reverted.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3447,6 +3466,9 @@ void function_2011f0(long arg_0);
 // [384, 359, 362, 402, 383, 362, 356, 385]. Original output defaults and lifetimes restored.
 // DH278: Persistent success logical/bitwise accumulation with final-node receiver and scalar-mask subsets 350/350/340/340/361/361/351/351.
 // Complete opening body restored; no qualifying keeper.
+// Round 356: Native byte/word/dword request outcome, original/consistent early squad receiver,
+// then unsigned pending-chain handles without/with that receiver: 318/318/354/403/389/389/318/403.
+// Complete original body restored; frame 0x134 agrees, masked-index/placement and chain homes remain.
 // DL236: Early mask/admission/selection inline declaration subsets 1..7, then all with final success gate: 318/318/318/318/318/318/318/318. Original contracts and body restored; frame 0x134 agrees, masked index/placement/definition and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)

@@ -298,6 +298,13 @@ static inline void quaternion_transform_vector(
 // M292: Staged dot/doubled-scalar/quadratic coefficient subsets 1-7, then all with independent
 // cross components:
 // 200/200/200/249/249/249/249/261. Original executable body restored.
+// P260: Independent half-angle lexical homes before/between/after rotation, four
+// forms 267 each; with independent transform cross scalars 252 each. The latter
+// reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
+// Round 312: Alias-conditioned native/CRT vector input capture in the existing rotation helper,
+// original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
+// Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
+// paired halves and complete body restored. Quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -984,6 +991,14 @@ void function_143250(
 // (10763 bytes, rotation EAX, ret 4, frame 0x30c); on the 648 form the leading terms as plain locals, with a matrix
 // pointer or a plain array 2238/2238 (10297 bytes, frame 0x2fc); plain leading locals keeping every term 2114 (10412).
 // Restored.
+// Round 519: Shared identical third-band real sum with complete basis/single-consumer/
+// reused copy-family masks 0..7: 1793/1928/1793/1916/1898/1975/1898/1964.
+// Native typed replay preserves all 83 matrix values and precision boundaries;
+// Full cleanup has frame 0x30c and EAX/ret 4 in preview but regresses and raises a caller score.
+// Original scalar, publication and input graphs restored; frame and homes remain.
+// P264: single-consumer real arithmetic owned by second-band product/sum/all,
+// third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
+// Original scalar graph, workspace, publication phases and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -269,6 +269,9 @@ struct s_24e9c7_bounds
 // Round 347: Existing two-component setter at upper/side/both/reverse/upper-reverse/side-
 // reverse/all/all-with-direct-across producers: 125/125/125/137/137/137/137/137.
 // Original complete body restored; early across spill and shifted scalar homes remain.
+// Round 467: One native displacement shared across upper/reverse phases, entry storage,
+// all origins first and early upper-production subsets: 144/144/143/143/145/145/144/144.
+// Scalar homes remain eight bytes high at frame 0x48; original complete body restored.
 // Round 355: reused output-corner receivers for each corner, upper/lower pairs and all
 // corners 125/125/125/125/125/125/125; all with early upper displacement 123.
 // Two-point reduction rejected; original body restored, early spill/scalar homes remain.
