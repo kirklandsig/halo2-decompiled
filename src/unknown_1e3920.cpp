@@ -687,6 +687,10 @@ real function_267370(long object_index);
 // cluster/entry carriers: 326/379/373/169; provider 0 -> [60, 56, 59, 55]. All rejected; the
 // helper shifts early NONE to EBX without delaying it. Original body and entire header restored;
 // frame 0x90, late NONE ownership and cross operands remain.
+// DL243: Matched sample/eligibility/speed provider inline contracts, seven subsets: 98 each; all
+// three with uniform actor view at use 103. Inline 0x267370 raises its other user 0x266640 from
+// 194 to 565, so those forms also fail the shared-user rule. Original entire body and every
+// declaration restored; frame 0x90 agrees, early NONE sharing and cross operand homes remain.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1157,6 +1161,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // Round 520: all six lexical orders of the native query-enabled/query-forced/squad
 // Boolean homes, then probability-home names at both endpoints: 254 each.
 // Original names and complete body restored; sentinel and squad/query homes remain.
+// DL243: Matched creation/variant/equipment producer inline contracts, seven subsets: 254 each;
+// all three with uniform placement view at use 335. Original body, every field and all
+// declarations restored; sentinel EDI/ESI, substitution/squad homes and unrotated loop remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

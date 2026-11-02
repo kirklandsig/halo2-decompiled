@@ -730,6 +730,11 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // sample subsets 0..7: 132/132/181/181/170/170/146/146. No gain; original vector copy, sample
 // qualifier, helpers, includes and whole body restored. Unity/limit XMM ownership and
 // direction/jitter homes remain.
+// DL243: Matched movement-provider inline with existing animation-scale/direction-scale/jitter-add
+// subsets 0..7: 132/132/132/132/130/130/130/130. Retail-length forms gain only two; scale-producer
+// one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
+// declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
+// remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
