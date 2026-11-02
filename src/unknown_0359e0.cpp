@@ -177,6 +177,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 499: Reused width/height dominance with bool/long decisions and private/shared
 // logarithms: 101/95/101/101/107/88/97/90. Original decisions, coordinates, helpers and body
 // restored; promotions and count homes remain.
+// Round 501: high-block logarithm peeling 16/8/4/16+8/16+4/8+4/16+8+4/16+8+4+2
+// 129/129/133/172/161/161/199/137; last loses the matched caller. Original helper/body
+// restored; delayed coordinate promotion and height/shared-count homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
