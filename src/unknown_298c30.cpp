@@ -202,9 +202,19 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 437 (1712 bytes, aligned 243, masked 111, against 235 and 111); with both 16-bit counters 488 (1669, masked 108);
 // centre built through an output-pointer inline 395 (same code), with double dx/dy, dy first 437; the difference
 // through a named point 450 (1751); centre built from the input copy 398.
+// Round 331: Inner-angle word with byte-byte/short-byte/byte-short/short-short outer counts
+// 395/464/402/471; with scalar center 472; inner-angle long with byte-byte/short-byte/byte-short
+// 411/486/409. Original counters, center, helpers and complete body restored; normalized XY/magnitude
+// homes remain.
 // DH295: Retained evaluation-first emitter with candidate/endpoint short-byte, byte-short,
 // short-short, long-byte, byte-long, short-long, long-short and long-long ordinals:
 // 464/402/471/442/420/481/444/457. All restored; normalized homes and entry sum remain.
+// Round 318: Native endpoint-pointer traversal with ordered/equality end tests and
+// byte/short/word/long candidate counts; 432/457/457/435/432/457/457/435. Original whole body and
+// helpers restored.
+// N324: Raw/bounded projection split with ternary/branch/ceiling-default/independent-bound producers,
+// original then test-produced wrapped-angle sum 395/395/404/421/400/400/407/411. Original complete body
+// restored; entry and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

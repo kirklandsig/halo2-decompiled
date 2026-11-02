@@ -528,6 +528,9 @@ real function_30bf0(vector3f *vector);
 // Round 322: Distance-owned outer/scaled/final paired comparisons, all seven subsets, then
 // corresponding motion-minimum comparison, 152 each. Original comparisons and complete body
 // restored; result/range/amount homes and inverse SIMD groups remain.
+// DH299: Native four-state result enum crossed with range-after-delta, entry
+// distance scratch and entry projection scratch, all eight subsets: 152 each.
+// Original result type and scratch lifetimes restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1967,6 +1970,16 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 520: conditional approach maximum/complete absolute producer/native established
 // byte subsets, then all with native visibility: 194/371/371/194/194/371/371/371.
 // Maximum selection is neutral; complete absolute production regresses. Body restored.
+// AC481: consume the actual point-provider result through the existing difference
+// helper or a thrice-used position pointer; original/copied relative input and
+// pure pre-clear result defaults, masks 0..7: 521/521/449/446/518/518/446/443.
+// Complete original body restored; entry operands, byte homes and direction residence remain.
+// DH297: Late score/facing/approach zero lifetimes, subsets 1-7, then all with
+// native byte positive: 745/715/749/365/688/704/749/749. Score/facing release shrinks
+// the frame below 0x80; original early zeros, predicates, observations and whole body restored.
+// Round 535: independent first/second/both real-table pointer walks, then native long
+// first/second/both ordinal combinations: 387/369/433/389/372/433/456/456. Original scans and body
+// restored; entry operand order, established/visible bytes and direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

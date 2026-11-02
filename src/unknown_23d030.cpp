@@ -126,7 +126,7 @@ byte g_51ec12;
 real g_470a24 = 1.f;
 extern byte g_51ec11;
 
-// score 89 (was 102): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
+// score 89 (was 89): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
 // the side/up/roll SSE colouring differ. Kept: both cameras share one state type and the forward vector comes from
 // this file's direction helper, which puts the side.i copy and the movement x87 block where retail has them.
 // Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
@@ -360,6 +360,16 @@ extern byte g_51ec11;
 // side block shape (divss before lahf, side.k moved to XMM4) with every register renamed, but its products put side
 // first where retail's (and this body's) rows load forward first. The up rows computed into up_k/up_j/up_i before
 // the stores, stored k,j,i / i,j,k: 94 (1328 bytes) / 274, with normalize3d 259/258.
+// F332: Consumed roll cosine/sine coefficient reused for inverse scale, phase/entry
+// storage and consistent matrix-scale observation, 319/322/319/322 in both cases.
+// Original scalar lifetimes and full body restored; zero/side/up allocation remains.
+// N320: Shared direction-helper pitch/yaw observations and scalar/native vector publication regress
+// the target and the matched second user. Original helper restored; zero, normalization and up/roll
+// allocation remain. Scores 291/128/280/304/101/307/295/345.
+// Original executable source restored.
+// AC483: Existing planar side normalizer with planar/spatial fallback and original/setter/staged/direct
+// up publication: 268/285/282/282/229/261/127/259. The planar length tree is exact-match-only;
+// no match, so original side/normalization/rotation and complete body restored. Zero and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

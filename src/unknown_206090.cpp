@@ -312,6 +312,14 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1355; the ray record and force vector declared at the first loop's top 1355; contact velocity at function scope
 // 1355; the two collected arrays declared at entry 1355; the two arrays in swapped order 1355 (all the same code:
 // no declaration moves a slot, so the extra 0x40 bytes are compiler temporaries, not declared locals).
+// N322: Fused point-spring/contact-slip sums and native ray-origin setter, subsets 1/2/4/3/5/6/7:
+// 1406/1468/1365/1403/1381/1395/1396; all with native contact-velocity setter 1416.
+// Final publication uses frame 0x5c0 but regresses; original body and all kernels/captures restored,
+// with frame 0x5cc versus 0x58c.
+// DL245: Frame 0x5cc and component/velocity/query/list homes remain. Static/active count dword subsets 1355 each; word/long and long/word 1394; word/word and short/short 1351; byte/byte 1400. Four-point leads rejected. Matched impact-producer inline subsets 1355 each; every user unchanged. Original bodies and all declarations restored.
+// P275: Actual contact-settings control bitfield with native point-row typing, read-only
+// receivers and full-width zero/one control, subsets 0-7: 1355/1355/1355/1355/1356/1356/1356/1356.
+// Original types and full body restored; frame 0x5cc/0x58c and component/velocity/query homes remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

@@ -252,6 +252,8 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // continue;` with the occupant code unnested 3; the definition-flags pointer declared after the object block 84;
 // the loop index at function scope 3; last_object_index declared after the seat array 3 (a repeat); a `long`
 // count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
+// Round 124: actor declared after the last-object local/seat array/count 3/3/116; object and team
+// rejections inverted 3/3; object and team tests nested 3/3; the else-if split into an else 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -639,6 +641,9 @@ extern "C" void _ReadWriteBarrier(void);
 // top 44, an early return for a busy actor 46 (212 bytes), the NONE test in a named bool 44; the state after the
 // actor with the barrier after both 6. Matched retail callbacks load a parameter in the entry block only when two
 // sibling paths use it (0x1b22e0, 0x29f370, 0xa9120).
+// Round 125: pointer names reversed 6; split state initialization 6; split actor initialization 6;
+// actor declared first 6; outer comparison reversed 6; threshold written > 6 gives 8; memcpy point 6;
+// const slot parameter 6; final store before the outer test 52 (189 bytes).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

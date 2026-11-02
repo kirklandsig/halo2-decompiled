@@ -153,8 +153,11 @@ short __stdcall function_1bef40(long actor_index)
 
 static __forceinline long real_to_long(real value);
 
-// score 17 (was 17): the draw helper's seed store still precedes the delay's doubling
-// (retail doubles first) and the reset's zero fields are still stored before the NONE
+// score 2 (was 17): the draw helper's seed store still precedes the delay's doubling
+// (retail doubles first; the draw helper is in include/unknown_0259d0.h). Round 30 (lane 17):
+// actor_reset_state now clears 0x4ac/0x504 through a second actor lookup made with the first,
+// which gives retail's reset order and registers here (17 -> 2, plain; matched 0x1b3ee0).
+// Earlier, score 17 (was 17): the reset's zero fields were still stored before the NONE
 // fields; the reset's order is fixed in include/slot_handler.h and the draw helper in
 // include/unknown_0259d0.h, both outside this lane's files.
 // Earlier, score 17 (was 19), coordinator review: the 6 below wrote actor_reset_state's seven stores out here and read the
@@ -220,7 +223,7 @@ static __forceinline long real_to_long(real value);
 // `sample + sample + 3.0f` 19. Diagnostics only: the time-globals pointer address-taken 31 (284 bytes;
 // its load then follows the reference store as in retail, but reloads after the first tick store, and
 // the reset keeps source order); 0x4ac/0x504 through a second actor lookup 77 (not merged).
-// score 17 (was 17): the seed store still precedes the first doubling, the NONE stores
+// Earlier, score 17 (was 17): the seed store still precedes the first doubling, the NONE stores
 // follow the zero fields, and the second scale precedes the tick-count load. Round 123:
 // sample reused for the second draw 17; forced outer/inner random declarations 17/17;
 // forced reset declaration 17; first/second/both sample scopes 17/17/17; delay and wait

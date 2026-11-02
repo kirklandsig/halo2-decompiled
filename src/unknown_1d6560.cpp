@@ -212,6 +212,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `(byte *)` arithmetic either way round or from a copied index 38
 // (same code); index modified in place 96; byte-shift spellings of the case 0 flag 38 (same code), the mask 57; inline
 // getters for the rigid body and the type 126 (224 B, caller lost).
+// Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
+// with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
+// forms lose the matched caller; original observations, body and convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -318,7 +321,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// score 146 (was 146): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
 // neighbor/key homes and remaining cold-block placement differ.
 // Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
@@ -475,6 +478,8 @@ struct s_physics_component_walk : s_havok_component
 // Round 118 (fast): the object index in a local for the first section query 179 (930 B), in both section loops 179;
 // the next group overwritten by `if` then widened 151; a key_b local 153; a const alias of the component for the
 // section queries 146 (same code).
+// Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
+// conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
