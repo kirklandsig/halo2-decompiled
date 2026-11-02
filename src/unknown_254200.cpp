@@ -384,6 +384,12 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // for one view 90 (2256 bytes); the 3rd/4th y written `y - -size` (diagnostic) 64 (2263 bytes, a negation).
 // 0x254490 shows the same reload swap: after a
 // reservation call retail reloads the live xmm values in the order they were defined, ours in reverse.
+// Round 51 (m3 lane 14, fast): a compile-only build of the file loads y first in all four vertices, as
+// retail does; only our LTCG build copies the size and folds y. Code-neutral probes (1-7 unused locals
+// at the top of the body, before the size local, or before a point pointer local's initialisation)
+// move nothing: 18 each. The size as an if/else 18 (same code); computed before the third pass's
+// memset 525 (2270 bytes) or at the top 563 (2282 bytes); a point pointer local for the last quad 18;
+// a non-const point parameter (definition and the caller's declaration) 18.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

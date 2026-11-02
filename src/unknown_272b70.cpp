@@ -1468,6 +1468,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH293: Actual leave-request type shared by the leave call and load/walk choice,
 // long/dword/int/short/word/byte/char/const-long 90/90/90/82/82/103/103/90.
 // Original body restored; iterator scaling, leave registers and request/slot homes remain.
+// DH296: Complete live sorted-candidate/actor/object receiver subsets 1-7
+// 32/198/198/32/32/198/198; all with byte request outcome 198. Actor re-fetches
+// grow to 898 bytes; original receivers and complete body restored at 846 bytes.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

@@ -2297,6 +2297,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // Round 259: Native body field at every selection use with retained/at-use count, entry/at-use
 // tag and local/entry-zero query output 67/82/74/85/77/91/83/94. All restored;
 // extra EBP, native validation and flag-store schedule remain.
+// DH295: Complete per-use component getters with retained/at-use settling count, promoted/native
+// main-body result and entry/at-use tag: 74/99/74/89/86/103/87/101. All restored;
+// extra EBP, native body transport and flag scheduling remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4807,6 +4810,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // Round 259: Direct animation-result initialization after the names store, complete shared orientation
 // setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
 // all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
+// P271: Complete orientation memcpy at biped-forward/output-forward/up, subsets
+// 1/2/3/4/5/6/7, then complete memmove: 655/655/655/655/655/655/655/628.
+// Complete memmove 621 plain at 2264/2190 bytes NOT kept: it adds three out-of-line CRT copy
+// calls retail does not make (a score-picked copy form). Struct assignments restored at 648.
 // M311: Actual animation-result/tag/state lexical-home subsets 1-7, all with late uninitialized motion:
 // 655/655/655/655/655/655/655/655 (fast control 655); restored.
 // M313: Uniform motion flags/placement mode/entry animation output subsets, all plus entry matrix declaration; restored;

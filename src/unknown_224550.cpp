@@ -299,6 +299,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at every interpolation site 280/232/245; with branch-produced primary aspects
 // 279/262/239; complete stages with secondary-first reciprocals, original/branch
 // primary 239/245. Next-term stages kept at plain 232; other bodies restored.
+// Round 367: Conditional sequence result with branch-owned UV defaults, pivot default/result, native secondary
+// default copy and reused frame-count subsets: 429/420/436/416/407/426/446/438. These lose
+// the recovered frame; original complete callback and all alias-safe UV input captures restored.
 // AC477: Complete byte/signed-byte/short/word flip domain through producer, reused selector
 // and all UV encoders, original then zero-first result: 247/247/253/259/403/403/411/416.
 // Original selector domains, UV input captures and body restored; tint/second-UV homes remain.

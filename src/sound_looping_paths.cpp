@@ -670,6 +670,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 331: Request sentinel production before the query at request/position/update/query phases, long
 // then short initializer, 265/242/252/211/265/242/252/211. Original production phase, query scope,
 // ordinal and entire body restored; BSP/count homes remain.
+// Round 479: Coordinated portal-angle register-parameter orders RLBP/BRLP/LRBP/RBLP/LBRP/BLRP/RLPB/LRPB
+// (R reverse, L listener, B BSP, P portal), fixed point/radius/output tail: 156/150/156/150/156/150/156/156.
+// Original provider signature, declaration, call and complete caller restored; BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

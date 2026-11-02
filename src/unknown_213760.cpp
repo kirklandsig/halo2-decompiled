@@ -1451,6 +1451,7 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // from the compare 114; `sizeof(empty_header)` 114; `written = bytes_written == 0x800` 107 (930 bytes, sete join), with
 // a redundant `if (written)` around a second assignment 107. No zero store, current graph, re-measured 157 (masked
 // stack offsets 20). Next: a form that takes one scratch step after the write and one before the checksum, no code.
+// Round 87: reversed size/write-count/close/open comparisons 33 each; header-read else-if 103 (932 bytes); plus write-result assignment 111; success under its own test 7 (exact-only); an explicit by-value write-handle temporary on that graph 114 (917 bytes). Original body restored.
 // @retail 0x213970
 void function_213970(void)
 {

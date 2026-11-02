@@ -545,6 +545,9 @@ extern point2f *g_468778;
 // ESI/EDI/EBP, retail in EDI/EBP/ESI, and that rotation dominates the positional score. Restored.
 // Round 304: primary/secondary displacement production in all six uniform coordinate orders,
 // then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
+// Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
+// primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
+// early actor/settings/prop carriers and prediction homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
