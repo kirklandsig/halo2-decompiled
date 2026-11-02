@@ -1792,6 +1792,11 @@ real game_time_get_seconds();
 // Round 369: native external definition/entry/const receiver subsets 1/2/4/3/5/6/7,
 // 507 each; complete native graph with member vertex API 512 at retail length.
 // Original receivers, API and whole body restored; frame/output homes remain.
+// F334: Existing clamp helper initialized-result/early-return/parameter-clamp/completed-
+// branch-result graphs: 567/507/581/567; with the member vertex API 492/512/533/494.
+// Initialized result plus member API 492 (2285/2285 bytes) NOT kept: the clamp graph alone
+// regresses (567) and the gain needs the member vertex call beside this body's C-style
+// D3DDevice_ calls, a combination picked by score. Body restored at 507; frame and output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2801,6 +2806,11 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Round 369: actual state-scalar/view-and-offset/three-component cursor subsets
 // 1/2/4/3/5/6/7 give 533/523/525/536/536/530/526; all with repeated native
 // flags 557 (frame 0x5c). Original indexed graph and whole body restored; frame and velocity reads remain.
+// F334: Existing random bounded-result initialized/early-return/local-clamp/completed
+// graphs: 502/517/517/517; with coherent per-use rate 500/524/500/524.
+// Local next-value clamp with the rate read at all three uses 500 (2052/2035 bytes, frame 0x64)
+// NOT kept: retail loads the rate once (fld [eax+0xa8] at 0x375a1, held across the three steps)
+// and the clamp alone ties 517. Body restored at 517; frame and velocity/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

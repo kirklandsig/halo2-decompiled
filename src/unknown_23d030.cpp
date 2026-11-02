@@ -360,6 +360,9 @@ extern byte g_51ec11;
 // side block shape (divss before lahf, side.k moved to XMM4) with every register renamed, but its products put side
 // first where retail's (and this body's) rows load forward first. The up rows computed into up_k/up_j/up_i before
 // the stores, stored k,j,i / i,j,k: 94 (1328 bytes) / 274, with normalize3d 259/258.
+// F332: Consumed roll cosine/sine coefficient reused for inverse scale, phase/entry
+// storage and consistent matrix-scale observation, 319/322/319/322 in both cases.
+// Original scalar lifetimes and full body restored; zero/side/up allocation remains.
 // N320: Shared direction-helper pitch/yaw observations and scalar/native vector publication regress
 // the target and the matched second user. Original helper restored; zero, normalization and up/roll
 // allocation remain. Scores 291/128/280/304/101/307/295/345.
