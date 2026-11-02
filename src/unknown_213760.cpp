@@ -1419,10 +1419,38 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
 // All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
 // native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
+// DL229: task-specific plain completion destinations for query/resize/write subsets, then close,
+// 58/58/50/58/50/50/105/94. Original common completion, separate counts and all I/O restored;
+// query/count homes and write/header joins remain.
+// Round 306: Function-owned query-size/write-count/completion declarations in seven subsets, then all
+// plus resize output: 33 each. Original iteration/block ownership, failure-only initialization, waits
+// and complete body restored. Frame 0x1144 and open prefix agree; swapped output homes and
+// write/checksum/validation joins remain.
 // DH271: Query/write-count/resize-result lexical identities, all seven subsets, then joint uninitialized
 // iteration-owned declarations, 33 each. The failure-only count-initialization graph keeps the same code
 // despite every new output-home identity. Original names, scopes, result producers, waits and native
 // handle/options tuples restored; query/count homes, write setup and checksum/header joins remain.
+// Round 513: Native path/write-header/read-header construction, seven subsets on the
+// failure-only count graph, 33 each; all three with early header construction 264.
+// Original objects, construction sites, scalar output lifetimes and full body restored.
+// Round 313: Query output initialized to zero/expected size, crossed with false resize output
+// and pre-write count initialization: 41/54/219/214/95/110/213/188. Original outputs and failure-only
+// count initialization restored; query/count homes and write/checksum/validation joins remain.
+// DH283: Joint four-byte query-size/write-count/expected-size lexical priorities abc/acb/bac/bca/cab/cba
+// 33 each; expected-size declaration at iteration entry 33; with complete path/header identities 33.
+// Original storage names, declaration scopes, waits, helper calls and complete body restored.
+// N306: Finite native validity-slot/current-result/pending-cleanup domains, seven subsets, then
+// all with readonly expected size: 272/134/287/102/274/195/289/289. Original objects and body restored;
+// query/count homes and write/checksum/header-validation joins remain.
+// Round 56 (lane 11, fast): round 53's three match-only forms rebuilt at 7 (aligned 6) and the write-local form at 114
+// (917 bytes, aligned 6). Diagnostics on them (all reverted): an extra dword load and global store after the write's
+// wait, on the write-local form, 109 at 930 bytes brings the close's `mov ecx, eax` copy back, so that copy is the
+// scratch rotation landing on ECX, not a coalescing rule, and only the probe's two lines and the checksum's EDX are left;
+// the same probe in the resized block on the 7 form 140 (933 bytes; handle ECX, flags still EAX); before the close test
+// 169 (946 bytes, frame moves). On the write-local form: the count through a local 114; reversed compare 114; a bool
+// from the compare 114; `sizeof(empty_header)` 114; `written = bytes_written == 0x800` 107 (930 bytes, sete join), with
+// a redundant `if (written)` around a second assignment 107. No zero store, current graph, re-measured 157 (masked
+// stack offsets 20). Next: a form that takes one scratch step after the write and one before the checksum, no code.
 // @retail 0x213970
 void function_213970(void)
 {

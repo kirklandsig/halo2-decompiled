@@ -958,6 +958,28 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 451: Complete classification-distance/clipped-distance/negative-reciprocal expression
 // nodes, subsets 1..7 and complete nodes with reciprocal first: 249/115/249/115/249/115/249/249. Original expression boundaries
 // and complete body restored; coefficient preload, XMM zero and projection homes remain.
+// Round 456: Near-normal/far-normal/input-point memmove transfers, subsets 1..7
+// 458/469/346/401/422/457/475; all plus complete intersection publication 470.
+// Original transfers, arithmetic trees, helpers and full body restored; coefficient preload and projection homes remain.
+// Round 72 (lane 16, fast; a compile-only listing reproduces the clip block). Aligned counts matter here: forms that
+// raised the positional score moved closer. dot3f denominator on plane3f locals 224 (first plane block then retail's
+// order, xmm4/xmm5 swapped); plus intersection `delta.i * t + p0->x` 226, p1 declared before p0 224, total declared
+// first 224, out pointer with a named input point 222. Then, on that form: no delta vector, the clip written from
+// `(p1->y - p0->y)` expressions with only delta_i named, denominator staged j, k, i: 21, with named scaled_x/y/z rows and
+// `out++` at the loop tail 19 (al 22). Same with i, k, j as one expression 31, tail 29; delta_j named, staged i, k, j
+// 36 (denominator shape retail's, intersection roles swapped); separate delta_i for the intersection only 53; no named
+// part 241/242 (1835 bytes, near/zero swap back); all named 245; each subset of two named 39+. What the 19 form still
+// differs in: classification first-row j term, denominator i and j roles, distance j term, total's register at the
+// projection entry. Not kept: a part named in only some rows and a one-use input pointer need a byte match. Other
+// forms on the dot3f base: dot3f swapped 224; scalars 245 (1830); pointer to the normal 226; near clamp forms 222-260;
+// negation orders and pointers 230-254; classification operand orders 222 (same code); 60 random combinations of
+// term, helper and negation forms 152-275. Permuter on the 19 form: 19 on the full image too, 73 tries, nothing better.
+// Original body restored.
+// Round 471: Selected normal/offset/origin observations, masks 1-7,
+// 515/386/494/515/584/511/565; complete selected-plane value 490. All restored.
+// P261: symmetric near/far coefficient captures, all six native component declaration
+// orders 269 each; joint row lifetime and immutable inputs 269/269 (1867 bytes).
+// All exact-only snapshots restored; coefficient preload, zero roles and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

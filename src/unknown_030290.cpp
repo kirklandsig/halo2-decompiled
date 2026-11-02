@@ -377,6 +377,23 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scale, 283/251/282/251; with all parallel row products 272/257/272/257.
 // All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
 // caller bindings and full body restored. Frame and second-transform spill remain.
+// Round 503: Existing row dots, coefficient/input operand order, immediate/eager
+// coefficient rows and immediate/complete result publication 263/263/447/447/447/447/256/256.
+// All native-coordinate forms are nonexact and restored; original alias-safe helper,
+// snapshots, expressions and calls remain. Frame and second-transform spill remain.
+// Round 505: Complete branch-owned return predicate, long/bool, entry/after-factor declaration,
+// predicate after/before output stores: 203/235/203/235/210/245/210/245.
+// All regress; original early returns, alias-safe helper and frame defaults restored.
+// Round 507: Direct translated-row publication xzy/yxz/yzx/zxy/zyx 216/213/227/220/230;
+// complete parallel product publication xzy/yzx/zyx 214/225/227. Product forms recover
+// frame 0x2c but not inverse homes; original alias-safe helper and body restored.
+// Round 60 (m3 lane 1, fast): transform helper with the scale branch reading the point's fields and the else branch
+// copying them (no shared snapshot) 285 (893 bytes); with the displaced point's y first 298 (884); with each row
+// summed right, forward, up 285 (893); the displaced point's y first alone 218; rows summed right, forward, up alone
+// 195 (same code). Retail passes out in EBX and d in ESI (camera ECX, a EDX; scale, perspective, negate on the stack).
+// Round 513: Complete native transform input/output library transfers, input memcpy/memmove,
+// output memcpy/memmove, then both APIs in all four pairs: 248/294/334/295/690/685/687/692.
+// Input memcpy recovers frame 0x2c but regresses; original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

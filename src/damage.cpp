@@ -261,7 +261,15 @@ struct s_object_region_state
 	word destroyed_permutations;
 	byte unknown02;
 	byte unknown03;
-	word pending;
+	union
+	{
+		word pending;
+		struct
+		{
+			word pending_permutation : 3;
+			word pending_ticks : 13;
+		};
+	};
 	short damage_level_ticks;
 };
 
@@ -341,7 +349,8 @@ struct s_damage_definition
 	dword flags0c;
 	byte unknown10[4];
 	dword flags14;
-	byte unknown18[0x28 - 0x18];
+	real ray_spread;
+	byte unknown1c[0x28 - 0x1c];
 	real cone_inner_angle;
 	real cone_outer_angle;
 	byte unknown30[0x44 - 0x30];
@@ -522,6 +531,11 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // M272: complete long/short/both sentinel chains 9/14/18 fast; adjacent byte clear alone/with long
 // chain 18/18 fast (unchanged reduced preview 5 versus full 3). Short chain plus byte clear: Wine hang;
 // remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
+// R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
+// mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
+// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
+// payload memset 36/36; individual long/short sentinel memsets 3/3;
+// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {
@@ -675,6 +689,18 @@ void function_d6a70(long object_index)
 // 160/174; with full-width last-child result 168/195; both storage changes 167/181.
 // On the recovered pool frame, cached first store 164; fresh first test/cached store 165;
 // fresh parent test 175; both fresh tests 173. Original frame 0x4c versus 0x50 and reload/store homes remain; all restored.
+// Round 44 (lane 15, fast): the reload across 0xb8b70 is not the link-time pass: matched 0x10cd50 keeps g_4e0300 in a
+// register across the same call, and a local pool copy here folds into reloads, so retail's EBP pool is an allocation
+// choice. Retail keeps the index in memory (ESI only up to the call), the object in memory and the owner in EBP.
+// Forms: first flag store through `object`, second lookup named 184 (606 bytes); with a local pool pointer 184; with a
+// plain read of the index parameter's address 184; flag test through a fresh lookup and store through `object`
+// (retail's byte test and byte `or`) with the parent index named (three uses) 183 (598, index in ESI, object in EBP);
+// a second pointer for the flag test and store 184; the notify lookup as an inline helper 183. Diagnostics with a
+// volatile read of the index parameter at the 0xdae60 call, reverted at once: first store cached 162; fresh test,
+// cached store 183 (598); object declared after the test 183; both flag accesses fresh with the second lookup named
+// 166 (617, aligned 53 and masked 14 against 87 and 23: object in memory and owner in EBP as retail, but owner loaded
+// in the prologue and no pool register); that with a named owner copy 166 (the copy coalesces), inline notify 166;
+// original lookups 203 (633); fresh test only 190 (590); second pointer 162.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -778,30 +804,6 @@ void __stdcall function_d6bc0(long object_index)
 }
 
 /* whether a damage event can affect an object */
-// score 15 (was 26): `result` must be a variable that is set true in one branch, or it is folded away and the
-// parameters move to registers (data on the stack, in ebp, is retail's). With the flag-8 test swapped (team call in
-// the then arm, `result = true` in the else) the layout is retail's except one `mov bl, 1` block before the false
-// epilogue: retail sends that path to the shared `mov al, 1` epilogue too (219 against 217 bytes).
-// Earlier: what still differs is layout: retail
-// shares one `mov al, 1` epilogue between the type test, the flags & 8 test and the team test, we emit one inline
-// before the team call and reach the other through `mov bl, 1`. Tried: all `return true` (convention reverts, 85),
-// `result = true` at every site (35, `mov bl, 1` tail), `return player_index != NONE` without the bool local (50).
-// Round 39 (lane 13, --fast): `if (!(flags & 8) || team) result = true` 33, with `return true` 88 (folds), `result =
-// !(flags & 8) || team` 63; nested flag-8 test with `result = true` / else `return true` 29 (217 bytes); unit branch
-// assigning result without returning, with the original / `||` return / nested return / nested result team 51/62/62/53;
-// unit `result = ...; return result;` 26, with `||` or nested return 88/88; type test `result = true` in an else-if chain
-// with `||` / nested result 35/35, two-arm else-if 33, `result = team` 74/74; type test inverted with `||` result /
-// nested result 35/35, with `||` return 15, `result = true` first with `||` return 38, one combined condition 35. On 15
-// (kept): `result = true; return result;` 88, type-test else `return true` with the team result forms 28/29/29,
-// result declared first / second 83/83.
-// Round 473: success paths type/flags/team as set/return/return 51, return/set/return 51, set/set/return
-// 36, set/return/set 26, return/set/set 33; first result on set/return/return 72; dword on
-// return/set/return 57; int on set/set/return 63. Player comparison owns result, direct/complete later
-// predicate and current/entry lifetime: four comparison forms 88, four conditional forms 91. Original body
-// restored; shared true epilogue and stack parameter convention remain coupled.
-// Round 339: True-default result with failure-owned gates, player early-return/assignment and
-// direct/conditional team result 80/73/88/71; entry result 78/96/88/92.
-// Original false-default body restored; shared true exit and parameter homes remain coupled.
 // @retail 0xd72e0
 bool function_d72e0(long object_index, s_type_1e6529 const *data)
 {
@@ -819,26 +821,21 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 			if (unit)
 				player_index = unit->player_index;
-			bool is_player = player_index != NONE;
-
-			return is_player;
+			result = player_index != NONE;
 		}
-
-		dword flags = definition->flags14;
-
-		if (!((flags & 1) && object_index == data->owner.object_index))
+		else
 		{
-			if (!((1 << object->type) & 3))
-				return true;
-			if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
+			dword flags = definition->flags14;
+
+			if (!((flags & 1) && object_index == data->owner.object_index))
 			{
-				if (flags & 8)
-				{
-					if (function_1df560(object->team, data->owner.team))
-						return true;
-				}
-				else
+				if (!((1 << object->type) & 3))
 					result = true;
+				else if (!((flags & 0x8000) && g_4e6948->state == 1 && object->player_index != NONE))
+				{
+					if (!(flags & 8) || function_1df560(object->team, data->owner.team))
+						result = true;
+				}
 			}
 		}
 	}
@@ -1572,7 +1569,8 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 /* destroys a damage region: picks the permutations whose chance and body
    threshold allow it, and destroys each now or schedules it after its
    delay */
-// score 87 (was 96): accumulator/flag register homes and both unmatched callee conventions remain.
+// score 82 (was 96): the body's instructions agree except the call setup of the two unmatched callees (0xda110 takes
+// its index in EAX, 0xd9d60 its flag in AL); both are back-edge targets of the link-time walk. BLOCKED-BY 0xd9d60.
 // Earlier at 96: what was left was register choice and the two unmatched callees' conventions. Retail keeps the
 // accumulator pointer in ecx (reusing it for the 0xda110 call's last argument) and the exclusive-flag value in eax, ours
 // the reverse; the permutation pointer is loaded as `edi = permutations; movss [edi + eax + 8]; add edi, eax` where ours
@@ -1588,6 +1586,13 @@ real function_d9020(long object_index, byte const *resistance, byte const *sourc
 // Round 268: permutation bound before first field test 87 (kept); pending word 96; both 87;
 // canonical exclusive bool 104; permutation/exclusive 96; pending/exclusive 104; all 96;
 // all with permutation before destroyed-bit admission 174. Plain whole-image check confirms 87.
+// Round 28 (lane 17, plain): `inline` on 0xd9d60 / on 0xda110 82/82; their declarations swapped 83 (0xda110 1868
+// bytes, 528; 0xdaaa0 151). Declaration order moves the walk (callees follow the TU's declaration order). 0xd6a70
+// before 0xc98a0 in the unit file: 57 (0xd9d60 8, 0xda110 1868 bytes), but 0xd6bc0, 0x11a320, 0x1039a0, 0xd9640,
+// 0xee910 lost and 0x176780 inlined into 0xd8cb0; 0xd6800 as __stdcall recovers only 0xd6bc0. 0xbd020 first there
+// and 0x146bf0 first in the 0xb8ca0 file: 57 with 27 lost. 0xd6800 first with __stdcall: 82, none lost, 0xca0b0 rises.
+// Round 44 (lane 15, fast): the pending field's bitfield form (see 0xdaaa0) here gives identical code, 82; with
+// 0xda110's 0xd9d60 call removed (diagnostic, reverted) 67 at 550 bytes.
 // @retail 0xdae60
 void __stdcall function_dae60(s_damage_info *info, long object_index, s_damage_owner const *owner, long region_index,
 	s_damage_region_accumulator *accumulator)
@@ -1791,22 +1796,30 @@ void function_d9110(long object_index, s_damage_effect_definition const *definit
 /* damages a region: raises its damage level by the damage over the span to
    its next permutation's threshold, and when the level fills, destroys the
    permutations at that threshold */
+// score 100 (was 110): the pending field is a real bitfield, 3 bits of permutation and 13 of ticks, which gives
+// retail's byte xor and `or` forms in the delay block. Left: the setup of the 0xda110 and 0xd9d60 calls (their
+// conventions, BLOCKED-BY 0xd9d60's walk, see 0xdae60; one instruction more at each call, so every later line is off)
+// and an eax/ecx/edx rotation in the delay block and the destroyed-flag store. Round 44 (lane 15, fast): `i !=
+// state->pending_permutation` 101; the effect index named (two uses) 100; the pending permutation named before the
+// ticks test 116 (966 bytes), named inside a nested ticks test 100; the delay rounding through a forceinline helper
+// 100. Diagnostic, reverted: 0xda110's 0xd9d60 call removed, so 0xd9d60 takes its register convention (8): this
+// function 80 (959 bytes), the rotation stays.
 // MiniMax C (11-01): the first permutation loop indexes the permutation array instead of walking it with a pointer, so
 // the permutation count is read before the array as retail does.
 // MiniMax C (11-01): the pending xor narrowed to a byte reproduces retail's byte form and measures 111, seven points and
 // under the keep bar for a function still above 30, so it was reverted.
-// score 118 (was 134): the first permutation loop indexes the permutation array instead of walking it with a pointer,
+// Earlier 118 (was 134): the first permutation loop indexes the permutation array instead of walking it with a pointer,
 // which reads the permutation count before the array as retail does and leaves the region pointer in edx. Left: retail
 // tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, the random global is in edx in
 // retail and ecx here, the pending index is used through ax in retail and cx here, and the calls to 0xda110 and 0xd9d60
 // take their arguments in another shape (the conventions of those two unmatched callees, see 0xdae60).
-// score 134 (was 229): the exclusive test is written as two mask conditions and the blocked flag is stored before the
+// Earlier 134 (was 229): the exclusive test is written as two mask conditions and the blocked flag is stored before the
 // threshold check, which puts `destroy` in bl and the permutation index in memory as retail does. Left: retail keeps
 // the region pointer in edx and ours in edi, retail applies `and eax, 0xffff` before the prologue's pushes and ours
 // after, retail tests the accumulator's exclusive flag with `test dh, 4` and ours with `test ch, 4`, and the pending
 // index and the random global land in different registers. The conventions of 0xd9d60 and 0xda110 are unmatched
 // callees' (see 0xdae60).
-// score 229 (was 265): register and stack-slot assignment only. Retail keeps `destroy` in bl and the permutation index
+// Earlier 229 (was 265): register and stack-slot assignment only. Retail keeps `destroy` in bl and the permutation index
 // in memory, ours the reverse; the damage-level delay is read through a region pointer reloaded from the stack right at
 // the use in retail, ours reloads it into edi early on each path; retail tests the exclusive flag with `test eax, mask`
 // on each side of the `?:`, ours materializes `and eax, mask`. The state-count check is unsigned (`shr ecx, 3`, signed
@@ -1938,10 +1951,10 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 				{
 					if (permutation->delay > 0.0f)
 					{
-						if ((state->pending & 0xfff8) && (state->pending & 7) != i)
-							function_da110(state->pending & 7, info, object_index, owner, region_index, accumulator);
+						if (state->pending_ticks && state->pending_permutation != i)
+							function_da110(state->pending_permutation, info, object_index, owner, region_index, accumulator);
 
-						state->pending ^= (state->pending ^ i) & 7;
+						state->pending_permutation = i;
 
 						real seconds = g_510c54->field_2_3 * permutation->delay;
 						long ticks;
@@ -1951,7 +1964,7 @@ void function_daaa0(s_damage_info *info, long object_index, s_damage_owner const
 							fld seconds
 							fistp ticks
 						}
-						state->pending = (word)((state->pending & 7) | (ticks << 3));
+						state->pending_ticks = ticks;
 
 						if (permutation->effect_index != NONE)
 						{
@@ -2023,6 +2036,18 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // Round 339: Entry declaration swap 41; default-owned reciprocal 196; separate lower region gate 5,
 // separate effect gate 5, coordinated info/object/ordinal/scale names 5; declarations/default 215;
 // both gates/names 5; all forms 215. Original body restored; scheduling remains.
+// Round 28 (lane 17, fast): the guard as an inline taking (info, entry) 227 (870 bytes; retail's `mov eax, [edi]` above
+// the je and [eax + ecx + 4], but definition in EAX, info in EBP, the object spilled), a result-style inline 204 (877),
+// an entry local before the guard 227; each with `(void)&definition` 227/204/227. Definition read once through its
+// address, at the call / category / flag 224 each (back on the stack, info still in EBP), on the original guard 5.
+// Object before info 227, 224 with that read; entry declared at the top 227, 224; flags through the field 228, 223.
+// The first 0xdb090 argument through the field: entry local 26 (871, aligned 3), inline 25 (871, aligned 2: only
+// `mov ecx, [edi + 4]` against `mov ecx, ebx`, and the lea), with the address read 25, result-style 206. On the entry
+// form, the object field for the re-lookup 196, count through the field 186, test through the field 202. With info as
+// the argument: `-=` written out 227, inline parameters swapped 227, nested flag test 227, result in a named bool 227.
+// A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
+// tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
+// The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -3648,35 +3673,18 @@ PRIVATE inline void cross3f(vector3f const *a, vector3f const *b, vector3f *out)
 	out->k = a->i * b->j - a->j * b->i;
 }
 
-PRIVATE inline void scale3f(vector3f const *v, real scale, vector3f *out)
+PRIVATE inline bool collision_test_points(long flags, point3f const *start, point3f const *end,
+	long ignore_object_index, long ignore_unit_index, s_collision_result_1697c0 *result)
 {
-	out->i = scale * v->i;
-	out->j = v->j * scale;
-	out->k = v->k * scale;
+	vector3f vector;
+
+	vector3d_from_points3d(start, end, &vector);
+	return function_1697c0(flags, start, &vector, ignore_object_index, ignore_unit_index, result);
 }
 
 /* whether the structure blocks damage from the damage's origin to a point
    on an object; around units, four rays offset sideways by the
    definition's spread must all be blocked */
-// score 151 (was 153): the collision result record is 0x5c bytes, the buffer the provider fills (frame 0xa0 as retail).
-// MiniMax C (11-01): not kept (one-use locals without a match): the spread read into a local in each ray case 101,
-// plus the second root walk in a local before the point difference 61 (the caller 0xd74e0 then 297 -> 308); the
-// spread in one local at the function's top 164, before the switch 215. At 61, left: retail keeps the definition
-// pointer in edi and the point in esi, its cross product loads side.k and offset.k first, and its case 2 scales as
-// `scale * up.i`; the permuter reached 59 (push esi against push edi).
-// score 151 (was 266): the root walk is written out inline in the ray loop (damage_object_root,
-// 0xbaf80 stays a call in the else branch; 164), and the loop sets result and breaks instead of returning from
-// inside (153; the failing call's epilogue is then shared with the else branch as in retail). Left: retail's
-// cases 2 and 3 share the code from `movaps xmm1,xmm0 / mulss xmm1,[up.i]` while ours scales case 2 as
-// `movss xmm1,[up.i] / mulss xmm1,xmm0`; the cross product loads side.j/offset.k in a different order; and
-// retail computes `remaining` after the second root walk (ours before). Tried: the second root in a named local
-// before `remaining` (165, and the convention changes to object_index in edi / point in ebx), the same for the
-// else branch's 0xbaf80 result (211, same convention change), `v->i * scale` in scale3f (153), the cross
-// product's first line with its products swapped (153).
-// Round 478: real collision extent 0x5c alone/shared cross/staged cross/scale return/staged return
-// 151/151/151/151/151; native scale input 370; complete scale products with shared/staged cross 151/151.
-// Point-difference output return at second/else/both sites with full extent 163/151/163;
-// both at original extent 165. Frame 0x90 versus 0xa0 and scale/root scheduling remain; all restored.
 // @retail 0xd6f90
 bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const *data)
 {
@@ -3684,11 +3692,14 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 	s_damage_object *object = DAMAGE_OBJECT(object_index);
 	s_collision_result_1697c0 collision;
 
-	if (((1 << object->type) & 3) && *(real *)((byte *)definition + 0x18) > 0.0001f)
+	if (((1 << object->type) & 3) && definition->ray_spread > 0.0001f)
 	{
 		vector3f offset;
 		vector3f side;
 		vector3f up;
+		real side_scale;
+		real up_i;
+		real up_scale;
 		bool result;
 
 		vector3d_from_points3d(&data->origin, point, &offset);
@@ -3702,16 +3713,30 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 			switch (i)
 			{
 			case 0:
-				scale3f(&side, *(real *)((byte *)definition + 0x18), &offset);
+				side_scale = definition->ray_spread;
+				offset.i = side.i * side_scale;
+				offset.j = side.j * side_scale;
+				offset.k = side.k * side_scale;
 				break;
 			case 1:
-				scale3f(&side, -*(real *)((byte *)definition + 0x18), &offset);
+				side_scale = -definition->ray_spread;
+				offset.i = side.i * side_scale;
+				offset.j = side.j * side_scale;
+				offset.k = side.k * side_scale;
 				break;
 			case 2:
-				scale3f(&up, *(real *)((byte *)definition + 0x18), &offset);
+				up_i = up.i;
+				up_scale = definition->ray_spread;
+				offset.i = up_i * up_scale;
+				offset.j = up.j * up_scale;
+				offset.k = up.k * up_scale;
 				break;
 			case 3:
-				scale3f(&up, -*(real *)((byte *)definition + 0x18), &offset);
+				up_i = up.i;
+				up_scale = -definition->ray_spread;
+				offset.i = up_i * up_scale;
+				offset.j = up.j * up_scale;
+				offset.k = up.k * up_scale;
 				break;
 			}
 
@@ -3719,10 +3744,8 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 				&collision);
 
 			point3f start = collision.point;
-			vector3f remaining;
 
-			vector3d_from_points3d(&start, point, &remaining);
-			result = function_1697c0(0x14a08c2d, &start, &remaining, damage_object_root(object_index),
+			result = collision_test_points(0x14a08c2d, &start, point, damage_object_root(object_index),
 				data->unknown18, &collision);
 			if (!result)
 				break;
@@ -3731,11 +3754,8 @@ bool function_d6f90(long object_index, point3f const *point, s_type_1e6529 const
 	}
 	else
 	{
-		vector3f vector;
-
 		collision.unknown24 = NONE;
-		vector3d_from_points3d(&data->origin, point, &vector);
-		return function_1697c0(0x14a08c2d, &data->origin, &vector, function_baf80(object_index), data->unknown18,
+		return collision_test_points(0x14a08c2d, &data->origin, point, function_baf80(object_index), data->unknown18,
 			&collision);
 	}
 }

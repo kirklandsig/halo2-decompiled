@@ -771,6 +771,10 @@ bool function_1f8660(long arg_0);
 // arg_1->unknownc in place/declared first 7/7; that view plus one position pointer 7; inverted tag test 188;
 // renames 7. Extra buffer releases before the first call or three after it give retail's homes but other
 // code (156-206); fresh actor lookups at the 270/26c/position reads keep the homes (140-235).
+// Round 49 (lane 14, fast): the failure store writing `false` directly 7; the slot flag named before the
+// prop test 7; the unit index declared then assigned 7; the reference compared against the global without
+// the copy 7; the side dot product scaled in its own statement's expression 7. Re-measured: the reference
+// test reversed (`!=` first, failure in the else) 137 (970 bytes).
 // @retail 0x1ad6a0
 bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 {
@@ -945,6 +949,9 @@ struct s_1ac612
 // existing vector3d_from_points3d 29; best index/value declared before the query and assigned after it 29,
 // the index declared at entry 29. Diagnostic: actor_get as offset-first sum or array element 29/29
 // (header restored), so the EBP/EDI swap is not the accessor's spelling.
+// Round 80: entry actor reused for cleanup 79 (955 bytes); direct actor lookups 248 (968); squared-length
+// helper 137; marker-matrix pointer 29; direct marker indexing 100 (969); distance declaration before
+// the query 29; candidate/marker postincrement 29/29. Restored.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)

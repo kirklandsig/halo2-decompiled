@@ -227,6 +227,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 	}
 }
 
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
+// test and leaves the table global in EDX, reloading its data and recomputing the index for the
+// object; ours keeps the validity result in EBP and shares one header address between the flag test
+// and the object lookup, so the index arithmetic stays common.
 // score 49 (was 49): retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
@@ -524,6 +529,14 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // local before the header test 77; an object pointer named in the unflagged arm 77; the NONE and flag tests as
 // breaks out of a `do ... while (false)` 75; the store and attach through the existing 0xbb780 with the update
 // through the existing v23 70 (176 bytes, v23's NONE test stays); that on the long result 57 (181 bytes).
+// Round 154 (lane 4, one-link harness, exact at 49), all on the early bool result: dword-cast index for the flag test, byte
+// arithmetic for the flag read or the object read 77 each; object read through entity->object_index with or without the macro
+// 77/77; `(word)object_index` for the object read / flag test / both forms 71/72/72 (176 bytes, index recomputed as movzx, retail
+// `and`); inline or forceinline lookup helper with its own pool pointer, index local or header local 77 each; one or two named
+// pool pointers for the two reads 77-78; dword-bitfield view of the index for the flag / object / both 77 each.
+// Round 462: multiply-used native absolute index with accepted-handle result at creation,
+// attachment, notification or accepted-branch entry: long/dword each 74/68/68/51.
+// Original validity result and independent source observations restored; BL/EBP and CSE remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
@@ -845,6 +858,16 @@ bool c_projectile_type::v8(long a, long b)
 // each use 12 (also with b direct 12); the group value through an inline value getter, read twice,
 // 14 (b direct 14); a `real const &` for the two power reads 12 (b direct 12); permuter (600 s, 53
 // tries) none better.
+// Round 49 (one-link LTCG screen, exact at 5; with the mask 12 unless noted): 1-8 unused locals before the
+// copy, the flags or the call 12 each (no numbering tie); every narrow read (`*(word *)`, `(short)` or
+// `(word)` with or without `& 0xffff`, `(long)(word)`) compiles to movzx (5), every full-width mask to the
+// swap: re-read through a dword or long pointer, `(dword)index`, a 12-byte group struct, a typed state
+// pointer for d (word form 5), dead object loads or copies 12; object looked up again for the index/store
+// 56/55; the base class v27 called inline 51 (as the listed base-class call). Fast: the result bit set
+// before the store (mask) 14; the call's mask from b only (mask) 12; a typed state view for d with the word
+// read 5, with the mask 12; the index's low word read from the object 5; the power value in a local (mask)
+// 17. Re-measured: an index local (mask) 12; the 0x800 and NONE tests combined (mask) 12; a value pointer
+// into the group (mask) 15.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

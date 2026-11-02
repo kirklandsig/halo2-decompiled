@@ -9,7 +9,7 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
     real arg_3, bool *arg_4, s_path_trace_result *arg_5);
 
 #pragma inline_depth(0)
-// score 85 (was 85): frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
+// score 4 (was 85): only the x87 faddp/fsqrt schedule against the first two subss rows remains (retail subss, faddp; ours faddp, subss). Earlier summary: frame 0x3c agrees; the half/reciprocal/negation XMM chain, local_5's carrier, the -1.0 hoist and
 // the final dot's k-before-j product remain (the tail's load/store schedule is retail's since round 67).
 // Earlier (104): half/offset XMM allocation and x87/SSE projection scheduling remain.
 // Earlier (104, was 104): the frame 0x3c still agrees; the half and offset XMM allocation
@@ -148,6 +148,21 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 223: Native two-component perpendicular value with aggregate/field
 // construction, direct/stored projection and i/j publication order, all eight
 // combinations: 175/175/175/175/176/176/176/176. Original body and depth restored.
+// Round 27 (m3 lane 18, fast, plain-confirmed): retail never stores the normalized vector: it goes into a separate `unit` vector
+// (local_2 keeps the raw copy), with named perpendicular and delta vectors: 85 -> 21 (996 bytes); projection grouped (j + k) + i 21 -> 10;
+// final test accumulated j, k, i in a named local 10 -> 4. On 4: in-place normalization with the same vectors 168; perpendicular defined
+// i,k,j or k,i,j 85-176; delta in each order 165-176; field pointers in the half-step loop 4 (seven subsets); half step written out 192
+// (1001 bytes; retail's subss-before-faddp schedule, but the flag store moves down and registers change); literal array spellings 192 (16 forms);
+// flag store after the loop 18 (exact x87/SSE schedule, only the flag store out of place); flag store first 4; two loops 4/4, loop then written
+// out 191, step loop 200, body in-place 195; pointer stepping 4 (three forms); accumulated sum in the loop 4; casts in the square sum 5/5/14/14/4/214/266;
+// accumulated squares 4/12/216; double root 5, fabs on the double 5/226, named fabs 4, degenerate bool 4, >= test 176; half-step constant named 4;
+// pointer to the flag 4; `do` loop 238; pointer to the direction source 196. A 600 s permuter run: none below 4.
+// M293: Second-projection displacement component loop: signed/unsigned, use/branch declaration,
+// vector-mediated/direct first projection:
+// 187/187/187/187/187/187/187/187. Original complete executable source restored.
+// Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
+// named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
+// root before the offset loop 181. Original body restored at 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
@@ -160,6 +175,7 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     }
     vector3f local_2 = local_0->unknown37c;
     vector3f local_3;
+    vector3f unit;
     vector3f const *facing = &local_0->unknown290;
     local_0->unknown456 = true;
     for (long component = 0; component < 3; ++component)
@@ -168,29 +184,31 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     if (!((real)fabs((double)local_4) < 0.0001f))
     {
         real local_8 = 1.0f / local_4;
-        local_2.i = local_8 * local_2.i;
-        local_2.j = local_8 * local_2.j;
-        local_2.k = local_2.k * local_8;
+        unit.i = local_8 * local_2.i;
+        unit.j = local_8 * local_2.j;
+        unit.k = local_2.k * local_8;
     }
     else
         local_4 = 0.0f;
     if (local_4 > 1.5f)
     {
-        local_3.i = (local_3.k * local_2.k + local_3.j * local_2.i) + local_3.i * (0.0f - local_2.j);
-        real local_5 = local_3.i;
-        local_3.i = 0.0f - local_2.j;
-        local_3.j = local_2.i;
-        local_3.k = local_2.k;
+        vector3f perpendicular;
+        perpendicular.i = 0.0f - unit.j;
+        perpendicular.j = unit.i;
+        perpendicular.k = unit.k;
+        real local_5 = (local_3.j * perpendicular.j + local_3.k * perpendicular.k) + local_3.i * perpendicular.i;
         if (local_5 > 0.0f)
-            local_2 = local_3;
+            local_2 = perpendicular;
         else
         {
-            local_2.i = local_3.i * -1.0f;
-            local_2.j = local_3.j * -1.0f;
+            local_2.i = perpendicular.i * -1.0f;
+            local_2.j = perpendicular.j * -1.0f;
         }
-        real local_6 = ((local_0->position.z - local_0->unknown370.z) * local_3.k +
-            (local_0->position.y - local_0->unknown370.y) * local_3.j) +
-            (local_0->position.x - local_0->unknown370.x) * local_3.i;
+        vector3f delta;
+        delta.i = local_0->position.x - local_0->unknown370.x;
+        delta.j = local_0->position.y - local_0->unknown370.y;
+        delta.k = local_0->position.z - local_0->unknown370.z;
+        real local_6 = (delta.k * perpendicular.k + delta.j * perpendicular.j) + delta.i * perpendicular.i;
         if (local_6 * local_5 < 0.0f)
             local_6 *= -1.0f;
         local_2.k = 0.0f;
@@ -225,8 +243,10 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     local_0->unknown41c = 4;
     local_0->unknown420 = 4;
     local_0->unknown424.vector = local_2;
-    if ((facing->j * local_2.j + facing->k * local_2.k) +
-        facing->i * local_2.i > 0.8f)
+    real alignment = facing->j * local_2.j;
+    alignment += facing->k * local_2.k;
+    alignment += facing->i * local_2.i;
+    if (alignment > 0.8f)
         function_1e4290(arg_0, true);
 }
 #pragma inline_depth(255)

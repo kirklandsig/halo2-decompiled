@@ -808,15 +808,16 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 	return datum != 0;
 }
 
-// score 43 (was 43): the datum address is still computed in EBX where retail computes it in EDI, and the
+// score 43 (was 43): frame 0x10 agrees; player/unit carrier roles and the root-walk entry differ.
+// Earlier: the datum address is still computed in EBX where retail computes it in EDI, and the
 // walk is still 0xbaf80 called out of line because another lane's file pins it noinline: BLOCKED-BY 0xbaf80.
-// score 43 (was 43): the 44 differing lines are 34 real ones (the rest are the
+// Earlier: the 44 differing lines are 34 real ones (the rest are the
 // unmatched callees and the relocated globals): the datum address is computed in
 // EBX where retail computes it in EDI, and the two are used the other way round.
 // The walk reads the first parent before the loop and keeps the root in a local,
 // retail's inlined 0xbaf80 keeps the entry test and the root in its register:
 // BLOCKED-BY 0xbaf80 (another file), so the swap is not ours to fix.
-// score 43 (was 43): the record pointer is kept in EBX here and in EDI in
+// Earlier: the record pointer is kept in EBX here and in EDI in
 // retail, and the two are used the other way round after the index is masked;
 // the walk differs (retail's starts from the unit with the root preset to NONE and keeps its entry test,
 // the shape of 0xbaf80 inlined; ours is pinned out of line there: BLOCKED-BY 0xbaf80).
@@ -845,6 +846,17 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // the iterator step through the existing data_datum_iterator_next_inlined 44; exits storing the
 // unit local 182; the parent declared before the root 44. Retail inlines 0xbaf80 here (it calls
 // it elsewhere); ours keeps it out of line, pinned in another lane's file: BLOCKED-BY 0xbaf80.
+// Round 254: Private iterator publishes datum pointers (byte/player), entry-null defaults and
+// stored/local result combinations 44/44/149/149/44/44/149/149 (fast control 44; full baseline
+// 43). Original iterator, traversal and body restored; player/unit carriers and root-walk entry
+// remain.
+// Round 59 (m3 lane 10, fast): BLOCKED-BY 0xbaf80 (its pin sits in src/unknown_0bad50.cpp, off limits this
+// round). The call as it stands 124 (400 bytes); the pin removed as a diagnostic 109 (431): it inlines, but the
+// entry test folds away there too, so the pin is not the whole cause; with field reads for the test and the walk
+// 109, walk only 171 (405), test only 109. The walk from the unit with a NONE root: long 109, named object 109,
+// dword unit 171 (405, the test returns but the unit takes EAX and the iterator index leaves the frame), named
+// object 171, short test as well 172. Parent copied ahead of the unit object: while 108, for 108, guarded do-while
+// 108, dword 171; copied right after the unit read 106; parent and unit as two field reads 171 (405).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1079,6 +1091,11 @@ bool function_14ed80(void)
 // player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
 // EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
 // first 9; renaming the globals or first local 8 (names do not steer it).
+// Round 135: no globals local with the player declared first 10 (first takes EDX as retail, the
+// globals EDI, their load after the NONE stores); third first 52; 30 orders x reads through a local
+// or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
+// 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
+// index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1350,6 +1367,20 @@ static inline s_players_globals *players_globals_14f2e0()
 // done;` before a separate mode test 192 (1041 bytes); `!(mode == 4)` 43. Compile-only: the mode read as a
 // masked word or dword, or as an unsigned byte against `(byte)4`, still narrows to the byte compare and mov.
 // 0xb8540 is still an empty stub here (its retail body makes calls).
+// Round 254: Provider-owned representation defaults: caller tag/third/both initializer elision
+// 241/241/251; with complete timer clear 241/241/251; both elisions with native result byte,
+// without/with timer clear 241/241. Original sentinel initializers, bool result, clears and body
+// restored; NONE materialization and timer/flag scheduling remain.
+// Round 59 (m3 lane 10; fast, then compile-only, which also gives the mov): two real causes only, the mov and the
+// tail store order; everything else in the 46 is the 2-byte address shift. The kept-unit flag as long / NONE-based /
+// dword / a second bool 46 each (the flag's test is not the partial write); no flag, a goto past the block 182 (1035
+// bytes, still mov); `long result` 108 (1030); mode test first 270. Diagnostics: two mode tests show `mov al, [edx+0xc]`
+// 255; a dword compare 4 at retail's length (`or`, only the compare and the tail differ); word 44. Compile-only, all
+// `cmp byte` + mov: masked dword/word, byte cast, byte index, `!(==)`, short and long casts, char constant, dword shift,
+// `(== 4) == false`, ternary, inline predicates, empty if with else-if or else, options local, mode local, named bool,
+// outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
+// A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
+// then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -1646,6 +1677,8 @@ struct s_unit_player_assignment
 // at each use 17; both together 17; the outer comparison's operands swapped 18; the remap as one
 // conditional expression 17; the unit pointer declared before the player 17. Matched 0x14f190
 // makes the same 0x1682bf call with our schedule.
+// Round 135: `inline` on 0xb58c0, 0x1872d0, 0x1682bf, 0x13ac42, all four: 17, 17, 17, 17, 17; the
+// existing remap helper directly in the 0x1682bf argument list 17, through a local 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -3052,6 +3085,14 @@ struct s_unit_flags_14d8b0
 // Round 145: one forceinline engine-slot notify helper for both slot blocks 9; root walk as a while
 // loop from NONE 9, as a do/while 9; reset countdown through a short pointer 9; both slot blocks reading
 // the engine globals directly 9 (all the same code: mode pointer EDX, retail ECX).
+// Round 39 (lane 2, fast): an inline `mode != 4` helper at the last test, all four tests, the last two 9/9/9; an inline
+// options-pointer helper at the last test, all four 9/9. Diagnostics (reverted): the two countdowns removed, one, three,
+// swapped 171/153/132/13; the slot block removed 393; the slot written without its local 9; the root walk removed 142;
+// the 0x1521d0 call removed 132; the flag store after the slot block 16; the first mode test removed 163; a named options
+// pointer at the second test, the first, the join 9/9/9; a byte mode local 9. Deleting any statement (compile-only: every
+// statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
+// One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
+// scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {

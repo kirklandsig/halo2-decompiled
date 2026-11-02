@@ -703,6 +703,27 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
 // products, sample qualifier and complete body restored; constant/limit ownership and jitter
 // spills remain.
+// DL235: Complete conditional factor expression, crossed with direct definition observations,
+// reused speed factor and ordinary sampling: 213/245/213/245/241/273/241/273.
+// All restored; constant/limit XMM ownership and jitter spills remain.
+// Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 104, st = with registers masked against
+// 49): movement and projection through vector3f_scale (direction), dot3f, vector3f_add_scaled and vector3f_add 177, al
+// 103, st 46; retail-order jitter (on/off, signs, scales, plain long) added straight into the velocity 239, al 101,
+// st 47, through vector3f_add 231, al 98, st 43; both 199, al 91, st 37 and 188, al 90, st 35 (1068 bytes, closest
+// shape; left: 1.0 in XMM4 for XMM3, limits.k and the z on/off and y spills, limits/direction frame slots swapped);
+// on that, direction or limits renamed to flip the name order, or both, 188/188/188 (slots do not move); direction summed through
+// length_sq3f 202; direction copied by component 248. None kept (the positional count stays above 132).
+// Round 510: initial-velocity setter/control-field receiver/all-use scale-field receiver subsets
+// 159/246/243/128/160/241/246; all with ordinary sample 279; scale plus velocity receiver,
+// with/without shared jitter add 128/128. Four-point leads rejected; original body restored,
+// constant/limit ownership and jitter spills remain.
+// Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
+// 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
+// Constant/limit XMM ownership, movement outputs and jitter spills remain.
+// DL239: Indexed animation scale/normalization/projection-and-movement stage subsets 1..7, all
+// with ordinary sample: 130/130/132/178/192/192/172/138. Two-point retail-length forms rejected.
+// Original complete body, sample qualifier, magnitude observations and frame 0x28 restored;
+// constant/limit ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -953,9 +974,28 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL224: Final direction decision in bool/long/byte storage, bit before/after publication:
 // 173/166/173/166/173/166; selected direction pointer consumed twice, bit before/after publication
 // 213/215. All restored; sampled-vector slot and rotation/output schedule remain.
+// Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 97): the sample and rotated vector as
+// one local, with an in-place rotate helper (projection first or cross_i first) and the `up` parameter as axis,
+// `!(0.0001f > fabs(angle))` 204/204, `>=` 215/215; with `&state->up` as axis 165/165 (1383 bytes, al 123), `>=`
+// 197/197; retail still reads v.j/v.k into registers and multiplies by memory for the axis.j/k products. 120 random
+// spellings of that helper (sum order, operand sides, cross order, compile-only) stay flat: 37 of the 78 rotation lines differ. None kept.
 // DL226: Existing complete vector setter at goal output, rotated output and original-input
 // copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
 // Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
+// DL235: Native output bitfields at input/support/turn boundaries, subsets 1..7,
+// then all with word bit storage: 372/206/398/155/372/206/398/396.
+// Original record and body restored; sampled-vector and rotation/output homes remain.
+// Round 510: overlap-safe original-input/goal-output/rotated-output library-copy subsets
+// 202/162/222/155/225/168/228; all plus initial native copies 386. Rotated-output-only reaches retail
+// length but ties 155; broad copies raise the unmatched caller. Original body restored; sample home
+// and rotation/output schedule remain.
+// DL237: Existing complete scalar setter at sampled velocity, crossed with complete
+// cross/rotation setters and uniform live scale: 186/155/186/157/209/182/187/182. All restored;
+// sample home and rotation/output scheduling remain.
+// DL239: Complete native up-vector for rotation and side tests, four acquisition phases with
+// original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
+// complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
+// rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

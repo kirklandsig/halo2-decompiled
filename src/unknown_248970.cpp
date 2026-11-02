@@ -343,8 +343,30 @@ public:
 // priorities 68/54/54/54/54/54/54/54; independent offset declaration regresses.
 // Original snapshot, scalar declarations and complete body restored; child pretest/pool ranks remain.
 // Round 264: Canonical salted-index producer with named ordinal/successor-before-offset/head-for-init masks 0..7: 261 each, 710/743 bytes. Original header producer, loop setup and stepping restored; pool/NONE ranks, allocation retest and salt/ordinal reconstruction remain.
+// Round 504: child initialization orders 248c/482c/428c/842c with original for
+// 54/54/54/54; with head/ordinal/offset while latch 49/49/49/49. Five-point gains
+// rejected; original stores, for loop and complete body restored.
 // Round 342: Unsigned snapshot/traversal/allocation handle subsets on the separate-allocation graph, then all with unsigned produced handle: 54/54/54/54/54/54/54/54.
 // Original complete body restored; child pretest, pool/NONE ranks and allocation/link homes remain.
+// Round 346: entry head/tail/both or child-phase link pointers, crossed with original for/native while:
+// 54/54/54/54/49/49/49/49.
+// Frame 0x14 and viewer scan agree; child admission, pool/NONE ranks, retest and handle construction
+// remain. Original executable body restored.
+// Round 351: Allocation-result, initialization-receiver and link-output declaration scopes on the recovered frame/input graph;
+// 54/54/54/54/54/54/54/49. Original executable source restored.
+// Round 136 (m3 lane 5, fast with 0x175270/0x247470/0x1751d0/0x2483f0/0x16b840/0x248cc0/0x248d90): retail recomputes the
+// scaled index for the link because it retests the allocation (`cmp eax, edi; mov esi, eax; je`), which only
+// `head = child_index;` before the break test gives. Indexed table 59; retest 118 (754 bytes); salt in place 176 (716); location
+// through its address 54; indexed + retest 120 (756); indexed + salt 176 (718); indexed + address 59; retest + salt 248
+// (723; 0x175270 100); retest + address 118; salt + address 176; indexed + retest + salt 248 (0x175270 100); indexed +
+// retest + address 120; indexed + salt + address 176; retest + salt + address 220 (743; 0x175270 21, the bool leaves AL
+// too); all four 221 (743, aligned 89). Native while with the increment last 53, first in the tail 48; indexed while 59; a
+// walked byte pointer for the child table 243; pool read at each use 54; pool local before the loop 137; count read at the
+// test 242. The link arm reading the location through the parameter or its own local: on indexed + retest + salt 248/248,
+// retest + salt 248, salt 176, alone 54 (copy-propagated), indexed with its own local 59.
+// Round 353: Traversal head assigned after list publication, crossed with sentinel chaining,
+// independent ordinal declaration and native while latch, 95/96/95/96/95/96/95/96.
+// Original allocation/link values and complete body restored; child setup, pool/NONE and index homes remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

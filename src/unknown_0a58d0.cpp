@@ -288,13 +288,13 @@ struct s_z_state_world
 // score 11 (was 11): this round: the fast check reads 11 at 120/120 bytes again and no new form was
 // tried; the difference is still the database pointer in ECX where retail keeps it in EDX and the
 // active byte folded as `mov cl, [eax + edx + 0x20b2]`.
-// score 11 (was 11): this round: reading the active byte from the array element with the database
+// Earlier: reading the active byte from the array element with the database
 // read early still folds the byte as retail does (`mov cl, [eax + edx + 0x20b2]`) and keeps the
 // database in EDX, but the database load is hoisted above the object lookup and the record address
 // comes out as `add eax, edx` with the 0x20ac folded into every field offset (19). Taking the record
 // pointer before the active test does not change that (19). A named world pointer moves the world to
 // ECX and the state to EDX (21). Still the database pointer in ECX where retail keeps it in EDX.
-// score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
+// Earlier: the entity pointer is materialised in EAX and the record is read through it;
 // retail folds the address into the load itself.
 // The fold is the scheduler's rewrite of `lea; mov cl, [eax+6]`; ours can't do it because the
 // database pointer is in ecx (retail edx) and the active byte goes to cl. Tried: inline active
@@ -309,6 +309,13 @@ struct s_z_state_world
 // 11; the active test and the dispatch joined in one condition 13; an object pointer local for the
 // identifier read 11; the size and data read into named locals before the dispatch 35 (the callers'
 // convention flips: 0xa9640, 0xa96d0, 0xa9770, 0xa98b0, 0xa9940 and 0xa9570 lose their match).
+// Round 71, fast: one world local 18 (world ECX, index EDX; the callers lose 1 to 20, and 0xa99f0 with it 18);
+// the world local first 18; `index &= 0xffff` with it 18; a named masked header index 18; a headers local 18.
+// A database local with the record first and the byte through the array 21 (138 bytes), the byte first into a
+// flag 21; two global reads with the record first 14 (138), the byte first 14 (138); a named entity index with
+// the byte first 21, the record first 21; `entities + i` 21; a byte-offset record pointer from the database 21;
+// an entities pointer local 34; an offset local with byte casts 45/45 (143); the offset local with global reads
+// 21/21. Every form with the byte before the record shares `add eax, db` and folds the field offsets.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {

@@ -193,6 +193,26 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // energy zero before/after conversion and storage at producer/entry: 604/599/604/599/
 // 604/599/604/599 (reduced control 532, full baseline 545). All sample storage restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// DL228: branch-native status destinations, distinct active mixbin/voice names, seven subsets,
+// then lexical query-record ordering: eight at 532 (reduced control 532; full 545).
+// Original native workspaces, receivers and body restored; frame and gain homes remain.
+// Branch-native status plus native send stores/tests/both, without/with complete speaker copy:
+// 541/551/552/567/535/545 (reduced control 532). The changes share frame 0x228;
+// original send word, status scopes, copies and complete body restored.
+// DL230: complete gain-update bool/byte/short/long and pitch-update bool/byte/short/long decisions: 532/532/532/532/532/532/532/532.
+// Reduced control 532, full 545; original gate expressions and body restored.
+// Round 29 (lane 17, fast; control 532, full 545; aligned common 221, register-masked common 392 of 565). Retail stores a dead
+// {0, &pairs} pair right before SetMixBins (three instructions our body lacks): an initialized unused s_mixbin_settings there
+// 557 (1930 bytes; masked 395, frame unchanged), before add_source_mixbins 557 (1930; masked 392), as separate fields 532 and
+// through a forceinline pointer helper 532 (stores dropped). Mode and direct read before the gain 552 (1901 bytes; stream in EBX
+// and gain in EBP as retail, aligned common 243, but they then schedule ahead of the gain test); direct then mode 541 (common
+// 235, masked 397); declaration-only orders of mode/direct/gain 532 (same code); gain through a pointer local 532; gain as
+// s_decibels 532 (same code). `#pragma intrinsic(fabs)` alone 532; with double fabs at all six tests 653 (1793 bytes; inline
+// unrounded, but the constant loads as a qword), the four differences 601 (1841), the two fields 584 (1857), the gain alone
+// 543 (1901). Combined: two-case switch 532 (masked 402), with the dead pair 557 (masked 405), with mode/direct first 548 (frame
+// 0x228, masked 378), all three 568 (0x228, masked 379); dead pair with mode/direct first 577. Retail's stack-byte bit tests
+// match the `volatile bool` shape of 0x21ec00, which this round may not add.
+// DL236: Actual gain/submix/routing initializer phases moved before queries/send construction, subsets 1..7, then all without the unused private workspace: 547/546/548/547/549/546/548/572 (reduced control equals full 545). All restored; frame 0x22c versus 0x224, stream/gain homes and mixed math remain; matched sibling preserved.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
@@ -215,7 +235,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 			sound_mixbins_initialize(&settings);
 			if(mode==0 || mode==1)
 				for(long send=0;send<=mode;++send)
-					sound_mixbins_add(&settings,voice->unknown00,gain);
+					sound_mixbins_add(&settings,voice->unknown00,*(s_decibels const *)&gain_bits);
 			function_2215d0((s_mixbin_list *)&voice_properties,&settings,stream->stream);
 			stream->stream->SetVolume(sound_decibels_to_volume(0.0f));
 		}

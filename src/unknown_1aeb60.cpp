@@ -429,6 +429,13 @@ short *function_e70b0(long unit_index, short *value);
 // original/native slot data block, entry/timed-block declaration and mutable/const
 // view combinations, all eight 124 at 443 bytes. The shared receiver makes the EBP
 // save unconditional. Original data view, global observations and full body restored.
+// Round 59 (m3 lane 10, fast): every flagged line follows from one decision, the actor pointer in ECX
+// (retail) or EDX. The slot data block alone 49 (same code; retail forms no data pointer here); the getter
+// as typed `+` / named data / named offset / named index / assigned later / const actor 49 each; 0x227 read
+// twice 49; prop index twice 49; 0x18 twice 130 (423 bytes, 0xe70b0 out of line); a copy of the index at each
+// of four uses 49 each; an actor copy 49. Getter read directly with the local at 0x227 / 0x229 / the prop test
+// / the prop lookup / 0x18: 117 / 117 / 49 / 49 / 120; pairs 117, 117, 117, 118, 117, 117, 117, 49, 120, 120;
+// all five 117.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
@@ -631,6 +638,9 @@ struct s_1af5c6
 // Round 101 (plain): NONE-initialised resolved index 20; repeated actor lookup 174; typed object
 // pointer 20; word second subscript 132; second lookup as pointer arithmetic 20; unsigned datum index 20;
 // early distance-vector declaration 20; direct actor predicate 115 (568 bytes); sqrt(length_sq3f) 20.
+// Round 50 (lane 13, plain; --fast misbuilds this function, 71 at 598 bytes): hit product operands swapped 20 (same code);
+// distance renamed a_distance, z_distance 20; distance declared apart from its assignment 20; the mask selection below the ray
+// vector 37; the result field store below the ray vector 40; the flag test named before the or 20.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {

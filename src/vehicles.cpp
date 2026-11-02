@@ -576,6 +576,14 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // 134; `speed` declared with the top locals 126; the normalizer's y product written `inverse * v->y` 126; `left`
 // written y first 126. Retail's normalizers keep the source operand order (x: inverse loaded, y: v->y loaded) where
 // ours loads inverse for both.
+// Round 253: Complete input capture with normalized-output staging, initial shared normalization and
+// full-width reversing truth subsets 0-7: 507/507/576/576/508/508/575/575. All helper and
+// target source restored; frame/velocity-copy, early 1.0 residence and later SSE colouring
+// remain.
+// F320: initial existing fallback normalizer, complete 2D role names and repeated steering-product
+// name subsets 349/126/349/126/349/126/349; all with component direction copy 310. The normalizer
+// forms grow to 1189/1170 bytes; neutral forms retain 1144. Original body/helper restored; initial
+// velocity receivers and 1.0 SSE residence remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -856,6 +864,15 @@ __forceinline long vehicle_round(real value)
 // angular output as axis workspace 30, with byte mode 174. Post-reader mode
 // byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
 // direct/staged before rate clamp 194/194, after clamp 223/223.
+// Round 80: side cross from the axis copy 113 (731 bytes); scale coefficient from axis.k 51;
+// the two-flip form with axis.k 57, with the side cross from axis 116 (730), with both 124 (728);
+// projection through axis then copied back 73 (775), on the two-flip form 72 (775), with the
+// velocity call selecting its output 157 (795). Restored.
+// Round 134 (lane 6), at 8: a pointer-returning cross helper at both crosses 8; the file's own vehicle_cross at both
+// crosses 8; the positive test with the clears in an else 12; a two-level nested test with the clears under
+// `if (!result)` 12; the pointer-returning cross with the angular scale after the projection 33. Compile-only screen
+// (exact for these products): the pointer-returning or file cross at either cross alone, the angular scale after the
+// projection, `v * s` scale helpers and `up.k <= 0.9f` keep all four flips.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -1112,7 +1129,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 588 (was 597): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 588 (was 588): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1141,6 +1158,17 @@ long function_10f5f0(long object_index);
 // M283: Ascending point cursor with indexed/postincrement/countdown/pointer-distance bounds 588/588/616/578;
 // with six-real output 588/588/616/578. Keep the indexed cursor, plain full confirmed 597 -> 588;
 // pointer-distance bounds introduce signed division per iteration, absent in retail, so are diagnostic only. Original buffer retained; frame 0x19ac/0x1984 and flag-result stores remain.
+// Round 251: Two-vector buffer, velocity name, state name, buffer/velocity, buffer/state, both names,
+// buffer/both names and six-real buffer/both names: 588 each. Original complete body and inherited qualifier
+// restored; frame and native flag-result stores remain.
+// Round 236: Native owning-word bit readers, initial/active/physics and pair subsets
+// 600/595/612/600/644/597; full readers with actual six-real buffer 644
+// (frame 0x1990); final Boolean result completion 595. All original record layout,
+// buffer, observations, qualifiers and complete body restored; frame 0x19ac versus
+// 0x1984, native flag-result stores and scalar/SSE homes remain.
+// M309: Actual returned matrix input, original/returned physics-state receiver,
+// with original/six-real output extent: 590/622/590/622; completed final result
+// 597/622/597/622. All restored; frame 0x19ac and native flag-result homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1501,8 +1529,8 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
    sideways drift, speed, forward speed and two engine overlays, the
    graph's function animations and the three aiming overlays) to the
    callback with its value */
-// score 40 (was 40): Frame 0x9c and extent agree; two header SIB operands, join reloads, cross/dot operand
-// ranks and constructor/graph-load scheduling remain.
+// score 13 (was 13): Graph-loop scope fixes constructor/load scheduling; header SIB forms, join reload
+// order and cross/dot operand ranks remain.
 // Earlier at 40 (was 44): the overlay lookups now call 0x1cb9d0 directly (each gets its own result home: frame 0x9c as
 // retail) and the spin fractions are one ternary each (kept in xmm0 to the push). Left: retail inlines the state's
 // channel-play routine (0x1cb490) at every set, so its id is loaded before the graph test and NONE stays in EDX
@@ -1560,6 +1588,14 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // M283: Frame 0x9c and extent agree; first +0x2d is header SIB ownership, with join reloads and constructor/graph scheduling still different.
 // Native header ordinal long with normal/early iterator/early channel/both constructors 114/518/552/530;
 // word ordinal with the same lifetimes 205/527/590/561. All eight bodies restored; original 40 retained.
+// Round 250: native value construction for channel/iterator/function-channel, seven subsets 40 each;
+// graph-only iterator/channel scope 13 plain, 2027 bytes; remaining SIB/reload/cross/dot ranks.
+// Round 253: First/second header access and failed-admission-return subsets 1/2/4/3/5/6/7:
+// 17/13/13/17/17/13/17; staged cross on graph-only workspace 13. All bodies restored;
+// frame/constructors agree, header SIB, join reload and cross/dot ranks remain.
+// P255: Existing object getter at both/first/second headers 17/13/17; paired dot helpers
+// 361, with both/first/second getters 365/361/365; reversed paired dots with both getters
+// 365. Original body restored; header SIB, join reloads and cross/dot ranks remain.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -1627,17 +1663,19 @@ void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callba
 			callback(vehicle_index, graph, &channel, value, 0.0f, 1.0f, user);
 		}
 
-		s_graph_iterator3c iterator;
-		c_animation_channel function_channel;
-
-		while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
 		{
-			if (state->channel_play(&function_channel, iterator.animation_id, 0))
-			{
-				byte value = ((byte *)vehicle->unknown398)[iterator.index];
+			s_graph_iterator3c iterator;
+			c_animation_channel function_channel;
 
-				callback(vehicle_index, graph, &function_channel, value == 0xff ? 1.0f : value * (1.0f / 255.0f), 0.0f,
-					1.0f, user);
+			while (function_1dceb0(&iterator, graph_tag_get(state->graph_tag_index)))
+			{
+				if (state->channel_play(&function_channel, iterator.animation_id, 0))
+				{
+					byte value = ((byte *)vehicle->unknown398)[iterator.index];
+
+					callback(vehicle_index, graph, &function_channel, value == 0xff ? 1.0f : value * (1.0f / 255.0f), 0.0f,
+						1.0f, user);
+				}
 			}
 		}
 		for (i = 0; i < 3; i++)
@@ -2320,6 +2358,10 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // J225: shared period receiver 101; torque call then multiply 101; period and torque assignment 101; shared
 // drive fraction 132; period and drive fraction 132; shared control length 101; period, drive fraction and
 // length 132; native byte gear and torque assignment 114. Original body restored.
+// Round 250: complete paired side-torque stages, named turn parts and named drive products 101 each;
+// gear-only scope alone and with each producer 101; scoped contact ordinal with stages/gear 101.
+// Original body and spin helper restored; NONE edge, zero/product carriers and spin staging remain.
+// Round 319: Per-contact selected torque result right-default/left-default/branch/conditional 101/101/101/101; each with NONE-first gear 127/127/127/127. Original complete body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2490,6 +2532,16 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
+// Round 81: contact-definition/contact/both names 10 each; `axle_torque` 10; `const delta` and
+// `real *const spin` 10 each; a local advance name 10; torque/braking declarations swapped 10;
+// definition/contact/both pointer arithmetic 10 each; a spin reference and helper advance/spin names 10 each;
+// throttle/torque joint declarations in either order 10 each; the wrap helper defined after its caller 10.
+// Opening body restored.
+// Round 134 (lane 6), at 10: the wrap helper's ternary as if/else 54 (993 bytes); the loop counter declared in
+// the for statement 10; the gear arm as `torque = 0.0f; if (gear != NONE) torque = ...;` (0xf1cd0's shape) 198
+// (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
+// test as `*spin < 0.0f` 10. A compile-only (no /GL) listing shares torque with the throttle as retail does and
+// homes the loop offset in a parameter slot, so it does not reproduce the LTCG frame.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2595,7 +2647,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 706 (was 719): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2617,6 +2669,14 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // 725/706; distinct output plus role names 707 for desired.up (the in-place-up comparison failed).
 // Current matrix before banked products with late sine 710; with late cosine/sine pair 709.
 // The distinct-output forms retain frame 0x104; selected desired.up uses 0xd0, versus retail 0xfc.
+// Round 251: Angular-output/banking/conversion lifetime subsets 1/2/4/3/5/6/7 with a distinct relative
+// transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
+// complete body restored; retail frame 0xfc and scalar/transform homes remain.
+// Round 319: Complete bounded forward/left/up speeds before reciprocal with distinct relative output, six producer orders 699/699/699/699/699/699; immutable 699; original output 692, kept and plain-confirmed. All fraction trees and original observations preserved.
+// Round 322: Complete interleaved bound/fraction producers with reciprocal after first bound, six
+// orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
+// output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
+// remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2656,10 +2716,13 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	vehicle_approach(&vehicle->unknown370, (real const *)(definition + 0x22c), elevation, dt);
 
 	real speed = vehicle->speed * boost;
+	real bounded_forward_speed = PIN(speed, 0.0f - maximum_speed, maximum_speed);
+	real bounded_left_speed = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed);
+	real bounded_up_speed = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed);
 	real inverse_maximum = 1.0f / maximum_speed;
-	real forward_fraction = PIN(speed, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real left_fraction = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real up_fraction = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
+	real forward_fraction = bounded_forward_speed * inverse_maximum;
+	real left_fraction = bounded_left_speed * inverse_maximum;
+	real up_fraction = bounded_up_speed * inverse_maximum;
 	vector3f up;
 
 	up.i = -(facing->k * facing->i);
@@ -2848,7 +2911,7 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
    toward the controls' speed in the facing's frame, a yaw torque toward the
    steering, torques that hold the vehicle upright while it is off the
    ground, and its boost */
-// score 1052 (was 1053): Frame 0x80 versus 0x74; velocity and force homes still differ.
+// score 1052 (was 1052): Frame 0x80 versus 0x74; velocity and force homes still differ.
 // Existing inverse transform 1137; forward transform and accumulation 1053 kept;
 // both 1238; shared cross products 1130; inverse/cross 1134; forward/cross 1056;
 // all three 1222; all with mass scales 1254. Plain confirms the shared in-place
@@ -2870,6 +2933,13 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // all 1126; all with one real velocity scratch buffer 1127. Live-zero forms use frame
 // 0x7c versus retail 0x74 but regress. Original complete executable body restored;
 // two incomplete-image comparisons excluded and completed on exact archived sources.
+// P252: Low-byte flag payload/full-width driven/full-width paired direction truths, subsets 1/2/4/3/5/6/7:
+// 1053/1052/1095/1099/1080/1110/1080; all native byte carriers 1053. Subsets 4/3/5/6/7 shrink the frame to
+// 0x7c but regress; original complete body and 0x80 frame restored.
+// B358: Named repeated pitch/roll scales / one stable active-phase admission /
+// separate native point-loop indices, subsets 1/2/4/3/5/6/7:
+// 1067/1102/1052/1091/1067/1102/1091; all with paired shared projections 1091.
+// Frame remains 0x80 versus 0x74. Complete original body and all evaluations restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3348,7 +3418,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 /* the orientation the vehicle's physics aims for: its facing held level,
    turned through its flip while it flips (returns whether it flips), else
    the state's own */
-// score 145 (was 154): Staged cross, native up receiver and complete rotation setters kept; projection/trig schedules remain.
+// score 136 (was 136): Fallback up setter with staged cross, native up receiver and rotation setters kept;
+// projection/cross operand ranks and trig homes remain.
 // Shared cross 204; external cross 326; native forward/up/both 263/269/298;
 // shared cross with forward/both 263/298. Wide angle 177 rejected without exact equality;
 // coordinated external force-inline 326, with wide angle 359; all original contracts restored.
@@ -3394,6 +3465,25 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 226: complete rotated forward/up through vector3f_assign 145 (827 bytes), plain confirmed;
 // input setters 230, both setter groups 215, enclosing axis 154, axis with inputs/rotations/both
 // 230/145/215, all vector setters 220. Original grouping, precision and all row expressions retained.
+// Round 250: existing setters independently at initial up/fallback up/negative axis and combinations
+// 186/136/207/144/186/138/204; all with forward setter 220. Fallback up setter alone kept plain,
+// 136 at 828/806; original values/precision retained. Projection/cross ranks and trig homes remain.
+// Projection-only workspace scope on the fallback-setter graph 136 (tie, restored).
+// Round 253: Vector-difference/cosine-up/sine-axis parts subsets 1/2/4/3/5/6/7:
+// 134/144/157/144/155/134/168; all with byte flipping truth 176. The two-point forms
+// rejected; original complete body restored. Projection input ranks, trig homes and angle
+// residence remain.
+// P255: Common matrix-source copy/late pure flip test/complete scale-add up rotation
+// subsets 1-7 224/220/222/167/228/211/219; all with separate scaled-axis/add 219.
+// Original real-angle and complete body restored; projection/cross ranks and trig homes remain.
+// Round 470: Plain real-array component loops for projection removal/negative axis/
+// up rotation, subsets 1/2/4/3/5/6/7, then all with forward rotation: 168/170/174/145/177/180/176/176.
+// Original body restored; projection i-product, cross ranks and angle/trig homes remain.
+// Round 236: Full projection-only/both/implicit producers 223/262/262; forward scale/add 235;
+// exact-valued promoted angular coefficient case/default/both 165/160/166, exact-only;
+// complete forward product parts 131; with shared subtraction/native fallback copy/both
+// 133/149/152. Five-point producer form rejected. Original complete body restored;
+// projection i-product, cross ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3416,7 +3506,7 @@ bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_p
 	up->k -= projection.k;
 	if (function_30bf0(up) == 0.0f)
 	{
-		*up = *g_4687a8;
+		vector3f_assign(up, g_4687a8->i, g_4687a8->j, g_4687a8->k);
 	}
 	cross3f_staged(up, &facing->forward, &facing->left);
 	if (flipping)
@@ -3847,7 +3937,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 197 (was 206): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 176 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -3931,6 +4021,16 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // J224: Native override records 197; with live iterator index/live count/scalar role names 197/265/197.
 // True-first fallback 207; with records 207; with completed clamp-result assignment 203;
 // all three 203. Original executable source restored; frame and first +0x5a unchanged.
+// Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
+// construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
+// scalar/world/fallback homes remain.
+// Round 236: Default offset/rest/length before search, with reused change/default collision result/both
+// 264/264/268/268; defaults at the search exit with those same result subsets
+// 263/263/273/273. Pre-search frame stays 0xec; exit defaults grow it to 0xf0.
+// Original complete body restored; found-index retest and scalar/world/fallback homes remain.
+// M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
+// 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
+// at 176 by the full check; frame/length unchanged, zero and vector staging closer.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -3990,13 +4090,13 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				}
 
 				s_vehicle_ray ray;
-				real reach = 0.0f - length;
 
 				ray.point = marker.matrix.position;
 				ray.vector = vehicle->up;
-				ray.point.x += ray.vector.i * offset;
-				ray.point.y += ray.vector.j * offset;
-				ray.point.z += ray.vector.k * offset;
+				vector3f_add_scaled((vector3f const *)&ray.point, &ray.vector, offset,
+					(vector3f *)&ray.point);
+				real reach = 0.0f - length;
+
 				ray.vector.i = ray.vector.i * reach;
 				ray.vector.j = ray.vector.j * reach;
 				ray.vector.k = ray.vector.k * reach;
@@ -4150,7 +4250,7 @@ bool __stdcall function_f8070(long bit, word const *flags);
 /* the vehicle object type's function values (+0x4c): its boost, brakes,
    ground contact, speeds, steering, engine and wheels; false for a name it
    does not know */
-// score 765 (was 817): Frame 0x18 agrees, 16 bytes short; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
+// score 765 (was 765): Frame 0x18 agrees, 16 bytes short; entry definition ownership, zero/result SSE allocation and per-site versus hoisted 1.0 remain.
 // Earlier at 817 (was 864): Frame 0x18 agrees; definition EBP and scalar/SSE allocation differ.
 // Complete definition snapshot, result-first, direct active predicate in seven nonempty
 // combinations 1006/864/1006/869/1002/869/1002; snapshot with numeric movement-case
@@ -4166,6 +4266,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // Round 496: One tag-table receiver for every definition lookup 765, plain kept; complete arm-owned
 // results 839, with the table 768; result graph with long/byte forced state 842/839; one
 // recognized-name exit 833; table/result with long forced/one exit 765/766. Only the table receiver retained.
+// P252: Channel result/forced state, blend/reverse scalar and native vector-output role-name subsets
+// 1/2/4/3/5/6/7 765 each; all with the pure forced-state constant declared first 765. Original complete body
+// restored; frame 0x18, entry definition and zero/result SSE allocation remain.
+// B358: Complete shared definition ordinal / paired velocity-selection observation /
+// existing projections, subsets 1/2/4/3/5/6/7: 919/792/765/941/919/792/941;
+// all with a native tag-entry receiver 1012. Projection forms are match-only
+// for grouping; no candidate qualifies. Original complete body restored.
+// The 0x18 frame agrees; entry definition and zero/result/constant residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4647,7 +4755,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1134 (was 1166): Frame 0xfc versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1117 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4666,6 +4774,15 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1179; state rotation in facing workspace 1148; all rotation workspaces 1179; inertia in consumed matrix
 // workspace 1197; all workspaces with flip output 1192; all workspaces with in-place output 1197; shared
 // quaternion-axis setter 1134; shared torque setter 1135. Original body restored.
+// P252: Full-width flip/boost/side-flip truth subsets 1/2/4/3/5/6/7: 1129/1126/1134/1175/1129/1125/1164; all
+// native byte truths 1134. Only full-width boost truth kept at plain 1126, 5043/5094 bytes, frame 0xf8. The
+// one-point side-flip addition and five-point flip-only form restored.
+// P255: Angular-output/quaternion-conversion/late-force lifetime subsets 1-7 all 1126;
+// consistent vector-role names 1126. Frame 0xf8 and index/vector/rotation homes remain; restored.
+// F323: Frame 0xf8 versus 0xd8 and index/rotation homes remain. Sequential target reuse is plain-confirmed at 5056/5094 bytes.
+// Target/drift, target/strafe, acceleration, target+drift+strafe, drift+acceleration,
+// strafe+acceleration, all, all+rotation reuse 1130/1117/1127/1145/1130/1117/1145/1145.
+// Naming only 1126; target/strafe reuse with original names 1117 (plain). Keep only that reuse.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4680,7 +4797,7 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 	vector3f target;
 	vector3f force;
 	bool flipping;
-	bool boosting;
+	long boosting;
 	long i;
 
 	if (vehicle->unknown351 > vehicle_round(g_510c54->field_2_3 * g_4678b8))
@@ -4780,7 +4897,6 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		real strafe_maximum = *(real *)(definition + 0x1f4) * flip_scale;
 		real strafe = vehicle->turn * flip_scale;
 		real strafe_fraction;
-		vector3f strafe_target;
 		vector3f strafe_velocity;
 		vector3f strafe_acceleration;
 
@@ -4792,16 +4908,16 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		{
 			strafe_fraction = 0.001f > (strafe_maximum >= 0.0f ? strafe_maximum : 0.0f - strafe_maximum) ? 0.0f : 0.0f - strafe / strafe_maximum;
 		}
-		strafe_target.i = strafe * facing.left.i;
-		strafe_target.j = facing.left.j * strafe;
-		strafe_target.k = facing.left.k * strafe;
+		target.i = strafe * facing.left.i;
+		target.j = facing.left.j * strafe;
+		target.k = facing.left.k * strafe;
 
 		real side_speed = facing.left.i * velocity.i + facing.left.j * velocity.j + facing.left.k * velocity.k;
 
 		strafe_velocity.i = facing.left.i * side_speed;
 		strafe_velocity.j = facing.left.j * side_speed;
 		strafe_velocity.k = facing.left.k * side_speed;
-		function_f1380(&strafe_acceleration, &strafe_target, &strafe_velocity,
+		function_f1380(&strafe_acceleration, &target, &strafe_velocity,
 			*(real *)(definition + 0x234) * strafe_fraction,
 			strafe_fraction * flip_scale * *(real *)(definition + 0x238), g_510c54->rate);
 

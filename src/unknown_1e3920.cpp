@@ -666,6 +666,22 @@ real function_267370(long object_index);
 // (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
 // cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
 // `carrier` declared at the top of the block 98 (same code).
+// DL234: shared predicate result from its final test, with direct cluster/entry keys
+// and a reused zone byte: 96/96/96/96/164/164/164/164; shared provider 0 -> 20/37 in the
+// first/last four. All rejected; header restored. Frame 0x90 agrees; NONE sharing and cross operands remain.
+// Round 508: Uniform three-use class snapshots short/byte/long at the original capture
+// 369/158/139; before the pure parent lookup 263/312/299; live class reads 125, with
+// child-default/parent-override carrier 388. Sentinel field fills, seven subsets and
+// all with short-mode clear, 357/357/357/96/357/357/357/357; two-point gain rejected.
+// Original observations and body restored; early NONE sharing and cross operands remain.
+// Round 295: field-sized library fills for first/second/both invalid handles 357 each;
+// conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
+// DL239: Complete default-forward/stored-forward/up memcpy subsets 1..7 score
+// 98/96/96/98/98/96/96; all memmove 226. Two-point leads rejected; original whole body restored.
+// Frame 0x90 agrees; early NONE sharing, carrier and cross operand homes remain.
+// Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
+// 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
+// Early shared NONE and cross operands remain; every original destination and body restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1014,7 +1030,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 254 (was 320): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// score 254 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
@@ -1111,6 +1127,31 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// Round 464: separate actual request records at case-entry/successful-producer scopes,
+// four phase pairs with each genuine case order: 254 each. Original shared request restored;
+// persistent sentinel and substitution/squad homes still differ at the matching frame and length.
+// DL234: current definition-table field at every use, guarded/conditional replacement,
+// inner/outer query storage and mutable/readonly metadata: 397/396/397/396/397/396/397/396.
+// Original observation and query-output lifetimes restored; sentinel and stack homes remain.
+// Round 295: positive perception/unit creation producers and both, each 253; with settings
+// admission each 253; both/all with conditional squad bit 337. Original failure exits restored.
+// M297: Without the redundant squad-index gate, inner/outer substitution outputs,
+// retained/omitted overwritten enabled default and guarded/conditional replacement
+// [384, 382, 384, 382, 395, 380, 395, 380]. Original gate, defaults and lifetimes restored.
+// N302: Complete paired equipment lookup loop, long/short/word/byte ordinal, defaults
+// at pair / at each producer: 345/369/369/369/336/369/369/369. Exact-only output pair and all
+// original code restored; frame agrees, sentinel/squad/substitution homes remain.
+// Round 466: Direct guarded substitution-output consumption / complete branch producer,
+// inner/outer real query storage and retained/omitted overwritten enabled default:
+// 348/275/348/275/348/275/348/275 on the retained mode/field/squad-bit graph.
+// Omitted default expands frame to 0x11c; original 0x118-frame body and all outputs restored.
+// P260: Squad-bit zero default before/after actor result, after definition/cleanup/
+// settings/squad and before final settings guard: 341/341/341/341/340/336/254;
+// entry declaration with original initialization 254. Original lifetime/body restored;
+// sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
+// Round 520: all six lexical orders of the native query-enabled/query-forced/squad
+// Boolean homes, then probability-home names at both endpoints: 254 each.
+// Original names and complete body restored; sentinel and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1364,6 +1405,8 @@ void function_1e3b60(long actor_index);
 // keeps the three flags in stack bytes. Tried there: sample/update as two assignments 26 (0x262ba0
 // 424), declared after the node call 26, update declared first 26 (422), sampled_one before
 // maximum 26, the update test nested 26.
+// Round 58 (fast): the global store before the actor lookup 26; the swarm field in a local 26; the
+// actor test as a bool local 26; the clear through a pointer to +0x41c 34; the arms swapped 40.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
@@ -1782,6 +1825,24 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the second block 251 (same code); the loop as `for (short i = 0; i < 2; i++)` 251
 // (same code). Diagnostic (plain, reverted): src/character_tag_accessors.cpp renamed to link after this file, as
 // retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
+// DL234: actual grenade-reset admission produced as bool/byte/short/long, complete
+// condition or guarded result: 251 each. Original predicate and body restored; actor/options,
+// retained pool and scalar homes remain. Shared query summaries and all draw guards are unchanged.
+// Round 295: per-use unit receiver, first phase 306; second 254; both 315; private queries 330;
+// first/private 360; second/private 337; all 372; all with long ordinal 361 (fast). All restored.
+// M297: Current-only/secondary-only default-result, failure-exit and complete
+// branch-result producers, then mixed default/failure and failure/default
+// [279, 251, 251, 251, 251, 251, 278, 278]. Both original private queries restored.
+// N302: Shared two-consumer ammunition-reduction predicate bool/byte/short/long,
+// per equipment phase / per valid weapon: 278/278/246/245/255/255/326/328. Exact-only
+// observations and all original code restored; frame/input agree, pool/actor/options homes remain.
+// DH282: Complete probability-default/increased-selection/delay-default ownership, seven subsets then all
+// with native signed-word tick storage [251, 251, 251, 251, 251, 251, 251, 251]. Original executable body
+// restored.
+// Round 259: One actor unit handle throughout both phases 347; with current/secondary/both
+// default query results 348/352/356, current/secondary/both rejection results
+// 352/352/350, mixed default/rejection 352. Original body and both queries
+// restored; actor/options/pool residency and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

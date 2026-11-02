@@ -520,6 +520,15 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
 // branch-owned next 74/129/129/74/74/129/129/129.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// M298: Native complete parent/scan definition and entry records, with scan-local
+// ordinal, value-owned count and per-use alternate in all eight combinations
+// [74, 92, 75, 92, 74, 92, 75, 92]. Original type, ordinal lifetime and body restored.
+// DH278: Separate short/long parent traversal with early/scan-local ordinal and compound/separate ordered exits 74/74/92/92/141/141/98/98.
+// Complete opening body restored; no qualifying keeper.
+// Round 356: Bulk zero of the three contiguous Boolean outputs with scan-local ordinal,
+// live count and live alternate subsets: 82/94/82/94/82/94/82/94. Complete original body restored;
+// the early ordinal frame and scan/flags ownership remain.
+// DL236: Actual iterator flags as the persistent owner, crossed with scan-local ordinal, per-use alternate and count-field observations: 138/133/138/133/138/133/138/133. All restored; ordinal push-ECX home and scan allocation remain; early flag stores lengthen the body.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -905,6 +914,20 @@ done:
 // the first scan's pair through a short pointer 196 (617 bytes, as before); a long result 211 (633, as
 // before). The entry test still loads next into CX for the first pass (retail compares it in memory and
 // reloads it at each loop top), which pushes NONE into EBX.
+// Round 135 (m3 lane 5): retail's code is what VC gives when g_4e0350 is address-exposed: a compile-only build of
+// the while form (below) gives retail's head and first scan exactly (NONE in ECX, `cmp word [edx+4], cx`, next
+// reloaded at each loop top, `mov bl, [edx+0xa]`), and the same build with file-static globals (LTCG's view) gives
+// ours (NONE in EBP pushed before the test). Real: the three scans as `while (iterator->next != NONE)` loops 174;
+// first scan only 202 (617 bytes); `(void)&result` 176; typed definition local after the squad lookup 199; `else {
+// definition local; if (definition) ... else ... }` 174; direct g_4e0350 reads in the second scan / short flags /
+// both 174 each. Diagnostic only: g_4e0350 read through its address 99 (636). `memset(&g_4e0350, 0,
+// sizeof(g_4e0350))` in 0x11be50 (still MATCH) with the while scans 99 (636), plus a third-scan `scenario` local for
+// both palette lookups 49 (619), plus `short flags` (retail's movsx) 48 (619), plus direct second-scan reads 157
+// (631); but the full check then loses 24 matched functions (0x243b10 allocates `xor ebx, ebx` where retail pushes
+// 0), so g_4e0350 is not exposed program-wide and the memset was reverted; without it the 48 form is 176 (626). All
+// retail callers pass stack iterators. A 192-form static-global harness search (short flags, direct reads,
+// block/entries if-else, definition local kinds, third-scan local, `alternate` local) keeps NONE in EBP in every
+// form. Left: whatever keeps g_4e0350 from being hoisted in the second scan.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -1424,42 +1447,16 @@ void __stdcall function_205320(long group_index)
 	}
 }
 
-// score 18 (was 18): same instructions as retail, only registers differ after the first call: retail
-// loads the squad pool into EAX, builds the index in EDX and forms the squad with lea eax,[edx+ecx] (so the
-// test of the index can sit before it), then uses EDX/ECX for the object reload and EDX for the new index;
-// ours builds the index in EAX (add eax,ecx) and swaps ECX/EDX after it.
-// The first vehicle read once through a volatile pointer, before the object reload as retail orders
-// it, gives 16; not kept, since it isn't a byte match.
-// Tried: squad_get 18; array address 18; index times size plus data 18; index local 18; or operands swapped
-// 18; early return 18; squad declared at the top 18; object reload into a local first 18; field through a
-// long pointer 18; first vehicle saved before the store 19; inverted test 24; squad lookup at each use 33;
-// squad computed before the NONE test 38 (at the top 42); ternary 45; one store after the test 47;
-// index local updated in place 56/57.
-// Round 42: named scaled offset signed/unsigned 18/18; const squad, then both pointers 18/18;
-// identifier as a real short field 18; low-word helper 44; typed pointer increment/address-of-element 18/18;
-// low-word equality 21; early high-bits predicate 18. The pool/index registers and three-address lea remain.
-// Round 15: a link pointer to the first vehicle (0x201a50's form) 18; byte pointer squad 18; old squad
-// index in a local 18; header pointer local 19; high-word test by shift 18. Compile-only screens
-// reproduce ours exactly and ~20 squad/header/test forms (helper return, NULL-initialized squad, pool
-// local) all keep add eax,ecx; retail's other two sites of this lea (0x1f3430, 0x20d570) are unmatched.
-// Round 54 (lane 9): `(salt << 16) | (squad_index & 0xffff)` (0x1e0160's spelling) 37 (the index moves to EBP);
-// the existing object_get for both object lookups 18; that with squad_get 18; the reload through
-// object_header_get(...)->object 18; the insertion written in both arms of the high-word test 40 (143 bytes).
-// Round 36: the same register pattern (pool in EAX, index product in EDX, lea) is matched 0x204950's, where
-// the product is computed before the pool load, and unmatched 0x20d570's; compile-only, 1-8 unused locals at
-// three places and a pool/data local change nothing. Real (fast): one store of a full-index local 57 (129
-// bytes, callers inline it), the same assigned in both arms 43; the absolute index named at the top 41; the
-// scaled offset named at the top 40; squad_get again for the salt read 46.
 // @retail 0x201ad0
 void function_201ad0(long squad_index, long object_index)
 {
-	s_squad_vehicle_view *object = ((s_squad_vehicle_header *)g_4e0300->data)[object_index & 0xffff].object;
+	s_squad_vehicle_view *object = (s_squad_vehicle_view *)object_get(object_index);
 	if (object->squad_index != NONE)
 		function_201a50(object->squad_index, object_index);
 	if (squad_index != NONE)
 	{
-		s_squad_datum *squad = (s_squad_datum *)(g_51e9d8->data + (squad_index & 0xffff) * sizeof(s_squad_datum));
-		((s_squad_vehicle_header *)g_4e0300->data)[object_index & 0xffff].object->next = squad->first_vehicle_index;
+		s_squad_datum *squad = squad_get(squad_index);
+		((s_squad_vehicle_view *)object_get(object_index))->next = squad_get(squad_index)->first_vehicle_index;
 		squad->first_vehicle_index = object_index;
 		if (!(squad_index & 0xffff0000))
 			object->squad_index = (*(short *)squad << 16) | squad_index;
@@ -1714,6 +1711,11 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
 // search result stored in the iterator's index and tested there 113; distance test as a continue 2;
 // squad index read after the flag test 2.
+// Round 119: ordinary inline helper 216; existing datum helper in the shared step 110; existing squad
+// step reused 88; preincremented search input 2; index declared before the pool 2; step in the for
+// update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
+// the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
+// byte-return helper 2; boolean datum step directly in the caller 150.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -2208,6 +2210,17 @@ bool function_1e11b0(long actor_index, bool active);
 // Round 73 (fast, current body): `squad_get` for the squad 80 (183 bytes: the depth-zero pragma keeps the header
 // getter out of line), with `actor_datum_get` too 102 (161 bytes); `iterator.actor_index` stored in the loop 64; the
 // loop as `for (;;)` with a break test 64; the +0x34 store from `iterator.squad_index` 65 (199 bytes).
+// Round 509: Actual flags/tick/stamp field-address lifetimes, subsets 1/2/4/3/5/6/7,
+// 64/64/64/64/64/64/64; all three with word flags 64 (201 bytes). No gain;
+// original complete body restored; squad spill, EBP handle and common loop head remain.
+// Round 56 (lane 11, fast; on 0x203d70's loop, 71 at 191 bytes, the eight missing bytes are the squad's spill into the
+// parameter's home and its back-edge reload, aligned 56): the post-loop flag and tick stores through a forceinline
+// helper on the squad 71; those and the return through helpers 71; a named index copy for both uses 71; the arm's
+// store and two calls as a forceinline helper with the actor passed 71, with the actor fetched again 79 (213 bytes).
+// All restored; the index still loses EBP to the squad pointer.
+// On the current body (fast): the actor looked up before the index copy 64; a field pointer for the +0x34 store 64;
+// the flag byte in a named local for the test 64; the iterator's next through a named reference 64; the next actor
+// read into a local before its store 64 (all same code).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2346,6 +2359,21 @@ bool function_1df5d0(short team_a, short team_b);
 // Round 272: Loop-carried contribution word/short/long/dword, per-actor health; then the same four
 // with outer health workspace 39/39/153/153/39/39/153/153.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// Round 135 (m3 lane 5): compile-only probes: inside a loop VC folds the total into `addss xmm0, [total]` only when
+// the added float has exactly two disjoint definitions (if/else arms, no dominating zero); a dominating zero, three
+// paths, a ternary, a multi-return inline getter, block scopes, struct/array holders and a per-path inline
+// accumulator all load the total first (outside a loop the three-path form folds). A scan of retail (xorps zero,
+// then two or more conditional jumps and an in-place addss/movss within 60 instructions, no call between, inside a
+// backward jump) finds only this function. Real: zero set in the else arm before the perception test 60; two-arm
+// else with a ternary perception health and a separate count test 253 (872 bytes), with the node pointer 267 (882);
+// inverted unit test 55; node pointer alone 84 (re-measured).
+// Round 509: Actual population/swarm/eligible counter receivers, subsets 1/2/4/3/5/6/7,
+// 38/39/44/46/51/52/43; all with health-total receiver 43. One-point lead rejected;
+// original body restored; in-place health add and node/pool lifetime remain.
+// Round 356: Native short/long/real denominator owners and both named real ratio operands,
+// original/named tracking node: 39/39/83/47/92/92/132/84. Original field observations and body
+// restored; in-place health addition, node/pool ordering and maximum registers remain.
+// DL236: Shared population sample as ratio numerator and contribution, word/short/long/dword, original/named node: 178/178/179/179/180/180/182/182. All restored; frame/extent agree, in-place health add and node/pool ordering remain. Named-node sources were exact-only and never retained.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2550,6 +2578,13 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // before); the walk through the existing out-of-line record_pool_iterator_step 415 (1007 bytes: the step
 // stays a call, also 0x204b20 202, 0x201df0 139, 0x200d80 158). Retail keeps the walk iterator in memory
 // (data reloaded each pass) as an escaped local would be.
+// Round 135 (m3 lane 5): retail keeps the overlap loop's intersection in a stack home (a dead `mov [esp+0x28], esi`
+// into the location's slot) and the wake byte at [esp+0x13]; ours folds the intersection into `test [ecx], edx`.
+// `dword intersection` at function scope 275; declared outside the overlap loop 275; `bool overlap` at function
+// scope 275; `long words` at function scope 275; a `dword const *` to the area's cluster bits 302 (1119 bytes).
+// Round 509: Persistent idle/remaining/last-seen timer field receivers, subsets
+// 1/2/4/3/5/6/7, 275 each; all with area bitmap receiver 302 (1119 bytes).
+// Original body restored; frame, iterator pool, point homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3017,6 +3052,14 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
 // 50/50/50/50/50/50/50/50.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// M298: Native admission bit-six bool/direct/nonzero and complete-word mask,
+// then once-owned bool/long bit and word/long mask [186, 50, 50, 50, 189, 191, 187, 172].
+// Original shared record and every admission observation restored.
+// Round 56 (lane 11, fast; aligned 2: the reload, and the loop pad it shifts): the two 0x1fb8a0 follow-ups through one
+// inline/forceinline `if (event != NONE)` helper 50/50; the first follow-up as an `&&` expression statement 50, as a
+// ternary 50; a named has-task bool for the follow-up test 50. Diagnostics: the follow-up block given a second call
+// 137 (594 bytes; loads the index into EBX, so the block is out of EBP's region, not only a missed copy); the index
+// read through its address in the trigger loop 50; a volatile read there 50, at the walk 49 (580 bytes), both reverted.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3418,6 +3461,15 @@ void function_2011f0(long arg_0);
 // Round 327: Count parameter as the sole remaining-attempt carrier in do/for loops 386/318;
 // last-producer short/long/word/unsigned-long countdowns 364/357/378/357; last-producer
 // short/long for loops 357/375. All restored; frame and placement/chain carriers remain.
+// M298: Redundant post-failure seat reset removed, with initial seat ownership,
+// actual object-result arms and omitted overwritten query-output default, eight forms
+// [384, 359, 362, 402, 383, 362, 356, 385]. Original output defaults and lifetimes restored.
+// DH278: Persistent success logical/bitwise accumulation with final-node receiver and scalar-mask subsets 350/350/340/340/361/361/351/351.
+// Complete opening body restored; no qualifying keeper.
+// Round 356: Native byte/word/dword request outcome, original/consistent early squad receiver,
+// then unsigned pending-chain handles without/with that receiver: 318/318/354/403/389/389/318/403.
+// Complete original body restored; frame 0x134 agrees, masked-index/placement and chain homes remain.
+// DL236: Early mask/admission/selection inline declaration subsets 1..7, then all with final success gate: 318/318/318/318/318/318/318/318. Original contracts and body restored; frame 0x134 agrees, masked index/placement/definition and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

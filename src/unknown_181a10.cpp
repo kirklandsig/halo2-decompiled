@@ -389,6 +389,13 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
 // and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
 // NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
+// Round 26: all 24 declaration orders of first, second, i and j at the top keep the slots, as do renames of them
+// (nine sets: these slots do not sort by name) and index initialisation before the loops. A component body
+// getter 8; j declared in the outer loop's body or before it 8/8; type_a read first 28; a contact count local 865
+// (1222 bytes); the second body read through the global 227 (710 bytes). Only a real extra read of j in the j or k
+// loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
+// Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
+// copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -518,7 +525,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 321 (was 321): frame 0x48 versus 0x44 (retail writes the transformed normal into the plane and has two
+// score 308 (was 321): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
 // unused dwords below it); classifier clamp form, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
 // key-clamp result arms 319; optional entity result 319.
@@ -634,6 +641,25 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
 // subsets 321 each; all with successive original-group normal/distance sums 321.
 // Original producers, helper contracts and complete body restored.
+// Round 458: Complete actual transform input ownership, mutable/immutable, with
+// original/native plane input and original/memcpy normal publication:
+// 468/468/514/514/468/468/514/514. Original matrix observations, plane inputs and publication
+// restored; frame 0x48 versus 0x44, classifier and output homes remain.
+// Round 77 (m3 lane 12; fast = plain): the instance-plane arm first as `if ((data >> 29) != 1)` (retail's block
+// order) 323 alone but register-masked aligned 204 -> 154; origin as one point3f copy 310 alone (1247 bytes, frame
+// 0x4c, aligned 212); with the hit point as one point3f copy too 310 (1243 bytes); both copies on the swapped arms
+// 308 at 1243 bytes (kept, aligned 162); swapped arms with origin copy 313, with the hit copy only 312 (aligned
+// 151); kept form plus the material read through 0x1ee410's returned pointer 310 (311 without the hit copy, 322 on
+// the swapped arms alone); kept form with scalar transformed normals 357 (1208 bytes); scalar normals alone 334
+// (frame 0x3c), with the origin copy 350, with origin and hit copies 368; origin assigned by components 322,
+// through real_point3d_set 324; hit copied out by struct assignment 333. Retail copies origin and hit with movss
+// (ours: dword moves) and keeps origin x at +0x28 above the hit point.
+// On the kept form: the hit point through real_point3d_set 313; the hit copy declared before the origin copy
+// 306 (two-count gain rejected), with the material through the returned pointer 308; distance, hit, origin in
+// that order 307.
+// Round 464: direct native normal-field accumulations, rowwise/leading-pair/leading-product/
+// termwise schedules, with original/early plane-normal publication: 321/321/321/321/321/320/321/319.
+// Early leading-pair/termwise publication gains one/two counts, rejected; original normal and plane restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
@@ -652,12 +678,8 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 		key += first->next->shape->data * 8 - 8;
 	long limited = key < 0 ? 0 : (key > count - 1 ? count - 1 : key);
 	if (limited != key) return;
-	real origin_x = ((point3f *)(first->transform + 0x50))->x;
-	real origin_y = ((point3f *)(first->transform + 0x50))->y;
-	real origin_z = ((point3f *)(first->transform + 0x50))->z;
-	real hit_x = contact->position.x;
-	real hit_y = contact->position.y;
-	real hit_z = contact->position.z;
+	point3f origin = *(point3f *)(first->transform + 0x50);
+	point3f hit = contact->position;
 	real distance = contact->distance + first->shape->radius;
 	if (!(results[key].fraction > distance)) return;
 	bool valid = true;
@@ -672,15 +694,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 			long surface = (data >> 16) & 0x1fff;
 			plane3f plane;
 			real side;
-			if ((data >> 29) == 1)
-			{
-				byte *record = *(byte **)((byte *)g_4e0340 + 0x2c) + entry * 8;
-				bsp3d_get_plane((s_bsp3d *)g_4e0340, *(short *)record, &plane);
-				if (record[4] & 0x20)
-					results[key].flag2c = function_181db0(*(short *)(record + 6), &results[key].surface_vector);
-				side = plane.n.j * origin_y + plane.n.k * origin_z + plane.n.i * origin_x - plane.d;
-			}
-			else
+			if ((data >> 29) != 1)
 			{
 				byte *bsp = (byte *)g_4e0348;
 				byte *instance = *(byte **)(bsp + 0x144) + entry * 0x58;
@@ -694,7 +708,15 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 				normal.k = matrix->up.k * plane.n.k + matrix->left.k * plane.n.j + matrix->forward.k * plane.n.i;
 				plane.d = matrix->position.z * normal.k + matrix->position.y * normal.j + matrix->scale * plane.d + matrix->position.x * normal.i;
 				plane.n = normal;
-				side = plane.n.k * origin_z + plane.n.j * origin_y + plane.n.i * origin_x - plane.d;
+				side = plane.n.k * origin.z + plane.n.j * origin.y + plane.n.i * origin.x - plane.d;
+			}
+			else
+			{
+				byte *record = *(byte **)((byte *)g_4e0340 + 0x2c) + entry * 8;
+				bsp3d_get_plane((s_bsp3d *)g_4e0340, *(short *)record, &plane);
+				if (record[4] & 0x20)
+					results[key].flag2c = function_181db0(*(short *)(record + 6), &results[key].surface_vector);
+				side = plane.n.j * origin.y + plane.n.k * origin.z + plane.n.i * origin.x - plane.d;
 			}
 			if (side > 0.0f) results[key].normal = plane.n;
 			else valid = false;
@@ -718,7 +740,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	if (valid && contact->normal.k > scale)
 	{
 		results[key].found = true;
-		real_point3d_set(&results[key].position, hit_x, hit_y, hit_z);
+		real_point3d_set(&results[key].position, hit.x, hit.y, hit.z);
 		real_point3d_set((point3f *)&results[key].normal, contact->normal.i, contact->normal.j, contact->normal.k);
 		results[key].fraction = distance;
 		results[key].index = index;

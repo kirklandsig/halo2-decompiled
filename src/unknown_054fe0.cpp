@@ -1440,6 +1440,14 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // M288: Existing membership helper in collection/update/both 232/216/247; name-copy
 // return used for its terminator 183 (one-point gain, rejected); with collection/update/both
 // 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
+// Round 59 (m3 lane 1, fast): the record defaults in an inline initialiser taking the record 184, forceinline 184 (the
+// zero stays hoisted, same code); no `current` with the 16-byte and 12-byte groups as memsets 224 (930 bytes, aligned
+// 55: retail's `test edi, edi`), the 12-byte memset first 224 (aligned 51: retail's EAX block for the 16-byte group, the
+// 12-byte zero still in EDX where retail has ECX); on that the mask read from the field 224, the parameters pointer renamed
+// to sort before owner 224, the team compared as a long 224. Owner, name count and the requested cursor still differ.
+// M304: Current-record address after clear/array defaults/zero bytes/sentinels, with phase/entry
+// property output: all eight fast 211/927, same as unchanged fast preview (callee convention caveat).
+// Original address/output lifetimes and body restored; full baseline remains 184/926.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
@@ -1925,6 +1933,8 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
+// then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
 // limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which
@@ -1987,6 +1997,9 @@ struct s_summary_player_sort_entry
 // mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
 // at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
 // and member index kept in the frame; name, identity and counts read through the membership).
+// Round 284: all three map-query output identities, six lexical priorities 360 each;
+// two complete output declaration scopes 360 each, with the sorted cursor stepping in its body.
+// Original body restored; frame and saved metadata homes remain.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

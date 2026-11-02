@@ -209,6 +209,26 @@ void function_213970(void);
 // Round 292: Native signed/unsigned wide language result, mutable/immutable and original/entry
 // acquisition, 146/146/146/146/149/149/149/149. Original result and whole body restored;
 // separate protected storage definitions still prevent both retail-wide clears.
+// Round 59 (m3 lane 1, fast): a local holding NONE for the three stores 131; the five clears in an inline helper 53
+// (169 bytes: the size pragma leaves it out of line, a call to a new one-caller helper, not kept); both invalidate
+// calls through an inline helper 131; the NONE/flag stores after the language query 131; a local holding the zero
+// for the scalar stores 131. Still BLOCKED-BY the separate definitions (src/unknown_213760.cpp and src/unknown_12be90.cpp).
+// DL227: Actual shared cached-query return ownership, direct-field, early-hit, exhaustive-result,
+// miss-return, named-conversion, chained-publication and miss-reload forms: 131 each. Original
+// shared helper/body restored; protected separate definitions still prevent both retail-wide
+// clears.
+// DL233: One requested value across language/version transitions, original/string-boundary
+// acquisition and independent dirty-first publications: 131/126/131/126/131/126/131/126.
+// Five-point forms dropped above 30; original complete body restored. Two whole-block clears
+// still require the protected global definitions.
+// Round 28 (m3 lane 18, fast): block B's scalar resets in descending address order 131; the NONE/flag stores
+// after the language update 131; the language update before the scalar resets 131; the NONE/flag stores
+// between the string and request clears 131; the scalar resets before the first clear 131 (all the same code:
+// separate globals let the compiler order the stores freely). Still BLOCKED-BY the separate definitions
+// (block A: src/unknown_213760.cpp, held by N306 this round; block B: g_55bd04/g_55bd08 in src/unknown_12be90.cpp, M1).
+// DL235: Native complete progress reset with requested-language reads at each use,
+// native handle/NONE-chain/scalar-zero-chain subsets: 172/184/172/184/163/176/163/176.
+// All restored; protected separate storage still prevents the two retail bulk clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

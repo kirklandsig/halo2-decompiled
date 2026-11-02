@@ -1182,7 +1182,11 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // the query and its callers 2. Round 55: the query's point parameter second, third, fourth
 // or fifth in its list (definition, declarations and calls) 2 each, first 2 (0x17b5d0 2); byte
 // flags parameter 2 (0xd2a50 12); its fifth parameter as a direction pointer passed NULL 2; the
-// retry test as a bool conversion 2, as `(flags & 1) == 1` 2.
+// retry test as a bool conversion 2, as `(flags & 1) == 1` 2. Round 27 (lane 17, fast): `flags &= ~1`
+// first in the retry block 2 (same code); `failed = true` in both arms of the flag test 2 (same code);
+// status declared at function scope 2 (same code); the point defined before the flag tests 66 (464
+// bytes); permuter 46 tries, best 2. Compile-only, every spelling of the retry value (xor, subtract,
+// hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
@@ -1457,6 +1461,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
 // subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
 // native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
+// Round 235: Complete selection-header value with native-entry/combined-mask/entry-false
+// result subsets 567/568/573/572/544/545/571/572. Frame 0x28 is recovered but type moves
+// to the stack; original scan inputs, result, helpers and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1756,6 +1763,12 @@ dword function_015cd0(long index, dword entry);
 // Round 118: the buffer declared in the conversion block 4; a short result 19; the bsp globals
 // pointer in a local 4; the bitmap tested before the status 4; the result declared after the
 // buffer 4 (a compile-only build keeps the same two registers in every form).
+// Round 136 (m3 lane 6, fast): a sample pointer local set in each arm (0xd30d0's shape) 68 (312 B, block
+// order flips); UV filled by field stores 4; UV declared at function scope 4; palette colour as two unpack calls 4;
+// converted surface in a named local 6 (the d15e0 call moves ahead of the push, buffer still ECX); buffer declared
+// before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
+// shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
+// general registers as retail, so no register-summary gap there.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2124,6 +2137,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
 // native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
 // producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
+// Round 234: Decoded/encoded/both scalar roots at branch/data production, readonly data and native block controls 554 each (eight forms); first/middle/last samples 555; complete status/mesh/sample/vector/color role names 555. One-byte gains rejected; original complete body restored. Frame 0x90 agrees; status/mesh homes and selective helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

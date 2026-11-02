@@ -79,8 +79,14 @@ void cache_copy_forget(char const *map_name);
 bool map_copy_request(char const *map_name, long priority);
 void __stdcall cache_copy_record_use(char const *map_name);
 
+// MiniMax S (11-01): the state 11 clamp keeps the completed value in EDX and the limit in ECX; no lower score.
 // score 37 (was 37): Frame 0x110 and retail length agree; request-copy order, file-handle
 // and completed/limit registers, and state 16/19 store scheduling still differ.
+// Round 115: chunk-first, slot/chunk-first and remaining/slot/chunk declarations 141 each;
+// state 17 between copy and clear 37, before the copy 89; named state-7 write options 500;
+// split state-7 handle 39; direct state-9 receiver 304; shared selected-file pointer 37;
+// state-7 handle copy with/without release inline 256; release/resize inline declarations 37 each;
+// completed local with remaining/slot/chunk declarations 142; const transfer locals 37.
 // Earlier (37, was 37): state 0 is blocked by 0x214db0 (map_file_path_get, src/unknown_213d20.cpp):
 // ours keeps EDI across the call, so the compiler folds the address of the pending request into
 // one register and the block is three bytes short, while retail's callee clobbers EDI. Left:
@@ -266,6 +272,9 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
 // the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
 // (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
+// Round 284: complete total/completed/capacity producers with six scalar lexical priorities 36 each;
+// in-place and branch clamp results 38/36. One-point, exact-only forms rejected; original body restored.
+// Request/path order, outgoing file/transfer registers and terminal store scheduling remain.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

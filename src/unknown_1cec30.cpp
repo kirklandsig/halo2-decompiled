@@ -919,7 +919,11 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
-// score 81 (was 81): component arrives on the stack where retail passes it in ebx (no push ebx,
+// score 81 (was 81): unchanged this round: the component still arrives on the stack where retail
+// passes it in EBX (no push ebx, a plain ret and a 0x88 frame), the entry copy is still a rep movsd
+// where retail uses movaps, and retail still tests m_fixed before flag5; the convention is decided
+// by the call cycle through the bodies outside this file.
+// Earlier: component arrives on the stack where retail passes it in ebx (no push ebx,
 // plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
 // m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
 // set + body pointer + m_fixed first 88 at 230 (retail's code except the ebx parameter); that with
@@ -1001,6 +1005,7 @@ void function_1d1540(s_havok_component *component);
 // Round 26 (lane 17, plain): 0x1d1260/0x1d1540 declared at the top of this file 81 (same code); that with the
 // 88 body 88 (0x1d0c20 40, 0x1d5120 73), so the cycle walk order is not what keeps the component on the stack;
 // the 88 body with flag5 read into a named bool before the body fetch 88, with a member-wise copy 88 (fast).
+// Round 357: Common setter with byte/word/dword/long refresh results, constructor then aligned set copy 77/83/82/82/56/59/58/58. Original body restored; frame and component transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1035,6 +1040,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// score 38 (was 38): unchanged this round: retail still passes the component to 0x1d0cf0 in EBX
+// (loaded here after `push ebx`), ours pushes it, so the frame size and every store offset differ;
+// the body is otherwise retail's instruction for instruction.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -1914,10 +1922,10 @@ class c_extent_shape;
 real __stdcall function_182aa0(c_extent_shape *shape, real *minimum, real *maximum);
 
 // @retail 0x1d1230
-real function_1d1230(long rigid_body_index, s_havok_component *component)
+real s_havok_component::function_1d1230(long rigid_body_index)
 {
     real minimum, maximum;
-    hkRigidBody *body = component->rigid_bodies[rigid_body_index].rigid_body;
+    hkRigidBody *body = rigid_bodies[rigid_body_index].rigid_body;
     return function_182aa0(*(c_extent_shape **)((byte *)body + 0xc), &minimum, &maximum);
 }
 
@@ -2333,6 +2341,11 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // not the lever), the length summed k, j, i with the scale k, j, i 99. Retail loads the velocity's j and
 // k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
 // unscaled else), reloading only i; ours reloads all three in each arm.
+// Round 319: Native speed/velocity/normal-output role names, subsets 1/2/4/3/5/6/7 91/91/91/91/91/91/91; all with enclosing output declaration 91. Original names, declarations and body restored.
+// DL240: Property word before lookup paired with native direction/final movement/early speed
+// ownership, masks 1/2/3/4/5/6/7: 223/160/191/424/300/417/279; direction setter plus movement 186
+// at retail length. All regress. Original helper and body restored; early velocity j/k loads,
+// speed products and property zero remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

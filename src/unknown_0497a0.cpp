@@ -194,6 +194,16 @@
 // the 8.2x phase) as named doubles 651; named reals, an inline four-factor helper, sinf/cosf and the
 // global point are forward-substituted (compile-only screens). Retail keeps the factors on the x87
 // stack (fmul st(1)/st(2), fadd st(3), three late pops), order 8.2x, sin x, cos 7.8y, cos 7.75y.
+// Round 509: Native horizontal/vertical/depth output receivers, subsets 1/2/4/3/5/6/7,
+// 722/722/588/720/722/722/719; all with depth-offset receiver 728. Main receiver homes add
+// four frame bytes but regress; original complete body and output receivers restored.
+// Round 512: Complete two-bit mask admission with full-kind/projection-mode/flag
+// snapshots, masks 0/1/2/4/3/5/6/7: 677/596/691/671/691/699/598/703.
+// Original decision and complete body restored; shape/basis/wave homes remain.
+// DL238: Complete shared six-channel clamp with branch-owned attenuation and long/dword/short/byte
+// output modes 959/959/956/962; selected-factor counterparts 997/997/994/1000. Original products,
+// repeated clamp arms, mode publication and sixth-component conversion restored; frame and
+// shape/basis/wave homes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -522,13 +532,14 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 276): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// score 265 (was 265): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
 // case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
 // where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
 // pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
-// score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Earlier 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
@@ -717,6 +728,30 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// Round 135 (m3 lane 5): local renames for the same-size slot order (vertex cursor, source, u/v, previous, half
+// width) 265 each: the differing homes belong to spilled register variables, which names do not order.
+// Round 512: Common geometry length/native transition color/both 265/265/265;
+// common reciprocal alone/with length/with color/with both 399 each, and all with
+// function-scope scalars 399. Original complete body restored; frame 0xa8/0xac
+// and geometry/conversion homes remain.
+// M298: Actual first/second output-position workspaces, direct/local, local/direct,
+// direct/direct, pointer/local, local/pointer, pointer/pointer, direct/pointer, pointer/direct
+// [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
+// DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
+// Complete opening body restored; no qualifying keeper.
+// Round 466: Complete independent current-position scalars in vertical/planar/camera
+// geometry subsets 1..7, then shared before dispatch: 570/576/570/568/559/626/538/582.
+// Frame/spill homes remain; original coordinate observations and full body restored.
+// Round 316: Paired planar/camera/both offsets 376/388/493; native position
+// alone/with planar/camera/both and assigned native position 669/657/633/628/628.
+// Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0
+// 400/308/407/428/408. Original geometry, products, observations and case order restored.
+// Round 518: half-width across tint on the entry-correct paired-point graph,
+// original/staged side/staged normal/both 325/325/325/325; with vertical normal
+// previous/neighbor/both order 321/334/406; both staged and both orders 406.
+// Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
+// Round 471: Emitted-pair capture, cursor step at lookup/color/tint/half-width/geometry/position/alpha/pixel,
+// 635/619/635/581/558/606/556/444. Original cursor and body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1081,6 +1116,23 @@ void __stdcall function_43720(s_43740_input *input)
 // with the position computed before the fill 68 (0x42b20 60 both); the texture test as an early return
 // 62 (same code). The lookup-first field form is the only one that splits the head here; what keeps the
 // split tag below both parameters in retail's colouring is open.
+// Round 135 (m3 lane 5): retail's 0x1e5e0 copies the record with an inline rep movs and calls nothing. Diagnostics
+// only: the record passed to a scratch callee that stores the pointer 119 (152 bytes: VC drops the record stores),
+// to one that only reads it 66. Renames (slot/register ties): tag 62, bitmap 62, group 62, image 62, the definition
+// byte view 62.
+// Round 509: Native tag-field/tag-entry/bitmap-table receiver subsets 1/2/4/3/5/6/7
+// and all with the source array receivers 62 each. Original body restored;
+// early tag EAX/EBP split, signed-slot residence and shader-relative test remain.
+// Round 512: Native source snapshot mutable/read-only 81/81, definition
+// snapshot mutable/read-only 100/100, both snapshots in four constness forms
+// 124 each. Original body restored; all copies lose the matched caller.
+// Early tag EAX/EBP admission and later slot/shader homes remain.
+// DL238: Entry source/definition, slot and shader request-header subsets 1/2/3/4/5/6/7/all plus
+// shader-relative normal 66/59/68/67/66/73/73/79. Early slot alone reaches retail length at 59, a
+// rejected three-point gain. On it, shared texture-pointer/Boolean admission 69/75; native
+// count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
+// 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
+// homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

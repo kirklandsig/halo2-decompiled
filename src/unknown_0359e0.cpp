@@ -171,6 +171,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 485: Complement low-bit mask with both tail insertions OR/add/XOR,
 // private/shared logarithms 83/83/83/89/89/89; sign-extended mask private/shared
 // 84/90. All three controls matched; original mask, helpers and tails restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // Round 495: Nonzero scans with negative-seeded index or complete bit length,
 // zero-before/after result selection and long/short counts: 101/94/114/95/100/98/112/93.
 // Original helper and body restored; coordinate promotion and count homes remain.
@@ -187,6 +190,34 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
 // 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
 // original helper calls, relations and body restored.
+// Round 43 (lane 15, fast with 0x136140): parameters as (width, height, x, y, out), which retail's call setup allows
+// (it fixes EAX, EDX, ECX and height pushed before out, not height against the coordinates), caller updated: 82 (same
+// code); with log2_floor 87; with long copies after the mask 100 (0x136140 125); with only the y copy at entry 93
+// (0x136140 7). The outputs written inside the tail's arms (out[1] then out[0] under the width test, out[0] then
+// out[1] in the else) 77, not kept (a gain of 5): x then stays in EDX as in retail and the first exit gets retail's pops,
+// leaving y EDI / x bits ESI where retail has ESI / EDI. On that tail: out[0] as one `x_bits | ...` expression 77, the
+// part written first 77, a named high part 77, out[0] stored first in the width arm 78, out[0] stored before the height
+// test 83, one out[1] store ahead of the tests 101, the else arm with an early return 77; with swapped copies 77, with
+// log2_floor 87, swapped with log2_floor 84 (0x136140 29); long copies after the mask 99, y at entry and x after 93/86 and
+// x at entry and y after 93/83 (log2_floor/private, all lose 0x136140); y looked up first in both arms 81, low arm 98, high arm
+// 98; y_bits declared first 77; the minimum as `if` 77, with y first 81. x and y used directly 119, with the arms tail 124
+// (log2_floor, x copied in 32 bits to EBX, y stacked), private logarithm 128. Retail's 16-bit `mov si, cx` stays out of reach;
+// the branch minimum still needs an object without /arch:SSE (a build-flag lead, not changed here).
+// Round 503: present high-bit scan predicate, original/no zero guard, scan/count update
+// order, shifted predicate 82/82/98/98; masked predicate 89/89/96/96. All controls
+// remain matched; original helper/body restored. Early promotion and count homes remain.
+// Round 505: Shared low-band producer with optional high-band insertion, short/long low mask,
+// OR/add joins and symmetric y-shift production: 104/104/104/104/103/105/103/105.
+// All remain 270 bytes; original branch producers and body restored.
+// Round 516: Signed axis-count difference in short/long storage, both orientations, reused by
+// suffixes and optionally minimum. Early coordinate promotion and height/common homes remain.
+// Scores 119/120/125/125/119/125/125/125; original executable body restored.
+// Round 518: independent unsigned quotient scan with long/dword/short/word
+// counts 98/98/98/98, with zero-first exit 105/105/103/103. Original helper
+// and body restored; delayed coordinate promotions and height/common homes remain.
+// Round 521: symmetric native table-expression indices/low/high nodes, seven subsets
+// and unshifted high node 82/82/82/82/82/82/82/82. All original executable code
+// restored; coordinate promotion and height/common homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

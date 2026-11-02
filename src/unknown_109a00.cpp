@@ -248,6 +248,10 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // previous velocity declared with the offset and the moved transform at its call 10; the delta as
 // `-change.i` 52. Compile-only screens of 128 local-declaration combinations (headers, platform index,
 // definition, velocity pointer, declaration places) found none that flips only the two x adds.
+// Round 26: both flagged sites are one x add each (the other flagged lines only shift by its one byte): ours
+// reverses retail's choice at each. The x add written change-first with `+=` for y and z 37 (1024 bytes); a second
+// read of the clock field for the change 163; the previous velocity through a local before the output copy 163;
+// products written scale-first 10; the delta's -1 first 10.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {
@@ -509,6 +513,27 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 292: Overlap-safe previous transform/velocity-pair/center transfers, subsets 1/2/4/3/5/6/7,
 // 236/229/220/219/223/243/256; all with existing center converter 248. Original complete file,
 // helpers, copies and caller restored; input register pair, physics spill and projection schedule remain.
+// Round 28 (lane 17, fast with 0xb7060): the search loop as a force-inlined helper 324 (813 bytes, both velocity
+// getters then stay out of line; head registers retail's and 0xb7060 matches), with the getters force-inlined too 132
+// (925, head and 0xb7060 back), plus the center through the converter 129 (928, entry on the stack). Diagnostics:
+// only both getters out of line, or only the default-body test removed, give retail's head (328, 269); either
+// `entry->active` or `entry->valid` test removed puts the entry on the stack (226, 192). Model index inline 135,
+// scaled locals inline 131, no body pointer 235, those together 131/235. Default-body forms (ternary, field in a
+// local, default-first, count in a local) by found-first and center converter: 112 to 265, converter 149 to 238.
+// N308: Both velocity getters inactive-first/inactive-return/native output/active-path output,
+// original center 147/147/328/219, native center 177/177/305/255. Forced existing getter expansion
+// on the four native-output graphs 261/219/248/255. Original getters, center and body restored;
+// object/entry roles, physics spill and projection schedule remain.
+// Round 310: Plain component loops for previous transform/previous vector family/current center,
+// subsets 1..7 then all unsigned counters: 382/233/364/224/401/219/384/384. Matrix and
+// center loops recover the input register pair and caller 0xb7060, but regress the body;
+// center alone first differs at +0x35 and reloads its source receiver per component.
+// Original copies, getters and body restored; physics/default/search/projection scheduling remains.
+// N313: Existing default producer owns the complete marked-body search; eager/late fallback with
+// latch/early return 525/524/525/525; existing native center conversion 519/518/519/519.
+// The larger existing helper stays out of line, shrinking the caller to 659..666 bytes and worsening
+// its caller to 11; exact-only boundary forms restored. Original default producer, search and center
+// transfer restored; frame 0x48, input register pair and physics/projection scheduling remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

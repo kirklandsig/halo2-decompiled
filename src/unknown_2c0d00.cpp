@@ -303,6 +303,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // Round 23 (lane 18, plain; fast misleads here, 931 fast against 882 plain): aligned before straight 882;
 // the 0x26c flag before the dot 883; self unit chosen right after its fetch 881; the range pair before
 // the ignore/block priorities 881; range maximum read before the minimum 882 (one-point moves, not kept).
+// Round 234: Native header/sphere/both/filter-word/header-filter/sphere-filter/all observations 888/880/946/925/930/880/946; all with library sphere copy 946. Sphere forms reach retail length but frame 0x2cc4 versus 0x2cac and gain only two; rejected. Header frame 0x2ce4. Original complete body restored; actor/unit and priority/query/marker homes remain.
+// N303: Distinct first-second/first-third/second-third/all marker batches grouped at collection
+// or object scope: 908f each (control 931f, baseline 882 plain). Exact-only forms restored;
+// original separate buffers, query storage, qualifiers and full body retained.
+// Round 317: Native first/second/vehicle relative-vector subsets 1..7, all with shared marker dots
+// 916/916/911/921/913/913/929/917 fast. Original full body restored.
+// Paired-marker ordinary 918; original body restored.
+// Actor/unit and priority/query/marker homes and excess twelve frame bytes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1138,6 +1146,40 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 443: repeated native byte/word/long/dword side-index values at entry
 // 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
 // radius, traversal, predicates and complete body restored.
+// Round 352: Complete projection/orientation results phased/together, each with
+// first/sentinel/second/pair-first Boolean accumulation: 404/404/404/423/403/403/403/422. Frame
+// 0x30, zero/radius and vertex allocation remain; original geometry, helpers and traversal
+// restored.
+// Round 234: Planar start/end/both/origin/start-origin/end-origin/all input records 424/338/426/346/419/362/444; all via library copies 444. Frames 0x38/0x40/0x48 regress from 0x30 versus retail 0x28. Original full body restored; zero/radius schedule and vertex homes remain.
+// N303: Final vertex from the already selected endpoints: conditional/if-else/default-to/default-from
+// 361/361/369/369; default before geometry to/from 369/375; native word endpoints/all indices
+// 397/358. Original body restored; frame 0x30 versus 0x28 and geometry/vertex homes remain.
+// Round 317: Actual endpoint-word/point/node lvalue subsets 1..7, all plus first portal lvalue
+// 333/324/333/324/333/324/333/333 fast; all original receivers and body restored.
+// Frame 0x30 versus 0x28, zero/radius lifetime and endpoint/history homes remain.
+// Round 73 (m3 lane 16, fast; positional/aligned; 324 stands, every gain below needs the flag, so nothing is kept without
+// a match). Base F = direct offsets (`origin->x + normal.x * radius`, `* (0.0f - radius)`), the three-if crossing flag
+// declared before the normal: 363/134 (1288), float block identical to retail apart from the shift. On F: first_vertex
+// first 361/132; end pointer before start 347/143 (1312); vertex1 read first 366/138; select by if/else 363/134; vertex =
+// vertex1 then if 367/134; widened side named 321/135; first_vertex + side 319/133; end + side 307/144; all three 305/142.
+// G = F + first_vertex first + end first (345/141): one variable for vertex1 and vertex 334/162; count first 345; ring
+// through a pointer local initialised from edge 212/98 (1292: vertex shares EBX with vertex1 as retail); in the ring's
+// body or after the forward test 345; with `edge = &edges[i]` kept and `walk = edge` at the bottom 204/97 (1312); any ring
+// read through edge instead of walk (seven masks) 345; edge address-taken in the ring (three placements) 345; first
+// comparison on bool 204; second on bool 316/178; helper re-reading the node word 204 (same code). H = 204 + surface index
+// read inside the test 204/96 (retail's load after the first jump); on H: the selected vertex read from the edge 166/79
+// (edge ESI, table EDI as retail, but word temps); vertices at every use 276/143; from/to at use 225/136; from/to as two
+// ternaries 320/77 (edge ESI), to first 222/79, vertex1 first 341/64 (vertex1/vertex EBX, edge ESI, vertex0 lost to the
+// widened side); a 30-form grid of from/to spellings best 183/87; walk from the table 385; chained tail 212; two-ifs and
+// for-increment tails 204; long count 205; count before first_edge 202/95. Single-variable ring on H (345/140): only this
+// form gives retail's edge store and reload at the ring's bottom, so the pointer local is not retail's; named long index
+// for `!forward` 277/112 (vertex1 EBX, vertex0 EDI, edge memory, but the test folds to setne); on one read only 345; byte
+// or bool index 353; first_edge at the loop top 320/158; first_edge or count declared elsewhere 345; first-edge pointer
+// compare 369; named next edge 345/355; named open result or ring node 345; both 380. Retail keeps edge ESI, vertex EBX,
+// vertex0 and node index and ring index EDI, and spills first_edge, count and the widened side: ours always spills vertex
+// or edge instead of first_edge. Plain subsets on the kept body: first_vertex first 322; surface in test 321; end first
+// 341; ring pointer 353; first_vertex + surface 319; first_vertex + end 339; end + surface 338; those three 336; pointer
+// + first_vertex 351; pointer + surface 352; pointer + end 342; all four 339.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1358,7 +1400,8 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 444 (was 444): frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
+// score 420 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1737 bytes against 1746.
+// Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
 // loop indexes against the count on the stack (ours holds it in bx) and forms the output element at
@@ -1535,46 +1578,75 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 479: native positioned-point subobject with short/long type-link
 // combinations 477/488/477/476; native position subobject 474/471/473/471
 // (fast control 444). Original complete record snapshot and body restored.
+// Round 27 (lane 17, fast; aligned = difflib over the listing): body rewritten to retail's map, 444 -> 420 (aligned 442 ->
+// 238, 1737 bytes, frame 0x10c; both volatiles gone: the source radius's alone cost 9, 411 with it, its `mov; mov; fld` needs
+// another form): count > 1 arm first, a step pointer in place of the record copy, type/link locals set in the
+// typed branch, the corner logic inside the untyped branch, a plain output index (its volatile removed), the corner chosen by
+// if/else, target.z set once outside the attempts, a named location, the next side in its own bool assigned at the loop end,
+// sector read before the output index. On the way: the rewrite alone 453 (1696, aligned 289), plus corner/z/location 429 (1727),
+// no second `edge = 0xffff` in the scan 429 (aligned 268; retail has that store), plus next side 412, plus sector order 411. The
+// first conversion nested as 0x210850's body 408 (1747, aligned 244; retail's two copies merge in the second, not kept: that
+// helper's shape written out); without the type/link locals 482-492, without one of them 480/482 (with nesting 433/470); the
+// scan as the compound `while (end < count && type == NONE)` with a test after it 456 (hence the break form). Registers
+// left: retail zero EBX (ours EDX, 0xc4 count in ESI where retail EDX), y read first through the query (`mov edx,[ecx+0x18]`),
+// points EDX, index EDI, step ECX then +0x84, NONE ESI, edge EBX, count never enregistered in the loop; ours points ECX, index
+// EDX, step EDI, NONE EBX, edge in memory. Retail also stores query+4 at +0x64 (never read). Retail inlines existing 0x210a30
+// (and 0x210850) here: a call to 0x210a30 stays out of line even with an inline or __forceinline declaration (697, 1495 bytes;
+// its file has /Ob1). Tried on these: the origin as two statements, y first or x first, 491/492; sector read before the origin 443
+// (1746 bytes, aligned 273); origin through the query, source after it, zero-init first 428/429; data as an if or if/else 429;
+// the count/data locals named 451; used shared with the no-data arm 469; scan as a for 548 (1858); type as long 487; out point pointer
+// 450-481 (aligned down to 245, 1757-1770); both conversions nested 410; z in a local +4; second edge store 442-449 (1770-1777).
+// DL237: Complete native query-source mutable/immutable/memcpy/memmove copies 495/495/495/504;
+// with existing origin setter 524/524/524/529. All restored; source-radius staging, persistent
+// zero and metadata homes remain.
+// Round 316: Eager classification short/word/long/dword with short/long links
+// 427/420/415/422/473/420/473/420; eager word with paired corner results
+// short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
+// original classification, Boolean corners and complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
 {
-    volatile real source_radius = query->source.radius;
-    real radius = (real)(source_radius + 0.05);
+    real radius = (real)(query->source.radius + 0.05);
     s_pathfinding_data *data = *(long *)((byte *)g_4e0348 + 0xc4) > 0 ?
         *(s_pathfinding_data **)((byte *)g_4e0348 + 0xc8) : 0;
     if (data)
     {
-        if (count <= 1)
+        if (count > 1)
         {
-            *result_count = 1;
-            result[0] = points[0];
-        }
-        else
-        {
-            point2f origin = *(point2f *)&query->source.point.point;
+            s_type_c3b527 const *source = (s_type_c3b527 *)&query->source.point;
+            point2f origin = *(point2f *)&source->point;
             long sector = points[0].node_index;
+            short index = 0;
             short used = 0;
             bool copied_last = false;
-            for (short index = 0; index < count; )
+            while (index < count)
             {
-                s_path_step_view const entry = points[index];
-                s_path_step_view *out = &result[used];
+                s_path_step_view const *step = &points[index];
                 short next = NONE;
                 long edge = 0xffff;
                 bool found = false;
-                volatile short output_index;
-                if (entry.type != NONE)
+                short type = NONE;
+                short link = NONE;
+                short output_index;
+                if (step->type != NONE)
+                {
                     next = index;
+                    type = step->type;
+                    link = step->link_index;
+                }
                 else
                 {
                     short end = index;
-                    while (end < count && points[end].type == NONE)
-                        ++end;
-                    if (end < count)
+                    while (end < count)
                     {
-                        next = end;
-                        found = true;
+                        if (points[end].type != NONE)
+                        {
+                            next = end;
+                            found = true;
+                            break;
+                        }
+                        ++end;
                     }
                     for (short candidate = end - 1; candidate >= index; --candidate)
                     {
@@ -1597,42 +1669,54 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                         copied_last = true;
                         break;
                     }
-                }
-                s_path_step_view const *next_step = &points[next];
-                if (edge != 0xffff && next_step->type == NONE)
-                {
-                    point2f corners[2];
-                    bool left = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                        &origin, radius, edge, true, &corners[0]);
-                    bool right = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                        &origin, radius, edge, false, &corners[1]);
-                    if (right && left)
+                    if (edge != 0xffff)
                     {
-                        point2f const *previous = next > 0 ? (point2f *)&points[next - 1].point.point :
-                            (point2f *)&query->source.point.point;
-                        point2f const *endpoint = (point2f *)&next_step->point.point;
-                        bool side = function_2c2a70(previous, endpoint, &corners[0], &corners[1], &origin);
-                        point3f start = { origin.x, origin.y, 0.0f };
-                        for (short attempt = 0; attempt < 2; ++attempt)
+                        s_path_step_view const *next_step = &points[next];
+                        if (next_step->type == NONE)
                         {
-                            point2f center = corners[side ? 0 : 1];
-                            point2f tangents[2], candidate;
-                            function_2c2740(&origin, &center, radius, side, &tangents[0]);
-                            side = !side;
-                            function_2c2740(endpoint, &center, radius, side, &tangents[1]);
-                            function_2c2910(&center, tangents, &origin, radius, &candidate);
-                            point3f target = { candidate.x, candidate.y, 0.0f };
-                            s_path_trace_result first, second;
-                            function_26c4e0(data, (s_type_c3b527 *)&start, sector, (s_type_c3b527 *)&target,
-                                NONE, (long)&query->location, &first);
-                            if (!((s_sector_trace_result *)&first)->blocked &&
-                                !function_26c4e0(data, (s_type_c3b527 *)&target, ((s_sector_trace_result *)&first)->sector_index,
-                                    &next_step->point, next_step->node_index, (long)&query->location, &second))
+                            point2f corners[2];
+                            bool left = function_2c3030((s_pathfinding_data *)query->pathfinding,
+                                &origin, radius, edge, true, &corners[0]);
+                            bool right = function_2c3030((s_pathfinding_data *)query->pathfinding,
+                                &origin, radius, edge, false, &corners[1]);
+                            if (right && left)
                             {
-                                sector = ((s_sector_trace_result *)&first)->sector_index;
-                                origin = candidate;
-                                output_index = next_step->point.output_index;
-                                goto emit;
+                                point2f const *previous = next > 0 ? (point2f *)&points[next - 1].point.point :
+                                    (point2f *)&source->point;
+                                point2f const *endpoint = (point2f *)&next_step->point.point;
+                                bool side = function_2c2a70(previous, endpoint, &corners[0], &corners[1], &origin);
+                                point3f start = { origin.x, origin.y, 0.0f };
+                                point3f target;
+                                target.z = 0.0f;
+                                long location = (long)&query->location;
+                                for (short attempt = 0; attempt < 2; ++attempt)
+                                {
+                                    point2f center;
+                                    if (side)
+                                        center = corners[0];
+                                    else
+                                        center = corners[1];
+                                    point2f tangents[2], candidate;
+                                    function_2c2740(&origin, &center, radius, side, &tangents[0]);
+                                    bool other_side = !side;
+                                    function_2c2740(endpoint, &center, radius, other_side, &tangents[1]);
+                                    function_2c2910(&center, tangents, &origin, radius, &candidate);
+                                    target.x = candidate.x;
+                                    target.y = candidate.y;
+                                    s_path_trace_result first, second;
+                                    function_26c4e0(data, (s_type_c3b527 *)&start, sector, (s_type_c3b527 *)&target,
+                                        NONE, location, &first);
+                                    if (!((s_sector_trace_result *)&first)->blocked &&
+                                        !function_26c4e0(data, (s_type_c3b527 *)&target, ((s_sector_trace_result *)&first)->sector_index,
+                                            &next_step->point, next_step->node_index, location, &second))
+                                    {
+                                        sector = ((s_sector_trace_result *)&first)->sector_index;
+                                        origin = candidate;
+                                        output_index = next_step->point.output_index;
+                                        goto emit;
+                                    }
+                                    side = other_side;
+                                }
                             }
                         }
                     }
@@ -1645,23 +1729,24 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                 }
                 else
                 {
-                    origin = *(point2f *)&next_step->point.point;
-                    sector = next_step->node_index;
-                    output_index = next_step->point.output_index;
+                    origin = *(point2f *)&points[next].point.point;
+                    sector = points[next].node_index;
+                    output_index = points[next].point.output_index;
                     next = index + 1;
                 }
             emit:
+                s_path_step_view *out = &result[used];
                 out->node_index = sector;
                 out->point.point.x = origin.x;
                 out->point.point.y = origin.y;
-                out->point.point.z = entry.point.point.z;
+                out->point.point.z = step->point.point.z;
                 out->point.output_index = output_index;
-                out->unknown02 = entry.unknown02;
+                out->unknown02 = step->unknown02;
                 ++used;
-                if (entry.type != NONE)
+                if (type != NONE)
                 {
-                    out->type = entry.type;
-                    out->link_index = entry.link_index;
+                    out->type = step->type;
+                    out->link_index = link;
                 }
                 else
                 {
@@ -1671,7 +1756,6 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                 if (used >= 4)
                     break;
                 point3f delta;
-                s_type_c3b527 const *source = (s_type_c3b527 *)&query->source.point;
                 if (source->output_index == out->point.output_index)
                 {
                     delta.x = out->point.point.x - source->point.x;
@@ -1696,6 +1780,11 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
             *result_count = used;
             if (!copied_last)
                 *complete = false;
+        }
+        else
+        {
+            *result_count = 1;
+            result[0] = points[0];
         }
     }
     else

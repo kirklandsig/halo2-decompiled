@@ -76,6 +76,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // that clobbers EDX in place of ECX gives EAX here).
 // Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
 // clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
+// Round 71: the entry body in a helper keeping (state, entry, index) 415 (90 bytes, out of line), (state, index)
+// 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
+// bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
+// Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -909,6 +913,20 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 301: Direct opposite ordinal on nearest-pointer result, counter/pointer-end bounds 815/700; nearest
 // indexed 782/685; complete query value 654/614, with indexed nearest 623/602. Original visits, float
 // trees and body restored; frame 0x18/0x2c, position transport and scan expansion remain.
+// Round 464: actual fallback-vector entry declaration/entry initialization/branch const/
+// branch setter with common-exit/nested singleton joins: 547/594/547/547/547/594/547/547.
+// Frame remains 0x18 versus 0x2c; original fallback, singleton exit and full body restored.
+// Round 506: final direction scaled-difference shared/native producers with late/entry vector,
+// dead search-delta reuse or shared setter 557/557/557/547/557/557/557/557. Original
+// vector/scalar producers and entire body restored; frame/input and fraction homes remain.
+// Round 511: complete sample-position captures nearest/anchor/opposite subsets through
+// memcpy 742/589/781/701/873/729/900; all through memmove 1483. Original
+// body restored; native frame/input, scan and fraction homes remain.
+// Round 136 (m3 lane 6, fast): second scan loading y, z, x 592 (2112 B); the fraction as `= 0; if (opposite !=
+// NONE)` 547 (same code); opposite declared after its distance 547 (same code); entries read at the count == 1
+// call with the samples local after it 592 (2127 B); y, z, x loads with the if-form fraction 592.
+// Also round 136: delta through vector3d_from_points3d 547; scan 2's offset through vector3d_from_points3d, dot3f
+// and length_sq3f 547 (both same score at 2122 B).
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

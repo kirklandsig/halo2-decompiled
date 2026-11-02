@@ -2315,6 +2315,9 @@ long voice_players_share_team(long other, long player)
 // which globals a callee writes.
 // Round 71: global test with inline membership 56; inline session/both 56 (membership 97, rejected);
 // mask before mode 56; inner mode getter 56; mask outside 25; const mode 56; force-inline mode 56.
+// Round 121 (lane 8, fast): g_4c9878, g_476fc8 or both defined in the /GL- voice-mail file 25/25/25, with the global
+// test 56/56/56; their addresses held in a data pointer (diagnostic) 25, with the global test 56 each. BLOCKED-BY
+// 0x59670: the 56 form needs the session lookup under 0x53de0 to end the global's availability.
 // Original body and helper declarations restored.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
@@ -3170,9 +3173,18 @@ struct s_voice_route_choice
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.
+// Round 153 (lane 4, fast): headset update as one expression 502 (1387 B); headset accumulated in its own
+// loop before the routing loop 491 (1183 B); talker bit computed once before the loop for both listener-mask
+// updates 391 (1294 B); talker's address taken 363 (no change); headset declared first 363.
 // Round 502: settings exclusion-mask production at iteration/entry, original/element
 // receivers 428/396/426/383; with conditional radio 395/410/400/410. Original
 // positive-mask observations, mixer workspaces and body restored; entry/cursor homes remain.
+// Round 511: live scalar mode-field pointer/reference receivers with bitwise/conditional
+// radio 363/363/411/411; with shared headset player bit
+// 391/391/411/411. Original body restored; entry saves, cursor bias
+// and tail priority merge remain.
+// Round 520: native byte/word bitwise radio, with actual receiver/talker mask/both:
+// 363/432/395/438/391/409/394/408. Original bool result, masks and body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3438,6 +3450,17 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 241: Route output initialized at relay entry/member result/member-set/after local delivery
 // 163/163/163/139; the same boundaries with an independent packet cursor 165/167/168/168.
 // Original route initialization, live count reads and complete body restored.
+// Round 511: consumed result advances before dispatch, after/before size admission,
+// with original/admission byte debit 163/172/176/176; unsigned ordinals
+// 163/172/176/176. Original body restored; channel/cursor/member
+// and route homes remain.
+// DH272: Known-present recipient bit removal by XOR/subtraction with long/short current member and
+// original/independent packet cursor gives 143/161/167/162/144/161/167/162. All regress; original AND-not
+// removal, member domain, live header counts, cursor, calls and body restored. Channel/packet/member
+// ownership and route homes remain.
+// Round 520: native unsigned/short current member on original/word current-kind and
+// original/independent cursor graphs: 139/166/137/169/164/159/140/150.
+// Two-count word-kind lead remains below the keep floor; original body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

@@ -167,6 +167,9 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 // scope 23; `forward` declared before `matrix` 23; a byte object type 110; a cluster table pointer local
 // 23; 1-3 unused locals at the top (diagnostic, numbering) 23 each. Retail reuses the dying register in
 // both the machine read (EBP) and the cluster sum (EAX holds the row, then the table).
+// Round 54 (m3 lane 11, fast): the machine index declared beside the object type and assigned in the arm 23; the
+// bsp pointer read before the camera call 34; the location copied field by field 57 (647 bytes); a named header
+// for the machine read 23; the cluster table indexed from `sound_clusters + row` 23.
 // @retail 0x18c3b0
 bool __stdcall function_18c3b0(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {
@@ -710,6 +713,8 @@ PRIVATE __forceinline void loop_location_clear(s_type_99c531 *location)
 // 261/260/261; reversed membership mask 257; with failure/common/both 263/264/263;
 // all with byte failure 263. Seven-point best is below the keep bar; original body restored.
 // Frame 0x84/0x80 and early constant-one spill remain.
+// M305: Two-use negative adjustment 265; with reversed membership 258 (six-point lead, restored);
+// late-tag/two-distance interactions 307/337/345/303/328/336.
 // @retail 0x18cbc0
 void function_18cbc0(long looping_sound_index, s_type_99c531 *location)
 {

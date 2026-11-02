@@ -3501,7 +3501,7 @@ void function_61050(c_class_58d20 *session, long channel_index,
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 119 (was 119): frame 8 agrees; attach scratch rotation and separate reject tails remain (fast control 131, full 119).
+// score 76 (was 76): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
 // Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
 // split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
 // copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
@@ -3551,12 +3551,37 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 482: Independent added/replacement channel results, shared/long/const-long
 // producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
 // Control 119 with related caller retained; original channel join and body restored.
+// Round 504: shared-result failure/all exits with existing/ordinary result and true/false
+// defaults 180/198/180/119/137/164/137/129 (calibrated reduced). Original early exits and
+// full body restored; attach scratch rotation and separate reject tails remain.
+// Round 506: common attach producer after optional member removal, direct/twice-used
+// presence, repeated identity ownership and entry/producer channel declarations
+// 172/172/172/172/165/165/165/165. Original producers and full body restored.
 // Round 119 (lane 8, fast with 0x630f0/0x59e50): the arms swapped (member found first) re-measured 144
 // at 463 bytes for its listing: both attach calls then take retail's EAX/ECX (the member arm's
 // temporaries come first), but the layout puts the member arm first; the member-state pointer declared
 // right after the lookup (not sunk into the arm) 131 (the first reason-7 tail then loads ECX as retail);
 // that with the flag read by index 141 (483 bytes); `long channel = NONE;` 119 and `channel` declared
 // at the top 119 (same code); a named pointer to the existing member for memcmp and properties 144.
+// Round 511: eligibility before attach dispatch, indexed/nullable-state receivers with
+// negative/positive admission 76/143/76/143; machine memmove variants
+// 184/185/184/185. Keep the indexed early eligibility guard, plain 76
+// at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
+// attach producers, reservations and call tuples stay fixed.
+// Round 307: Branch-owned native state/member receivers and plain identity cursor, seven subsets
+// plus complete nullable state: 101/77/98/121/105/122/134/134; paired native state/member
+// receivers in member admission, without/with cursor: 144/144. Original body restored;
+// eligibility/reject ordering and member/reservation scratch homes remain.
+// Round 316: Shared attach-failure negative/positive continuations, original/ordinary
+// success storage, original/scoped machine copy 143/143/126/126/145/145/153/153.
+// Exact-length negative continuation still regresses; original early admission,
+// independent failures, success qualifier and complete body restored.
+// Round 286: Joint member/channel/time/clock/reservation/counter lexical priorities, six forms,
+// then ordinary/direct success ownership on that graph: 76/76/76/76/76/76/116/116. Original body and result qualifier
+// restored; eligibility edge and member/reservation scratch rotation remain.
+// Round 309: Unsigned full-bit member/channel carriers and twice-used membership result, subsets 1..7,
+// then complete byte presence: 76/76/76/155/155/155/155/155. Original native carriers, admission tests and body
+// restored; dispatch/reject layout and scratch roles remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3565,6 +3590,11 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 	volatile bool result = true;
 	s_session_machine_address machine = *(const s_session_machine_address *)((const byte *)identity + 0xa);
 	long member = network_session_find_member_by_machine(session, &machine);
+	if (member != NONE && !session->member_states[member].flag1)
+	{
+		*reason = 5;
+		return false;
+	}
 	long channel;
 	if (member == NONE)
 	{
@@ -3577,15 +3607,9 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 	}
 	else
 	{
-		s_network_session_member_state *state = &session->member_states[member];
-		if (!state->flag1)
-		{
-			*reason = 5;
-			return false;
-		}
 		if (!memcmp(session->members[member].words, identity, sizeof(*identity)))
 		{
-			long time = state->unknown10;
+			long time = session->member_states[member].unknown10;
 			long now = network_session_time_now();
 			if (!session->members[member].properties_valid && now - time < g_network_configuration.value1468)
 				return result;
@@ -3730,6 +3754,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
 // each with original reply order or member before id: 101/94/101/94/101/94/101/94.
 // Seven-point gain rejected; original executable source restored.
+// Round 516: Twice-used host index initialized before/after state read,
+// original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
+// message/reply allocation remain.
+// Scores 104/104/104/104/97/97/97/97; original executable body restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4998,7 +5026,7 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 569 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// score 569 (was 569): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
 // Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
 // First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
 // Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
@@ -5014,6 +5042,9 @@ struct s_membership_update_snapshot
 // first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
 // both with unsigned-word application ordinal 743 (fast; unchanged control 523).
 // Every form regresses; original signed-short validation ordinal and full body restored.
+// M302: Mask zero initialization after validation, added/moved/removed and pair/all subsets,
+// then all four masks: 704/703/704/687/686/686/780/779 (unchanged fast 523).
+// Original initializations restored; mask homes, validation scheduling and stale completion remain.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

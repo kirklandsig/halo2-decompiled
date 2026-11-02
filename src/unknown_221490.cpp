@@ -224,7 +224,8 @@ set_all:
 	IDirectSoundStream_SetMixBins(stream, &settings->mixbins);
 }
 
-/* the same for a buffer */
+/* the same for a buffer; a mismatch sets set_all instead of jumping to a
+   shared call, as in 0x2aeb20 where this is inlined with no list */
 // @retail 0x2216f0
 void function_2216f0(
 	s_mixbin_list *list,
@@ -237,6 +238,7 @@ void function_2216f0(
 	dword changed_mask;
 	dword seen_mask;
 	bool changed;
+	bool set_all = true;
 	long i;
 
 	out_mixbins.dwMixBinCount = 0;
@@ -244,11 +246,9 @@ void function_2216f0(
 	changed_mask = 0;
 	seen_mask = 0;
 
-	if (!list)
-		goto set_all;
-	if (list->count != (long)settings->mixbins.dwMixBinCount)
-		goto set_all;
+	if (list && list->count == (long)settings->mixbins.dwMixBinCount)
 	{
+		set_all = false;
 		long count = list->count;
 		DSMIXBINVOLUMEPAIR *list_pairs = list->pairs;
 		changed = false;
@@ -259,7 +259,10 @@ void function_2216f0(
 			dword bit;
 
 			if (list_pairs[i].dwMixBin != (dword)mixbin)
-				goto set_all;
+			{
+				set_all = true;
+				break;
+			}
 
 			long volume = settings->pairs[i].lVolume;
 			if (list_pairs[i].lVolume != volume)
@@ -267,10 +270,11 @@ void function_2216f0(
 				bit = 1 << mixbin;
 				if (seen_mask & bit)
 				{
-					if (settings->pairs[i].lVolume != values[i])
-						goto set_all;
-					if (changed_mask & bit)
-						goto set_all;
+					if (settings->pairs[i].lVolume != values[i] || (changed_mask & bit))
+					{
+						set_all = true;
+						break;
+					}
 				}
 				changed_mask |= bit;
 				changed = true;
@@ -287,13 +291,12 @@ void function_2216f0(
 			}
 		}
 
-		if (changed)
-			IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
-		return;
 	}
 
-set_all:
-	IDirectSoundBuffer_SetMixBins(buffer, &settings->mixbins);
+	if (set_all)
+		IDirectSoundBuffer_SetMixBins(buffer, &settings->mixbins);
+	else if (changed)
+		IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
 }
 
 /* a sound class of the sound classes tag. Retail calls it out of line
@@ -688,6 +691,18 @@ bool sound_driver_voice_create_buffer(
 // Round 340: shared creation HRESULT on native descriptor scopes, spatial/play
 // producer order, status-selected result and entry/success status declaration combinations
 // 71/182/191/192/71/182/191/192. Original body restored; spatial/play and zero/input homes remain.
+// Round 313: One actual SDK descriptor reused across both current native phases, separate/reused
+// pair array and shared/per-phase mixbins 82/146/82/146; spatial-first counterparts
+// 180/208/180/208. Original descriptors, arrays, predicates and complete body restored;
+// spatial/play and descriptor zero/input homes remain.
+// Round 466: Native submix/buffer output-slot pointers, each/both at admission/SDK
+// phases, then both with indexed receivers: 82/158/170/82/100/111/176/109.
+// All preserve the caller but move saves earlier (+0xc); original direct outputs,
+// spatial/play carriers, descriptors and full body restored.
+// Round 354: Real submix/spatial output-field references and count-first mixbin stores
+// subsets 1..7, then spatial-first predicates: 82/158/170/74/85/156/168/166. Original actual output
+// slots, descriptors, pairs, SDK flags, modes and calls restored.
+// Round 357: Native-frame multi-use input-bin carrier, dword/long at admission/entry with playback-first then spatial-first predicates 71/71/71/71/182/182/182/182. Original parameter observations, descriptors and body restored; Boolean/zero/input allocation remains.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
@@ -827,6 +842,13 @@ extern "C" void _ReadWriteBarrier(void);
 // local for both calls 42. The existing decibel-volume helper 65 (667 bytes); direct global reads 21;
 // direct indexed voice accesses 191 (686); an independent RoomHF PIN 112 (691); a real loss local 57;
 // chained filter zeros 23; the filter at first use 21; a room-base local 99. Body restored.
+// Round 116: the scratch registers follow one round-robin pointer over EAX/ECX/EDX for temporaries without a
+// preferred register, and the memset's zero is the one allocation ahead of the decibels load; retail's
+// pointer is one step behind ours from there on (diagnostic: the memset removed gives every retail register,
+// 173 at 638 bytes). The nine fields zeroed one by one 82 (the zero goes to EDI); the room as a sum then `-=`
+// 99; `lRoom = lRoomHF = PIN(...)` 23; both barriers removed 28; memset of sizeof(DSI3DL2BUFFER) 21.
+// Compile-only (same registers as the full build): `= { }`, memset first, the voice pointer after the memset,
+// a forceinline memset wrapper and the zero-memory macro all keep the zero's allocation.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

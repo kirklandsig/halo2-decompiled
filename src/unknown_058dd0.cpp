@@ -142,6 +142,12 @@ bool c_session_state_none::update()
 // Round 65: named 0x58d50, 0x58d70 and 0x58d20 results 5 each and combined 5;
 // a case-1 session pointer 5; the type-0 arm with an early break 5; case-1 results
 // from short-circuit tests 83, from conditional expressions 76.
+// Round 26: the kind read at each use 5 (the merged read still takes the session's register);
+// a switch on the kind 7 (jl/jg); nested result and failed tests 5; a kind getter 5, with named index
+// and kind 5; a kind predicate in the 0x58d70 condition 5, with its own result 5; 0x58d70 or 0x58d50
+// without inline 5 each.
+// A second session pointer read from the owner for the 2-4 arm, the kind or the switch 5 each; the session read
+// through the owner field directly 5, declared before the owner local 5.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {
@@ -831,6 +837,13 @@ void c_session_client::function_06dbc0()
 // after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
 // whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
 // call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
+// Round 300: update consumer/provider/both inline declarations 43 each;
+// both force-inline 449. With the existing state-predicate call, the same
+// contracts give 100/100/100/400. All declarations and original body restored.
+// Round 28 (m3 lane 18, fast): the existing 0x58d90 called 100 (84 bytes, out of line), with a `__forceinline`
+// declaration here 100 (still out of line: its /Ob0 file); the mode/type test as a guard return 43; memcmp
+// tested for truth 43; the busy states as one if-condition 73 (113 bytes). Still BLOCKED-BY 0x58d90's /Ob0
+// file (retail inlines it here: direct 7-entry table and `this` in EBX as if live across the inlined call).
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

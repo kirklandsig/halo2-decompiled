@@ -258,6 +258,23 @@ struct s_24e9c7_bounds
 // geometry, observations and complete body restored; early spill/scalar homes remain.
 // Round 342: Across scalars scaled into the actual side displacement, upper/reverse scalar-pair and shared real half-width subsets: 125/125/133/133/123/123/132/132.
 // Original complete body restored; early across spill, shifted scalar homes and SSE schedule remain.
+// Round 301: paired rectangle limit chains, minima/maxima first and either chain direction,
+// 131/130/127/129; with explicit zero-minus across 144/143/140/142. Original body restored.
+// Round 232: Complete rectangle zero-fill then maxima through memset/zero aggregate, at
+// group/selector/bitmap/default-workspace boundaries 211/191/221/191/222/192/222/192.
+// Original defaults and body restored; early across spill and shifted scalar homes remain.
+// Round 344: separate real geometry height with long/double return carriers at producer, width
+// and draw boundaries, late real return carrier, then long carrier with early upper displacement:
+// 153/153/147/161/161/150/187/152. Original body restored; early spill and scalar homes remain.
+// Round 347: Existing two-component setter at upper/side/both/reverse/upper-reverse/side-
+// reverse/all/all-with-direct-across producers: 125/125/125/137/137/137/137/137.
+// Original complete body restored; early across spill and shifted scalar homes remain.
+// Round 467: One native displacement shared across upper/reverse phases, entry storage,
+// all origins first and early upper-production subsets: 144/144/143/143/145/145/144/144.
+// Scalar homes remain eight bytes high at frame 0x48; original complete body restored.
+// Round 355: reused output-corner receivers for each corner, upper/lower pairs and all
+// corners 125/125/125/125/125/125/125; all with early upper displacement 123.
+// Two-point reduction rejected; original body restored, early spill/scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

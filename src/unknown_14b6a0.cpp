@@ -118,6 +118,7 @@ void function_14bac0()
 	s_record_pool_iterator *iterator_reference = &iterator;
 	players_pending_creation_process(iterator_reference);
 }
+// MiniMax S (11-01): no new form, no lower score.
 // score 222 (was 222): Frame 0x50 (original 0x44) versus retail 0x3c; centre/second-iterator slot sharing, readiness homes and the second scan's call remain.
 // Round 9 (lane 11, fast): second loop through data_datum_iterator_next as retail calls it 257 (frame 0x44:
 // center 0x10, destination 0x1c, alternate 0x28, second iterator 0x34; retail packs the iterator over the
@@ -393,6 +394,28 @@ void function_14bac0()
 // six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
 // declarations 235/235. Original aggregate, output pointer, bounds and traversals
 // restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
+// Round 27 (m3 lane 18, fast; register-masked aligned 60 for the kept form): scoped form (iterators, points and centre in their own blocks, translated
+// point used directly, unit re-read at each use, second scan through 0x6b380) 259 (1048 bytes, frame 0x48) [40]; compile-only it has retail's exact frame layout,
+// under LTCG the second iterator stays at the top whatever its declaration scope, a diagnostic `(long)&iterator` passed to a call moves it to +0x2c (frame 0x44).
+// On that form: scenario read at each use 278 (1032) [39]; stamp local 259, plus index local 258 [37]; iterator declared at the outer scopes 259/259; named recipient 259;
+// pointer to the iterator 259; centre unscoped 259; for-increment reload of the pool 249 (no reload block above the head); reload dropped 263 (reload block above the head as
+// retail, 1032); reload after the block 258 (aligned 103); uncached pool reads through an inline next 258/262 [38]. Retail's spill/pool reload block sits above the loop head.
+// Round 297: complete standard marker-input/accepted-output/relocation-addition
+// native-array producers, masks 1..7, 241/268/274/299/310/310/330; all with
+// standard displacement subtraction 364. Original returned output, native point
+// copies, selected unit and body restored; frame/readiness/recipient sharing remains.
+// Round 307: Actual accepted-marker/accepted-bounds destination-source enum/word, general/source-
+// specific radius admission, original/native result-tested recipients: 261/260/261/261/245/255/245/254.
+// Original Boolean readiness, point storage and both scans restored; frame and iterator overlap remain.
+// Round 309: Plain native component loops for displacement/returned-position addition/all accepted-point
+// transfer subsets 1..7: 222/222/247/263/263/246/263/298; the eighth uses short counters. Original body restored;
+// frame, point/iterator overlap and readiness carriers remain.
+// Round 288: Joint lexical priorities of all native point/displacement roles, both iterator
+// workspaces, complete receiver/bounds scalar orders and readiness bytes: eight orders 222 each.
+// Original names and full body restored; frame 0x50/0x3c and point/recipient sharing remain.
+// Round 311: Readiness-selected bounds output, conditional/if selection, original/shared relocation-probe scratch,
+// original/native result-tested recipients: 267/266/279/279/267/266/279/279. Original outputs and traversals
+// restored; frame 0x50/0x3c, point/iterator sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

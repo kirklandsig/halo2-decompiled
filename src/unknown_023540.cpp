@@ -1198,6 +1198,9 @@ void __cdecl function_24970(s_histogram_state *state)
 // none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
 // in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
 // subtraction readback plus final memset 35; a named post-store zero used twice 17.
+// Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
+// the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
+// compare and the locals in the value 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1926,6 +1929,17 @@ struct s_filter_rows
 // here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
 // an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
 // inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
+// Round 74 (lane 9, fast): a second read of the tag compared with the first (`long tag = slot->tag; if (tag !=
+// slot->tag) tag = 0;`, a diagnostic: the test is always false, so not keepable) MATCHES: this read is the
+// only difference, and what keeps the add is a second read in the same block that folds away late. 0x1cb70's
+// result in a dead local before the bind 17; after the bind with `| 1` 17; `& 0` as the bind's last argument
+// 29 (1052 bytes); a tag local, then 0x1cb70 on a re-read 17; `inline` on 0x1cc30's definition (temporary)
+// with function_1cc30(12) 17, also on 0x1cb70's 28 (0x1cc30 itself then 66). Compile-only, all fold:
+// references to the slot or field, by-value slot and 8-byte union copies, one-read accessors (member or free),
+// nested inlines, the index through a local or short, a dead second argument, a switch or ternary on a
+// constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
+// 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
+// index. So a state of the caller picks it, not the helper's source.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2488,6 +2502,14 @@ dword __cdecl function_131fc0(real alpha);
 // Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
 // kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
 // clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
+// Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0, whose convention is now
+// found: it matches as (short stage, long fallback, long tag, short fallback_index, short index, real
+// priority) with two calls to 0x14390 in place of the goto, the count read at each use, no address-taken
+// fallback and no volatile. Its file is left alone this round. This function's count under each callee form:
+// fallback read directly 266; plus an address-taken priority 268; direct without the volatile 266; two calls
+// 156 (1729 bytes, first +0x280); two calls in order (tag, fallback, stage) 267; (fallback, tag, stage) 267;
+// (stage, tag, fallback) 154 (first +0x32b); (stage, fallback, tag) 154; (fallback, stage, tag) 156; with the
+// matching 0x144f0 154.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2872,6 +2894,11 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
 // in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
 // coordinate arrays declared second-first 282; declared just before the bounds 282.
+// Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0; see the form that matches it
+// in 0x2a8d0's note. This function's count under each callee form: fallback read directly 283; plus an
+// address-taken priority 280; direct without the volatile 283; two calls 366 (2044 bytes, a positional shift,
+// first still +0x17); two calls in order (tag, fallback, stage) 345; (fallback, tag, stage) 346; (stage, tag,
+// fallback) 366; (stage, fallback, tag) 366; (fallback, stage, tag) 365; with the matching 0x144f0 366.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3321,6 +3348,15 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
 // at selector production 243/31/957/243. Original body restored; selector order,
 // span/constant reload pairs and shift/clip quantizer homes remain.
+// Round 315: Shared quantizer complete result, lower-default, conditional and upper-default
+// graphs on the recovered state-call graph 31/787/31/690; each with paired native input
+// expression names 31/787/31/690. Original helper/body restored; selector scheduling,
+// post-bias reload order and quantizer shift/clip homes remain.
+// Round 462: opacity-selector/lower-adjustment/quantizer-sample lexical homes, all seven
+// nonempty subsets 31 each; all with color-selector declaration first 939. Original names,
+// selector producers and shared quantizer restored; reload pairs and shift/clip homes remain.
+// Uniform parallel scale/gain product operand directions, seven subsets and all with the
+// cutoff product reversed, 31/31/31/31/31/31/31/31; original product inputs restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

@@ -498,6 +498,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // split after the copy 367 (ours keeps the count in EDX and increments it before the store; retail keeps `previous`
 // in EDI, uses EDX for the copy and increments the count in memory); the link copy as a struct assignment 305, on
 // the short count with the split increment 367.
+// Round 233: Node-array base and CRT memmove step/fallback point-transfer masks 1-7:
+// 430/377/378/307/418/389/374; all with short link count 377. Every node-base graph loses matched
+// caller 0x270930. Original complete body, link memcpy and signed bounds restored; frame
+// 0xe8/0xe4, initial acquisition and memory flag homes remain.
 // Round 70 (m3 lane 16, fast): retail's [esp+0xf] byte behaves like an address-taken bool (no constant propagation):
 // `special` as an address-taken local, false at the else arm's start and set by an if (diagnostic) gives retail's
 // special sequence exactly (`mov byte ptr [esp+0xf], 0` beside the count test, `mov cl, 1; je` / `mov cl, [esp+0xf]`)
@@ -505,6 +509,31 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // bytes, aligned 150; the link-bit store is still dropped as dead). The type named for the tests only (stores read
 // the field, for retail's type store from CX) 342; one store block for the two-step and type-2 arms with the call
 // under `if (two_step)` 364 (1375 bytes); `previous` declared first 295 (same code).
+// Round 311: Copy-owned short/word/long link ordinal, increment before/after memcpy,
+// 367/366/367/366/363/305; short counter with short/long ordinal 366/366.
+// Original counter, indexed memcpy and full body restored; frame and flag homes remain.
+// Round 275: Truncation polarity bool/byte/short/long, each with long/short
+// link count, 333/362/333/362/356/347/357/348. Original completion, counters and full body restored.
+// DH278: Separate short/long traversal index crossed with short/long previous and bounded link carriers 347/396/380/392/383/384/384/386.
+// Complete opening body restored; no qualifying keeper.
+// Round 257: Actual geometry step/edge cursors and remaining paired distance-difference helpers,
+// seven subsets, then full-width geometry ordinal: 341/367/296/378/341/367/378/378. All regress;
+// original traversal, initialization, link memcpy and complete body restored. Frame
+// 0xe8/0xe4 and node/flag/previous homes remain.
+// DH280: Admitted-depth/previous-point/converted-coordinate branch ownership, seven subsets then all with
+// bounded short link count [350, 332, 336, 297, 354, 345, 334, 366]. Original executable body restored.
+// Round 73 (m3 lane 16, fast; positional/aligned, 0x270930 kept throughout; 295 stands): short link count 366/210 (1368);
+// with special false at the in-range arm's start and set by an if 363/190 (1370); plus count zeroed after the init loop
+// 371/211; count after the loop alone 371/230; short + early special + link test as an inline predicate with a result
+// variable 361/186 (1374); that with count after the loop 365/207; a named initial node pointer 361 (same code);
+// increment split after the copy 360/210 (1373); with `(dword)flags >> 7` in the predicate 359/208 (1374: retail's
+// movsx/shr/and/store sequence); `previous = NULL` assigned after the declarations or after the clamp 359 (same code).
+// Left on that form: retail keeps previous in EDI from entry (`xor edi, edi` shared with the count test and the link count
+// store, stored to its home, reloaded after the fill and at the back edge) where ours sinks the NULL past the fill, and the
+// slots run previous/count/previous index where ours run count/previous index/previous.
+// DH283: Repeated depth captured as short, with parent/edge/both field captures
+// 425/401/378/420; corresponding long depth forms 426/402/406/420.
+// Original indexed memcpy, field observations, private helpers and complete body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -929,6 +958,19 @@ bool function_2715a0(byte *buffer)
 // (retail's setg) and per-case `child->depth = node->depth + N` stores with case 2 reading `child->unknown14`, all
 // together: 486 at 2076 bytes (same count; opcode-only alignment 121 -> 104, the closest structure so far). The
 // four-register rotation (state EBX/EBP) remains; the compile-only harness puts state in EDI, so it cannot screen it.
+// Round 507: Embedded heap/node/heap+node/hash/heap+hash/node+hash/all/all-after-defaults
+// bases 486/568/568/486/486/568/568/568. Node-base forms shorten to 2004/2076 bytes;
+// state/node/link homes still differ. Original complete body restored.
+// Round 311: Captured squared length reused in the projection denominator, with complete
+// parallel dot parts and root/vector declaration-ownership masks 0..7: 531/531/531/531/531/531/531/531.
+// Original fresh denominator, root lifetime and full body restored; state EBP and scalar/link homes remain.
+// DH278: Entry-owned candidate point/projection direction/attraction output, seven subsets and complete behavior names 486/486/486/486/486/486/486/486.
+// Complete opening body restored; no qualifying keeper.
+// DH280: Complete child-depth case priorities ADB/BAD/BDA/DAB/DBA, then update-first heap arms with
+// ABD/ADB/BAD [486, 488, 488, 486, 488, 490, 490, 492]. Original executable body restored.
+// DH283: Repeated decremented-count/child-heap-index/stored-cost ownership subsets
+// 486/494/494/486/486/494/494; complete graph with promoted remaining count 516.
+// Original heap observations, cost casts, helper calls and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

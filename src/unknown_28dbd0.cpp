@@ -222,6 +222,23 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Original executable body and helpers restored.
 // Round 291: Heading/paired transform/fallback-point overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with shared velocity scale, 264/299/206/280/275/313/296/296. Original full file and helpers restored.
+// Round 318: Complete cosine-plus-projection scalar subtotals on the added-cross/consumed-axis
+// graph in six producer orders, const subtotals and completed scalar outputs, eight at 228.
+// Original shared products, helper and full body restored; frame 0x11c versus 0x118 and
+// cross/trig homes remain.
+// Round 256: fused per-coordinate rotation weighting/publication, long/dword/short/byte
+// counters 225/225/216/216; separate axis scale with fused cross/direction/output
+// 229/229/257/257. Original separate shared scales, helper and complete body restored.
+// DH282: Complete caller heading/axis and inlined cross lexical priorities abc/acb/bac/bca/cab/cba; first
+// with native request/transform/result identities, last with those and all scalar role names [173, 173,
+// 173, 173, 173, 173, 173, 173]. Original executable body restored.
+// Round 73 (m3 lane 16, fast; 173 stands): the rotation with named scalar cross terms and scalar outputs, cross k/j, sine,
+// cosine, projection, cross i 237 (1220 bytes); j/k, cosine, sine, projection, i with the vector term first 238; i/j/k, sine,
+// cosine, projection 237; sine, cosine, projection, j/k/i 237, with a vector output 275 (1244); sine, cosine, j/k,
+// projection, i 237; cosine, sine, projection, j/k/i 238. Compile-only grids of 1440 statement orders and 224 inline-row
+// forms (rows as 0xd0080, itself unmatched, writes them: `axis * along + x * cosine - (cross term) * sine`) found none near
+// retail, but that screen's measure is register-sensitive, so it does not rule the shapes out. Retail's rotation: heading
+// zero in xmm3 replaced by 1.0 after the dot, memory 0.0 then `xorps` later.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

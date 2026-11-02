@@ -288,6 +288,29 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH round 268: accumulated-prefix CRT clears for first/second/both/third/first-third/
 // second-third/all 414/414/411/381/411/411/411; all with chained remaining stores 411.
 // Fast control 336 versus full 324; original complete clears, unit stores and body restored.
+// Round 235: Direct three-output table, long/short ordinal, const and scope variants
+// 410/757/410/757/410/764/410/764; factor-first products 410, explicit updates 412,
+// both 412, six product names 418. Original body/helper restored; early ESI save,
+// reciprocal and RGB/product scheduling remain.
+// DL230: whole-output initialization orders 132/213/231/312/321; reordered clears 213/231/312 before common unit stores: 354/338/354/346/345/370/370/370.
+// Entry ESI save, unit-constant carrier and accumulation schedules remain; original executable source restored.
+// M292: Existing double-factor opposite scale with direction/angle CRT and double reciprocal
+// masks 0-7 (fast control 336; full 324):
+// 392/392/392/392/393/393/393/393. Original executable body restored.
+// DH277: outer native count/table/cursor subsets 463/383/363/430/479/430/478; complete readonly record
+// graph 478 (fast control 336, full 324). All restored; entry ESI save, unit constant and
+// scale/accumulation schedules remain.
+// Round 298: Complete explicit color/scalar/weight-remainder updates and pairs/all
+// 344/343/337/326/344/343/341; all with a distinct normalized weight 421
+// (fast control 336). Color/scalar alone is 333 plain, 1877/1892; rejected.
+// Original complete helper and body restored; ESI/unit/reciprocal scheduling remains.
+// Round 77 (m3 lane 12, fast control 336, full 324): a three-caller reset helper (memset, then
+// `remaining = 1.0f`) for the entry clears 336 (same code: 1.0 stays in XMM5); third remaining read
+// before the first/second product 336; each loop weight named before its accumulate call 337;
+// the accumulate helper as plain `inline` 336, with the named weights 337. Original body restored.
+// Y522: Existing accumulator member/color-input capture/normalized-weight ownership, seven subsets
+// 350/616/596/421/420/685/685; complete overlap-safe color capture 1067 (fast control 336, full 324).
+// Original free accumulation helper, record layout and complete body restored; ESI/unit scheduling remains.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

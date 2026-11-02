@@ -27,53 +27,27 @@ PRIVATE const dword g_4507c8[24] =
 
 typedef void *(__stdcall *texture_allocate_proc)(long size, long alignment);
 
-// score 28 (was 28): retail reads width and height as full dwords (its only caller sign-extends
-// both), so its prototype has 32-bit dimensions; the caller's declaration is short. Retail also
-// spills the header register into the dead width slot before the allocation call and makes the null
-// result only on the failure path. Tried: the dimensions used directly 46; each path storing the
-// outputs and returning 52 (retail's tests, no spill); `if (!result) buffer = 0;` 28; a named
-// validity bool 28; a dword aligned size 28; long width/height here and in the caller's
-// prototype 27 (176 bytes: the entry and the caller's movsx pushes as retail; the spill, the
-// early null and the field order still differ); with that, result starting as the header and cleared with the buffer 42 (failure
-// path as retail), result = header at the top 69 (header moves to eax), result set in both arms
-// or the test inverted 69, the lock store first 31 (43 with the header result).
-// Round 12 (fast): ours makes the null result in ECX before the tests (`xor ecx, ecx; cmp edi,
-// ecx`), and that extra instruction stands where retail's dead spill is, so the positions after it
-// line up. Result set in both arms 69; result = header just before the allocation call, cleared
-// in the else 69 (copy coalesced into the header's register, header moves to eax); `return buffer
-// ? header : 0` with no result 68 (branchless sbb, but the Lock store then takes EBX's zero);
-// result = 0 at the top 83 (own stack slot); `result = header` first in the success arm and
-// result = 0 in the else 51 (both tails and the tests exactly retail's, ECX then stays reserved
-// through the arm); that with the Lock store first 51 (180 bytes, Lock from EBX as retail); that
-// with long width/height here and in the caller's prototype 52 (176 bytes; caller 244 -> 246);
-// with long width/height, the header itself cleared in the failure arm 68, result set at the end
-// of the arm 68. Retail's result is set late yet not coalesced with the header, and its spill
-// stores the header register: a copy of the header defined after width's read and live across
-// the allocation call would give both; no source form tried keeps that copy apart.
-// The failure result rewritten 69 (181 bytes); the result declared before allocation 28; the buffer
-// before aligned 28; all declarations at entry 28; the result before Lock/Data 33/35; a promoted
-// height with the failure result 66 (182), with Lock first 31. Body restored.
 // @retail 0x23e340
-D3DTexture *function_23e340(short width, short height, short format,
+D3DTexture *function_23e340(long width, long height, short format,
 	texture_allocate_proc allocate, long *size, void **data, D3DTexture *header)
 {
-	long w = width;
-	long bytes = function_1366d0((short)w, height, 1, format, 0x40, 0);
+	long bytes = function_1366d0((short)width, (short)height, 1, format, 0x40, 0);
 	long aligned = (-bytes & 0x7f) + bytes;
+	D3DTexture *result = header;
 	void *buffer = allocate(aligned, 0x80);
-	D3DTexture *result = 0;
 	if (header && buffer)
 	{
-		header->Format = (g_4507c8[format] << 8) | 0x10029;
-		header->Size = (((((dword)w * 4) >> 6) - 1) << 24) | ((height - 1) << 12) | (w - 1);
+		dword texture_format = g_4507c8[format];
 		header->Lock = 0;
+		header->Size = (((((dword)width * 4) >> 6) - 1) << 24) | ((height - 1) << 12) | (width - 1);
+		header->Format = (texture_format << 8) | 0x10029;
 		header->Data = (dword)buffer & 0x0fffffff;
 		header->Common = 0x40001;
-		result = header;
 	}
 	else
 	{
 		buffer = 0;
+		result = 0;
 	}
 	*size = aligned;
 	*data = buffer;
@@ -762,6 +736,29 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
 // and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
 // output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
+// Round 50 (lane 14, fast with 0x1f0870/0x23d790): `right` in a local two-field struct or as element 0 of a
+// two-element array 45/45, element 1 216 (1265 bytes), the same with the staged second product 217/217/217; both
+// products through named component locals in all 36 row orders 228 (1272 bytes each: the order does not reach the
+// code); both products staged re-measured 221 (1272); the second product into a local vector copied to the output
+// field by field, or a local two-field struct, through cross3f, staged or function_1f087b, 232 each (1272); the first
+// product into a local copied to `right` field by field, through any of the three, 49 (1264), with the staged second
+// product 221 (1272). A force-inline difference-of-products helper taking its operands by const reference: second
+// product rows i, j, k 58 (1264), staged rows in either order 211 (1261 bytes, retail's length, aligned 35, but up.k
+// goes to xmm2 and the rows interleave with the stores); first product through it with function_1f087b 219 (1261,
+// aligned 53), with the staged second product 228 (1272).
+// Round 510: whole-function forward/up receivers and native trig setter, seven subsets
+// 354/349/354/159/354/346/354; all with position receiver 372. Original complete body restored;
+// product colors, forward.k reuse and angle receiver stores remain.
+// Round 512: Common field-of-view/offset/velocity output tail 228/208/207;
+// field-of-view+offset/field-of-view+velocity/offset+velocity 219/219/238; all
+// common stores, separate/chained vector copies 246/246. Original complete body
+// restored; right i/j colors, forward.k reuse and ordinary-angle bases remain.
+// Round 348: complete normalized-forward/offset/velocity setter subsets
+// 231/233/265/197/243/244/279; all with prior-up setter capture 313.
+// Original aggregate copies and products restored; right i/j carriers and forward.k reload remain.
+// M297: Completed direction workspace reused for the first product, direct/staged; prior-up
+// workspace reused with the existing staged producers; direct forward normalization with
+// direct/staged/k-first first products and prior-up reuse [49, 45, 63, 56, 360, 360, 360, 364]. Original workspaces restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

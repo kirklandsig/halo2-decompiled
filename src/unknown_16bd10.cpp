@@ -858,6 +858,21 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round N284: Projection zero-first, absent-object-first and unfinished-FOV-first branch
 // subsets 1..7 score 236/260/260/236/236/260/260; all with nested FOV guards 260.
 // Original native normal copy, branch graph, captures and complete body restored.
+// Round 455: Overlap-safe native transfers for normal/frame axes/pan axes, seven
+// subsets, then all with animation outputs: 459/470/477/301/493/452/445/488. Original aggregate copies,
+// projection, shared helpers and complete body restored.
+// Round 458: Actual point-mode view axes/origin reset/final camera position through
+// overlap-safe whole-value transfers, seven subsets, then all with memcpy normal input:
+// 455/402/490/374/482/483/400/400. Original pose observations, transfers, projection and body restored;
+// direction preload, normal/length/zero allocation and flag scheduling remain.
+// Round 60 (m3 lane 1, fast): length sum right-grouped `n.i*d.i + (n.j*d.j + n.k*d.k)` 238, direction-first 238;
+// `(n.j*d.j + n.k*d.k) + n.i*d.i` 238 (d.j preload, normal registers still rotated); `n.i*d.i + (n.k*d.k + n.j*d.j)`
+// 236; `(d.j*n.j + d.k*n.k) + d.i*n.i` 238. A one-link harness screen of all 24 grouping x term order x operand order
+// forms and both dot3f orders loads n.i into XMM5 in every one, but the real build gave XMM3/4/5 for
+// dot3f(direction, &plane.n) (round 82) and the harness uses XMM6 where the build uses XMM7: not a numbering screen here.
+// Round 463: actual partial length accumulation, full successive/leading-pair,
+// zero-first factor result and uniform product directions, 256/236/371/368/256/236/371/368;
+// original (k+j)+i grouping and complete executable source restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

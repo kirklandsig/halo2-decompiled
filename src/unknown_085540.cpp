@@ -804,6 +804,13 @@ static inline long view_buffer_write(s_ring_buffer *buffer, long count, const vo
  }
  return result;
 }
+static inline void view_buffer_read(c_simulation_view *view, long count, void *destination)
+{
+ s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
+ buffer->read_wrapped(buffer->start, count, destination);
+ buffer->start = (buffer->start + count) % buffer->size;
+ buffer->used -= count;
+}
 bool function_1995a0(const byte *source, dword source_size, byte *destination, long *compressed_size, dword capacity, long level);
 
 // score 14 (was 14): retail's code apart from two single differences: retail stores kind 1
@@ -951,6 +958,13 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
 // wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
 // the reader's local non-volatile 250 (its zero stores vanish).
+// Round 135: allocation helper shapes: elapsed declared at its top 22; elapsed test as a nested inline
+// helper taking start 22; start declared then assigned 22. Reader: memset of a local, a volatile, a
+// long[2], a LARGE_INTEGER 250, 250, 250, 250 (621 bytes, the zero stores vanish).
+// Round 114: separate allocation scopes 22; one combined allocation-output declaration 22;
+// a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
+// `+= 1` for either count 22; result declaration split from its initialization 22;
+// the header scoped to the write/serialization block 22.
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -1033,7 +1047,9 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
-// score 72 (was 72): earlier: the case-0 copy of the header value, block- and function-scoped,
+// score 24 (was 72): only the first read differs (the ring start stays in esi across it; retail reloads it from
+// the ring) and the 0x68670 argument loads (retail's load order implies (block, source, size); that callee is a
+// contributor's). Earlier: the case-0 copy of the header value, block- and function-scoped,
 // header/sequence homes, the size register, forwarded read position and prefix stores differ.
 // frame 0x14454 agrees; header/sequence homes, short-size register and cursor reload remain.
 // Earlier: the case-0 copy of the header value, block- and function-scoped,
@@ -1252,11 +1268,25 @@ bool function_68670(byte *source, long size, void *block);
 // the copy count from header.size too 79.
 // M291: Complete outgoing-message aggregate/full memset initialization, each with native/separate sequence and function/loop received-header lifetimes:
 // 110/137/131/131/110/137/131/131. Original executable body restored.
+// Round 121 (lane 8, fast): a shared read helper that derives the ring from the view for both reads 66 (553 bytes), with
+// the view-address line dropped 63 (544; view in edi), with case 0 sending a block-local copy 24 (553). On that form: a
+// ring-parameter helper with a cast at each call 24, one ring local passed to it 154 (533); start in a local, header,
+// payload or both in the loop, a function-scope copy, byte-pointer destinations 24 each. Case 0 through a const
+// reference or by-value or const-reference send helper on the old body 137 (561). Ring read 0x1a19a0 forms (still
+// matched): a named destination pointer 121 (554; first read reloads, size stays in si and is not reloaded), a copy
+// helper, an array index or an advanced parameter 24; a named source 197 (510, loses 0x1a19a0). Diagnostics (grouping
+// structs, reverted): header and copy in one record 24 (view esi / size edi swapped, copy store before the channel
+// load), with the named destination 21 (only the swap and the 0x68670 loads left); short size or used-first forms 39-143.
+// BLOCKED-BY 0x68670 for the two argument loads.
+// AC460: Actual outgoing message/decoded-block/both workspaces at loop scope, both orders,
+// 118/118/118/118 (553 bytes, entry allocation regresses); the same function-scope forms
+// 72/72/72/72. Original workspace lifetimes, header, payload and complete body restored.
+// Round 350: Positive payload delta word/int with native header/payload/both cursor
+// addition-then-remainder stores: eight forms 72 each. Header/sequence homes, DX size and forwarded
+// cursor remain.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
- // Keep the retail stack argument under whole-program optimization.
- c_simulation_view *const *view_reference = &view;
  struct { short kind; short size; long value; } header;
  byte payload[1024];
  while (view->established() && view->unknownac != 0)
@@ -1266,21 +1296,16 @@ void __stdcall function_865d0(c_simulation_view *view)
   s_network_stream_header *stream = network_stream_get(connection->stream_index);
   long occupied = stream->window.next - stream->window.end;
   if ((512 - occupied) * 32 < 0x600) break;
-  s_ring_buffer *buffer = (s_ring_buffer *)&view->unknown9c;
-  buffer->read_wrapped(buffer->start, sizeof(header), &header);
-  buffer->start = (buffer->start + (long)sizeof(header)) % buffer->size;
-  buffer->used -= sizeof(header);
+  view_buffer_read(view, sizeof(header), &header);
   if (header.size > 0)
-  {
-   long size = header.size;
-   buffer->read_wrapped(buffer->start, size, payload);
-   buffer->start = (buffer->start + size) % buffer->size;
-   buffer->used -= size;
-  }
+   view_buffer_read(view, header.size, payload);
   switch (header.kind)
   {
   case 0:
-   view_send_message(view, 0x29, sizeof(header.value), &header.value);
+   {
+    long message = header.value;
+    view_send_message(view, 0x29, sizeof(message), &message);
+   }
    break;
   case 1:
    {

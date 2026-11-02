@@ -81,6 +81,17 @@ extern "C" void _ReadWriteBarrier(void);
 // 49; the third and the fallback sharing the final call 49. A one-file LTCG screen of 194 forms (call sharing
 // x end test x barrier arm, and four plain calls) found none below 9 but the inclusive third; four plain calls
 // give retail's second block and fallback but join the first range to the second's call.
+// Round 49 (one-link LTCG screen, exact at 9): one extra register value in the first arm (a diagnostic
+// store there) gives retail's second block and fallback; every no-code form there coalesces, 7 on the
+// inclusive third: allocator self-assign, a pool local, a `+ 0` cast, getters, a release helper, an
+// address copy, the barrier moved or doubled. Globals as one struct 7; null guard as an early return 20;
+// second and third sharing the call 18; four direct calls with inclusive ends 29, barrier 18; one
+// owner-lookup helper 42; first bounds from start plus size 7. Fast: third end as a long add 9; third as
+// an offset compare 10; address-first equalities 13; the pool's page-array bounds 9; second and third
+// sharing the call on this body 27; the second end as start plus size 9.
+// Round 121: direct second dispatch 9; concrete direct second dispatch 9; concrete fallback return
+// declarations 9; concrete first assignment 9; direct chain with concrete first 27, concrete first/second
+// 27; first receiver local in the direct chain 27; distinct second receiver local on the shared graph 9.
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {
@@ -135,7 +146,7 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 }
 
 #pragma intrinsic(_ReadWriteBarrier)
-// score 11 (was 19): the first and third ranges now share one call, as in retail; left: the first end
+// score 11 (was 11): the first and third ranges now share one call, as in retail; left: the first end
 // test is `jg` (retail `jge`), the second block takes EDX for its start and EAX for its vtable (retail EAX/
 // EDX), so the third joins the second's call instead of the first's; the third end is `add edx, eax`
 // (retail `add eax, edx`) and the fallback sets ECX after the push.
@@ -162,6 +173,14 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // allocator declared above the address test 11; third end `m_size + m_buffer` 11; fallback through the
 // allocator local 11; barrier after the first assignment 11. Diagnostic: one to four unused locals at
 // entry 19 each (before the dispatch change).
+// Round 459: Branch-admitted primary/secondary/physical receiver capture subsets on shared dispatch, then all with inclusive endpoint arms (exact-only)
+// 11/11/11/42/42/42/42/41. Original executable source restored.
+// M299: Independent repeated primary/secondary endpoint and physical-start ownership
+// subsets [33, 68, 86, 11, 33, 68, 86], all with common fallback 59. Original bounds restored.
+// Round 122: secondary/fallback/shared/all void-return expressions 21/21/11/11; plain shared return 21;
+// secondary and fallback done exits 11; secondary-only done exit 11; secondary receiver before its bounds 11;
+// concrete primary global declaration 11. Concrete secondary declaration did not compile at its explicit base
+// destructor; primary declaration without the complete type did not compile at an external upcast.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
@@ -252,6 +271,13 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // first call block merges into the second's and the equality branch goes), with `>` 70; all three
 // ranges in that form 68; address-first comparisons with the named end 10; second and third ranges
 // address-first 14.
+// Round 58: the third range `>= || ==` 6 (-2, not kept); first and second plain with that third 43 (127 bytes); the named
+// first end with second and third `>= || ==` 64 (155 bytes); first in the test `>= || ==`, second plain, third `>= || ==` 73
+// (153 bytes). Compile-only (exact here, 8 = real 8), about 8,000 forms: test spellings, named and shared bounds, inverted
+// tests, per-arm allocator locals, inline bool helpers, casts, assignments in the test: none below 6. `>= || ==` in all three gives
+// retail's EAX bounds but turns the first call block's class/vtable to EAX/EDX (retail EDX/EAX), so the blocks don't merge.
+// Named first and second ends in nested blocks with the third `>= || ==` in the test: compile-only 8, only the named ends' lea
+// ahead of the jg (start EDX) still differs; the third range, the merged calls and the jne are retail's.
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {

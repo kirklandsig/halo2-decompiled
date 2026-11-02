@@ -70,7 +70,8 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 618): Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
+// score 618 (was 618): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
 // Earlier: the true initializer uses BL, saving EBX early.
 // Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
 // Input/minimum/hit homes, inactive-exit layout and later basis/ray/root/rotation homes differ.
@@ -241,10 +242,33 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
 // Original constant inactive return, private producers, in-place snapshots and complete body
 // restored; success/hit/input/minimum homes and axis schedules remain.
+// DL229: distinct shadowed ray-index/response-scalar/projection-object identities in seven subsets,
+// then complete basis identities, eight at 618. Original names and complete body restored;
+// native success/input/minimum/hit homes and inactive-exit placement remain.
+// Round 306: Native output-vector memset with input memcpy/hit memset/final memcpy subsets:
+// 692/692/702/702/692/704/702/709. Output clear recovers the initial success home at 692, first +0x50,
+// but all forms regress. Original scalar stores, hit bytes, helpers, in-place snapshots, complete body
+// and includes restored at 618.
 // DH271: Four-query remaining byte/short/word/dword with native long array ordinal 618/618/618/618; with
 // word ordinal 726/726/726/726. Native countdown widths canonicalize; word ordinal loses the matching frame
 // and shrinks away from retail. Entire original body, hit/result producers, helpers and in-place snapshots
 // restored; success/input/minimum/hit homes remain.
+// Round 257: Actual ray/projection coordinate consumers and every rotation-row product node,
+// seven subsets, then short coordinate counters: 630/639/624/638/628/641/644/720. Original
+// private producer, complete in-place snapshots and full body restored; success/input/
+// minimum/hit homes and inactive-return placement remain.
+// DH280: Existing native cross/point/rotation publication subsets, then all with the native ray publisher
+// [618, 630, 630, 628, 623, 630, 624, 628]. Original executable body restored.
+// Round 73 (m3 lane 16, fast; 618 stands, every form below scores higher): the active test as a positive if with `return
+// true` last 679 (2839 bytes, aligned 473 -> 462: retail's exit layout at the function's end); with `else local_0 = true` 679; the range read once before the test 666 (2828, aligned 461; retail's
+// `comiss xmm1, xmm0` and the later store from xmm1), declared before the input copy 675; the ray loop as a plain for 755
+// (2768, frame 0x100: index scaled, no byte offset or count down), with the positive test 746, with the range too 724.
+// Eight name sets for success, minimum, hit flags and basis 666 each (same code). Next cause: low slots, retail
+// remaining/point cursor/success/offset/minimum/hit/basis/hit cursor/range, ours
+// remaining/offset/minimum/success/basis/hit/point cursor/hit cursor/range.
+// DH283: Native coordinate input/origin/projection producer subsets 1-7
+// 667/721/739/618/667/721/739; complete graph with aggregate hit initialization 730.
+// Original input copies, private producers, in-place snapshots and complete body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

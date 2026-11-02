@@ -227,6 +227,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
 // planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
 // Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
+// Round 233: CRT memmove planar-normal transfer, long/bool/short/byte success: 460/544/462/520;
+// with actual multi-use vertex-table owner: 446/545/439/526. Copy-only long/short reach retail
+// frame 0x64 but regress; all eight lose fourteen matches. Original complete body restored;
+// full/planar normal homes, byte state and separate output tails remain.
 // Round 70 (lane 16, fast): retail reaches the hit block only from the edge loop's break, runs `++count`, then
 // re-tests `hit` (no-hit tail) before the loop condition; one no-hit tail serves both "no first edge" and "no hit";
 // every tail but the final one returns a constant, and the final one reads a stack byte that is only ever stored 0
@@ -236,6 +240,26 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // folds and the false tails merge), plus `success = false;` at the two breaks 604 (folded away). Value difference:
 // the no-target over-distance tail stores `(dword)NONE` (0xffffffff) where retail stores 0xffff; `(word)NONE` there
 // 429 (1585 bytes: that tail then merges into the final tail), not kept. `edge` declared first 409.
+// Round 506: common second-endpoint producer, native orientation/vertex-table/paired-scope
+// combinations 524/524/528/528/518/518/416/416; best graph with complete planar library
+// copy 444. Original producers and full body restored; frame, byte state and tails remain.
+// DH round 279: Current-sector parameter ownership with long/bool/byte/word success and valid-walk/entry
+// next-sector declarations; all forms also lose four matched callers [426, 422, 424, 430, 426, 422, 424,
+// 430]. Original executable body restored.
+// Round 236: Native first endpoint value with original/long count, then staged cross,
+// 667/670/667/670; both endpoint values with those same subsets 671/680/671/680.
+// First-only frame 0x68 loses twelve matches; paired frame 0x74 preserves matches.
+// Original pointer geometry and complete body restored; full/planar normal homes,
+// byte state and separate output tails remain.
+// DH281: Complete endpoint-source/first-edge-source/hit-tail priorities, seven subsets then all with native
+// Boolean success; the one-point 409 form is below the retention gates [446, 410, 449, 419, 441, 419, 444,
+// 409]. Original executable body restored.
+// P262: Native counted sector for with short/word/long/dword count and long success
+// 410/410/409/409; with Boolean success 448/448/446/446. Original while,
+// count scope, long success, normal storage and every output tail restored.
+// P264: negative edge-search outcome bool/byte/short/long, long success
+// 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
+// original positive hit, normal storage, tails and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

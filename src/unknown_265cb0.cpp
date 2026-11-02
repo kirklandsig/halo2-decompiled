@@ -520,6 +520,14 @@ real function_30bf0(vector3f *vector);
 // inherited result restored; result/range/amount homes and inverse SIMD groups remain.
 // Round 74 (m3 lane 12, fast): the posture switch as if/else-if 188; distance squared through the existing
 // length_sq3f 152, the motion test through it 152, both 152 (same code); `use_facing && !actor->unknown007` 154.
+// Round 295: isolated complete plane products in yzx/xyz/xzy/zyx declaration orders,
+// mutable/const, each 191 (1310 bytes). Original plane expression and native copy restored.
+// Round 300: positive projection before upper clamp, combined/nested admission and
+// in-place/named clipped fraction 269/269/287/287; with live object handle
+// 263/263/269/269. Original admission, fraction and handle observations restored.
+// Round 322: Distance-owned outer/scaled/final paired comparisons, all seven subsets, then
+// corresponding motion-minimum comparison, 152 each. Original comparisons and complete body
+// restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1193,6 +1201,22 @@ struct s_equipped_object_view
 // conditional held index 38 (144 bytes). Selected declared before held index makes the entry exact but gives
 // a data-first held reload 15 (142 bytes), unchanged by threshold/held order or held object_get; result first
 // 36, result between selected and held index 33. Reversed fresh lookup for the held slot 27.
+// Round 58 (m3 lane 1, fast, no volatile): the held reload comes from either a pool local read
+// before `held_index = NONE` and used only for the held lookup 15 (142 bytes; read after the
+// slot's if 28) or a second entry lookup for the selected byte 4; the order of `held_index = NONE`
+// against the selected load decides both halves (NONE first: held block exact, entry data EDX and
+// widened index ECX; NONE after: entry exact, held data first). On the second-lookup form: the
+// NONE store split from its declaration 15; object/selected/NONE in all six orders 4/15; result
+// first 36, result before selected 36; `(short)` selected 4; selected or object through
+// object_header_get / object_get 4/4/4 (both through object_get 27); thresholds and definition at
+// the block top, after the held lookup or inside the compare 4 each (15 each on the NONE-after
+// form); the held lookup through object_header_get / object_get 4/4 (15/15 NONE-after). The
+// 0x267370 form (object_get + function_cbd50, held object inline in the definition) 28, and with
+// the object read inside the argument 28; a pool local for the entry only 28; one inside the held block 28.
+// On the second-lookup form: a masked index local for both entry lookups 4; a pool local for the entry lookups
+// 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
+// threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
+// test nested 15 on the NONE-after form.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1309,6 +1333,12 @@ long function_146650(void);
 // direction pointer at both queries 14; a pointer only at the first query 14; a target pointer 14;
 // a movement pointer 14; an ahead pointer 14; an offset pointer 14. Every listing is identical;
 // original executable body restored.
+// Round 121 (lane 8): a compile-only frame screen ranks the 12-byte homes by references that survive to code: one more
+// materialized target_direction read puts it above ahead, two above direction; two more ahead reads put it above
+// direction; forwarded pointers, inline pointer helpers and reads a common subexpression removes do not count. Retail's
+// order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
+// bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
+// the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -1738,7 +1768,7 @@ real function_2683f0(long actor_index, long node_index, short type)
 	return result;
 }
 
-// score 194 (was 262): frame 0x80 and the forward/relative blocks now agree; the established and
+// score 194 (was 194): frame 0x80 and the forward/relative blocks now agree; the established and
 // visible flags take each other's stack bytes, the facing/scoring block keeps the direction in memory
 // where retail keeps it in xmm1-3, and the entry's second actor lookup indexes [eax+ecx] for [ecx+eax].
 // Earlier first line: score 502 (was 502): Frame 0x84/0x80 and selection/iterator/scoring homes remain.
@@ -1916,6 +1946,19 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Compile-only (no LTCG) keeps direction i/j/k in xmm3/xmm2/xmm1 across the relative and facing dots as retail
 // (visible in BL there); our LTCG build keeps visible in AL and folds every direction read. Calling 0x30bf0
 // through a function pointer for the relative vector (diagnostic) did not change that (487).
+// Round 348: native player/contact/both iterator aggregate initialization
+// 394/194/394; with early constant results 391/191/391; both with native second
+// search counter 402, plus early results 399. The 191 form gains only three and
+// is restored; byte homes, direction preloads and entry operands remain.
+// Round 295: all-axis normalized direction scalars before contact or velocity normalization,
+// mutable/const and forward/reverse declaration orders, each 194. Original consumers restored.
+// M297: Complete product terms named uniformly in all three scoring dots, six
+// declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
+// DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
+// complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
+// Round 520: conditional approach maximum/complete absolute producer/native established
+// byte subsets, then all with native visibility: 194/371/371/194/194/371/371/371.
+// Maximum selection is neutral; complete absolute production regresses. Body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

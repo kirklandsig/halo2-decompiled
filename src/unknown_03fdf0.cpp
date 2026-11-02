@@ -154,7 +154,8 @@ bool function_c17f0(long light_index, s_light_shape_ab *shape, bool respect_engi
 void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale);
 
-// score 54 (was 54): count, mode and first-index homes conflict across the inline copy. Retail
+// score 2 (was 54): only first's spill slot differs (retail +0x14, ours the mode parameter's home, shared with the entry cursor).
+// Earlier: count, mode and first-index homes conflict across the inline copy. Retail
 // multiplies the index into edx and clears the globals before the loop, ours
 // computes the index in eax and stores the table pointer later. Without the block pointer (count and
 // entries indexed at each use) the head is retail's (scaled index in edx, spilled) and so is the loop
@@ -458,9 +459,35 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
 // with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
 // (same codes: mode is already on the stack and cache_index's register does not move).
+// Round 135 (m3 lane 5): retail's only caller (0x404b0) passes cache_index in EDX with mode pushed. The indexed form
+// is retail's code but for the head (aligned 30 against this form's 55): retail loads the count into AX with the
+// zero in ECX, loads first into EDI and spills it (reloaded as the index), keeps mode in EBP from entry and the
+// entries in EDX. Parameters as (mode, cache_index) at the definition and the call 54 (LTCG still uses EAX; 0x404b0
+// 155 -> 186); indexed 144 (492 bytes); indexed with `long index = first;` right after `current = first` 156 (493;
+// compile-only it gives retail's AX/ECX/EDI head, but LTCG moves cache_index to EAX and leaves mode on the stack);
+// block form with that index 168 (491); indexed with n and index both early 167 (492); indexed with the selection
+// first 170 (490).
 // Round 288: field-major resets across groups in all six field orders, then
 // count/first/flags and flags/count/first with reversed group order, 54 each.
 // Original stores and executable body restored; index/count/zero and copy homes remain.
+// Round 508: Native contiguous count/flags/first memset at first/second/both groups and a
+// plain group loop, block/indexed receivers 152/152/152/169/146/164/164/168. Original
+// scalar resets and body restored; scaled-index, first-index and copy/count homes remain.
+// Round 511: full-array memmove, block/indexed receivers and live/shared copy count
+// 169/162/165/151; late cursor pairs 169/164/165/151. Original
+// memcpy and body restored; scaled-index, first-index and copy/count homes remain.
+// Round 29 (lane 17, fast; plain 2): retail's cursor and index starts sit below the loop guard, so they are induction variables of
+// `&entries[n]` and `first + n` in a plain counted loop, with the table read at each use. First and the copy both through a local
+// 164/157/158 by head form (492 bytes; cache index in EAX); index re-read from previous, no first 131 (508); `first` only for the
+// loop, the copy through previous or current 2. On that: first or material renamed 2/2; first declared at the top then assigned 2;
+// defined at the function top 22; after the selection 130; after the copy 130; `n + first` 2; index before entry 2; entries in a local
+// 2; index inlined at its uses 114 (491), entry inlined 130 (515), both 154 (526); explicit cursor before the `for` 9 (first in
+// retail's slot, so the slots conflict there, but the cursor's start moves above the guard); explicit index 7; both 163 (492); cursor
+// before the copy in all six head orders 163 (490); `first` from current 2, chained 2 (kept); with first as the copy's destination
+// 157; material at loop or block top 2/2; chosen as a ternary 52.
+// Round 514: combined required-mask equality/zero optional mask/bit-index test/mode
+// optional mask, block receivers 150/139/180/164; indexed receivers 159/159/188/181.
+// Original admission, copy and complete body restored; scaled-index/count/first homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
@@ -470,36 +497,35 @@ void function_402b0(long cache_index, long mode)
     g_4c1a48[2].count = 0;
     g_4c1a48[2].first = 0;
     g_4c1a48[2].flags = 0;
-    s_render_index_cache_block const *block = &g_4c62f8.records.blocks[cache_index + 1];
-    if (block->count > 0)
+    if (g_4c62f8.records.blocks[cache_index + 1].count > 0)
     {
-        long first = g_4c0b78.previous;
-        g_4c0b78.current = first;
-        s_44940_entry const *entries = block->entries;
-        memcpy(g_4ba138 + first, entries, block->count * sizeof(s_44940_entry));
-        g_4c0b78.current += block->count;
+        long first = g_4c0b78.current = g_4c0b78.previous;
+        memcpy(g_4ba138 + g_4c0b78.current, g_4c62f8.records.blocks[cache_index + 1].entries,
+            g_4c62f8.records.blocks[cache_index + 1].count * sizeof(s_44940_entry));
+        g_4c0b78.current += g_4c62f8.records.blocks[cache_index + 1].count;
         dword selection = !mode ? ~0UL : mode == 2 ? 0x10 : 0x20;
-        long n = 0;
-        long index = first;
-        while (n < block->count)
+
+        for (long n = 0; n < g_4c62f8.records.blocks[cache_index + 1].count; ++n)
         {
-            if (entries->unknown00 & selection & 0x1fffff &&
-                entries->unknown00 & 1 && entries->unknown10[0xa] > 0 && (entries->flags & 0x1f0) == 0x1f0)
+            s_44940_entry const *entry = &g_4c62f8.records.blocks[cache_index + 1].entries[n];
+            long index = first + n;
+            if (entry->unknown00 & selection & 0x1fffff &&
+                entry->unknown00 & 1 && entry->unknown10[0xa] > 0 && (entry->flags & 0x1f0) == 0x1f0)
             {
                 byte weight = g_4c0b78.weights[index];
-                long shape = entries->flags & 0xf;
+                long shape = entry->flags & 0xf;
                 byte material_index = g_4c0b78.material_indices[(short)index];
                 long material = NONE;
                 if (material_index != 0xff)
                     material = g_4c0b78.materials[material_index];
-                byte *geometry = (byte *)function_449e0((short)index, false, (bool)((entries->unknown00 >> 12) & 1));
+                byte *geometry = (byte *)function_449e0((short)index, false, (bool)((entry->unknown00 >> 12) & 1));
                 if (geometry)
                 {
                     for (long part = 0; part < *(long *)geometry; ++part)
                     {
                         s_render_part_context context;
                         if (function_45ce0((short)index, (byte *)&context, (short)part, (short)shape) &&
-                            function_460d0(*(dword const **)(entries->unknown10 + 4), (short)index, part))
+                            function_460d0(*(dword const **)(entry->unknown10 + 4), (short)index, part))
                         {
                             long chosen = context.material;
                             if (material != NONE)
@@ -510,9 +536,6 @@ void function_402b0(long cache_index, long mode)
                     }
                 }
             }
-            ++n;
-            ++index;
-            ++entries;
         }
     }
 }

@@ -1202,6 +1202,14 @@ void __stdcall looping_sound_fade_out(real duration, long first_sound_index)
 // test the first index leaves EBX for the stack and the index takes EDI (48), so the conditional arm
 // weighs into the tie. A 600 s fast annealing permuter run: 64 tries, none below 24 (its reduced image scores the
 // original 57, so it cannot see this tie).
+// Round 58: a bool-returning next with the body reading iterator.index 24; the same with a `long index` copy in the
+// body 24; the element pointer at function scope 24; the first index copied to a local 24; the register parameter
+// second / last (stack order unchanged) 24/24; a pointer to the state field 24; the element as a reference 24; a
+// pointer to iterator.index 24; next as `long next` with a test, as a double store, as a one-read local 49/47/54 (207/201/207
+// bytes; 0x21b870 32, 0x21bd00 71). Diagnostic, not keepable (0x126df0's body written out): an element local tested and used in
+// the loop gives retail's index EDI/element ESI but folds the state load (`mov al, [esi + edx + 2]; add esi, edx`) 35 (211
+// bytes), six other element spellings 35; the test through the macro with that local 24 (index ESI again).
+// A private next with pointers to the iterator's count/first/both 24/24/24, to its index (alone or with the others) 50 (212 bytes).
 // @retail 0x21be20
 void looping_sound_fade_in(long first_sound_index, short curve, real duration)
 {
@@ -1248,7 +1256,7 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 127 (was 127): return result first restores entry load allocation; the first-player expansion remains (retail
+// score 110 (was 110): return result first restores entry load allocation; the first-player expansion remains (retail
 // calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
@@ -1342,6 +1350,16 @@ struct s_looping_detail_request
 // restored; detail retention and unwanted first-player expansion remain.
 // Round 291: Source/offset/velocity overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with native flag, 190/180/123/193/185/174/186/186. Four-point best rejected; original copies restored.
+// Round 247: Native request-offset output workspace with four complete publication orders and
+// early/late success: 110/110/110/110/110/110/110/110. Keep original field order and early success,
+// 110 plain at 508/508; detail retention, offset publication and first-player expansion remain.
+// Round 251: Complete two-use camera-position value, mutable/const with original/audible-done/no-player-done
+// finalization, 168 in all six forms; native short count on the final two graphs 169/169 (reduced control
+// 124). Original whole body restored at full score 110; query expansion and detail retention remain.
+// Round 253: Final-position offset production with native count, source flag member and byte-result
+// subsets 0-7: 161/161/161/161/164/164/164/164. All original storage and source restored;
+// frame ownership regresses and the first-player query still expands.
+// Round 469: One counted first/next-player traversal, short/word/long/dword visit counter, then enclosing selected-player lifetime: 121/121/129/131/121/121/129/131. Original two-stage selection restored; query expansion remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1356,15 +1374,13 @@ bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_soun
 	if (sound->source.audible == 1)
 	{
 		source->audible = 1;
-		vector3f offset;
-		function_21ce60(detail, &offset);
-		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&offset, source);
+		function_21ce60(detail, &request->offset);
+		function_21bfb0(looping_sound_index, detail->sound_definition_index, (s_sound_marker const *)&request->offset, source);
 		result = true;
 		request->flags = 0x2f;
 		request->looping_sound_index = looping_sound_index;
 		request->callbacks = &g_44a130;
-		request->offset = offset;
-		request->tracking_data_size = sizeof(offset);
+		request->tracking_data_size = sizeof(request->offset);
 	}
 	else
 	{
@@ -1681,6 +1697,15 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Original guards, request, frame and complete body restored.
 // Round 291: Native integer activity/mask domains long/short/word: 305/304/304/410/410/304/304/304.
 // One-point forms rejected; original dword mask/activity, request and range loops restored.
+// Round 247: Actual first-pass gain-output, second-pass sound and gain-input cursor subsets, then all
+// with full request extent: 442/406/384/460/453/432/432/432; original body and helpers restored.
+// Round 250: standard fill_n for sounds/gains/both 547/565/564; fill 547/563/564;
+// both complete initialization phases reversed with fill_n/fill 564/564. Original arrays,
+// initializer lists and header set restored; frame/playback/NONE and range/ring homes remain.
+// Round 308: native physical sound/detail/playback flag domains, seven subsets and shared gain-add
+// Round 308: boundary 479/486/452/438/494/469/469/488 reduced (control 479); sound/detail plain 421,
+// Round 308: playback word plain 467 against full 305. Original real types and complete body restored;
+// Round 308: frame 0x11c versus 0x128 and playback/NONE/range homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2295,6 +2320,17 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 289: native previous/next transition carriers char/long, short/long, long/char,
 // long/short, char/char, short/short, char/short, short/char: 669/644/626/657/645/651/658/655.
 // Original state graph restored; entry truth ownership and record/track homes remain.
+// Round 248: Existing find/create boundary, reused lower-pitch value and plain energy-input cursor,
+// seven subsets then both gain-input cursors: 668/597/668/680/745/680/745/723.
+// Original late lookup/create pair, pitch observations, indexed gain loops and complete body restored.
+// P252: Fixed four-gain ordinal as short/word/byte/signed byte 722 each; the same four with the complete
+// normalization scale produced after energy 746 each (unchanged reduced control 694, full baseline 597).
+// Original ordinal, scale lifetime and complete body restored; entry truth, record/track homes and loop
+// alignment remain.
+// Round 308: native persisted sound/outer-tag/track-tag flag domains, seven subsets then guarded alternate,
+// Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
+// Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
+// Round 308: and record/track ownership remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

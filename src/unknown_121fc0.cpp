@@ -184,6 +184,11 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 58 (m3 lane 1, fast): the three buffers at function scope 128; buffers, flags and size at function scope
+// 128; flags and size at the block's top 128, ahead of the buffers 128; a named path pointer for the three path
+// uses 128 (all same code). Compile-only: token declared outside the success block, or NULL there with the walk
+// after it, or one goto to the block's end leave the code unchanged; only a real use of the token after the
+// block (`g_4e3b40 = token == NULL`, diagnostic) saves EBP at the block's top, which retail's code does not show.
 // Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
 // mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
 // delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
@@ -194,6 +199,21 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
 // `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
 // before the token array, unique first 127.
+// Round 299: Standard endpoint/count-based native pointer-table initialization, with independent
+// counters before the table and zero read-count interactions: 238/239/238/239/225/225/225/225. All
+// original source/includes restored; outer EBP preservation and read-size/count/cursor homes remain.
+// Round 29 (lane 17, fast): register-masked aligned difference 8 of 224, nearly all from EBP's save (every slot in the block is
+// 4 off). The async read's out-locals declared volatile (diagnostic, not kept: no new volatile this round): done 128, success 128,
+// both 128, size 102 (masked 4: retail's three reads around the clamp and the slot order, leaving only EBP's save and restore),
+// size with done or success or both 102/102/102. The flag store in both arms of the success test 127, on the volatile size 101;
+// the store in an else arm with the success arm's own store 127/101; a `do ... while (false)` with `if (!success) break` 128/102 (EBP
+// still saved in the first tokenizer's block in all of these). Compile-only: a NULL token walked after the test, a goto to the
+// flag store, a token from a conditional, the token at block or function scope, an uninitialized token with two success tests, a
+// for walk, a do walk, the whole block in a do/for once, an early return of the done path all leave the save late; only a real use
+// of the token after the block moves it to the block's top, which retail's immediate flag store does not show.
+// N306: Existing tokenizer delimiter-tail outputs, four native cut graphs with end-owned/input-owned
+// whitespace scans, 160/128/212/166/214/229/223/176. Original tokenizer and loader restored; early EBP
+// preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

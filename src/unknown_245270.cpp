@@ -142,22 +142,15 @@ PRIVATE __forceinline void function_244de2(real thickness, short count, point3f 
 	}
 }
 
-// score 6 (was 6): the sum of squares is emitted with the x87 terms in the
-// other order and the loads inside the second inlined call are ordered
-// differently; the frame, the two prism writes and the calls all match.
-// Zero-initialised then x, y 6; the direction's i/j copied and rotated through
-// a temporary 244 (y saved) / 224 (x saved); a separate projected direction 155;
-// y stored before x with a const view for the sum 136.
-// Round 31: the hand-written normalization replaced by the existing normalize2d_fast on a
-// vector2f 6 (identical code, kept); on that: y written before x 136 (x squared first but taken
-// from st0); the dot computed just before the first prism 92; the swapped corners exchanged the
-// other way 18; `-x` for `0.f - x` in the second prism 6. Compile-only: writing only x through a
-// pointer gives retail's square order and reload, but puts the second prism's loads in y, x,
-// distance order (retail y, distance, x); routing both prisms through function_24526f with a
-// plane local grows the frame.
-// Round 68: point2f normalization view 6; length local / condition-scoped length 6/6;
-// shared 2d dot / 3d add / both 6/6/6; lower corner copied from the first 6;
-// upper and lower shared setters together 203. Original body restored.
+/* the direction turned a quarter turn in the horizontal plane */
+PRIVATE __forceinline void function_244de0_perpendicular(vector3f const *direction, vector2f *perpendicular)
+{
+	perpendicular->i = -direction->j;
+	perpendicular->j = direction->i;
+}
+
+/* records an edge and, given a height, the edge lowered by it and a prism for each side of
+   the strip between the two */
 // @retail 0x244de0
 void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 	real arg_3, long arg_4, long arg_5, long arg_6, byte arg_7,
@@ -191,7 +184,8 @@ void function_244de0(point3f const *arg_0, vector3f const *arg_1, real arg_2,
 			local_0->field_1c = *arg_1;
 			local_0->field_28 = arg_3;
 		}
-		vector2f local_1 = { -arg_1->j, arg_1->i };
+		vector2f local_1;
+		function_244de0_perpendicular(arg_1, &local_1);
 		if (normalize2d_fast(&local_1) != 0.f)
 		{
 			real local_4 = arg_0->y * local_1.j + arg_0->x * local_1.i;
@@ -534,6 +528,27 @@ void function_245400(s_source_245400 const *source, long index,
 // parts, deferred accumulated stores and paired axial sums, each with early/late plane table,
 // 209/203/209/203/209/203/209/203. The matched helper user stays exact; late planes lose
 // the caller and gain only six. Entire helper/body restored; frame 0x24/0x2c and side homes remain.
+// Round 353: Native surface endpoints, secondary signed index and material low-word
+// declarations on the source-ECX graph, seven subsets 209 each; all with secondary-code-first
+// reads 208 (one-point gain rejected). Original data declarations and complete body restored;
+// frame 0x24/0x2c, matrix/table homes and independent side bytes remain.
+// Round 313: Existing point helper with plain component output loop, complete product parts
+// and coordinate-before-translation subsets 209/209/209/209; one scale observation
+// 213/213/213/213, also raising matched helper user 0x245400 to 44. Complete helper
+// and body restored; frame 0x24/0x2c, matrix lifetime and independent side homes remain.
+// Round 467: Existing point helper consumed by explicit destination/final conditional selection,
+// phase/entry point storage and point production after/before direction: 209/211/209/211/210/209/210/209.
+// Frame and independent side homes remain; original helper and complete body restored.
+// Round 355: native paired index/side fields at the actual material record, complete
+// first/second material values and existing staged-cross subsets: 210/231/228/229/210/231/228/229.
+// Original record and body restored; frame/table/matrix and independent side homes remain.
+// Round 59 (m3 lane 10, fast): the matrix in EBP from entry is what keeps retail's shape away. The matrix block under one
+// more folded test (the material test again) 209, under two 404 (588 bytes: the two transforms go out of line and EBP goes to
+// the material table); force-inlined transforms at no / two / three / four extra tests 209 each (still EBP). Diagnostic, removed
+// at once: a volatile read of the matrix at its test 209 (EBX plane table, borrowed EBP, later saves as retail, frame still
+// 0x24, sides still folded, so a volatile cast alone would not match and is not allowed). A local copy at the block 213, a read through its
+// address 213 (both still EBP from entry). The rotation through a `matrix3x3` local 208, axis pointer locals 208, axis pointers
+// as a helper's parameters 208 (one instruction, not kept); a scale local 209; `arg_2 != NULL` 209.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

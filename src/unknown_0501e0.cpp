@@ -241,9 +241,26 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 500: native ordinal !=3/<=2 with long/dword/short/word domains
 // 409/221/401/221/400/399/400/399. Equality bounds change unrolling but regress;
 // extra frame word and coefficient/input/result homes remain. Original helper/body restored.
+// Round 72 (lane 16, fast; compile-only register-blind distance in brackets, control [178]): explicit offset rows alone
+// 278 [156]; rows with a `vector3f scaled` copied field by field and overwritten from the input under the scale test,
+// component loop or cursor 278 [122], which gives retail's opening 32 instructions (raw kept, copies before the test,
+// scale-first products); three row statements 235 (1113 bytes) [152]; the copy as reals 278 [156]; scaled declared in the
+// caller, a camera pointer or an inline getter: no change to the folded coefficients. Calling matched 0x142640 562 (827
+// bytes, stays out of line under /Ob1); a static or inline copy of its body 235 (1113). Retail loads the first view's
+// coefficients into registers where ours folds them; without the scale branch ours loads them too. Restored.
 // Round 502 (reduced): identity-conditional native/memcpy input protection, alias/scale-first
 // ownership 287/289/287/289; indexed outputs 290/305/290/305. Complete alias-safe scalar
 // helper and original body restored; extra frame dword and coefficient/result homes remain.
+// Round 504: twice-used scalar origin capture orders xyz/xzy/yxz/yzx/zxy/zyx
+// 281/280/281/281/280/281; shared per-axis origin in long/dword offset loops 226/226.
+// Complete original offset loops, helper and body restored; extra frame word remains.
+// Round 518: on separate offsets/cursor outputs, in-place first/second/both
+// transforms 285/259/275; with the first transform before second offsets
+// 291/279/262; both in-place with indexed output 278, early shared scale 306.
+// Original helper/body restored; extra frame word and coefficient/result homes remain.
+// Round 521: real endpoint-pair array traversal, separate/fused phases, long/short
+// endpoint indices and cursor/indexed view rows 389/373/380/376/380/377/376/374.
+// Grouped workspace forms do not match; original helper and body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

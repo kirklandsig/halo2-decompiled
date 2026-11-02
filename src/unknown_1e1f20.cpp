@@ -482,6 +482,12 @@ s_node_view *function_26be30(s_iterator *iterator);
 // the two stores 18; with 0x4fc before the 0x4ac test 14; plain while 10; handler local 10; callback field
 // at test and call through the handler local 10. The slot address still forms after the callback test and
 // only the nullable-slot mask changes; none of the prefix combinations moves it or the offset/type registers.
+// Round 152: callback read through the element's type with the slot pointer declared after it and passed
+// to the callback 10; the callback declared in the if's condition 7; a handler local tested and called
+// with the slot pointer passed 10; a short type local with the slot pointer passed 10; the nullable slot
+// named before the callback test 10. Each keeps the offset in eax and the slot lea after the test.
+// Retail's matched 0x1e17d0 and 0x1e2150 get retail's loop registers from this loop source (without a
+// zero register in the loop), 0x1e22d0 gets ours; retail's 0x28fdf0 clobbers eax, ecx and edx.
 // @retail 0x1e23c0
 void function_1e23c0(long actor_index)
 {
@@ -794,6 +800,8 @@ void swarm_leader_detach(long actor_index);
 // Y499: native cleanup/prop-iterator/actor-iterator phase scopes, seven subsets and
 // all with terminal receiver role name, eight 266 against fast control 266 (ordinary 281).
 // Original body restored; frame 0x1c/0x20, actor/displacement and cleanup homes remain.
+// M305: Native terminal parallel-table bound walk, for/while, less/not-equal and pointer declaration orders
+// 270/269/270/269/270/269/270/269 fast versus unchanged fast 266 (ordinary 281).
 // @retail 0x1e1a00
 void __stdcall function_1e1a00(long actor_index, long value)
 {
