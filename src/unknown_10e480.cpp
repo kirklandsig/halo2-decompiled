@@ -306,6 +306,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // const animation pointer 207; the existing channel validity test 0xb6760 after the weighted play 239 (954
 // bytes); in 0x1c6440 itself, its graph in a named local 207 (getter still matches), an early NULL return
 // 207 (getter 15).
+// Round 275: Real two-identifier touch loop with four native channel initializations 268 each; all with long sample frame 202 each (five-point lead rejected); pointer traversal with bool/long flag/long count/short count 224/231/223/222.
+// Original executable source restored; frame 0x30 versus 0x2c, getter expansion and ordinal homes remain.
+// Round 277: Twice-used real/double sample frame, direct/named weight product 273/273/289/289; each
+// with publication-owned weighted output 281/281/300/300. Original frame observations, constructors
+// and body restored; frame, getter expansion and ordinal homes remain.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

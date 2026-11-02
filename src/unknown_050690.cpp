@@ -221,6 +221,10 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 // Round 292 reduced control 680: complete double accumulation results in all six evaluation
 // orders 680 each; native real results 680; symmetric weighted-coordinate parts 691.
 // Original complete accumulation and all producers restored; full frame/mode gap remains.
+// Round 26 (lane 17, plain; the reduced image realigns, so only plain counts): sums and weights cleared by
+// memset 631, as `= {}` 631 (both give retail's whole-array 0x202/0x101 rep stosd fills, register-blind
+// differences 331 -> 337); `= {}` with the flag declared last 630 (register-blind 326); the exponent read first
+// and clamped by an if 643; the level counter without volatile 652. Still BLOCKED-BY 0x508d0 (a stub).
 // @retail 0x516d0
 long __stdcall function_516d0(bool reduced, dword seed,
 	const s_noise_draw_definition *definition, const s_random_draw *draw,

@@ -223,6 +223,15 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Single-variable clamps `chunk = total - completed; if (...) chunk = limit;` with `chunk > limit` 38,
 // `limit <= chunk` 37 (retail's `cmp limit, chunk; jg` shape, registers still rotated: ours colours the limit
 // first) and `limit < chunk` 38.
+// Round 131 (lane 5, fast): state 11's clamp `remaining < g_55bd1c ? remaining : g_55bd1c` 37 (same
+// registers); the size computed into chunk and clamped by `if (chunk > g_55bd1c)` 38, `if (chunk >= g_55bd1c)`
+// 38, `if (g_55bd1c <= chunk)` 37 (retail's `cmp limit, chunk; jg`, but total/completed/limit rotate to
+// ecx/edx/eax against retail's eax/ecx/edx); `g_55bd1c <= remaining ? g_55bd1c : remaining` 37 (same code as
+// the opening ternary). Retail's 0x214db0 takes the map name in EDI and the path in EBX.
+// Round 230: On the current chunk-publication/slot graph, completed snapshot with conditional,
+// both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
+// snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
+// 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
 // Round 20 (lane 18, fast): state 19 with the buffer release before the slot clear (retail's order) 43
 // (ours then sinks the NONE store past both clears to share the handle's NONE, where retail keeps it right
 // after the call; retail's cache-copy globals 0x55b4f0..0x55c02c look like one structure, which would keep
@@ -238,6 +247,15 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // both snapshots with conditional, completed with capacity-first/remaining-first clamp, both
 // snapshots with remaining-first conditional/clamp, and limit-only conditional/clamp:
 // 38/38/38/38/38/40/37/38. Original observations, clamps and body restored.
+// Round 71 (lane 9, fast), state 11 (retail: chunk shares EAX with the remaining bytes, completed ECX, limit EDX,
+// slot EDX early, file EAX late): `long chunk = remaining; if (g_55bd1c <= remaining) chunk = g_55bd1c;` 37
+// (retail's `cmp limit, remaining; jg` shape, registers rotated); `g_55bd1c <= remaining ? g_55bd1c : remaining`
+// 37 (same code); the chunk as the difference clamped in place 38; the if-clamp with the slot local first 38,
+// between clamp and store 38, after the store 37; the if-clamp or difference clamp without the slot local 115
+// each (chunk EAX and completed ECX as retail, but buffer and limit swapped and the slot read late, which
+// breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
+// the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
+// (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

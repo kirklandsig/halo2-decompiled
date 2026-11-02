@@ -1954,6 +1954,12 @@ void function_269250(long clump_index, long actor_index);
 // compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
 // Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
 // unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
+// Round 193 (lane 3, plain): the in-arm compare gives retail's 480 bytes and homes (126), but our found
+// block is laid out after the improve block (0x26ae30's identical walk keeps retail's order); a
+// memory-only selection (diagnostic, reverted) gives the pool EBX but promotes the walk index into EBP
+// and sends the actor to the stack, 145. On the in-arm form: the walk reading g_4f55d0->active at each
+// step 126 (same code); score declared per actor 126; activity snapshot before the walk init 126; the
+// creation arm assigning the selection 126 (same code); creation arm first 130.
 // Round 34 (plain checks): in-arm compare with the selection stored first 126; on it `actor->unknown07c != selected`
 // 126, best declared and stored first 126 (both same code), the team read once into a `short` before the scan 168
 // (497 bytes), creation arm first 130.
@@ -1970,6 +1976,8 @@ void function_269250(long clump_index, long actor_index);
 // Round 231: Produced actor/group/both pointer for scopes 87/335/335; readonly actor 87, with
 // those scopes 87/335/335; all with entry uninitialized score 335. Original common score graph,
 // observations and body restored.
+// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
+// all plus pre-search created-result storage 89. Original declarations and body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2204,12 +2212,22 @@ void function_269250(long clump_index, long actor_index)
 // separate globals the first-referenced pool takes the first register (the node pool in 0x25d770/0x25d810); under the
 // struct the other one; retail gives the prop pool the first register in all three. The node walk through the out-of-
 // line 0x26be30 4 (wrong link field, +0x2c for +0x34; not a valid form).
+// Round 193 (lane 3, fast): the 3 form under s_prop_pool_storage 3; with separate pool globals it
+// matches but 0x25d770 2 and 0x25d810 91, also with the prop pool defined first in globals.cpp, declared
+// first in globals.h, grouped with the clump pool (one struct, node separate) or the node pool grouped with
+// the tracking pool: 0/2/91 each. Whenever the two pools are separate symbols 0x25d770/0x25d810 give the
+// node pool the first register (one use each, node referenced first); as one symbol 0x26ae30 does (node
+// referenced last); retail gives the prop pool the first register in all three. The 3 form's cleared prop
+// is a flag set and tested, kept only on a match: a shared-declaration conflict with matched 0x25d770 and
+// 0x25d810, not a body problem. The 3 form with the node scan started from the prop pointer 208 (709 B).
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
 // Round 231: Disjoint-category unit deletion reaches existing completion, original/native node
 // with original/reversed/chained category initialization 188/188/186/186/186/186/188/188. All
 // reach 760 bytes; original continuation and body restored.
+// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
+// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

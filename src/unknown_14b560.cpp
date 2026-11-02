@@ -2806,6 +2806,10 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
 // 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
 // iterator, so our build promotes g_4e8c20 into EDI through both loops.
+// Round 288: Normalized first-iterator result in byte/char/short/long, each with signed/dword next
+// index, 103/103/103/103/103/103/103/103. All tie with full-context controls; original bool/long
+// helper, all iterator stores, traversal, copies, globals observations and whole body restored.
+// Global-pointer web and target/point homes remain.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
