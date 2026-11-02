@@ -529,6 +529,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // center loops recover the input register pair and caller 0xb7060, but regress the body;
 // center alone first differs at +0x35 and reloads its source receiver per component.
 // Original copies, getters and body restored; physics/default/search/projection scheduling remains.
+// N313: Existing default producer owns the complete marked-body search; eager/late fallback with
+// latch/early return 525/524/525/525; existing native center conversion 519/518/519/519.
+// The larger existing helper stays out of line, shrinking the caller to 659..666 bytes and worsening
+// its caller to 11; exact-only boundary forms restored. Original default producer, search and center
+// transfer restored; frame 0x48, input register pair and physics/projection scheduling remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
