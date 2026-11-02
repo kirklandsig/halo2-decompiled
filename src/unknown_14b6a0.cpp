@@ -410,6 +410,9 @@ void function_14bac0()
 // Round 309: Plain native component loops for displacement/returned-position addition/all accepted-point
 // transfer subsets 1..7: 222/222/247/263/263/246/263/298; the eighth uses short counters. Original body restored;
 // frame, point/iterator overlap and readiness carriers remain.
+// Round 288: Joint lexical priorities of all native point/displacement roles, both iterator
+// workspaces, complete receiver/bounds scalar orders and readiness bytes: eight orders 222 each.
+// Original names and full body restored; frame 0x50/0x3c and point/recipient sharing remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

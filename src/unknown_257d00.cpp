@@ -1735,6 +1735,9 @@ void function_b7360(long object_index);
 // Round 341: Consistent actor-object fields with a shared short/long/byte/word completion,
 // failure-first 502/495/565/502, success-first 535/536/548/535. The long failure form reaches
 // 1848 bytes but worsens allocation; original callback and observations restored.
+// Round 286: Native actor/command/both array elements, command-first then actor-first, original
+// elements actor-first, both with output at use: 301/301/301/487/487/487/487/487. Original recovered case/result graph
+// and body restored; pool-first acquisition, actor/output carriers and 24-byte gap remain.
 // Round 517: On the current case-result graph, direct admission/enclosed execution/named admission
 // 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
 // enclosed short selector 466. Original admission, selector observations and complete body restored;
