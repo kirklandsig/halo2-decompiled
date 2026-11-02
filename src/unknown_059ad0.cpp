@@ -3551,6 +3551,12 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // Round 482: Independent added/replacement channel results, shared/long/const-long
 // producer pairs other than shared/shared 120/120/129/130/130/129/130/130.
 // Control 119 with related caller retained; original channel join and body restored.
+// Round 119 (lane 8, fast with 0x630f0/0x59e50): the arms swapped (member found first) re-measured 144
+// at 463 bytes for its listing: both attach calls then take retail's EAX/ECX (the member arm's
+// temporaries come first), but the layout puts the member arm first; the member-state pointer declared
+// right after the lookup (not sunk into the arm) 131 (the first reason-7 tail then loads ECX as retail);
+// that with the flag read by index 141 (483 bytes); `long channel = NONE;` 119 and `channel` declared
+// at the top 119 (same code); a named pointer to the existing member for memcmp and properties 144.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,

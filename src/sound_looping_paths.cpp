@@ -630,6 +630,14 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // g_4e0348 there while tag and radius use the local), the 0x18ab70 argument setup and the BSP/count homes. On
 // 153: the transition through g_4e0348 279 (1037 bytes, a zero kept in ESI), position copied before the cluster
 // 210, bsp declared before the tags 153, the angles declared at the request-loop top 153.
+// Round 119 (lane 8, fast, 162 confirmed plain): bsp renamed to sort after count 159 (homes do not
+// move); the sentinel do-while as a plain for loop 159 (identical code; not kept: lane 15's hold on this form stands); the request stores in
+// retail's order (transition, index, fade) with `tag == NONE ? 0.0f : 1.0f` 158 (that block then
+// matches); on it the cue requests' NULL stores in the family's order (marker, source, variant, as
+// the matched projectile and effect requests) 162 (both cue blocks then store in retail's order, one
+// instruction behind: retail re-reads g_4e0348 for the transition definition); on that the transition
+// definition through g_4e0348 278 (1037 bytes: bsp takes retail's +0x14 home but a zero takes ESI for
+// the 0x18dc90 NULL, the count test and the cue stores).
 // Round 263: Native query-tail sentinel chains in six array orders 161/162/162/161/161/159; original-order chain with short/word
 // bounded fill induction 256/256. Original fill producer, count, helpers and complete body restored.
 // @retail 0x18bb80

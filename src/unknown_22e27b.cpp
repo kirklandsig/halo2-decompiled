@@ -331,6 +331,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // restart expression 207 (next time in EBX, no zero register); with `if (dispose test) { dispose = true;
 // break; } else if (restart test) restart = true; else restart = false;` in both blocks 207; with dispose
 // declared before restart 207; with the loop as `for (; time >= next_time; next_time += frame_time)` 207.
+// Round 119 (lane 8, fast): the screen test folded into `if (dispose && get_screen() == this)` 227 (646
+// bytes); the key table read once 217 (650 bytes); that with the fraction first 217; the two unused key
+// pointers dropped 96 (identical code); dispose false at its declaration with both resets dropped
+// 96 (identical code).
 // Round 494: one native restart mask at all policy sites, with disposal/restart operand
 // priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
 // Mask forms shorten away from retail and regress; all original policy tests and body restored.
@@ -340,9 +344,6 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 328: Complete playback case orders 021/120/201/210 across all four
 // switches, then the lookahead pair alone, 96/96/96/96/96/96/96/96. Original
 // case order restored; direction/frame/flags and interpolation carriers remain.
-// Round 494: one native restart mask at all policy sites, with disposal/restart operand
-// priorities and logical/conditional production: 262/273/262/273/262/273/262/273.
-// Mask forms shorten away from retail and regress; all original policy tests and body restored.
 // Round 333: Uniform at-use fraction with reused key receivers and scalar interpolation subsets
 // 153/223/155/219; immutable-duration counterparts 153/223/155/219. Exact-only forms rejected;
 // frame/timing and original shared fraction restored.
