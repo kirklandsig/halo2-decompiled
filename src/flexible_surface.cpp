@@ -499,6 +499,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // DH round 290: sampled axis ordinal short/word/long/dword reused for all three native
 // component reads, aggregate producers 161/161/161/161; shared setter 173/173/173/173.
 // Original draws, native axis/direction captures, cross/dot, all rows and tail restored.
+// AC480: Existing in-place double output scale / complete initialization result / named amplitude
+// envelope, subsets 1/2/4/3/5/6/7, then double scale with weighted oscillation: 158/178/118/204/159/178/204/158.
+// Original transfers, producers and complete body restored; frame and direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

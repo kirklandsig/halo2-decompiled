@@ -2031,6 +2031,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
+// AC480: Local/forward assignment initialization and existing native result setter, subsets
+// 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
+// original producer and body restored. Frame and independent vector-copy homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2331,6 +2334,9 @@ real magnitude3d(vector3f const *v);
 // Round 527: Native real absolute/sine/cosine API subsets 1/2/4/3/5/6/7 and all with separate
 // sine/cosine declarations: 170 each. Original math APIs and complete executable body restored;
 // frame 0x38 agrees, raw-length/dot/angle homes and rotation allocation remain.
+// AC480: Recovered-frame admission orders and scalar/vector/full workspace names: 170/182/182/182/182/182/182/182/262/314/334.
+// The shared real clamp at current/target/both boundaries gives the final three counts;
+// original macro clamps and complete body restored. Raw magnitude/dot/cosine homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3568,6 +3574,9 @@ bool __stdcall function_391f0(void *state);
 // Round 527: Two-use previous timestamp/native short frame/single-exit admission subsets
 // 1/2/4/3/5/6/7 give 294/262/251/290/294/262/290; all with double previous time 324.
 // Original time observations, frame carrier, gates and complete body restored; extra frame dword and zero/loop homes remain.
+// AC480: Natural portal-cursor for increment with the signed post-decrement condition; conditional
+// absolute / array-home names / independent phase ordinal combinations: 266/266/266/266/266/266/266/266. Original
+// loop and complete body restored; extra frame dword and zero/portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
