@@ -1235,6 +1235,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 137 (was 137): unchanged this round: the entry still loads the class table into EDI where
+// retail uses EDX, the first branch still multiplies the fade-out time before the inverse (so the
+// elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
+// the hold branch still copies the ducking gain through a stack temporary our code folds away.
 // score 137 (was 137): Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
 // Earlier at 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
@@ -2832,6 +2836,12 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
+// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
+// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
+// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
+// retail's length and was reverted.
 // score 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
 // Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
@@ -3271,6 +3281,11 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// score 24 (was 49): the loop is a for statement whose increment reloads the pool and advances the index, the
+// switch has a `case 1: continue;` arm (so a non-zero mode skips the record work) and the pitch range is computed
+// above the mode, which keeps the pool in ebp and the index in ebx as retail has them. Left: the range is built
+// before the mode flag test where retail builds it inside case 0, so the flag byte load and the class lookup sit
+// in a different order than retail's.
 // score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
@@ -3374,59 +3389,56 @@ void function_1282d0(void)
 {
 	s_record_pool *sounds = g_4e637c;
 	long sound_index = data_datum_index(sounds, function_16bc00(sounds, 0));
-	if (sound_index != NONE)
+	for (; sound_index != NONE;
+	     sounds = g_4e637c, sound_index = data_datum_index(sounds, data_find_index(sounds, sound_index == NONE ? 0 : (sound_index & 0xffff) + 1)))
 	{
-		do
+		if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
 		{
-			if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
+			s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
+			if ((byte)function_125e60((s_looping_track_sound *)sound))
 			{
-				s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
-				if ((byte)function_125e60((s_looping_track_sound *)sound))
+				long reason;
+				short voice_index = sound_voice_acquire(sound_index, &reason);
+				if (voice_index != NONE)
 				{
-					long reason;
-					short voice_index = sound_voice_acquire(sound_index, &reason);
-					if (voice_index != NONE)
+					s_sound_voice *voice = &g_4e6378[voice_index];
+					if (voice->sound_index != sound_index)
 					{
-						s_sound_voice *voice = &g_4e6378[voice_index];
-						if (voice->sound_index != sound_index)
+						if (voice->sound_index != NONE)
 						{
-							if (voice->sound_index != NONE)
-							{
-								function_127320(voice->sound_index, reason);
-								sound_voice_free(voice_index);
-							}
-							voice->sound_index = sound_index;
-							sound->start_time = SOUND_SYSTEM->time;
-							sound->value_ac = voice_index;
+							function_127320(voice->sound_index, reason);
+							sound_voice_free(voice_index);
 						}
-						if (!TEST_FIELD_BIT(sound->source_updated) && sound->source && sound->source->proc1)
-							sound->source->proc1(sound->object_index, sound->definition_index, sound_index, (long)&sound->marker);
+						voice->sound_index = sound_index;
+						sound->start_time = SOUND_SYSTEM->time;
+						sound->value_ac = voice_index;
 					}
-					else
-						function_127320(sound_index, 7);
+					if (!TEST_FIELD_BIT(sound->source_updated) && sound->source && sound->source->proc1)
+						sound->source->proc1(sound->object_index, sound->definition_index, sound_index, (long)&sound->marker);
 				}
-				else if (sound->value_ac == NONE)
+				else
+					function_127320(sound_index, 7);
+			}
+			else if (sound->value_ac == NONE)
+			{
+				s_sound_definition *definition = sound_definition_get(sound->definition_index);
+				s_sound_pitch_range *range = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + sound->pitch_range_index];
+				short mode = TEST_FIELD_BIT(sound->flag4) ? 1 : *(short *)((byte *)function_221810(definition->promotion_index) + 0xe);
+				switch (mode)
 				{
-					s_sound_definition *definition = sound_definition_get(sound->definition_index);
-					short mode = TEST_FIELD_BIT(sound->flag4) ? 1 : *(short *)((byte *)function_221810(definition->promotion_index) + 0xe);
-					switch (mode)
+				case 0:
 					{
-					case 0:
-						{
-							s_sound_pitch_range *range = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + sound->pitch_range_index];
-							if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
-								(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
-								function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
-							function_127320(sound_index, 0xe);
-						}
-						break;
+						if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
+							(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
+							function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
+						function_127320(sound_index, 0xe);
 					}
+					break;
+				case 1:
+					continue;
 				}
 			}
-			sounds = g_4e637c;
-			sound_index = data_datum_index(sounds, data_find_index(sounds, sound_index == NONE ? 0 : (sound_index & 0xffff) + 1));
 		}
-		while (sound_index != NONE);
 	}
 }
 

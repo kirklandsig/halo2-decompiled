@@ -234,6 +234,10 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 	out->unknown0e = source->unknown0e;
 }
 
+// score 57 (was 57): unchanged this round: retail still loads the 1.0 constant inside each of the
+// sphere test's two arms and holds the differences in XMM1/XMM2/XMM4 (i, k, j), while ours hoists one
+// 1.0 load above the fsqrt and holds them in XMM1/XMM4/XMM3, which also rotates the radius, the
+// scale products and the plane dot's registers.
 // score 57 (was 57): the sphere test's normal: retail multiplies the x and z differences in
 // place (normal x/y/z in xmm1/xmm3/xmm2, differences x/z/y in xmm1/xmm2/xmm4) and loads 1.0 in
 // each arm; ours multiplies copies of the scale, keeps z/y in xmm4/xmm3 and hoists 1.0 into xmm0

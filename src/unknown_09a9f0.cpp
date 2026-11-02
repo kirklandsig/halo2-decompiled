@@ -227,6 +227,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 	}
 }
 
+// score 49 (was 49): unchanged this round: the head's register roles still differ - retail saves
+// EBX and keeps a false result in BL from before the creation call, pushes EBP only around the header
+// test and leaves the table global in EDX, reloading its data and recomputing the index for the
+// object; ours keeps the validity result in EBP and shares one header address between the flag test
+// and the object lookup, so the index arithmetic stays common.
 // score 49 (was 49): retail holds a bool result in BL from before the creation call, saves EBP
 // only around the header test (pushed and popped there) and keeps the table global in EDX, reloading
 // its data and recomputing the index for the object; ours keeps a long result in EBP and shares one
