@@ -590,6 +590,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH291: Progress-first case priorities 40123/40132/40213/40312/41023/41032/41203/41230
 // on the retained signed-state graph 424/448/423/450/422/452/421/417. All complete cases,
 // release joins, sampling, qualifiers and original body restored; actor/frame homes remain.
+// DH293: Case-local admission completion, timer reset-first and terminal completion,
+// all seven nonempty combinations 412 each; complete graph with native signed
+// saved state 413. Original cases and complete body restored; frame/actor homes remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

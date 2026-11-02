@@ -642,7 +642,7 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // [ebp + 0x12]) and keeps the callback in ebx across the second dispatch, while ours loaded the flags after the
 // clear and reloaded the callback from its stack home; reading the callback once, plainly or through the
 // volatile slot, kept one load but changed the register allocation (133, 132, 141).
-// score 12 (was 93): frame 0xc and 531-byte extent agree; third-dispatch scratch registers still rotate.
+// score 12 (was 12): frame 0xc and 531-byte extent agree; third-dispatch scratch registers still rotate.
 // Earlier 93: the second-dispatch callback reload and the third dispatch's scratch registers (rotated
 // one step) still differ; earlier also the adjacent flag load/byte clear. Direct parameters
 // 139; direct channel/state/user 113, with word events 113; word/short events 97/97; separate bit clears
@@ -801,6 +801,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // delayed native variant identity with all exits 14, original/initial/initial-end guards 12/12/13,
 // all exits plus frame-delta expression 14. Keep plain callback and twice-used variant,
 // channel identity before rate and saved identity after it; original guards. Plain/full 12.
+// DH293: Separate loop-start with long/word/short/dword events 13/13/13/13;
+// original position with word/short/dword events 12/12/12; separate loop-start
+// and directly initialized replacement 130. Original retained callback/variant
+// graph restored; third-dispatch scratch rotation remains.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

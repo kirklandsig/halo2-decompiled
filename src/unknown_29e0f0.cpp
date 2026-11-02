@@ -239,6 +239,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // DH291: Native selected group/point/record accumulator subsets on the retained output-cursor
 // graph 462/444/390/466/462/409/468; all with full-width input group 440. Original short
 // traversals, selected homes, byte narrowing, bitmaps, metrics and complete body restored.
+// DH293: Joint selected-terminal/best-distance/point-bitmap four-byte lexical
+// priorities, all six 390; two opposite priorities with nearest-distance identity
+// 390/390. Original complete body restored; default/table/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
