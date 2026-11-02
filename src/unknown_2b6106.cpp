@@ -813,6 +813,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // DH round 268: native text storage for message/format/game/teams/main pair/auxiliary pair/
 // message+auxiliaries/format+auxiliaries 506/512/512/512/506/512/506/512. Only message
 // storage recovers EBP bias, still frame 0x860; six-point lead rejected. Original buffers and body restored.
+// Round 305: Native message with session equality, flag-before-clock and body-advanced score cursors,
+// seven subsets 504/489/487/506/504/489/487; all with native auxiliary buffers 487. Bias and frame
+// recover, but wrapped storage remains unmatched and exact-only. Original buffers and full body
+// restored at 512.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

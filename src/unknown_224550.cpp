@@ -265,6 +265,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // AC460: Existing UV producer with two-use positive axis decisions in bool/byte/short/long
 // 367/367/402/367; complete complementary decisions 397/397/421/398. Original conditional
 // expressions, helper and all in-place input captures restored; tint/UV homes remain.
+// Round 308: Native bitmap-default copy primary to secondary with original/input-RGB/seed-RGB/both loops
+// 347/347/350/347; reverse default ownership 348/348/351/348. The caller-owned tint frame
+// remains 0x60, but the swapped homes persist and the copy grows code to 1952 bytes.
+// Original separate default stores, RGB statements and helper input captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

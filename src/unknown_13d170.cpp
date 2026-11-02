@@ -310,6 +310,10 @@ struct s_block_candidate
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
+// Round 308: One post-callback block timestamp with direct/cached/conditional/guarded callback producer
+// 347/347/356/358 for long and 347/347/356/358 for dword. Pre-callback segment time remained
+// separate. The missing frame dword and page/ring register roles persist; original observations
+// and callback expression restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

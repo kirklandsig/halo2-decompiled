@@ -3126,6 +3126,8 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // but moves its load above the early return); names never move them.
 // Round 226: current reduced control 4; native table, native palette, both roots, native range, native record,
 // range/record, all native views and const callback arrays each 4. Original body restored.
+// Round 307: positive enabled scope 4; handle per view 4; table root at every use 217;
+// decoded/position/both point storage at entry 4/4/4; node/range and record/geometry storage at entry 4/4.
 // @retail 0x41640
 void function_41640(void)
 {

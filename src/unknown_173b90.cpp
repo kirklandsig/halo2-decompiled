@@ -1592,6 +1592,9 @@ bool function_17afd0(long effect_index, long value);
 // 154/151/161/158/164/162/171/168. Original executable body restored.
 // Round 459: Complementary unavailable bool/byte/short/long on two-use effect graph, original/shifted-word flag
 // 155/155/154/152/144/144/144/142. Original executable source restored.
+// Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
+// original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
+// complete body restored; eligibility width and availability/view carriers remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

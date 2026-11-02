@@ -524,6 +524,9 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 // remaining two prepared forms not run. Original body restored; the full-image OR schedule remains.
 // R75: second global read after definition/before memset 3/3; both globals read early together 3; owner pointer 3;
 // mutable/const owner aggregate 54/54; aggregate member reads 3; definition parameter through its address 3.
+// Round 307: clear result reused 3; zero event aggregate copy 79; owner long/complete
+// payload memset 36/36; individual long/short sentinel memsets 3/3;
+// owner longs plus long sentinels 36; complete owner plus remaining sentinel memsets 35.
 // @retail 0xd6660
 void function_d6660(s_type_1e6529 *data, long definition_index)
 {

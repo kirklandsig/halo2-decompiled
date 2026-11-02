@@ -473,6 +473,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // 225/237/202, initial+query/initial+bound/query+bound 241/238/249; separate
 // center/query with initial or initial+bound transfers 226/239. Original body
 // restored; entry/index spill and center/query/bound homes remain.
+// Round 309: Indexed coordinate producers at initial/large/both/single-initial captures,
+// each with original/common radius lifetime: 280/280/182/186/280/280/242/242.
+// Original native and scalar copies, radius lifetime and complete body restored; entry/index and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

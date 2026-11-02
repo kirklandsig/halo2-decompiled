@@ -509,6 +509,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // bytes, aligned 150; the link-bit store is still dropped as dead). The type named for the tests only (stores read
 // the field, for retail's type store from CX) 342; one store block for the two-step and type-2 arms with the call
 // under `if (two_step)` 364 (1375 bytes); `previous` declared first 295 (same code).
+// Round 311: Copy-owned short/word/long link ordinal, increment before/after memcpy,
+// 367/366/367/366/363/305; short counter with short/long ordinal 366/366.
+// Original counter, indexed memcpy and full body restored; frame and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -936,6 +939,9 @@ bool function_2715a0(byte *buffer)
 // Round 507: Embedded heap/node/heap+node/hash/heap+hash/node+hash/all/all-after-defaults
 // bases 486/568/568/486/486/568/568/568. Node-base forms shorten to 2004/2076 bytes;
 // state/node/link homes still differ. Original complete body restored.
+// Round 311: Captured squared length reused in the projection denominator, with complete
+// parallel dot parts and root/vector declaration-ownership masks 0..7: 531/531/531/531/531/531/531/531.
+// Original fresh denominator, root lifetime and full body restored; state EBP and scalar/link homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

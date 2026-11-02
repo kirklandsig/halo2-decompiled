@@ -61,7 +61,7 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
-// score 61 (was 97): prologue and 438-byte extent agree; the default-copy destination still
+// score 61 (was 61): prologue and 438-byte extent agree; the default-copy destination still
 // uses pointer induction instead of integer offset 0x18..0xa8; staged scalar loads differ.
 // Earlier at 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
 // induction where retail keeps the integer offset 0x18..0xa8 with the base in the displacement (16
@@ -239,6 +239,10 @@ struct s_spawn_scenario_23aea0
 // and the direct-union record 73/73. Only the default setter and native scalar/vector
 // record view remain; original scalar defaults, override reloads and signed loops retained.
 // Every other user keeps its score in reduced and ordinary checks; all matches survive.
+// Round 308: Retained setter with long/long, dword/long, long/dword batch ordinals 61/100/61;
+// zero-based long/dword type ordinal 61/100; non-equality/inclusive fixed bound 232/61;
+// body-stepped source cursor 68. Earlier induction forms used direct stores; this setter graph
+// still keeps a pointer induction and staged scalar loads. Original body restored.
 // Round 246: Native source vector/array records on the retained setter graph, flat/nested
 // 61/61/61/61; native vector assignment/library copy 256/256; both-phase setter 73;
 // mutable nested source records 61. Original source view and complete body restored;

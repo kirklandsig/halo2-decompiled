@@ -2076,6 +2076,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
 // 128/138/138/128/138/128/128/128. Original case order, body and zone producer
 // restored; early color/query ownership and frame 0x40 versus 0x44 remain.
+// Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
+// in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
+// query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3159,6 +3162,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // used node word and traversal-scope matrix, 110/140/110/140/110/140/110/140. Cached-mode forms retain frame
 // 0x4c and add copy work; per-call forms recover frame 0x54 but lose matched caller 0x176f60 (25). All
 // exact-only forms, input contracts, pointer-result ownership and complete original body restored.
+// Round 312: negative tint/multiplication/both query outcomes 113/112/130;
+// paired byte/signed-char/short/word/long storage 130/130/147/147/147.
+// All inverse-outcome forms restored; caller convention, frame, system/successor and color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3404,6 +3410,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
 // association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
 // restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
+// Round 312: plain output-row loops in point/direction/both 131/74/344; with
+// default-first scale 270/270/297; point loop with complete named basis products
+// 125, with default-first scale 270. The named-product forms also lose the matched
+// shared user 0x17a380. All helper input captures, original row stores and body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
