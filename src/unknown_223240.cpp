@@ -246,6 +246,9 @@ void function_2232a0(void)
 // Round 284: native multi-use options receiver with a complete positive layout result,
 // bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
 // Original complete body restored; outer pretest, optional-source home and tail transport remain.
+// Round 349: loop-entry source-availability predicate before the pure slot scan,
+// bool/byte/short/long with original/pretested traversal 126/177/126/177/125/182/124/181.
+// One-use predicate forms require a match; every form and original body restored.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

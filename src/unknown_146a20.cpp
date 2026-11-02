@@ -58,6 +58,10 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// score 34 (was 34): unchanged this round: retail still stores the abstract allocator's vtable at
+// the object before the two following stores (our build drops that store, which comes from the
+// header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
+// the constructed arm where ours reloads it at the join.
 // score 34 (was 34): the base vtable store is still dropped and the pool placement
 // still reloads g_479888 at the join where retail reloads it on the constructed arm.
 // Earlier headers, merged: unchanged that round (34); a one-file LTCG probe keeps the

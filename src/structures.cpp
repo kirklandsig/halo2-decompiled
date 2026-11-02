@@ -807,6 +807,8 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
 // second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
 // them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
+// R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
+// arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)

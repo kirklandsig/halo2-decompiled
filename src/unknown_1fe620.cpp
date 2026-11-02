@@ -159,6 +159,9 @@ static __forceinline long real_to_long(real value);
 // adjustment outcomes, scores [493, 493, 493, 493, 493, 493, 491, 491].
 // Actual resolver definition inline/forceinline [466, 466], with all users checked; restored.
 // Original executable source restored. Frame 0x4c and early third-input/random-state ownership remain.
+// DL231: Complete eligibility/true-first adjustment/whole displacement square subsets; all with double
+// square: 378/427/427/373/378/427/427/427. Frame 0x4c/0x48 and third-input/random-state carriers remain;
+// original executable source restored.
 // @retail 0x1fe620
 void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
 {

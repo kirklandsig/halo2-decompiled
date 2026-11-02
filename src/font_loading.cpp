@@ -611,6 +611,13 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 302: native word store owned by existing pixel helper, pointer/reference output and inline/force-inline:
 // byte parity 107/107/107/107; full parity 208/208/208/208. Original helper and decoder restored;
 // alpha widening, literal assembly and two-run reuse remain.
+// DL231: Shared first packed-pixel output, full-width helper/word fills/common first count combinations:
+// 188/196/195/195/188/200/199/199. Alpha extension, literal assembly and two-run reuse remain; original
+// executable source restored.
+// Round 249: Standard fill_n/fill independently at switch/ordinary word-fill boundaries:
+// 173/165/246/173/138/199/194/214. All but ordinary fill also disturb the matched caller in
+// preview. Original loops/header/helper/decoder restored; parity extension, literal assembly and
+// run-two reuse remain.
 // N round 296: Standard endpoint/count-based fill contracts independently in switch/ordinary
 // run families, all eight nonoriginal combinations 138/165/173/214/199/173/194/246. Original
 // decoder, helper and includes restored; alpha extension, literal assembly and run-two reuse remain.

@@ -992,6 +992,8 @@ void function_fcea0(long effects_index, point3f const *point, vector3f const *di
 // the payload field short too 133; with 0xfcea0 widening the index into a long local at entry 133.
 // Round 107: final-effect early return and single-exit goto 20/20; explicit 16-bit mask 20; word-to-dword
 // and dword-to-word two-stage locals 20/20; word field reference and pointer 20/20; zeroed dword OR assignment 20.
+// Round 195 (lane 3): no new form; 0xfcea0's file is on another lane's list this round, so its index
+// width (the only difference here) could not be retried.
 // @retail 0xa17d0
 bool c_projectile_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

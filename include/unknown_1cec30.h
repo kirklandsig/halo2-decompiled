@@ -443,6 +443,7 @@ struct s_havok_component
 	bool rigid_body_keyframed(long rigid_body_index);
 	void rigid_body_inertia_get(long rigid_body_index, struct matrix3x3 *inertia);
 	real rigid_body_mass_get(long rigid_body_index);
+	real function_1d1230(long rigid_body_index);
 	void rigid_body_matrix_get(long rigid_body_index, struct transform4x3f *matrix);
 };
 

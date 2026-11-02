@@ -1464,6 +1464,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 305: plain two-slot traversal, long/short/word/byte index with original
 // conjunction or guarded second publication 472/451/424/462/424/462/423/462.
 // Original paired queries, signed-count domains, argument observation and body restored.
+// AC460: Canonical permission assigned by status tests in primary dispatch, byte/bool/short/long
+// 164/194/377/381; both dispatches 164/194/377/381. Original expression producers, byte result,
+// unconditional queries, signed observations, parameter handling and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1679,6 +1682,10 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 273: Reused two-request primary membership bool/byte/short/long before the
 // predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
 // comparisons, case results and complete body restored; frame eight versus twelve remains.
+// AC460: Live true permission with complete conditional failure stores for base status,
+// depletion and conditional-request families, seven subsets, then all at entry:
+// 487/491/499/483/475/499/511/511. Entry unit EDI/ret 8 and both caller scores regress;
+// executable differences also rise. Original result graph, defaults and body restored.
 // Round 297: finite depleted/base/overlay status domains, masks 1..7,
 // 481/488/488/430/485/492/492; full finite result domain 695. Overlay-only
 // 430 confirmed plain at 1793 bytes, but code differences remain 424; decoded
@@ -2034,6 +2041,12 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 305: paired pitch/yaw comparison values, bool logical/bitwise in both orders
 // 854/828/824/825; byte equivalents 854/828/825/826. Original combined predicate,
 // complete direction capture, helpers and body restored; frame and first-angle expansion remain.
+// AC460: Both blend products inside the positive-weight admission, canonical activity
+// bool/byte/short/long 881/881/857/861; both products inside the two-screen admission
+// 881/881/857/861. Original product lifetimes, activity and complete body restored.
+// M292: Exhaustive nonempty screen cases both/first, both/second, first/both, second/both, with
+// original/direct bounds fallback:
+// 853/886/859/858/856/894/861/861. Original executable body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2285,6 +2298,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // Round 105: const priority capture 16; combined declarations 16; const final index 16; priority input through its
 // own address 16; chained default NONE stores 16; output NONE between fallback and the common guard 22;
 // entry/priority stores swapped 16; definition stored first 17. Original body restored.
+// Round 135: the 26 combinations of two or more of: request priority declared first, entry_index
+// reassigned, request priority as long, second NONE test un-nested, request record at function scope:
+// 16 each. Extra NONE stores, diagnostic: 54, 59, 66 (251, 256, 261 bytes) with the roles unchanged, so
+// the NONE register is whatever the index and the priority leave free.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

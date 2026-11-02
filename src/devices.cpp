@@ -800,6 +800,19 @@ struct s_device_machine_view
 // pointer 122 (all the pushed ESI); screens only: `register` on the flags or machine flags, `!= 0` masks, the
 // flags word at its read, machine flags first (ESI); the bitfield copy tested with `&` frees EAX only by
 // spilling the copy to the stack. 1-7 dead temporaries (diagnostic) leave both forms unchanged.
+// Round 38 (m3 lane 2; compile-only screen against retail, base aligned 3 = 34): 612 combinations of
+// pointer/const pointer/pointer-to-const, pointer before/after the machine flags, word/short/dword/long/
+// unsigned short/int/unsigned long/unsigned int flags locals declared at the top, after the machine test or
+// read directly, tested as masks, `!= 0` masks, `1U`/`2U` masks, `!!`, `(f & 1) && ((f >> 1) & 1)` and
+// `((f >> 0) & 1) && ((f >> 1) & 1)`, all with the zero store: every one is the pushed ESI (aligned 4) or the
+// machine flags read first (13). A bool for the second bit (`bool second = (group_flags & 2) != 0;` and 14
+// other spellings) gives retail's `lea eax` / `mov ax, [eax+2]` / `test al, 1` exactly, aligned 2: only its
+// `shr al, 1; test al, 1` for retail's `test al, 2`; a word/dword/int/long second-bit local folds back to
+// `test al, 2` and the pushed ESI. Real (fast): two bools + zero store 114, a ternary bool 114 (656 bytes
+// each), `bool both = (f & 1) ? (f & 2) != 0 : false` 117 (658), an int flags local with masks 122, a word
+// second-bit local 122. Screen: that bool tested nested, after a `first` bool, with `!= 0` on the first bit,
+// as `second == true`, const, through a `both` bool, through a ternary value, or braced: all the shift
+// (aligned 2); `&` of the bits 13.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1123,6 +1136,12 @@ bool function_108530(long device_index, long name)
 // half-const/all-const phase nodes give 142/157 in each local/field cruise pair.
 // All eight are 500/523 bytes and change caller allocation; original argument, clamp,
 // phase lifetimes and field publication restored. Initial velocity residency remains.
+// Round 38 (m3 lane 2, fast, both callers 31/13 unchanged): retail reads the ramp-down time from its slot at
+// every use (as if address-taken); ours keeps it in xmm1 from the zero clamp to the half time. The pinned
+// target in its own local (target parameter dead after the pin) 121 (same code); that with the per-branch
+// cruise store 134 (524 bytes); the ramp-down minimum as `if (ramp_down_time > remaining)` 121; the half times
+// named before the cruise time 121; the distance as `real distance = (real)fabs(delta);` inside the duration
+// test (no copy at the top) 121.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1612,6 +1631,12 @@ bool function_0b6760(s_index_pair const *pair);
 // Round 305: finite first-motion/integration/second-motion completion domains,
 // subsets 1..7, 389/327/407/344/395/341/423; all with finite activity 433. Original
 // bool carriers, activity, inherited qualifiers and body restored; frame/homes remain.
+// Round 38 (m3 lane 2, fast; masked-aligned counts in brackets, this body 294 [156]): plain index with both
+// event ids as selects between two field reads 367 [123] (1488 bytes, frame 0x20; slots F+0xc previous, F+0x10
+// index * 12, F+0x14 position where retail has index * 12, position, previous; index*12 in ESI and the index in
+// EDI where retail has EBX/ESI, EBX pushed late, the result in DL); that with a plain definition 405 [130];
+// `previous` renamed (sorting before `position`) on that form 367 and on this body 294 (same code each); the
+// position local renamed twice on that form 367/367 (same code): the slot order follows neither name.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
