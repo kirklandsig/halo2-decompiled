@@ -187,14 +187,15 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	__m128 *axis, __m128 *first_axis, solver_velocity_31c940 *a,
 	solver_velocity_31c940 *const volatile &b, float *result)
 {
+	solver_step_31c940 *parameters = step;
 	float target_a = axis[-5].m128_f32[3];
 	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b, *first_axis);
 	// Give the first error its float home before projecting the second row.
-	volatile float error_a = target_a * load_error_scale(step)
-		- projected_a.value * load_velocity_scale(step);
+	volatile float error_a = target_a * parameters->error_scale
+		- projected_a.value * parameters->velocity_scale;
 	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
-	float error_b = axis[-2].m128_f32[3] * load_error_scale(step)
-		- projected_b.value * load_velocity_scale(step);
+	float error_b = axis[-2].m128_f32[3] * parameters->error_scale
+		- projected_b.value * parameters->velocity_scale;
 	volatile float impulse_a = axis[-3].m128_f32[3] * error_a + error_b * operation_float(op, 4);
 	// Capture the second mass before its coupled product.
 	float const volatile &mass_b_source = axis[0].m128_f32[3];
@@ -396,7 +397,7 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 
 // Retain the coefficient and B inertia addresses across consecutive rows.
 // Native scalar locals keep the projection between SSE and x87 without a copy.
-static __forceinline void solve_linear_friction(float target, float limit,
+static __forceinline void solve_linear_friction(float target, float const volatile &limit,
 	float const *const volatile &friction_scale_pointer,
 	solver_linear_row_31e7b0 *row, solver_velocity_31c940 *a,
 	__m128 &angular_b, __m128 &linear_b, __m128 const *const volatile &inverse_b_pointer,
@@ -507,7 +508,7 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 
 // Capture target and limit before projection, retaining the coefficient address
 // across consecutive rows. Only the SIMD copy of the impulse rounds to float.
-static __forceinline void solve_angular_friction_kernel(float target, float limit,
+static __forceinline void solve_angular_friction_kernel(float target, float const &limit,
 	float const *const volatile &friction_scale_pointer,
 	solver_angular_row_31e7b0 *row, solver_step_31c940 *const volatile &step,
 	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const &inverse_b, float *result)
@@ -683,38 +684,45 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// Solving and result publication use these values in separate phases.
-union solver_body_or_stride_31c940
+// Solver state stays together through the iterations. Result publication then
+// reuses its storage for the result stride and current operation kind.
+union solver_phase_state_31c940
 {
-	solver_velocity_31c940 *volatile a_home;
-	long stride;
+	struct
+	{
+		solver_velocity_31c940 *volatile a_home;
+		float saved_velocity;
+		long iteration;
+		float saved_error;
+		float spin_limit;
+		volatile float linear_limit;
+		float angular_limit;
+	} solving;
+	struct
+	{
+		long stride;
+		int kind;
+	} writing;
 };
 
-union solver_velocity_or_kind_31c940
-{
-	float saved_velocity;
-	int kind;
-};
-
-// score 1960 (was 1961): capture B separately for the first pair's body fields.
+// score 1944 (was 1960): retain the solver state and each friction limit's home.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
 {
-	solver_body_or_stride_31c940 body_or_stride;
-	solver_velocity_or_kind_31c940 velocity_or_kind;
+	solver_phase_state_31c940 state;
 
 	if (!g_480c60)
 	{
 		function_31c7d0();
 		if (!g_480c60) return 0;
 	}
-	for (long iteration = 0; iteration < step->iterations; ++iteration)
+	for (state.solving.iteration = 0; state.solving.iteration < step->iterations; ++state.solving.iteration)
 	{
 		solver_step_31c940 *initial_parameters = step;
-		float saved_error = initial_parameters->error_scale;
-		velocity_or_kind.saved_velocity = initial_parameters->velocity_scale;
+		state.solving.saved_error = initial_parameters->error_scale;
+		state.solving.saved_velocity = initial_parameters->velocity_scale;
 		unsigned char *op = operations;
 		__m128 *terms;
 		solver_velocity_31c940 *a;
@@ -733,7 +741,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			read_header:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
-				a = header->a; body_or_stride.a_home = a; b = header->b;
+				a = header->a; state.solving.a_home = a; b = header->b;
 				// Keep one term cursor across the row kinds and restore A after calls.
 				terms = header->terms;
 				op += sizeof(*header);
@@ -790,10 +798,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				// in the x87 norm accumulation.
 				float impulse_spin = initial_spin;
 				float norm = impulse_spin * impulse_spin + impulse_b * impulse_b + impulse_a * impulse_a;
-				float maximum = operation_float(op, 12);
-				if (norm > maximum * maximum)
+				state.solving.spin_limit = operation_float(op, 12);
+				if (norm > state.solving.spin_limit * state.solving.spin_limit)
 				{
-					float factor = maximum / sqrtf(norm);
+					float factor = state.solving.spin_limit / sqrtf(norm);
 					impulse_a *= factor; impulse_b *= factor; impulse_spin *= factor;
 					((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] *= factor;
 					((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] *= factor;
@@ -855,7 +863,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				__m128 const *volatile inverse_b_pointer = &body_b->inverse_inertia;
 				do
 				{
-					solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], operation_float(op, 4), friction_scale_pointer,
+					state.solving.angular_limit = operation_float(op, 4);
+					solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], state.solving.angular_limit, friction_scale_pointer,
 						((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, *inverse_b_pointer, result);
 					terms += 2; ++result; op += 8;
 				} while (*op == 9);
@@ -970,7 +979,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				__m128 *volatile angular_b_pointer = &body_b->angular;
 				do
 				{
-					solve_linear_friction(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], operation_float(op, 4), friction_scale_pointer,
+					state.solving.linear_limit = operation_float(op, 4);
+					solve_linear_friction(((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3], state.solving.linear_limit, friction_scale_pointer,
 						((solver_linear_row_31e7b0 *)terms), a, *angular_b_pointer, *linear_b_pointer, inverse_b_pointer, step, result);
 					terms += 3; ++result; op += 8;
 				} while (*op == 6);
@@ -1041,7 +1051,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					}
 					apply_linear(impulse, ((solver_linear_row_31e7b0 *)terms), a, b, result);
 					terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
-					a = body_or_stride.a_home; ++result; op += 16;
+					a = state.solving.a_home; ++result; op += 16;
 				} while (*op == 5);
 
 				break;
@@ -1049,20 +1059,20 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			case 15:
 			{
 				solver_step_31c940 *parameters = ((solver_step_31c940 *const volatile &)step);
-				velocity_or_kind.saved_velocity = parameters->velocity_scale;
-				saved_error = parameters->error_scale;
+				state.solving.saved_velocity = parameters->velocity_scale;
+				state.solving.saved_error = parameters->error_scale;
 				parameters->velocity_scale = operation_float(op, 8);
 				parameters->error_scale = operation_float(op, 4);
 				op += 12;
 				break;
 			}
 			case 16:
-				step->error_scale = saved_error; step->velocity_scale = velocity_or_kind.saved_velocity;
+				step->error_scale = state.solving.saved_error; step->velocity_scale = state.solving.saved_velocity;
 				op += 4;
 				break;
 			case 14:
 				(*(void (__cdecl **)(__m128 *, void *))(op + 4))(terms, op + 8);
-				a = body_or_stride.a_home;
+				a = state.solving.a_home;
 				op += op[1];
 				break;
 			}
@@ -1072,7 +1082,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		// Save the first iteration's velocities, then accumulate later ones.
 		// Retail consumes consecutive kind-2 bodies before checking the sentinel.
 		solver_velocity_31c940 *body = bodies;
-		if (iteration == 0)
+		if (state.solving.iteration == 0)
 		{
 			for (;;)
 			{
@@ -1188,7 +1198,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	}
 
 	// Publish impulses and remaining error using each header's destination and
-	// body_or_stride.stride. Contact friction records carry a separate result destination.
+	// result stride. Contact friction records carry a separate result destination.
 	unsigned char *op = operations;
 	__m128 *terms;
 	unsigned char *destination;
@@ -1197,14 +1207,14 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	goto read_results_header;
 	for (;;)
 	{
-		velocity_or_kind.kind = *(signed char *)op;
-		switch (velocity_or_kind.kind)
+		state.writing.kind = *(signed char *)op;
+		switch (state.writing.kind)
 		{
 		case 1:
 		read_results_header:
 		{
 			solver_header_31c940 *header = (solver_header_31c940 *)op;
-			body_or_stride.stride = header->result_stride;
+			state.writing.stride = header->result_stride;
 			terms = header->terms; destination = header->results;
 			op += 24; break;
 		}
@@ -1214,10 +1224,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 			*(float *)destination = result[0];
 			*(float *)(destination + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			destination += body_or_stride.stride;
+			destination += state.writing.stride;
 			*(float *)destination = result[1];
 			*(float *)(destination + 4) = row[1].linear.m128_f32[3] * step->inverse_time;
-			destination += body_or_stride.stride;
+			destination += state.writing.stride;
 			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(2);
 			result += 2; op += 8; break;
 		}
@@ -1229,10 +1239,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				*(float *)destination = *result;
 				*(float *)(destination + 4) = terms[0].m128_f32[3] * *inverse_time_pointer;
-				destination += body_or_stride.stride;
+				destination += state.writing.stride;
 				terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == velocity_or_kind.kind);
+			} while (*(signed char *)op == state.writing.kind);
 			break;
 		}
 		case 4: case 9: case 10: case 12:
@@ -1242,10 +1252,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				*(float *)destination = *result;
 				*(float *)(destination + 4) = terms[1].m128_f32[3] * *inverse_time_pointer;
-				destination += body_or_stride.stride;
+				destination += state.writing.stride;
 				terms = (__m128 *)((s_angular_cursor_31c520 *)terms)->offset(1);
 				++result; op += op[1];
-			} while (*(signed char *)op == velocity_or_kind.kind);
+			} while (*(signed char *)op == state.writing.kind);
 			break;
 		}
 		case 7:
