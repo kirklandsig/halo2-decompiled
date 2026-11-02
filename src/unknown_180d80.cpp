@@ -138,6 +138,11 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Round 51: count before tag/vector 95; count initialization split 94; unsigned long polygon counter 94;
 // short counter with count before tag/vector 548; with split count 547; with count between tag/vector 547;
 // with outer maximum distance 547; with both count placement and outer distance 548. Original restored.
+// Round 41: 0x17cfa0 is still todo (score 70) in a contributor's file, so the block stands. Transform helper:
+// accumulator declared first 94; scale as `scale * x` 94; one accumulator per row 170; separate input and
+// output pointers (in place at the four calls) 170 (the x row's products stay swapped: our copy-first `z * up.i`
+// where retail loads up.i first, in all four inlined copies). Count and vertex-index locals renamed
+// quad_count/vertex_index 94, count alone 94 (their two slots stay swapped).
 // Round 55 (fast): count and vertex counter renamed a_/z_ either way and with the names exchanged 94/94/94
 // (the spill slots, ours count 0x10 and counter 0x14, retail the other way, do not follow names); the vertex
 // counter declared at the top of the block 94; the count declared just before its loop 624.

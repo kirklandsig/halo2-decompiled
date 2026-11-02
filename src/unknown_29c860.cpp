@@ -252,6 +252,14 @@ __forceinline real function_29cc7e(vector3f *arg_0)
 	return normalize3d(arg_0);
 }
 
+// MiniMax I (11-01), not kept in review: the 0x44 setting read into a one-use local before the local_16
+// test (retail keeps it in xmm1 across the branch) 291 from 300, and with the left vector declared before
+// the other two vectors 288. The early read is a one-use local, kept only with a match; the declaration
+// order alone is under the 8-point bar. Also tried, all worse or identical: the steering sums and the
+// local_16 dot with their terms swapped (291, identical code), the left vector's i taken from the left
+// component (339), the other two vectors swapped (306). Left: the second normalize's j product, the left
+// vector's stores and 12-byte slot, the 0x5d0 flag store, the side test's dot order and the local_16 dot's
+// x87 order.
 // score 645 (was 645), coordinator review: the body is back to its earlier form. The lane's 628 needed two one-use
 // locals (the 0x44 setting read early, the 0x11cd20 result held until after the side test), kept only with a match;
 // without them the sum splits and store reorders below score 643 (fast), under the 8-point bar. Its tried forms:

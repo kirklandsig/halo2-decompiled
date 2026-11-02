@@ -48,6 +48,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
     long arg_2, long arg_3, long arg_4);
 
 // score 14 (was 14): draw bounds source ADD/LEA and occupied-width/half-height XMM homes differ.
+// Round 74: half-height lower/all/upper/early-lower copies 14/20/14/14;
+// half-width right/all/early-right copies 14/14/14; bounds pointer with early-right copy 12
+// (one-use pointer, not kept without a match). Opening graph restored.
 // Earlier at 70 (from 103): frame 0x50 agrees; pulse/entry setup and second-pass
 // the copy source address and occupied-width/height registers still differ.
 // Earlier: frame 0x50 agrees; pulse/entry setup and second-pass

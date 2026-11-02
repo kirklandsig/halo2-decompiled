@@ -229,6 +229,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Original repeated producers, short scale loop, accepted angular consumers and complete body restored; frame 0x1f0/0x1d4 and entry/record/vector homes remain.
 // Round 268: scalar maximum selections at radial/planar/axial/angular response joins,
 // linear pairs 1-2/2-3, axial-angular pair and all four, all eight 902. Original branch updates restored.
+// Round 448: Early captured bit-25/26 options 993/993/989; late captured bit-2/1
+// options 949; the three combinations 907/907/907, complete role names 907.
+// Original option lifetimes and all kernels, response sharing and body restored.
+// Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
+// all with long scale ordinal 1682
+// Original executable body and helpers restored.
 // Round 50 (m3 lane 11, fast): retail's byte slots hold local_17 (record bit 2) at +9 and local_1 at +0xa where
 // ours has them the other way; local_17 renamed to sort before local_1, local_1 renamed to sort after it,
 // local_17 declared at the top, local_17 declared between local_0 and local_1: 902 each (identical code); the
@@ -255,6 +261,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 237: native wide-dot/real-dot/planar input values, seven nonempty subsets 1249/1274/1605/1145/1402/1446/1741;
 // all with long scale ordinal 1682
 // Original executable body and helpers restored.
+// Round 241: In-place direction-to-residual storage at radial/planar/angular sites,
+// singles/pairs/all 946/934/939/954/962/954/963; all with shared radial/planar differences 963.
+// Original separate direction/residual vectors, short scale loop and complete body restored.
+// Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
+// pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
+// entry/frame and activity/record/vector homes remain.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

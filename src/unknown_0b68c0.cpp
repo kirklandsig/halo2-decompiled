@@ -266,6 +266,9 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
 // to the entry index; retail keeps the index in EAX and loads the pointer into ECX. 0x109660 forms: a named masked
 // object index 2 (0x109660 132), a header element pointer 2 (132), the entry by byte offset 2 (112). Here: the call
 // reading the index array again 19; the object index declared before the loop 2.
+// Round 112: an object-list state pointer 14; a pool pointer shared by both passes 99, also with
+// the state pointer 99; nested first-pass flag tests 2; an entry-index argument carrier 2; an
+// object-index argument carrier after the first call 2; preincrement 2; a const indices pointer 2.
 // @retail 0xb7060
 void function_b7060()
 {
