@@ -333,19 +333,17 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
-// Round N284: Native real absolute-value APIs at the three epsilon consumers,
-// masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
-// Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
-// Round 131 (lane 5, fast): displaced point through the existing vector3f_add, displacement first, 195
-// (same code); locals named so the first point and inverse sort after the second's 195 (same code: names
-// do not move these slots); round 28's direct inverses with y-first displaced point re-measured 206 (971 B:
-// b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
-// and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
-// helper coordinates declared z, y, x 218 (966 B). Original body restored.
+// Round 25 (lane 18, fast): orthographic arm first 215 (repeat); the direct-inverse graph with b.y first
+// re-measured 206 (b.x/b.y in retail's xmm7/xmm6, but the second transform's x and z take xmm4/xmm7 where
+// retail has xmm7/xmm4, so ours spills both and retail only z, into the scale slot); on it the helper reading
+// z, x, y 213; the displaced point as a copy plus compound adds 303; the orthographic arm first 205.
 // Round 230: Origin/displaced inverse defaults staggered across the first/second transform
 // boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
 // between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
 // recover frame 0x2c but regress. Original defaults restored.
+// Round N284: Native real absolute-value APIs at the three epsilon consumers,
+// masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
+// Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
 // Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
 // Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
 // Round 483: independent reverse-displacement admission with entry/perspective
@@ -369,6 +367,16 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 501: alias-protected native scaled input before/after the scale branch, field/loop
 // scaling and repeated/coherent scale observations 267/267/258/258/269/269/260/260.
 // Original alias-safe snapshots, helper and body restored; inverse/point homes remain.
+// Round 477: Native translation at entry/post-scale with no/right/up/forward axis capture 261/690/690/690/260/690/690/690.
+// Translation alone recovers frame 0x2c but changes the scale carrier; paired captures outline. Original alias-safe helper and complete body restored.
+// Round 483: independent reverse-displacement admission with entry/perspective
+// inverse defaults, immediate/paired factor publication and either reciprocal
+// order 195/239/197/227/294/285/294/285. Original guard, defaults, factor
+// producers and full body restored; frame and displaced-transform spill remain.
+// Round 485: Existing scale helper only, native branch/in-place result and field/coherent
+// scale, 283/251/282/251; with all parallel row products 272/257/272/257.
+// All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
+// caller bindings and full body restored. Frame and second-transform spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

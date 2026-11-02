@@ -640,6 +640,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
     return (*(short *)(data->data + data->size * absolute) << 16) | absolute;
 }
 
+// MiniMax R (11-01): no new form, no lower score: our frame is still 0xac against retail's self-aligned 0xb4; the alignment is decided by LTCG from the call chain (callers 0xbf2c0 and 0x268c90), not by this body.
 // score 230 (was 230): retail self-aligns its frame (`and esp, -8`, esp-relative locals,
 // bool result byte) while ours keeps EBP for the global base and a dword result.
 // Earlier round: the root-walk loop and the table read are the only places
@@ -1866,6 +1867,9 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // node-matrix offset before the link stores) 342, and matched 0xbcc20/0x11b710 stop matching: BLOCKED-BY 0xb8bd0
 // (its file is /Ob1); `allowed` as one && expression 317; the ancestry walk as a while loop 285; the two link tests
 // in one || 293; the rest of the body nested under `if (allowed)` 307 (1213 bytes).
+// Round 289: existing point-helper coordinate captures yxz/xzy/zyx/yzx/zxy
+// 284/285/293/288/293; yxz/xzy/zyx with native activity 282/283/294. The shared sibling
+// regresses 62/127/125/50/127/62/127/125; original helper and full body restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

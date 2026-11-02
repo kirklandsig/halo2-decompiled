@@ -499,6 +499,13 @@ struct s_1f8a70_actor
 // its bool in BL). On 270: returned unit-mode test 333 (route_mode then takes EDI, NONE EBX); first
 // exit by goto to a shared final `return result;` 437 (still folded, EDI pushed early); actor fetched
 // once before the first test 277; short route_mode with the returned test 432. Original body kept.
+// Round 25 (lane 18, fast, on the value-fixed 270 graph): the zero-route and range tests as one ternary
+// condition 427; the zero-route test nested under `if (route_mode == 0)` 270 (same code); the early exits as an
+// if/else-if chain to one final `return result;` (false before 0x1f86a0, true after the calls) 406: the first
+// exit is retail's `xor bl, bl` / `mov al, bl` exactly, but the true exits then return through BL; only the
+// first exit reaching that final return 270 (folds again: it needs a second value at the join); result
+// initialized from the first test 435. Retail's true exits are `mov al, 1`, so the first exit's join partner
+// is still unknown. Original body restored.
 // Round N284: Missing-destination conjunction orders route-node-radius/radius-route-node/
 // radius-node-route/node-route-radius/node-radius-route 228/377/254/307/308; nested
 // route/radius/node admission 228/377/307. Original gates, values and complete body restored.

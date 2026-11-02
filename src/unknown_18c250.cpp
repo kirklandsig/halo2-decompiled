@@ -349,6 +349,9 @@ void __stdcall function_18c630(long object_index, long tag_index, long a, long b
 }
 #pragma inline_depth(255)
 
+// MiniMax D (11-01): no new form, no lower score; the sample sum still puts the entry offset in EDX and the
+// samples in ESI where retail has the samples in EDX and the offset in the dying EDI, the object index still
+// loads before the pushes, and the permuter's 1806 tries never beat 7.
 // score 7 (was 7): the tail still loads the entry offset into EDX and the samples pointer into ESI, where
 // retail loads the samples into EDX and the offset into the dying EDI, and the object index is still loaded
 // into ECX before the pushes where retail loads it after them, with the curves address computed by lea eax

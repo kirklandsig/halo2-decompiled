@@ -426,6 +426,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // bytes: the short stays in BX, is extended into EDX for the copy and tested as `test bx, bx` at the loop
 // guard, where retail extends it once into EAX and tests EAX); on the indexed form the parameters as (mode,
 // cache_index) at the definition and the call 144 (same code), first as `current = first = previous` 144.
+// Round 288: field-major resets across groups in all six field orders, then
+// count/first/flags and flags/count/first with reversed group order, 54 each.
+// Original stores and executable body restored; index/count/zero and copy homes remain.
 // Round 117 (m3 lane 8): a 600 s permuter run on this body, none below 54; indexed form rebuilt 144 (492 bytes:
 // count CX and zero EAX where retail has AX and ECX, so first stays in EAX across the copy and entries goes straight
 // to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
@@ -450,6 +453,11 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 502: actual destination-record cursor drives all entry indices; before-copy,
 // memcpy-result, after-copy and pre-loop ownership 165/151/165/165; indexed source receiver
 // 165/112/165/165. Original copy/index graph restored; scaled-index and first-index homes remain.
+// Round 117 (m3 lane 8): a 600 s permuter run on this body, none below 54; indexed form rebuilt 144 (492 bytes:
+// count CX and zero EAX where retail has AX and ECX, so first stays in EAX across the copy and entries goes straight
+// to ESI); on it the selection between the current store and the copy 168 (491), the copy before `current` is set
+// with `current = first + count` 176 (477); mode read once through its address on the block / indexed form 54/144
+// (same codes: mode is already on the stack and cache_index's register does not move).
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

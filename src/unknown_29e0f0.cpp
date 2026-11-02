@@ -77,7 +77,7 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
     real local_2 = arg_0->z - arg_1->z;
     return (real)sqrt(local_2 * local_2 + local_1 * local_1 + local_0 * local_0);
 }
-// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// score 390 (was 390): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 27: the instruction order follows retail closely, but the locals sit in different frame
 // slots, the group pointer is in EBP where retail keeps EBX and retail parks the group index in the
 // incoming s_reference slot at 0x80; no form found this round.
@@ -85,7 +85,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // index and point index in memory (frame 0x2c and 0x80) where ours keeps them in registers, its three
 // NONE defaults sit at frame 0x44/0x28/0x24 with the best distance at 0x38, against our 0x3c/0x40/0x1c
 // and 0x34, and it holds the group table in ebx and the point table in ebp where we swap them.
-// score 398 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// Earlier 390 (was 398): frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
+// frame 0x64 now agrees; selected defaults, point bitmap, endpoint homes, root-table roles and x87 scheduling differ.
 // Round 132 (m3 lane 5, fast): root-table test nested under the count test with the pointer declared there
 // (no NULL default) 398; overall result declared first 399; best distance before the selected defaults 398;
 // group bitmap declared before the record/group pointers 412; record pointer after the marker call 420.
@@ -185,6 +186,16 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 494: complete point-input copies inside squared/length metrics, first/second/both
 // in each alone, then both squared with first/both length: 439/437/473/558/555/787/677/892.
 // Original input reads, metric helpers and entire body restored; selected homes and table roles remain.
+// Round 221: native selected group/terminal/both 466/394/459; with native group input 513/470/471
+// (native input control 496); complete graph with short byte-narrowed terminal producer 433. Native
+// selected terminal plus actual output-record cursor and consistent point-table fields 390, kept:
+// best-distance home agrees at frame 0x64. Separate short/long output-point induction 415/412; with one
+// shared computed step 418/427. Original signed-short input scans, byte narrowing, metric helpers and
+// validator tuples remain; selected-default, bitmap/endpoint, root-table and x87 homes still differ.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // Round 51 (lane 11, fast): round 86's t19 form rebuilt on this body 437 with the byte selected point,
 // 188 (aligned 46) with it short again; on that graph the existing distance3d (0x3ea30, inlined) for the
 // three point distances with b - a operands 185 (aligned 57), with a - b 216; the distance helper through
@@ -198,13 +209,16 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
 // point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
 // original body restored; selected-default/root roles and metric/bitmap homes remain.
+// DL224: Group range-first/negative-first/split-range/split-bitmap eligibility 473/440/473/390;
+// the four with shared group bits 434/434/434/424. Original group observation, domains, helpers
+// and body restored; default/bitmap/endpoint homes, root roles and x87 scheduling remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
 {
     short local_0 = NONE;
     short local_1 = NONE;
-    short local_2 = NONE;
+    long local_2 = NONE;
     real best_distance = 3.402823466e38f;
     bool local_4 = false;
     s_29e0f3 *local_5 = (s_29e0f3 *)g_4e0348;
@@ -291,18 +305,19 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                     }
                     if (local_0 != NONE && local_1 != NONE && local_2 != NONE)
                     {
-                        s_29e0f0 *local_36 = &local_11->field_44[local_0];
+                        s_29e0f8 *output = &arg_4->field_30[0];
                         short local_37 = 0;
                         do
                         {
-                            function_29e64d(&arg_4->field_30[local_37], &local_36->field_4[local_1]);
+                            function_29e64d(output, &local_11->field_44[local_0].field_4[local_1]);
+                            ++output;
                             ++local_37;
                             if (local_1 == local_2) break;
                             local_1 += local_2 > local_1 ? 1 : -1;
                         } while (local_37 < 4);
                         if (local_37 < 4)
                         {
-                            function_29e64d(&arg_4->field_30[local_37], &marker_position);
+                            function_29e64d(output, &marker_position);
                             ++local_37;
                             arg_4->field_2c = true;
                         }

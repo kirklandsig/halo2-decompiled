@@ -588,6 +588,9 @@ static inline word font_character_pixel(long alpha, long color)
 // production orders 201/201/195/195; complete opacity field with byte/numeric
 // parity, word/dword 211/201/239/195. Exact-only records, helper and full decoder
 // restored; alpha extension, literal assembly and run-two reuse remain.
+// Round 296: Consumed spans short/word/byte/signed-char with long/dword counts, then byte/signed-
+// char/short/word spans with the long pixel-helper result. Scores
+// 101/101/91/91/101/101/91/91/98/98/99/99. Original complete body restored.
 // Round 489: signed byte alpha input with word/long helper result, long/word fills
 // and byte/full parity, eight combinations 201/205/205/205/201/209/205/205.
 // Original alpha type, helper, fill values and complete decoder restored.
@@ -596,9 +599,18 @@ static inline word font_character_pixel(long alpha, long color)
 // Round 285: short fill counters switch/ordinary/both 181/172/191; word counterparts
 // 181/172/191; both byte/signed-byte 178/178. Original helper, decoder and counters restored;
 // alpha extension, literal assembly and two-run reuse remain.
+// Round 290: paired word color with byte/signed-byte/short/word alpha and word/long helper result,
+// 201/209/201/205/92/91/92/91; frame 0xc agrees throughout. Original helper and decoder restored;
+// parity extension, literal assembly and two-run residency remain.
 // Round 296: Consumed spans short/word/byte/signed-char with long/dword counts, then byte/signed-
 // char/short/word spans with the long pixel-helper result. Scores
 // 101/101/91/91/101/101/91/91/98/98/99/99. Original complete body restored.
+// Round 450: Literal color/store/count orders SCN/SNC/NSC/NCS, word then long pixel helper:
+// 183/180/182/121/143/171/142/116. Original literal publication, helper, aliased source reads and
+// complete decoder restored; parity extension, literal assembly and two-run reuse remain.
+// Round 302: native word store owned by existing pixel helper, pointer/reference output and inline/force-inline:
+// byte parity 107/107/107/107; full parity 208/208/208/208. Original helper and decoder restored;
+// alpha widening, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

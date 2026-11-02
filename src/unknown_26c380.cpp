@@ -126,7 +126,7 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 	return success;
 }
 
-// score 410 (was 419): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
+// score 410 (was 410): 1605 bytes as retail; frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x60 versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // Earlier: frame 0x5c versus 0x64; full/planar normal overlap, pathfinding/zero roles, byte flags and tails differ.
 // pathfinding pointer in EBP and the -1 edge seed in EDX where ours keeps them in EBX
@@ -227,6 +227,15 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 478: cross component publication ikj/jik/jki/kij/kji 450/444/449/451/451;
 // planar j/i transfer with ijk/kij/kji cross publication 441/449/449. Two-point gain rejected.
 // Frame 0x60 versus 0x64 and normal/result/tail homes remain; original helper and entire body restored.
+// Round 70 (lane 16, fast): retail reaches the hit block only from the edge loop's break, runs `++count`, then
+// re-tests `hit` (no-hit tail) before the loop condition; one no-hit tail serves both "no first edge" and "no hit";
+// every tail but the final one returns a constant, and the final one reads a stack byte that is only ever stored 0
+// (at entry and at the two breaks). The hit block inside a `while (edge)` edge loop (`++count; break;`) with one
+// `if (!hit)` tail after it and the two outer breaks as gotos (diagnostic) 483 (1508 bytes; retail's hit, increment
+// and re-test sequence appear); that with constant returns and a bool success 604 (1417 bytes, frame 0x58: success
+// folds and the false tails merge), plus `success = false;` at the two breaks 604 (folded away). Value difference:
+// the no-target over-distance tail stores `(dword)NONE` (0xffffffff) where retail stores 0xffff; `(word)NONE` there
+// 429 (1585 bytes: that tail then merges into the final tail), not kept. `edge` declared first 409.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -316,6 +316,9 @@ union s_185be7
 // all four datum carriers 731. Minimum/range/fraction scalar identities on the shared-exponent
 // graph, seven subsets 731 each; exponent identity too 731. Original carriers, names and full
 // body restored; control-root/NONE, settings/zero homes and flag joins remain.
+// DH round 268: independent byte/word scratch declarations, clear order and entry scope,
+// seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
+// Original scratch lifetimes, CRT clears and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

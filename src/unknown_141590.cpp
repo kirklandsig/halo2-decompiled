@@ -237,6 +237,7 @@ static inline void quaternion_transform_vector(
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, score
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies, scoring
 // Round 263: Both library cosine clamp orders, each with neither/quaternion/matrix/both identity copies,
+// each gave 332. Original clamp, native identity assignments, staged construction and real scale restored;
 // 332 each. Original clamp, native identity assignments, staged construction and real scale restored;
 // frame 0x1c/0x24 and quaternion/cross spill sharing remain.
 // Round 267 on staged construction/real scale: transform cross direct/staged 241/252; shared dot
@@ -275,11 +276,19 @@ static inline void quaternion_transform_vector(
 // transform cross 346, independent half angles 343. Scalar outputs recover frame 0x24 in the first seven
 // but grow code; original helper, half storage and body restored. Frame 0x1c/0x24 and quaternion/cross
 // spill overlap remain.
+// Round 289: existing complete vector assignment output with staged-cross/shared-dot/independent-half
+// masks 0..7 gives 333/346/340/351/344/360/333/368. Paired halves recover frame 0x24 but grow code;
+// independent halves give 0x20. Original helper/body restored; quaternion/cross spill sharing remains.
 // Round 118: transform helper taking the quaternion by value 436 (1429 bytes); rotation declared after the
 // halves/dot/cosine 200; half-angle struct members sine-first 200; the dot clamped in place (no cosine local)
 // 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
 // cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
 // it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
+// Round 267: result-component loop on staged-axis/real-scale construction,
+// long/short/byte/word ordinals with paired halves 266/1023/1023/1023,
+// independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
+// transform at 596 bytes; original helper, halves and complete body restored.
+// Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -919,6 +928,9 @@ void function_143250(
 // retail's convention) 1778 (10758); all single-use terms written in, copies kept (356) 1813 (10723); the
 // 299-term form with the workspace as plain locals 2222 (10310, frame 0x304). Callers 0x22850 237->235 and
 // 0x23690 508->512 with retail's convention.
+// Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
+// 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
+// admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
 // Round 46 (lane 14, plain): only terms whose single use is the next statement written into it: the first 420
 // (921 declarations) 1775 at 10763 bytes with retail's convention (rotation in EAX, ret 4; 0x22850 235, 0x23690
 // 512); all 678 such terms the same 1775 code (only the declaration count changes); on those, the eight leading
@@ -936,6 +948,9 @@ void function_143250(
 // frame 0x314. On that product graph, native row subsets and late matrix declaration:
 // 1807/1855/1989/1992/2093/2090/2238/2238. Original scalar graph, workspace, publications and body
 // restored; frame 0x314/0x300 and basis/matrix homes remain.
+// Round 289: native final matrix-entry chains in bands 5/7/both, left-priority 1774/1791/1786;
+// right-priority 1766/1804/1804; complete chains plus same-type local alias cleanup 1817/1983.
+// The last two recover EAX/ret 4 but frames 0x324/0x314 and caller 508 -> 512 regress; all restored.
 // Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
 // 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
 // admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
@@ -944,6 +959,10 @@ void function_143250(
 // Original scalar and publication graph restored; frame, rotation admission and basis homes remain.
 // The full identity/literal graph has 917 numeric declarations, EAX rotation and frame 0x304
 // in the reduced image, but regresses to 1986 at 10988 bytes.
+// Round 222: numeric scalar identities, mutable first-assignment declarations,
+// first-producer/final-consumer declaration order, double-first/real-first declarations,
+// numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
+// precision boundary and publication retained; complete original scalar graph/body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
