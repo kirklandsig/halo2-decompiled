@@ -997,6 +997,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // low-normal product groups as ten one-use named product locals, 417 plain (3038 bytes; first difference
 // at +0xd, damping in ECX/EDX). NOT kept: one-use temporaries that only steer evaluation order are kept
 // only with a match; body restored at 433.
+// DH305: Complete state/settings words and mask predicates on the planar/eight-normalization
+// graph, seven subsets then opposite complete-word declaration order: 526/610/562/495/573/609/559/560.
+// NOT kept: retail reads both words again at history admission; unsupported observation/predicate
+// steering needs a match. Original body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

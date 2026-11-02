@@ -967,6 +967,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
+// DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
+// admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
+// byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1537,6 +1540,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // N324: Separate null/player rejection, scan-scoped iterator and result-admitted recursive calls, seven
 // subsets then result-first initialization 71/71/71/118/118/118/118/120. Original complete body restored;
 // initializer receiver and loop latch remain.
+// DH305: Per-visit result refinement on the retained recursive-OR graph, nested admission,
+// short rejection, short-predicate refinement and null/player refinement, bool/byte:
+// 58/58/78/75/56/56/78/75. NOT kept: result-tested predicates require an exact match; initializer receiver and latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4559,6 +4565,9 @@ struct s_damage_object_creation
 // N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
 // library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
 // and detached/node homes remain.
+// DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
+// scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
+// offset/definition and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
