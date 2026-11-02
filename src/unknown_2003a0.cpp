@@ -529,6 +529,7 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // live count and live alternate subsets: 82/94/82/94/82/94/82/94. Complete original body restored;
 // the early ordinal frame and scan/flags ownership remain.
 // DL236: Actual iterator flags as the persistent owner, crossed with scan-local ordinal, per-use alternate and count-field observations: 138/133/138/133/138/133/138/133. All restored; ordinal push-ECX home and scan allocation remain; early flag stores lengthen the body.
+// DL244: Published-next scan seed with inner/outer declaration, common/branch-owned next and direct mode outputs 92/92/89/89/94/94/91/91. All restored; early ordinal stack home versus persistent zero and parent/scan registers remain.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -928,6 +929,9 @@ done:
 // retail callers pass stack iterators. A 192-form static-global harness search (short flags, direct reads,
 // block/entries if-else, definition local kinds, third-scan local, `alternate` local) keeps NONE in EBP in every
 // form. Left: whatever keeps g_4e0350 from being hoisted in the second scan.
+// P270: native unsigned explicit palette id with independent signed full-width
+// entry carriers, subsets 0..7: 176/189/202/202/201/202/215/214. Original selector
+// domains and all three scans restored; next-word/sentinel allocation remains.
 // @retail 0x205010
 short function_205010(s_squad_iterator *iterator)
 {
@@ -2378,6 +2382,7 @@ bool function_1df5d0(short team_a, short team_b);
 // original/named tracking node: 39/39/83/47/92/92/132/84. Original field observations and body
 // restored; in-place health addition, node/pool ordering and maximum registers remain.
 // DL236: Shared population sample as ratio numerator and contribution, word/short/long/dword, original/named node: 178/178/179/179/180/180/182/182. All restored; frame/extent agree, in-place health add and node/pool ordering remain. Named-node sources were exact-only and never retained.
+// DL244: Complete conditional health value with word/short and actor/loop scopes 274/274/274/274; contribution selected first 284/284, with named node 285/285. All restored; frame 0x14 agrees, in-place health addition and node/pool ordering remain.
 // @retail 0x203360
 void function_203360(long squad_index)
 {
@@ -2589,6 +2594,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // Round 509: Persistent idle/remaining/last-seen timer field receivers, subsets
 // 1/2/4/3/5/6/7, 275 each; all with area bitmap receiver 302 (1119 bytes).
 // Original body restored; frame, iterator pool, point homes and intersection spill remain.
+// P270: existing generic squad producer with entry-owned area/point-pair/location
+// workspace subsets 0..7: 306/306/306/306/306/306/306/306. Original producer,
+// declaration scopes and body restored; frame, pool and intersection homes remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3477,6 +3485,7 @@ void function_2011f0(long arg_0);
 // then unsigned pending-chain handles without/with that receiver: 318/318/354/403/389/389/318/403.
 // Complete original body restored; frame 0x134 agrees, masked-index/placement and chain homes remain.
 // DL236: Early mask/admission/selection inline declaration subsets 1..7, then all with final success gate: 318/318/318/318/318/318/318/318. Original contracts and body restored; frame 0x134 agrees, masked index/placement/definition and final-chain homes remain.
+// DL244: Point producer inline 318 (other users regress); coherent seat/options/completion subsets 318 throughout. Frame 0x134 agrees; masked-index/placement and final-chain homes remain. Original contracts and body restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
