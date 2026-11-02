@@ -2550,7 +2550,7 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // and selector position, with staged, parenthesized and named sums: y first only comes with y in XMM1
 // (helper) or sum XMM1 (no helper).
 // @retail 0x20c440
-void function_20c440(byte const *request, s_audio_priority_table *table, long target_index,
+void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
     short second_state, short other_category, s_audio_selection *results, short *count)
 {
@@ -2747,18 +2747,6 @@ void function_20c440(byte const *request, s_audio_priority_table *table, long ta
 
 bool function_1df640(short team_a, short team_b);
 
-// score 6 (was 6): the address of the entry is built in EAX here and in ECX
-// in retail, and the two words of the group are read into the registers the
-// other way round after the call. Also tried: a const group pointer 6, the
-// count test as if/else 6, the byte view passed as the table 6, the entries
-// read through the table parameter 6, the bound's terms swapped 6 (VC sorts
-// them), a (long) cast on either or both terms 6; (r169) the parameter-address
-// statements removed 6 (kept); a long index 148; a named request pointer 6;
-// a while loop 6; (r106) the index read from the group before the count test
-// with `group[0] + group[1]` as the bound 8 (the first word's load moves above
-// the branch, the reload order stays); a named entry pointer 6; the count test
-// in the loop condition 6; the existing object_get/actor_get helpers for both
-// objects 6 (same code); the entries as rows of 0x40 bytes 6.
 // @retail 0x20cbd0
 void function_20cbd0(short group_index, s_audio_priority_table *table, long target_index,
     long source_index, long previous_index, long ai_index, short category,
@@ -2802,13 +2790,14 @@ void function_20cbd0(short group_index, s_audio_priority_table *table, long targ
             relation = 3;
         else if (function_1df560((short)target_team, (short)source_team))
             relation = 4;
-        if (group[1] > 0)
+        short *count_ptr = &group[1];
+        if (*count_ptr > 0)
         {
-            for (short index = group[0]; index < group[1] + group[0]; ++index)
+            for (short index = group[0]; index < group[0] + *count_ptr; ++index)
             {
                 if (*count >= maximum_count)
                     break;
-                function_20c440(*(byte **)(data + 0xc) + index * 0x40, table, target_index, source_index, previous_index,
+                function_20c440(table, *(byte **)(data + 0xc) + index * 0x40, target_index, source_index, previous_index,
                     ai_index, (short)relation, target_type, source_type, category, results, count);
             }
         }

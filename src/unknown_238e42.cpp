@@ -1038,6 +1038,8 @@ bool __stdcall function_2399da(long controller_index)
 // field with the own-rank local kept for the dispatch 90.
 // Round 342: Definite immutable selected-pointer producer with complete bool/byte/word/long validity and complementary predicates: 90/90/90/90/90/90/90/90.
 // Original complete body restored; selected identity/rank EAX/ECX ownership and extra removal move remain.
+// Round 301: original failure/choice exits joined to one normal epilogue, seven subsets
+// 90/90/90/90/90/90/90; all with complete request-failure guard 189. Original body restored.
 // Round 232: Complete outgoing member value owns requested rank before dispatch/non-removal;
 // property tests and deny-first admission combinations 142/147/142/147/136/148/136/148. Exact-only
 // forms restored; identity/rank register ownership and the extra removal move remain.

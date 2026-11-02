@@ -576,6 +576,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // maximum 450/454/450/420; after maximum logical 450/454, direct with native signed-short
 // prior state 427/417. Several recover frame 0xa0 and 1616 bytes, but actor input stays
 // stacked. Original prior-state type, maximum qualifier, predicates, cases and body restored.
+// DH281: Sampling admission priorities ACB/BAC/BCA/CBA with original and update-first validation on
+// retained 21304/signed-state graph; exact-length 412 ties the opening score [414, 450, 450, 422, 412, 436,
+// 436, 424]. Original executable body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
