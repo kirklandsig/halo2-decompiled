@@ -183,6 +183,9 @@ real normalize2d(point2f *arg_0);
 // Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
 // point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
 // Original scalar expressions, publication and complete body restored; output/vector homes remain.
+// Round 238: plain second-perpendicular two-component sign traversal, long/short/dword/word
+// ordinals, 211/217/211/217; with the existing shared scaled-add output, 211/217/211/217.
+// Original scalar signs, offset producer, include list and complete body restored.
 // Round 51 (lane 11, fast): the found-flag clear before the actor lookup 261, without the output
 // self-address read 275 (both change the convention: 0x1ba5c0/0x1bdad0/0x1bff80 stop matching); the point
 // copy declared at function scope 211 (same code); the output self-address read after the actor lookup 211

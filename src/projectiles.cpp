@@ -994,6 +994,10 @@ real function_30bf0(vector3f *v);
 // Round 497: Entry chosen-speed/time/inverse-time storage, seven nonempty subsets, 232 each; all
 // with path-distance storage 232. Every producer stays at its original use; original body restored.
 // Frame 0x28/0x30, rounded horizontal root and separate divisions remain.
+// Round 243: existing horizontal dot producer alone/both norms 232/232; with complete
+// displacement helper 235/236; entry-result counterparts 245/245/228/228. The 228 forms
+// recover frame 0x30 but gain only four and lose four matched callers. Original helpers,
+// inputs, scalar trees, result lifetime and inherited optional-pointer contract restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1879,6 +1883,10 @@ real function_17c900(short function_type, real input);
 // Round 497: Uniform parallel/cosine-axis/sine-cross term subsets 366/348/348/348/366/348/348; all
 // with per-use lead field 369. Original body restored; stacked-index/output-EBX transport and
 // normalized component homes remain.
+// Round 244: existing moving/havok object getters, each with early/drift-local salt
+// and common/branch-final point output: 348/377/365/382, twice. Original macro,
+// salt, point workspace and final publication restored; frame 0x30 agrees, stacked
+// index/output-EBX contract and point/direction homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

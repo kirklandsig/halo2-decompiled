@@ -304,6 +304,9 @@ struct s_block_candidate
 // Round 302: Scan cursor advanced before policy/prefetch with original/maximum timestamp and
 // field/reused page total 380/378/378/374; enclosing cursor scope 380/378/378/374. Frame reaches 0x1054,
 // but length grows to 1223-1232; original scan, values and body restored.
+// Round 240: Inner-scan policy/time/segment-home names, seven subsets and all with reversed
+// independent policy/time acquisition: 347/421/411/347/347/421/411/411. Policy-only field copy
+// exact-only; policy/time reaches frame 0x1054 at 411. Original executable body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -299,6 +299,10 @@ void function_14bac0()
 // Round 286: shared actual ray-query input on returned-output graph, bounds/relocation/native-recipient
 // combinations 228/228/228/228/229/229/229; complete native-recipient graph with library input copies 229.
 // Original points, output pointers and both traversals restored; frame/readiness sharing remains.
+// Round 226: actual native/fully-inline first iterator on the returned-output graph,
+// without/bounds/bounds-probe sharing: 269/370, 269/370, 269/370; complete sharing with native
+// recipients 263/374. Original body and all producer boundaries restored; frame 0x50 versus 0x3c
+// and readiness/recipient homes remain.
 // Round 53 (lane 10, fast): retail adds the offset to its own position local (read back from +0x20, the
 // destination's slot) after 0xb9dd0, reads the target unit from the player at both calls, and steps the second
 // scan through the out-of-line 0x6b380 on a 16-byte iterator at +0x2c. The position local used directly 245
@@ -382,6 +386,10 @@ void function_14bac0()
 // 233/233/240; each with native recipients 229/229/245. Shared setter producing the final z
 // directly 240, with native recipients 245. Original point copies, elevation, returned relocation
 // output, selected unit and both scans restored; frame/readiness/recipient sharing remains.
+// Round 244: independent scalar displacement on the returned-output/selected-unit graph,
+// six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
+// declarations 235/235. Original aggregate, output pointer, bounds and traversals
+// restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

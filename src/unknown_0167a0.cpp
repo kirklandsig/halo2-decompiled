@@ -1483,6 +1483,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // spelling tried (~60: all six store orders, chains, `out` and `out + 1` pointer copies, dependency chains, the
 // width store in each of the four positions, the zeros before the width) floors at 2; the pointer copy keeps
 // 0x1b2c0 exact but leaves 0x19ca0 at 130, so the direct form is not kept (it raises another function's score here).
+// Round 234: Existing sampler and two writer inline-metadata subsets, then all with mapped reload, and
+// native word/short/existing-word/bool rescale producers with branch/shared color workspace on the opaque
+// sampler graph: 232/342/435/514/515/636/647/647/232/232/232/326/232/232/232/326. Original contracts,
+// writers and entire body restored.
 // Round 23 (lane 17, fast; scores as 0x1b2c0/0x19ca0): the reorder comes from the later of the two identical
 // case 14/18 bodies in source order. When it stores straight through `out` (array, a struct cast of `out`, or a
 // plain `real *p = out` copy) and ends with the out[2], out[3] stores of cases 10 and 12/13, VC emits out[3]

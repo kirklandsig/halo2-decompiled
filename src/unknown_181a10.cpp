@@ -631,6 +631,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 451: Existing initial-entity/repeated-root/material-entity helper boundaries,
 // subsets 1..7 and complete graph with shared discarded coefficient: 343/350/360/321/343/350/360/362. Original traversals,
 // coefficient outputs, helper uses and full body restored; frame/classifier/plane homes remain.
+// Round 241: Complete normal/distance/side multiplicand ownership, seven nonempty
+// subsets 321 each; all with successive original-group normal/distance sums 321.
+// Original producers, helper contracts and complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

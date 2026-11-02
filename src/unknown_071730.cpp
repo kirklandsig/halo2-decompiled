@@ -217,6 +217,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // 439 each; all three with the capacity getter 439. All checked user scores agree; every original
 // declaration and body restored. Frame, dead state stores, result-byte home and data-getter
 // boundary remain.
+// Round 241: Shared long balance-output scratch with completed roster count/deadline/final deadline,
+// singles/pairs/all 439/441/439/441/439/441/441; all with first elapsed result 441.
+// Original separate scalar phases and complete body restored; frame and result/state/getter homes remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

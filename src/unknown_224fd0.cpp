@@ -166,6 +166,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // ascending/descending 373/501; independent square-sine/sine-square loops 518/505; paired
 // square-sine/sine-square loops 518/505. Original interleaved native products and complete body
 // restored; axis-specific square/sine/cosine homes and basis registers remain.
+// Round 239: Existing square/sine vectors through the native vector setter and complete cosine-pair
+// producer lifetime, seven subsets 422/444/351/364/407/369/452; all with reversed pair declarations 395.
+// Original private rotation producer and complete function restored; axis/cosine spill scheduling remains.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

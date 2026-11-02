@@ -190,6 +190,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // complementary rejected results 202/202/200/201. All are exact-only post-test
 // flag forms; none matches. Original result flow, rotation helper, full request
 // and complete body restored; frame 0x11c versus 0x118 remains.
+// Round 237: staged cross consuming weighted-preserved axis, four sine lifetimes 242/243/243/217;
+// consuming weighted-preserved direction 226/227/208/209
+// Original executable body and helpers restored.
 // Round 114 (m3 lane 7, fast): helper order sine, named dot, cosine, projection, `cross3f(v, axis)` subtracted 226
 // (retail's fsin placement, frame 0x120); that with `cross3f(axis, v)` added 225, with cross3f_staged 226, with
 // direct per-component sums 226; the kept order with only the dot named before the cosine 226. Retail keeps the

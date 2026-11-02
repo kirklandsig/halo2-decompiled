@@ -1157,6 +1157,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // score 33 (was 85): frame 0x1144 and extent agree; query/count homes, write argument order,
 // checksum register and header-validation joins remain. Earlier diagnosis before native handles:
 // the read-call value transport differed. The retained API and handle prefix now agree.
+// frame 0x1144 and the entry prefix agree; size/count homes, write setup,
+// checksum register and write/header validity joins remain.
+// Earlier: the read-handle declaration/caller contract differed; frame and extent agreed.
 // frame 0x1144 and extent agree; file displacement, request-copy
 // scheduling, the first read handle copy and write-success join still differ.
 // Earlier: frame 0x1144 and extent agree; file displacement, request-copy, the first read
@@ -1409,6 +1412,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Keep original-scope success-first form, plain 33 at 930 bytes; write API initializes the actual
 // count on every submitted write. Frame 0x1144 agrees; count/query homes, write argument order,
 // checksum register and header-validation joins remain. All other declaration scopes restored.
+// Round 239: On the indexed-handle/direct write-count graph, native by-value query/resize/write
+// copies in seven subsets, then all four I/O copies, 84/84/89/82/89/89/89/84. All exact-only forms
+// restored; frame and entry prefix agree, size/count homes and write/checksum/result scheduling remain.
+// Round 242: Shared query/write byte-count storage, block/entry scopes with original/later
+// zero and resize-guarded/failure-only-zero completion forms 110/110/213/213/154/154/166/166.
+// All shrink the frame to 0x1140/0x113c and regress; separate original outputs, all waits and
+// native I/O values restored. Frame 0x1144 agrees; size/count and write/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

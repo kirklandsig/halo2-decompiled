@@ -784,6 +784,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // identity; native points after selection, then field reads at use: 718/698/675/742/639/665/759/692. Original
 // endpoint copies, helper boundaries and complete body restored; tag/count/plane homes and rotation spills
 // remain.
+// Round 239: Both accepted endpoint copies before the disjoint selected-plane output, with endpoint
+// order, distance-store priority and pre-emission total decrement combinations, 683/683/683/683/785/785/786/786.
+// Original endpoint/plane/total order and whole body restored; tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

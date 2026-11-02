@@ -1597,6 +1597,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 448: Separate selected/fallback entry lifetimes 221/221/221; supported-first
 // final admission 222, with either/both lifetimes 222/222/222; all with real movement
 // 225. Original distinct block workspaces, movement and selected-first test restored.
+// Round 236: Complete request-flag reads at each use, crossed with saved/current predicate role names,
+// native magnitude and constant sentinel phase: 229/229/228/228/229/229/228/228. Original complete
+// executable source restored; zero width, reset/selection homes and material-call expansion remain.
 // Round 289: Three named movement-coordinate inputs, with real magnitude/sentinel phase/contact-base
 // at-use masks 0..7, 229/224/229/224/222/221/219/218 (1066 bytes). Best gains three,
 // rejected; original magnitude, inputs, selected/highest homes, observations and calls restored.

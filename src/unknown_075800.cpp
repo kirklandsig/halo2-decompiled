@@ -1177,6 +1177,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // late case returns in both orders 196/196; default/terminal conditional chains
 // 196/196; singleton-first switch/conditional chain 201/202 (fast control 196).
 // Full baseline 153; original native-role graph and matched caller preserved.
+// Round 238: on the consolidated native-input root, common completion for all/direct/connection
+// cases, default-owned late cases, case-local lookup results on those three completion graphs,
+// and common completion with failed-lookup breaks: eight 196 fast, tying control 196.
+// All-case common completion is 153 plain, tying baseline; original complete body restored.
 // Round 445: Accepted first classifier with connection orders 5,7,6 / 6,5,7 / 6,7,5 / 7,5,6 /
 // 7,6,5 and direct priorities 2,4,0,3 / 4,2,0,3 / 0,3,4,2: 195/196/196/195/196/196/194/195.
 // Original complete executable body restored.

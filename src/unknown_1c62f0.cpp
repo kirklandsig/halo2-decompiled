@@ -758,6 +758,9 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // last frame computed after the clamp 119; the loop frame as `next_frame -= last_frame; ... += position` 93
 // (same code); the non-looping end frame as `next_frame = last_frame` 91 (531 bytes only because that arm loses
 // retail's recomputed frame count; every later line still differs).
+// Round 237: graph/animation/event lexical homes, seven nonempty subsets 93/93/93/93/93/93/93;
+// all three with earlier uninitialized declarations 93
+// Original executable body and helpers restored.
 // Round 113 (m3 lane 7, fast): callback and user as one by-value pair struct (callers build it, no pointer or
 // volatile) 124 (frame 0x10; the first callback load is reused at the second dispatch and kept in EBX through the
 // third, the animation spilled at the variant join); that with a volatile third read of the pair's callback 130 (539

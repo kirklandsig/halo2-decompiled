@@ -1556,7 +1556,7 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 			prism->plane.n.n[indices[1]] * point->y) / prism->plane.n.n[axis];
 }
 
-// score 552 (was 552): frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain; the prism cursor is
+// score 552 (was 552): frame 0xb964 agrees; sum/zero homes and point-count-biased prism cursor remain.
 // frame 0xb964 agrees; sum homes and EBX/ESI zero carrier remain.
 // Round 30 (lane D): the permuter's best variant reorders some declarations and swaps the face-sum
 // product (540 -> 539 on the reduced image, one point, below the retention margin). Retail multiplies
@@ -1670,6 +1670,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 451: Edge-reconstruction endpoint declarations at entry/radius/prism/producer
 // scopes, original and complete endpoint role names: 552/552/552/552/552/552/552/552. Original declarations, names and
 // complete body restored; sum homes, query zero and prism anchor remain.
+// Round 241: Native cross-product/point-difference/edge-query direction storage,
+// singles/pairs/all 580/552/553/580/581/553/581; all with long accepted counts 592.
+// Original vector storage, accepted word counters, helper and complete geometry restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

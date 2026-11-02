@@ -2097,6 +2097,15 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // ascending/reverse declarations and model/entry validity lifetime: 603/821/555/773/603/821/555/773.
 // sample_offset names 555; plain 555 kept. Each offset has both format consumers; all sample objects,
 // helper bodies, call roles and arithmetic grouping stay fixed.
+// Round 231: structure/model/both admission guards 817/618/642; the same guards with
+// test-produced shared status 817/798/776; both guards with special-material single
+// completion and test-produced/original status 816/797. Original admission and body restored.
+// Round 236: Three reused sample-offset storage lifetimes at entry/model/section/dynamic scope,
+// native long/dword at each: 555/555/555/555/555/555/555/555. Assignments stayed at their original
+// producer; original body restored. Frame agrees; status/mesh/color/sample homes and helper expansion remain.
+// Round 278: Native complete default library copies normal/base/lightmap in all seven subsets, then all
+// with the complete normal-publication family: 555 each. Original aggregate transfers and entire body
+// restored; frame 0x90, displaced result/mesh/UV/color/sample homes and selective helper expansion remain.
 // Round 329: Three-entry sample-offset table, long/dword entries with initializer,
 // ascending assignments, descending assignments and plain indexed loop,
 // 603/603/555/575 each. No exact match; independent offset locals and full body restored.
