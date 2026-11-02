@@ -1002,6 +1002,8 @@ real function_30bf0(vector3f *v);
 // solved-coefficient storage:
 // 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
 // frame, rounded-root scheduling and separate divisions remain.
+// M290: Independent/shared rounded polynomial-root storage with solver/entry declarations and original/shared horizontal-square storage:
+// 232/232/232/232/232/232/232/232. Original executable body restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -2121,7 +2123,9 @@ void __stdcall function_fc330(long projectile_index, bool detach_contrail, real 
 			center.y *= inverse;
 			center.z *= inverse;
 			attached_parent = *(long *)((byte *)projectile + 0x14);
-			function_b9a90(attached_parent);
+			/* the projectile leaves its parent: retail passes the projectile
+			   index in ebx (0xfc5a6 loads it from the first argument) */
+			function_b9a90(projectile_index);
 			position = *(point3f *)((byte *)projectile + 0x64);
 			function_b75a0(projectile_index, &center, NULL, NULL, NULL, false);
 			function_bc1d0(projectile_index, &position, *(long *)((byte *)projectile + 0x14));

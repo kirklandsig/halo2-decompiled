@@ -949,6 +949,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 219: positive visibility on guarded loops, entry-result/projection-input-cursor/shared-count
 // masks 0..7: 236/236/132/132/470/470/470/470. Original culling result, independent counts and
 // projection indexing restored; coefficient preload, zero roles and projection staging remain.
+// Round 341: Native two-coordinate screen value with conditional bounds, intersection
+// receiver and logical cull publication, masks 0-7: 368/469/410/378/374/411/395/380.
+// Frame shrinks to 0x1e8 versus 0x1ec; original complete body restored.
 // Round 449: Conditional projection-extent publications, x/y/z subsets 1..7
 // 173/168/191/162/190/185/290; all six selections named symmetrically before publication 287 (fast control 115, full 115).
 // Original complete executable source restored; opening structural differences remain.

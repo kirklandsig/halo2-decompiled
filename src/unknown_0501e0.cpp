@@ -248,6 +248,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // caller, a camera pointer or an inline getter: no change to the folded coefficients. Calling matched 0x142640 562 (827
 // bytes, stays out of line under /Ob1); a static or inline copy of its body 235 (1113). Retail loads the first view's
 // coefficients into registers where ours folds them; without the scale branch ours loads them too. Restored.
+// Round 502 (reduced): identity-conditional native/memcpy input protection, alias/scale-first
+// ownership 287/289/287/289; indexed outputs 290/305/290/305. Complete alias-safe scalar
+// helper and original body restored; extra frame dword and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

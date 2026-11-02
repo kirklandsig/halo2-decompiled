@@ -284,6 +284,9 @@ static inline void quaternion_transform_vector(
 // 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
 // cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
 // it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
+// Round 294: Complete rotated-vector memcpy/memmove publication with staged-cross/independent-half
+// combinations 334/311/334/311 and 348/383/348/383. Original helper/body restored; frame and
+// quaternion/cross spill sharing remain.
 // Round 267: result-component loop on staged-axis/real-scale construction,
 // long/short/byte/word ordinals with paired halves 266/1023/1023/1023,
 // independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
@@ -954,6 +957,10 @@ void function_143250(
 // Round 285: Direct matrix destinations in bands 1/2/12/3/13/23/123 score
 // 1791/1840/1880/2057/2065/2174/2201; all with the inherited array receiver 2276. Frame, rotation
 // admission and basis/matrix homes remain. Original polynomial body and publication graph restored.
+// Round 246: Independent complete input columns on the retained publication graph, masks
+// 1/2/3/4/5/6/7, 1901/1766/1901/1914/2230/1774/2113; all with a native-table receiver
+// 2228. Full extraction recovers frame 0x300 but regresses; original snapshots,
+// workspace and polynomial graph restored. Rotation admission and spill homes remain.
 // Round 500: literal-only scalar cleanup with complete basis/single-consumer/reused
 // same-type copy families, masks 0..7, 1767/1948/1766/1936/1927/2000/1917/1986.
 // Original scalar and publication graph restored; frame, rotation admission and basis homes remain.
