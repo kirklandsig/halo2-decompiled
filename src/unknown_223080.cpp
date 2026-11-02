@@ -148,6 +148,8 @@ void function_3f450(long arg_0);
 // a local 71; local_4 at function scope 71; arg_0 == 0 71; else rects
 // through a local pair 73. Struct-copy of the pair 58 but positional
 // only; field-by-field 146; arm swap 122 (earlier rounds).
+// Round 113: shared extent/dimensions/position pointers 2/2/2; all three pointers 2;
+// shared count/mode/both 2/2/2; early extent through three calls 2. Call tuples unchanged.
 // @retail 0x223080
 void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 	long arg_4, long arg_5, s_223081 const *arg_6)
