@@ -2355,6 +2355,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // DL242: Complete direction memcpy before normalization 211; library constant-vector
 // normal/fallback/velocity copy subsets 1..7 all 91. Original copy, normalizer, helper and body
 // restored; early velocity j/k and property-zero residence remain.
+// DL245: Aligned frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. Native velocity scalar sums with original/direct defaults and setter/aggregate publication 258/233/342/249; with property value constructed first 259/247/351/249. All regress and disturb the previously matching prefix. Original accumulators, normalizer, property helper and complete body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
