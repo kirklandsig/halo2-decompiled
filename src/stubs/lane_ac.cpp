@@ -10,8 +10,6 @@ public:
 
 class hkEntity;
 
-// @stub 0x315340
-void __cdecl function_315340(void *arg_0, hkEntity *arg_1, hkEntity *arg_2, real arg_3, real arg_4) {}
 
 // @stub 0x3153c0
 void __cdecl function_3153c0(void *arg_0, void *arg_1, void const *arg_2)

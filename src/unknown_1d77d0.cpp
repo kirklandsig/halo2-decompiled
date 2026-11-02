@@ -187,49 +187,6 @@ struct s_1ce970
 		__m128 const *arg_6, __m128 const *arg_7, __m128 const *arg_8);
 };
 
-class c_component_joint_allocator
-{
-public:
-	virtual void slot0() = 0;
-	virtual void slot1() = 0;
-	virtual void slot2() = 0;
-	virtual void slot3() = 0;
-	virtual void *allocate(long size, long kind) = 0;
-};
-
-/* the six constraints, reference counted, from Havok's constraint memory */
-class c_component_joint_constraint
-{
-public:
-	static void *operator new(size_t size)
-	{
-		void *block = ((c_component_joint_allocator *)g_480118)->allocate(size, 0x27);
-		((c_havok_reference_counted *)block)->allocation_size = (word)size;
-		return block;
-	}
-};
-
-class c_component_joint_3 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_3(c_component_joint_snapshot_3 const *info);
-	byte unknown00[0x50];
-};
-
-class c_component_joint_4 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_4(c_component_joint_snapshot_4 const *info);
-	byte unknown00[0x60];
-};
-
-class c_component_joint_5 : public c_component_joint_constraint
-{
-public:
-	c_component_joint_5(c_component_joint_snapshot_5 const *info);
-	byte unknown00[0xf0];
-};
-
 void function_1d0150(s_havok_component *component, s_havok_contact_entities *contact, short a, short b);
 byte *__fastcall function_30c170(hkWorld *world);
 extern hkWorld *g_51e9a4;
@@ -313,7 +270,7 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 			((s_1ce8d0 *)&info)->function_1ce8d0(local_560343, rigid_body_b,
 				&frame_a.m_translation.m_quad, &frame_b.m_translation.m_quad);
 			info.length = joint3->unknown78;
-			constraint = (s_havok_contact_entities *)new c_component_joint_3(&info);
+			constraint = (s_havok_contact_entities *)new lane_a_spring(&info);
 		}
 		break;
 	case 4:
@@ -323,7 +280,7 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 			info.body_b = rigid_body_b;
 			info.pivot_a = frame_a.m_translation.m_quad;
 			info.pivot_b = frame_b.m_translation.m_quad;
-			constraint = (s_havok_contact_entities *)new c_component_joint_4(&info);
+			constraint = (s_havok_contact_entities *)new lane_a_ball_socket(&info);
 		}
 		break;
 	case 5:
@@ -337,7 +294,7 @@ static __forceinline s_havok_contact_entities *joint_constraint_create(s_havok_c
 			info.maximum = joint5->unknown7c;
 			info.minimum = joint5->unknown78;
 			info.friction = joint5->unknown80;
-			constraint = (s_havok_contact_entities *)new c_component_joint_5(&info);
+			constraint = (s_havok_contact_entities *)new lane_a_prismatic(&info);
 		}
 		break;
 	default:

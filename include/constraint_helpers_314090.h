@@ -30,6 +30,7 @@ struct c_component_joint_snapshot_5 : lane_b_rigid_constraint_description
 class lane_a_ball_socket : public lane_b_rigid_constraint
 {
 public:
+	lane_a_ball_socket(c_component_joint_snapshot_4 const *description);
 	__m128 pivot_a, pivot_b;
 	lane_a_solver_result results[3];
 	virtual lane_a_solver_result *runtime();
@@ -44,6 +45,7 @@ public:
 class lane_a_spring : public lane_b_rigid_constraint
 {
 public:
+	lane_a_spring(c_component_joint_snapshot_3 const *description);
 	__m128 pivot_a, pivot_b;
 	float length;
 	lane_a_solver_result results[1];
@@ -59,6 +61,7 @@ public:
 class lane_a_prismatic : public lane_b_rigid_constraint
 {
 public:
+	lane_a_prismatic(c_component_joint_snapshot_5 const *description);
 	__m128 pivot_a, pivot_b, axis_a, axis_b, perpendicular_b;
 	__m128 frame_b[3];
 	float minimum, maximum, friction;

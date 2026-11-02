@@ -232,8 +232,6 @@ public:
     void function_2dbcf0(s_2dc030 const *arg_0);
 };
 
-// @stub 0x314710
-c_314710::c_314710(hkEntity *arg_0) {}
 
 struct c_shape_library_base_a
 {
@@ -266,16 +264,3 @@ struct s_2da8c0
 
 struct s_1d1540 { void function_30be00(void *arg_0); };
 struct s_1d1541 { void *function_30d2b0(void *arg_0); };
-/* Unwritten constructors for the three remaining joint kinds. */
-class c_component_joint_3 { public: c_component_joint_3(c_component_joint_snapshot_3 const *info); };
-class c_component_joint_4 { public: c_component_joint_4(c_component_joint_snapshot_4 const *info); };
-class c_component_joint_5 { public: c_component_joint_5(c_component_joint_snapshot_5 const *info); };
-
-// @stub 0x314b00
-c_component_joint_3::c_component_joint_3(c_component_joint_snapshot_3 const *info) {}
-
-// @stub 0x314270
-c_component_joint_4::c_component_joint_4(c_component_joint_snapshot_4 const *info) {}
-
-// @stub 0x314ef0
-c_component_joint_5::c_component_joint_5(c_component_joint_snapshot_5 const *info) {}
