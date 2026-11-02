@@ -1367,6 +1367,9 @@ struct s_looping_detail_request
 // Round 473: Complete failure-valued bool/byte/short/long completion, with
 // request/native-local audible offsets: 144/144/143/142/168/168/168/167.
 // All restored; first-player expansion and detail/offset homes remain.
+// N322: Original positive byte/char/short/word/long/dword completion carriers:
+// 131/131/135/135/134/134; native long/byte admission-produced results 176/159.
+// Original common tail, result, native offset and complete body restored; first-player expansion remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
