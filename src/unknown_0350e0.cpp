@@ -1981,7 +1981,7 @@ typedef char assert_direction_entry_size[(sizeof(s_direction_entry) == 0x34) ? 1
 typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 : -1];
 
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
-// score 177 (was 188): earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// score 177 (was 177): earlier 188; earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
 // Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
@@ -2000,6 +2000,10 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // Round 503: native entry/list/both 188/188/188; each with shared axes 181/181/181.
 // Both records with capacity checked after entry selection 177 (861/857), kept;
 // shared axes plus that capacity check 176, exact-only and restored. Frame and vector homes remain.
+// P266: Native paired entry angles with const-pointer/reference/value/mutable-pointer
+// input, value-vector output 192/192/182/192, output-pointer vector 223/223/205/223;
+// each uses the existing zero-pitch forward producer. Original fields, scalar inputs,
+// vector returns, helper, include set and caller restored; frame/vector-copy homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2949,7 +2953,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 }
 
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
-// score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
+// score 177 (was 177): earlier 175, 194; the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -2974,6 +2978,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // field reads 204/204/204; both with those reads and reversed cases/shared position lifetime 204/204. Frame
 // stays 0x18 versus 0x1c; initial alpha/kind scheduling and final fade scratch stores remain. Entire
 // original body, output roles and distance helper restored.
+// P266: Entry float ownership for elapsed, the first fade pair and final fade, all seven
+// nonempty subsets, then all with reversed declarations: 177 each. Producers stay at
+// their original observations; frame remains 0x18 versus 0x1c. All original scopes restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4198,7 +4205,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
-// score 138 (was 210): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// score 138 (was 138): earlier 210; the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
 // calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
 // stores 1 into the slot after function_15680 in both arms of pass 3, and the three passes with
@@ -4226,6 +4233,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
 // 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
 // retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
+// P266: Disabled-return pass epilogue with byte/bool/short/long state 222/222/242/230;
+// exclusive enabled/disabled epilogues with those domains 209/209/239/216.
+// All shared users regress; original common epilogue, helper and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
