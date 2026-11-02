@@ -340,6 +340,10 @@ union s_185be7
 // subsets, then short copy ordinal: 731/690/839/690/839/845/845/854. Keep only the duration
 // source cursor, 690 plain at 3782/3777 bytes; the paired source cursor ties.
 // Sole caller 0x186ab0 remains 134/1486. Control-root/NONE, settings/zero and flag joins remain.
+// Round 237: Native copy destination button/duration/both cursors 690/691/691; inferred byte/word/both
+// flag destinations 858/848/864; complete exact-valued promoted angular coefficient
+// alone/with native destinations 1018/1075. Original helper, widths, scalars and body
+// restored; control-root/NONE, settings/zero homes and flag joins remain.
 // AC468: Shared input-five/four/seven branch ownership retaining the individual flag-helper calls,
 // seven subsets and all with selected-input ownership: 1121/1111/1152/1134/1155/1159/1150/1140.
 // The branches collapse stores and lose the native frame. Original helper calls, masks, observations,
