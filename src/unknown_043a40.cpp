@@ -8,7 +8,7 @@
 struct s_render_reset_state;
 struct s_shader_cache;
 extern bool g_4c8780;
-extern dword g_4c8784;
+extern byte g_4c8784[4];
 extern long g_4c8788, g_4c878c, g_4c8790;
 extern byte g_4670bc;
 extern long g_4858b8;
@@ -33,7 +33,7 @@ void __stdcall function_43a40(long mode)
     g_4c8790 = mode;
     g_4c878c = NONE;
     g_4c8788 = 0;
-    g_4c8784 = 0;
+    *(dword *)g_4c8784 = 0;
     g_4c8780 = true;
     g_4670bc = true;
     function_16b10((s_render_reset_state *)g_485b48);

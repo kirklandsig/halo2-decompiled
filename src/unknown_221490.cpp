@@ -702,7 +702,15 @@ bool sound_driver_voice_create_buffer(
 // Round 354: Real submix/spatial output-field references and count-first mixbin stores
 // subsets 1..7, then spatial-first predicates: 82/158/170/74/85/156/168/166. Original actual output
 // slots, descriptors, pairs, SDK flags, modes and calls restored.
+// Round 237: Success-path library array clears first/spatial/both 167/177/174; direct volume-member
+// loops on the original real arrays first/spatial/both 83/81/93; both loops with
+// per-phase mixbins, then spatial-first predicates 93/182. Bin-ID stores and SDK
+// calls are original; all zero producers, scopes, flags and full body restored. Spatial/play and zero/input homes remain.
 // Round 357: Native-frame multi-use input-bin carrier, dword/long at admission/entry with playback-first then spatial-first predicates 71/71/71/71/182/182/182/182. Original parameter observations, descriptors and body restored; Boolean/zero/input allocation remains.
+// Round 137 (m3 lane 6, fast with 0x191420, which stays matched): both bools declared after the pairs and mix
+// bins, play first 71 (same code), the 3D flag first 182 (599 bytes); the submix creation as a force-inline
+// helper taking (globals, voice, input mixbin) with its own pairs, mix bins and descriptor, play first 71 (same
+// code, frame unchanged), the 3D flag first 181 (599); the 3D flag as `(byte)flags & 1` defined first 182.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
