@@ -86,6 +86,7 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // store only); the lea form with the local in its own block 115. Compile-only: plain, LARGE_INTEGER, array, struct, memset,
 // pointer, inner-function and member forms all lose the stores; a read under if (0) or a folding condition, __assume and
 // __noop lose them; the count of dead lea references and the local's name do not move the frame.
+// Round 87: condition-declared pool 3; direct result/pool initialization 3/3; null-initialized pool 3; explicit/reversed null tests 3/3; condition assignment 3; direct context initialization 3. Original body restored; the low timing-zero store hoist remains.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

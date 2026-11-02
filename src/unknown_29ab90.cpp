@@ -255,9 +255,18 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // DH283: Joint magnitude-input/query-output/working-vector lexical priorities abc/acb/bac/bca/cab/cba 345 each;
 // independent vector producer order with joint identities 343, with entry query-output declarations 343.
 // Two-point gains rejected; original executable body and private helpers restored.
+// P265: Entry-owned magnitude result/speed-limit/turn-floor scalar homes, seven nonempty
+// subsets then joint semantic scalar names, 345 each. All initializers stayed at their original
+// producers; original declarations and body restored. Frame/query-magnitude overlap remains.
 // Round 287: Existing-helper native/coordinate input ownership: magnitude only, paired
 // native/coordinate planar inputs, then immutable paired inputs, 345/456/492/566/345/456/492/456. Original helpers
 // and body restored; frame 0x58/0x64 and magnitude/query overlap remain.
+// M3 lane 4 r155 (fast; callee CAVEATs, base reproduced 345): magnitude helper by pointer on a named copy 343 (frame still 0x58,
+// the query output still shares the copy's slot), that copy declared before the position call 402 (frame 0x5c), by pointer on
+// the input directly 456 (1880 bytes), zeroed in place by pointer 421 (1854 bytes); the planar helper zeroed in place (scale arm
+// first) with the pointer copy 352; the magnitude helper's by-value input `vector3f const` 345 (same code); the query outputs
+// declared before the magnitude 345 (same code: homes follow lifetimes). Re-measured: the query output vector at function scope
+// 345; the three working vectors as struct copies 442 (1887 bytes); the planar helper zeroed in place alone 354.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

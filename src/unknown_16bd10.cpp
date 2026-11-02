@@ -887,6 +887,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // six explicit length term orders on the lead, either operand side, 356-359; normal + distance locals with no plane
 // struct 379 (distance forward-substituted); on the lead field_of_view declared at its assignment 337, active cleared
 // first 337, distance/timer stores swapped or chained 339/339; direct position stores 349 (1700 bytes).
+// Round 289: Standard native-array normal/basis/converted-animation transfers, subsets 1..7,
+// then backward normal with all: 446/475/474/337/464/465/437/437. Coherent output-first
+// matrix-builder formal/declaration/call order 236, matched callee preserved. All transfers,
+// include, interfaces and complete executable source restored; direction and zero homes remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -234,6 +234,12 @@ bool function_a7670(long object_index);
 // it 151 (not kept: 2 points); admission as nested ifs over a true preset 155; list preset to the second then
 // overwritten 236; on the plain-for base the byte local with `continue` / a nested block 233/233. Diagnostic,
 // reverted: a probe load before the outer loop 289 (selector stays EDX, so not one scratch rotation step).
+// AC475: Native preincrement island test from -1, pending continue/nesting and bool/byte
+// admission: 240/240/240/240; with shared membership 233/233/233/233 (match-only).
+// Original consumed index, live bound, indexed cleanup and complete body restored.
+// P269: native body-array snapshot at pending-island/retry boundaries, each with
+// bool/byte/short/long admission on consumed-index/live-bound/indexed-cleanup graph:
+// 275/275/280/280/275/275/280/280. Exact-only field-pointer forms restored; native homes remain.
 // @retail 0x278f00
 void function_278f00()
 {

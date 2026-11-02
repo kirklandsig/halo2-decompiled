@@ -307,6 +307,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // forwarded); success from a ternary with `!= false` 55; from `!!opened` 55; through a named pointer written and
 // read 55. Diagnostic, reverted at once: the volatile success byte with the long test and the element passed
 // directly still matches byte for byte; no plain form re-reads the stored byte.
+// P269: wide-result lexical success/completion, file/outcome and path/ordinal home subsets
+// 1/2/3/4/5/6/7, then all with reversed byte declarations: 42/42/42/42/42/42/42/42.
+// Original homes and body restored; handle ECX and stored-success memory retest remain.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

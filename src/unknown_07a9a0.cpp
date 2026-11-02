@@ -407,6 +407,9 @@ void function_07b3e0(void)
 // M302: Pre-stepped pointer/bool iterators with independent record-pool capture,
 // aggregate/field setup and either capture order: 126/126/126/126/144/144/144/144.
 // All exact-only forms rejected; original scan and terminal observations restored.
+// Round 363: Absolute cursor initialized before activation guard, long/dword/short/signed-char domain with
+// cached scanner 44/55/65/62; dynamic scanner 44/55/65/62. Original guard-owned cursor and full body restored;
+// split scan/datum pool residency remains.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1358,6 +1361,8 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M302: Independent all/eligible phase cells byte/word, word/byte, byte/byte,
 // byte/dword, each aggregate/library first clear: 823/830/816/826/831/839/835/850.
 // Original word workspace and both populations restored; frame/session/lookup remain.
+// M312: Actual capacity/team selector interior case priorities, five capacity/two team/one joint:
+// 766/766/766/766/766/766/766/766. Original body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

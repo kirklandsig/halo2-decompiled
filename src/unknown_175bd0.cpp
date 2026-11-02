@@ -2068,6 +2068,15 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 288: Native placement rejection in bool/byte/signed-char/short/word/long
 // 139/139/139/168/168/164; true/false default rejection 139/139. Original positive
 // placement result, color observations, query carriers and full body restored.
+// AC474: Complete positive/failure zone-admission results in bool/byte/word/long: 379 each
+// (outlined); forced positive-result expansions 238/238/284/271. Original zone producer,
+// queries and full body restored; early color/query/cursor homes and frame 0x40/0x44 remain.
+// Round 476: direct per-case placement rejection, case orders 0123/0213/1023/2013,
+// named/direct final multiplication query: 164/156/164/156/184/172/184/172.
+// Original placement-result lifetime, type-query block and complete body restored.
+// Round 478: complete native zone-entry/cluster/both/const-both values with
+// cached/live zone selectors: 379/375/375/375 in both sets. Every producer
+// outlines; original complete zone helper, observations and body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3175,6 +3184,14 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 288: Single successor-return exit with result-first, live mode and complete
 // node-at-consumer subsets 0..7: 93/93/108/108/107/107/112/112. Live-mode and
 // node-at-consumer forms lose the exact caller; original body and input contract restored.
+// Round 476: condition-owned location pointer, bool/byte/short/long tint,
+// cached/live mode: 93/98/99/99/108/108/111/109. Live-mode forms lose
+// the matched update caller; original location scope, carriers and body restored.
+// Round 478: single signed-node threshold in bool/byte/short/long storage,
+// cached/live mode, 111/111/111/111/97/97/97/97. Live threshold preserves the
+// matched caller but still regresses. Separate signed/bitwise tests on fields
+// or one native node word, cached/live: 94/109/105/113/94/109/96/115.
+// Original complete body restored; frame and system/color/definition homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3440,6 +3457,18 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // 403/427/423/403/403; one dword/long group observation 380/380; Boolean categories
 // with byte capped flare ordinal 422. Original group observations and body restored;
 // scale prefix and preserved point-Y source remain.
+// Fraction producer independent bounds/reversed bounds/early returns/successive selections
+// 74/86/147/74; each with default-before-color scale 270/270/258/270.
+// AC474: Paired scale-enable expression results in bool/byte/word/long, original/default-before-color
+// scale production: 380/380/375/321/315/315/318/306. Narrow forms lose both update callers.
+// Original scale, observations and full body restored; scale prefix and point-Y preservation remain.
+// Round 476: existing shared native point return, pointer/reference matrix and point
+// inputs, original/default-before-color scale: 340/340/340/340/277/277/277/277.
+// Both other shared users regress; original output contract, helpers and body restored.
+// Round 478: complete native coordinate snapshot with indexed conditional scaling,
+// long/short/byte ordinals and repeated scale observation: 387/402/402/387;
+// with default-before-directions scale 354/374/374/354. Both other shared point
+// users regress in every form; original complete helper and body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

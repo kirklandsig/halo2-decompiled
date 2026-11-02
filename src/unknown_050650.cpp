@@ -622,6 +622,9 @@ struct s_collision_result_buffer_1697c0
 // initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
 // terms 337; both startup setters with squared terms 342. Original helper and body restored;
 // frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
+// P265: Separate normalization result, zero-before/zero-after/complete-before/root-default,
+// native sum 322/322/341/648; shared squared-length 322/322/341/648.
+// Original result boundaries and all body/helper text restored; scratch and axis homes remain.
 // Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
 // 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
 // @retail 0x296e60
@@ -860,6 +863,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // P264: complete direction/output library contracts, native+memcpy/native+memmove/
 // memcpy+native/memcpy+memcpy/memcpy+memmove/memmove+native/memmove+memcpy/memmove+memmove
 // 258/333/258/258/333/421/421/415 (fast control 258); original transfers and body restored.
+// Round 137 (m3 lane 6, plain; --fast now scores the unchanged body 341 at 1404 bytes, so it cannot screen this
+// one; 0x297a50/0x297660/0x2980d0 stay matched): retail's exit at 0x296d22 stores result = 0 and is reached from
+// both remembered NONE tests, case 1's state < 1 and both normalize failures. A `failure: result = false; goto
+// done;` label after the return taking all of them 257; only the two case exits 256; only the normalize failures
+// 257; all of them with the normalize step as `if (!(normalize > 0)) goto failure; result = true;` 260;
+// reference and state declared inside case 2's and case 1's own blocks 257.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
