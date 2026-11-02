@@ -801,6 +801,14 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // complete result arms: 17 each (eight forms); reuse of distance for its
 // normalized-length and adjusted-projection phases 17. Restored: the entry
 // graph still needs a one-use unit snapshot; sum/length/projection homes differ.
+// Round 137 (on the match-only 17 form above, aligned counts equal the score): the adjusted projection stored
+// in the length variable (one symbol) 17: the slot groups become retail's (length+adjusted, sum+side, index+
+// timing) with +0x14 and +0x18 swapped, plus the lateral/maximum XMM2/XMM3 swap; a separate adjusted variable
+// 17 (slots unchanged); radius variable reused for lateral 80; on the shared form: renames, top or own-statement
+// declaration 17; sides swapped 18; sum spellings 17/17/17/17/162/185/19; size declared earlier 193/183; named
+// reach 25/197/19/197/197; side maximum named, reversed, inline, lateral named or if/else 17 each. Guard shapes
+// without the unit local (early return, nested, all in one) 92 at 964 bytes: the argument stays in ECX (one
+// scratch rotation step behind retail). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

@@ -192,6 +192,11 @@ struct s_visibility_bound_record
 // entry/table and plane/query homes remain.
 // Round 471: Uninitialized containment output at entry/fallback/part-loop/part/record/transform/point-input/query,
 // 433 each. Original false initialization and complete body restored.
+// Round 137 (aligned count in brackets, baseline 406 [357]; retail's scalars sit below the plane and query, ours
+// keep the views pointer and inner counter above them): flags read in each arm with a (bool) bit-12 test 444 [389]
+// at 1744 bytes; query data as if/else arms 446 [361]; both 459 [407] at 1760; loop counters at branch or function
+// scope 406; the plane copy at branch scope, after the query, at or before the top of the function 406 each; planes
+// and query at function top, either order 413 [389]. Body unchanged.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

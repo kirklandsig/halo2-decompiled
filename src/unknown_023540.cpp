@@ -3238,6 +3238,19 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selectors (retail loads small into CL first and computes input before the alpha selector), the
 // constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
 // first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
+// Round 137: one function-scope value for every quantizer, with the quantizer a macro, puts modes
+// one to three's inputs in clip's home as retail 19 (a block-scope value 31; the inline helper with a
+// by-value parameter keeps a separate symbol per expansion); whole/alpha/fraction/input 18 (aligned 20).
+// NOT kept: the macro and the shared function-scope value shape lifetimes, and the order was picked by
+// score from 24; body restored at 31. In that build 0x41640 (0350e0.cpp, score 4) matched with no edit to
+// its file (a link-time side effect): a lead for 0x41640's own source.
+// On it, aligned counts in brackets: whole/fraction/input/alpha 939 [15] (one instruction short, no
+// `mov al, cl`), with small declared after the switch 31 [6]: only the false store (after the switch,
+// retail before it) and the reload pairs differ; alpha/whole/fraction/input 19 [18]; the other 20 orders
+// 23..970; a second input selector 225 [30]; a bool copy of small 939 [15]; negated selectors 939 [15];
+// bool/byte/char/long/short small 939/939/939/508/506; small at each earlier declaration position 938..998;
+// reversed loop comparisons 19/19; exponent loop at the mode chain 19; named span 19; maximum at the switch
+// 22; inverse distance first 26; no result variable 1105; result declared at the first failure 1131.
 // Earlier 226 (was 949): length and prologue agree; mode zero and one still inline the
 // blending helper's ZENABLE write (VC's inline budget: retail inlines only the first seven
 // state writes, ours one more cheap one), the small selector is loaded after the fraction move,
