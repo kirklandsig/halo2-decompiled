@@ -850,6 +850,13 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // stored/local result combinations 44/44/149/149/44/44/149/149 (fast control 44; full baseline
 // 43). Original iterator, traversal and body restored; player/unit carriers and root-walk entry
 // remain.
+// Round 59 (m3 lane 10, fast): BLOCKED-BY 0xbaf80 (its pin sits in src/unknown_0bad50.cpp, off limits this
+// round). The call as it stands 124 (400 bytes); the pin removed as a diagnostic 109 (431): it inlines, but the
+// entry test folds away there too, so the pin is not the whole cause; with field reads for the test and the walk
+// 109, walk only 171 (405), test only 109. The walk from the unit with a NONE root: long 109, named object 109,
+// dword unit 171 (405, the test returns but the unit takes EAX and the iterator index leaves the frame), named
+// object 171, short test as well 172. Parent copied ahead of the unit object: while 108, for 108, guarded do-while
+// 108, dword 171; copied right after the unit read 106; parent and unit as two field reads 171 (405).
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1364,6 +1371,16 @@ static inline s_players_globals *players_globals_14f2e0()
 // 241/241/251; with complete timer clear 241/241/251; both elisions with native result byte,
 // without/with timer clear 241/241. Original sentinel initializers, bool result, clears and body
 // restored; NONE materialization and timer/flag scheduling remain.
+// Round 59 (m3 lane 10; fast, then compile-only, which also gives the mov): two real causes only, the mov and the
+// tail store order; everything else in the 46 is the 2-byte address shift. The kept-unit flag as long / NONE-based /
+// dword / a second bool 46 each (the flag's test is not the partial write); no flag, a goto past the block 182 (1035
+// bytes, still mov); `long result` 108 (1030); mode test first 270. Diagnostics: two mode tests show `mov al, [edx+0xc]`
+// 255; a dword compare 4 at retail's length (`or`, only the compare and the tail differ); word 44. Compile-only, all
+// `cmp byte` + mov: masked dword/word, byte cast, byte index, `!(==)`, short and long casts, char constant, dword shift,
+// `(== 4) == false`, ternary, inline predicates, empty if with else-if or else, options local, mode local, named bool,
+// outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
+// A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
+// then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
