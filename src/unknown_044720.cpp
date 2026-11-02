@@ -466,6 +466,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 508: Actual part/bound/both table bases in both declaration orders, mutable/read-only
 // geometry 215/266/282/282/215/266/282/282. Original field observations and body restored;
 // entry/index spill and center/query/bound homes remain.
+// Round 512: Selective memmove at initial center/large query/bound snapshot
+// 225/237/202, initial+query/initial+bound/query+bound 241/238/249; separate
+// center/query with initial or initial+bound transfers 226/239. Original body
+// restored; entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

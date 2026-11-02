@@ -765,6 +765,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 510: whole-function forward/up receivers and native trig setter, seven subsets
 // 354/349/354/159/354/346/354; all with position receiver 372. Original complete body restored;
 // product colors, forward.k reuse and angle receiver stores remain.
+// Round 512: Common field-of-view/offset/velocity output tail 228/208/207;
+// field-of-view+offset/field-of-view+velocity/offset+velocity 219/219/238; all
+// common stores, separate/chained vector copies 246/246. Original complete body
+// restored; right i/j colors, forward.k reuse and ordinary-angle bases remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
