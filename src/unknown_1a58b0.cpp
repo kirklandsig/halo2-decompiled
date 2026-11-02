@@ -649,6 +649,11 @@ void function_1a6d80(void)
 // call 26; output pointer locals 6; forceinline output setter 6.
 // Round 55: table entry pointer local 28 (104 bytes); call result local stored in order 6; short
 // handler index 7; handler index read after the table reads 20; count read before the node list 6.
+// Round 49: actor lookup at both table reads 27; group local without the actor local 14 (103 bytes);
+// result pointer declared first and set after the count 6; char count 6; group local after the actor
+// local 14 (103 bytes); table index read into a local before the node list 6. Diagnostics: the valid
+// pointer takes EDX with the count store removed or a NULL return; with the count stored first the count
+// pointer loads first into EDX and the valid pointer into ECX (retail's registers, wrong store order).
 // @retail 0x1a73c0
 s_action_node **function_1a73c0(long owner_index, short id, bool *valid, short *count)
 {
