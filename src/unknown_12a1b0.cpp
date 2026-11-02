@@ -1359,6 +1359,10 @@ struct s_looping_detail_request
 // Round 253: Final-position offset production with native count, source flag member and byte-result
 // subsets 0-7: 161/161/161/161/164/164/164/164. All original storage and source restored;
 // frame ownership regresses and the first-player query still expands.
+// DL241: Counted actual first/next-query dispatch, long/short/word/dword visits with
+// native/temporary audible output: 195/199/199/194/217/222/222/216. All regress; original two-
+// stage selection and body restored. Entry frame/copy agree; first-player expansion and detail
+// retention remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

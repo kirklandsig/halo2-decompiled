@@ -682,6 +682,11 @@ real function_267370(long object_index);
 // Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
 // 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
 // Early shared NONE and cross operands remain; every original destination and body restored.
+// DL241: Repeated native full-direction/carrier/holder Boolean field receivers, seven subsets then
+// immutable: 104/104/100/104/100/100/106/106. Shared zone success-default result with native
+// cluster/entry carriers: 326/379/373/169; provider 0 -> [60, 56, 59, 55]. All rejected; the
+// helper shifts early NONE to EBX without delaying it. Original body and entire header restored;
+// frame 0x90, late NONE ownership and cross operands remain.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1840,6 +1845,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // default query results 348/352/356, current/secondary/both rejection results
 // 352/352/350, mixed default/rejection 352. Original body and both queries
 // restored; actor/options/pool residency and scalar homes remain.
+// DL241: Original indexed-query current/secondary long/dword slot-domain pairs
+// 269/268/272/269/268/272/272/272; numeric ordinal plus short/word/dword ticks 278 each, with real
+// pair initializer 277. All regress. Original two private query bodies, ordinal, tick storage and
+// complete body restored; actor/options/pool and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

@@ -724,6 +724,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // with ordinary sample: 130/130/132/178/192/192/172/138. Two-point retail-length forms rejected.
 // Original complete body, sample qualifier, magnitude observations and frame 0x28 restored;
 // constant/limit ownership and jitter spills remain.
+// DL241: Complete direction memcpy with existing normalized scale/projected update and ordinary
+// sample subsets 0..7: 132/132/181/181/170/170/146/146. No gain; original vector copy, sample
+// qualifier, helpers, includes and whole body restored. Unity/limit XMM ownership and
+// direction/jitter homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
