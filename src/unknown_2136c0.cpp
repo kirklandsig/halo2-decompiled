@@ -206,6 +206,10 @@ void function_213970(void);
 // Round 292: Native signed/unsigned wide language result, mutable/immutable and original/entry
 // acquisition, 146/146/146/146/149/149/149/149. Original result and whole body restored;
 // separate protected storage definitions still prevent both retail-wide clears.
+// Round 59 (m3 lane 1, fast): a local holding NONE for the three stores 131; the five clears in an inline helper 53
+// (169 bytes: the size pragma leaves it out of line, a call to a new one-caller helper, not kept); both invalidate
+// calls through an inline helper 131; the NONE/flag stores after the language query 131; a local holding the zero
+// for the scalar stores 131. Still BLOCKED-BY the separate definitions (src/unknown_213760.cpp and src/unknown_12be90.cpp).
 // @retail 0x2136c0
 void function_2136c0(void)
 {
