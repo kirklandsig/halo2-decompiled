@@ -333,6 +333,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // xyz/xzy/yxz/yzx/zxy/zyx: 195/227/230/237/225/228; explicit component-first products
 // with xyz/zyx snapshots 195/228. Original alias-safe helper and body restored;
 // frame 0x30 versus 0x2c and the second transform spill remain.
+// Round 25 (lane 18, fast): orthographic arm first 215 (repeat); the direct-inverse graph with b.y first
+// re-measured 206 (b.x/b.y in retail's xmm7/xmm6, but the second transform's x and z take xmm4/xmm7 where
+// retail has xmm7/xmm4, so ours spills both and retail only z, into the scale slot); on it the helper reading
+// z, x, y 213; the displaced point as a copy plus compound adds 303; the orthographic arm first 205.
 // Round N284: Native real absolute-value APIs at the three epsilon consumers,
 // masks 1..7 195/195/195/195/195/195/195; all with displaced-factor admission first 219.
 // Original absolute tests, inverse defaults, alias-safe helper and complete body restored.
@@ -356,16 +360,6 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // scale, 283/251/282/251; with all parallel row products 272/257/272/257.
 // All native-coordinate forms rejected; original alias-safe helper, inverse defaults,
 // caller bindings and full body restored. Frame and second-transform spill remain.
-// Round 131 (lane 5, fast): displaced point through the existing vector3f_add, displacement first, 195
-// (same code); locals named so the first point and inverse sort after the second's 195 (same code: names
-// do not move these slots); round 28's direct inverses with y-first displaced point re-measured 206 (971 B:
-// b.x/b.y in retail's xmm7/xmm6, but the second inlined transform still moves x out of xmm7 and spills x
-// and z where retail keeps x in xmm7 and spills only z); on it z, x, y displaced order 204 (971 B);
-// helper coordinates declared z, y, x 218 (966 B). Original body restored.
-// Round 230: Origin/displaced inverse defaults staggered across the first/second transform
-// boundaries: entry-between/between-entry/both-between/entry-before/before-entry/both-before/
-// between-after/after-between 237/237/272/208/208/204/282/274. Both final staggered forms
-// recover frame 0x2c but regress. Original defaults restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
