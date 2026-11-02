@@ -75,10 +75,13 @@ void function_2232a0(void)
 	function_2c8a0((byte const *)function_2232a1(&g_47f0f8[0]));
 }
 
-// score 109 (was 109): this round: the tail call still needs 0x2b5d0's own body (it takes the mode
+// score 109 (was 109): the tail call still needs 0x2b5d0's own body (it takes the mode
 // in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
 // a file this lane may not edit: BLOCKED-BY 0x2b5d0.
+// Earlier: one-dword frame agrees; the count block, the count/layout join and the layout
+// Earlier at 109: one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier at 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
+// Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
 // it anywhere later every count-one path threads straight to the layout stores); the slot scan uses
@@ -208,6 +211,17 @@ void function_2232a0(void)
 // Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
 // original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
 // the final null-arm store 123/160. Original source assignments and traversal restored.
+// Round 284: native multi-use options receiver with a complete positive layout result,
+// bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
+// Original complete body restored; outer pretest, optional-source home and tail transport remain.
+// Round 50 (m3 lane 11, fast; 0x2b5d0 now ours, activated in src/unknown_023540.cpp with the stub removed, all
+// reverted): the disabled body as it is 106 (0x2b5d0 takes mode in EAX, the rest on the stack); without its
+// parameter-address reads 106; its loop as a plain for loop over the views (count not modified) 109, two register
+// parameters but swapped (mode EAX, count ECX); with its parameters ordered (mode, count, players, layout,
+// source) as retail's call setup implies 109, 0x2b5d0 then takes count EAX and mode ECX as retail; on that, a
+// named view count (count + 1) for the initializer and the call 94, with a while/for loop 167/170. Every
+// activation loses 0x13b90 (33), 0x1dc40 (55, its EBX register parameter) and 0x223240 (19) in the plain check,
+// also without 0x2b5d0's calls to 0x13b90 or 0x12a50: BLOCKED-BY those side effects of activating 0x2b5d0.
 // Round 42 (lane 14, fast): 0x2b5d0 is now this machine's; activating its disabled body (stub removed) gives
 // 0x2234e0 106 (three points), but 0x13b90 stops matching (33: its call to 0x1dc40 pushes the argument
 // retail passes in EBX) and 0x223240 too (19: its EBX save moves); with 0x2b5d0's formals as count,
@@ -219,6 +233,19 @@ void function_2232a0(void)
 // bytes); as `while (++local_1 < 4 && !local_player_exists(local_1));` 284 (414 bytes); the empty scan
 // arm storing the NONE index before the slot data 117. Still BLOCKED-BY 0x2b5d0 (its activation breaks
 // the conventions of 0x1dc40/0x13b90, a contributor's file, and 0x223240).
+// Round 68 (m3 lane 16, fast; 0x223240 and 0x2232a0 MATCH each time; the two stacked score lines merged):
+// the slot data declared outside the outer loop 109; the counter's increment in the loop test 109; the NONE
+// store before the empty-scan NULL 117; the scan index declared after count and layout 109; the per-view
+// record address as `g_47f0f8 + 1 + index` 109 (identical code where 109). 75 of the differences still sit
+// in the tail after the loop (0x2b5d0's convention: count + 1 in EAX, kept in EDX across the record init).
+// DL218: Complete dispatch inline and shared-predicate forced expansion, separately/together and
+// with optional-source initialization, six forms 109; predicate-only and combined pretested
+// traversal 138/138. All controls preserved. Original body, every declaration and initializer
+// restored. Exact count/layout prefix, outer pretest, loop-entry source zero and outside tail
+// transport remain.
+// Round 284: native multi-use options receiver with a complete positive layout result,
+// bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
+// Original complete body restored; outer pretest, optional-source home and tail transport remain.
 // @retail 0x2234e0
 void function_2234e0(void)
 {

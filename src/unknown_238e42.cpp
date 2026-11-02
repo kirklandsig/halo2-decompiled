@@ -1004,6 +1004,12 @@ bool __stdcall function_2399da(long controller_index)
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 325: Permission flag read at every use (shift/mask), crossed with all-use own-rank fields
+// and direct full-identity member presence: 142/163/142/163/142/163/142/163. All restored;
+// the changed flag lifetime shortens the body and changes saved-register ownership.
+// Round 275: one common denial-message result, long/dword/short/byte carriers with zero/NONE
+// representations 172/177/172/177/173/181/161/161. Exact-only message guards restored; frame
+// 0xf00 agrees, identity/rank EAX/ECX ownership and the extra removal move remain.
 // Round 29 (m3 lane 2, fast): the identity pointer renamed to sort first (name tie-break test) 90; `long const
 // own_rank` 90; `membership` declared in the post-membership block 90; the over-rank test folded into the
 // permission condition (`&& (rank == NONE || rank <= own_rank)`) 121 (435 bytes); the selection getter as an
@@ -1021,6 +1027,10 @@ bool __stdcall function_2399da(long controller_index)
 // test 90; own rank read (signed) from the field at all three uses 90; the own-rank local read before the
 // identity test with the stored test 89; task index preset to NONE with the stored rank and an if/else
 // rank-3 dialog 89. The identity still takes ECX and the rank EAX in every form.
+// Round 52 (fast): the rank read once through its address into a local used at every rank use 90;
+// `NONE == rank` 90; `!= NULL`/`!= 0` identity test with a `(DWORD)` rank store 90; the store and set-rank
+// call through a member pointer 90 (lane 7's form again); the permission test read from the membership
+// field with the own-rank local kept for the dispatch 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

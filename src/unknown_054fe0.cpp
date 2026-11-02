@@ -1221,7 +1221,17 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 /* the host gives the players their properties: unique names, and teams when
    the game has teams */
 // score 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
+// differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
+// measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
+// in the requested cursor.
+// Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain;
+// the zero kept in EDX from the parameters test through both loops is the first difference (+0x1d).
+// Round 31 (lane D): unchanged this round, and no new form was tried; still
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
+// Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // this round: retail's record defaults differ from ours in three places - it
 // zeroes the team and the three bytes after it as one dword at 0x7c, it zeroes only two of the three
 // longs at 0x70, and it sets the two bytes at 0x82 to 0xff (our source leaves them at the memset's
@@ -1235,6 +1245,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // reverted as well. The permuter on this function was stopped by its time limit without printing
 // anything. Still differs in the owner, the name count and the zero's allocation and the requested
 // cursor.
+// Earlier (184, was 184): this round: reading the parameters at the call site instead of through the
 // Earlier (184, was 184): reading the parameters at the call site instead of through the
 // shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
 // compiles to the very same bytes, so the parameters null test still compares with the zero in
@@ -1244,9 +1255,15 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // test instead of the `current` pointer gives 184 again, both reverted. Still differs in the
 // owner, the name count and the zero's allocation and the requested cursor.
 // Round 31 (lane D): score 184 (was 184): unchanged this round, and no new form was tried; still
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain;
+// the zero kept in EDX from the parameters test through both loops is the first difference (+0x1d).
+// Round 31 (lane D): unchanged this round, and no new form was tried; still
 // differs in retail's session-state guard and the parameters read through the 0x4db0 member (both
 // measured earlier at 211 and 222), in the owner, the name count and the zero's allocation, and
 // in the requested cursor.
+// Earlier: unchanged. Retail guards the session state (a state of 2 or less, or more
+// Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Earlier (round 31, lane D; 184, was 184): unchanged that round, and no new form was tried; still
 // Earlier (184, was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
 // Round 31 (lane D): 184 (was 184): unchanged this round, and no new form was tried; still
 // Earlier 184 (was 184): unchanged. Retail guards the session state (a state of 2 or less, or more
@@ -1257,6 +1274,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // `imul esi` and `add` where retail uses `imul ecx` and `lea`, so the original body was restored.
 // Still differs in the owner, the name count and the zero's allocation and the requested cursor.
 // Earlier 184 (was 184): Frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
+// Earlier: frame 0xe4 agrees; owner/count/zero allocation and requested-record induction remain.
 // Earlier: the frame 0xe4 still agrees; the owner, the name count, the
 // zero's allocation and the requested cursor are unchanged, and this round's trials
 // in this file found no lower form of them
@@ -1386,13 +1404,30 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // Round 256: Scalar cache test first crossed with bounded byte count, uniform current-field reads
 // and copy-first completion: 222/223/211/226/213/248/238/234. Original cache guard, count,
 // receivers, publication and body restored; owner/count/zero homes remain.
+// Round 131 (m3 lane 6, fast; the stacked score lines merged into this one note): the record defaults
+// stored in retail's emitted order (40, 44, 48, 70, 74, 4c, 78, team, 7e, 7f, 84, 8c, 88, 8a, 7d) 212 (928
+// bytes); only the 7d default moved last 212; the name count declared first in the function 211 (927
+// bytes); the names array declared first 211; a requested-record pointer declared after `current` for all
+// fifteen reads 224 (891 bytes).
 // Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
 // 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
 // block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
+// Round 35 (m3 lane 2, plain; fast gives 211 for the unchanged body): the name count as dword 184 (same code);
+// no `current` with `previous` set before the getter 223 (903 bytes); `previous` set before the getter and used
+// by the else arm's memset too 190 (916 bytes; previous is computed ahead, the zero still in EDX), with no
+// `current` 209 (905 bytes), with a dword name count 190. Our zero constant is register-allocated across the
+// update loop (EDX, `xor edx, edx` at the latch) exactly where retail reloads the name count into ESI; a
+// compile-only build without `current` gives retail's `test edi, edi` and memset-EAX zeros, LTCG does not.
 // Round 273: Complete clear-return/four-element-array/three-element-array
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
 // Original body restored; owner/count/zero and requested-record induction remain.
+// Round 285: full record clear before membership; no early defaults/array zeros/byte zeros/
+// array-and-byte zeros/sentinels/array-and-sentinels/byte-and-sentinels/all defaults
+// 181/205/183/203/193/187/193/185. Three-point form rejected; complete body restored.
+// Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
+// 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
+// block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
 // Round 47 (m3 lane 14, fast): counting the `push ebx` that retail places among the default stores (every
 // [esp+N] after it is +4), retail stores exactly our defaults (three longs at 0x70, team, 0x7d, 0xff at
 // 0x7e/0x7f, the four NONEs): the earlier reading of a dword at 0x7c, two longs and 0xff at 0x82 was off by that
@@ -1402,6 +1437,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // the name count in memory. Name count declared before the names table 184; the loop index first 184; the mask
 // first 184; the name pointer taken as `->name` of the record 184; the previous-record pointer declared after
 // the names (memcmp on the table entry) 184 (all the same code).
+// M288: Existing membership helper in collection/update/both 232/216/247; name-copy
+// return used for its terminator 183 (one-point gain, rejected); with collection/update/both
+// 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
@@ -1887,15 +1925,22 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
-// Round 31 (lane D): score 339 (was 339): unchanged this round; the permuter run was stopped by
+// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
+// Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
+// limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which
+// needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in the type, membership and
+// member-index homes and the saved registers.
+// Earlier (339, was 339): unchanged. Retail writes output->state with a conditional move (cmovne at +0x23c), which needs
+// /arch:SSE; this file has no such flag and the build flags are out of this lane's reach. The frame is
+// 0xa9c against retail's 0xaa8 and the type, membership and member-index homes and the saved registers differ.
+// Round 31 (lane D): unchanged this round; the permuter run was stopped by
 // the background time limit before it produced a result. Still differs in retail's conditional move
 // (cmovne at +0x23c, which needs /arch:SSE), in the frame (0xa9c against retail's 0xaa8) and in
 // the type, membership and member-index homes and the saved registers.
-// score 339 (was 339): unchanged. Retail writes output->state with a conditional move (cmovne at
+// Earlier: unchanged. Retail writes output->state with a conditional move (cmovne at
 // +0x23c), which needs /arch:SSE; this file has no such flag and the build flags are out of this
 // lane's reach. The frame is 0xa9c against retail's 0xaa8 and the type, membership and
 // member-index homes and the saved registers differ.
-// score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Round 102 (lane 7, fast): the member index read into a local after the state tests 353, at the block top
 // 352; the type through a pointer to value18 339; both 353; the member index from 0x5a680 with a NULL
 // current-member output 353 (the reduced build inlines it: frame 0xaa0, index stored early). Retail's
@@ -1926,6 +1971,22 @@ struct s_summary_player_sort_entry
 // inline/forceinline declaration here 353/353 (still called); `inline` on 0x5a680's definition 353 (still
 // called here; 0x83220 and the 0x199ebc family lose); member index and the +0x4c pointer written as
 // 0x66050 does 353 (frame 0xaa0: the pointer folds into the session register). All restored.
+// Round 35 (m3 lane 2, fast = plain here): the id/key copy through the existing network_session_get_key
+// (session, &output->id, output->key, NULL, NULL) 393 (1323 bytes; LTCG inlines it in the plain build too and
+// gives retail's per-destination null tests, but the six-instruction prologue gap makes it positional); the
+// manager state as `long state = 0; if (initialized) state = g_527330.state;` 375; the variant through the
+// existing session_get_data_4db0 357 (1291 bytes, retail's length), with the option through
+// session_get_value_5dd0 too 373 (1275 bytes), with the key getter instead 375 (1307 bytes). Diagnostic only
+// (changes behaviour, not a valid form): get_values_4d08's third output initialised to `(byte *)&session->value18`
+// and the type read through it, which forces a &value18 pointer into the frame as retail has one, 373 (frame
+// 0xaa0, EDI pushed early); the membership from 0x5a680 (NULL, &member_index; inlined here, the index stored early
+// at retail's +0x2c) with the key getter 396 (frame 0xaa0), with that diagnostic too 384 (1339 bytes, frame
+// 0xaa0). Retail keeps &session->value18 in its own slot across the get_values call (the outputs go to other
+// slots) and the membership pointer (+0x4c) in another; ours folds both into the session register.
+// Round 111 (lane 7, fast): map_variant declared before map 339 (same code); the maximum, the option and the
+// mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
+// at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
+// and member index kept in the frame; name, identity and counts read through the membership).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

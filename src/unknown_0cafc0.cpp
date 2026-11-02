@@ -161,6 +161,8 @@ point3f *function_b9ef0(long object_index, point3f *result)
 }
 
 // score 2 (was 2): only constant-one and crouching-height load scheduling remains; frame 0xa4 and all other instructions agree.
+// Round 74: named call result in a ternary/if-else 2/2; immutable crouch 2; immutable/read-only unit 2/2;
+// immutable inner tag pointer 2; shared height-pair pointer alone/with immutable crouch 2/2. Opening graph restored.
 // Round 73: definition-pointer rename 2; direct explicit read-add-store 17; explicit store on the two-local graph 2;
 // standing-only/crouching-only temporaries 2/2; named total with explicit store 2; early constant-one 2;
 // raw crouching-height load before the calls 12. Opening graph restored.
@@ -245,6 +247,12 @@ point3f *function_b9ef0(long object_index, point3f *result)
 // Round 41: scale-first product 2; named height sum 2; scale local 2; `z = product + z` 2; crouch declared
 // at function scope 2. Retail's biped copy of this blend (0xe5d50) loads the crouching height before the 1.0
 // constant, as ours does here; 1.0 is used once in 0xcafc0, so it is not a shared value.
+// Round 52: the parentless branch as a force-inline helper with its own lookups 267; heights read through
+// the definition macro at each use 117; the raise through the point 0xb9dd0 returns 265; heights as a
+// two-element field 2; definition local declared after the others 2; a 600 s permuter run, best 2.
+// Compile-only screens of the blend (unused locals, if/else or default-first crouch, sum/product orders,
+// named or array terms, 1.0 as a global, lerp helpers; flag variants only as compile-only screens) all keep the
+// crouching height first.
 // @retail 0xcafc0
 void function_cafc0(long unit_index, point3f *position)
 {

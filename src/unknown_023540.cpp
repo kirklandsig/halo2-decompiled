@@ -2485,6 +2485,9 @@ dword __cdecl function_131fc0(real alpha);
 // default rectangles built first, source/destination selected after 256/256 (1711 bytes); with the macros
 // 256; the RGB output word through PS_COMBINEROUTPUTS 247. Retail reads inverse from its home each time
 // (EBX carries 0x144f0's fallback), ours caches it in EBX: BLOCKED-BY 0x144f0.
+// Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
+// kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
+// clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2782,7 +2785,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
-// its 0 lives there. 0x144f0 sits in a contributor file this round; no new form tried.
+// its 0 lives there. No new form tried (0x144f0 in src/unknown_01cf50.cpp is machine 3's per m3_owner.py, open to a later round).
 // The stage call is BLOCKED-BY 0x144f0: retail passes tag in EAX, stage in ECX and the fallback in EBX
 // (ret 0xc), and reads the first bitmap formal as a full dword (cmovne). Round 73: for loop 334;
 // stage-nonzero ternary 334; selected bitmap local 294 at 2001 bytes (strength-reduced sampler table);
@@ -2865,7 +2868,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // is in a contributor file.
 // Round 43: the alpha clamps already have retail's store-then-overwrite shape; renaming the inlined
 // 0x131fc0's scale local (diagnostic) leaves its param-home slots (scale 0x6c, pixel 0x70; retail the
-// reverse) unchanged, 282. Stage loop still BLOCKED-BY 0x144f0 (contributor file).
+// reverse) unchanged, 282. Stage loop still BLOCKED-BY 0x144f0 (machine 3's, src/unknown_01cf50.cpp).
+// Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
+// in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
+// coordinate arrays declared second-first 282; declared just before the bounds 282.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3163,6 +3169,9 @@ PRIVATE __forceinline long filter_quantized_byte(real value, bool direct)
     return (long)function_2b480(value);
 }
 
+/* blending and depth states of the filter passes; retail calls every one of these
+   state writes out of line, and each caller writes the depth bias itself */
+#pragma inline_depth(0)
 PRIVATE __forceinline void set_filter_blending(bool additive)
 {
     function_0222d0(D3DRS_ALPHABLENDENABLE, 1);
@@ -3173,10 +3182,14 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
     function_0222d0(D3DRS_ZENABLE, 2);
     function_0222d0(D3DRS_ZWRITEENABLE, 0);
     function_0222d0(D3DRS_ZFUNC, 0x203);
-    function_0222d0(D3DRS_ZBIAS, 0);
 }
+#pragma inline_depth(255)
 
-// score 226 (was 949): length and prologue agree; mode zero and one still inline the
+// score 31 (was 31): retail length; the blend sites now call 0x222d0 as retail. Left: the two small
+// selectors (retail loads small into CL first and computes input before the alpha selector), the
+// constant/inverse-span reloads after mode zero and one's depth-bias write (retail reloads the span
+// first), and modes one to three's quantizer inputs in shift's home where retail uses clip's.
+// Earlier 226 (was 949): length and prologue agree; mode zero and one still inline the
 // blending helper's ZENABLE write (VC's inline budget: retail inlines only the first seven
 // state writes, ours one more cheap one), the small selector is loaded after the fraction move,
 // and the quantizer temporaries of modes one to three take shift's home where retail takes clip's.
@@ -3293,6 +3306,21 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // function_14f60(0, 3) as retail passes it (EDI still holds the bound 3, as in 0x25e50 and 0x26e50) 935
 // [27] (prologue and registers now agree); the four selector/split declarations in all 24 orders
 // 226..980 (alpha before input 227 [41], kept); floors through 0x2b460 again 227/228.
+// Round 133: the blending helper under a file-scope inline_depth(0) pair 250 (4812 bytes: ZBIAS
+// called too); with its ZBIAS write moved to the four callers 31 (4828, kept); the redundant pair
+// around DEPTHCLIPCONTROL removed 31 (kept). On that: the quantizer input by reference 31, a
+// function-scope input shared by all quantizers 31, both 31 (the slot stays shift's); fixed/
+// whole/fraction/alpha/input orders fwria 939, fiwra 965, fwira 976, fiawr 35, faiwr 950,
+// iafwr 43, aifwr 959, frwia 771, frwai 452, fawri 31; alpha selector at its use 947; both
+// selectors at their uses 975.
+// Round 336: paired-selector branch/default forms 952/952/952/952/948/959/959/948;
+// clip/shift admission, width lifetime and negative-arm subsets 39/37/45/1092/1092/1097/1097,
+// nested rescale admission 1146; gain-span/all-quantizer producer boundaries and both,
+// then with the fixed sample, 31/31/31/31. Original complete body and helpers restored;
+// selector scheduling, reciprocal reload order and shift/clip quantizer homes remain.
+// Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
+// at selector production 243/31/957/243. Original body restored; selector order,
+// span/constant reload pairs and shift/clip quantizer homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
@@ -3373,9 +3401,7 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         function_0222d0(D3DRS_ZFUNC, 0x207);
 #pragma inline_depth(255)
         function_0222d0(D3DRS_ZBIAS, 0);
-#pragma inline_depth(0)
         function_0222d0(D3DRS_DEPTHCLIPCONTROL, 0x10);
-#pragma inline_depth(255)
         function_1cc30(12);
         function_1c710(g_51f0f0);
     }
@@ -3415,7 +3441,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         bool extra_texture = configuration == (byte const *)NONE;
         if (extra_texture)
         {
-            if (!skip_state) set_filter_blending(true);
+            if (!skip_state)
+            {
+                set_filter_blending(true);
+                function_0222d0(D3DRS_ZBIAS, 0);
+            }
             g_484f68.PSTextureModes = 0x21;
             g_484f68.PSAlphaInputs[0] = 0x19140000;
             g_484f68.PSAlphaOutputs[0] = 0x90;
@@ -3460,7 +3490,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
         second.red = FILTER_PIN(*(real const *)(configuration + 0x5c));
         second.green = FILTER_PIN(*(real const *)(configuration + 0x60));
         second.blue = FILTER_PIN(*(real const *)(configuration + 0x64));
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSAlphaInputs[0] = 0x8200000;
         g_484f68.PSAlphaOutputs[0] = 0x40;
         g_484f68.PSAlphaInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3488,7 +3522,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 2)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x21;
         g_484f68.PSConstant0[4] = small ? 0x7f0000ff : 0;
         g_484f68.PSRGBInputs[4] = 0x1d201d00 | (exponent > 3 ? 0x20 : 0);
@@ -3528,7 +3566,11 @@ bool __stdcall function_3a5c0(byte const *configuration, real low, real high, lo
     }
     else if (mode == 3)
     {
-        if (!skip_state) set_filter_blending(false);
+        if (!skip_state)
+        {
+            set_filter_blending(false);
+            function_0222d0(D3DRS_ZBIAS, 0);
+        }
         g_484f68.PSTextureModes = 0x8421;
         g_484f68.PSConstant0[4] = pack_color3f((color3f const *)(configuration + 4));
         g_484f68.PSConstant1[4] = pack_color3f((color3f const *)(configuration + 0x10));

@@ -2070,6 +2070,11 @@ void function_2818e0(void)
 // lanes plus a sign store 256; a negative-zero scalar 308; an __m128 mask 235; a zero __m128 plus
 // a sign store 290; split dword initialization 2 (0x289580 78); quaternion fields 256; ordinary
 // inline multiply 480; the flag declaration split from its read 2.
+// Lane 13 r48 (fast, with 0x27dff0 2 and 0x285750/0x288570/0x289580/0x28aaa0 matched throughout): the code is
+// retail's up to the two reloads after the multiply's asm block (retail flags then count, as 0x285750's blend-3
+// pass gets). The destination index declared at the pass helper's top 2; the pass bound declared there 2; the node
+// count declared first in the orchestration 2; the blend-2 arm tested before blend-1 in the apply 2; the flags
+// declared then assigned at the loop top 2 (all the same code).
 // @retail 0x281b60
 void function_281b60(void)
 {
