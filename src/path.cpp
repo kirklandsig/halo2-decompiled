@@ -505,6 +505,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // bytes, aligned 150; the link-bit store is still dropped as dead). The type named for the tests only (stores read
 // the field, for retail's type store from CX) 342; one store block for the two-step and type-2 arms with the call
 // under `if (two_step)` 364 (1375 bytes); `previous` declared first 295 (same code).
+// Round 275: Truncation polarity bool/byte/short/long, each with long/short
+// link count, 333/362/333/362/356/347/357/348. Original completion, counters and full body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

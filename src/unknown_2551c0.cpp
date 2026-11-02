@@ -223,6 +223,9 @@ short __stdcall function_2551c0(long actor_index)
 // Round 494: native slot data block with complete vector/axis/output component arrays 89;
 // vector/axis/both/output/vector-output/axis-output/all component-array roles
 // 43/43/43/43/43/43/43. Member/array accesses canonicalize; helper and slot view restored.
+// Round 275: Complete sequential/interleaved cross accumulators, crossed with the
+// cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
+// Original helper, payload view and complete body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

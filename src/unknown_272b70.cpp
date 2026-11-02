@@ -1435,6 +1435,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 243: scalar count/ordinal/selection lexical names, four individual and four paired/complete
 // families, 32 each. Original names and entire executable body restored; candidate scaling,
 // leave-request transport and request publication still differ at the matching frame and extent.
+// Round 275: Load-request families T type, O object, S seat, F flags, ordered
+// OSTF/OSFT/FTOS/FOST/SOTF/SOFT/TSOF/FSOT 32/34/34/34/31/33/32/34. Original helper and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
