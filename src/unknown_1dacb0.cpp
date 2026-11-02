@@ -1392,6 +1392,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // DL229: unsigned resolved mode/class/type storage in seven subsets 828 each;
 // all with native iterator aggregate 826. Exact-only API casts and every key type restored;
 // class/NONE, result/candidate/output homes and later zero carrier remain.
+// DL239: Optional mode/class/type output publication via memcpy subsets 1..7, then all memmove:
+// 828/828/828/828/828/828/828/1059. Original complete body, output order, native identifier and
+// iterator restored; frame 0x2c agrees, class/NONE and result/candidate/output homes plus late
+// zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
