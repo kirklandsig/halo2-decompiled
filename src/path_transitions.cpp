@@ -637,6 +637,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Diagnostic only (volatile, reverted at once): a volatile read of actor_index at case 5's test 355 (1284 bytes,
 // 0x270d90 334). Retail's case-5 `cmp eax, -1` opens the case (actor loaded at entry, as a load hoisted from the
 // two sibling uses in cases 5 and 2).
+// DH292: Both vector differences through plain component-array loops, long/dword/short/word
+// ordinals 305/305/423/423; with the same direction-negation loop 305/305/401/401.
+// Original scalar arithmetic, result qualifier, helpers and complete body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

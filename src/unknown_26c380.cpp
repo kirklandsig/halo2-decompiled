@@ -260,6 +260,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // P264: negative edge-search outcome bool/byte/short/long, long success
 // 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
 // original positive hit, normal storage, tails and complete body restored.
+// DH292: Pending-sector parameter owns the genuine next-sector query output, long/bool/byte/short
+// success with short count 440/444/433/439; with long count 449/447/442/453.
+// Original pending/current histories, normal homes, count, result and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

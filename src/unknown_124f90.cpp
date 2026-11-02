@@ -2896,6 +2896,9 @@ static inline short sound_voice_find_available_channel(char type)
 // subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
 // Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
 // eight, entry voice/global scheduling and early failure tail remain.
+// DH292: Available-bit intersection / occupied-bit union in the existing finder, original break
+// with byte/committed Boolean results 144/131/147/130; condition-controlled search
+// 159/131/161/133. Original two bitmap tests, helper, result and entire body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
