@@ -621,6 +621,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 337: returned rotation consumed through shared addition/three-use pointer, with
 // native emitter indexing and scale-first defaults: 122/124/117/121/120/122/115/119.
 // All lengthen and regress; original in-place rotations, translation and whole body restored.
+// Round 455: Original particle position/motion captures through memcpy/native,
+// native/memcpy, both memcpy, memmove/native, native/memmove, both memmove,
+// memcpy/memmove and memmove/memcpy: 42/42/42/193/177/210/177/193. Original native copies restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1109,6 +1112,9 @@ public:
 // each with staged cross, then both nested normalizers without/with staged cross:
 // 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
 // color/tag homes remain.
+// Round 455: Actual forward seeded from velocity before in-place negative scaling,
+// native default/fallback/both, shared setter default/fallback/both, memcpy/memmove both:
+// 311/297/346/193/260/269/346/339. Original forward producers, helper calls and complete body restored.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1459,7 +1465,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 73 (was 102): frame 0x14, NONE/owner and Boolean stack homes agree;
+// score 73 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
 // flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
@@ -1565,6 +1571,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 337: raw view classification consumed by both zero-status tests, long/dword/short/byte,
 // default/query then conditional producer: 137/137/135/155/136/136/134/149. Wider raw carriers
 // recover the first EBP save but worsen later homes; original availability and body restored.
+// Round 455: On the retained two-use nullable effect graph, false-default/direct logical/
+// complete valid-invalid arms/raw two-use status, original then shifted-word flag:
+// 144/150/150/145/132/140/140/72. One-point best rejected; original body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

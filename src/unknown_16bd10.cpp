@@ -858,6 +858,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round N284: Projection zero-first, absent-object-first and unfinished-FOV-first branch
 // subsets 1..7 score 236/260/260/236/236/260/260; all with nested FOV guards 260.
 // Original native normal copy, branch graph, captures and complete body restored.
+// Round 455: Overlap-safe native transfers for normal/frame axes/pan axes, seven
+// subsets, then all with animation outputs: 459/470/477/301/493/452/445/488. Original aggregate copies,
+// projection, shared helpers and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
