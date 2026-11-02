@@ -26,6 +26,11 @@ struct s_emitter_248340
 };
 
 // score 4 (was 4): virtual-table setup precedes the tag-result spill in retail;
+// Lane 16 round 74: retail's store is a register-allocator spill made just before the call (the
+// value stays in EAX, the vtable takes EDX); the volatile's store comes at once. The particle system
+// definition as one reused local (outer and block) 4, without the volatile 27 (caller 0x247140 lost);
+// a block-scoped definition local without the volatile 27; the group query inline in the call 8;
+// plain tag with the emitter decrement first 27.
 // tried group const query 4; tag const query 4; both const queries 4; group signed return 4;
 // tag unsigned return 4; tag const home 4; tag unsigned home 4; const query receiver 4. Restored.
 // second virtual-call vtable/spill order remains.
