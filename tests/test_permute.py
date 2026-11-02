@@ -506,6 +506,9 @@ extern s_thing *g_thing;
 long helper(long a, short b);
 bool test(long a);
 void store(long a, bool b);
+#define TEST_FIELD_BIT(field) ((bool)(field))
+static inline long doubled(long a) { return a + a; }
+static inline bool has_flags(s_thing *t, word mask) { return (t->flags & mask) != 0; }
 '''
 PARAMS = 's_thing *thing, long index, short count'
 
@@ -594,6 +597,16 @@ CASES = [
     (permute.mut_redundant_cast, '\n\tstore(index, true);\n\treturn 0;\n', {'\n\tstore((long)index, true);\n\treturn 0;\n'}),
     (permute.mut_do_while, '\n\twhile (index > 0)\n\t{\n\t\tindex--;\n\t}\n\treturn index;\n',
      {'\n\tif (index > 0)\n\t{\n\t\tdo\n\t\t{\n\t\t\tindex--;\n\t\t} while (index > 0);\n\t}\n\treturn index;\n'}),
+    (permute.mut_single_exit, '\n\tif (index)\n\t\treturn 1;\n\treturn index + 2;\n',
+     {'\n\tlong result;\n\tif (index)\n\t\treturn 1;\n\tresult = index + 2;\n\treturn result;\n'}),
+    (permute.mut_inline_helper, '\n\treturn doubled(index) + has_flags(thing, 4);\n',
+     {'\n\treturn ((long)(index + index)) + has_flags(thing, 4);\n',
+      '\n\treturn doubled(index) + ((bool)((thing->flags & 4) != 0));\n'}),
+    (permute.mut_test_field_bit, '\n\tif (thing->ready && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
+     {'\n\tif (TEST_FIELD_BIT(thing->ready) && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
+      '\n\tif (thing->ready && !TEST_FIELD_BIT(g_thing->ready))\n\t\treturn 1;\n\treturn 0;\n'}),
+    (permute.mut_test_field_bit, '\n\twhile (TEST_FIELD_BIT(thing->ready))\n\t\tindex++;\n\treturn index;\n',
+     {'\n\twhile (thing->ready)\n\t\tindex++;\n\treturn index;\n'}),
 ]
 
 
@@ -638,6 +651,20 @@ def test_typed_mutations_leave_alone_what_they_must():
         '\n\tlong a = 0;\n\tlong *volatile p = &a;\n'
     # a local read once is the inline mutations' business
     assert permute.mut_uncache_field('\n\tword flags = thing->flags;\n\treturn flags;\n', rng(), ctx) is None
+    # one exit already; the last return is a local (mut_early_return's case); a void function
+    assert permute.mut_single_exit('\n\treturn index + 2;\n', rng(), ctx) is None
+    assert permute.mut_single_exit('\n\tlong r = 0;\n\tif (index)\n\t\treturn 1;\n\treturn r;\n', rng(), ctx) is None
+    assert permute.mut_single_exit('\n\tif (index)\n\t\treturn 1;\n\treturn 2;\n', rng(),
+                                   permute.Context(PARAMS, 'void', HEADER)) is None
+    # an argument the helper reads twice is evaluated once only when it is a name or a literal
+    assert permute.mut_inline_helper('\n\treturn doubled(index + 1);\n', rng(), ctx) is None
+    # a helper from another file (an included header) stays a call
+    assert permute.mut_inline_helper('\n\treturn doubled(index);\n', rng(),
+                                     permute.Context(PARAMS, 'long', HEADER, own='')) is None
+    # no TEST_FIELD_BIT in the file, or a field that is not the whole condition
+    assert permute.mut_test_field_bit('\n\tif (thing->ready)\n\t\treturn 1;\n\treturn 0;\n', rng(),
+                                      permute.Context(PARAMS, 'long', '')) is None
+    assert permute.mut_test_field_bit('\n\tif (thing->value > 2)\n\t\treturn 1;\n\treturn 0;\n', rng(), ctx) is None
 
 
 def test_a_declaration_in_a_switch_gets_braces():

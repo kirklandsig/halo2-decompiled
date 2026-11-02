@@ -991,11 +991,13 @@ CAST = re.compile(r'(?<![\w)\]])\(\s*(?P<type>' + INT_NAMES + r')\s*(?P<ptr>\**)
 
 class Context:
     """What the typed mutations know beyond the body: the function's parameter
-    list and return type, and text (its source file and the headers that file
-    includes) to look up structure fields, globals and callees in."""
+    list and return type, text (its source file and the headers that file
+    includes) to look up structure fields, globals and callees in, and own
+    (the source file alone; text when not given)."""
 
-    def __init__(self, params='', returns='', text=''):
+    def __init__(self, params='', returns='', text='', own=None):
         self.params, self.returns, self.text = params, returns, text
+        self.own = text if own is None else own
         self._cache = {}
 
     def _find(self, key, pattern, accept=lambda m: True):
@@ -1092,7 +1094,7 @@ def function_context(text, start, root=ROOT):
             if m:
                 ret = re.sub(r'\b(?:static|inline|virtual|__\w+)\b', ' ', m.group('ret'))
                 returns = _normal(ret.replace('*', ' '), ret.count('*')) if ret.strip() else ''
-    return Context(params, returns, _with_includes(text, root, set()))
+    return Context(params, returns, _with_includes(text, root, set()), text)
 
 
 def _normal(type_, stars=0):
@@ -2037,9 +2039,127 @@ def mut_do_while(body, rng, context=None):
     return body[:s] + new + body[e:]
 
 
+
+def mut_single_exit(body, rng, context=None):
+    """The first step to one exit, which mut_early_return cannot take: in a
+    function that returns a value from more than one place and ends 'return
+    x;' (x not a local), declare 'T result;' (T the function's return type)
+    and end 'result = x; return result;'. mut_early_return then turns the
+    earlier returns into stores to result one at a time."""
+    returns = (context.returns if context else '').strip()
+    if not returns or returns == 'void' or '&' in returns:
+        return None
+    exits = list(re.finditer(r'\breturn\s+(?P<x>[^;]+);', body))
+    last = ([None] + list(re.finditer(r'(?m)^(?P<ind>[ \t]*)return\s+(?P<x>[^;]+);[ \t]*$', body)))[-1]
+    if len(exits) < 2 or not last or body[last.end():].strip() or exits[-1].start() != last.start() + len(last.group('ind')):
+        return None
+    declared = {m.group('name') for m in DECLARATION.finditer(body) if _is_declaration(m)}
+    if last.group('x').strip() in declared:
+        return None
+    name, n = 'result', 0
+    while re.search(r'\b%s\b' % name, body) or (context and re.search(r'\b%s\b' % name, context.params)):
+        n += 1
+        name = f'result{n}'
+    unit = _indent_unit(body)
+    decl = f'{returns}{name};' if returns.endswith('*') else f'{returns} {name};'
+    ind = last.group('ind')
+    tail = f'{ind}{name} = {last.group("x").strip()};\n{ind}return {name};'
+    head = body[:last.start()] + tail + body[last.end():]
+    return '\n' + unit + decl + head if head.startswith('\n') else unit + decl + '\n' + head
+
+
+STATIC_HELPER = re.compile(r'^[ \t]*static[ \t]+(?:(?:__forceinline|inline)[ \t]+)?(?P<ret>(?:const[ \t]+)?[A-Za-z_]\w*'
+                           r'(?:[ \t]*\*)*)[ \t]*\b(?P<name>[A-Za-z_]\w*)[ \t]*\((?P<params>[^()]*)\)\s*\{\s*'
+                           r'return\s+(?P<expr>[^;{}]+);\s*\}', re.M)
+SIMPLE_ARG = re.compile(r'^\s*(?:[A-Za-z_]\w*|-?\d[\w.]*)\s*$')
+
+
+def _helper_params(params):
+    """The parameter names of a helper's list, or None when one cannot be named."""
+    names = []
+    for p in [p.strip() for p in params.split(',')] if params.strip() not in ('', 'void') else []:
+        m = re.search(r'([A-Za-z_]\w*)\s*$', p)
+        if not m or m.group(1) in NOT_NAMES or p == m.group(1):
+            return None
+        names.append(m.group(1))
+    return names
+
+
+def mut_inline_helper(body, rng, context=None):
+    """A call to a static helper defined in the function's own file whose
+    body is one 'return e;' -> e itself, cast to the helper's return type,
+    with each parameter replaced by its argument (parenthesized). An argument
+    the expression reads more than once must be a plain name or literal, so
+    nothing is evaluated twice."""
+    own = getattr(context, 'own', None) if context else None
+    if not own:
+        return None
+    helpers = {}
+    for m in STATIC_HELPER.finditer(own):
+        names = _helper_params(m.group('params'))
+        if names is not None:
+            helpers[m.group('name')] = (m.group('ret').strip(), names, m.group('expr').strip())
+    if not helpers:
+        return None
+    cands = []
+    for m in re.finditer(r'(?<![\w.>])(?P<name>' + '|'.join(map(re.escape, helpers)) + r')\s*\(', body):
+        ret, names, expr = helpers[m.group('name')]
+        got = _call_args(body, m.end() - 1)
+        if got is None:
+            continue
+        spans, end = got
+        args = [body[s:e].strip() for s, e in spans]
+        if args == [''] and not names:
+            args = []
+        if len(args) != len(names):
+            continue
+        ok, new = True, expr
+        for p, a in zip(names, args):
+            uses = len(re.findall(r'\b%s\b' % re.escape(p), expr))
+            if uses > 1 and not SIMPLE_ARG.match(a):
+                ok = False
+                break
+        if not ok:
+            continue
+        # substitute every parameter at once, so an argument naming another parameter stays put
+        lookup = dict(zip(names, args))
+        if names:
+            new = re.sub(r'\b(?:%s)\b' % '|'.join(map(re.escape, names)),
+                         lambda x: lookup[x.group(0)] if SIMPLE_ARG.match(lookup[x.group(0)]) else f'({lookup[x.group(0)]})',
+                         expr)
+        cands.append((m.start(), end, f'(({ret})({new}))'))
+    if not cands:
+        return None
+    s, e, new = rng.choice(cands)
+    return body[:s] + new + body[e:]
+
+
+TESTED_FIELD = re.compile(r'(?:(?<=if \()|(?<=while \()|(?<=!)|(?<=&& )|(?<=\|\| ))(?P<f>' + FIELD
+                          + r')(?=\s*(?:\)|&&|\|\|))')
+
+
+def mut_test_field_bit(body, rng, context=None):
+    """A field or global read as a condition (in an if or while, after '!',
+    '&&' or '||') <-> TEST_FIELD_BIT(field), the repository's (bool) cast of
+    a bit field (unknown_11c920.h), when the function's file has the macro."""
+    if not context or 'TEST_FIELD_BIT' not in context.text:
+        return None
+    cands = []
+    for m in re.finditer(r'TEST_FIELD_BIT\(\s*(?P<f>' + FIELD + r')\s*\)', body):
+        cands.append((m.start(), m.end(), m.group('f')))
+    for m in TESTED_FIELD.finditer(body):
+        if body[max(0, m.start() - 15):m.start()].endswith('TEST_FIELD_BIT('):
+            continue
+        cands.append((m.start(), m.end(), f'TEST_FIELD_BIT({m.group("f")})'))
+    if not cands:
+        return None
+    s, e, new = rng.choice(cands)
+    return body[:s] + new + body[e:]
+
+
 TYPED_MUTATIONS = [mut_reorder_fields, mut_move_statement, mut_hoist_argument, mut_inline_local, mut_cache_field, mut_uncache_field,
                    mut_zero_compare, mut_early_return, mut_volatile_local, mut_retype_wide, mut_recast,
-                   mut_redundant_cast, mut_do_while]
+                   mut_redundant_cast, mut_do_while, mut_single_exit, mut_inline_helper, mut_test_field_bit]
 WEIGHTS.update(dict.fromkeys(TYPED_MUTATIONS, 1))  # drawn only with --anneal (run_fast's anneal)
 PARSE_ERRORS = (ValueError, IndexError)  # unbalanced text (match_brace), a declaration with nowhere to go
 
