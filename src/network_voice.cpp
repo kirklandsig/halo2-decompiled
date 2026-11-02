@@ -3170,9 +3170,16 @@ struct s_voice_route_choice
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.
+// Round 153 (lane 4, fast): headset update as one expression 502 (1387 B); headset accumulated in its own
+// loop before the routing loop 491 (1183 B); talker bit computed once before the loop for both listener-mask
+// updates 391 (1294 B); talker's address taken 363 (no change); headset declared first 363.
 // Round 502: settings exclusion-mask production at iteration/entry, original/element
 // receivers 428/396/426/383; with conditional radio 395/410/400/410. Original
 // positive-mask observations, mixer workspaces and body restored; entry/cursor homes remain.
+// Round 511: live scalar mode-field pointer/reference receivers with bitwise/conditional
+// radio 363/363/411/411; with shared headset player bit
+// 391/391/411/411. Original body restored; entry saves, cursor bias
+// and tail priority merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3438,6 +3445,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 241: Route output initialized at relay entry/member result/member-set/after local delivery
 // 163/163/163/139; the same boundaries with an independent packet cursor 165/167/168/168.
 // Original route initialization, live count reads and complete body restored.
+// Round 511: consumed result advances before dispatch, after/before size admission,
+// with original/admission byte debit 163/172/176/176; unsigned ordinals
+// 163/172/176/176. Original body restored; channel/cursor/member
+// and route homes remain.
 // DH272: Known-present recipient bit removal by XOR/subtraction with long/short current member and
 // original/independent packet cursor gives 143/161/167/162/144/161/167/162. All regress; original AND-not
 // removal, member domain, live header counts, cursor, calls and body restored. Channel/packet/member

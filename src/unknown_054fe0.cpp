@@ -1440,6 +1440,11 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // M288: Existing membership helper in collection/update/both 232/216/247; name-copy
 // return used for its terminator 183 (one-point gain, rejected); with collection/update/both
 // 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
+// Round 59 (m3 lane 1, fast): the record defaults in an inline initialiser taking the record 184, forceinline 184 (the
+// zero stays hoisted, same code); no `current` with the 16-byte and 12-byte groups as memsets 224 (930 bytes, aligned
+// 55: retail's `test edi, edi`), the 12-byte memset first 224 (aligned 51: retail's EAX block for the 16-byte group, the
+// 12-byte zero still in EDX where retail has ECX); on that the mask read from the field 224, the parameters pointer renamed
+// to sort before owner 224, the team compared as a long 224. Owner, name count and the requested cursor still differ.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {
@@ -1925,6 +1930,8 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
+// then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.
 // Earlier (round 31, lane D; 339, was 339): unchanged this round; the permuter run was stopped by the background time
 // limit before it produced a result. Still differs in retail's conditional move (cmovne at +0x23c, which

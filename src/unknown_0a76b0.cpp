@@ -268,7 +268,7 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 
 /* when an animation of a unit ends: the action it ends, and the state and
    action animations that follow */
-// score 271 (was 279): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
+// score 271 (was 271): retail takes unit_index in ebx and keeps name in esi and the actions in edi; ours
 // takes unit_index in esi and keeps name in edi, which function_e6960's type argument clobbers, so name is
 // reloaded at the join and VC cannot thread the switch's two function_e68c0 cases into retail's single
 // shared call; the c7070 chain's calls also merge differently.
@@ -276,6 +276,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // index) 271; actions read at each use 337; no unit local 344; next_state/next_action declared first 278;
 // the e70b0 count arms the other way round 278 (fewer structural differences, positional worse); count
 // declared at function scope 277.
+// Round 346: shared-call cases last/first/reversed/reverse-last, with original/early conditional outputs:
+// 271/271/271/271/279/279/279/279.
+// Frame 8 agrees; unit/name/actions register ranks and shared-call threading remain. Original executable
+// body restored.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2542,6 +2546,10 @@ long function_c8f60(long unit_index, short seat_index);
 // goto-free form); on it the 0x3dc state in a named long tested twice 304 (aligned 156 -> 151); the vehicle
 // lookup before is_vehicle 308; unit declared at function scope, assigned after the test, 306; is_vehicle
 // with the file's `1u <<` flag (retail's shr) 306 (aligned 155).
+// Round 346: parent result with outer result, byte result and existing vector zero setters:
+// 304/331/307/338/304/331/307/338.
+// Frame 0xf0 agrees; vehicle/index/unit-pointer ranks, state comparison and late result scheduling remain.
+// Original executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2820,6 +2828,10 @@ void function_a8b10(long unit_index);
 // extra temps (a load and store) just before or inside the second `!is_vehicle` block give retail's
 // registers (one extra temp does not; two before the 0xd4 test rotate that chain instead), so retail
 // makes two more free-choice allocations (or one fewer) between the 0xd4 chain and the slot read.
+// Round 114 (reduced baseline 88, with its known extra reload): the seat snapshot before the guard 75
+// (132 plain); a weapon-slot local, a const unit pointer, and actor-only/player-only locals 88 each;
+// the retained unit for the weapon read, and one refreshed unit shared with the owner read, 86 each;
+// the seat declared last 101; conditional state initialization 169; conditional action initialization 128.
 // @retail 0xea8e0
 void __stdcall function_ea8e0(long unit_index, bool hurried)
 {

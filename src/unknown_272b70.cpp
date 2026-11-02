@@ -1427,6 +1427,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 41/41/34/34/34/34/34/34. Flag-first 34 is a seven-point form, restored alone; with seat-first fields,
 // FOE/FEO ordinary/chained 32/32/32/32; interleaved clear/set phases 52/51. Kept the unchained
 // flags then seat/object fields: plain 32 from 41, 846/846 bytes. Every original slot byte, memset, call and loop is retained.
+// Round 233: Native load parameter char/signed-char/byte/short/word/int/long/dword
+// 32/32/32/74/74/32/32/32. Definition and sole shared declaration changed together; original bool
+// contract, declaration and complete body restored. Iterator scaling, leave-selector registers and
+// request publication remain.
 // Round 336: shared collection ordinal long/dword/word/byte/signed-byte/const
 // long/const-dword/const-short 32/32/32/49/49/32/32/32; actual leave-request
 // conditional value long/dword/short/word/byte/signed-byte/const-long/const-short
@@ -1435,6 +1439,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // Round 243: scalar count/ordinal/selection lexical names, four individual and four paired/complete
 // families, 32 each. Original names and entire executable body restored; candidate scaling,
 // leave-request transport and request publication still differ at the matching frame and extent.
+// Round 459: Native busy field byte/signed-char/short/word/long/dword/unsigned-bit/bool-bit with comparator controls
+// 32/32/183/183/159/159/203/201. Original executable source restored.
+// Round 350: Nested actor/capacity and ordered collection rejection gates 32/32/36/36; walk-first
+// requests on those graphs 60/60/64/64. Iterator scaling, leave-selector and publication homes remain.
 // Round 275: Load-request families T type, O object, S seat, F flags, ordered
 // OSTF/OSFT/FTOS/FOST/SOTF/SOFT/TSOF/FSOT 32/34/34/34/31/33/32/34. Original helper and complete body restored.
 // @retail 0x274a50
@@ -2654,6 +2662,9 @@ struct s_scenario_scripting_view
 // also rose 0 -> 1 in the first seven trials.
 // DH280: Actual consumed candidate ordinal short/long, original/loop-owned short traversal and raw/native
 // point access [89, 89, 86, 86, 89, 89, 86, 86]. Original executable body restored.
+// Round 232: Explicit signed-short wrapping in long/int induction carriers, then unsigned word/dword
+// carriers with uniform signed-short observations; early/loop-owned pairs 93/96/93/96/80/87/80/87.
+// Original complete search restored; actor/counter homes and delayed scripting observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

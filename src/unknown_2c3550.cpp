@@ -261,6 +261,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 261: complete source/goal/both point snapshots before normalization 178/177/205;
 // with existing subtraction 197/177/219; full snapshots with shared dot/cross and tiny-case-first
 // normalizer 215/215. All restored; added native input storage grows frame 0xc to 0x10-0x18.
+// Round 249: Complete paired square terms and named square-root argument, separately/together, with
+// common distance result and reciprocal declaration lifetime: eight forms all 156 at 634/630 bytes.
+// Original normalizer/body restored; early Y transport remains.
 // Round 454: Native destructive difference in the direction itself, goal/source seeds and
 // direct/shared subtraction 175/173/175/173; all four with shared dot/cross consumers
 // 189/187/189/187. Original native difference, normalizer and complete body restored; early Y load
@@ -788,6 +791,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // short-long, long-short-bool, short-long-long, short-long-bool, short-short-long, short-short-bool
 // 707/761/682/748/707/768/699/755. All regress; original parent ordinal, signed native fields, result,
 // copies and body restored. Byte success, radius/pathfinding and scalar/geometry homes remain.
+// Round 300: Complete ten-byte obstacle/blocking CRT header resets and whole-step memmove
+// subsets 1/2/4/3/5/6/7, then all with Boolean success:
+// 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

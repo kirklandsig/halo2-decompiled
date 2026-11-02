@@ -1935,6 +1935,10 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// score 107 (was 124): the pool pointer is read once into a local that lives across the whole body, the
+// definition is read through the live weapon, `taken` is declared inside the availability gate and the
+// other-weapon receiver is a single local reused by the two reserve accesses. Still open: the magazine,
+// available and taken registers and the per-slot pool reload differ from retail.
 // score 124 (was 124): frame eight bytes agrees; magazine, available and taken registers and pool reloads differ;
 // retail holds the object pool in ebp across the four unrolled slots, the full image reloads it per slot.
 // tried all lookups pool value 124; needed result first 171; positive take continue 124; availability before update 124; first reserve field reference 123.
@@ -2047,14 +2051,12 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 	s_weapon *weapon = WEAPON_GET(weapon_index);
 	s_weapon_definition *definition = WEAPON_DEFINITION(weapon);
 	long available = function_1008f0(magazine_index, weapon_index, false);
-	long definition_index = weapon->definition_index;
 	bool result = false;
-	long taken = 0;
 
 	function_106030(weapon_index);
 	if (available >= count)
 	{
-
+		long taken = 0;
 		if (magazine_index >= 0 && magazine_index < definition->magazine_count)
 		{
 			s_weapon_magazine *magazine = &weapon->magazines[magazine_index];
@@ -2068,22 +2070,26 @@ bool function_100b80(long magazine_index, long weapon_index, long count)
 		if (weapon->unit_index != NONE && taken < count)
 		{
 			s_weapon_unit *unit = WEAPON_UNIT_GET(weapon->unit_index);
+			s_record_pool *pool = g_4e0300;
 
 			for (long i = 0; i < 4; i++)
 			{
 				long other_index = unit->weapon_indices[i];
 
-				if (other_index != NONE && other_index != weapon_index &&
-					WEAPON_GET(other_index)->definition_index == definition_index)
+				if (other_index != NONE && other_index != weapon_index)
 				{
-					s_weapon_magazine *magazine = &WEAPON_GET(other_index)->magazines[magazine_index];
-					short unloaded = magazine->rounds_unloaded;
-					long take = count - taken > unloaded ? unloaded : count - taken;
-
-					if (take > 0)
+					s_weapon *other = ((s_weapon_header *)pool->data)[other_index & 0xffff].weapon;
+					if (other->definition_index == weapon->definition_index)
 					{
-						magazine->rounds_unloaded = unloaded - (short)take;
-						taken += take;
+						s_weapon_magazine *magazine = &other->magazines[magazine_index];
+						short unloaded = magazine->rounds_unloaded;
+						long take = count - taken > unloaded ? unloaded : count - taken;
+
+						if (take > 0)
+						{
+							magazine->rounds_unloaded = unloaded - (short)take;
+							taken += take;
+						}
 					}
 				}
 			}

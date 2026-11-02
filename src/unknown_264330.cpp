@@ -899,7 +899,8 @@ short function_263810(point3f const *origin, long actor_index, point3f const *po
 void function_26bfa0(long object_index, long *location_index, s_location_view *location);
 real function_296600(long actor_index, long prop_ref_index);
 
-// score 257 (was 267): actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
+// score 257 (was 257): frame 0x20 and actor EBX agree; squad/object, flag and root/hit homes differ.
+// Earlier: actor EBX, prop ESI, squad home, the type-15 arm and the 0x25c9d0
 // call are retail's; left: the object and table registers (ours EAX/ECX, retail ECX/EAX) and time
 // scheduling before the branch, the suppression/current byte homes swapped ([esp+0x12]/[esp+0x13]),
 // and at the first 0x1c8df0 call retail spills the root into the squad's slot and keeps the hit
@@ -1022,6 +1023,10 @@ real function_296600(long actor_index, long prop_ref_index);
 // inverted 257; time before prop 258; current before suppressed 366; the unit selected right after the
 // object lookup 289; `prop_ref_index ==` operand order 257. Byte homes: ours puts suppressed (3 byte
 // refs plus its address) at [esp+0x12] and current (4 refs) at [esp+0x13], retail the reverse.
+// Round 254: Squad acquired at suppression producer with readonly ownership, existing object
+// getter and null-first unit combinations 380/397/380/397/380/397/380/397 (fast control 372; full
+// baseline 257). Ordinary late-squad and late-squad/null-first forms 359/364; both regress.
+// Original source and include restored; squad/object, flag and root/hit homes remain.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

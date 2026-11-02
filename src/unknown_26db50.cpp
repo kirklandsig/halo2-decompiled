@@ -654,6 +654,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // and the rotation spill remain. Original helper and all input snapshots retained.
 // DH280: Complete projected-axis/cosine-vector/sine-cross operand-priority subsets, then all with internal
 // cross-product sides commuted [90, 90, 90, 90, 90, 90, 90, 90]. Original executable body restored.
+// N301: Complete trace/distance/origin scope ends at point before collision, with
+// original/real short marker and aggregate/library fallback transfer 90/90/90/90;
+// each with the outer ring phase 143/143/143/143. All restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
