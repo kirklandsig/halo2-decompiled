@@ -520,6 +520,9 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
 // branch-owned next 74/129/129/74/74/129/129/129.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// M298: Native complete parent/scan definition and entry records, with scan-local
+// ordinal, value-owned count and per-use alternate in all eight combinations
+// [74, 92, 75, 92, 74, 92, 75, 92]. Original type, ordinal lifetime and body restored.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -3017,6 +3020,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // state/selector+pending/latch/selector+latch/pending+latch/all; all with immutable receiver
 // 50/50/50/50/50/50/50/50.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// M298: Native admission bit-six bool/direct/nonzero and complete-word mask,
+// then once-owned bool/long bit and word/long mask [186, 50, 50, 50, 189, 191, 187, 172].
+// Original shared record and every admission observation restored.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3418,6 +3424,9 @@ void function_2011f0(long arg_0);
 // Round 327: Count parameter as the sole remaining-attempt carrier in do/for loops 386/318;
 // last-producer short/long/word/unsigned-long countdowns 364/357/378/357; last-producer
 // short/long for loops 357/375. All restored; frame and placement/chain carriers remain.
+// M298: Redundant post-failure seat reset removed, with initial seat ownership,
+// actual object-result arms and omitted overwritten query-output default, eight forms
+// [384, 359, 362, 402, 383, 362, 356, 385]. Original output defaults and lifetimes restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

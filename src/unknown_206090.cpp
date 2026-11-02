@@ -277,6 +277,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // DH round 268: retained second-input scalar capture orders ikj/jik/jki/kij/kji
 // 1363/1363/1383/1383/1383; const captures ijk/kji/kij 1363/1383/1383.
 // All inputs stayed before the first store; frame 0x5cc remained. Original helper and body restored.
+// M298: Separate collected membership and compatible-contact searches; body/head
+// membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
+// [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

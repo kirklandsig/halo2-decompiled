@@ -528,7 +528,7 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
-// score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Earlier 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
@@ -717,6 +717,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// M298: Actual first/second output-position workspaces, direct/local, local/direct,
+// direct/direct, pointer/local, local/pointer, pointer/pointer, direct/pointer, pointer/direct
+// [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
