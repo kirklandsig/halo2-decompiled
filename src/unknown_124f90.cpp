@@ -632,6 +632,11 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // 2 (the stores follow source order, `inc esi` stays after `inc edi`; not kept); `g_4e6378 + index++`
 // 3; the inner counter declared before the for 3; a per-type count local used for the sum and the
 // bound 49 (the bound then sits in a register); `(char)type` 3; `++i` 3.
+// Round 73 (fast; the compile-only build hoists the g_4e6378 load the LTCG build reloads each pass, so
+// it cannot screen this): a pointer to the per-type count for the sum and the bound 3; the voice pointer
+// as `g_4e6378 + voice_index` with the index advanced in its own statement 3; a long type counter 28;
+// the bound as a short member of the counts struct 3; `system->voice_count +=` 3, with the two final
+// stores through system too 59 (561 bytes).
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1230,6 +1235,10 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
+// score 137 (was 137): unchanged this round: the entry still loads the class table into EDI where
+// retail uses EDX, the first branch still multiplies the fade-out time before the inverse (so the
+// elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
+// the hold branch still copies the ducking gain through a stack temporary our code folds away.
 // score 137 (was 137): Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
 // Earlier at 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
@@ -1427,6 +1436,12 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // gain copied into an s_decibels_view and added in place 16; the add in place on the converted gain's long 16.
 // One-file LTCG probe (exact here): a struct-returning converter, by-value struct operands and a float-
 // consistency pragma (diagnostic) all keep the fold or move the conversions below the class gain call.
+// Round 73 (fast): a real local for the converted gain before the class gain call, then a real sum over
+// a decibels_add inner 15 (class-first inner 16); the converted gain stored straight into a real 15; a
+// by-value outer decibels_add with a class-first inner 27 (LTCG hoists the class gain call above the
+// upper conversion); one result long redefined by `decibels_add(result, decibels_add(class call, gain))`
+// 27, gain-first 27, through decibels_sum 16. Compile-only, 23 tail forms (in-place `+=` on a real or a
+// long, calls inside the arguments, accumulators, either argument order) all fold the converted gain.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -1565,6 +1580,10 @@ void looping_sound_controller_release(long index);
 // Round 33 (lane 13; LTCG harness, base 5 = 5; the decrement already uses DL as in retail): the whole
 // decrement cast to byte 5; an early-return form for no effect 33; the controller pool global typed as a
 // record pool (no cast) 5; a `(word)` controller index 31; `(count + 0xff) & 0x7f` 5.
+// Round 73 (fast; both callees match retail byte for byte, so their register summaries agree): the
+// controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
+// through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
+// the unknown03 test nested 40; `(word)` controller index again 31.
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -2410,6 +2429,12 @@ real g_547f14;
 // Round 72 (plain): direct class-field loudness after forced 16; loudness from the pre-flag class base 7;
 // inner-seeded class sum / in-place class sum 7 each; an audible bool after forced 67 (468 bytes); a two-view
 // decibel-return union 7; a real const-reference sum helper 35; a forceinline class-lookup sum helper 35.
+// Round 73 (plain): a word flags local used by both flag tests 7; that local first with the sum inside
+// the `||` condition 42; the forced bool computed before the sums 42; the inner sum as a decibels_add
+// long with a loudness local before the forced bool 39; the class gain base first with a loudness local
+// before the forced bool 35. Compile-only diagnostic (not a keepable form): when the inner sum stays live
+// after the add, VC gives retail's exact pre-test `movss xmm1, base ... addss xmm1, xmm0`, so in retail the
+// inner sum is a register value VC does not reuse for the result.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2485,6 +2510,8 @@ bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_i
 // short 15 (BLOCKED-BY 0x219070: only its movsx and the flag0 order are left); that with a short
 // range-index local 53; a short range-index local alone 53; the flags pointer (diagnostic) 13;
 // a short chunk index 17; literal zero chunk index and fade times 17, as one chained store 19.
+// Round 73 (plain): flag0 set before the start-time store 18; `delay + SOUND_SYSTEM->time` 17;
+// `sound->flags |= 1` for flag0 17, before the start-time store 18; `delay + time` with flag0 first 18.
 // @retail 0x126000
 long function_126000(long tag_index, long listener_index, s_sound_play_state *state, long rate_limit_stage)
 {
@@ -2809,6 +2836,12 @@ static inline short sound_voice_find_available_channel(char type)
 }
 
 /* assigns a free channel and, when needed, a shared driver voice */
+// score 96 (was 96): unchanged this round: retail keeps the result in AL (set at the entry, cleared
+// through BL on the failure path and set again after the commit) with an eight-byte frame, while ours
+// keeps it in a stack byte with a twelve-byte frame; retail's failure block follows the success path
+// and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
+// compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
+// retail's length and was reverted.
 // score 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
 // Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
@@ -3248,6 +3281,11 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
+// score 24 (was 49): the loop is a for statement whose increment reloads the pool and advances the index, the
+// switch has a `case 1: continue;` arm (so a non-zero mode skips the record work) and the pitch range is computed
+// above the mode, which keeps the pool in ebp and the index in ebx as retail has them. Left: the range is built
+// before the mode flag test where retail builds it inside case 0, so the flag byte load and the class lookup sit
+// in a different order than retail's.
 // score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
@@ -3351,59 +3389,56 @@ void function_1282d0(void)
 {
 	s_record_pool *sounds = g_4e637c;
 	long sound_index = data_datum_index(sounds, function_16bc00(sounds, 0));
-	if (sound_index != NONE)
+	for (; sound_index != NONE;
+	     sounds = g_4e637c, sound_index = data_datum_index(sounds, data_find_index(sounds, sound_index == NONE ? 0 : (sound_index & 0xffff) + 1)))
 	{
-		do
+		if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
 		{
-			if (SOUND_PLAYBACK_GET(sound_index)->start_time <= SOUND_SYSTEM->time)
+			s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
+			if ((byte)function_125e60((s_looping_track_sound *)sound))
 			{
-				s_sound_playback *sound = SOUND_PLAYBACK_GET(sound_index);
-				if ((byte)function_125e60((s_looping_track_sound *)sound))
+				long reason;
+				short voice_index = sound_voice_acquire(sound_index, &reason);
+				if (voice_index != NONE)
 				{
-					long reason;
-					short voice_index = sound_voice_acquire(sound_index, &reason);
-					if (voice_index != NONE)
+					s_sound_voice *voice = &g_4e6378[voice_index];
+					if (voice->sound_index != sound_index)
 					{
-						s_sound_voice *voice = &g_4e6378[voice_index];
-						if (voice->sound_index != sound_index)
+						if (voice->sound_index != NONE)
 						{
-							if (voice->sound_index != NONE)
-							{
-								function_127320(voice->sound_index, reason);
-								sound_voice_free(voice_index);
-							}
-							voice->sound_index = sound_index;
-							sound->start_time = SOUND_SYSTEM->time;
-							sound->value_ac = voice_index;
+							function_127320(voice->sound_index, reason);
+							sound_voice_free(voice_index);
 						}
-						if (!TEST_FIELD_BIT(sound->source_updated) && sound->source && sound->source->proc1)
-							sound->source->proc1(sound->object_index, sound->definition_index, sound_index, (long)&sound->marker);
+						voice->sound_index = sound_index;
+						sound->start_time = SOUND_SYSTEM->time;
+						sound->value_ac = voice_index;
 					}
-					else
-						function_127320(sound_index, 7);
+					if (!TEST_FIELD_BIT(sound->source_updated) && sound->source && sound->source->proc1)
+						sound->source->proc1(sound->object_index, sound->definition_index, sound_index, (long)&sound->marker);
 				}
-				else if (sound->value_ac == NONE)
+				else
+					function_127320(sound_index, 7);
+			}
+			else if (sound->value_ac == NONE)
+			{
+				s_sound_definition *definition = sound_definition_get(sound->definition_index);
+				s_sound_pitch_range *range = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + sound->pitch_range_index];
+				short mode = TEST_FIELD_BIT(sound->flag4) ? 1 : *(short *)((byte *)function_221810(definition->promotion_index) + 0xe);
+				switch (mode)
 				{
-					s_sound_definition *definition = sound_definition_get(sound->definition_index);
-					short mode = TEST_FIELD_BIT(sound->flag4) ? 1 : *(short *)((byte *)function_221810(definition->promotion_index) + 0xe);
-					switch (mode)
+				case 0:
 					{
-					case 0:
-						{
-							s_sound_pitch_range *range = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + sound->pitch_range_index];
-							if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
-								(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
-								function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
-							function_127320(sound_index, 0xe);
-						}
-						break;
+						if (!(bool)((*(word *)((byte *)function_221810(definition->promotion_index) + 0xa) >> 5) & 1) &&
+							(short)function_2193d0((s_animation_state *)range, (s_animation_ref *)definition) == NONE)
+							function_219310((s_animation_state *)range, (s_animation_ref *)definition, sound->permutation_index);
+						function_127320(sound_index, 0xe);
 					}
+					break;
+				case 1:
+					continue;
 				}
 			}
-			sounds = g_4e637c;
-			sound_index = data_datum_index(sounds, data_find_index(sounds, sound_index == NONE ? 0 : (sound_index & 0xffff) + 1));
 		}
-		while (sound_index != NONE);
 	}
 }
 
@@ -3751,6 +3786,17 @@ struct s_128ca0
 // bounds 278/293; with both reference sums 278/293 (frame 0x494, first +0x44).
 // Original record declaration, body, gain helpers and every call restored; the two
 // extra argument homes and clamp joins remain. One incomplete-image comparison excluded.
+// Round 73 (fast; positional score (length) / LCS-aligned count, base aligned 147): the controller count
+// defaulted to 0xff and overwritten (retail's single store at the join) 234 (1045) / 144, a NONE char
+// default 275 (1040) / 162; that join with this file's decibels_pin single-exit 251 (1027) / 154; join,
+// single-exit pin and `decibels_pin(decibels_add(local_6, converted permutation gain bits))` at both pin
+// sites 228 (1043) / 142, the decibels_add operands the other way 258 (1086) / 148; pin and arguments
+// without the join 231 (1052) / 145; round 154's opening (shared scale local, pitch-bounds pointer, gain
+// seeded from arg_1 and updated in place) 245 (1052; exact to +0xba) / 110, with join, pin and arguments
+// 255 (1041) / 105 (42 aligned lines closer: the lead); that opening without the scale local 269 / 118,
+// with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
+// Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
+// round trip between each pin argument's sum and the pin parameter.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

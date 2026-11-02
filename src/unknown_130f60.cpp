@@ -292,6 +292,18 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // 410/757/410/757/410/764/410/764; factor-first products 410, explicit updates 412,
 // both 412, six product names 418. Original body/helper restored; early ESI save,
 // reciprocal and RGB/product scheduling remain.
+// DL230: whole-output initialization orders 132/213/231/312/321; reordered clears 213/231/312 before common unit stores: 354/338/354/346/345/370/370/370.
+// Entry ESI save, unit-constant carrier and accumulation schedules remain; original executable source restored.
+// M292: Existing double-factor opposite scale with direction/angle CRT and double reciprocal
+// masks 0-7 (fast control 336; full 324):
+// 392/392/392/392/393/393/393/393. Original executable body restored.
+// DH277: outer native count/table/cursor subsets 463/383/363/430/479/430/478; complete readonly record
+// graph 478 (fast control 336, full 324). All restored; entry ESI save, unit constant and
+// scale/accumulation schedules remain.
+// Round 298: Complete explicit color/scalar/weight-remainder updates and pairs/all
+// 344/343/337/326/344/343/341; all with a distinct normalized weight 421
+// (fast control 336). Color/scalar alone is 333 plain, 1877/1892; rejected.
+// Original complete helper and body restored; ESI/unit/reciprocal scheduling remains.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

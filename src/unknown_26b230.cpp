@@ -519,6 +519,12 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
 // only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
 // not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
+// Round 26: a local gets the movsx but folds the add, the direct argument keeps the add but loads 16 bits. Long or
+// short team local 31 each; side getter by clump pointer with a short or long local 31/31; side wrapper taking a
+// short or long team 31/31; team in a block scope 31; an unused short or long read before the direct argument 3/3;
+// a pointer to the field 25; a long read through `*&` 31; clump computed before the result test 12, with a long or
+// short team 31/31; before the first call with a short team 31; a long team getter by pointer or by index 3/3;
+// `clump->team + 0` 3; a pool local with a long team 31.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
