@@ -2647,7 +2647,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2677,6 +2677,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
 // output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
 // remain.
+// F327: Distinct inverse output with the relative result in current/desired/inverse
+// 701/700/703; inverse declared at entry 701/700/703; complete matrix role names
+// with current/desired result 701/700. Original complete body restored; frame and scalar/transform homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3940,7 +3943,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 176 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 176 (was 176): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -4034,6 +4037,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
 // 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
 // at 176 by the full check; frame/length unchanged, zero and vector staging closer.
+// F327: Four-use component index, completed true-arm return and both 176/176/176;
+// native byte quantization alone/with either/both 178 each; all with twice-used change
+// 178. Original complete body restored; found-index retest and collision/result allocation remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
