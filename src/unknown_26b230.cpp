@@ -1944,6 +1944,16 @@ void function_269250(long clump_index, long actor_index);
 // the score call replaced by a constant (143) or the post-loop selection use removed (220) both hoist the pool
 // into a register and leave the selection in memory as retail: the selection wins the callee-saved register
 // only through the call in the walk plus its post-loop uses.
+// Round 116 (lane 8, fast with 0x269580/0x269040; the unchanged body gives 89 there): in-arm x87 compare with the
+// selection stored first 126; with the selection from `groups.iterator.datum_index` 128 (pool promoted to EDI and the
+// selection memory-only as retail, but the walk's join loses the clump-index copy, so the not-found path threads to
+// the exit and the homes rotate); the walk struct declared once outside the actor loop 126 / 128; selection and best
+// declared before the walk 129.
+// Round 51 (lane 10, fast): one `clump_index` local for both the selected and the created clump 89 (482 bytes), with
+// the in-arm compare 126 (480); that with the selection stored before the best score 89, in-arm 126; the in-arm
+// compare with the score declared at the top of the walk body 126; the group declared in the while condition 89.
+// Retail never gives the selection a register (stored from ESI in the walk, reloaded after the post-loop calls,
+// unlike the created index in EDI), so the walk's pool field is scalarised into EBX; ours gives EDI to the selection.
 // Round 193 (lane 3, plain): the in-arm compare gives retail's 480 bytes and homes (126), but our found
 // block is laid out after the improve block (0x26ae30's identical walk keeps retail's order); a
 // memory-only selection (diagnostic, reverted) gives the pool EBX but promotes the walk index into EBP
@@ -1963,6 +1973,8 @@ void function_269250(long clump_index, long actor_index);
 // in-arm search as a forceinline function returning the selection 126 (480 B); the in-arm compare with the selection
 // and best declared once for the whole function and reset per actor 126. The fast image swaps 0x269580's two
 // argument registers (0x269580 matches only in the full image): read this function's call setup from plain checks.
+// Round 295: Existing score/create/merge inline-contract subsets [89, 89, 89, 89, 89, 89, 89],
+// all plus pre-search created-result storage 89. Original declarations and body restored.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2191,6 +2203,12 @@ void function_269250(long clump_index, long actor_index)
 // Round 250: Foreign-state clear before owned-prop handling: replacement-first with category-
 // order/native-node subsets 123/123/121/121; removal-first 98/98/96/96. Category homes and
 // deletion/pool scheduling remain; all matched controls survive.
+// Round 116 (lane 8, fast): the 3 form (cleared prop) re-checked 3: the hoisted loads are in place and only which
+// pool gets EDI/EBP differs (ours node EDI / prop EBP). Separate pool globals with the 3 form: this function matches,
+// 0x25d770 2 and 0x25d810 91, unchanged by the definition order in globals.cpp or the extern order in globals.h. Under
+// separate globals the first-referenced pool takes the first register (the node pool in 0x25d770/0x25d810); under the
+// struct the other one; retail gives the prop pool the first register in all three. The node walk through the out-of-
+// line 0x26be30 4 (wrong link field, +0x2c for +0x34; not a valid form).
 // Round 193 (lane 3, fast): the 3 form under s_prop_pool_storage 3; with separate pool globals it
 // matches but 0x25d770 2 and 0x25d810 91, also with the prop pool defined first in globals.cpp, declared
 // first in globals.h, grouped with the clump pool (one struct, node separate) or the node pool grouped with
@@ -2202,6 +2220,8 @@ void function_269250(long clump_index, long actor_index)
 // Round 482: Independent category false-initializer lifetimes at entry/object/type
 // boundaries, eight nonoriginal pairs 91/91/90/91/91/90/91/91. Original entry
 // declarations restored; category-byte homes and deletion/pool completion remain.
+// Round 295: One exclusive object category enum/byte/short/long, group-first [223, 197, 223, 223],
+// unit-first [241, 241, 241, 241]. Exact-only classification forms restored; original completion and pools retained.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
@@ -2428,6 +2448,11 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 250: Complete candidate values by construction/assignment/memcpy/memmove 317/317/317/426;
 // with native cleanup-entry copy 388/388/388/445. Early reset-word and visibility/selection
 // allocation remain; all matched controls survive.
+// Round 116 (lane 8, plain): first loop re-deriving `&candidates[cursor]` 301 (re-check); that plus a short local
+// of g_4686c4 before the distance store (diagnostic, one-use local of a global) 275: the cluster loop is then retail's
+// except `mov esi, dword ptr` for retail's `mov si, word ptr`, and the marking loop swaps EBX/EDI; cursor declared
+// first 301; both selection loops indexing `candidates[cursor]` with no pointer 233 (1365 bytes); the second loop as
+// `for (; cursor < count; ++cursor)` over the array 293.
 // Round 193 (lane 3, plain; 283 -> 71 before this round): both selection loops re-deriving the candidate
 // after `++cursor` give retail's selection loops exactly but 301: our allocator then promotes g_502420 into
 // EDI across the cluster loop and drops the bsp-word/NONE hoists, and swaps the marking loop's walker/object
@@ -2438,6 +2463,9 @@ void *actor_get_character_situation_entry(long actor_index);
 // Round 482: Stable selection-count snapshots short/long after sort 197/313, before sort
 // 203/315; with first-loop indexed candidate advancement 314/171/313/184.
 // Caller-inclusive fast control 71; every snapshot regresses. Original escaped count restored.
+// Round 295: Native prop iterator/prop result/object result entry homes in seven subsets [71, 71, 71, 71, 71, 71, 71],
+// all plus entry candidate receiver 71. Caller-inclusive fast control 71.
+// Every initializer and escaped count observation stayed fixed; original complete body restored.
 // @retail 0x269870
 void function_269870(long clump_index)
 {

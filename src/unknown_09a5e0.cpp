@@ -2210,6 +2210,33 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // key/fraction/tag/bytes, fraction/tag/key/bytes, fraction/key/tag/bytes, tag/key/bytes/fraction,
 // tag/fraction/bytes/key and tag/bytes/key/fraction: 157/155/155/157/157/155/157/155.
 // Original observations restored; object/offset homes and low-mask EBP ownership remain.
+// Round 33 (lane 2, fast): the masked object index named before the entry lookup 154 (retail's SIB base
+// in the entry and child lookups; homes unchanged), with the raw offset form 154; the entry through
+// OBJECT() 155; the 0x400000 test as a plain mask 168, with the named index 167 (retail's
+// `test ecx, 0x400000`, but the result is then loaded in both arms and the unit stays in EBP); with the
+// named index, memcmp for the 0x2000 test 213 (retail's two-register compare, no dead add), memcmp plus
+// memcpy 213, memcpy for the copy alone 154. Retail reloads the unit from its home after the slot loop.
+// Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
+// tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
+// The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
+// `field_ac[bit - 18]` indexing 247 (1051 bytes), as a zero-based `for` with `field_ac[i]` 220 (1057);
+// the tail flags declared after the clamps 158 (both stores then sink after the flag compare); the flags
+// parameter used directly in place of its copy 155 (same code); renaming the unit pointer 155 (no move).
+// Round 55: object offset named as a local (`local_offset + data + 8`, retail's SIB order) 154;
+// `(local_3 & 0x400000)` for the field-bit test 168, with the named offset 167; the 0x2000 compare through
+// an inline pointer helper either way round 155/155; its copy through memcpy 155, through an inline pointer
+// helper 155, memcpy with the named offset 154; a compare-and-copy inline helper 155; a `long const *` or
+// `long const &` to the 0x214 field used for both, also inside the 0x2000 test, 155/155/155; memcmp for the
+// compare 214 (retail's two loads and register compare, no dead add), with memcpy for the copy 214; the
+// second slot mask named at the loop top for both tests 268 (1043 bytes); the first slot mask declared at
+// function scope 155; `for (local_5 = 18; local_5 < 22; local_5++)` without the countdown 247 (1051), with
+// the named offset 246. Retail's dead `add ebp, 0x214` is the idiom of a pointer-to-field variable whose
+// last use was folded away (matched 0x89df0 and 0xbb950 link walks, 0xa0c50's inlined flag setter); no
+// existing accessor reads the unit's 0x214 field.
+// Round 226: native-short first parent with direct immutable request, early parent-mask placement
+// subsets 0-3: 289/289/289/288; exhaustive mapped-parent outcomes with those subsets
+// 288/288/288/297. Original parent reads, request carrier, result timing, four-slot loop and
+// complete body restored; object/offset and low-mask homes remain.
 // Round 20 (lane 18, fast): retail tests the 0x400000 bit with `test ecx, 0x400000` and keeps both later
 // tail flags memory-homed (false stored to the dead flag and record parameter slots), the first in CL.
 // The plain 0x400000 mask test 168; the child loop as a plain `for` over the bit with direct
@@ -2221,6 +2248,16 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // no copy 155 (same code); the first mask declared at function scope 155 (same code); the requested flags
 // read from the parameter at each use 155 (same code). Retail spills the first mask (EBP) and keeps the
 // flags in EDI in the loop, reloading the unit only after it; ours keeps the mask in EDI throughout.
+// Round 491: actual four-record end traversal != with long/short/word/byte ordinal 286/283/283/280; <
+// counterparts 286/283/283/280. Original countdown, cursor, ordinal and complete body restored.
+// Round 280: joint direct/conditional parent-short producers with decoded slot/header offset
+// and shifted/direct tail request 279/294/288/290/284/273/266/266. Original executable
+// body restored; object/offset homes and low-mask EBP ownership remain.
+// Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
+// outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
+// Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
+// 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

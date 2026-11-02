@@ -92,14 +92,24 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 	}
 	return result;
 }
+// score 107 (was 107): Frameless entry saves, fresh unit lookup and late prior-state carrier remain.
 
-// score 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
+// score 107 (was 107): BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp): retail re-fetches the unit after
+// the two 0xbadc0 calls (index * 12 kept in ESI), ours reuses the entry fetch. Earlier notes:
+// Earlier 107 (was 107): this round: the fast check reads 107 at 362 bytes against retail's 376 again
 // and no new form was tried; the difference is still blocked by 0xbadc0's memory-effect knowledge in
 // src/unknown_0bad50.cpp, which makes our link keep the entry fetch.
-// score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// Earlier 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
 // re-fetches the unit after its two 0xbadc0 calls, our link proves the callee writes no memory
 // and keeps the entry fetch, so every later register home shifts.
-// score 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Earlier 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// frameless entry saves, fresh unit lookup and late prior-state carrier remain.
+// Earlier: this round: the fast check reads 107 at 362 bytes against retail's 376 again
+// Earlier at 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// Earlier at 107 (was 107): frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Frameless entry saves, fresh unit reload and late prior-state carrier differ.
+// Earlier: this round: no new form. Still BLOCKED-BY 0xbadc0 (held file): retail
+// Earlier: frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // frameless entry saves, unit reload and sentinel carriers differ.
 // frameless entry saves, fresh unit reload and late prior-state carrier differ.
 // Earlier: frameless entry saves, unit reload and sentinel carriers differ.
@@ -153,10 +163,41 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // Round 76: late false 122; result arms 121; late false with long user 125; late fresh unit 122;
 // original fresh unit 107; direct reset lookups 175; false after entry 107; false before weapon 120.
 // Original body restored.
+// Earlier 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// MiniMax R (11-01, third round): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail
+// re-fetches the unit after its calls because its link treats the callee as writing memory, while
+// our link knows that it writes none and keeps the unit in a register. The needed change is in
+// src/unknown_0bad50.cpp, which is outside this lane's set of files, so the function is left as
+// it is.
+// MiniMax R (11-01, second round): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail
+// MiniMax R (11-01): no new form, no lower score. Still BLOCKED-BY 0xbadc0: retail re-fetches the
+// unit after its calls because its link treats the callee as writing memory, while our link knows
+// that it writes none and keeps the unit in a register.
 // score 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
 // retail re-fetches the unit after the two calls because its compiler treats 0xbadc0 as writing
 // memory, while our link knows it writes none, so the unit and the flag registers are homed
 // differently and the entry prologue differs.
+// Round 47 (m3 lane 13, fast): zoom flag declared after the weapon test (retail's late `xor dl, dl`) 122; the
+// weapon helper taking the unit index and fetching the unit itself 107 (same code: the fetch is still merged);
+// the player test inverted (`!= NONE` arm first) 117; zoom flag declared after the unit fetch 107; user index
+// defaulted to NONE with a one-arm assignment 124. Retail treats 0xbadc0 as writing memory (reloads g_4e0300 and
+// its data after the calls while keeping the index register); ours knows it writes none, so no body form here
+// brings the second fetch back.
+// Earlier at 107 (was 107): this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// Round 215: full salted weapon/sound handle domains and real player-record
+// indexing, seven nonempty subsets 107 each; complete graph with native long user ordinal 110.
+// Original types, both player queries, prior-state lifetime and entire body restored;
+// entry saves, fresh unit lookup and sentinel carriers remain.
+// Earlier: this round: no new form. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp):
+// Round 280: complete pre-reset prior-state predicate, reset/preserve decision, bool/long
+// storage and producer/entry declaration 110/110/113/113/113/113/116/116. Original complete
+// body restored; merged lookup and late prior-state carrier remain.
+// Round 332: Retained absolute header ordinal long/dword/word/int, each with entry or late false
+// result: 107/107/109/107/122/122/124/122.
+// Original executable source restored; no eligible gain.
+// Round 284: reset/sound domain without the implied keep retest, crossed with early preserve
+// exit, producer prior-state lifetime and sound sentinel exit: eight forms 134 each.
+// Original complete body restored; fresh current-unit observation and late prior-state home remain.
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

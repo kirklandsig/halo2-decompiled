@@ -191,6 +191,18 @@ bool function_a7670(long object_index);
 // instead of `continue` 181; the body count read before the flag is cleared 181; the index stepped back
 // after the flag store 181; the index declared outside its loop 181 (all same code); the retry counts
 // declared ahead of the flag test 186 (966 bytes).
+// Round 217: native immediate/deferred/both append-end extents, then indexed cleanup,
+// standard deferred search and shared membership result: 312/321/382/319/324/385/360/382. Original counts and body restored.
+// Round 259: Deferred-before-immediate membership, ordinary/first-standard/second-standard/both-standard searches, cursor/indexed cleanup
+// 275/270/263/256/266/262/265/270. Original body and producer sites restored.
+// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
+// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
+// selector/list/count homes, BL admission and indexed cleanup remain.
+// DH round 262: standard-count first/second/both membership 201/213/235; indexed cleanup
+// 213/232/206; both counts with unsigned/immutable result storage 235/235. All exact-only forms restored.
+// DH round 264: Force-inline contracts for the existing property/component/object inline producers,
+// all seven subsets and all three with readonly body input, 181 each. Original declarations,
+// body and call cycle restored; scratch EDX/EAX, list/count homes, admission BL and cleanup remain.
 // @retail 0x278f00
 void function_278f00()
 {

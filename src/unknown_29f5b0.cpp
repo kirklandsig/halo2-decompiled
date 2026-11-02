@@ -952,6 +952,11 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // products 6; forward declared before the flag 6; forward brace-initialised 6.
 // Round 57 (--fast): const position pointer 6; one named pitch cosine 6, written cosine-first 6;
 // the sibling 0x2a06a0's `T *const &flag` reference 6, also with the position passed inline 6.
+// Round 70 (--fast): the vector filled by an inline that returns it, called in the argument list
+// (stack arguments ahead of the x87 code) 6, the same schedule, so statement order does not reach
+// it; `(real)cos(...) * (real)cos(...)` factors 6; the flag table named before the element 6; a
+// named normal 6; the position taken after all three components 6. The caller 0x2a1120 sets ax
+// (flag) before edx (effect), as the declared order implies.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

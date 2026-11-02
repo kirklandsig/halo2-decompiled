@@ -2080,6 +2080,11 @@ void function_2818e0(void)
 // body's top or with the last node, frame-state saves before the interpolation test, flags at function
 // scope 2 each; the later passes' count as a ternary or clamped copy in function_288571 39, as
 // separate translation and scale copies 2. All restored.
+// Lane 13 r48 (fast, with 0x27dff0 2 and 0x285750/0x288570/0x289580/0x28aaa0 matched throughout): the code is
+// retail's up to the two reloads after the multiply's asm block (retail flags then count, as 0x285750's blend-3
+// pass gets). The destination index declared at the pass helper's top 2; the pass bound declared there 2; the node
+// count declared first in the orchestration 2; the blend-2 arm tested before blend-1 in the apply 2; the flags
+// declared then assigned at the loop top 2 (all the same code).
 // @retail 0x281b60
 void function_281b60(void)
 {

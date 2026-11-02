@@ -899,7 +899,7 @@ extern long *g_51e9cc;
 /* the biped's physics callback: its crouch, kill volumes, its character
    physics move, and the ground (structure, instanced geometry or object)
    its contact rests on */
-// score 42 (was 310): walked against retail block by block (calls, argument order, offsets, constants, conditions,
+// score 42 (was 42): walked against retail block by block (calls, argument order, offsets, constants, conditions,
 // case bodies): the only behaviour difference was the final flags bit-7 clear, which retail also runs when the
 // biped has no havok component (0xddf46 is the NONE branch's target, 0xdd9bf); it is now outside the if.
 // What still differs: crouch sum loads the biped's crouch first (retail 0xddb25 loads crouch_change first; swapping
@@ -912,6 +912,17 @@ extern long *g_51e9cc;
 // unsigned key (47 -> 46), `PIN(contact...) == contact` (46 -> 45), i, k, j square sum (45 -> 42), word flag masks.
 // Earlier rounds (350 and up): word flags, shared velocity norm, unsigned key, full-width physics result, case
 // order (the compiler lays the cases out itself: 1/5/4 and 5/4/1 give the same bytes), clamp admission, owned crouch.
+// Round 46 (lane 14, fast): retail inlines 0xb77d0 here (the velocity block). That block as a call to function_b77d0 498
+// (stays a call; the crouch sum then loads crouch_change first as retail); with a __forceinline declaration 498
+// (not honoured; 0xb77d0's file is /Ob1); 0xb77d0 defined `inline` 44 (inlined, the square sum back to i/j/k and the
+// crouch order back; 0x2056e0 stops matching). crouch_change named crouch_delta 42, change 42,
+// z_crouch_change 42; the sum named `crouch` before the PIN 42.
+// Round 118: the crouch sum in a named local under PIN 42 and with an if/else clamp 42 (both identical code);
+// case 5 `found = true` first 42; case 4's surface pointer passed straight to the flag test 42; the lookup declared
+// with the contact block's locals 42. Diagnostic (not keepable, a pointer to a whole local): an `s_lookup *` local
+// used for both the initialize call and 0x1efd80 gives retail's esi reuse (`mov edx, esi`) and length, 42 -> 17
+// (1481 bytes; left: the crouch sum/store order, case 5's 0x35c store, case 4's store order, the 0x10 or); 0x14a8e0
+// shows the same reuse, so the lead is a source form in which both calls take one pointer value.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1552,6 +1563,20 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 // cross3f that always re-colours the velocity scale and the cross (xmm2/1/0 -> 0/2/1); the hand-written cross
 // keeps the colours (screen) but turns spin to angle-first in all rows and the squares to i, j, k. A byte mode local
 // with the field read for 3 90 (narrow compares); byte/char/word/short/dword locals (screens) narrow or keep eax.
+// Round 118: the long mode local plus the field read for 3 with the 0.5 scale rows in each other order 168-173;
+// the mode local declared at the block or function top 77 (with the field read for 3 174); the velocity scale
+// through vector3f_scale with the magnitude i, k, j plus the spin through vector3f_scale(&axis, angle, &spin) 73,
+// with the angle expression passed instead 71 (x87 squares and spin.i as retail; left: spin.j, the mode block);
+// that plus the field read for 3 179, plus `(byte)mode != 3` 72, plus a byte local with the long mode copied from
+// it and 3 tested on the byte 16 (mode block and colours as retail; only spin.j left, angle-first where retail
+// loads axis.j; the long copy of the byte local only widens it to split the compares, a cast that only steers
+// the compiler, so not kept without a match). On that 16 form: angle local with vector3f_scale 20, spin = axis
+// then scaled 165, cross3f_staged 16, hand-written cross 128, magnitude/spin_fraction declared in place or swapped
+// 16/16/16, spin rows k, j, i 23. Compile-only screens of it (they reproduce the re-colouring and spin): 28 orders of
+// the top declarations, 6 of the block's, three product orders of the angle, spin_fraction folded in, an in-place
+// axis scale then copy, position/linear/away declared elsewhere: spin.j stays angle-first. Mode spellings screened
+// (no local; unsigned long/int/short/word/dword/char/unsigned short locals, each with the local or the field for 3;
+// nested; const): narrow compares or the re-coloured velocity scale; only the byte+long pair gives both.
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -3978,6 +4003,11 @@ void __stdcall function_e3380(long arg_159e6d)
 // (10): the push temp and the names registers, a one-step scratch rotation; 0xdd360's 0x1e5af0 call also takes edx
 // for the push temp in retail where ours takes the first free register (lead: 0x1e5af0's parameter order; its file
 // is held this round).
+// Round 118: chained zero store (output first) 13; top lookup through the existing object_header_get 13; the
+// final names block inverted (else arm first) 13; 0x1e5af0's parameters as (output, physics, up, forward) at the
+// definition, both declarations and all five calls 13 (push temp still ecx; 0xdd360/0x118700 worse); a named
+// real field at output + 0x28 13. Retail's 0x1e5af0 call setups disagree on an order (0xdd360 ecx/eax/edx,
+// 0x118700 eax/ecx/edx), so none is evidence for a reorder.
 // @retail 0xe3c90
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

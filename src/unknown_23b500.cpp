@@ -11,7 +11,7 @@
 #include "unknown_0d0690.h"
 
 /* the influences' weights (g_502258, cleared by unknown_157450.cpp): two
-   shared values, then three per influence type */
+   shared values, three per influence type, then the influence table */
 struct s_spawn_influence_type
 {
 	real value0;
@@ -24,6 +24,7 @@ struct s_spawn_influence_globals
 	real value0;
 	real value4;
 	s_spawn_influence_type types[12];
+	byte const *table;
 };
 
 extern dword g_502258[0x27];
@@ -34,7 +35,6 @@ PRIVATE const byte g_4709f0[48] =
 	144, 7, 0, 13, 145, 7, 0, 17, 146, 7, 0, 17, 147, 7, 0, 14,
 	148, 7, 0, 14, 149, 7, 0, 14, 150, 7, 0, 9, 151, 7, 0, 20
 };
-byte const *g_5022f0;
 
 struct s_spawn_type_override_23aea0
 {
@@ -59,7 +59,10 @@ struct s_spawn_scenario_23aea0
 	s_spawn_settings_23aea0 *settings;
 };
 
-// score 105 (was 105): addressing the weights through the neighbouring global's own symbol
+// score 97 (was 105): the prologue is retail's; what differs is the destination, still a pointer
+// induction where retail keeps the integer offset 0x18..0xa8 with the base in the displacement (16
+// stores 3 bytes shorter), and the alignment pad that puts ahead of the override loop.
+// Earlier (105): addressing the weights through the neighbouring global's own symbol
 // (g_502248: four longs, the two shared values, then the twelve type records) still folds the
 // destination into a pointer induction (148), with the type records read as dwords or as reals,
 // so retail's integer table offset with its base in the displacement stays out of reach.
@@ -198,6 +201,10 @@ struct s_spawn_scenario_23aea0
 // 141 (375 bytes, a pointer countdown). Diagnostic, reverted at once: a volatile destination 242
 // (294 bytes, not unrolled, still a pointer). 0x502248..0x502257 hold other globals (a `long *` and
 // the game type), so retail's displacement is only g_502258 - 16, not a wider table.
+// Round 112 (m3 lane 7, fast): the table pointer stored before the tag read 105 (same code); the two scalar
+// defaults through g_502258[0]/[1] as dwords 142 (374 bytes); value0 by the dword array and value4/value8
+// through globals->types[type - 2] 105; `type = 2 + i * 6 + j` 105; the six records of a batch written out
+// (diagnostic) 105 (same code: VC's own unroll). Every form keeps the pointer induction.
 // Round 148 (fast): retail's IV reads as 12 * (first type of the batch) from 0x18 with the exit `cmp eax, 0xa8`
 // (first < 14), so the batch loop `for (first = 2; first < 14; first += 6)` with `type = first + j` 139
 // (374 bytes, again a pointer induction; the same as re-measure), the inner loop over `k = first .. first + 6`
@@ -210,6 +217,15 @@ struct s_spawn_scenario_23aea0
 // `long` loop over the records 105 (same code); the outer batch counter `dword` 141. Harness diagnostics
 // (not kept): /G5, /G6, /G7 and /Ox the same 105; the weights reached through an extern `dword *const`
 // global pointer 105 (folded at link), through a non-const one 156.
+// Round 56 (m3 lane 1, fast, plain-confirmed): the influence table pointer as the weights' last member (the
+// 0x9c-byte memset in 0x157450 clears 0x5022f0 with them) with the copies through `globals->types[type - 2]`
+// real fields 102 (scenario load and table store then at retail's positions); plus a `weights` element pointer
+// for the three stores 97 (kept: definition in EAX and the source lea between the scalar stores, the prologue
+// exact); on 97: one type loop in place of the two-by-six loops 97 (same code, kept), an element reference 97,
+// `globals->types + (type - 2)` 97, a named `real const *source` record 120, a `dword` type counter 140 (377
+// bytes); before it, a signed `short` type loop 256 (278 bytes, not unrolled), a do-while type loop 254 (not
+// unrolled). Diagnostic (reverted): the stores aimed at a global defined in a /GL- file keep the pointer
+// induction, so LTCG's view of the symbol is not the cause.
 // @retail 0x23aea0
 void function_23aea0()
 {
@@ -217,18 +233,15 @@ void function_23aea0()
 	byte *definition = *(byte **)(tag + 0xc);
 	s_spawn_scenario_23aea0 *scenario = (s_spawn_scenario_23aea0 *)g_4e0350;
 	s_spawn_influence_globals *globals = (s_spawn_influence_globals *)g_502258;
-	g_5022f0 = g_4709f0;
+	globals->table = g_4709f0;
 	globals->value4 = *(real *)(definition + 0x154);
 	globals->value0 = *(real *)(definition + 0x150);
-	for (long i = 0; i < 2; i++)
+	for (long type = 2; type < 14; type++)
 	{
-		for (long j = 0; j < 6; j++)
-		{
-			long type = i * 6 + j + 2;
-			g_502258[type * 3 - 4] = *(dword *)(definition + 0x148 + type * 0x1c);
-			g_502258[type * 3 - 3] = *(dword *)(definition + 0x14c + type * 0x1c);
-			g_502258[type * 3 - 2] = *(dword *)(definition + 0x150 + type * 0x1c);
-		}
+		s_spawn_influence_type *weights = &globals->types[type - 2];
+		weights->value0 = *(real *)(definition + 0x148 + type * 0x1c);
+		weights->value4 = *(real *)(definition + 0x14c + type * 0x1c);
+		weights->value8 = *(real *)(definition + 0x150 + type * 0x1c);
 	}
 	if (scenario->count > 0)
 	{
