@@ -236,6 +236,9 @@ real normalize2d(point2f *arg_0);
 // Round 521: native input/center/both memmove producers 255/275/259; with entry
 // point reservations 255/275/259; both with native object fields, original/entry
 // points 259/259. All change caller conventions; original complete body restored.
+// Round 476: existing complete collision helper with common query-test result,
+// coherent-input/native-object/entry-point subsets: 303/298/303/298/303/298/303/298.
+// All lose three caller matches; original collision tail, observations and body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
