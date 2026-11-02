@@ -714,6 +714,22 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // Round 267: Timing-output declaration orders 19/20/21/22, 20/22/19/21, 21/22/19/20,
 // 20/19/22/21, 19/22/21/20, 21/20/19/22, 22/19/20/21, 20/21/22/19: 89 each.
 // Original output declarations restored; unit-argument and first-length/projection homes remain.
+// Round 27 (lane 17, fast): the lead. The guard split with the unit read into a named long before the
+// 0x110ab0 test, as matched 0x1ae440/0x1a9ec0 write it (a one-use local, so match-only) 42: the argument
+// takes EAX and the scratch rotation disappears; with it the target lookup before the vector copies 22,
+// the request stores short, long, type 19 (type, short, long and short, type, long 19; long, type, short and
+// type, long, short 22), the object size in a named local used by both sums 17 (the sum then loads the field
+// first as retail). Left at 17: the first length, the sum, the adjusted projection and the 0x26bfa0/timing
+// outputs sit in other slots (retail 0x14 sum, 0x18 length and projection, 0x1c index and distance; ours
+// 0x10, 0x14, 0x1c, 0x18), and the lateral reload and the side maximum swap XMM2/XMM3. No gain on it: the
+// radius declared before the target 19; a named maximum, reversed compare and fallback sum spellings 19 each;
+// the sum as `length + (size + radius)`, `projection < ...`, radius first in one or both sums, 0.6f first 19
+// each; renames of the length, projection and side outputs 19 each; side outputs reordered 19 (13/14 swapped
+// 21), declared at the heading or 0.95 block top 19; the side outputs as an array 66; the adjusted projection
+// as a copy or as a new variable from the last subtraction 17; projection, index and timing declarations moved
+// 17; a named reach with a repeated sum 25, used in both 196; a named lateral copy 17; the unit also passed
+// to later uses 227/234; the unit radius in a variable 167; the side defaulted to zero first 117. Without the
+// named unit: target lookup first 94 (964 bytes), store order 89, both 94.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

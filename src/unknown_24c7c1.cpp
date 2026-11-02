@@ -655,6 +655,12 @@ void function_24ce9d(word const *text, long left, long top, short_rectangle2d *b
 // Round 40 (lane 13, fast): `left = (short)origin.x - g_4b9dd2` 114 (same code); with the bool timer 191
 // (1888 bytes, `left` still a dword spill); `short line_height` 115; `short font` 486 (1892 bytes); `long
 // count` 197 (1883 bytes).
+// Round 27 (lane 17, fast; control 115): 0x24ce9d's parameters from retail's setup order, the text last (left, top,
+// bounds, result, text) 110 with 0x24ce9d still matched, top or bounds moved around it 110 (a gain of 5, not kept);
+// (top, left, ...) forms 113-115 with 0x24ce9d lost; (left, text, top, ...) 114. Tutorial colour as a nested ternary,
+// `!flag && bit ? a8 : a4` and a named pixel from an if-chain or if/else 115 each (same code); on the reorder, two unpack
+// calls 209 (1890 bytes), a default pixel with one override 398 (1887 bytes). The 0x1fa30 calls load the text before the
+// bounds in retail (its parameters swapped); that definition is in a contributor's file, left alone.
 // @retail 0x24cf66
 void function_24cf66(long local_player_index)
 {
