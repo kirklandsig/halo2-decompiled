@@ -1621,6 +1621,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 294: invariant aiming/look/both spring defaults before admission or user
 // receiver 233/235/239 each; all before unit lookup, abcd/badc order, 236/236
 // (fast control 220, full 218). Original default lifetimes restored; frame 0x28/0x2c remains.
+// Round 341: Two-bit channel-byte ownership/activity preset/zero-first callback,
+// subsets 1-7, 412/383/358/220/412/383/358; all with late idle receiver 358
+// (fast control 220, full 218). Exact-length forms still miss the frame word;
+// original complete body and every smoothing tuple restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

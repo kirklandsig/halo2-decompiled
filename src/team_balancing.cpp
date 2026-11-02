@@ -623,6 +623,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
 // pointer or `this`; 1-7 dead temporaries (diagnostic) 67 each.
+// Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
+// result storage 92/92/106/105; complementary rejection results 92/92/106/105.
+// Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

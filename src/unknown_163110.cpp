@@ -939,6 +939,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Round 219: positive visibility on guarded loops, entry-result/projection-input-cursor/shared-count
 // masks 0..7: 236/236/132/132/470/470/470/470. Original culling result, independent counts and
 // projection indexing restored; coefficient preload, zero roles and projection staging remain.
+// Round 341: Native two-coordinate screen value with conditional bounds, intersection
+// receiver and logical cull publication, masks 0-7: 368/469/410/378/374/411/395/380.
+// Frame shrinks to 0x1e8 versus 0x1ec; original complete body restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
