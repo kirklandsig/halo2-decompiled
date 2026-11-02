@@ -213,6 +213,10 @@ void function_213970(void);
 // miss-return, named-conversion, chained-publication and miss-reload forms: 131 each. Original
 // shared helper/body restored; protected separate definitions still prevent both retail-wide
 // clears.
+// DL233: One requested value across language/version transitions, original/string-boundary
+// acquisition and independent dirty-first publications: 131/126/131/126/131/126/131/126.
+// Five-point forms dropped above 30; original complete body restored. Two whole-block clears
+// still require the protected global definitions.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

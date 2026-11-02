@@ -247,6 +247,9 @@ struct c_aggregate : c_child
 // Round 293: Independent callback/information outputs with cleanup item walk and child/boundary/block
 // cursor masks 0-7: 77/79/140/142/77/79/140/142. Original outputs and traversal restored;
 // escaped-output and loop homes remain.
+// DL233: One real block pointer across dispatch/cleanup, before/after arrays, separate/shared
+// query output and joint/separate dispatch bounds: 31/31/31/31/31/31/33/33. Shared output
+// recovers 0x8020 but exchanges the low loop homes; original complete body and outputs restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

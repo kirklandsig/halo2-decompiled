@@ -689,6 +689,13 @@ void function_1537f0(s_profile_record *record);
 // zeroed after the record initializer in an index loop 78 (238); the links as four statements in retail's store
 // order on the pointer walk 53 (same code); flags and timestamp as two stores on the pointer walk 62 (253); the index
 // loop with both 80 (236). The compile-only build cannot inline 0x1537f0 (another file), so it does not reproduce this.
+// DL233: Actual four-aligned producer record on the pointer/no-tail graph, native/library
+// identity zeroing, identity before/after the producer, destination tail before/after view:
+// 53/53/53/53/62/62/63/63. Original source type, forward declarations and full body
+// restored; identity still folds and frame remains 0x98 versus 0xa0.
+// Complete cache-entry construction including metadata, native/library full-record copies,
+// live/ended input scopes and metadata before/after payload: 92/92/92/92/81/81/81/81.
+// Original complete body restored; identity homes and signed end-bound remain.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1164,6 +1171,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
 // with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
 // the declarations reversed, upper assigned first and the count path upper first 370.
+// DL233: Direct count observations at each capacity use, conditional/branch removal values,
+// original/retail-order minimum and original/complete direction cases: 395/395/395/395/61/61/61/61.
+// Original complete body restored; direct count/removal and independent upper ECX/source EAX
+// still differ within the matching frame and tail.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
