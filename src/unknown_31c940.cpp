@@ -478,7 +478,7 @@ static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *r
 	row->b.m128_f32[3] -= projected;
 }
 
-// score 2021 (was 2136): shared cursors, call lifetimes, and paired projections.
+// score 2012 (was 2021): retain the residual classification across paired records.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -896,10 +896,13 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		// Retail advances the impulse cursor with each residual row, while
 		// this pass writes the remaining errors back into the row stream.
 		result = impulses;
+		signed char residual_kind;
 		goto residual_header;
 		for (;;)
 		{
-			switch ((signed char)op[2])
+			residual_kind = (signed char)op[2];
+		residual_dispatch:
+			switch (residual_kind)
 			{
 			case 0: goto iteration_done;
 			case 1:
@@ -913,7 +916,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				// Consume up to two paired records, then join the friction path.
 				update_residual_pair(terms, result, a, b); op += op[1];
-				if (op[2] != 5) break;
+				// Redispatch the classification already read for this pair.
+				residual_kind = (signed char)op[2];
+				if (residual_kind != 5) goto residual_dispatch;
 				update_residual_pair(terms, result, a, b); op += op[1];
 				if (op[2] != 6) break;
 			}
