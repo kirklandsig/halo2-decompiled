@@ -475,17 +475,22 @@ def contact_group_case(pair_count, seed):
 
 @pytest.mark.parametrize('precision', [0x7f, 0x27f, 0x37f])
 @pytest.mark.parametrize('positive', [False, True])
-def test_bounded_linear_clamp_keeps_divide_then_multiply(solver_images, precision, positive):
-    data = solver_case(5, 2)
+@pytest.mark.parametrize('kind', [4, 5])
+def test_bounded_clamp_keeps_divide_then_multiply(solver_images, precision, positive, kind):
+    data = solver_case(kind, 2)
     put(data, STEP, '7fi', 0, 1, 1, 1, 60, 0, 0, 1)
-    put(data, OPS + 24, 'I3fI', 0x31005, 0.2, -0.4, 0, 0x400)
-    put(data, TERMS, '12f', 1, 0, 0, 1.5 if positive else -1.5,
-        0, 0, 0, 1, 0, 0, 0, 0)
+    row_kind = 4 if kind == 4 else 3
+    put(data, OPS + 24, 'I3fI', kind | 16 << 8 | row_kind << 16, 0.2, -0.4, 0, 0x400)
+    if kind == 4:
+        put(data, TERMS, '8f', 1, 0, 0, 1, 0, 0, 0, 1.5 if positive else -1.5)
+    else:
+        put(data, TERMS, '12f', 1, 0, 0, 1.5 if positive else -1.5,
+            0, 0, 0, 1, 0, 0, 0, 0)
     put(data, IMPULSES, 'f', 0)
     for body in (HEAP, HEAP + 0x80):
         put(data, body + 0x10, '8f', *([0] * 8))
         put(data, body + 0x30, '4f', 1, 1, 1, 1)
-    snapshots = compare_case(solver_images, data, precision, ('linear clamp order', positive))
+    snapshots = compare_case(solver_images, data, precision, ('clamp order', kind, positive))
     # With a 24-bit x87 significand, (bound / impulse) * impulse is one
     # float ULP beyond the bound. Reassociation must not collapse it to bound.
     if precision == 0x7f:
@@ -493,7 +498,8 @@ def test_bounded_linear_clamp_keeps_divide_then_multiply(solver_images, precisio
     else:
         expected, = struct.unpack('<I', struct.pack('<f', 0.2 if positive else -0.4))
     for heap, _ in snapshots:
-        assert struct.unpack_from('<I', heap, 0x10)[0] == expected
+        velocity_offset = 0x20 if kind == 4 else 0x10
+        assert struct.unpack_from('<I', heap, velocity_offset)[0] == expected
         assert struct.unpack_from('<I', heap, IMPULSES - HEAP)[0] == expected
 
 

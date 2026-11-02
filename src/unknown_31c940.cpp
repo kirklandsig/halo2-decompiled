@@ -223,8 +223,8 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	*result += impulse;
 }
 
-// score 2239 (was 2244): capture error-row inputs and B field addresses,
-// avoiding scalar return copies. Register allocation and stack homes differ.
+// score 2219 (was 2239): retain the header cursor home and separate the
+// bounded angular ratio from its multiply. Register allocation and stack homes differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -253,7 +253,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			read_header:
 			{
 				solver_header_31c940 *header = (solver_header_31c940 *)op;
-				a = header->a; b = header->b; terms = header->terms;
+				a = header->a; b = header->b;
+				// Retain the term cursor in its local home when reading a header.
+				__m128 *volatile &terms_slot = terms;
+				terms_slot = header->terms;
 				op += sizeof(*header);
 				break;
 			}
@@ -423,8 +426,18 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 					// while retaining the extended x87 value across both multiplications.
 					double mass_error = (target - angular_velocity(row, a, b)) * mass;
 					float impulse = mass_error * load_error_scale(step);
-					if (impulse > operation_float(op, 4)) impulse *= operation_float(op, 4) / impulse;
-					else if (impulse < operation_float(op, 8)) impulse *= operation_float(op, 8) / impulse;
+					// Preserve the ratio before multiplying by the original impulse.
+					// Compound assignment can cancel the lower clamp's division.
+					if (impulse > operation_float(op, 4))
+					{
+						float ratio = operation_float(op, 4) / impulse;
+						impulse = ratio * impulse;
+					}
+					else if (impulse < operation_float(op, 8))
+					{
+						float ratio = operation_float(op, 8) / impulse;
+						impulse = ratio * impulse;
+					}
 					apply_angular(impulse, row, a, b, result);
 					++row; ++result; op += 16;
 				} while (*op == 4);
