@@ -314,6 +314,8 @@ struct s_block_candidate
 // 347/347/356/358 for long and 347/347/356/358 for dword. Pre-callback segment time remained
 // separate. The missing frame dword and page/ring register roles persist; original observations
 // and callback expression restored.
+// Round 248: Native indexed-ring best/array/deletion-iterator entry storage, seven scope subsets
+// and all with coherent object-role names: 347 each. Original scopes, initialization and body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

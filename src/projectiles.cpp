@@ -1002,6 +1002,10 @@ real function_30bf0(vector3f *v);
 // solved-coefficient storage:
 // 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
 // frame, rounded-root scheduling and separate divisions remain.
+// Round 250: rounded solved-root receiver with conditional long/short/real sign 232/241/261;
+// branch-produced long/short/real sign 262/254/261; default negative/positive integer sign 261/261.
+// Exact-only receivers restored; latter six forms lose five matched callers. Original pointer
+// contract, frame 0x28/0x30, rounded horizontal root and separate-division gap remain.
 // M290: Independent/shared rounded polynomial-root storage with solver/entry declarations and original/shared horizontal-square storage:
 // 232/232/232/232/232/232/232/232. Original executable body restored.
 // Round 43 (lane 15, fast with 0xfa6a0, 0xfa580, 0x1f8100, 0x1f8160; ret 0x2c already agrees, 11 stack arguments; frame 0x28 against

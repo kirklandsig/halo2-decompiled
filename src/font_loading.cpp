@@ -614,6 +614,10 @@ static inline word font_character_pixel(long alpha, long color)
 // DL231: Shared first packed-pixel output, full-width helper/word fills/common first count combinations:
 // 188/196/195/195/188/200/199/199. Alpha extension, literal assembly and two-run reuse remain; original
 // executable source restored.
+// Round 249: Standard fill_n/fill independently at switch/ordinary word-fill boundaries:
+// 173/165/246/173/138/199/194/214. All but ordinary fill also disturb the matched caller in
+// preview. Original loops/header/helper/decoder restored; parity extension, literal assembly and
+// run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

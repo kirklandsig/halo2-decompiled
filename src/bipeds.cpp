@@ -924,6 +924,9 @@ extern long *g_51e9cc;
 // used for both the initialize call and 0x1efd80 gives retail's esi reuse (`mov edx, esi`) and length, 42 -> 17
 // (1481 bytes; left: the crouch sum/store order, case 5's 0x35c store, case 4's store order, the 0x10 or); 0x14a8e0
 // shows the same reuse, so the lead is a source form in which both calls take one pointer value.
+// Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
+// lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
+// address rematerialization and crouch/surface/store scheduling remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
