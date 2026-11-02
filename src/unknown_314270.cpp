@@ -50,3 +50,15 @@ c_314710::c_314710(hkEntity *entity)
 	rotation_b.m128_f32[3] = 1.0f;
 	update_radius_squared(*(shape_bounds_314650 const **)((char *)entity + 0xc));
 }
+
+// The serialization's create callbacks (standard cdecl, like the export and
+// import ones in unknown_314090.cpp): a new constraint from its description.
+// @retail 0x3140e0
+lane_a_ball_socket *__cdecl create_ball_socket_3140e0(c_component_joint_snapshot_4 const *description)
+{ return new lane_a_ball_socket(description); }
+// @retail 0x314880
+lane_a_spring *__cdecl create_spring_314880(c_component_joint_snapshot_3 const *description)
+{ return new lane_a_spring(description); }
+// @retail 0x314c20
+lane_a_prismatic *__cdecl create_prismatic_314c20(c_component_joint_snapshot_5 const *description)
+{ return new lane_a_prismatic(description); }
