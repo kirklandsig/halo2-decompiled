@@ -520,6 +520,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // `entry->active` or `entry->valid` test removed puts the entry on the stack (226, 192). Model index inline 135,
 // scaled locals inline 131, no body pointer 235, those together 131/235. Default-body forms (ternary, field in a
 // local, default-first, count in a local) by found-first and center converter: 112 to 265, converter 149 to 238.
+// N308: Both velocity getters inactive-first/inactive-return/native output/active-path output,
+// original center 147/147/328/219, native center 177/177/305/255. Forced existing getter expansion
+// on the four native-output graphs 261/219/248/255. Original getters, center and body restored;
+// object/entry roles, physics spill and projection schedule remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

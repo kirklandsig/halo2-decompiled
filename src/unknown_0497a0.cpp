@@ -200,6 +200,10 @@
 // Round 512: Complete two-bit mask admission with full-kind/projection-mode/flag
 // snapshots, masks 0/1/2/4/3/5/6/7: 677/596/691/671/691/699/598/703.
 // Original decision and complete body restored; shape/basis/wave homes remain.
+// DL238: Complete shared six-channel clamp with branch-owned attenuation and long/dword/short/byte
+// output modes 959/959/956/962; selected-factor counterparts 997/997/994/1000. Original products,
+// repeated clamp arms, mode publication and sixth-component conversion restored; frame and
+// shape/basis/wave homes remain.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -735,10 +739,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
 // DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
 // Complete opening body restored; no qualifying keeper.
+// Round 466: Complete independent current-position scalars in vertical/planar/camera
+// geometry subsets 1..7, then shared before dispatch: 570/576/570/568/559/626/538/582.
+// Frame/spill homes remain; original coordinate observations and full body restored.
 // Round 316: Paired planar/camera/both offsets 376/388/493; native position
 // alone/with planar/camera/both and assigned native position 669/657/633/628/628.
 // Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0
 // 400/308/407/428/408. Original geometry, products, observations and case order restored.
+// Round 518: half-width across tint on the entry-correct paired-point graph,
+// original/staged side/staged normal/both 325/325/325/325; with vertical normal
+// previous/neighbor/both order 321/334/406; both staged and both orders 406.
+// Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1114,6 +1125,12 @@ void __stdcall function_43720(s_43740_input *input)
 // snapshot mutable/read-only 100/100, both snapshots in four constness forms
 // 124 each. Original body restored; all copies lose the matched caller.
 // Early tag EAX/EBP admission and later slot/shader homes remain.
+// DL238: Entry source/definition, slot and shader request-header subsets 1/2/3/4/5/6/7/all plus
+// shader-relative normal 66/59/68/67/66/73/73/79. Early slot alone reaches retail length at 59, a
+// rejected three-point gain. On it, shared texture-pointer/Boolean admission 69/75; native
+// count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
+// 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
+// homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
