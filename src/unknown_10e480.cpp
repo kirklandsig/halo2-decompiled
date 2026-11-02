@@ -342,6 +342,8 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 299: Finite sampled-outcome domain in both encodings, initialized at the original,
 // pre-getter, positive-entry and function-entry lifetimes: 215/280/306/318/259/288/312/322. Exact-only
 // result forms and original full body restored; frame, getter and destination/ordinal homes remain.
+// J239: getter-result guarded phase/early return/conditional producer/loop admission [264, 264, 264, 256];
+// each with the twice-used native long frame [275, 275, 275, 225]. All implied-admission forms and original body restored.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

@@ -315,6 +315,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // stores 142 (964: both copies go through integer registers), y first 142; a corner local copied out 244 (1039); a
 // two-call component helper 144; a row pointer local 142. Forward/left pointer locals 64, with origin 60; references for
 // the coordinates 46; box fields 50, with pointers 62; rows z, y, x 79; rows y, x, z 71.
+// Round 328: existing vector/point normal setters with copied/source/plane/normal
+// receivers 207/211/209/213 and 207/211/209/211. Original normal block copy,
+// all consumers, corner helper and complete body restored; plane base and product ranks remain.
 // Round 364: On by-value selectors/component-array/point-setter graph, plane receiver,
 // shared edge norms and shared determinant subsets 1/2/4/3/5/6/7: 91/130/44/165/87/130/165;
 // all with both squared lengths named 154. The two-point determinant gain is ineligible;
@@ -322,6 +325,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
 // native/array planar sums, native/array parallel products and native running coordinates
 // 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
+// N320: Paired native 3D point setter and 2D determinant reaches 42, below the eight-point gain bar;
+// plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
+// and product ranks remain. Scores 42/87/76/90/54/82/66/90.
+// Original executable source restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -851,6 +858,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH round 290: unconditional decoded plane owned by native value or destination,
 // scalar fields/plain vector loop, then each with common angle result:
 // 896/897/753/753/864/898/737/739. All regress; original decoders, angle gate and body restored.
+// Round 532: native axis/bound-pair/up-component cursors, seven subsets and all with short
+// orientation ordinal: fast 779/771/802/793/779/771/809/873 versus unchanged fast 795.
+// Minimal axis/bounds cursors plain 574/591 at 3631/3599 bytes versus full 539/3647; both rejected.
+// Original indexed component loops, complete body and all helpers restored; tag/count/plane homes remain.
+// Round 330: sequential outer/inner signed-short ordinal and candidate/selected-plane
+// storage subsets 1-7, then all with bound-first search, fast 771/780/781/762/822/807/774/770. Original body restored;
+// first grouping plane stays independent; tag/count/plane homes remain.
+// Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
+// ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

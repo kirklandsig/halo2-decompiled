@@ -62,7 +62,7 @@ bool g_47f05b;
 // the object before the two following stores (our build drops that store, which comes from the
 // header's inline constructor and so is out of reach from this file) and still reloads g_479888 on
 // the constructed arm where ours reloads it at the join.
-// score 34 (was 34): the base vtable store is still dropped and the pool placement
+// Earlier: the base vtable store is still dropped and the pool placement
 // still reloads g_479888 at the join where retail reloads it on the constructed arm.
 // Earlier headers, merged: unchanged that round (34); a one-file LTCG probe keeps the
 // store only for a load through an unknown pointer between the two stores, which
@@ -254,6 +254,9 @@ bool g_47f05b;
 // Round 300: Passive refcount header initialized by its abstract owner before/after the
 // native reverse four-word pass, long/int/short/signed-char indices:
 // 33/33/54/54/35/35/54/54. All worsen other constructor users; original header/body restored. Intermediate vtable store and arm reload remain.
+// J239: intermediate fixed-base storage with byte/next-object/sizeof buffer before reset [34, 34, 34];
+// after reset [34, 34, 34]; scoped next-object/sizeof with chained state [34, 34].
+// Original placements and body restored; intermediate vtable store and successful-arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {

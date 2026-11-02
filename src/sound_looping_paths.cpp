@@ -515,7 +515,7 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 	function_189fe0(&request, tag);
 }
 
-// score 150 (was 159): frame 0x148 agrees; BSP/count homes +0x10/+0x14
+// score 150 (was 150): frame 0x148 agrees; BSP/count homes +0x10/+0x14
 // are exchanged, camera/query and request publication scheduling remain.
 // Earlier 154 (was 223): the transition definition read through the local bsp and the missing-query fill
 // order; the entry test and scan match retail's, but the position copy (retail loads x, the cluster, y and
@@ -667,6 +667,12 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 528: Query scope ending before publication with long/int/short/word ordinal
 // 159/159/309/309; complete position/query scope ending there 150/150/310/310.
 // The original long ordinal and complete workspace scope retained, 150 plain at 1033 bytes.
+// Round 331: Request sentinel production before the query at request/position/update/query phases, long
+// then short initializer, 265/242/252/211/265/242/252/211. Original production phase, query scope,
+// ordinal and entire body restored; BSP/count homes remain.
+// Round 479: Coordinated portal-angle register-parameter orders RLBP/BRLP/LRBP/RBLP/LBRP/BLRP/RLPB/LRPB
+// (R reverse, L listener, B BSP, P portal), fixed point/radius/output tail: 156/150/156/150/156/150/156/156.
+// Original provider signature, declaration, call and complete caller restored; BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

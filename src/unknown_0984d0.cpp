@@ -489,6 +489,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // P265: Native rejection bool/byte/signed-byte/short/word/long/dword/int64 on the retained byte
 // ordinal 153/153/153/205/205/203/203/148. All exact-only flag forms restored; validity
 // home, validation carriers and loop-entry reload remain. Original helper and body restored.
+// M316: On signed-byte ordinal graph: size/handle producer forwarding with inherited/plain cursor reads, then long producer result 188/194/189/209/209/209/209/80.
+// Validity home, validation carriers and loop-entry reload remain; original helper and inherited cursor reads restored. Original executable body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

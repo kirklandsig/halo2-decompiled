@@ -492,6 +492,12 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N304: Uniform scalar direction/axis/cross product families, seven subsets
 // then all immutable: 157/139/139/139/157/139/139/139. Original body restored;
 // frame 0x28/0x20 and old-direction, seed/time and tail scheduling remain.
+// Round 328: actual random-angle/rotation/clamp phase scopes in all seven
+// subsets, then all with immutable complete rotation inputs, 117 each. Original
+// scopes and full body restored; frame 0x28/0x20 and seed/direction/cross homes remain.
+// P271: Consumer-scoped angle on retained projection/row/tail graph, independent
+// entry old/axis/cross declarations masks 0..7: 165/165/165/165/165/165/165/165.
+// Original body restored; frame and seed/direction/rotation homes remain.
 // Round 364: Real-coordinate-array transfers for direction/axis/both/both plus output,
 // long ordinals 167/183/190/190; short ordinals 117/141/141/152. Long axis forms shrink
 // the frame to 0x24, direction alone grows it to 0x30; all original transfers and body
@@ -499,6 +505,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // DH round 290: sampled axis ordinal short/word/long/dword reused for all three native
 // component reads, aggregate producers 161/161/161/161; shared setter 173/173/173/173.
 // Original draws, native axis/direction captures, cross/dot, all rows and tail restored.
+// AC480: Existing in-place double output scale / complete initialization result / named amplitude
+// envelope, subsets 1/2/4/3/5/6/7, then double scale with weighted oscillation: 158/178/118/204/159/178/204/158.
+// Original transfers, producers and complete body restored; frame and direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

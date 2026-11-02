@@ -654,6 +654,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in a local struct or a two-element array, read through the pointer 61 (aligned 34), direct 139.
 // The whole body in a scoped block, word direct/pointer 139/63; the accumulators and what follows in
 // a scoped block with the masks outside it 139.
+// Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
+// subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
+// reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5551,6 +5554,9 @@ void __stdcall function_d6bc0(long object_index);
 // N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
 // with immutable kind, 144 in all eight forms. Original signed-word producers
 // restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
+// Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
+// and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
+// domains restored; frame 0x14/0x18 and independent timer spill remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
