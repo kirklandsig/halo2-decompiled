@@ -60,7 +60,7 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 	long arg_5, dword arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
 	void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
 	bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
-	real arg_21, byte arg_22, point3f const *arg_23, real arg_24);
+	real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
 // score 16 (was 16): the 22nd argument of the 0x2cbf0 call is a word in retail but 0x2cbf0 declares a
 // byte (that declaration is also in src/unknown_1321f0.cpp); field_2c[i] is computed before the
@@ -220,7 +220,7 @@ void function_133f70(s_133f70 const *record, bool arg_2)
 					record->field_1be, record->field_1bc, NULL, record->field_1d0, record->field_1b4,
 					record->field_1c0, record->field_1c4, first, second, record->field_1d4,
 					record->field_1d8, record->field_1dc, record->field_1e0,
-					(byte)record->field_c6[i][j], &record->field_194, record->field_1a0);
+					record->field_c6[i][j], &record->field_194, record->field_1a0);
 			}
 		}
 	}
