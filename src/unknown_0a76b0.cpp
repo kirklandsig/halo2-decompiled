@@ -1380,6 +1380,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// M311: Unsigned bounded hand bool/byte/word/unsigned-int, each Boolean/direct long argument:
+// 189/184/189/184/136/144/148/203; restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -2217,6 +2219,8 @@ __forceinline char unit_action_round(real value)
 // M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
 // with Boolean active test 297/299; both 295/297. All regress and are restored;
 // pool/index/type/name register ownership and result-byte home remain.
+// M311: Native bounded event type short/word/char/byte, original/numeric actual-case order:
+// 243/243/243/243/270/270/270/270; restored.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4300,7 +4304,7 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 175 (was 201): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
+// score 175 (was 175): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
 // Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
 // (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
@@ -4334,6 +4338,8 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
 // Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
 // 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
+// M311: Returned object-transform/point-helper composition/reversed actual-case subsets 1-7, all with
+// entry frame: 374/175/374/175/374/175/374/374; restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

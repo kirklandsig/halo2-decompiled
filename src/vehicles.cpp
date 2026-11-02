@@ -1160,6 +1160,9 @@ long function_10f5f0(long object_index);
 // M309: Actual returned matrix input, original/returned physics-state receiver,
 // with original/six-real output extent: 590/622/590/622; completed final result
 // 597/622/597/622. All restored; frame 0x19ac and native flag-result homes remain.
+// M311: Native tag-field layout with actual physics-case orders
+// 013456/016543/654310/601345/345601/456013/560134/103456: 588/590/592/592/590/590/590/590; restored.
+// M311 continued: Native indexed light records, plain/Boolean bit-4 test 595/589; restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
