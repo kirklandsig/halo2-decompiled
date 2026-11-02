@@ -3268,6 +3268,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
 // sum 364. Exact-length 364/363 gains are below threshold. Original complete body
 // restored; matrix/origin and paired pivot/property homes remain.
+// M317: Sequential parent/rotation, origin/placed and pivot/target workspace reuse subsets 1/2/4/3/5/6/7, all
+// with consumed-direction reuse; root relocation offset with aggregate copy/point setter:
+// 369/401/395/401/395/428/428/428/396/379.
+// Matrix/origin and paired point/property homes remain. Original executable body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4440,6 +4444,9 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // body restored. An unused-address preparation 198 is excluded, not a gain.
 // M313: Natural input/direct relative-query output with CRT copy/direct success/short contact subsets; callers lose 61/14; restored;
 // fast 239/239/253/253/238/238/254/254.
+// M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
+// long/short contact truth: 317/228/228/228/228/228/228/231/228.
+// State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
