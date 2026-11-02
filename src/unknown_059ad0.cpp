@@ -3501,7 +3501,7 @@ void function_61050(c_class_58d20 *session, long channel_index,
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 119 (was 119): frame 8 agrees; attach scratch rotation and separate reject tails remain (fast control 131, full 119).
+// score 76 (was 119): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
 // Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
 // split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
 // copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
@@ -3563,6 +3563,11 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // right after the lookup (not sunk into the arm) 131 (the first reason-7 tail then loads ECX as retail);
 // that with the flag read by index 141 (483 bytes); `long channel = NONE;` 119 and `channel` declared
 // at the top 119 (same code); a named pointer to the existing member for memcmp and properties 144.
+// Round 511: eligibility before attach dispatch, indexed/nullable-state receivers with
+// negative/positive admission 76/143/76/143; machine memmove variants
+// 184/185/184/185. Keep the indexed early eligibility guard, plain 76
+// at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
+// attach producers, reservations and call tuples stay fixed.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3571,6 +3576,11 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 	volatile bool result = true;
 	s_session_machine_address machine = *(const s_session_machine_address *)((const byte *)identity + 0xa);
 	long member = network_session_find_member_by_machine(session, &machine);
+	if (member != NONE && !session->member_states[member].flag1)
+	{
+		*reason = 5;
+		return false;
+	}
 	long channel;
 	if (member == NONE)
 	{
@@ -3583,15 +3593,9 @@ bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_ide
 	}
 	else
 	{
-		s_network_session_member_state *state = &session->member_states[member];
-		if (!state->flag1)
-		{
-			*reason = 5;
-			return false;
-		}
 		if (!memcmp(session->members[member].words, identity, sizeof(*identity)))
 		{
-			long time = state->unknown10;
+			long time = session->member_states[member].unknown10;
 			long now = network_session_time_now();
 			if (!session->members[member].properties_valid && now - time < g_network_configuration.value1468)
 				return result;

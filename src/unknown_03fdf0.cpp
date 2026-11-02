@@ -464,6 +464,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 508: Native contiguous count/flags/first memset at first/second/both groups and a
 // plain group loop, block/indexed receivers 152/152/152/169/146/164/164/168. Original
 // scalar resets and body restored; scaled-index, first-index and copy/count homes remain.
+// Round 511: full-array memmove, block/indexed receivers and live/shared copy count
+// 169/162/165/151; late cursor pairs 169/164/165/151. Original
+// memcpy and body restored; scaled-index, first-index and copy/count homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

@@ -912,6 +912,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 506: final direction scaled-difference shared/native producers with late/entry vector,
 // dead search-delta reuse or shared setter 557/557/557/547/557/557/557/557. Original
 // vector/scalar producers and entire body restored; frame/input and fraction homes remain.
+// Round 511: complete sample-position captures nearest/anchor/opposite subsets through
+// memcpy 742/589/781/701/873/729/900; all through memmove 1483. Original
+// body restored; native frame/input, scan and fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
