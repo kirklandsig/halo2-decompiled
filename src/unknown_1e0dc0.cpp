@@ -24,19 +24,16 @@ long __stdcall function_1e0160(long squad_index, long entry_index, long unit_ind
 
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
-// score 2 (was 2): retail writes the request's fields in the order type (0x31),
-// arguments[0] and arguments[2], ours writes arguments[0], type and
-// arguments[2]. Retail's time-field load precedes the type store, so the
-// product is evaluated before it. Tried: all six store orders 2-15 (type
-// first leaves the field load below the type store); a named short, long or
-// word duration local in each order 2-25 (it takes AX from the dying time
-// pointer and its store moves above `mov eax, ebx`); named duration and
-// request-value locals 20. Round 11 (lane 17): type first 6 (the type store is scheduled above
-// the time-field load); a short duration local before the type store, at block scope, before the
-// request or at function scope 20/20/20 (the product takes AX and its store is hoisted above the
-// type store; the e6900 result path then changes registers); the product written `3 * field` 2.
-// A typed union member for the two arguments instead of the casts: our order 2, type first 6.
-// The one-file harness is not exact here (7: callee conventions).
+/* sends the unit a type 0x31 request carrying a duration and a value */
+PRIVATE inline bool unit_send_request_31(long unit_index, short duration, short value)
+{
+	s_unit_request request;
+	request.type = 0x31;
+	*(short *)(request.arguments + 0) = duration;
+	*(short *)(request.arguments + 2) = value;
+	return function_e6900(unit_index, &request);
+}
+
 // @retail 0x1e0dc0
 long function_1e0dc0(short team, long unit_index, short request_value, short squad_index)
 {
@@ -60,11 +57,7 @@ long function_1e0dc0(short team, long unit_index, short request_value, short squ
 		{
 			if (*squad_reference == NONE)
 				function_1e11b0(result, true);
-			s_unit_request request;
-			*(short *)(request.arguments + 0) = g_510c54->field_2_3 * 3;
-			request.type = 0x31;
-			*(short *)(request.arguments + 2) = *request_reference;
-			if (function_e6900(*unit_reference, &request))
+			if (unit_send_request_31(*unit_reference, g_510c54->field_2_3 * 3, *request_reference))
 				unit_submit_entry_request(0x15, NONE, actor_get(result)->unknown018, 0xd, NULL);
 		}
 	}

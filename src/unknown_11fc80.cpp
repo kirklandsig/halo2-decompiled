@@ -159,6 +159,9 @@ static inline real distance_squared(point3f const *a, point3f const *b)
 // mid_up declared earlier 21-30; mid_left before each earlier statement 8-56; a shared axis
 // rebuild helper for root and mid 2 (with the point helper 4); unused-local probes (diagnostic
 // only) show the helper form needs mid_forward's numbering moved by 3-5 (mod 8).
+// Round 118: second root cross through function_1f087b/cross_11e130/function_25a131/
+// vector_basis_cross/matrix_cross 12/62/122/2/2 (plain); up/forward/both input copies
+// 149/138/176. Original helper and body restored.
 // @retail 0x120220
 void function_120220(
 	transform4x3f *target,

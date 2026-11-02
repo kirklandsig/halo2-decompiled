@@ -628,6 +628,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 230: native unsigned object/prop handles and signed-byte side truth, seven subsets; all with
 // unsigned-byte truth, scores [77, 77, 77, 77, 77, 77, 77, 77].
 // Original executable source restored. Zero-test scheduling and rotation register homes remain.
+// DL231: Existing shared planar normalizer scale-first/one-result/native-output subsets; joined scale-
+// first j-first stores: 77/119/119/189/189/189/189/121. Zero-test lifetime and rotation registers remain;
+// helper and all users restored; original executable source restored.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
