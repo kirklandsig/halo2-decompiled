@@ -389,6 +389,8 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // renamed outer/inner 8 (same slots: these are spill homes, names do not order them); the collector
 // and contact buffer declared before the loops 181; i and j declared before the loops 8; an early
 // NONE return in place of the enclosing test 87; second declared before first, assigned in order 8.
+// Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
+// copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
