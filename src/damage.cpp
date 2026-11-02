@@ -4300,6 +4300,10 @@ PRIVATE inline long model_find_physics_node(byte *model, short physics_node)
 // DL244: Root/cursor/graph names and Boolean XOR 166 throughout; canonical bool/byte membership != or XOR 194, word 165/149, dword 166/166.
 // Word membership XOR 149 (803/803, whole-program plain, no lost match) NOT kept: the local type was picked by score from bool/byte/word/dword. Body restored at 166.
 // Native signed-list/entry-mask follow-ups 249/149/249/149/249/149/249/249, restored; frame 0x447c and root/iterator/list/query register gaps remain.
+// F332: Existing node-search index early return 150; indexed while result/early 166/150;
+// cursor for result/early 228/149, cursor while result/early 228/149, direct row inputs 229.
+// Indexed for early exits (plain 150, frame 0x4478, 782/803 bytes) NOT kept: the helper copies matched
+// 0x16d890, which keeps result + break, and the frame/length move away from retail. Body restored at 166.
 // @retail 0xdb810
 dword function_db810(long object_index, long node_index)
 {

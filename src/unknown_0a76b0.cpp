@@ -1413,6 +1413,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // and conditional/branch event: 136/203/144/142/139/205/95/188. Keep the real array,
 // direct bounded hand and branch event with the original long slot: plain 95, 606/604 bytes.
 // All other full-image measurements stay unchanged; entry table and second unit load remain.
+// F332: Actual two-element array cursor, endpoint/long/short/word termination
+// 103/186/187/187; with consistent direct receiver observations 264/266/267/267.
+// Original indexed scan and receiver ownership restored; entry pool/hand and second load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

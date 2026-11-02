@@ -4080,6 +4080,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // F327: Four-use component index, completed true-arm return and both 176/176/176;
 // native byte quantization alone/with either/both 178 each; all with twice-used change
 // 178. Original complete body restored; found-index retest and collision/result allocation remain.
+// F332: Sound admission produces the returned Boolean, original/entry/pre-call/
+// pre-iterator change-state storage 271/271/279/279; with late constant sound
+// initialization 215/215/334/334. Original result production and all lifetimes restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

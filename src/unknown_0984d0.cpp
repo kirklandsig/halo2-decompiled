@@ -489,6 +489,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // P265: Native rejection bool/byte/signed-byte/short/word/long/dword/int64 on the retained byte
 // ordinal 153/153/153/205/205/203/203/148. All exact-only flag forms restored; validity
 // home, validation carriers and loop-entry reload remain. Original helper and body restored.
+// F332: Paired validity/byte-ordinal lexical priorities, four pairs 80 each;
+// the same pairs with ordinal storage inside the count guard 207 each. Original
+// names, lifetimes and complete body restored; validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
