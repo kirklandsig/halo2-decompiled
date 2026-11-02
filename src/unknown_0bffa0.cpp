@@ -791,13 +791,17 @@ struct s_first_person_marker;
 short first_person_weapon_get_markers(long weapon_index, long marker_name, s_first_person_marker *markers, short count);
 bool function_3e9c0(long object_index);
 long function_b8c40(long object_index, short entry_index);
-bool function_2dba0(long tag, vector3f const *direction, bool alternate, long kind, long index, long marker_index, point3f const *position, color3f const *color, real alpha, real amount, real scale);
+bool function_2dba0(long tag, bool alternate, long kind, long index, long marker_index, point3f const *position, vector3f const *direction, color3f const *color, real alpha, real amount, real scale);
 void function_42850(long object_index, long tag_index, point3f const *position,
     vector3f const *first, vector3f const *second, real scale, real width,
     vector3f const *third);
 byte g_55e708;
 
-// score 128 (was 128): BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
+#define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
+
+// score 38 (was 128): the loop, frame and clamp are retail's; left are scratch register picks only (object argument and
+// count in the fallback arm, the loop's amount/index loads, the single-marker arm, the opacity reload). 0x2dba0's order is
+// now applied: earlier BLOCKED-BY 0x2dba0 (parameter order): with its parameters declared (tag, alternate, kind,
 // index, marker_index, position, direction, color, alpha, amount, scale) at its definition and every call (0x2dba0 and
 // its other callers unchanged) the marker loop anchors on the position pointer as retail (the cursor anchors on the
 // address evaluated last) and this is 45 at retail's 607 bytes, 38 with the opacity through the PIN macro; the
@@ -856,6 +860,18 @@ byte g_55e708;
 // 128 (identical); a pointer loop to `markers + count` with `marker - markers` as the index 161 (642 bytes); a
 // guarded do-while 116 (607 bytes only by padding: the count clamp stores immediates and EBX is reloaded after
 // 0xb8d30 as retail, but the forward anchor stays; a hand-inverted loop, not kept).
+// Round 136 (m3 lane 5, fast with 0x2dba0/0x31520/0x3e9c0/0xb8c40/0xb8d30/0x1662a1/0x42850 listed, plain confirmed):
+// 0x2dba0's order applied (retail pushes scale, amount, alpha, color, position, marker index, index, kind, then the
+// 0x3e9c0 result, tag in ECX, direction derived from the position cursor) 45, the opacity through PIN 38. On 38: indexed
+// while 38; for with marker pointer 40; indexed for 38; count/array declared first 38; object_index for all object reads
+// 132, for the 0xb8c40 argument 135; no object_index local 38 (kept); count ternary 38; count if/else 38; `count == 0` 38;
+// marker pointer declared with count 38; i before marker 38; marker stepped first 40; count = 1 before the flag test 107;
+// PIN as call argument 38; named product 38; assignment inside the test 38; nested first-person test 38; short-cast count
+// argument 38; amount local in the single arm 97; alpha local in the loop 114, both arms 115; colour pointer local 143;
+// typed light/definition/object fields, singly and all together 38 each; direction after the colour/alpha/amount 38/38/38;
+// the count arms in an inline helper 178 (stays a call), forced inline 146; a named fallback count 38. The picks do not
+// move with symbols here (unlike 0x17d9a0): retail's fallback arm takes EAX for the object and EDX for the count, then
+// `mov eax, edx`; ours takes EDX then EAX, coalesced.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
@@ -868,8 +884,7 @@ void __stdcall function_c3340(long light_index, long unused)
         {
             if (*(short *)(light + 0x54) != NONE)
             {
-                long object_index = *(long *)(light + 0x4c);
-                byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
+                byte *object = *(byte **)(g_4e0300->data + (*(long *)(light + 0x4c) & 0xffff) * 12 + 8);
                 long marker_name = function_b8c40(*(long *)(light + 0x4c), *(short *)(light + 0x54));
                 s_object_marker markers[2];
                 long count = 0;
@@ -888,18 +903,17 @@ void __stdcall function_c3340(long light_index, long unused)
                 long i = 0;
                 while (i < count)
                 {
-                    function_2dba0(*(long *)(definition + 0x94), &marker->matrix.forward, function_3e9c0(*(long *)(light + 0x4c)), 2, absolute_index, i, &marker->matrix.position, (color3f *)(light + 0xd4), 1.0f - *(real *)(light + 0xc8), *(real *)(light + 0xd0), 1.0f);
+                    function_2dba0(*(long *)(definition + 0x94), function_3e9c0(*(long *)(light + 0x4c)), 2, absolute_index, i, &marker->matrix.position, &marker->matrix.forward, (color3f *)(light + 0xd4), 1.0f - *(real *)(light + 0xc8), *(real *)(light + 0xd0), 1.0f);
                     ++i;
                     ++marker;
                 }
             }
             else
-                function_2dba0(*(long *)(definition + 0x94), (vector3f *)(light + 0xac), function_3e9c0(*(long *)(light + 0x4c)), 2, absolute_index, 0, (point3f *)(light + 0x84), (color3f *)(light + 0xd4), 1.0f - *(real *)(light + 0xc8), *(real *)(light + 0xd0), 1.0f);
+                function_2dba0(*(long *)(definition + 0x94), function_3e9c0(*(long *)(light + 0x4c)), 2, absolute_index, 0, (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (color3f *)(light + 0xd4), 1.0f - *(real *)(light + 0xc8), *(real *)(light + 0xd0), 1.0f);
         }
         if ((light[2] & 2) && *(long *)(definition + 0xa0) != NONE)
         {
-            real opacity = (1.0f - *(real *)(light + 0xc8)) * *(real *)(light + 0xd0);
-            opacity = opacity < 0.0f ? 0.0f : opacity > 1.0f ? 1.0f : opacity;
+            real opacity = PIN((1.0f - *(real *)(light + 0xc8)) * *(real *)(light + 0xd0), 0.0f, 1.0f);
             function_42850(*(long *)(light + 0x4c), *(long *)(definition + 0xa0),
                 (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8),
                 1.0f, opacity, (vector3f *)((byte *)g_4686cc + 4));
@@ -1085,6 +1099,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // existing 0x30bf0 called 695 (2734 bytes: stays a call); a one-caller normalize with the sum spelled
 // i*i + k*k + j*j 315 (identical to normalize3d: the unparenthesised sum is re-sorted), i*i + (j*j + k*k) 568
 // (aligned 448), (i*i + k*k) + j*j 567 (aligned 450).
+// Round 136 (m3 lane 5, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): an instruction-shape histogram against
+// retail shows the same shapes except 7 fewer `movss x, [m]`, 6 more `mulss x, [m]`, 4 more `movaps` and the x87 sum's
+// stack order: no block is missing, only which operand folds. Half extents as width*scale then `*= 0.5f` 603 (2773 bytes);
+// extents read first, scale after, `*=` steps 315 (same code); bounds stored after the corners in retail's x0, y0, x1, y1
+// order 315 (aligned 279 -> 276); both 603; extents-first with bounds last 315; centre read into named x/y 568; plane
+// distance through dot3f 315; depth stored after has_plane 377.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
@@ -1478,7 +1498,6 @@ bool function_b9d20(long object_index);
 struct s_object_list;
 extern s_object_list *g_4de2f4;
 
-#define PIN(x, low, high) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
 // @retail 0xc0c80
 void __stdcall function_c0c80(long light_index)
