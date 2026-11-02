@@ -219,6 +219,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both/native long balance/record-balance/setter-balance/all/all with initial memset
 // 439/477/477/454/454/477/477/486. Original record, property construction, short balance
 // and complete body restored; frame/result/state/getter homes remain.
+// Round 304: false result after receivers/type/primary/secondary admission, with explicit early
+// false outcomes: 441/446/470/470; with Boolean reset 471/449/484/484 (frame 0x3e4). Original
+// result default, long reset and complete body restored; result/state homes and getter boundary remain.
 // DL224: Coordinated inline count/team balancer and player-lookup declarations in seven subsets
 // 439 each; all three with the capacity getter 439. All checked user scores agree; every original
 // declaration and body restored. Frame, dead state stores, result-byte home and data-getter

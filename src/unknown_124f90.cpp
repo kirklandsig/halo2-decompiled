@@ -3660,6 +3660,8 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
+// retail's and the gain argument's homes and the joined clamp stores still differ.
 // score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
