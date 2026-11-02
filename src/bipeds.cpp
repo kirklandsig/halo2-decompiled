@@ -1351,6 +1351,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Round 330: consumed nearest points for eye/center and shared target/body point,
 // subsets 1-7 then all with long airborne 616/600/604/619/615/600/600/644. Original complete body restored;
 // frame, material/animation homes and entry scheduling remain.
+// N321: Actual animation-getter return used by packed setter with early/producer construction and
+// current/selected homes: 608; each with native turning 628. All regress and leave frame 0xf8 versus
+// 0xfc. Original getter use, value graph and complete body restored. Scores
+// 608/608/608/608/628/628/628/628.
+// Original executable source restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2978,6 +2983,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // frame 0x78, flight scalar/byte homes and wall-vector scheduling remain.
 // M313: Native orientation/shared short-hand getter/entry scalar declaration subsets, then branch scalar declaration; original body restored;
 // fast 600/616/616/600/600/616/616/616.
+// N321: Common final result, bool/long/byte width and result-first lifetimes on the retained
+// long-special graph tie or regress against reduced control 605, except byte common result 603
+// (two-point lead, restored). Full baseline 561 retained; flight/result/vector homes remain. Scores
+// 605/625/610/605/618/603/605/618.
+// Original executable source restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3993,6 +4003,11 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // P268: Native angle/sine/cosine lexical home subsets 1/2/4/3/5/6/7, then all with
 // complete private projection/cross scalar identities: 145 each. Original helper/body restored;
 // normalized-axis SIMD ranks, trigonometric homes and rotation/basis carriers remain.
+// N321: Complete in-place vector accumulation through existing scale/add producers, with
+// no/cosine/projection/sine/pair/all workspaces, all regress and grow the body. Original private
+// helper and target body restored; normalized-axis SIMD and trig/rotation homes remain. Scores
+// 183/197/263/200/217/201/285/218.
+// Original executable source restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

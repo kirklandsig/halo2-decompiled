@@ -1777,6 +1777,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Round 364: Real shared request payload, pointer/direct access, original/entry result,
 // original/split admission: 60/60/130/130/60/60/130/130.
 // Original request union, body and input observations restored; request/weapon homes remain.
+// N320: One admission/pickup phase result, bool/byte storage, nested admission and native
+// switch/if-chain: all regress and add storage or length. Request/weapon homes and getter expansion
+// remain; original source restored. Scores 141/143/141/143/167/165/167/165.
+// Original executable source restored.
 // Round 366: Native admission field and input-only weapon/pickup contracts, seven
 // subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
 // interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
