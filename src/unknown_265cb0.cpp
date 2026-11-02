@@ -1977,6 +1977,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 535: independent first/second/both real-table pointer walks, then native long
 // first/second/both ordinal combinations: 387/369/433/389/372/433/456/456. Original scans and body
 // restored; entry operand order, established/visible bytes and direction residence remain.
+// Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
+// boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
+// established/visible homes and normalized direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

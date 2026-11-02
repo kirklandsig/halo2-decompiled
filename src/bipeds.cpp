@@ -1910,6 +1910,9 @@ void function_dfd70(long arg_159e6d)
 // forward-up names / native tag-table receiver, subsets 1/2/4/3/5/6/7, then all
 // with head declared after collision: 228/222/222/228/228/222/228/228. The 222
 // form restores ret 0x14 but needs exact bytes; all bodies and helpers restored.
+// Round 537: real forward/up/direction scratch scope subsets 248/248/248/248;
+// remaining subsets and head-at-copy 248/248/248/248. Original shared helper and
+// complete target restored; offsets transport and forward/up homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4475,6 +4478,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // frame/state-result lifetime and input convention remain.
 // Complementary bool/byte results recover frame 0x28 at 232, but lose the two
 // matched callers at 61/14 through the natural register input; restored.
+// Round 537: natural input with complementary support result bool/byte/short/long,
+// entry success 229/229/217/219; query-bound success 225/225/213/215. Original complete body
+// restored; native stack input, state/result lifetime and 0x28 frame remain unresolved.
+// NOT kept: natural-input forms lose matched callers through the input convention.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

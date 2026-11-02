@@ -1672,6 +1672,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // seven subsets, then all with full player value: 167/138/134/167/165/134/165/167. Original body
 // restored; same-block pool reload and weapon/mode homes remain.
 // Short hand alone 134 gains four above 30 and is below the retention gate.
+// Round 537: shared hand-getter result first/valid arms/invalid arms/conditional
+// 138/138/138/138; each with caller success result 171/134/134/134. Helper and
+// complete body restored; 134 gains four and shortens to 526/538, below the keep gate.
+// All helper forms raise other users, including 0xe8510; none is eligible to keep.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2297,6 +2301,9 @@ __forceinline char unit_action_round(real value)
 // 243/243/243/243/270/270/270/270; restored.
 // M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
 // fast 326/379/549/338/382/552/556/559.
+// Round 537: failure-result lifetime at play/pre-call/post-call/fallback boundaries,
+// bool 235/235/235/235; byte 235/235/235/235. Every original selection, call and
+// complete body restored; pool/type/name ranks and completion-byte home remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
