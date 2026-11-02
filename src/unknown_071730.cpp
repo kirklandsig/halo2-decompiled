@@ -204,6 +204,9 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // both/native long balance/record-balance/setter-balance/all/all with initial memset
 // 439/477/477/454/454/477/477/486. Original record, property construction, short balance
 // and complete body restored; frame/result/state/getter homes remain.
+// Round 304: false result after receivers/type/primary/secondary admission, with explicit early
+// false outcomes: 441/446/470/470; with Boolean reset 471/449/484/484 (frame 0x3e4). Original
+// result default, long reset and complete body restored; result/state homes and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

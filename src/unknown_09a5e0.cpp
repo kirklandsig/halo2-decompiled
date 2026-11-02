@@ -2258,6 +2258,8 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Native object/offset and low-mask homes remain; original tests, stores and body restored.
 // DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
 // 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
+// Round 304: high-first/combined-mask/low-bank-fold/high-bank-fold admission 285/267/264/262;
+// with the actual entry slot named 285/267/264/262. Original request tests and full body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
