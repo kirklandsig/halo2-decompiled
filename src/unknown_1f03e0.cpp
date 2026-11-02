@@ -989,6 +989,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
 // Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
+// DH297: Complete direct/positive-normal/low-normal product groups, subsets 1-7,
+// then column-owned planar terms: 556/556/437/473/425/417/473/473. Best: the positive-normal and both
+// low-normal product groups as ten one-use named product locals, 417 plain (3038 bytes; first difference
+// at +0xd, damping in ECX/EDX). NOT kept: one-use temporaries that only steer evaluation order are kept
+// only with a match; body restored at 433.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

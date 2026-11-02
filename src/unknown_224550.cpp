@@ -315,6 +315,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 318: Direct-bounds UV outputs encoded independently by the existing encoder,
 // geometry/output phases GAB/AGB/ABG/GBA, then a shared two-use selector;
 // 645/645/645/645/575/575/573/575. Original whole body and helpers restored.
+// Round 331: Native primary-aspect/secondary-span/reciprocal stage boundaries, two early-selector
+// graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
+// interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend
+// homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

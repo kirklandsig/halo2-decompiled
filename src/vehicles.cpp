@@ -1132,7 +1132,7 @@ long function_10f5f0(long object_index);
 /* the vehicle object type's update: its Havok bodies, controls, its
    vehicle type's physics, its kill volume, boost and lights, and the unit
    update */
-// score 565 (was 588): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
+// score 565 (was 565): Frame 0x19ac versus retail 0x1984, native flag-result byte stores, sum-loop unrolling
 // and scalar/SSE homes remain.
 // Earlier at 597 (was 597): frame 0x19ac versus retail's 0x1984; flag and scalar homes differ. 715 before round 114.
 // Round 114 (lane 6): 715 -> 639 with no change here, from 0x2056e0's cap helper no longer naming a
@@ -1179,6 +1179,9 @@ long function_10f5f0(long object_index);
 // M311: Native tag-field layout with actual physics-case orders
 // 013456/016543/654310/601345/345601/456013/560134/103456: 588/590/592/592/590/590/590/590; restored.
 // M311 continued: Native indexed light records, plain/Boolean bit-4 test 595/589; restored.
+// AC481: direct initial changed truth / branch-owned lit truth / logical final result,
+// subsets 1/2/4/3/5/6/7: 569/567/587/570/639/581/623; all with a signed
+// countdown point cursor 642. Original body restored; frame and flag-result homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -1606,6 +1609,7 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // P255: Existing object getter at both/first/second headers 17/13/17; paired dot helpers
 // 361, with both/first/second getters 365/361/365; reversed paired dots with both getters
 // 365. Original body restored; header SIB, join reloads and cross/dot ranks remain.
+// J239: actual table-base capture 521; separate refresh/publication ordinals 17; bounded short ordinal 384; base with separate ordinals 521; base with short ordinal 506; separate short ordinals 384; all three 506; sequential animation-ID output cursor 17; coordinated kind-getter inline declarations 13. Original body and declarations restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2662,7 +2666,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
 // score 692 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
-// score 692 (was 692; earlier 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// Earlier at 692 (was 692; earlier 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2699,6 +2703,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // subsets 1/2/4/3/5/6/7: 735/717/741/742/756/740/747; all on the original output 739.
 // Mass-only reaches frame 0x100; acceleration-only and climb/acceleration reach retail 0xfc
 // at 741/740. Every form regresses; original observations and complete body restored.
+// AC481: desired.forward owns all facing observations; distinct relative output /
+// existing staged torque APIs / both position setters, masks 0..7:
+// 795/798/792/797/793/800/792/797. Original body restored; frame and scalar homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4082,6 +4089,8 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // F327: Four-use component index, completed true-arm return and both 176/176/176;
 // native byte quantization alone/with either/both 178 each; all with twice-used change
 // 178. Original complete body restored; found-index retest and collision/result allocation remain.
+// Round 368: Two-use admitted world value, conditional/branch producer with completed fallback/clamp
+// subsets: 176/176/220/220/182/182/218/218; original complete body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4331,6 +4340,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P268: Actual limit-record native field families (kind/spin/engine, speeds, steering/turn),
 // seven subsets 765 each; complete typed const-record reference 1019 (2676 bytes).
 // All types/observations/body restored; entry definition and zero/result/1.0 homes remain.
+// AC481: active truth from the published output / read-only tag-table receiver /
+// read-only vehicle receiver, subsets 1/2/4/3/5/6/7: 765 each; all with table
+// acquisition before the pure object lookup 768. Original body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

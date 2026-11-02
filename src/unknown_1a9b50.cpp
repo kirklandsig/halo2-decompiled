@@ -854,6 +854,10 @@ static __forceinline long real_to_long(real value);
 // Round 318: Progressive returned admission at short-circuit boundaries, first/last/all flag
 // partitions in bool/byte, then first/last in long; 517/517/517/526/526/526/543/543. Original
 // whole body and helpers restored.
+// Round 331: Query and later planar directions share one consumed vector at
+// direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
+// each. Original workspaces, entry/result graph, query aliases and entire body restored; early
+// rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
