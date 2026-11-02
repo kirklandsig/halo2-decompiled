@@ -323,6 +323,10 @@ union s_185be7
 // DH round 268: independent byte/word scratch declarations, clear order and entry scope,
 // seven subsets 731/743/743/731/731/743/743; complete graph with purpose names 743.
 // Original scratch lifetimes, CRT clears and complete body restored.
+// Round 352: Settings/state acquisition after local-input clear or full output reset,
+// independently/together and both orders: 1012/743/1010/741/1012/1012/744/744. Original
+// acquisition order, helpers and complete body restored; control-root/NONE, settings/zero homes
+// and flag joins remain.
 // Round 506: single held-input/filter-copy traversal, live/maintained masks with
 // dword/word bits and long/short ordinals 1148/1136/1130/1109/1148/1136/1133/1112.
 // Frames grow to 0xe4/0xe8; original two scans, masks and complete body restored.

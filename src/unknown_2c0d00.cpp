@@ -1146,6 +1146,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // Round 443: repeated native byte/word/long/dword side-index values at entry
 // 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
 // radius, traversal, predicates and complete body restored.
+// Round 352: Complete projection/orientation results phased/together, each with
+// first/sentinel/second/pair-first Boolean accumulation: 404/404/404/423/403/403/403/422. Frame
+// 0x30, zero/radius and vertex allocation remain; original geometry, helpers and traversal
+// restored.
 // Round 234: Planar start/end/both/origin/start-origin/end-origin/all input records 424/338/426/346/419/362/444; all via library copies 444. Frames 0x38/0x40/0x48 regress from 0x30 versus retail 0x28. Original full body restored; zero/radius schedule and vertex homes remain.
 // N303: Final vertex from the already selected endpoints: conditional/if-else/default-to/default-from
 // 361/361/369/369; default before geometry to/from 369/375; native word endpoints/all indices
