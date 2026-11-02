@@ -190,6 +190,12 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 478: complete strict solver predicate with short/bool/byte/long result
 // 455/458/458/457; both strict and fallback predicates 458/458/458/458.
 // All original producers and body restored; frame 0x3e8 versus 0x3e4, state/result homes and getter boundary remain.
+// Round 259: Entry uninitialized reset/waiting/balance storage, seven subsets, then all with Boolean reset
+// 439/439/439/439/439/439/439/469. Original body and producer sites restored.
+// DH round 264: On the complementary waiting graph, native producer record/existing kind-four setter/
+// both/native long balance/record-balance/setter-balance/all/all with initial memset
+// 439/477/477/454/454/477/477/486. Original record, property construction, short balance
+// and complete body restored; frame/result/state/getter homes remain.
 // Round 282: Boolean reset with result/completed, reset/reset_required and
 // transition_pending/waiting name combinations, eight at 469/1562. Frame 0x3e4 agrees
 // but result remains at +0xe; original long reset, names and entire body restored.

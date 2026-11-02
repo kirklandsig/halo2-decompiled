@@ -519,6 +519,8 @@ void function_245400(s_source_245400 const *source, long index,
 // 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
 // Round 263: Joint paired-mask/xor side equality, signed/unsigned material words and existing staged-cross combinations
 // 239/239/211/211/239/239/211/211. Original side producers, material carriers, cross call and complete body restored.
+// DH round 265: complementary facing rejection with bool/byte/word/long sides, original/staged cross:
+// 211/211/211/211/211/211/211/211. Original complete body restored.
 // Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
 // two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
 // Original in-place rotation and complete executable body restored.

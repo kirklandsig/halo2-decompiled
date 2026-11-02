@@ -307,6 +307,9 @@ struct s_block_candidate
 // Round 240: Inner-scan policy/time/segment-home names, seven subsets and all with reversed
 // independent policy/time acquisition: 347/421/411/347/347/421/411/411. Policy-only field copy
 // exact-only; policy/time reaches frame 0x1054 at 411. Original executable body restored.
+// Round 267: page-mask node before/after quotient, expression/split decrement,
+// original increment/direct conditional count: 347 in all eight forms. Complete
+// opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

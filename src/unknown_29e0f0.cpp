@@ -192,6 +192,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // best-distance home agrees at frame 0x64. Separate short/long output-point induction 415/412; with one
 // shared computed step 418/427. Original signed-short input scans, byte narrowing, metric helpers and
 // validator tuples remain; selected-default, bitmap/endpoint, root-table and x87 homes still differ.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // Round 51 (lane 11, fast): round 86's t19 form rebuilt on this body 437 with the byte selected point,
 // 188 (aligned 46) with it short again; on that graph the existing distance3d (0x3ea30, inlined) for the
 // three point distances with b - a operands 185 (aligned 57), with a - b 216; the distance helper through

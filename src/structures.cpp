@@ -1022,6 +1022,10 @@ done:
 // eight-point gate; setter forms lose the matched caller. Original Boolean parameter, caller
 // declaration, grouped storage, point copy and entire body restored. Frame 0x64 agrees; exclusion BL,
 // result stack home, direction ESI and NONE ownership remain.
+// DH round 264: Result-owned pretested retries with independent flags/long-short-word-byte attempts
+// and native collision fields 157/156/156/160; with the existing initial point setter
+// 144/145/145/157. All regress; original record layout, grouped state, triangle access and
+// body restored; result/NONE/exclusion allocation and direction reloads remain.
 // Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the

@@ -1678,6 +1678,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // policy gates 104/132; common eager availability 123, with one mode observation 123;
 // eager native-word muted 106; common eager/native-word 122; common eager/conditional muted 122.
 // Eager gates combine the two tests; snapshots still defer or combine loads. Original restored.
+// DH round 265: complementary eager unavailable bool/byte/short/long, separate/shared policy gates:
+// 101/101/97/99/111/111/94/116. Original complete body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3161,6 +3163,8 @@ struct s_voice_route_choice
 // Round 41 (lane 14): settings update then a separate if/else-if radio/nearest decision 477, with the bitwise
 // radio 430; inside the routed arm `if (mode == 2) radio = true; else if (!radio && nearest test)` 394 (all
 // three lose both callers); `mode == 3` before `!radio` 412; player local after the headset update 363.
+// DH round 265: recovered byte-radio frame with rejected-route/split-nearest/plain-while subsets 1..7, then all with a choice receiver:
+// 363/428/428/363/363/428/428/428. Original complete body restored.
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.

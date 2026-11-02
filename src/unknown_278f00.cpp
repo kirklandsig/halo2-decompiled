@@ -47,9 +47,9 @@ void __stdcall function_b8890(long arg_0);
 
 bool function_a7670(long object_index);
 
-// score 181 (was 181): frame 0x424 and retail's length agree; left are the scratch-register phase at entry
-// (retail xor eax), the homes of the list/island/index/count slots and the inner-loop induction, the
-// admission flag (retail BL, ours a stack byte) and the cursor cleanup loop (retail indexed).
+// score 153 (was 181): frame 0x424 and retail's 954-byte length agree; entry scratch-register
+// phase, selector/island homes, admission register and membership block layout still differ.
+// Consumed next-island indexing, native body bound and indexed cleanup retain the 28-point gain.
 // list reference 212; island reference 212.
 // body reference 212; header reference 212.
 // unsigned object handle 212; list and island references 212.
@@ -206,6 +206,13 @@ bool function_a7670(long object_index);
 // DH round 264: Force-inline contracts for the existing property/component/object inline producers,
 // all seven subsets and all three with readonly body input, 181 each. Original declarations,
 // body and call cycle restored; scratch EDX/EAX, list/count homes, admission BL and cleanup remain.
+// Round 283: fixed-body continue, membership-miss continue and release-arm-first, seven subsets then
+// all with nested insertion tests: 181/181/229/181/229/229/229/229. Original body restored;
+// selector/list/count homes, BL admission and indexed cleanup remain.
+// DH round 266: consumed island index with native-bound/indexed-cleanup/shared-result subsets
+// 260/257/179/153/253/244/122/96; kept native bound plus indexed cleanup 153 (plain).
+// Two-point 179 and match-only shared-result 122/96 restored. Completed shared/named membership,
+// both completed ordinals and completed first result on the new graph 153/153/236/255; restored.
 // @retail 0x278f00
 void function_278f00()
 {
@@ -221,14 +228,14 @@ void function_278f00()
 				local_3 = (s_278f01 *)((byte *)g_51e9a4 + 8);
 			else
 				local_3 = (s_278f01 *)((byte *)g_51e9a4 + 0x14);
-			for (long local_4 = 0; local_4 < local_3->field_4; local_4++)
+			long next_island = 0;
+			while (next_island < local_3->field_4)
 			{
-				s_278f00 *local_5 = local_3->field_0[local_4];
+				s_278f00 *local_5 = local_3->field_0[next_island++];
 				if (!local_5->field_ae)
 					continue;
-				local_4--;
+				next_island--;
 				local_5->field_ae = false;
-				long local_6 = local_5->field_40;
 				long local_7 = 0;
 				long local_8 = 0;
 				long local_9 = 0;
@@ -236,7 +243,7 @@ void function_278f00()
 				{
 					local_7 = 0;
 					local_8 = 0;
-					for (long local_10 = 0; local_10 < local_6; local_10++)
+					for (long local_10 = 0; local_10 < local_5->field_40; local_10++)
 					{
 						hkRigidBody *local_11 = local_5->field_3c[local_10];
 						if (!local_11->m_fixed)
@@ -316,10 +323,9 @@ void function_278f00()
 						function_b8540(local_11);
 					}
 				}
-				long const *cleanup_cursor = local_1;
 				for (long local_10 = 0; local_10 < local_8; local_10++)
 				{
-					long local_11 = *cleanup_cursor++;
+					long local_11 = local_1[local_10];
 					s_havok_object *local_12 = havok_object_get(local_11);
 					if (local_12->havok_component_index != NONE)
 						function_1d1260(havok_component_get(local_12->havok_component_index));

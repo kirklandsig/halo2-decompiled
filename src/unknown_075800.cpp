@@ -1196,6 +1196,10 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // 198/195/193/195/193/199/209/208 fast (control 196; full 153).
 // Three-point preview reductions rejected; original complete classifiers restored.
 // Delayed ESI save, late case layout and full-only handler expansion remain.
+// Round 267: shared connection lookup on the accepted primary root, successful/
+// failure-first lookup guards and inner orders 567/576/657/765: 212 each reduced,
+// against control 196 (full 153). All lose caller 0x7afd0 at three differences;
+// original classifier, separate lookups, native input roles and caller match restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

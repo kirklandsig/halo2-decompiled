@@ -339,6 +339,7 @@ public:
 // Round 338: initial-child snapshot identity with offset/current-child/ordinal lexical
 // priorities 68/54/54/54/54/54/54/54; independent offset declaration regresses.
 // Original snapshot, scalar declarations and complete body restored; child pretest/pool ranks remain.
+// Round 264: Canonical salted-index producer with named ordinal/successor-before-offset/head-for-init masks 0..7: 261 each, 710/743 bytes. Original header producer, loop setup and stepping restored; pool/NONE ranks, allocation retest and salt/ordinal reconstruction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
