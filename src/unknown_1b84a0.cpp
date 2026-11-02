@@ -507,6 +507,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // force/force 1393. State contracts worsen shared callers; forced marker
 // inlining expands the target. Original declarations and complete body restored;
 // table/result producer, marker setup and late actor/reference/slot cycle remain.
+// P276: Actual payload signed-selector output/native marker-byte/native outcome-byte
+// contracts, seven subsets, then all with readonly character input: 49 each. Shared
+// Outcome-byte users regress 7 to 22; originals restored. Entry AL and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

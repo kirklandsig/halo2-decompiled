@@ -1573,6 +1573,9 @@ struct s_rating_summary
 // complete body restored; formatter/count schedule and team/counter homes remain.
 // M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
 // One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
+// P276: Shared value/change/level/lower, summary and identity lexical roles, then
+// joint result roles and all six roles on adjusted-value graph: 31 each. Complete body
+// restored; formatter/count schedule and team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

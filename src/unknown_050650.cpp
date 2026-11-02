@@ -633,6 +633,9 @@ struct s_collision_result_buffer_1697c0
 // DH297: Test-produced success/failure-owned collision/immediate per-attempt admission,
 // subsets 1-7, then fraction-first fallback: 348/322/348/322/348/322/348/360.
 // Original Boolean result, collision graph, ten draws, helper bodies and complete sampler restored.
+// P276: Existing marked normalizer at axis/candidate/fallback, seven subsets, then all
+// with long sample ordinal: 418/417/448/511/543/562/651/652. Calls remain outlined and
+// alter caller transport; original helper, declaration and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
