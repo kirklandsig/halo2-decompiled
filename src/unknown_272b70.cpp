@@ -2664,6 +2664,8 @@ struct s_scenario_scripting_view
 // each with early/loop-scope short counter: 89/96/90/95/91/95/98/94. Original acquisition
 // and loop restored; frame 0x18 agrees, actor/counter/set allocation remains. Wrapper
 // also rose 0 -> 1 in the first seven trials.
+// DH280: Actual consumed candidate ordinal short/long, original/loop-owned short traversal and raw/native
+// point access [89, 89, 86, 86, 89, 89, 86, 86]. Original executable body restored.
 // Round 232: Explicit signed-short wrapping in long/int induction carriers, then unsigned word/dword
 // carriers with uniform signed-short observations; early/loop-owned pairs 93/96/93/96/80/87/80/87.
 // Original complete search restored; actor/counter homes and delayed scripting observation remain.

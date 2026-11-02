@@ -1819,6 +1819,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // N302: Shared two-consumer ammunition-reduction predicate bool/byte/short/long,
 // per equipment phase / per valid weapon: 278/278/246/245/255/255/326/328. Exact-only
 // observations and all original code restored; frame/input agree, pool/actor/options homes remain.
+// DH282: Complete probability-default/increased-selection/delay-default ownership, seven subsets then all
+// with native signed-word tick storage [251, 251, 251, 251, 251, 251, 251, 251]. Original executable body
+// restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
