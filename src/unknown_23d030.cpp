@@ -339,6 +339,9 @@ struct s_free_state_23d260
 // Round 360: complete inverse/transformed/world position accumulations, subsets 1/2/4/3/5/6/7,
 // 288/121/121/288/121/102/121; all with reused pitch observation 276. Original matrix rows,
 // publications and complete body restored; zero/side normalization and up/roll allocation remain.
+// P261: complete native accumulated roll rows before shared-setter publication,
+// all six producer orders 291 each; direct complete publications 291/292.
+// Original interleaved row stores and full body restored; zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -992,6 +992,9 @@ void function_143250(
 // Native typed replay preserves all 83 matrix values and precision boundaries;
 // Full cleanup has frame 0x30c and EAX/ret 4 in preview but regresses and raises a caller score.
 // Original scalar, publication and input graphs restored; frame and homes remain.
+// P264: single-consumer real arithmetic owned by second-band product/sum/all,
+// third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
+// Original scalar graph, workspace, publication phases and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

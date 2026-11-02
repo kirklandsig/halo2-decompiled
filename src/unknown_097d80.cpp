@@ -265,6 +265,9 @@ struct c_aggregate : c_child
 // M302: Common signed block ordinal across dispatch/cleanup, before/after arrays,
 // separate/shared query output and start/end bound order: 31/31/31/31/31/31/33/33.
 // Original phase ordinals restored; shared output fixes frame but exchanges the low loop homes.
+// P261: shared callback/information output with all six error/total/output lexical
+// priorities 31 each; first two priorities before arrays 31/31. Frame 0x8020
+// recovered, but low loop homes exchange; independent outputs and full body restored.
 // M304: Seven-cell cleanup item ordinal signed-char/byte/short/word with separate/shared query
 // output: 92/102/92/102/77/81/77/81. Original long ordinal, independent outputs and body restored.
 // Round 521: repeated cleanup block/item/both record references, original/query-only

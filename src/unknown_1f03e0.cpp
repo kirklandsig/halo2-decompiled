@@ -1632,6 +1632,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P258: Two-/three-step left-associated dot sums, original/early eligibility
 // and double/real movement: 229/223/229/223/224/226/224/226. Other dot users stay
 // 590/418; original helper, eligibility, magnitude and complete body restored.
+// P263: complete selected-normal/final-vector native/memcpy/memmove pairs
+// 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
+// Original transfers, magnitude, call sites and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
