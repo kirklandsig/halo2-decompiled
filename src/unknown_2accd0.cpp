@@ -1091,6 +1091,9 @@ struct s_signed_file_write_parameters
 // header+extension/publication/header+publication/extension+publication/all/shared-all
 // 154/238/279/294/312/312/332/332. Original complete body restored;
 // capacity acquisition and extension buffer/offset homes remain.
+// Round 314: Dispatch orders 0231/0321/1230/1302/1320/2031/2130/2310 on the
+// direct-header-return graph 294/292/320/327/314/326/317/320. Original complete cases
+// restored; early capacity acquisition and extension offset/buffer homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -59,30 +59,20 @@ byte const g_44178c[k_number_of_function_types] = { 0, 1, 2, 4, 6, 20, 32, 12, 4
 real function_17c900(short function_type, real input);
 real function_17ca10(real x, short curve);
 
-/* sqrt(a) / sqrt(b), approximately: the square root of a from its bits (built in a's own
-   storage), times rsqrtss of b */
+/* sqrt(a) / sqrt(b), approximately: the square root of a from its bits, times rsqrtss of b */
 static __forceinline real square_root_ratio_approximate(real a, real b)
 {
-	*(long *)&a = (*(long *)&a >> 1) + 0x1fc00000;
+	real root;
+	*(long *)&root = (*(long *)&a >> 1) + 0x1fc00000;
+	real denominator = b;
 	real reciprocal;
 
 	__asm
 	{
-		rsqrtss xmm0, b
+		rsqrtss xmm0, denominator
 		movss reciprocal, xmm0
-		fld reciprocal
-		fmul a
 	}
-}
-
-struct vector2f
-{
-	real i, j;
-};
-
-static inline real length_sq2f(vector2f const *v)
-{
-	return v->i * v->i + v->j * v->j;
+	return root * reciprocal;
 }
 
 /* a squared plus b squared, from two coordinate differences */
@@ -108,38 +98,6 @@ point2f *function_13bec0(s_tag_data const *function, byte range_index, byte poin
 	return NULL;
 }
 
-// score 11 (was 11): the remaining differences are in square_root_ratio_approximate, in both
-// spline2 ranges (7 instructions in the low range, 4 in the high): retail spills the numerator into
-// the slot rsqrtss then reuses for its operand and stores the shifted root before that operand;
-// ours uses other slots and emits the two stores in the opposite order.
-// Tried: the shifted root in its own long/real local (any name or declaration order) 12; a
-// square-root helper and an rsqrtss helper multiplied in C 12, plus the high range's differences
-// x first like the low range 8 (retail's slots and store order, but the multiply is deferred past
-// the input load where retail multiplies in the asm), the same through a pow helper 8; an rsqrtss
-// helper that multiplies by a root parameter 12 (the root copy takes the numerator's slot), its
-// parameters swapped 12, the root as a long parameter 16; the root by an out parameter 12-16; the
-// ratio helper's parameters swapped 12-16; the root as `long bits` read back through a real
-// local that the asm multiplies by 12, with the x-first high range 16.
-// Round 52: a square-root helper with its own result local (as 0x2b9750's) and an rsqrtss asm
-// helper that only stores the reciprocal, multiplied in C, give retail's slots, stores and
-// `fld; fmul`, but pow then loads the input first (no store and reload of the product) 201
-// (1944 bytes); the same with the rsqrtss helper returning by `fld` 12; b copied into an
-// asm-visible local (retail's store order, the root takes the numerator's slot) 12; an rsqrtss
-// helper that multiplies by the estimate passed in 16; the root through a long pointer out
-// parameter 12. Screened: names and declaration orders of the root, the copy and the reciprocal
-// never move the slots; any root the asm reads takes the numerator's slot.
-// Round 62: union root result 221 (1972 bytes); root bits read from the numerator 15; reciprocal declared first 15;
-// denominator after the root 8 (retail's store order and denominator home; low root/reciprocal homes exchanged and
-// the high result home differs), rejected as only three points without a match; implicit x87 return 12; separate
-// result local 46; parameter result 225 (1984); denominator before the root 15. Opening helper restored.
-// Round 127 (lane 6, fast): retail lets the denominator reuse the numerator's slot (in the end length's home)
-// and gives the root its own slot; a compile-only build (/FAs) shows the slots are coloured with the caller's
-// locals, inline temps last. One asm operand holding the numerator, then the denominator after the root 18
-// (retail's sharing and store order, but the shared slot takes the start length's home and the high range's
-// differences flip); a root helper with a result local and an asm helper multiplying by the root, the root
-// named 16, passed straight 16; the denominator copied before the root 12; the shared operand with a real root
-// written through its address 18. Screened only: root/reciprocal/denominator names, `ratio` folded into the
-// pow call, the ratio code written in the caller (the frame grows to four slots).
 // @retail 0x13b390
 real function_13b390(void const *function, real input, real range)
 {
@@ -272,7 +230,8 @@ real function_13b390(void const *function, real input, real range)
 					}
 					else if (!(fabs(start_length_squared - end_length_squared) < 0.0001f))
 					{
-						real ratio = square_root_ratio_approximate(start_length_squared, end_length_squared);
+						/* bound by reference: retail keeps the ratio in memory across the input's load */
+						real const &ratio = square_root_ratio_approximate(start_length_squared, end_length_squared);
 						real value = (real)pow(input, ratio);
 						t = 0.0f > value ? 0.0f : (value > 1.0f ? 1.0f : value);
 					}
@@ -291,22 +250,17 @@ real function_13b390(void const *function, real input, real range)
 					point2f const *p1 = function_13bec0(field_4_7, 1, 1);
 					point2f const *p2 = function_13bec0(field_4_7, 1, 2);
 					point2f const *p3 = function_13bec0(field_4_7, 1, 3);
-					/* the differences are passed y first here, which is the order retail evaluates them in the high range */
-					real end_length_squared = length_squared_components(p2->y - p3->y, p2->x - p3->x);
+					real end_length_squared = length_squared_components(p2->x - p3->x, p2->y - p3->y);
 					if (end_length_squared > 0.0001f)
 					{
-						/* also y first; the length is still x squared plus y squared */
-						vector2f vector;
-						vector.j = p0->y - p1->y;
-						vector.i = p0->x - p1->x;
-						real start_length_squared = length_sq2f(&vector);
+						real start_length_squared = length_squared_components(p0->x - p1->x, p0->y - p1->y);
 						if (fabs(start_length_squared) < 0.0001f)
 						{
 							t = 1.0f;
 						}
 						else if (!(fabs(start_length_squared - end_length_squared) < 0.0001f))
 						{
-							real ratio = square_root_ratio_approximate(start_length_squared, end_length_squared);
+							real const &ratio = square_root_ratio_approximate(start_length_squared, end_length_squared);
 							real value = (real)pow(input, ratio);
 							t = 0.0f > value ? 0.0f : (value > 1.0f ? 1.0f : value);
 						}

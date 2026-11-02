@@ -202,6 +202,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Round 299: Standard endpoint/count-based native pointer-table initialization, with independent
 // counters before the table and zero read-count interactions: 238/239/238/239/225/225/225/225. All
 // original source/includes restored; outer EBP preservation and read-size/count/cursor homes remain.
+// N306: Existing tokenizer delimiter-tail outputs, four native cut graphs with end-owned/input-owned
+// whitespace scans, 160/128/212/166/214/229/223/176. Original tokenizer and loader restored; early EBP
+// preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

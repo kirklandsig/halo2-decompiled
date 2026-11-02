@@ -340,6 +340,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // Round 515: Parent-first seat acquisition with bounds-getter failure exits, native seat-flag
 // snapshot and uniform parent-field reads, eight subsets 117/117/456/456/117/117/456/456.
 // One-point best rejected; original getter, case graph and complete executable body restored.
+// Round 354: Native metadata flag, readonly lookup result and branch-completed nullable
+// result subsets 1..7, then native flag bitfield: 118/118/118/118/118/612/612/612. Original metadata
+// layout, getter, complete case graph and matched sibling restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

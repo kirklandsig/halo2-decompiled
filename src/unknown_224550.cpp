@@ -273,6 +273,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 350: Native-frame blend initialization after packing/in geometry arms/after cache
 // update/explicit frame outcomes 493/493/271/261; merged positive-sequence gate 483/483/375/394. Tint/UV
 // homes and blend residence remain.
+// Round 352: Pointer lower/upper/independent/continue clamp walks 522/527/522/522; indexed
+// upper/independent/continue/descending bounds 265/245/245/263. Frame homes and blend residence
+// remain; complete original callback and alias-safe UV helper restored.
 // Round 248: On the native frame/cache graph, branch-produced primary aspects, paired named secondary
 // ratios and cross-phase inverse blend, seven subsets plus inverted primary: 239/245/239/530/529/530/529/529.
 // Six-point primary gain below gate; original tint/UV bodies and arithmetic restored.
@@ -285,6 +288,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 515: Native first/next/both selected-frame values at index production or first use
 // 441/432/475/420/419/473; both with branch-produced primary aspects 474/466.
 // Tint/second-UV homes remain; complete native inputs, scalar phases and body restored.
+// Round 354: Complete seed/input RGB product phases and outer seed workspace subsets
+// 1..7, then early native UV declarations: 245/245/245/245/245/245/245/245. Original product groups,
+// component stores, workspaces, tint/UV storage and alias-safe UV captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

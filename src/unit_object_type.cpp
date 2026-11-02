@@ -7132,6 +7132,10 @@ real function_50650(real cosine);
 // Round 515: Complete prediction through the existing vector setter, with magnitude-squared
 // part, paired frame/motion names and phase-entry result declarations: 563/567/563/567/563/567/563/567.
 // Frame/input homes remain; complete original body and every shared helper restored.
+// Round 316: Native prediction input copy mutable/const, before-angle/after-trig
+// 614/614/614/614; component aggregate counterparts 563/563/563/563.
+// Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.
+// Original prediction input, axis, reciprocal and complete body restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
