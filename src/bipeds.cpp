@@ -1862,6 +1862,10 @@ void function_dfd70(long arg_159e6d)
 // 392/375/392/393/393/378/388/375; shared user 610 -> 614 in all. Original helper restored.
 // Common origin setup once with mode orders 312d/123d/d312/1d23/2d31/321d/d213/231d:
 // 254 each; direct helper users unchanged, dispatcher 108 -> 109. Original helper restored.
+// Round 359: Forward/side/both scale observations 240/235/240; each with a complete
+// direction input 282/278/279; both scales and the crouch if-chain, without/with direction,
+// 251/277. Every form raises shared user 0xdc5c0 from 610 to 614; overlap-sensitive
+// snapshots also need a match. Original shared helper and complete target restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2659,6 +2663,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // Round 324: complete centroid scalar storage in both input-read orders, each with/without
 // reciprocal and all weighted products beside their consumers: 562 each. Frontloaded
 // weighted products also 562, reverted. Original aggregate centroid and body restored.
+// M309: Existing position helper before/after mass query 530/548; native signed view
+// 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
+// restored). Deduplicated exits 531; per-path result 591; false-default/result-first
+// 542/542. Original complete body, owning field and helper declarations restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3205,6 +3213,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Original helper and body restored; matrix/pivot homes and scalar transport remain.
 // Round 324: last-use scopes for parent matrix/world pivot/child world, subsets 1-7,
 // then all with matrix declared before origin: 368 each. Original scopes restored.
+// Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
+// subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
+// Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -3902,6 +3913,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // ranks, trigonometric homes and rotation/basis carriers remain.
 // M306: Native scalar component accumulation at four prefix/publication boundaries, with all factors first/last: 173/173/170/170/173/173/170/170. All restored.
 // M306: Existing rotation helper force-inline on the original retained expression 145; restored.
+// Round 470: Repeated forward-field receiver at first rotation/before normalization,
+// each with no/forward/up/both fallback vector setters: 191/186/185/193/220/221/220/228. All restored;
+// normalization SIMD ranks and trig/rotation/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4350,6 +4364,14 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // 240/228/176/228/240/228/167; complete dot/norm products 228.
 // All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
 // The 176 form also uses a register argument and ret instead of retail ret 4; restored.
+// DL239: Natural parameter with native complete relative/kick/actor-ground vector producer subsets
+// 1..7, all plus common result exit: 174/204/191/204/191/178/222/222. Original complete body
+// restored; frame 0x24/0x28, state-base/result and vector homes remain.
+// Ordinary lower-score forms lose matched 0xe4680 and 0xecfc0; all restored.
+// Round 359: Natural input with all three twice-used ground components, reversed raw copies,
+// existing kick producer and bool/short contact: 191/196/191/195/191/196/191/195.
+// Actual admission/actor result with one exit and bool/short contact 190/192. All lose matched
+// callers 0xe4680 and 0xecfc0 through the input convention; complete original body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

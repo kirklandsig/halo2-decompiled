@@ -177,10 +177,17 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 248: Native squared/sine aggregate initialization, singly/together and producer order,
 // mutable/readonly complete products: 455/485/443/486/455/485/443/486.
 // Original partial product vectors, helper and complete body restored.
+// Round 311: Native matrix return from the existing repeated rotation producer, complete axis capture,
+// immutable mixed products and staged-cross subsets 0..7: 488/531/488/531/488/531/488/531. Original
+// helper and full body restored; axis-specific square/sine/cosine spills and table placement remain.
 // Round 515: Existing shared row scaler with coherent cosine complement, shared k-complement
 // part and paired matrix names: 219/451/220/367/219/451/220/367. Native frame/product spills remain;
 // complete private producer, scaling statements, include set and body restored.
 // Round 357: Complete scalar rotation results before original output stores, six row and two column production orders 380/380/380/380/380/380/380/380. Original helper and body restored; two-axis spills remain.
+// Round 288: Shared sine-vector scaling after k/before squares/after early squares/after
+// complete squares/before complete squares 440/444/436/351/444; with staged crosses/
+// complete cosine complement/native in-place sine input 440/223/404. Original helper,
+// sine observations and complete body restored; axis-specific spills remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

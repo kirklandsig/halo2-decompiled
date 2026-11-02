@@ -572,11 +572,23 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH round 279: Spatial-first case priorities 24013/24031/24103/24130/24301/24310/23401/23410 on the
 // retained signed prior-state graph [423, 434, 421, 417, 448, 421, 447, 425]. Original executable body
 // restored.
+// Round 236: Run-wide sampling result before maximum, logical/direct and qualified/plain
+// maximum 450/454/450/420; after maximum logical 450/454, direct with native signed-short
+// prior state 427/417. Several recover frame 0xa0 and 1616 bytes, but actor input stays
+// stacked. Original prior-state type, maximum qualifier, predicates, cases and body restored.
 // DH281: Sampling admission priorities ACB/BAC/BCA/CBA with original and update-first validation on
 // retained 21304/signed-state graph; exact-length 412 ties the opening score [414, 450, 450, 422, 412, 436,
 // 436, 424]. Original executable body restored.
 // Round 324: post-query timer limit from branches/conditional/default, each alone and with
 // native short decrement, then branch/conditional with named elapsed: 412/412/412/412/412/412/412/412. Original restored.
+// P262: Complete sample/update/sampled-once lexical priorities, all six native Boolean
+// orders 412 each; signed prior-state word on sample-first/update-first flag graphs 413/413.
+// Original flags, signed-long state, workspaces, cases and complete body restored.
+// N313: Equal-size motion/query workspace lexical ranks motion/query_result, body_motion/context,
+// motion_sample/sample_context and sample_motion/query_result, each with promoted/native signed
+// saved state: 412/413 in all four pairs. Native state recovers the word store but regresses one;
+// workspace ranks leave the frame and homes unchanged. Original names, full saved-state domain,
+// qualifier and body restored; frame 0xa4 versus 0xa0 and stacked actor remain.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

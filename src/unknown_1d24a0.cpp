@@ -293,6 +293,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // block's difference written straight into its normal (no staging copy) 961 (frame 0x1e4, 4235 bytes), with
 // the late object-index local 966; the element pointer as `(s_1d24a0 *)data + index` 902 (same code). Original
 // body restored.
+// Y522: Existing body getter at owner activity/other activity/center, seven subsets
+// 902/902/902/902/902/902/902; all with existing free matrix getter 902.
+// Original body observations, center snapshot, kernels and complete force body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

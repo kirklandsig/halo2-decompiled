@@ -1240,6 +1240,7 @@ long function_2197f0(real gain);
 // elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
 // the hold branch still copies the ducking gain through a stack temporary our code folds away.
 // Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
+// Earlier at 137 (was 137): Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
 // Earlier at 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
 // this round: the entry still loads the class table into EDI where retail loads it into
@@ -1332,6 +1333,11 @@ long function_2197f0(real gain);
 // each with native table/raw class entry 146/146/146 (672 bytes, entry agrees). Both workspaces with
 // negated hold-first arm 157; table entry too 160. Frame 0xc and elapsed/endpoint homes persist;
 // original executable body restored.
+// N313: Integer-contract interpolation with both real inputs captured, native table/raw-class entry,
+// expression/staged result 146/146; shared hold addition 116/116; complete reused attack durations
+// 155/155, with shared hold addition 116/116. The 116 forms write the aggregate through its own
+// address and are restored without a match. Original helper, table receiver and full body restored;
+// frame 0xc agrees; elapsed/interpolation and copied hold-gain homes remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2807,6 +2813,7 @@ static inline short sound_voice_find_available_channel(char type)
 // compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
 // retail's length and was reverted.
 // The twelve-byte frame, byte result normalization, initial voice/global load order and
+// Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
 // Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
 // cx and the result in al/bl with an 8-byte frame; ours loads the index into eax and holds the result in a stack
@@ -2885,6 +2892,10 @@ static inline short sound_voice_find_available_channel(char type)
 // F320: shared search mask/word ordinal/both 125/149/158; each with chained driver/buffer
 // defaults 120/149/158; both with cached upper bound 158; all 158. The frame remains twelve
 // versus eight, with a saved result byte and early failure tail. Original body/helper restored.
+// N313: Channel-search receiver read at every field use, chained defaults/byte status complement
+// subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
+// Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
+// eight, entry voice/global scheduling and early failure tail remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3664,7 +3675,7 @@ struct s_128ca0
 
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
-// score 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// score 222 (was 222): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3764,6 +3775,9 @@ struct s_128ca0
 // with join, pin and arguments 281 / 115; gain/pitch names on both 245 / 255 (the two slots stay put).
 // Left in the lead: the unfolded location add at +0xba (as 0x1251e0 and 0x126c30) and retail's memory
 // round trip between each pin argument's sum and the pin parameter.
+// Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
+// Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
+// Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

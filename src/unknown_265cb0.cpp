@@ -1956,6 +1956,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
 // DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
 // complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
+// Round 520: conditional approach maximum/complete absolute producer/native established
+// byte subsets, then all with native visibility: 194/371/371/194/194/371/371/371.
+// Maximum selection is neutral; complete absolute production regresses. Body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

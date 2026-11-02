@@ -1161,6 +1161,14 @@ long function_10f5f0(long object_index);
 // Round 251: Two-vector buffer, velocity name, state name, buffer/velocity, buffer/state, both names,
 // buffer/both names and six-real buffer/both names: 588 each. Original complete body and inherited qualifier
 // restored; frame and native flag-result stores remain.
+// Round 236: Native owning-word bit readers, initial/active/physics and pair subsets
+// 600/595/612/600/644/597; full readers with actual six-real buffer 644
+// (frame 0x1990); final Boolean result completion 595. All original record layout,
+// buffer, observations, qualifiers and complete body restored; frame 0x19ac versus
+// 0x1984, native flag-result stores and scalar/SSE homes remain.
+// M309: Actual returned matrix input, original/returned physics-state receiver,
+// with original/six-real output extent: 590/622/590/622; completed final result
+// 597/622/597/622. All restored; frame 0x19ac and native flag-result homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2928,6 +2936,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // P252: Low-byte flag payload/full-width driven/full-width paired direction truths, subsets 1/2/4/3/5/6/7:
 // 1053/1052/1095/1099/1080/1110/1080; all native byte carriers 1053. Subsets 4/3/5/6/7 shrink the frame to
 // 0x7c but regress; original complete body and 0x80 frame restored.
+// B358: Named repeated pitch/roll scales / one stable active-phase admission /
+// separate native point-loop indices, subsets 1/2/4/3/5/6/7:
+// 1067/1102/1052/1091/1067/1102/1091; all with paired shared projections 1091.
+// Frame remains 0x80 versus 0x74. Complete original body and all evaluations restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3464,6 +3476,14 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // P255: Common matrix-source copy/late pure flip test/complete scale-add up rotation
 // subsets 1-7 224/220/222/167/228/211/219; all with separate scaled-axis/add 219.
 // Original real-angle and complete body restored; projection/cross ranks and trig homes remain.
+// Round 470: Plain real-array component loops for projection removal/negative axis/
+// up rotation, subsets 1/2/4/3/5/6/7, then all with forward rotation: 168/170/174/145/177/180/176/176.
+// Original body restored; projection i-product, cross ranks and angle/trig homes remain.
+// Round 236: Full projection-only/both/implicit producers 223/262/262; forward scale/add 235;
+// exact-valued promoted angular coefficient case/default/both 165/160/166, exact-only;
+// complete forward product parts 131; with shared subtraction/native fallback copy/both
+// 133/149/152. Five-point producer form rejected. Original complete body restored;
+// projection i-product, cross ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -3917,7 +3937,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
    pushes it (every fourth tick, a spread of the vehicles' work, else the
    last one), which sets the function's value; a hard landing plays the
    definition's sound */
-// score 197 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
+// score 176 (was 197): Frame 0xec agrees; permutation/flag store order is recovered. Found-index retest,
 // scalar/SSE operand homes, ray/world staging and fallback-result lifetime remain; first differing branch is
 // still +0x5a.
 // Earlier at 206 (was 206): Frame 0xec agrees; changed/permutation stores, found-index retest, ray scale/world/zero and fallback-result ownership remain.
@@ -4004,6 +4024,13 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Round 251: Iterator/search/ray workspace lifetime subsets 1/2/4/3/5/6/7 and all with native iterator value
 // construction 197 each. Original complete body restored; frame 0xec agrees, found-index retest and
 // scalar/world/fallback homes remain.
+// Round 236: Default offset/rest/length before search, with reused change/default collision result/both
+// 264/264/268/268; defaults at the search exit with those same result subsets
+// 263/263/273/273. Pre-search frame stays 0xec; exit defaults grow it to 0xf0.
+// Original complete body restored; found-index retest and scalar/world/fallback homes remain.
+// M309: Shared scaled-vector translation in-place/direct 197/330; with late three-use reach
+// 176/330; completed clamp 203/318; both 182/318. In-place helper with late reach kept
+// at 176 by the full check; frame/length unchanged, zero and vector staging closer.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4063,13 +4090,13 @@ bool __stdcall function_f6670(long vehicle_index, bool update)
 				}
 
 				s_vehicle_ray ray;
-				real reach = 0.0f - length;
 
 				ray.point = marker.matrix.position;
 				ray.vector = vehicle->up;
-				ray.point.x += ray.vector.i * offset;
-				ray.point.y += ray.vector.j * offset;
-				ray.point.z += ray.vector.k * offset;
+				vector3f_add_scaled((vector3f const *)&ray.point, &ray.vector, offset,
+					(vector3f *)&ray.point);
+				real reach = 0.0f - length;
+
 				ray.vector.i = ray.vector.i * reach;
 				ray.vector.j = ray.vector.j * reach;
 				ray.vector.k = ray.vector.k * reach;
@@ -4242,6 +4269,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P252: Channel result/forced state, blend/reverse scalar and native vector-output role-name subsets
 // 1/2/4/3/5/6/7 765 each; all with the pure forced-state constant declared first 765. Original complete body
 // restored; frame 0x18, entry definition and zero/result SSE allocation remain.
+// B358: Complete shared definition ordinal / paired velocity-selection observation /
+// existing projections, subsets 1/2/4/3/5/6/7: 919/792/765/941/919/792/941;
+// all with a native tag-entry receiver 1012. Projection forms are match-only
+// for grouping; no candidate qualifies. Original complete body restored.
+// The 0x18 frame agrees; entry definition and zero/result/constant residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
