@@ -414,6 +414,9 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // Round 347: Native Y normal operand before/after length, self-dot, K-I-J, K-J-I and reverse-dot
 // helpers, then complete operand at Y/containment: 4/4/4/4/4/10/10/4/4/4/61/61.
 // Original complete body restored; sphere X/Z square order and normal/reciprocal ownership remain; four-count forms archived.
+// Round 351: All three displacement components read once for the squared-distance
+// tree and complete normal operand, six producer orders 61/61/59/57/59/57;
+// earlier complete operand at the sum/containment 61/61. Original helper/body restored.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

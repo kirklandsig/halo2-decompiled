@@ -259,7 +259,7 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 
 /* gift wrapping: the indices of the convex hull of the points, starting from
    the lowest */
-// score 170 (was 203): native output ordinal separates iteration from produced length;
+// score 170 (was 170): native output ordinal separates iteration from produced length;
 // frame 0x18 versus 0x14, count/departure homes, equality and compaction still differ.
 // Earlier at 203: frame 0x14 agreed; count/departure homes, scan bound, equality and compaction differed.
 // Round 132 (m3 lane 5, fast): index store and increment as two statements 203; `best_distance` declared
@@ -373,6 +373,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // long departure and memcpy retained at 170, 785/784 bytes, plain confirmed.
 // On that graph, short/word produced length 242/242; earlier current/pass lifetimes
 // 249/260; one native count for all admitted phases 274. Follow-ups restored.
+// Round 351: Heading/departure/current lifetimes on the retained native output-ordinal graph;
+// 204/215/254/244/209/245/244/228. Original executable source restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
