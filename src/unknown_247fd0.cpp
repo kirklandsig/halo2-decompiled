@@ -71,7 +71,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 	arg_1 = function_x82e52f(arg_0, 0, 0);
 }
 
-// score 70 (was 70): frame 0x10 and length agree. Retail stores field_10 before the field_38
+// score 55 (was 70): frame 0x10 and 870-byte length agree; first +0x1d is the exit span.
+// Timestamp order agrees; the cache comparison still splits a memory load, and evaluator/spawn
+// and child scratch registers differ.
+// Earlier at 70: frame 0x10 and length agree. Retail stores field_10 before the field_38
 // sample; written in that order (133) everything from the 0x173ba0 arguments to the end matches,
 // but the cached-record compare splits into `mov eax,[ebx+0x50]; cmp ebp,eax` after the sample's
 // x87 store (+2 bytes, adds the child-loop pad) where retail folds `cmp ebp, [ebx+0x50]`. With
@@ -296,6 +299,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // two-consumer value-array inputs, masks 0-3: 77/89/77/89; retail timestamp order
 // 126/68/126/68. Two-point gains rejected. Original mask, receivers, timestamp and
 // complete body restored; folded comparison and child scratch rotation remain.
+// Round 367: Allocation-pool identity with pointer/reference cache arrays and current/cached
+// evaluator inputs, original/retail timestamp orders: 70/70/138/138/133/133/55/55. Minimal
+// timestamp-first plus reconciled particle evaluator input 55 kept plain at 870/870; pool and
+// array locals removed. Original duration results, helpers and all argument positions remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -321,14 +328,14 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 		local_1->field_18 = (word)real_truncate(local_9 * 65535.f);
 		function_248076(&g_4e7408->seed, local_9);
 		local_1->field_1a = (word)real_truncate(local_9 * 65535.f);
-		local_1->field_38 = function_x82e52f(&g_4e7408->seed, 0, 0);
 		local_1->field_10 = arg_2->unknown04;
+		local_1->field_38 = function_x82e52f(&g_4e7408->seed, 0, 0);
 		if (local_1 != arg_0->field_50)
 		{
 			arg_0->field_50 = local_1;
 			arg_0->field_44 &= ~0xf80f;
 		}
-		function_173ba0(~arg_0->field_44 & 0xf80f, arg_0->field_48, arg_0->field_4c, arg_0->field_50, arg_0->field_00);
+		function_173ba0(~arg_0->field_44 & 0xf80f, arg_0->field_48, arg_0->field_4c, local_1, arg_0->field_00);
 		arg_0->field_44 |= 0xf80f;
 		function_249aa0(local_3, (s_particle_spawn_state *)local_1, arg_3, arg_0->field_00, arg_4);
 		local_1->field_3c = arg_5;
@@ -624,6 +631,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 365: Plain native-array blend/contact/velocity traversals, subsets 1-7,
 // 376/374/374/376/376/374/580; all with short component ordinals 528. Original
 // complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// Round 367: Actual cache value array reused by evaluation/spawn, pointer/reference and entry/producer
+// address, then missing-bit result reused for publication: 359/359/359/359/379/379/379/379.
+// Original complete body restored; late EBP save and first-sample/blend/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
