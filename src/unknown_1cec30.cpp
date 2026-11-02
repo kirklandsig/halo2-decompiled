@@ -919,6 +919,10 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
+// score 81 (was 81): unchanged this round: the component still arrives on the stack where retail
+// passes it in EBX (no push ebx, a plain ret and a 0x88 frame), the entry copy is still a rep movsd
+// where retail uses movaps, and retail still tests m_fixed before flag5; the convention is decided
+// by the call cycle through the bodies outside this file.
 // score 81 (was 81): component arrives on the stack where retail passes it in ebx (no push ebx,
 // plain ret, frame 0x88), the entry copy is rep movsd where retail uses movaps, and retail tests
 // m_fixed before flag5. Tried: copy through hkTransform::set 77 at 237 bytes (0x1d1b60 lost);
@@ -1035,6 +1039,9 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
+// score 38 (was 38): unchanged this round: retail still passes the component to 0x1d0cf0 in EBX
+// (loaded here after `push ebx`), ours pushes it, so the frame size and every store offset differ;
+// the body is otherwise retail's instruction for instruction.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
