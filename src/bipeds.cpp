@@ -1265,7 +1265,8 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 610 (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
+// score 610 (was 610): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
 // conditional material 1566; workspace names 1566; case/setter/boost/names 1552.
@@ -1312,6 +1313,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Round 339: Full-width airborne result with paired facing setters, existing target-vector producer
 // and material result in both branches, eight subsets 639/651/639/651/692/690/692/690.
 // Original result types, producers and body restored; frame and workspace homes remain.
+// P258: Per-use tag/state/both/component/tag+component/state+component/all
+// receivers 666/698/676/681/695/692/683; all plus use-site animation flags
+// 689. Original receivers, eye helpers and complete executable body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2247,6 +2251,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // so 0x1d5120 declares its count before its result pointer; with that order (diagnostic, 0x1d5120 77 unchanged)
 // the argument setup is retail's (92 with the long body form; EBP still holds the early Havok data load and 0x9fff
 // is hoisted into EDI). 0x1d5120's file was another lane's this round.
+// Round 259: Native body field at every selection use with retained/at-use count, entry/at-use
+// tag and local/entry-zero query output 67/82/74/85/77/91/83/94. All restored;
+// extra EBP, native validation and flag-store schedule remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2620,7 +2627,7 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 530 (was 540): Frame 0x48 versus 0x4c; result byte, scalar homes and native point loading remain.
+// score 530 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
 // Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
 // loops). The flag tests are TEST_FIELD_BIT (retail `shr; test r8, 1` at 0xe1079, 0xe109d, 0xe10a8, 0xe118c).
@@ -2637,6 +2644,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // M288: Uniform per-use tag fields 530 (plain, kept); complete center/hit setters
 // alone 571/569, tag+center/tag+hit/both setters/all three 562/562/556/546; all plus
 // mass/push role names 546. Every caller and all other file measurements stay unchanged.
+// P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
+// push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
+// with uniform per-use counts 544. Original indexed scans and body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2881,6 +2891,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M288: Direct flight-rate argument 593 (seven-point gain, rejected); staged shared
 // projections 633, both 616; complete facing/turn setters 624, with rate 624, with staged
 // projections 616, all three 616, with role names 616. Original complete body restored.
+// P258: Default flight threshold D, existing bit tests B, per-use state S:
+// D/B/DB/S/DS/BS/DBS/direct-rate+BS fast 649/656/643/646/632/654/639/654
+// (control 642); expanded 651/650/604/648/618/639/634/639 (control 649).
+// DB plain 615; BS plain 639. Original threshold, tests and state receiver restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3936,6 +3950,9 @@ real magnitude3d(vector3f const *v);
 // Round 514: long falling/byte event/both 214/33/222; shared complete flight scale 2,
 // with long falling/byte event/both 214/33/222; uninitialized event at entry 2.
 // Original body restored; final actor move versus second argument push remains.
+// Round 259: Bounded event enum with retained/at-use time, long/native-word ticks and
+// original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
+// actor move versus second argument push remains the only two differences.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
@@ -4655,7 +4672,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
-// score 648 (was 742): the logic was walked against retail block by block and agrees (callees, argument order,
+// score 648 (was 648): the logic was walked against retail block by block and agrees (callees, argument order,
 // field offsets, condition directions, constants 0.1/0.15/0.5/0/+-32768/4/6/+-1). The later velocity is
 // move.velocity itself: retail adds to it in place (0xe2a2c-0xe2a38, [esp+0x44]), stores it to linear_velocity and
 // passes &move.velocity to 0x1c4b00 (0xe2b3b), so the second copy is gone and `velocity` lives only in the matrix
@@ -4677,6 +4694,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // the +0x10a test through the bit view 674; both 694 (the head is then retail's up to the early return); the count read
 // once into a `char` local with `0 >= x`/`x <= 0`/`+=` forms 655 each (identical code: ours re-reads after the call);
 // the early return as one goto to an exit after the final return 655, with the `still` form 686, with both 694.
+// Round 259: Direct animation-result initialization after the names store, complete shared orientation
+// setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
+// all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

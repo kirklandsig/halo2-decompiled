@@ -1629,6 +1629,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // movement, earlier sentinel phase and count capture masks 0-7,
 // 334/332/335/333/334/332/335/333. Original observations and body restored;
 // zero-load width, reset/selection homes and selective material calls remain.
+// P258: Two-/three-step left-associated dot sums, original/early eligibility
+// and double/real movement: 229/223/229/223/224/226/224/226. Other dot users stay
+// 590/418; original helper, eligibility, magnitude and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
