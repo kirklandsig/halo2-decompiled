@@ -966,6 +966,9 @@ real normalize2d(point2f *v);
 // DL242: Canonical result == true / > 0 as bool 179/135, each with validity == true 180/138;
 // byte/signed-byte == true 163/163 and > 0 186/186. Original result domain, guards and body
 // restored; DL retention and folded false exit remain.
+// AC484: Multi-use origin pointer at entry/valid scope, with late/early result declaration,
+// 135 each; each with direct request return 182. Original field addresses, result scope
+// and complete body restored; retained DL success and distinct return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

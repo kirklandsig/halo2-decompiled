@@ -325,10 +325,18 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
 // native/array planar sums, native/array parallel products and native running coordinates
 // 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
+// Round 273: complete native input captures (both bounds/both basis vectors/origin),
+// subsets 1/2/4/3/5/6/7, then all with entry axis declaration:
+// 137/734/734/747/747/734/747/747. Basis/origin copies end full corner inlining.
+// Original helper/body restored; plane base, selectors and product ranks remain.
 // N320: Paired native 3D point setter and 2D determinant reaches 42, below the eight-point gain bar;
 // plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
 // and product ranks remain. Scores 42/87/76/90/54/82/66/90.
 // Original executable source restored.
+// DH300: Existing corner helper owns native/immutable/library transform inputs, basis plus origin,
+// immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
+// 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
+// helper and body restored. Plane-store base, first-selector roles and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -867,6 +875,12 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // first grouping plane stays independent; tag/count/plane homes remain.
 // Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
 // ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
+// Round 372: first-present-face searches ending with break, short/word/int/long, then separate
+// bounded scans: fast 779/803/776/776/810/792/780/780 versus control 795.
+// NOT kept: retail prologue/frame lost; original body restored, tag/count/plane homes remain.
+// P274: Complete vector-return rotation producer with native input/component loop/entry basis
+// declarations, eight calibrated forms 575/842/571/842/575/842/571/842 (control 539).
+// Original helper and body restored; tag/count/plane homes and rotation spills remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
