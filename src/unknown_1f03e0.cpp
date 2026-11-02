@@ -994,6 +994,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // low-normal product groups as ten one-use named product locals, 417 plain (3038 bytes; first difference
 // at +0xd, damping in ECX/EDX). NOT kept: one-use temporaries that only steer evaluation order are kept
 // only with a match; body restored at 433.
+// B374: planar bounded producer with native/library raw backup before/after step, alone or
+// with general producer: 393/385/388/398 twice; 3034-3035/3047 bytes, frame 0x30.
+// NOT kept: reversed producer and length farther from retail; original raw-first body restored at 433.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

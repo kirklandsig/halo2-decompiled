@@ -1119,6 +1119,9 @@ struct s_signed_file_write_parameters
 // graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
 // homes remain. Scores 138/229/291/255/309/303/320/323.
 // Original executable source restored.
+// B374: separate getter output and multiuse header transfer stride, after getter/before-getter
+// declaration/after clear/loop-owned, original or separate extension capacity: 102 each (eight trials).
+// Native stride ownership does not recover the capacity copy or extension homes; original body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -961,6 +961,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
 // with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
 // Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
+// B374: twice-consumed inner radius maximum via macro/branches/lower/upper fallback,
+// outer expression or test-produced result: 230/230/235/234 twice; 767/782 bytes, frame still 0x1a4.
+// No match; original repeated selector and complete body restored.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1515,6 +1518,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // Round 532: result-owned iterator termination with bool/byte/short/long carriers, guarded success
 // or comparison-produced success: fast 71/67/95/104/58/57/93/98 against unchanged fast 71.
 // Byte predicate measures 246 bytes but none matches; result-tested flags restored. First-call receiver and latch remain.
+// B374: complete type-owned false before iterator initialization, OR/conditional/negative/positive
+// recursive joins 82/89/108/89; after initialization 102/108/125/110.
+// No exact match; original entry default, verifier boundary, loop and recursive tails restored.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4524,6 +4530,9 @@ struct s_damage_object_creation
 // Round 532: entry detached bitmap, shared marking/node ordinal on the recovered frame, complete
 // scalar role names, seven subsets 211/188/211/188/211/188/211; full workspace names 211.
 // Entry bitmap is 797/808 bytes, first +0xa; all others retain displaced homes. Opening body restored.
+// B374: actual metadata cursor crossed with flag-byte cursor, ordinal-first initialization and
+// pre-capture cursor declaration: eight trials 209 at 799/808 bytes, first +0xa.
+// Original body restored; offset/definition and detached-mask homes remain despite the closer length.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
