@@ -1495,6 +1495,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body
 // restored.
+// Round 453: Final other-update/spin reduction, bool/long and bool/byte carriers with
+// bitwise/logical joins, masks 0..7 (exact-only): 195/207/193/207/209/206/209/206.
+// Original executable body restored.
 // Round 242: On the paired-setter/two-use-spin graph, native short/long countdown values
 // captured before admission or after the positive test, with spin consumed after damping,
 // 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,

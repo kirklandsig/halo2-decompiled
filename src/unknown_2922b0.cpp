@@ -70,7 +70,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 	arg_3->k = local_6;
 }
 
-// score 618 (was 629): Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
+// score 618 (was 618): Frame 0x108 agrees; success/input/minimum/hit homes differ from +0x31.
+// Earlier: the true initializer uses BL, saving EBX early.
+// Frame 0x108 agrees; first +0x31 stores success at +0x1b instead of +0x17.
 // Input/minimum/hit homes, inactive-exit layout and later basis/ray/root/rotation homes differ.
 // Frame 0x108 agrees; success/hit/input/minimum homes, inactive-exit placement and axis schedules remain.
 // Earlier at 629: Frame 0x108 agrees; the true initializer uses BL, saving EBX early.
@@ -232,10 +234,17 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // Round 272: Basis declarations 798/879/897/978/987; entry collision workspace/original basis,
 // cross-first basis, cross-first with entry ray workspace 629/629/629/629/629/629/629/632.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// DH269: Native hit/minimum/uninitialized-input entry lifetimes, subsets 1/2/4/3/5/6/7,
+// 631/636/618/639/631/636/639; all with success after acquisitions 639. External input
+// copy stays after acquisitions; original full body restored. Success/input/minimum/hit homes remain.
 // Round 300: Single inactive goto to the common result exit, staged cross basis/rotation/projection
 // masks 0..7: 635/657/635/657/632/651/632/651. All restore early EBX/BL success and regress.
 // Original constant inactive return, private producers, in-place snapshots and complete body
 // restored; success/hit/input/minimum homes and axis schedules remain.
+// DH271: Four-query remaining byte/short/word/dword with native long array ordinal 618/618/618/618; with
+// word ordinal 726/726/726/726. Native countdown widths canonicalize; word ordinal loses the matching frame
+// and shrinks away from retail. Entire original body, hit/result producers, helpers and in-place snapshots
+// restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

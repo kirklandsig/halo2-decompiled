@@ -449,6 +449,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // tie-breaks left besides the loop: the count after the loop in EAX (retail ECX, so the chain call's register
 // temporaries rotate), case 2/4's index*5 in ECX (retail EAX: state read through the scaled index before the entry
 // address is formed), case 5's table in EDX (retail reloads it into EBX).
+// Round 115 (lane 7, fast): case 2/4's first state test written `!= 0` 115; the validator result named and
+// assigned into the flag on failure 203 (524 bytes); the peer nibble from the signed handle 115; the count-one
+// branch's request reads in reverse order 115; the loop increments as counter, items, data 115.
 // Round 261: existing element producer reports failure, neither/size/handle/both input producers
 // 137/134/138/115; with full-width rejection 202/200/202/91. The 91 flag form remains exact-only.
 // Original helper and body restored; items/data carriers and loop-entry reload remain.
