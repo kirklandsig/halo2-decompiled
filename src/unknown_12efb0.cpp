@@ -312,6 +312,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // N295: Independent palette-input/metadata-default/weighted-state lifetimes before the provider,
 // subsets 1-7 625/718/755/618/625/625/625; all with signed-byte palette 749. Original order,
 // body and helpers restored; palette/record and SIMD accumulator homes remain.
+// Round 510: complete pre-store scalar/merge/color product families 616/616/616/599/599/599/600; all
+// with publication products 600. Cross-store one-use products rejected without a match. Color phases
+// ICWR/IWCR/IWRC/WICR/WRIC/CWIR/CWRI/CRWI (C RGB, I intensity, W weight, R remainder)
+// 775/775/775/748/748/616/614/612; two/four-point leads rejected. Original helpers and complete body
+// restored; palette/record and SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

@@ -458,7 +458,7 @@ void function_1cf50(void);
 // in XMM2, so EBX holds a hoisted zero from the loop head (the first difference, +0x1f) and the colour/draw
 // schedule after the call differs. Round 71: no new form (the remaining colour-byte and manager-order forms
 // below gain 2 at most).
-// score 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
+// Earlier at 100 (was 100): this round: the fast check reads 100 or 101 at 365/365 bytes (the reduced
 // image's size decides which) and no new form was tried; the difference is still blocked by 0x144f0's
 // call convention in src/unknown_01cf50.cpp.
 // this round: no new form. Retail's argument values for the call to 0x144f0
@@ -494,6 +494,9 @@ void function_1cf50(void);
 // Round 69 (m3 lane 9): no new form; the first difference (+0x1f) is the loop-wide `xor ebx, ebx` that
 // feeds the zero pushes of 0x144f0's standard six-argument call; retail sets EBX/ECX to zero at the call
 // (0x144f0 takes three register arguments there, ret 0xc). BLOCKED-BY 0x144f0 (a contributor's file).
+// Round 510: actual stamp/bitmap receivers and read-only entry subsets 99/100/99/100/99/100/99;
+// complete graph with short bitmap 97. One/three-point leads rejected. Original body restored;
+// material-provider convention and SDK/color/draw scheduling remain.
 // @retail 0x44040
 void __stdcall function_44040(long cell, short mask)
 {
