@@ -966,6 +966,10 @@ void function_143250(
 // first-producer/final-consumer declaration order, double-first/real-first declarations,
 // numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
 // precision boundary and publication retained; complete original scalar graph/body restored.
+// Round 297: same-real one-use negative/literal-scaling/unequal-factor product families,
+// masks 1..7, 1767/1767/1767/1766/1766/1771/1771; complete graph with independent
+// original basis/matrix storage 2237. Squares and reused values retained; all executable
+// source restored. Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

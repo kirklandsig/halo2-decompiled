@@ -1448,6 +1448,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // phase 281/281/277/277; entry bool/byte/short/dword 281/281/290/277. Original byte
 // result, status graph and argument observation restored. Two other reduced links
 // produced no comparison and are excluded; pool/state/count/return differences remain.
+// Round 297: existing generic header accessor at entry/paired slots/paired
+// counts, all seven subsets, 164 each; complete header graph with the existing
+// typed paired-slot accessor 164. Original body and includes restored; early
+// pool/state allocation, signed-count materialization and byte normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1658,6 +1662,11 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 273: Reused two-request primary membership bool/byte/short/long before the
 // predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
 // comparisons, case results and complete body restored; frame eight versus twelve remains.
+// Round 297: finite depleted/base/overlay status domains, masks 1..7,
+// 481/488/488/430/485/492/492; full finite result domain 695. Overlay-only
+// 430 confirmed plain at 1793 bytes, but code differences remain 424; decoded
+// trailing-table differences fall 22 to 6. Table/extent-only gain rejected; all
+// original statuses, body and types restored. Frame eight versus twelve remains.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

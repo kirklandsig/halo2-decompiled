@@ -393,6 +393,10 @@ void function_14bac0()
 // six complete initializer orders 235/239/239/241/241/239; request/marker-scope scalar
 // declarations 235/235. Original aggregate, output pointer, bounds and traversals
 // restored; frame 0x50 versus 0x3c, point/iterator sharing and readiness homes remain.
+// Round 297: complete standard marker-input/accepted-output/relocation-addition
+// native-array producers, masks 1..7, 241/268/274/299/310/310/330; all with
+// standard displacement subtraction 364. Original returned output, native point
+// copies, selected unit and body restored; frame/readiness/recipient sharing remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
