@@ -4504,7 +4504,7 @@ bool __stdcall function_296c0(long context);
 bool __stdcall function_29370(long context);
 bool __stdcall function_298f0(long mode, real const *bounds, real const *t, real *out, long unused);
 void __stdcall function_2a8d0(long tag, long bitmap, real const *source, real const *destination, long mask, color3f const *color, real strength, bool blend, bool inverse, bool alternate_target, bool screen_target, bool simple, bool preserve_alpha);
-void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha, real first_angle, real first_scale, long second_bitmap, real second_alpha, real second_angle, real second_scale, bool screen_target);
+void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha, real first_angle, real first_scale, long second_bitmap, real second_alpha, real second_angle, real second_scale, bool screen_target);
 void __stdcall function_2a2f0(volatile long tag, volatile real alpha);
 PRIVATE __forceinline real filter_transition_time_289e0()
 {

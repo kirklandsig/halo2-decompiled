@@ -208,6 +208,10 @@ void function_1d56f0(s_havok_component *component)
 // 0x1d1260/0x1d1540 declared first in its file (call-cycle walk order, plain) 77 (0x1d0cf0 81); that with
 // 0x1d0cf0's 88 body (plain) 73 (0x1d0cf0 88, 0x1d0c20 40, component still loaded from [ebp + 8]); the 88
 // body with flag5 read into a named bool before the body fetch 73, with a member-wise transform copy 73.
+// Round 122 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): on 0x1d0cf0's 88 body 73 (0x1d0cf0 88, 0x1d0c20 40);
+// that with `inline` on 0x1d0c20 73; 0x1d0c20 and its frame helper ahead of 0x1d0cf0 in the file on the 88 body 73,
+// on the original body 77; the component copied to a local at the 88 body's top 73; m_fixed in a named bool 73;
+// the published count in a named local 77. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)
