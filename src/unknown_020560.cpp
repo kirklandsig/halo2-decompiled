@@ -76,6 +76,10 @@ PRIVATE __forceinline long texture_floor(real value)
 // that clobbers EDX in place of ECX gives EAX here).
 // Round 10: integer level index before its float 4; const floor parameter 4; named bit before the
 // clear 4; element address as &state[...] 4; definition count read inline in the floor call 4.
+// Round 71: the entry body in a helper keeping (state, entry, index) 415 (90 bytes, out of line), (state, index)
+// 431, the part after the NONE test 409; the same three forceinline 4/4/4; forceinline bitmap getter 114 (379
+// bytes), bias getter 114 (379), level helper 4, bitmap and bias getters 114, all three 114.
+// Inline call-and-store helper with evaluated arguments 4; mask-without-bit helper 4; single-bit helper 4; both 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

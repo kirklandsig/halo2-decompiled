@@ -1240,6 +1240,15 @@ static inline long render_memory_allocate(long bytes)
 // the permutations still gets eax.
 // Round 63: const count 1; const result 1; permutation-array and node-array declarators 1/1;
 // sizeof(transform4x3f) in the size product 10; const extra_bytes 1; inline/forceinline target 1/1.
+// Round 71 (one-file LTCG harness): the permutations take ECX exactly when another parameter takes EAX: an
+// early test of node_count or lod, a shift by lod, a division of extra_bytes, `long level = lod & 0xff` (each
+// leaves the stack, ret 0x10 or 0xc). Still eax: local copies of lod, permutations and the model index;
+// result, out, count or bytes declared first; NONE and false locals; a seventh parameter unused, read into a
+// dead local, under if (false), or passed to an empty or identity function in another file; existing
+// parameters passed to the empty function; the allocator out of line in another file; a long or short lod
+// with byte casts at both uses or one. Without the second call the three arrive in eax, edx and ebx directly.
+// Fast: a lod local 1; a permutations local 1; result declared first 1; a false local 1; bytes declared first 15 (157 bytes);
+// out declared first 28 (158 bytes).
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)
