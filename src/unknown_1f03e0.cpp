@@ -965,6 +965,10 @@ struct s_flags_1f0870
 // then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
 // retail length at 587; the three-point gains are rejected. Original complete body restored;
 // frame 0x34 and direct/vector homes remain.
+// DL238: Native grounded/gravity-disabled/direct-disabled predicate subsets 1/2/3/4/5/6/7/all plus
+// damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
+// damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
+// Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
