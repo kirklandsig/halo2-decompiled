@@ -534,6 +534,9 @@ extern point2f *g_468778;
 // Round 289: Complete facing value with actor-first/target position/target velocity values, masks
 // 0..7, 473/467/514/520/505/524/522/556. All restored; original facing receiver,
 // observations, lookup order, early distance and complete body retained.
+// Round 456: Facing fallback/secondary direction/planar-test memmove transfers, subsets 1..7
+// 378/381/410/381/386/387/420; all plus three request planar transfers 414.
+// Original copies, early distance, lookup order, arithmetic trees and full body restored; persistent actor/settings/prop homes remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
