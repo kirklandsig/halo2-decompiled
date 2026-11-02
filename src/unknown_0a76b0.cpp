@@ -894,6 +894,8 @@ extern vector3f *g_4687b0;
 // restored. Definition/index/type/direction homes and offset/SSE schedules remain.
 // Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
 // 309/309/309/309/309/309/309/308. Original executable source restored.
+// P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
+// Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
