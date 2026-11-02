@@ -1814,6 +1814,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
 // DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
+// Own-unit fields at every use: early admission/direct pool with live/captured request
+// 129/125, coherent pool capture 135/129; nested admission/direct pool 143/118,
+// coherent pool capture 158/109. Original pointer, observations and body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

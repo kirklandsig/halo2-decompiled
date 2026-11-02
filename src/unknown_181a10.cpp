@@ -525,7 +525,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 	return limited != shape->data;
 }
 
-// score 308 (was 321): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
+// score 308 (was 308): frame 0x4c versus 0x44 (retail writes the transformed normal into the plane and has two
 // unused dwords below it); classifier clamp form, transformed-plane and output homes remain.
 // normal component loop 319; material-output scope 319; direct validity 351;
 // key-clamp result arms 319; optional entity result 319.
@@ -660,6 +660,8 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Round 464: direct native normal-field accumulations, rowwise/leading-pair/leading-product/
 // termwise schedules, with original/early plane-normal publication: 321/321/321/321/321/320/321/319.
 // Early leading-pair/termwise publication gains one/two counts, rejected; original normal and plane restored.
+// Current aggregate origin/hit graph: captured normal input/direct plane output, early
+// normal publication, memcpy and vector setter 335/308/308/357; plane at entry 335/308/308/357.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

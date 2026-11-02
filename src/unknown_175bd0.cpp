@@ -3426,6 +3426,8 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // 403/427/423/403/403; one dword/long group observation 380/380; Boolean categories
 // with byte capped flare ordinal 422. Original group observations and body restored;
 // scale prefix and preserved point-Y source remain.
+// Fraction producer independent bounds/reversed bounds/early returns/successive selections
+// 74/86/147/74; each with default-before-color scale 270/270/258/270.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
