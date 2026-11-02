@@ -260,6 +260,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // P264: negative edge-search outcome bool/byte/short/long, long success
 // 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
 // original positive hit, normal storage, tails and complete body restored.
+// P266: Native two-component normal-copy for with long/dword/short/word ordinal
+// 459/459/464/464; plain while 459/459/464/464. Frame 0x64 recovered,
+// but all grow to 1667 bytes; original scalar transfers and complete body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

@@ -1856,6 +1856,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Own-unit fields at every use: early admission/direct pool with live/captured request
 // 129/125, coherent pool capture 135/129; nested admission/direct pool 143/118,
 // coherent pool capture 158/109. Original pointer, observations and body restored.
+// P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
+// slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
+// Original shared accessor, request workspace, result graph and complete body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

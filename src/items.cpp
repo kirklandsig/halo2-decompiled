@@ -1570,6 +1570,12 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P264: constant accumulator before object acquisition, bool/byte/short/long
 // 143/144/160/160; between object/tag acquisition 143/144/160/160.
 // Original result lifetime, paired point setters, two-use spin and body restored.
+// P269: shared contact/event point with owner memcpy/memmove at initialization, magnitude,
+// location joins 137/137/140/165/165/164; complete object/team/player publication at the
+// latter two joins 132/138; the magnitude-join field publication with the common active-scope
+// point reached 132 plain at 892/892. Not kept (coordinator): the same form as N315 (owner copy
+// written out as three field stores, the contact and event points folded into one local), a
+// steering form at exactly the keep bar. Body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

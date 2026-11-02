@@ -486,6 +486,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // request 206; while form of the index loop 206. Re-measured on this body: c,b,count (the reverse reads) 86; natural index
 // for loop 206, through the helper 207; dword handle 206; memcmp sized by the request count 195 (handle split at entry), with
 // the index loop 208; entry element pointer in case 2/4 80 (same code).
+// P265: Native rejection bool/byte/signed-byte/short/word/long/dword/int64 on the retained byte
+// ordinal 153/153/153/205/205/203/203/148. All exact-only flag forms restored; validity
+// home, validation carriers and loop-entry reload remain. Original helper and body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

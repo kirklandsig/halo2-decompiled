@@ -622,6 +622,9 @@ struct s_collision_result_buffer_1697c0
 // initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
 // terms 337; both startup setters with squared terms 342. Original helper and body restored;
 // frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
+// P265: Separate normalization result, zero-before/zero-after/complete-before/root-default,
+// native sum 322/322/341/648; shared squared-length 322/322/341/648.
+// Original result boundaries and all body/helper text restored; scratch and axis homes remain.
 // Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
 // 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
 // @retail 0x296e60
