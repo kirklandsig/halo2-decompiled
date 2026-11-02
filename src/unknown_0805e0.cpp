@@ -189,6 +189,8 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // 59 (135 bytes; compile-only it hoists the mask into AL and builds the entry in place, but next shares the index
 // register), the same with the result declared after the index 59, with `else index = next` 59; a named `admitted`
 // bool with early returns and a successor local 49.
+// M296: Cheap-flag-gated two-use identity, nested/continue admission and break/direct
+// success, then those four with single flag observation [43, 52, 43, 52, 43, 52, 43, 52]. Original admission restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -1155,6 +1157,8 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // store on the current declarations 57 (the entry then matches to +0x43), with only the count path's flag 370,
 // with `removed <= position` / `removed < position ? position : removed` bounds and `g_4cf978 > position` 369, with
 // the declarations reversed, upper assigned first and the count path upper first 370.
+// M296: Range-relative copy ordinals forward/reverse/both, then each with the real
+// range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

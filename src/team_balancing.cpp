@@ -626,6 +626,8 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // M294: Existing cost weighted products/accumulator/staged weighting/raw query parts,
 // in-class then forced expansion:
 // 67/67/67/67/67/67/67/67. Original complete executable source restored.
+// M296: Single current-team count observations A/B/both, mutable then const,
+// then both with reverse declaration priority [75, 151, 154, 75, 151, 154, 154, 154]. Original per-use count reads restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -964,6 +966,8 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M292: Raw maximum-party index with strict/named-fill/conditional/inclusive producers,
 // original/expression-owned clamp:
 // 82/85/82/82/82/85/82/82. Original executable body restored.
+// M296: Sixteen-slot shared short/word/byte/char ordinals, then separate short/long,
+// long/short, short/short and word/word [79, 79, 78, 78, 79, 76, 79, 79]. Original long induction restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

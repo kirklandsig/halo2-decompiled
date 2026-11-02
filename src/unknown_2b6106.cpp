@@ -812,6 +812,8 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // M294: Native message storage with bounded widget-word/row-byte/campaign-bool domains,
 // seven subsets, then all with consistent state observations (exact-only):
 // 546/601/625/532/547/624/630/630. Original complete executable source restored.
+// M296: Actual score ordinals player/team/both long, player/team/both short, then
+// both long with Boolean campaign/native short count [531, 524, 548, 545, 519, 550, 578, 568]. Original score cursors restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
