@@ -14,20 +14,18 @@ typedef char ball_results_offset[(offsetof(lane_a_ball_socket, results) == 0x40)
 typedef char spring_results_offset[(offsetof(lane_a_spring, results) == 0x44) ? 1 : -1];
 typedef char prismatic_results_offset[(offsetof(lane_a_prismatic, results) == 0xac) ? 1 : -1];
 
-// Score 12: the compiler moves the frame's zero/identity stores ahead of the
-// five preceding vector clears. All offsets, values and the base call agree.
-// Stop here: the remaining difference is instruction scheduling.
+// Explicit aligned stores keep all vector clears before the identity lanes.
 // @retail 0x314bb0
 c_component_joint_snapshot_5::c_component_joint_snapshot_5()
 {
-	pivot_a = _mm_setzero_ps();
-	pivot_b = _mm_setzero_ps();
-	axis_a = _mm_setzero_ps();
-	axis_b = _mm_setzero_ps();
-	perpendicular_b = _mm_setzero_ps();
-	frame_b[0] = _mm_setzero_ps();
-	frame_b[1] = _mm_setzero_ps();
-	frame_b[2] = _mm_setzero_ps();
+	_mm_store_ps(pivot_a.m128_f32, _mm_setzero_ps());
+	_mm_store_ps(pivot_b.m128_f32, _mm_setzero_ps());
+	_mm_store_ps(axis_a.m128_f32, _mm_setzero_ps());
+	_mm_store_ps(axis_b.m128_f32, _mm_setzero_ps());
+	_mm_store_ps(perpendicular_b.m128_f32, _mm_setzero_ps());
+	_mm_store_ps(frame_b[0].m128_f32, _mm_setzero_ps());
+	_mm_store_ps(frame_b[1].m128_f32, _mm_setzero_ps());
+	_mm_store_ps(frame_b[2].m128_f32, _mm_setzero_ps());
 	frame_b[0].m128_f32[0] = 1.0f;
 	frame_b[1].m128_f32[1] = 1.0f;
 	frame_b[2].m128_f32[2] = 1.0f;
@@ -91,22 +89,20 @@ void lane_a_spring::info(lane_a_constraint_info *output) const
 	output->op_bytes = 0x30;
 	output->result_count = 1;
 }
-// Score 9: the virtual-table load is scheduled before the last vector copies;
-// retail reads it after loading the final scalar. The 126-byte extent and
-// field copies agree. The virtual call still uses the valid() slot at +0x1c.
+// Explicit aligned stores retain the retail copy order before virtual validation.
 // @retail 0x314cd0
 void lane_a_prismatic::import_fields(c_component_joint_snapshot_5 const *description)
 {
-	pivot_a = description->pivot_a;
-	pivot_b = description->pivot_b;
-	axis_a = description->axis_a;
-	axis_b = description->axis_b;
+	_mm_store_ps(pivot_a.m128_f32, description->pivot_a);
+	_mm_store_ps(pivot_b.m128_f32, description->pivot_b);
+	_mm_store_ps(axis_a.m128_f32, description->axis_a);
+	_mm_store_ps(axis_b.m128_f32, description->axis_b);
 	minimum = description->minimum;
 	maximum = description->maximum;
-	perpendicular_b = description->perpendicular_b;
-	frame_b[0] = description->frame_b[0];
-	frame_b[1] = description->frame_b[1];
-	frame_b[2] = description->frame_b[2];
+	_mm_store_ps(perpendicular_b.m128_f32, description->perpendicular_b);
+	_mm_store_ps(frame_b[0].m128_f32, description->frame_b[0]);
+	_mm_store_ps(frame_b[1].m128_f32, description->frame_b[1]);
+	_mm_store_ps(frame_b[2].m128_f32, description->frame_b[2]);
 	friction = description->friction;
 	valid();
 }
@@ -310,14 +306,16 @@ float c_314710::update_radius_squared(shape_bounds_314650 const *shape)
 	return radius_squared;
 }
 // @retail 0x3155f0
-void contact_sizes_3155f0::get_sizes(lane_b_constraint_sizes *sizes)
+void contact_sizes_3155f0::info(lane_a_constraint_info *output) const
 {
-	lane_b_contact_constraint_prefix::get_sizes(sizes);
+	lane_b_constraint_sizes *sizes = (lane_b_constraint_sizes *)output;
+	((lane_b_contact_constraint_prefix *)this)->get_sizes(sizes);
 	sizes->op_bytes += 0x28;
 }
 // @retail 0x315720
-void contact_sizes_315720::get_sizes(lane_b_constraint_sizes *sizes)
+void contact_sizes_315720::info(lane_a_constraint_info *output) const
 {
-	lane_b_contact_constraint_prefix::get_sizes(sizes);
+	lane_b_constraint_sizes *sizes = (lane_b_constraint_sizes *)output;
+	((lane_b_contact_constraint_prefix *)this)->get_sizes(sizes);
 	sizes->op_bytes += 0x88;
 }
