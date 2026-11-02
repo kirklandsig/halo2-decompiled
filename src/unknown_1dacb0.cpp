@@ -1226,6 +1226,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 520: actual named-table pointer/reference before/after candidate construction,
 // original/native iterator: 828/828/828/828/826/826/826/826.
 // Field receivers do not match; two-count initialization gains rejected. Body restored.
+// M319: Native urgent-resource/inheritance/both endpoints, field-read bounds
+// 1325/807/1341; cached bounds 999/808/999; urgent/both equality bounds 999/999.
+// Inheritance-only 807/808 loses matched 0x1dc8c0 to 565/558; shared-user
+// gate rejects both. Every helper/body restored; initial/output homes and zero remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

@@ -209,6 +209,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DH295: Retained evaluation-first emitter with candidate/endpoint short-byte, byte-short,
 // short-short, long-byte, byte-long, short-long, long-short and long-long ordinals:
 // 464/402/471/442/420/481/444/457. All restored; normalized homes and entry sum remain.
+// Round 318: Native endpoint-pointer traversal with ordered/equality end tests and
+// byte/short/word/long candidate counts; 432/457/457/435/432/457/457/435. Original whole body and
+// helpers restored.
 // N324: Raw/bounded projection split with ternary/branch/ceiling-default/independent-bound producers,
 // original then test-produced wrapped-angle sum 395/395/404/421/400/400/407/411. Original complete body
 // restored; entry and normalized XY/magnitude homes remain.

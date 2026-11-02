@@ -1011,6 +1011,9 @@ void function_1d1540(s_havok_component *component);
 // Keep constructor copy with two-use slot pointer and fixed-first guard, ordinary whole-program
 // confirmed; post-reset lookup retained. Component/index stack transport, 0x84/0x88 frame and
 // rep/SIMD copy remain.
+// Round 534: complete transform workspace roles and inverse entry/use storage on the
+// two-use slot receiver, four name pairs: 65/65/65/65/65/65/65/65. Frame 0x84/0x88,
+// constructor copy and stacked component/index remain; original complete body restored.
 // Round 330: early native slot pointer/reference, constructor/set copy, before-copy then
 // after-copy-before-inverse acquisition 86/85/86/85/88/85/88/85. Original body restored;
 // frame/component transport remains; two early-constructor forms lose matched 0x1d1b60.
