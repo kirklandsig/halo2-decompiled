@@ -145,9 +145,13 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // comes from the constant pool order (our 0x4a7f28 is 2.356194496154785 and 0x4a7f2c is 0.7853981852531433,
 // so the compiler swapped the two against their order in the source). What remains is the frame (0x38
 // against 0x40), the shared quadrant/magnitude preparation and the slot and register rotations.
-// Earlier 474 from 501: the per-controller block and the preferences are declared in retail's order,
+// Retained output/preferences declaration order: the per-controller block and the preferences are declared in retail's order,
 // so the block pointer keeps the register retail loads it into. The frame 0x38 versus 0x40, the loop
 // counter's home and the remaining field and register rotations remain.
+// Round 222: first/second/both native coordinate reads at every use 550/474/550;
+// normalized-output/double-angle/both/coordinate-trig/all scalar identities 474 each
+// on the shared-scale, output-first graph. Original body and both helpers restored.
+// Earlier 474 from 501: the per-controller block and the preferences are declared in retail's order,
 // Round 338: native external input axes/channel-word/trigger views in seven subsets,
 // then all with a read-only receiver, 474/474/474/474/474/474/474/474. Original input layout,
 // observations, helper input copies and complete body restored; frame/angle/snap homes remain.

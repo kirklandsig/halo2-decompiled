@@ -299,6 +299,9 @@ struct s_free_state_23d260
 // two-use double movement trig values, eight subsets 512/484/474/444/503/477/465/439;
 // separate force-inline declaration 512 (producer remains out of line). Original body and
 // declarations restored; zero/side normalization and up/roll allocation remain.
+// Round 286: paired shared horizontal input observations in real/real, double/real,
+// real/double and double/double domains 293/264/267/153; reverse read order repeats
+// 293/264/267/153. Zero/side ownership remains; original input reads and body restored.
 // Round 219: native roll/movement input with alternate normalization, staged up cross and repeated
 // double movement trig results, masks 0..7: 257/274/256/289/264/274/258/157. Original input layout,
 // normalizer and complete body restored; zero/side and up/roll allocation remain.

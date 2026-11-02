@@ -3318,6 +3318,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // nested rescale admission 1146; gain-span/all-quantizer producer boundaries and both,
 // then with the fixed sample, 31/31/31/31. Original complete body and helpers restored;
 // selector scheduling, reciprocal reload order and shift/clip quantizer homes remain.
+// Round 267: shared selector decision long/byte/short/dword before floor 250/31/964/250;
+// at selector production 243/31/957/243. Original body restored; selector order,
+// span/constant reload pairs and shift/clip quantizer homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

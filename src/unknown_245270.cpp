@@ -496,6 +496,9 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
 // Round 53 (lane 10, fast): ours keeps the material table in EBX for the whole body and the matrix in EBP
 // from entry; retail spills the table (+0x18) and the first material index (+0x1c) and uses EBX for the
 // second code, the plane table and the side bit. The final call's fields read through `arg_1->field_2c` 205
@@ -519,6 +522,8 @@ void function_245400(s_source_245400 const *source, long index,
 // 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
 // Round 263: Joint paired-mask/xor side equality, signed/unsigned material words and existing staged-cross combinations
 // 239/239/211/211/239/239/211/211. Original side producers, material carriers, cross call and complete body restored.
+// DH round 265: complementary facing rejection with bool/byte/word/long sides, original/staged cross:
+// 211/211/211/211/211/211/211/211. Original complete body restored.
 // Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
 // two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
 // Original in-place rotation and complete executable body restored.

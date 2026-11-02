@@ -314,6 +314,9 @@ void c_juggernaut_engine::v15(long player_index)
 // inline twin of the test called with the masked index 81, the twin masking the datum index itself
 // 81; no masked-index local (each use masks the player index) 85 (the test shifts by bl and the
 // mask is computed per path); both indices declared at function scope with the masked-index test 8.
+// Round 112: a separate short membership carrier 8; with masked membership, the count incremented
+// first 52, the accumulator written as `players = players | mask` 8, a word shift count 8, a globals
+// pointer 17, the difference inlined 8, a player-record pointer 8, and count declared before players 10.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

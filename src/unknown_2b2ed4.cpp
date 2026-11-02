@@ -74,7 +74,8 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
  }
  return result;
 }
-// score 330 (was 330): Stack homes, suffix address rederivation and block placement remain.
+// score 330 (was 330): frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
+// Stack homes, suffix address rederivation and block placement remain.
 // frame 0xfd4 agrees; child/text/layout homes and suffix re-derivations differ.
 // merging the two XONLINE_FRIEND copies into one local in the status block
 // Frame 0xfd4 agrees; child/text/layout homes, suffix rederivation and block placement remain.
@@ -82,6 +83,7 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // left the bytes and the score unchanged, so it was reverted; the stack homes still differ.
 // the block order follows retail's apart from a few blocks, but stack offsets
+// Stack homes, suffix address rederivation and block placement remain.
 // Stack homes, suffix address rederivation and block placement remain.
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block
 // Earlier: the block order follows retail's apart from a few blocks, but stack offsets
@@ -165,6 +167,9 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Round 279: Existing status producer writes the real final payload directly, before/after
 // the disjoint range helper, crossed with constructor-owned zero and native flag bits:
 // 400 each, 2324/2345 bytes. Original local output, library copy, flags and full body restored.
+// Round 284: shared actual invitation/session/voice icon-result publication, subsets
+// 1-7: 490/389/487/374/487/390/669; all with native short session/voice results 673.
+// Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // Earlier: merging the two XONLINE_FRIEND copies into one local in the status block left the bytes and
 // the score unchanged (330), so it was reverted; the stack homes still differ.
 // Lane 5 r130 (fast): 0x230134 takes the buffer in ESI and never writes it, and its callees (0x22f871,
