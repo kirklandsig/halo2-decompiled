@@ -279,6 +279,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // used child-lifetime value 78/78; reconciled current-record evaluator input 138/138; both
 // changes 139/139. Frame 0x10 agrees; timestamp/fifth-draw scheduling and child register
 // allocation remain.
+// Round 462: actual child-duration branch/default result after/before publications
+// 98/98/118/102; each with the allocation pool held for both real uses 98/98/118/102.
+// Original output arms and pool observations restored; timestamp/compare and child homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

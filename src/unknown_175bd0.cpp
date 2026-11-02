@@ -3398,6 +3398,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 457: Actual position/forward/up inputs through memmove in all seven subsets, then all
+// three plus color; original observations, scale selection, transforms and render arguments
+// retained. Scores 353/350/341/351/340/339/306/257. Original executable body restored.
 // Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
 // association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
 // restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.

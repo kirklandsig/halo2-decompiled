@@ -466,6 +466,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
 // and common-expression publication 50/50. All regress; original body, includes,
 // parameter storage, length lifetime, delta order and correction producer restored.
+// Round 461: Final tracked velocity/location native/memcpy/memmove pairs, excluding both
+// native, with direct tracked parameter: 99/102/99/99/102/100/100/109.
+// Original complete transfers, prediction/correction graph and parameter storage restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

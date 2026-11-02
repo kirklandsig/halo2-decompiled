@@ -524,6 +524,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // local before the header test 77; an object pointer named in the unflagged arm 77; the NONE and flag tests as
 // breaks out of a `do ... while (false)` 75; the store and attach through the existing 0xbb780 with the update
 // through the existing v23 70 (176 bytes, v23's NONE test stays); that on the long result 57 (181 bytes).
+// Round 462: multiply-used native absolute index with accepted-handle result at creation,
+// attachment, notification or accepted-branch entry: long/dword each 74/68/68/51.
+// Original validity result and independent source observations restored; BL/EBP and CSE remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

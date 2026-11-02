@@ -262,6 +262,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
 // 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
 // regress; complete original body and alias-safe helper restored.
+// AC460: Existing UV producer with two-use positive axis decisions in bool/byte/short/long
+// 367/367/402/367; complete complementary decisions 397/397/421/398. Original conditional
+// expressions, helper and all in-place input captures restored; tint/UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
