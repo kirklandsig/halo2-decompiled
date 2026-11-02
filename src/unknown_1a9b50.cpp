@@ -692,8 +692,16 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 384 (was 384): the frame and the length agree, and the early false exit's place, the
+// score 382 (was 384): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
+// Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
+// target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
+// matched 0x2900b0 uses for target and origin) 384 -> 382. Tried: the entry flags through a forceinline
+// predicate 519 (exit still last, frame 0x54, 0x25d740 inlined); the flag preset true and cleared in an `if`
+// then tested 527; local_1/local_3/local_4 declared at the top 384 (same code); the computed flag declared
+// before local_0 517; on the value fix: an object pointer for the velocity reads 411 (1919 bytes), the
+// computed entry flag 517. Every form whose false exit is threaded (computed flag, false default) also moves
+// arg_0 into EDI and drops the frame to 0x54.
 // Earlier (384): Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Frame 0x58 and length agree; early rejection, object/magnitude and query scalar homes remain.
 // Lane 6 r85: retail lays the early false exit (`xor al, al; pop ebp; add esp, 0x58; ret 8`) right after the
@@ -901,8 +909,8 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 						real local_20;
 						vector3f local_22;
 						/* retail reuses the speed variable as the vertical speed output and stores that result below */
-						if (function_fa1a0(local_19, 1.0f, &local_8->field_4, &local_1->position, &local_15, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20) ||
-							(local_3->field_2c > local_15 && function_fa1a0(local_15 + 0.03f, 1.0f, &local_8->field_4, &local_1->position, NULL, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20)))
+						if (function_fa1a0(local_19, 1.0f, &local_1->position, &local_8->field_4, &local_15, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20) ||
+							(local_3->field_2c > local_15 && function_fa1a0(local_15 + 0.03f, 1.0f, &local_1->position, &local_8->field_4, NULL, NULL, NULL, false, &local_22, NULL, NULL, NULL, &local_19, &local_20)))
 						{
 							if (normalize2d((point2f *)&local_22) == 0.0f)
 							{

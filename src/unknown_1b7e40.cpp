@@ -69,9 +69,10 @@ bool actor_has_joint_invitation(long actor_index, short type);
 long function_25d810(long object_index, long actor_index, bool create);
 bool function_25d9b0(long prop_index);
 
+// score 49 (was 49): the actor/node EBX/EBP tie and retail's duplicated zero epilogue remain (see round 53 below).
 // MiniMax R (11-01): the file's retail setting includes /Ob1 (`// @flags /O2 /Ob1 /arch:SSE /Gr`): 145 -> 49
 // (557 bytes against retail's 551); the file's other seven functions stay matched and nothing is demoted.
-// score 49 (was 86): the `priority > 0` gate after both branches gives retail's block order (no-invitation
+// Round 107 kept form, 86 -> 49: the `priority > 0` gate after both branches gives retail's block order (no-invitation
 // branch last, jumping past the gate), priority in SI, view in EDI and the state spilled to the argument slot.
 // Left: actor and node swap EBX/EBP through the body, and the zero exits share `xor esi, esi; mov ax, si` where
 // retail has its own `pop ebp; xor eax, eax; pop ebx` epilogue (9 bytes short). Frame 0xc and invitation call agree.
@@ -191,6 +192,16 @@ bool function_25d9b0(long prop_index);
 // (`test al, al; je` to a `return priority` placed last) and falls into the shared `xor eax, eax` exit. On that
 // block: `if (!busy) return priority;` 65 (old registers), `if (busy) priority = 0; return priority;` 82, the whole
 // test as one && with an extra `return 0` 65. Left: the select, the success/zero block order and `xor ax, ax`.
+// Round 53 (lane 11, fast with the file and its callees): `short result = 0` at the top, `if (!busy) result =
+// priority; return result;` with the loop's own `return result` 153 (`xor ax, ax` there, frame 0x10), keeping the
+// loop's return 87 (result spilled); the busy test as `if (!busy) goto done; } } priority = 0; done: return
+// priority;` 76 (542 bytes: retail's block order, zero exit after the busy test and the fallback after it, but
+// actor EBP/node EBX and one shared `xor esi, esi; mov ax, si` return where retail has two epilogues), the same
+// with the busy test in the && chain 76; `return priority` inside and `priority = 0; return priority;` after 65
+// (success epilogue falls through, zero exit last as `xor ax, ax`), nested 65, with node or priority declared
+// first 65/65. Diagnostic only (reverted): an extra actor read in the decline test flips the goto form to
+// retail's actor EBX/node EBP, leaving only the shared return (12 aligned rows, 551 bytes); so the two causes
+// left are the actor/node register tie and retail's duplicated epilogue (`xor eax, eax` copy for the zero path).
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
