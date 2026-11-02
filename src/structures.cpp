@@ -391,6 +391,10 @@ static __forceinline bool structure_bsp_collision_available()
 // (290 bytes; 0xd2bb0 21). Compile-only, the join test threads with a ternary, `&&`, do/while(false), `__assume` or `__noop`
 // or an empty statement or goto label at the join, and a flag copied at the join into a variable with a second definition;
 // only `found && !flag` (an extra test and an entry `xor`) and a store between the two tests keep it. Body restored.
+// Round 519: Complete native collision-input assignment/memcpy/memmove after admission
+// 156/156/154; after triangle resets 156/156/154; early assignment/memcpy with byte
+// acceptance 156/156. Assignment/copy forms lose the matched caller; all restored.
+// Exclusion BL and source-slot publication/reload remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1074,6 +1078,10 @@ done:
 // flag set after 0x14a8e0 125 (same code), as an else-if chain 125; `requery` preset true and cleared in both arms 125, or
 // from `!excluded` with the 0x14a8e0 arm clearing it 161 (485 bytes); the excluded result cleared in a nested else 137 (471
 // bytes). The join test stays threaded in all of them. Body restored.
+// Round 519: Complete direction value shared by both probes and retry advance,
+// admitted/per-pass samples with original eligibility 177/165; positive eligibility
+// 177/165; existing availability producer 142/147; both changes 142/147.
+// All lose the matched caller; original direction observations and complete body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

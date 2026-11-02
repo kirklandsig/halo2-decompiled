@@ -343,6 +343,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // Round 354: Native metadata flag, readonly lookup result and branch-completed nullable
 // result subsets 1..7, then native flag bitfield: 118/118/118/118/118/612/612/612. Original metadata
 // layout, getter, complete case graph and matched sibling restored.
+// Round 286: Existing metadata getter forced inline, original/table-first/readonly/guard exits/
+// completed result/conditional result/entry-owned result/coordinated roles: 118/118/118/118/118/118/118/118. Original
+// helper and complete body restored; metadata table/result scratch rotation remains.
 // Round 517: On the recovered entry graph, validity-player-permission order 366; validity-
 // permission-player 367; entry/player nested admissions 366/118; complete metadata permission in
 // bool/byte/short/long 630/630/631/630. Original admission, getter, case graph and body restored;

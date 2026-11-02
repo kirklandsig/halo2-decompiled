@@ -7140,6 +7140,9 @@ real function_50650(real cosine);
 // 614/614/614/614; component aggregate counterparts 563/563/563/563.
 // Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.
 // Original prediction input, axis, reciprocal and complete body restored.
+// Round 286: Current native-axis graph with target/current-direction storage reuse and joint
+// motion-record lexical order, seven subsets then all with complete cosine parts: 563/563/563/563/563/563/563/556. Original
+// storage lifetimes and body restored; frame, vector homes and prediction/motion scheduling remain.
 // Round 309: Plain axis/final-scale loops and accumulated actual completion result, subsets 1..7, then
 // all unsigned component counters: 1090/576/1090/565/1091/577/1091/1091. Axis loops also lose caller 0x1faf80 at 16.
 // Original scaling, completion results and body restored; frame/input/vector homes and
