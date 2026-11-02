@@ -507,6 +507,12 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // Round 294: Status tail memset, length last/first, Boolean/mask 286/283/285/282;
 // native field-zero chains 287/285/288/286. Other producer users regress (18-19/75-78/42-50);
 // original helper and body restored; frame 0x3c/0x40 and status/clock/output homes remain.
+// Round 44 (lane 15, fast): block initialized after the start time as retail's `xor esi, esi` 264 (aligned 107, masked
+// 67, against 105 and 70); the retry loop as for(;;) with an exit test 246 (same code, it rotates as before); dword
+// mask with `(mask | 0x40) << 16` and the open call per arm 283 (1108 bytes, masked 65); all three 301 (1114, masked
+// 60); a timed-out flag in the retry condition, retail's head-tested loop with one call, 282 (1082, masked 68). The
+// `fld; fcompi` timeout and movss stores still need /arch:SSE, so this body cannot match in this file (flags lead
+// only).
 // N306: Finite allocation-choice domains, canonical/flag-valued, mutable/readonly and conditional/
 // per-arm movie open: 280/287/280/287/279/290/279/290. Original decision and complete body restored;
 // frame 0x3c/0x40, status/clock/output homes and instruction policy remain.

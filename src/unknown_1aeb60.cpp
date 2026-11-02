@@ -429,6 +429,13 @@ short *function_e70b0(long unit_index, short *value);
 // original/native slot data block, entry/timed-block declaration and mutable/const
 // view combinations, all eight 124 at 443 bytes. The shared receiver makes the EBP
 // save unconditional. Original data view, global observations and full body restored.
+// Round 59 (m3 lane 10, fast): every flagged line follows from one decision, the actor pointer in ECX
+// (retail) or EDX. The slot data block alone 49 (same code; retail forms no data pointer here); the getter
+// as typed `+` / named data / named offset / named index / assigned later / const actor 49 each; 0x227 read
+// twice 49; prop index twice 49; 0x18 twice 130 (423 bytes, 0xe70b0 out of line); a copy of the index at each
+// of four uses 49 each; an actor copy 49. Getter read directly with the local at 0x227 / 0x229 / the prop test
+// / the prop lookup / 0x18: 117 / 117 / 49 / 49 / 120; pairs 117, 117, 117, 118, 117, 117, 117, 49, 120, 120;
+// all five 117.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
