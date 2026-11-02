@@ -1203,6 +1203,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // requests 1009 (2849 bytes); the iterated kinds requested before the asked-for ones 980; the named-animation
 // pointer declared at the block top 828; the iterator outputs declared before the iterator 828; the iterator
 // declared after the entry pointer 828. 0x1dbc80 stays 828 in every form.
+// Round 43 (lane 15, fast): retail keeps the three iterator outputs contiguous in mode, class, type order and gives the
+// per-attempt candidate found_mode's dead parameter home; the three outputs as one `long found[3]` do the same (807, not kept: locals packed into an array are against the lane rules; the
+// global alignment falls 163 -> 141, candidate stores now at retail's [esp+0x60]); with the iterator stored graph, zeros, keys as
+// retail and matched 0x1dc790 807, not kept (no gain). On that: initialised array 823, anonymous struct 823, memset of the array 807, any array/result names
+// or array declared first 807 (renaming the locals on the old form 828: names do not move this home). Outputs and id as one named
+// struct: 972 (2807 bytes), retail's first 11 instructions and frame, with loop forms for/while/flag all the same code (for or
+// while with a break 997, 2839 bytes; flag 972); a second id set on both loop exits gives retail's reload path and jump shape 979
+// (2825 bytes; on the array form 988), the store-order permutations of the iterator 818-972. Left: retail's NONE reloaded after
+// the je (`or eax, -1`), ECX carrying the id from the loop to the 0x1dd9d0 call, the second request's EBX/EBP roles and the late
+// zero carrier.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1366,6 +1376,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 234: Downstream request eligibility as the actual urgent argument, bool/byte/short/long after
 // outputs 996/995/1008/1009; before outputs 996/995/1009/1010. Original search and request guards
 // restored.
+// Round 43 (lane 15, fast): retail keeps the three iterator outputs contiguous in mode, class, type order and gives the
+// per-attempt candidate found_mode's dead parameter home; the three outputs as one `long found[3]` do the same (807, not kept: locals packed into an array are against the lane rules; the
+// global alignment falls 163 -> 141, candidate stores now at retail's [esp+0x60]); with the iterator stored graph, zeros, keys as
+// retail and matched 0x1dc790 807, not kept (no gain). On that: initialised array 823, anonymous struct 823, memset of the array 807, any array/result names
+// or array declared first 807 (renaming the locals on the old form 828: names do not move this home). Outputs and id as one named
+// struct: 972 (2807 bytes), retail's first 11 instructions and frame, with loop forms for/while/flag all the same code (for or
+// while with a break 997, 2839 bytes; flag 972); a second id set on both loop exits gives retail's reload path and jump shape 979
+// (2825 bytes; on the array form 988), the store-order permutations of the iterator 818-972. Left: retail's NONE reloaded after
+// the je (`or eax, -1`), ECX carrying the id from the loop to the 0x1dd9d0 call, the second request's EBX/EBP roles and the late
+// zero carrier.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
