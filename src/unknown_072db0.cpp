@@ -1567,6 +1567,15 @@ struct s_rating_summary
 // Round 307: stepped team with indexed counters 116. Original body restored; formatter/count scheduling
 // Round 307: and the swapped team/counter homes remain.
 // Round 307: complete native team-record snapshot at admission 224 (1268 bytes); restored.
+// M310: Actual team admission snapshots before identity comparison; gate orders ASIV/AVIS/ASVI/AVSI/SAIV/VAIS/SVAI/VSAI [223, 231, 127, 126, 214, 211, 253, 253]. Original body restored.
+// Round 273: joint team-statistics/ordinal/bound role names, seven subsets 31 each;
+// all three with an uninitialized iteration-entry statistics declaration 31. Original
+// complete body restored; formatter/count schedule and team/counter homes remain.
+// M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
+// One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
+// DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
+// receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
+// Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1906,9 +1915,24 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // N303: Actual cache-group/request-player/completion-player element references, seven subsets,
 // then complete returned-record/property/destination elements: 709 each. Original receiver
 // forms restored; frame agrees, initial user cursor base/home and slot expansion remain.
+// Round 523: Initial properties/identity/cache-publication memmove transfers, seven subsets
+// then all with properties before identity, 776/767/734/785/804/753/771/771. Cache-only and
+// identity/cache reach retail length; properties memmove loses self-alignment. Original
+// copies, input observations, cursor forms, helpers and complete body restored.
 // P263: equality-only library operands reversed consistently in cache/duplicate/completion
 // subsets 1/2/4/3/5/6/7, then all with team comparison: 713/709/709/713/713/709/713/715.
 // Original comparisons and body restored; initial cursor/slot and later homes remain.
+// M3 lane 4 r155 (fast; LCS-aligned base 344): retail's user loop passes the record pointer in ECX and the xuid pointer
+// (record + 1) through EDX/EAX like an inline helper's arguments. New: the identity copied through a const xuid pointer (also
+// the later copy's source) with online_logon_connected() 775 (2846 bytes, aligned 362); the user's valid flag typed byte or
+// char, team computed before `valid = true`, the availability loop through a player element pointer: 709 each (same code).
+// Re-measured: a record pointer with the xuid pointer 754 (aligned 364, twice: at the body top / beside the values pointer),
+// online_logon_connected() 729 (2862 bytes, aligned 343), with the record pointer 775. The slot helper's cmovne still needs
+// /arch:SSE (a file-flag decision).
+// M319: Slot index/native row/byte view/flags-address production before the
+// property copy, admission helper kept after it: after identity 709/709/709/761;
+// before identity 709/709/709/767. One-use producers require a match; all
+// restored. User cursor base/home, slot conversion and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

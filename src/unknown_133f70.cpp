@@ -60,10 +60,10 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 	long arg_5, dword arg_6, long arg_7, byte *arg_8, short arg_9, byte arg_10,
 	void *arg_11, long arg_12, real arg_13, long arg_14, long arg_15,
 	bool arg_16, bool arg_17, bool arg_18, real arg_19, real arg_20,
-	real arg_21, byte arg_22, point3f const *arg_23, real arg_24);
+	real arg_21, word arg_22, point3f const *arg_23, real arg_24);
 
-// score 16 (was 16): the 22nd argument of the 0x2cbf0 call is a word in retail but 0x2cbf0 declares a
-// byte (that declaration is also in src/unknown_1321f0.cpp); field_2c[i] is computed before the
+// score 16 (was 16): the 22nd argument of the 0x2cbf0 call is a word in retail, and 0x2cbf0 declares a
+// word since r644 (#1015; it was a byte, score not re-measured); field_2c[i] is computed before the
 // field_4/field_5c pushes in retail. Round 58: natural loop with the record reset from the parameter
 // 247 (parameter moves to the stack); record through the parameter/const source copy/record in the loop
 // 247/247/247; volatile source copy 222; parameter as the per-pass record with a const original 169;
@@ -170,7 +170,7 @@ short function_2cbf0(long arg_1, long arg_2, short arg_3, dword arg_4,
 // record tested `i == 0` 17.
 // Round 37 (fast): the level passed without the byte cast 16; first/second declared before the
 // flags copy 16; index declared before the selected byte 16; category or instance read through the
-// original 206/201. Both causes stay BLOCKED-BY the held src/unknown_1321f0.cpp (0x2cbf0's prototype).
+// original 206/201. Both causes waited on 0x2cbf0's prototype (byte level), a word since r644 (#1015).
 // Round 118: active record for three call inputs 239; category row at the call/before the inner
 // loop 16/16; direct pointer arithmetic, category value and element address 16 each; active record
 // for every call input 215; active record from the feature read 239. Caller preserved; original restored.
@@ -223,7 +223,7 @@ void function_133f70(s_133f70 const *record, bool arg_2)
 					record->field_1be, record->field_1bc, NULL, record->field_1d0, record->field_1b4,
 					record->field_1c0, record->field_1c4, first, second, record->field_1d4,
 					record->field_1d8, record->field_1dc, record->field_1e0,
-					(byte)record->field_c6[i][j], &record->field_194, record->field_1a0);
+					record->field_c6[i][j], &record->field_194, record->field_1a0);
 			}
 		}
 	}

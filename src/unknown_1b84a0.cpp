@@ -309,7 +309,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 49 (was 113): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
+// score 49 (was 49): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
 // the actor table through EAX instead of ECX; SETNE, marker-call setup and tail homes remain.
 // Earlier (113, was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
@@ -494,6 +494,23 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 256: nullable marker-list at the query producer, branch/conditional output,
 // early result storage and limit-field observations: branch 236 each, conditional 233 each.
 // Original readiness Boolean, list construction, movement snapshot and complete body restored.
+// N320: One function-result exit on the common-release graph, true/false defaults, early/late constant
+// result and native/aligned request: all regress. True-first restores AL production but moves actor
+// offset to EAX; original result and tail homes remain. Scores 112/270/131/268/112/270/131/268.
+// Original executable source restored.
+// Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
+// availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
+// Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
+// Round 273: existing state/marker declaration contracts ordinary/inline 49,
+// ordinary/force 1393, inline/ordinary 49, inline/inline 49,
+// inline/force 1393, force/ordinary 49, force/inline 49,
+// force/force 1393. State contracts worsen shared callers; forced marker
+// inlining expands the target. Original declarations and complete body restored;
+// table/result producer, marker setup and late actor/reference/slot cycle remain.
+// DH300: Twice-used optional-distance snapshot, native/immutable/outer 49/49/49; with complete
+// movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
+// invalid-first reference publication 110, combined limit/reference forms 192. Original field
+// observations and body restored; entry table/result production, marker setup and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

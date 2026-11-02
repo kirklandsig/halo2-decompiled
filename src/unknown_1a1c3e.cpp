@@ -409,29 +409,8 @@ __forceinline short function_1a1fb0(short height)
 	return height;
 }
 
-// score 9 (was 9): retail loads the global after the store of the height, ours loads it before.
-// The volatile view keeps the blip on the stack, reread at each use, as retail. Tried (r27b): the
-// plain form 78 (the blip travels in ebx); a `const` reference to the blip without volatile 51
-// (on the stack but kept in ebx).
-// Scoped primary receiver 9; split branch receivers 9; store in the override condition 9;
-// a two-use height-field pointer 61; a shared setter 9; const receivers 9; clamp-and-store helper 34.
-// Round 39: plain blip uses with `(void)&blip` 78 (and caller 0x1a264e loses its match); the blip
-// reread before the clamp 21, at the top of the arm 21; the override as nested ifs 9; a char height
-// 9. Retail never takes g_4e6948's address (byte scan), so the store does not pin the load there;
-// ours gives the global eax and the blip edx (retail: blip eax, global ecx after the store).
-// Round 57 (exact one-file harness; scores for identical code, else the harness's aligned count):
-// ours hoists the global load above the height store and allocates blip edx / global eax (retail
-// blip eax, global ecx after the store). The arm's pointer read again at each use aligned 3 but one
-// instruction longer; a new arm local 9; the arm's read before the clamp aligned 5 (reordered); a char clamp result 9;
-// `blip->type` compares without the view aligned 11 (blip an ebx register parameter); a
-// `T *const *` reference aligned 15; a named options pointer after the store 9, before the clamp
-// aligned 5 (reordered); a named override bool 9; type tests first aligned 6.
-// Round 70 (--fast): a byte type 9; the clamp as a nested ternary 44 (216 bytes); each height
-// initialised from the clamp 9; an early return for the NONE object 9; the type mask named once
-// (as motion_sensor_object_type does) 60 (213 bytes, the mask held in ebx).
-// Round 76: helper parameter name 9; view declared after the type call 9; initial blip read before
-// the type call 24; primary/secondary direct clamp initialisation 9/9; primary separate clamp output 9;
-// helper const input with a separate result 9; named state 9. Original body restored.
+/* sets a blip's type and its height from the object it shows; the volatile view keeps
+   the blip on the stack (retail's ret 4) and reads it once after the type call */
 // @retail 0x1a1faf
 void motion_sensor_blip_set_type(long local_player_index, long object_index, s_motion_sensor_blip *blip)
 {
@@ -451,17 +430,15 @@ void motion_sensor_blip_set_type(long local_player_index, long object_index, s_m
 		{
 			short height = SENSOR_DEFINITION(object->definition_index)->height194;
 			height = function_1a1fb0(height);
-			local_1 = *local_0;
-			local_1->height = (char)height;
+			blip->height = (char)height;
 			if (g_4e6948->state == 2 && (type == 7 || type == 8))
-				local_1->height = 2;
+				blip->height = 2;
 		}
 		else if ((1 << object->type) & 0x1000)
 		{
 			short height = SENSOR_DEFINITION(object->definition_index)->heightc2;
 			height = function_1a1fb0(height);
-			local_1 = *local_0;
-			local_1->height = (char)height;
+			blip->height = (char)height;
 		}
 	}
 }

@@ -888,7 +888,7 @@ bool __stdcall function_2399da(long controller_index)
 }
 
 /* sets the selected player's rank in the clan (NONE removes them) */
-// score 90 (was 90): this round: the difference is purely the register colouring of the two
+// score 90 (was 90): the difference is purely the register colouring of the two
 // values the matched callee 0xac050 takes (retail reloads the selected identity pointer into
 // eax and the requested rank into ecx, so the callee needs no copy; ours keeps the pointer in
 // ecx and the rank in eax and inserts a `mov eax, ecx` before the call, which shifts every
@@ -1057,6 +1057,9 @@ bool __stdcall function_2399da(long controller_index)
 // Round 356: Complete selected/member 64-bit validity reductions, low-first/high-first/bitwise
 // halves alone and paired 170/170/164/143/143/176/176/164. Original validity and body restored;
 // selected-pointer/rank EAX/ECX ownership and the two-byte removal move remain.
+// Round 366: Complete authority comparison parts, bool/byte/short/long, original
+// admission or a separate complete admission result: 90/90/90/90/90/90/90/90.
+// Original comparisons and body restored; selected-pointer/rank registers remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
