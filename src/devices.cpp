@@ -813,6 +813,10 @@ struct s_device_machine_view
 // second-bit local 122. Screen: that bool tested nested, after a `first` bool, with `!= 0` on the first bit,
 // as `second == true`, const, through a `both` bool, through a ternary value, or braced: all the shift
 // (aligned 2); `&` of the bits 13.
+// Round 310: Complete device/tag receiver observations at each use, bool/byte/word/long
+// success carrier without/with power-velocity zero default: 494/512/518/515 and
+// 497/515/521/518. Original cached receivers and body restored; native word-load
+// sharing and velocity-zero join remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1142,6 +1146,9 @@ bool function_108530(long device_index, long name)
 // cruise store 134 (524 bytes); the ramp-down minimum as `if (ramp_down_time > remaining)` 121; the half times
 // named before the cruise time 121; the distance as `real distance = (real)fabs(delta);` inside the duration
 // test (no copy at the top) 121.
+// Round 310: Initial reset as contiguous zero span/native initialized reset/native zero reset/whole clear,
+// with local cruise speed 142/170/181/140; field-owned speed 138/178/189/147. All reset
+// forms restored; frameless ramp-down and initial-velocity residency remain.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1637,6 +1644,10 @@ bool function_0b6760(s_index_pair const *pair);
 // EDI where retail has EBX/ESI, EBX pushed late, the result in DL); that with a plain definition 405 [130];
 // `previous` renamed (sorting before `position`) on that form 367 and on this body 294 (same code each); the
 // position local renamed twice on that form 367/367 (same code): the slot order follows neither name.
+// Round 310: Shared real group and repeated channel receivers across both group phases,
+// with ordinary index/saved pointer/result-first storage subsets 0..7:
+// 360/378/372/435/360/378/372/436. Original receivers, scalar qualifiers and
+// body restored; frame/index/header/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

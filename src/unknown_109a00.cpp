@@ -524,6 +524,11 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // original center 147/147/328/219, native center 177/177/305/255. Forced existing getter expansion
 // on the four native-output graphs 261/219/248/255. Original getters, center and body restored;
 // object/entry roles, physics spill and projection schedule remain.
+// Round 310: Plain component loops for previous transform/previous vector family/current center,
+// subsets 1..7 then all unsigned counters: 382/233/364/224/401/219/384/384. Matrix and
+// center loops recover the input register pair and caller 0xb7060, but regress the body;
+// center alone first differs at +0x35 and reloads its source receiver per component.
+// Original copies, getters and body restored; physics/default/search/projection scheduling remains.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
