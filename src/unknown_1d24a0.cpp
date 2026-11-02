@@ -271,6 +271,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // Round 293: Owner/other body-simulation result preset/fill and exhaustive outcomes, singles and all
 // pairings: 945/983/992/966/984/992/991/993. Original predicates, kernels and full body restored;
 // entry/frame and activity/record/vector homes remain.
+// Round 235: Full selected coefficient value, early bit-25/26 and late low-option subsets
+// 998/990/990/993/993/998/998/990. All recover entry ECX/EAX and activity-byte home,
+// but frame grows to 0x24c versus 0x1d4. Complete original body restored;
+// entry/frame, activity and lower record/vector homes remain.
 // DL227: Composed owner/other simulation-result
 // byte-bool/word-bool/bool-byte/bool-word/byte-byte/byte-word/word-byte/word-word carriers:
 // 902/929/902/982/902/982/929/980. Other-result word forms use frame 0x1ec at 982/980; original
@@ -283,6 +287,12 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // DH277: complete linked-component conditional/compound/nested/failure-first outcomes 901/901/902/992; each
 // with result declaration before object lookup 901/901/902/992. One-point leads rejected; all original
 // tests, fields, kernels and body restored.
+// Round 77 (m3 lane 12, fast control 902): retail reads the element's object field once into EDI ahead of the
+// record lookups, materialises the element pointer (`shl 3; add`) and spills it, and clamps the byte body slot
+// from AL. A named object-index local read before the record lookups 951 (4283 bytes), after them 926; the first
+// block's difference written straight into its normal (no staging copy) 961 (frame 0x1e4, 4235 bytes), with
+// the late object-index local 966; the element pointer as `(s_1d24a0 *)data + index` 902 (same code). Original
+// body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

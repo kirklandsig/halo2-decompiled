@@ -632,6 +632,14 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 461: Conditional validity results at system/location/particle cache transitions,
 // subsets 1-7, 140/131/144/179/171/161/192; one shared entry validity result 283.
 // Original invalidations, masks, offset/default lifetimes and shared rotations restored.
+// Round 74 (lane 9, fast): scale first with `scale = value; scale *= multiplier` in the emitter gate or the
+// particle gate 120/120 (1136 bytes); scale first with the definition computed before the particle index 40;
+// the next index read before the particle-mask refresh 58; scale first with the two copies swapped 48; scale
+// first with the transform flag in a named bool 107; scale first with `definition->unknown0c != 0` 40.
+// Compile-only, about 500 sets of indexed definitions, scale first, masks inline or at each use, `+=`, swapped
+// copies, next index early or late and named values: the rotations never get closer than row i's up/forward
+// pair (score 20 of 65 ops against 22 now); indexed with scale first and the mask at each use has the current
+// rotations but the integer homes turn over (232, round 61).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1120,6 +1128,9 @@ public:
 // each with staged cross, then both nested normalizers without/with staged cross:
 // 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
 // color/tag homes remain.
+// Round 314: Orientation case orders 021/102/120/201/210 on the zxy magnitude
+// graph, then 021/201/210 with staged cross, all 184. Original cases and cross calls
+// restored; normalized-j/default-cross and color/tag homes remain.
 // Round 455: Actual forward seeded from velocity before in-place negative scaling,
 // native default/fallback/both, shared setter default/fallback/both, memcpy/memmove both:
 // 311/297/346/193/260/269/346/339. Original forward producers, helper calls and complete body restored.
@@ -1598,6 +1609,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
 // original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
 // complete body restored; eligibility width and availability/view carriers remain.
+// Round 315: Complete optional-effect admission bool/byte/short/long shared by owner and
+// attachment, original/shifted-word eligibility 144/144/147/147/136/136/136/136. Original two-use effect
+// receiver and complete body restored; flag width, availability and view carriers remain.
 // M299: Attachment effect-first/nullable-conditional/complete/nested results,
 // original and shifted-word flags [72, 132, 134, 134, 113, 116, 87, 86].
 // One-point form rejected; original attachment result and eligibility restored.

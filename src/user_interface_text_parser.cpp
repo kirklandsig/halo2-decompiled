@@ -625,6 +625,8 @@ done:
 // after it 54; `if (globals != NULL)` 54.
 // Round 342: Seven complete cyclic case priorities and one paired priority on the repeated-copy graph (33 executable differing rows each versus 25): 52/42/50/50/50/50/38/50.
 // Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
+// Round 301: void copy-return ownership at success/tail/both/default/all-default/entry/
+// shared/native-shared boundaries 32/32/32/32/32/77/54/54. Original parser restored.
 // Round 232: Forced-inline complete selector-name producer, return/result-first with zero/NONE
 // no-name and repeated/shared copy tails 32/32/32/32/54/54/54/54. Exact-only helper removed;
 // original complete parser restored; early EDI save, tag/selector and scratch cache remain.
@@ -633,6 +635,10 @@ done:
 // Round 347: Default before each genuine case on the retained repeated-copy graph:
 // 32/32/32/32/32/32/32/32.
 // Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
+// Round 355: complete readonly shared getter with readonly UI receiver, direct selector
+// and repeated/shared copy tails: 32/32/44/44/54/54/57/57. Original getter and body restored;
+// early EDI save, tag/selector schedule and scratch-address cache remain.
+// Round 357: Complete if/else or conditional-expression name results, selected-name/numeric priorities and repeated/shared copy completions 57/57/57/57/68/68/68/68. Original switch, single scratch object and body restored; early EDI save and tag/scratch allocation remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

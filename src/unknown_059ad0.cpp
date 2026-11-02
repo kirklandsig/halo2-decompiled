@@ -3501,7 +3501,7 @@ void function_61050(c_class_58d20 *session, long channel_index,
 
 long network_observer_attach_channel(s_network_observer *observer, long owner_index, const XNADDR *address);
 
-// score 76 (was 119): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
+// score 76 (was 76): frame 8 agrees; eligibility/rejection layout and member/reservation scratch homes remain.
 // Round 104 (plain): the machine address read through a named source pointer (pointer, reference, byte pointer or
 // split copy) 151 at 463 bytes: the first attach then takes retail's eax/ecx and the reason-7 exits merge, but the
 // copy loses retail's `lea eax, [edi + 0xa]` and the member/reservation scratch stay rotated; a shared XNADDR
@@ -3568,6 +3568,17 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // 184/185/184/185. Keep the indexed early eligibility guard, plain 76
 // at 465/463 bytes; all checked sibling/caller measurements preserved. Original clock,
 // attach producers, reservations and call tuples stay fixed.
+// Round 307: Branch-owned native state/member receivers and plain identity cursor, seven subsets
+// plus complete nullable state: 101/77/98/121/105/122/134/134; paired native state/member
+// receivers in member admission, without/with cursor: 144/144. Original body restored;
+// eligibility/reject ordering and member/reservation scratch homes remain.
+// Round 316: Shared attach-failure negative/positive continuations, original/ordinary
+// success storage, original/scoped machine copy 143/143/126/126/145/145/153/153.
+// Exact-length negative continuation still regresses; original early admission,
+// independent failures, success qualifier and complete body restored.
+// Round 309: Unsigned full-bit member/channel carriers and twice-used membership result, subsets 1..7,
+// then complete byte presence: 76/76/76/155/155/155/155/155. Original native carriers, admission tests and body
+// restored; dispatch/reject layout and scratch roles remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
@@ -3740,6 +3751,10 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
 // each with original reply order or member before id: 101/94/101/94/101/94/101/94.
 // Seven-point gain rejected; original executable source restored.
+// Round 516: Twice-used host index initialized before/after state read,
+// original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
+// message/reply allocation remain.
+// Scores 104/104/104/104/97/97/97/97; original executable body restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -5008,7 +5023,7 @@ struct s_membership_update_snapshot
 	s_network_session_player players[16];
 };
 
-// score 569 (was 697): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
+// score 569 (was 569): Frame 0x2684 recovered; 2591/2589 bytes. Stale-exit placement and loop/index scheduling remain.
 // Round 296: Reduced control 804; result after map clear 805; native snapshot copy 804; version/count/both snapshots 801/802/782; map names 804; result/copy and map combination 805/805.
 // First/second/both pass index field reads 824/731/733; both with late result 730; first/second destination-only reads 823/783; accepted scope 803, with field reads 732; branch results with late initialization 730; version-test result with field reads 696, plain 697 (kept).
 // Round 453: First/second/both pass result validation 787/736/782; player-index fields 748;
@@ -5024,6 +5039,9 @@ struct s_membership_update_snapshot
 // first/both with long validation ordinal 697/695, unsigned-word ordinal 697/734;
 // both with unsigned-word application ordinal 743 (fast; unchanged control 523).
 // Every form regresses; original signed-short validation ordinal and full body restored.
+// M302: Mask zero initialization after validation, added/moved/removed and pair/all subsets,
+// then all four masks: 704/703/704/687/686/686/780/779 (unchanged fast 523).
+// Original initializations restored; mask homes, validation scheduling and stale completion remain.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

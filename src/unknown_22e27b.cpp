@@ -168,7 +168,7 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 9 (was 96): frame, timing and loop registers now agree at 657/657 bytes; one boundary
+// score 9 (was 9): frame, timing and loop registers now agree at 657/657 bytes; one boundary
 // exit span and interpolation key-table/current-frame scheduling remain.
 // Earlier at 96: advance direction/frame/flags rotated through EAX/ECX/EDX/EDI; inactive arm exact.
 // Earlier note: Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
@@ -357,6 +357,12 @@ static inline real interpolate_linear(real a, real b, real t)
 // 102/102/212/210; each with complementary continuation 224/224/213/211.
 // All restored; frame 0x10 and timing agree, direction/frame/flag and
 // lookahead/fraction ownership remain. Original policy outcomes retained.
+// Round 307: Twice-used current offset as point pointer/reference or key pointer/reference,
+// captured before/after the fraction: 76/76/77/77/17/17/30/30. Original indexed expressions,
+// post-store scale refresh and complete body restored; restart edge and key-address scheduling remain.
+// Round 354: Full-width current/next address indices and later key acquisition subsets
+// 1..7, then readonly keys: 216/12/217/9/82/9/82/82. Original short lookahead, key observations,
+// shared fraction, frame/timing and helper calls restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

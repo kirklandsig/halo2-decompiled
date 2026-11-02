@@ -514,6 +514,20 @@ struct s_1f8a70_actor
 // DL225: distinct scratch-conversion result, bool/byte/short/long, published before/after
 // release 424/424/424/424/432/432/433/433. All restored; frame 0x84, early false and
 // unit-output/route/result homes remain.
+// Round 50 (lane 14, fast; aligned counts from a difflib listing, base 82). Value fix for mode 3 (route_mode = 1, tail
+// order point, node, radius), `default: result = false;` and `failed: result = false;` with the `!result` exit past that
+// store 398 (1644 bytes, aligned 69, frame 0x80); with no result initializer 398; with short route_mode 426 (1636,
+// aligned 94: route takes EDI, the properties pointer spills); unit mode through the returned pointer, dword route 436
+// (1628), scoped 434, long and scoped 430, short and scoped 423; scope alone 398, the unit index as the call's
+// argument 398. A long copy of a short route_mode for the zero test, range test and route switch 267 (1640, aligned
+// 66): route then spills with dword stores and word reads as retail. On that: radius set through a helper 267; mode 7's
+// radius before its node 440 (1632, aligned 59: cases 2/4 and 3/5 then merge their tails as retail); mode 2 or 4 radius
+// first 268, both 269, modes 2 and 7 412 (1648). On the 59 form: the zero and range tests nested if/else 440 (aligned
+// 68), one test route-zero first 440 (59), range first 420 (1640, aligned 71), as a ternary 440, a valid flag 440, a
+// has-node flag 440; default after case 5 or first 440; source order 6,7 first 449 (1620), 7,6 last 458 (1612), 5
+// last 459 (1612). Left on that form: retail lays the route test and compare chain directly after case 5, with
+// cases 6 and 7, the zero test and the failure block after it; ours has them after case 7. Also left: `xor bl, bl` kept
+// across 0x1f86a0, unit mode at frame +2 read through the returned pointer, and `setne al` in the zero test.
 // DL227: Complete result carriers on the dword selector graph: byte entry/late 376/379,
 // signed-byte 376/379, short 410/413, word 410/413. Original result and body restored; frame
 // 0x84, early false and unit-output/route/result homes remain; recorded mode-three value question
@@ -521,6 +535,9 @@ struct s_1f8a70_actor
 // DL229: complete destination-case orders 246753/247653/264753/267453/274653/276453/245763/254763
 // 379/375/379/379/375/379/379/379. Original case graph, dword selector and body restored;
 // frame, early pool/data staging and unit-output/result homes remain.
+// DL234: complete complementary route outcomes in bool/byte/short/long, initialized at
+// entry 411/411/418/419 or at the route phase 438/438/445/446. All exact-only forms rejected;
+// original result and body restored. Frame 0x84, early false and unit-output/route/result homes remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

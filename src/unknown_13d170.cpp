@@ -311,6 +311,13 @@ struct s_block_candidate
 // Round 267: page-mask node before/after quotient, expression/split decrement,
 // original increment/direct conditional count: 347 in all eight forms. Complete
 // opening body restored; 0x1050/0x1054 frame and page-offset/ring roles remain.
+// Round 154 (lane 4, relink screen, exact at 347): all six policy case orders 347 (same code, bodies stay at the function's end);
+// case 0 as `better = false` plus an if 347, through a one-caller inline 383 (1178), case 0 and default inline 379 (1177), the whole
+// switch in an inline with returns or a result 343/343; offset first with previous in the if 357, offset after the page count 380,
+// after the result 380, before the if 381 (aligned 195); head and tail as struct fields 347, with offset and previous inside 376;
+// hill climb of 212 forms over those plus the mask form, candidate fill order, next-offset sum, busy form and segment store order
+// 343 at best (candidate `time = pages = 0` with segment time first, 4 points, not kept). Retail's offset stays in EBX through the
+// scan with tail in memory and next spilled; no form gave offset the higher register priority.
 // Round 308: One post-callback block timestamp with direct/cached/conditional/guarded callback producer
 // 347/347/356/358 for long and 347/347/356/358 for dword. Pre-callback segment time remained
 // separate. The missing frame dword and page/ring register roles persist; original observations

@@ -327,6 +327,15 @@ struct s_free_state_23d260
 // Round 351: Complete camera-angle observation ownership on the accumulated projection/row graph;
 // 324/135/365/266/361/252/362/362. Pitch-only recovers zero XMM1, first +0x89,
 // but regresses to 135. Original executable source restored.
+// Round 467: Existing projection dot on accumulated rows, reused pitch/complement/shared-cosine
+// subsets: 289/284/97/136/290/284/95/134; complement-first compound projection 289/290.
+// Best 95/1329 is seven below 102 and fails the eight-point gate; original body restored.
+// Round 353: Final camera-position, command-position and offset copy setters, seven
+// subsets then all with earlier bare position storage, 316/293/335/152/306/320/338/338.
+// Original output publications and complete body restored; zero/side and up/roll allocation remain.
+// Round 355: shared complete roll cross, direct/staged, on accumulated projection/rows,
+// with pitch observation and named projection complement subsets: 282/282/298/298/191/191/347/347.
+// Original body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

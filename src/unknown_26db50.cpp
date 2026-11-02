@@ -652,6 +652,8 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // accumulators 239/239; scalar accumulators with outer ring phase 233/233;
 // native output accumulators with phase 250/252. All restored; SSE ring conversion
 // and the rotation spill remain. Original helper and all input snapshots retained.
+// DH280: Complete projected-axis/cosine-vector/sine-cross operand-priority subsets, then all with internal
+// cross-product sides commuted [90, 90, 90, 90, 90, 90, 90, 90]. Original executable body restored.
 // N301: Complete trace/distance/origin scope ends at point before collision, with
 // original/real short marker and aggregate/library fallback transfer 90/90/90/90;
 // each with the outer ring phase 143/143/143/143. All restored; ring conversion/spill remain.
@@ -667,6 +669,8 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // by-value float parameter elsewhere), on the 96 form 271 (1067 bytes), radius named in the caller 222 (1083), sector read in
 // the helper 222 (1083), without the phase 243 (1074); on the current rotation with the phase 262 (1079), without 235 (1092).
 // The radius still copies through integer registers in all six.
+// DH282: Complete repeated scalar-input immutable declaration orders ijk/ikj/jik/jki/kij/kji, then kij/jik
+// with the native outer ring phase [90, 90, 90, 90, 90, 90, 143, 143]. Original executable body restored.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

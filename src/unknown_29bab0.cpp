@@ -211,6 +211,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // The two clamps differ only because of those scores: the second still needs its MIN once other bytes fall.
 // Not kept at review (11-02): the set needs MIN at the first of two identical clamps only, chosen by score (a mix);
 // no consistent form beats 750 (on that body MIN at both 771, at neither 817), so the body is restored at 750.
+// DH282: Complete double squared-magnitude producer with repeated component inputs, all square parts and
+// single-result completion, seven nonempty subsets then all with k/j/i component declaration priority [750,
+// 750, 805, 798, 798, 798, 801, 801]. Original executable body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

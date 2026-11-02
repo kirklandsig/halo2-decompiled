@@ -212,6 +212,7 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // 543 (1901). Combined: two-case switch 532 (masked 402), with the dead pair 557 (masked 405), with mode/direct first 548 (frame
 // 0x228, masked 378), all three 568 (0x228, masked 379); dead pair with mode/direct first 577. Retail's stack-byte bit tests
 // match the `volatile bool` shape of 0x21ec00, which this round may not add.
+// DL236: Actual gain/submix/routing initializer phases moved before queries/send construction, subsets 1..7, then all without the unused private workspace: 547/546/548/547/549/546/548/572 (reduced control equals full 545). All restored; frame 0x22c versus 0x224, stream/gain homes and mixed math remain; matched sibling preserved.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

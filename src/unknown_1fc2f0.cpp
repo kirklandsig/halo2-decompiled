@@ -477,9 +477,21 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
 // then all with correction publication, without the own-parameter address read:
 // 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
+// Round 513: Complete overlap-safe transfers at initial velocity, fallback output and
+// history velocity, seven subsets, then all with location commit, without the own-parameter
+// address read: 162/107/100/158/157/105/153/170. Original body and includes restored.
 // Round 309: Without the own-parameter address read, indexed correction accumulation,
 // location-first admission and word-order subsets 1..7: 99/100/100/99/99/100/100;
 // all with short ordinal 121. Original prediction, parameter storage, helper and complete body restored; tick/delta/correction allocation remains.
+// Round 74 (lane 9, fast): rate product and add i, j, k, then the conversion, then `v = (v - p) * ticks` i, j,
+// k, deltas k, j, i 72 (first +0x65); as two statements, scale j, i, k, the same deltas 72; chains and scale
+// j, i, k, deltas i, j, k 49 (ticks in XMM3 scaled in place; left: the stores run j, i against retail's i, j,
+// then the delta homes and the correction); that with the correction scaled in place 49; written in the
+// outputs 99 (348 bytes); chains j, i, k, scale i, k, j, deltas k, j, i 72; chains j, i, k, scale i, j, k,
+// deltas j, i, k, ticks at the top, in place 32 (same code); fused i, j, k, deltas j, i, k, ticks at the top
+// 32 (same code). Compile-only, about 2,800 random orders of loads, chains, conversion, products, deltas,
+// scalar or struct chains and five correction shapes: none closer than the current form on the whole SSE
+// sequence.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

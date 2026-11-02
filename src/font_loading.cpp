@@ -627,6 +627,12 @@ static inline word font_character_pixel(long alpha, long color)
 // N302: Literal owns two payload bytes, skip after publication / read-consuming cursor,
 // crossed with full parity and native word fill values: 131/135/207/202/119/125/211/207. Original
 // decoder/helper restored; alpha extension, literal assembly and run-two reuse remain.
+// N306: Native byte header/class and word run spans, seven subsets, then all with signed-word
+// runs: 85/186/189/171/180/174/176/176. Original carriers, helper and decoder restored; alpha widening,
+// literal assembly and run-two reuse remain.
+// N308: Independent low/high literal parts word/word, word/long, long/word, long/long,
+// 85/85/85/85; with numeric parity in the existing word helper 204/204/204/204. Original
+// literal expression, helper and decoder restored; alpha extension, literal assembly and run-two reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

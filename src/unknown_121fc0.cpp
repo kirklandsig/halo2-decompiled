@@ -211,6 +211,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // flag store, a token from a conditional, the token at block or function scope, an uninitialized token with two success tests, a
 // for walk, a do walk, the whole block in a do/for once, an early return of the done path all leave the save late; only a real use
 // of the token after the block moves it to the block's top, which retail's immediate flag store does not show.
+// N306: Existing tokenizer delimiter-tail outputs, four native cut graphs with end-owned/input-owned
+// whitespace scans, 160/128/212/166/214/229/223/176. Original tokenizer and loader restored; early EBP
+// preservation and read-size/count/cursor homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

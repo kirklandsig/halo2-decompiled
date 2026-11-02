@@ -485,6 +485,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // retail's slot, so the slots conflict there, but the cursor's start moves above the guard); explicit index 7; both 163 (492); cursor
 // before the copy in all six head orders 163 (490); `first` from current 2, chained 2 (kept); with first as the copy's destination
 // 157; material at loop or block top 2/2; chosen as a ternary 52.
+// Round 514: combined required-mask equality/zero optional mask/bit-index test/mode
+// optional mask, block receivers 150/139/180/164; indexed receivers 159/159/188/181.
+// Original admission, copy and complete body restored; scaled-index/count/first homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

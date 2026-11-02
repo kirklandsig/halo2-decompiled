@@ -162,7 +162,7 @@ bool function_01dd60(long index, long *width, long *height)
 	return result;
 }
 
-// score 24 (was 21): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
+// score 24 (was 24): width stack/height ESI differ from ESI/EDI inputs; packed gate differs.
 // width/height/both unit subtraction before shifts 25/28/30; native packed words 30;
 // row-byte part 30; selected/masked new packed word 27/28; early dimensions 30.
 // width/height input registers and byte-gate normalization differ.
@@ -202,6 +202,13 @@ bool function_01dd60(long index, long *width, long *height)
 // ret, retail's tail): 21 -> 24 positional, LCS-aligned 17 -> 10, and caller 0x335e0 matches with it. Left: the
 // folded shifts (`shl 0x14; and` for retail's `lea [esi*4]; shr 6; shl 0x18`, `lea [edi+0xfffff]; shl 0xc` for
 // `mov; shl 0xc; sub 0x1000`), which the notes above tie to retail building without global optimisation.
+// Round 136 (m3 lane 6, fast): `((w*4/64 - 1) << 24) | ((h - 1) << 12) | (w - 1)` with the select before the stores
+// 28; a switch-returned bytes-per-pixel inline helper 22, but 0x335e0 0 -> 1 and the index moves to EAX; `if
+// (!e->flag94) value = 0;` 24 with 0x335e0 0 -> 17; width term first 24; height as `(height - 1) << 12` 27.
+// Compile-only: separate statements, compound assignments, `+ 0xff000000`, `(1 << 24)`, fields read back after the
+// stores, a pitch helper with a constant and a const multiplier table all fold. In all of retail the unfolded
+// `shr 6`/`shl 0x18` and `shl`/`sub 0x1000` pairs occur only here and in 0x1df20.
+// Also round 136: the packing as compound-assignment statements 24; the subtractions as added 0xff000000/0xfffff000 24.
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {

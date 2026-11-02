@@ -299,7 +299,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
-// score 113 (was 113): the search tail's three exits now fall to one `return result` (retail's
+// score 49 (was 113): Frame 0x162c, result +0xf and length 1068 agree. First +0x10 loads
+// the actor table through EAX instead of ECX; SETNE, marker-call setup and tail homes remain.
+// Earlier (113, was 113): the search tail's three exits now fall to one `return result` (retail's
 // reloads); left: frame 0x1634 against 0x162c (the result byte has its own dword, retail packs it at
 // 0xf beside has_markers/available at 0xe, so later homes sit 8 higher), the result set with setne
 // (retail `mov al, 1` before the branch), 0x25d690 called after the marker call's first pushes, and
@@ -473,6 +475,15 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // movement field reads and native request masks 0..7: 248/249/248/249/248/249/248/249.
 // Result-first forms recover frame 0x162c but worsen state-base/register homes.
 // Original scalar state resets, result, request, field snapshot and complete body restored.
+// Round 318: one shared release on the ordinary result/search-tail graph, crossed with early
+// result declaration, native request and complete limit reads: 53/53/53/53/49/49/49/49.
+// Keep common release and limit field reads only (49 plain); original request and declarations.
+// Round 465: marker pointer produced at collection/request start/geometry/movement,
+// current/full-body common result: 199/242/248/201/252/253/246/202.
+// Last two recover frame 0x162c but regress; original pointer lifetime and result restored.
+// Round 256: nullable marker-list at the query producer, branch/conditional output,
+// early result storage and limit-field observations: branch 236 each, conditional 233 each.
+// Original readiness Boolean, list construction, movement snapshot and complete body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
@@ -527,8 +538,7 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
     long minimum;
     if (movement)
     {
-        real limit = movement->unknown0c;
-        minimum = (long)(limit > distance ? distance : limit);
+        minimum = (long)(movement->unknown0c > distance ? distance : movement->unknown0c);
         *(long *)((byte *)&request + 0x684) = minimum;
         *(long *)((byte *)&request + 0x688) = (long)movement->unknown10;
     }
@@ -568,7 +578,6 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
         {
             state->unknown00 = true;
             g_46eeb8[0x23]->unknown8 = g_46f348;
-            ai_scratch_buffer_release(scratch);
         }
         else
         {
@@ -596,15 +605,14 @@ bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
             {
                 state->unknown01 = true;
                 actor->unknown4ae = true;
-                ai_scratch_buffer_release(scratch);
             }
             else
             {
                 state->unknown00 = true;
                 g_46eeb8[0x23]->unknown8 = g_46f348;
-                ai_scratch_buffer_release(scratch);
             }
         }
     }
+    ai_scratch_buffer_release(scratch);
     return result;
 }
