@@ -580,6 +580,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // full-width reversing truth subsets 0-7: 507/507/576/576/508/508/575/575. All helper and
 // target source restored; frame/velocity-copy, early 1.0 residence and later SSE colouring
 // remain.
+// F320: initial existing fallback normalizer, complete 2D role names and repeated steering-product
+// name subsets 349/126/349/126/349/126/349; all with component direction copy 310. The normalizer
+// forms grow to 1189/1170 bytes; neutral forms retain 1144. Original body/helper restored; initial
+// velocity receivers and 1.0 SSE residence remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

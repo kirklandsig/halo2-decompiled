@@ -2248,7 +2248,6 @@ real magnitude3d(vector3f const *v);
 
 // score 182 (was 182; earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
-// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2270,6 +2269,9 @@ real magnitude3d(vector3f const *v);
 // scalar rotation results 198. Magnitude and protected neighboring body stay matched in previews. Frame 0x34
 // versus 0x38 and raw-length/dot/angle/cosine homes remain; entire original body and every arithmetic tree
 // restored.
+// F320: separate current/target reciprocals, complete aligned rotation sums and entry native-vector
+// declarations in all seven combinations 182 each; all with scalar role names 182. Raw length still
+// shares a clamped slot, frame 0x34 versus 0x38. Original executable body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2949,7 +2951,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 }
 
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
-// score 177 (was 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
+// score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -2974,6 +2976,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // field reads 204/204/204; both with those reads and reversed cases/shared position lifetime 204/204. Frame
 // stays 0x18 versus 0x1c; initial alpha/kind scheduling and final fade scratch stores remain. Entire
 // original body, output roles and distance helper restored.
+// F320: native alpha/kind, position/region and output-byte role-name subsets 177 each (seven forms);
+// all names with entry-declared byte outputs 177. Frame 0x18 versus 0x1c and fade scratch homes persist;
+// all executable source restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
