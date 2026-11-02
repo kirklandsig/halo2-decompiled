@@ -615,6 +615,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 295: Mutable per-emitter multiplier/scale/both defaults before the first-particle read [55, 54, 55],
 // before the emitter lookup [55, 54, 55], pre-gate multiplier/both [55, 55].
 // All overrides and memory observations stayed fixed; original defaults and complete body restored.
+// Round 453: Unscaled property residence with callback/pre-rotation scale product, indexed
+// definitions and scale-first defaults, masks 0..7: 304/308/305/309/315/316/315/316.
+// Original executable body restored.
 // Round 337: returned rotation consumed through shared addition/three-use pointer, with
 // native emitter indexing and scale-first defaults: 122/124/117/121/120/122/115/119.
 // All lengthen and regress; original in-place rotations, translation and whole body restored.
@@ -1099,6 +1102,9 @@ public:
 // 189/248/240/184/237; coordinate names 248; reversed independent comparisons
 // with xyz/yxz producers 199/199. Keep zxy, plain-confirmed 184 with no match loss.
 // Round 297: Retained zxy magnitude graph with staged cross/alternate normalization/both 184/190/190; reversed independent comparisons alone/staged/normalization/both 247/247/253/253; axis magnitude names 184. Original helpers, comparisons and body restored; normalized-j/default-cross and color/tag homes remain.
+// Round 453: Separate native forward, fallback after normalizer/axis/cross, default after
+// normalizer/perpendicular/cross, both early/both late: 407/406/406/407/407/407/442/428.
+// Original executable body restored.
 // Round 337: existing double-factor negative scale in default/fallback/both paths, then
 // each with staged cross, then both nested normalizers without/with staged cross:
 // 308/184/318/308/184/318/318/318. Original body restored; normalized-j/default-cross and
@@ -1453,7 +1459,8 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 102 (was 102): frame 0x14 agrees; NONE/owner, availability and Boolean homes differ.
+// score 73 (was 102): frame 0x14, NONE/owner and Boolean stack homes agree;
+// flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
 // bytes: retail's movzx/shr/test shape, but the surrounding allocation gets worse). Retail's
@@ -1547,6 +1554,11 @@ bool function_17afd0(long effect_index, long value);
 // Round 295: Native system/definition/cluster entry storage in all seven subsets [102, 102, 102, 102, 102, 102, 102].
 // All three plus effect/view entry storage 102. Original producers and body restored.
 // Round 297: Native unsigned owner/iterator/next-slot domains in all seven subsets, then all with owner declared before effect acquisition, 102 each. Original signed domains, declaration scopes, queries and complete body restored; NONE/owner, availability and Boolean homes remain.
+// Round 453: Nullable effect identity used for owner and attachment, conditional pointer/branch
+// pointer/joint arms/default results, original then shifted-word flag:
+// 144/144/142/73/152/152/133/113.
+// Kept the default-initialized effect record for owner extraction and attachment admission;
+// plain-confirmed 73 at 495/498 bytes, with no matched function lost.
 // Round 299: Complete owner-valid/equal/available conjunction orders ACB/BAC/BCA/CAB/CBA 102/102/102/147/147;
 // explicit owner-result arms with ACB/BCA/CBA 149/149/104. Original full predicate order, owner result and
 // body restored; NONE/owner coalescing, BL availability and Boolean homes remain.
@@ -1570,13 +1582,18 @@ void __stdcall function_174220(bool view_pass)
         {
             long effect_index = system->effect_index;
             definition = system->function_1751d0();
+            s_effect_datum *effect = NULL;
             long owner = NONE;
-            if (effect_index != NONE) owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
+            if (effect_index != NONE)
+            {
+                effect = DATUM(g_4ea93c, s_effect_datum, effect_index);
+                owner = effect->unknown58;
+            }
             long view = g_4b9ed8;
             bool local_287b6e_2 = view != NONE;
             if (local_287b6e_2) local_287b6e_2 = !function_155760(view);
             bool same_view = owner != NONE && view == owner && local_287b6e_2;
-            bool attached = local_287b6e_2 && effect_index != NONE && function_17afd0(effect_index, view);
+            bool attached = local_287b6e_2 && effect != NULL && function_17afd0(effect_index, view);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
