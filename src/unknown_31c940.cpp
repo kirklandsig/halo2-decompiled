@@ -155,12 +155,11 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	solver_velocity_31c940 *const volatile &b, float *result)
 {
 	float target_a = axis[-5].m128_f32[3];
-	// Complete both SIMD projections before the coupled x87 errors.
 	solver_projection_31c940 projected_a = project_first_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 5)), a, b);
-	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
-	// Retail spills the first error and both coupled impulses to 32-bit storage.
+	// Give the first error its float home before projecting the second row.
 	volatile float error_a = target_a * load_error_scale(step)
 		- projected_a.value * load_velocity_scale(step);
+	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
 	float error_b = axis[-2].m128_f32[3] * load_error_scale(step)
 		- projected_b.value * load_velocity_scale(step);
 	volatile float impulse_a = axis[-3].m128_f32[3] * error_a + error_b * operation_float(op, 4);
@@ -666,7 +665,7 @@ union solver_velocity_or_kind_31c940
 	int kind;
 };
 
-// score 1967 (was 1968): retain rounded x87 reads with ordinary SIMD bit copies.
+// score 1966 (was 1967): stage the first rounded error between row projections.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
