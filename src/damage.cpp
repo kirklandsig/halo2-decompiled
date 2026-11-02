@@ -4290,6 +4290,9 @@ PRIVATE inline long model_find_physics_node(byte *model, short physics_node)
 // word list_a and a (short)list_b compare. Tried: i and j declared at function scope (166), iterator at function
 // scope (166), changed/physics/lists declaration orders (166), list_b as long (181), a pointer-returning
 // section_list_get (189).
+// DL244: Root/cursor/graph names and Boolean XOR 166 throughout; canonical bool/byte membership != or XOR 194, word 165/149, dword 166/166.
+// Word membership XOR 149 (803/803, whole-program plain, no lost match) NOT kept: the local type was picked by score from bool/byte/word/dword. Body restored at 166.
+// Native signed-list/entry-mask follow-ups 249/149/249/149/249/149/249/249, restored; frame 0x447c and root/iterator/list/query register gaps remain.
 // @retail 0xdb810
 dword function_db810(long object_index, long node_index)
 {
