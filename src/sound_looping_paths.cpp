@@ -258,6 +258,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // count declared before the targets 886. The same list as a named {count, indices[64]} type used directly
 // (no references) 875 too; no existing type in src/ or include/ holds this list, so a new one would only
 // move homes: lead only.
+// AC477: Next-free choice/target/existing collection builders, subsets 1..7, then word
+// completed choice count: 955/945/962/926/977/953/981/981. Original arrays, counts, scans,
+// helpers and body restored; entry zero, target/query/count homes and choice carriers remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -662,6 +662,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // Early leading-pair/termwise publication gains one/two counts, rejected; original normal and plane restored.
 // Current aggregate origin/hit graph: captured normal input/direct plane output, early
 // normal publication, memcpy and vector setter 335/308/308/357; plane at entry 335/308/308/357.
+// AC477: Native three-float origin/hit/completed-normal copy loops, subsets 1..7, then
+// short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
+// aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
