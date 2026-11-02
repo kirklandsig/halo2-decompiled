@@ -4849,6 +4849,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 714/648/655/640/714/648/640; all with native byte decisions 640 (fast control 655).
 // 640 forms need an exact match for the branch-set flag; seven-point eligible forms fail the keep margin.
 // Original body restored; frame 0xd0 and animation/state/tag homes plus completion expansion remain.
+// DH301: Complete repeated tag flags/standing-height/crouched-height ownership, subsets
+// 1/2/4/3/5/6/7, then all with read-only tag receiver: 729/770/741/773/744/780/775/775
+// (fast control 655). All regress; complete original body restored. Frame 0xd0 agrees;
+// animation/state/tag homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

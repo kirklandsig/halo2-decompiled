@@ -2058,6 +2058,10 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // AC480: Local/forward assignment initialization and existing native result setter, subsets
 // 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
 // original producer and body restored. Frame and independent vector-copy homes remain.
+// DH301: Actual drawing matrix, complete point setter and complete facing setter,
+// subsets 1/2/4/3/5/6/7, then all with uninitialized draw outputs before reset: 177 each.
+// All tie; complete original drawing objects, helper calls and body restored. Frame
+// 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2636,6 +2640,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // DH299: Native nonnegative prefix and explicit post-swap tail decrements in both
 // removal passes, seven subsets, then complete graph with byte found: 317 each.
 // Original body restored; frame 0x30, prefix/state and ordinal homes plus decay rotation remain.
+// DH301: Original requested parameter retained with a genuine clamped-limit local;
+// branch/conditional clamp, safe entry parameter-copy and bounded unsigned-prefix
+// combinations: 377/321/435/321/377/321/435/321. Complete original body restored; frame 0x30
+// and retail length agree, prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3632,6 +3640,10 @@ bool __stdcall function_391f0(void *state);
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// DH301: Clock at each use, twice-used native elapsed result and distance-array reads
+// at each consumer, subsets 1/2/4/3/5/6/7, then immutable elapsed on the complete graph:
+// 310/251/277/295/288/277/275/275. All tie or regress; original complete body, reads,
+// publications and loops restored. Frame 0x74 versus 0x70 and zero/portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
