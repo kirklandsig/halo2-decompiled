@@ -514,6 +514,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
 // invalid-first reference publication 110, combined limit/reference forms 192. Original field
 // observations and body restored; entry table/result production, marker setup and tail roles remain.
+// P278: On recovered ordinary-result/common-release graph, call-owned marker indices, movement-bound
+// phase and search-owned entry, seven subsets 49/49/49/108/108/108/108; all with search-request role
+// name 108. Original storage restored; entry result, marker setup and tail homes remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

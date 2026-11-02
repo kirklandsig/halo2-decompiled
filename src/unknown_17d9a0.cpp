@@ -340,6 +340,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
 // 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
 // helper and body restored. Plane-store base, first-selector roles and product ranks remain.
+// P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
+// axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
+// carriers and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

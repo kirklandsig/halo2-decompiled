@@ -1579,6 +1579,9 @@ struct s_rating_summary
 // DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
 // receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
 // Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
+// P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
+// roles independently, then all: 31 each. Original body restored; formatter/count setup and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

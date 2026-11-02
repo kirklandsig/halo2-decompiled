@@ -319,6 +319,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
 // interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend
 // homes remain.
+// P278: Geometry/primary/secondary UV declarations at entry, seven subsets, then all with seed-
+// colour scratch at entry: 232 each. All initializers and observations fixed; original
+// declarations/body restored. Tint/secondary UV and blend homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
