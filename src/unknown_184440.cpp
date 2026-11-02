@@ -279,6 +279,14 @@ __forceinline bool function_184448(long arg_0)
 // DH285: Joint projection-origin/perpendicular-origin/grid-spacing scalar lexical
 // priorities, six, then two with uninitialized face-owned spacing: 965/965/965/965/965/965/965/965.
 // Original complete body restored; eight-byte frame excess and initial geometry homes remain.
+// M3 lane 4 r155 (fast; also LCS-aligned counts, base 710): retail stores the four projected cell bounds as one packed
+// short rectangle (word stores at +0x3e/+0x3c/+0x42/+0x40 for left/top/right/bottom, zeroed bottom/right/top/left). The bounds
+// as the existing short_rectangle2d (fields left, top, right, bottom assigned, loops over top..bottom / left..right) 1007
+// (4630 bytes, aligned 709; ours then packs it at +0x2c, frame still 0x11d4), with the zeroing in retail's order 1007 (chained
+// or as four statements), declared at function scope 1007 (aligned 709); the per-face projected bounds initialized by four
+// statements 969 (4595 bytes, aligned 718). Re-measured: record/surface declarations before the instance pointer 965, surface
+// before record 965, rectangle plus that order 1007.
+// Retail keeps the record pointer (+0x98) and surface pointer (+0xe4) in memory from the start; ours holds them in EDI/EBX.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
