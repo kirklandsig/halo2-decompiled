@@ -784,6 +784,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // Round 261: all six relative lexical schedules of direction/previous-direction/world-start
 // 675/675/675/675/675/675; world/direction/previous with Boolean success and then signed-word frame
 // 754/751. Original names, types and complete body restored; byte success and scalar/geometry homes remain.
+// Round 300: Complete ten-byte obstacle/blocking CRT header resets and whole-step memmove
+// subsets 1/2/4/3/5/6/7, then all with Boolean success:
+// 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

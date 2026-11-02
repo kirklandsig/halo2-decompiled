@@ -382,6 +382,9 @@ static __forceinline bool structure_bsp_collision_available()
 // 52/56/53/74/52/56/74; all with complete finite model return 83.
 // One-point leads rejected; original byte result and entire body restored.
 // Exclusion BL and source-slot publication/reload remain.
+// Round 300: Complete positive/rejection availability with common result exit and native
+// short/long object policy, default/type-arm and conditional producers:
+// 95/95/97/97/95/95/97/97. Original complete body restored; exclusion BL and source-slot join remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1048,6 +1051,9 @@ done:
 // 125/125/131/125/131/131/131; full finite graph with three-outcome model 164.
 // Original Boolean parameter, grouped storage and complete body restored;
 // exclusion/result/NONE ownership and direction residency remain.
+// Round 300: Complete positive-admission/done-exit availability graphs with native short/long
+// policy merges, default/type-arm and conditional producers:
+// 136/136/147/147/136/136/147/147. Original complete body restored; exclusion/result/NONE and direction homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

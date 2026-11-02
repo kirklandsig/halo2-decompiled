@@ -235,6 +235,9 @@ bool g_47f05b;
 // All add a constructor call and worsen other users: 0x146b80 57,
 // 0x146e30 169, 0x22c3e0 230/201. Entire original shared header restored;
 // the intermediate vtable store and successful-arm reload remain.
+// Round 300: Passive refcount header initialized by its abstract owner before/after the
+// native reverse four-word pass, long/int/short/signed-char indices:
+// 33/33/54/54/35/35/54/54. All worsen other constructor users; original header/body restored. Intermediate vtable store and arm reload remain.
 // @retail 0x146a20
 void function_146a20(void)
 {
