@@ -984,6 +984,11 @@ void function_143250(
 // (10763 bytes, rotation EAX, ret 4, frame 0x30c); on the 648 form the leading terms as plain locals, with a matrix
 // pointer or a plain array 2238/2238 (10297 bytes, frame 0x2fc); plain leading locals keeping every term 2114 (10412).
 // Restored.
+// Round 519: Shared identical third-band real sum with complete basis/single-consumer/
+// reused copy-family masks 0..7: 1793/1928/1793/1916/1898/1975/1898/1964.
+// Native typed replay preserves all 83 matrix values and precision boundaries;
+// Full cleanup has frame 0x30c and EAX/ret 4 in preview but regresses and raises a caller score.
+// Original scalar, publication and input graphs restored; frame and homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
