@@ -2465,6 +2465,9 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,
+// immutable complete zxy, then zxy with full position memcpy: 136 each (fast control 136).
+// Original products, position assignment and complete body restored; list/cursor homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2606,6 +2609,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
 // subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
 // All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
+// DH299: Native nonnegative prefix and explicit post-swap tail decrements in both
+// removal passes, seven subsets, then complete graph with byte found: 317 each.
+// Original body restored; frame 0x30, prefix/state and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -4384,6 +4390,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F327: Existing light-pass producer for individual modes 3/20/7, then
 // 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
 // Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
+// DH299: Complete branch-owned fog maximum crossed with raw mode-eight gate,
+// per-use source-group fields and native payload-byte count: 142/193/142/193/234/217/234/217.
+// Original maximum producer and callback restored; late enabled stores, dead mode loads and clear convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

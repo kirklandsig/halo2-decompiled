@@ -528,6 +528,9 @@ real function_30bf0(vector3f *vector);
 // Round 322: Distance-owned outer/scaled/final paired comparisons, all seven subsets, then
 // corresponding motion-minimum comparison, 152 each. Original comparisons and complete body
 // restored; result/range/amount homes and inverse SIMD groups remain.
+// DH299: Native four-state result enum crossed with range-after-delta, entry
+// distance scratch and entry projection scratch, all eight subsets: 152 each.
+// Original result type and scratch lifetimes restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

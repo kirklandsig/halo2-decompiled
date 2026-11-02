@@ -4815,6 +4815,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 655/655/655/655/655/655/655/655 (fast control 655); restored.
 // M313: Uniform motion flags/placement mode/entry animation output subsets, all plus entry matrix declaration; restored;
 // fast 682/658/685/655/682/658/685/685.
+// DH299: Branch-produced grabbing/transition comparison/merged guard, seven subsets
+// 714/648/655/640/714/648/640; all with native byte decisions 640 (fast control 655).
+// 640 forms need an exact match for the branch-set flag; seven-point eligible forms fail the keep margin.
+// Original body restored; frame 0xd0 and animation/state/tag homes plus completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
