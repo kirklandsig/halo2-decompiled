@@ -1706,6 +1706,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 308: boundary 479/486/452/438/494/469/469/488 reduced (control 479); sound/detail plain 421,
 // Round 308: playback word plain 467 against full 305. Original real types and complete body restored;
 // Round 308: frame 0x11c versus 0x128 and playback/NONE/range homes remain.
+// Round 137 (m3 lane 6, plain; --fast is not usable here, its reduced image scores 477 on the request trial):
+// the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
+// playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
+// plain 9-step loop 335; `long selected` 427 (1908 bytes).
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
