@@ -4337,6 +4337,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // 240/228/176/228/240/228/167; complete dot/norm products 228.
 // All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
 // The 176 form also uses a register argument and ret instead of retail ret 4; restored.
+// DL239: Natural parameter with native complete relative/kick/actor-ground vector producer subsets
+// 1..7, all plus common result exit: 174/204/191/204/191/178/222/222. Original complete body
+// restored; frame 0x24/0x28, state-base/result and vector homes remain.
+// Ordinary lower-score forms lose matched 0xe4680 and 0xecfc0; all restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

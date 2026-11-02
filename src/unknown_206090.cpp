@@ -304,6 +304,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Y522: Existing rigid-body mass/keyframe/get helpers, seven subsets
 // 1417/1387/1470/1355/1417/1387/1470; direct member mass/keyframe with getter 1470.
 // All original producer bodies and force source restored; frame and velocity/query homes remain.
+// DL240: Native contact direction/velocity/residual projection loops, masks 1/2/4/3/5/6/7/15:
+// 1396/1405/1382/1417/1389/1373/1376/1398. Final mask includes moving-surface correction. All
+// regress; original body, float trees, captures and helpers restored. Frame 0x5cc versus 0x58c and
+// component/velocity/query homes remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

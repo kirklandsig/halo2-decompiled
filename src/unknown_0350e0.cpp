@@ -1982,7 +1982,7 @@ typedef char assert_direction_entry_size[(sizeof(s_direction_entry) == 0x34) ? 1
 typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 : -1];
 
 // MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
-// score 177 (was 188): earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
+// score 177 (was 177): earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
 // Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
 // at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
 // with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
@@ -2001,6 +2001,13 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // Round 503: native entry/list/both 188/188/188; each with shared axes 181/181/181.
 // Both records with capacity checked after entry selection 177 (861/857), kept;
 // shared axes plus that capacity check 176, exact-only and restored. Frame and vector homes remain.
+// DL240: Local/forward/up whole-vector memcpy subsets 1/2/3/4/5/6/7: 177/177/173/177/177/177/173;
+// complete memmove 263. Four-point leads fail the keep gate and returned-value one-use diagnostics
+// do not match. Original body restored; frame 0x80 versus 0xc0 and angle/copy homes remain.
+// DL240: Follow-up input const-reference heading/elevation/both 178/180/173; with rotated-vector
+// memcpy 178/180/173; heading/both plus memmove 197/201. Four-point leads and literal-bound
+// reference forms rejected; original angle producer and complete body restored. Frame and vector
+// homes remain.
 // @retail 0x3eec0
 void function_3eec0()
 {
