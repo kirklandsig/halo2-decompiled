@@ -2647,7 +2647,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 692; earlier 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2677,6 +2677,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
 // output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
 // remain.
+// P267: coherent per-use mass/climb/acceleration fields on the distinct-output graph,
+// subsets 1/2/4/3/5/6/7: 735/717/741/742/756/740/747; all on the original output 739.
+// Mass-only reaches frame 0x100; acceleration-only and climb/acceleration reach retail 0xfc
+// at 741/740. Every form regresses; original observations and complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

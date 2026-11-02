@@ -1833,6 +1833,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
 // Original executable body restored; frame/result and pool/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
+// P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
+// slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
+// Original shared accessor, request workspace, result graph and complete body restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

@@ -927,6 +927,12 @@ extern long *g_51e9cc;
 // Round 253: Failed object/lookup/surface case admissions, subsets 1/2/4/3/5/6/7 and all with the
 // lookup declared at case scope: 42 each. Original body restored; frame agrees, lookup
 // address rematerialization and crouch/surface/store scheduling remain.
+// P267: word flag writers (the existing word_flags_set) with case 5's 0x35c store in both arms of the
+// surface test / case 4's contact (0x354) stored before the position (0x364) / native decoded widths,
+// subsets 1/2/4/3/5/6/7: 32/30/211/27/225/213/225; all without the writers 229. Not kept (coordinator):
+// retail stores 0x35c once, between the flag test and its branch (0xddcd0), so the both-arms form is a
+// duplicated store, and retail stores 0x364 before 0x354 (0xdddbd, 0xdddc7), the source's present order,
+// so the case 4 swap is a score-picked order. The writers alone stayed under the keep bar in earlier rounds.
 // F321: complementary contact-discovery state in bool/byte/word/long storage,
 // then each with lookup/surface tests owning that state: 42/42/42/42/200/200/170/168.
 // Original executable body restored; lookup receiver retention and store scheduling remain.

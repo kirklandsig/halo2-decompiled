@@ -2185,7 +2185,7 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// score 57 (was 57; earlier 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
 // Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
@@ -2212,6 +2212,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 307: native external state/group/entry layouts, all seven subsets, 57 each;
 // Round 307: all three with native motion records 57. Original raw receivers, body and external types
 // Round 307: restored; delayed register saves and the split post-fstp count comparison remain.
+// P267: coherent range-field observations/range lifetime/normalization lifetime,
+// subsets 1/2/4/3/5/6/7: 237/57/57/237/237/57/237; all with entry-fraction scope 237.
+// Direct-range forms reach retail length but regress; original ranges, scopes and complete body restored.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2680,9 +2683,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
     return result;
 }
 
-// score 517 (was 517; earlier 529, 561): the logic matches retail block by block (walked statement by statement against
+// score 517 (was 517; earlier 529, 561): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
 // MiniMax R (11-01): no new form, no lower score.
-// score 517 (was 529; 561 before that): the logic matches retail block by block (walked statement by statement against
+// Earlier: the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
 // is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
 // state+0x18, view+0x104, view+0x120 (offset[1]), view+0x158 and state+0x2c. Reading the strength before the cycle test
@@ -2702,6 +2705,8 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // F321: shared phase/reciprocal/previous-position workspaces in subsets
 // 1/2/4/3/5/6/7 give 518/517/517/518/572/571/572; all with complete point
 // and projection role names 572. Original executable body restored; frame and velocity reloads remain.
+// P267: native long cycle/size/reset carriers, subsets 1/2/4/3/5/6/7: 515/511/519/516/518/513/519; all byte carriers 517.
+// Best lead is below the keep threshold; original flag types and complete body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
