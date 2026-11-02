@@ -2342,6 +2342,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // k into xmm3/xmm2 at the length's x87 loads and uses those same values in both arms (in-place scale,
 // unscaled else), reloading only i; ours reloads all three in each arm.
 // Round 319: Native speed/velocity/normal-output role names, subsets 1/2/4/3/5/6/7 91/91/91/91/91/91/91; all with enclosing output declaration 91. Original names, declarations and body restored.
+// DL240: Property word before lookup paired with native direction/final movement/early speed
+// ownership, masks 1/2/3/4/5/6/7: 223/160/191/424/300/417/279; direction setter plus movement 186
+// at retail length. All regress. Original helper and body restored; early velocity j/k loads,
+// speed products and property zero remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

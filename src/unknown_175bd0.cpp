@@ -2061,6 +2061,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 311: Negative native tint/multiplication outcomes, bool subsets 1/2/3, then both
 // in byte/signed-char/short/word/long storage: 188/190/190/190/190/193/193/193. Original positive
 // query carriers, color timing, zone producer and full body restored; frame and early color homes remain.
+// Round 519: Spawn outputs deferred past type/color calls, scale/unknown/location
+// masks 1..7: 127/123/189/187/189/189/188; complete late aggregate 188.
+// The five-count unknown-only lead fails the eight-point gate; scale-containing
+// forms lose callers. Original publications and body restored; early color/frame homes remain.
 // Round 288: Native placement rejection in bool/byte/signed-char/short/word/long
 // 139/139/139/168/168/164; true/false default rejection 139/139. Original positive
 // placement result, color observations, query carriers and full body restored.
@@ -3164,6 +3168,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // DH round 273: native pooled-location pointer frontier with live mode/native node word/inactive-
 // return subsets: 170/181/170/181/161/177/161/177. All original handle cursors, mode observation, node
 // tests, successor result and executable body restored; frame and system/color homes remain.
+// Round 519: Actual successor sampled after color publication/at completion,
+// cached/live mode and original/native node word: 98/108/112/153/98/108/112/153.
+// All exact-only observation forms regress; complete original successor, mode,
+// node observations and body restored. Frame and system/color homes remain.
 // Round 288: Single successor-return exit with result-first, live mode and complete
 // node-at-consumer subsets 0..7: 93/93/108/108/107/107/112/112. Live-mode and
 // node-at-consumer forms lose the exact caller; original body and input contract restored.
@@ -3428,6 +3436,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 347: Complete point row publication xzy/yxz/yzx/zxy/zyx, then xzy/zxy/yxz with default-before-
 // color scale: 303/102/131/303/127/262/264/270.
 // Original complete body restored; scale prefix and point-Y preservation remain; both matched helper users regress under every order.
+// Round 470: Complete eligibility/dispatch category predicates bool/long/short/byte/char
+// 403/427/423/403/403; one dword/long group observation 380/380; Boolean categories
+// with byte capped flare ordinal 422. Original group observations and body restored;
+// scale prefix and preserved point-Y source remain.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

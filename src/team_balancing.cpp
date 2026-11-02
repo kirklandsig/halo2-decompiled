@@ -641,6 +641,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // the `||` form 64. Aligned, those differ from retail by one instruction: `cmp [esp+0x30], eax` where retail reloads a
 // spilled value (`mov ecx, [esp+0x30]; cmp ecx, eax`). A named copy of the reference 65. Lead: retail's order with a
 // spilled (not address-taken) first result.
+// P264: whole/header-team best publication via memcpy/memmove, native candidate
+// 67/83/79/95; default-built memmove candidate 185/173/197/186.
+// Native copies, original candidate lifetime, queries and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -994,6 +997,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Round 289: One ordered union-domain copy/fill traversal, preserving signed iteration ranges,
 // with conditional/logical bounds, maximum comparison directions and named/expression excess:
 // 87/73/87/73/87/72/87/72. Original separate loops, full-width values and body restored.
+// F321: complementary failure result in bool/byte/word/long storage, with
+// conditional-value and branch-owned clamp consumers: 63/63/73/68/90/90/102/96.
+// Original combined scan/fill and success-result graph restored; count ownership remains.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

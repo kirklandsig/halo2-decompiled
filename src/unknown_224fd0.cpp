@@ -177,6 +177,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 248: Native squared/sine aggregate initialization, singly/together and producer order,
 // mutable/readonly complete products: 455/485/443/486/455/485/443/486.
 // Original partial product vectors, helper and complete body restored.
+// Round 311: Native matrix return from the existing repeated rotation producer, complete axis capture,
+// immutable mixed products and staged-cross subsets 0..7: 488/531/488/531/488/531/488/531. Original
+// helper and full body restored; axis-specific square/sine/cosine spills and table placement remain.
 // Round 515: Existing shared row scaler with coherent cosine complement, shared k-complement
 // part and paired matrix names: 219/451/220/367/219/451/220/367. Native frame/product spills remain;
 // complete private producer, scaling statements, include set and body restored.

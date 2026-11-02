@@ -1649,6 +1649,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // then all addresses at admission: 222/457/459/225/459/457/236/239
 // (fast control 220, full 218). Original addresses and complete body restored;
 // frame, unit/mode homes and independent look divisions remain.
+// Round 521: two-use native look-coefficient handoff, early/phase capture, optional
+// aiming-pair handoff and immutable receivers: eight at 220 (fast control 220, full 218).
+// All original carriers restored; frame, unit/mode and independent look homes remain.
 // DH285: Native late-magnitude input assignment/memcpy/memmove/components at consumption,
 // then with uninitialized iteration-owned storage: 420/420/426/529/420/420/426/529 fast. Exact-only captures
 // restored; frame, unit/mode homes and independent look divisions remain.

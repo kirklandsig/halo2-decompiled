@@ -945,6 +945,13 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 289: Independent initialized flag/state producers from one nullable native record pointer,
 // expression/guarded outputs with long/native-char state: 232/215/220/232/236/218/223/236 fast
 // (unchanged preview 58). All regress; original conditional snapshots and body restored.
+// Round 322: Complementary captured primary choice in bool/byte/short/long storage, conditional
+// outputs 145/145/201/199; full branch outputs 147/147/200/199 (fast control 58, plain baseline
+// 30). All restored; alternate-byte and scalar homes remain.
+// Round 307: tag flags captured once on the dual-ternary graph 139 fast (834 bytes);
+// Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
+// Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
+// Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
