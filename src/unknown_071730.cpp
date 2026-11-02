@@ -248,6 +248,11 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // 474/503/475/506/487/513/463/498/470/494/470/500/478/503/469/507
 // Best 433 (merged arms, bool ready, long reset, 1589 bytes, aligned 239): six points, and its ready flag is set in failure arms and tested later, so not kept.
 // Merged arms with both bools 458 give retail's frame 0x3e4 and EBP with aligned 202 (1573 bytes). Long ready with separate arms 460, aligned 204 (1571).
+// Round 467: Shared signed entry-state/balance-output workspace with entry declaration,
+// Boolean reset and early property default subsets: 441/441/466/466/455/455/467/467.
+// Secondary-state spill appears, but frame grows to 0x3ec; original workspace/body restored.
+// M304: Roster bound/matched-count/ordinal descriptive name combinations, eight at 439/1589.
+// Original scalar identities and body restored; frame, result/state homes and getter boundary remain.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {

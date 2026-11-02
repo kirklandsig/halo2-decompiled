@@ -208,12 +208,31 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 222: named rotation member 110; complete matrix receiver in loop/branch/entry
 // 149/149/149; direct forward/up/both consumers 160/169/181; native helper component
 // array on the named-member graph 110. Original private helper and complete body restored.
+// Round 318: Up-before-forward evaluation with complete squared-dot magnitude, native shared
+// scale, early short return or j-square magnitude staging, each with direct k in
+// dot/projection: 71/71/71/71/71/71/124/124.
+// All mixed observations are exact-only and none matches; original four-use helper and complete
+// body restored.
 // Round 256: plain native-array dot reduction, long/dword/short/byte counters,
 // original projection 110/110/221/221; indexed projection 110/110/221/221.
 // Original shared dot call, private normalizer and complete body restored.
 // DH282: Complete native forward/up/both values after normalization and before normalization with matrix
 // publication, then paired forms with symmetric dot roles [228, 278, 333, 255, 253, 336, 333, 336].
 // Original executable body restored.
+// Round 73 (m3 lane 16; 110 stands): the 2-form reconfirmed real (helper with the squared length named, k row through the
+// matrix field; 922 bytes, only the dot's i term operands differ). Real on it: k read into a named local after the dot 2;
+// the scaled values as three named locals 2; left as `forward + 1` at the cross and its normalization 11 (923); up.i through
+// the field at the projection row with forward.k through the field in the dot 126 (929); up.i through the field in the dot
+// 126 (929). Compile-only, which reproduces the 2-form exactly: pointer views of up.i or forward.i at the dot and the
+// projection (dead, top of block, at use) 2; named i product 6, staged 2; named forward.i/up.i leaves in the dot, either or
+// both 2; address spellings in the dot, cross and third normalization 2; a matrix pointer declared first 128; `up` declared
+// first 72, both pointers first 78; `forward + 2` for up 72; an axis pointer 78; a named k before the dot 118; a separate up
+// normalizer (24 sum and scale orders) 2 or worse; a forward normalizer with named values (288 product, store and operand
+// orders) and named leaves (24) never flips the i term; 800 unused-local probe combinations at five sites and 40 extra-read
+// diagnostics never flip it (reads recolour only); single and paired direct field reads across 24 uses, with the dot and
+// the cross written out (301 forms), none at 6 or below; a randomized search of helper counts, dot, projection and cross
+// spellings, stopped after about 14 minutes, nothing below 2. Direct up.i flips the i term (102 compile-only, aligned 7) but
+// drops up.i's preload and flips the cross's `up.i * forward.k`.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

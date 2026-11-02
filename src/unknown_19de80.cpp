@@ -458,6 +458,13 @@ static inline bool teams_enabled_19e1c0()
 // each with inherited/ordinary final result storage: 441/442/428/428/651/651/691/691.
 // Original full-width producers, signed clamps, result storage and complete body
 // restored; frame 0x208 versus 0x204 and independent copy tails remain.
+// Round 77 (m3 lane 12, fast control 390): `remaining` copied into a capacity local used everywhere 390 (same
+// code); `token` copied into a name local 390; capacity local with the plain result 691; plain result with a long
+// opponent team and `best_score <=` 688; volatile result with those two and every format failure returning
+// `remaining` 443. Compile-only diagnostics (the no-LTCG build reproduces ours: plain result gives `token` EBP and
+// leaves `remaining` on the stack): the copies coalesce with the parameters; seven fewer `token` uses keep it in
+// EBP; a `remaining` test added to each comparison (not a form, use-count probe) flips it to retail's homes, so
+// retail's body uses `remaining` more, or `token` less, than ours. Original body restored.
 // Round 464: repeated event input snapshots for cause/effect/both players and all player/team
 // values before pure token comparisons: inherited result 418/433/441/452, ordinary result
 // 632/632/643/574. All regress; original observations, result storage and full body restored.

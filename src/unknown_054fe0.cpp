@@ -1766,6 +1766,9 @@ struct s_summary_player_sort_entry
 // mode each as one ternary 375/375/375; the state as `short state = 0; if (initialized) state = ...;` 375 (all
 // at 1307 bytes). Still BLOCKED by the cmovne (/arch:SSE) and by retail's inlined 0x5a680 (membership at +0x4c
 // and member index kept in the frame; name, identity and counts read through the membership).
+// Round 284: all three map-query output identities, six lexical priorities 360 each;
+// two complete output declaration scopes 360 each, with the sorted cursor stepping in its body.
+// Original body restored; frame and saved metadata homes remain.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

@@ -794,6 +794,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 59 (m3 lane 10; compile-only, base 22, exact here): reasons for the fresh sums, each with two callers. An inline
+// signature-position helper (the sum returned; inline or forceinline, either sum order) used at the signature case
+// alone 22; with the total through it 22; in place 67, helper first in the sum 67. A forceinline seek-and-read helper
+// taking the parameters (the file is read twice, as retail) at the body and signature cases 27 aligned (235 instructions,
+// 155 positional), without the total local 60 (67); signature case only 22, without the total local 60 (67); its body as
+// early returns, both cases 35 (239), without the total 76, signature only without the total 71 (237).
+// Real --fast (0x2adb10 115 throughout): position helper with the total through it 34, total in place 88; seek-and-read helper at
+// both cases 161 (689 bytes), without the total 88, signature only without the total 88; early-return body at both cases 216 (699 bytes).
 // Round 56 (m3 lane 10; compile-only exact here, real --fast in brackets): retail's entry total and signature sum are
 // compiler temporaries (sum into a fresh EDX; body size ECX, header EDX, `lea esi`). The total converted in place (no
 // total local) with the signature position passed to a forceinline (file, position) seek helper gives both: 16 [28];
@@ -819,6 +827,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // classification crossed with flag/size output phases: eight forms all 161. Flag-before-size forms
 // also raise the other user from 129 to 138. Original helper/body restored; fresh total and
 // size/seek carriers remain.
+// Round 259: Header/body/signature ReadFile results at their actual producers, seven subsets,
+// then all with native signature-finalization status: 34/34/34/34/34/34/34/34. All one-use
+// result forms restored; entry total and size/seek coalescing remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1087,6 +1098,9 @@ struct s_signed_file_write_parameters
 // Round 311: Entry-owned uninitialized signature workspace/output-count/success subsets
 // 1/2/3/4/5/6/7 and all with file-signature identity 115/136/136/115/115/136/136/136.
 // Original phase scopes, header return, getter and complete body restored; capacity and extension homes remain.
+// P258: Test-produced task failures for scratch/direct/publication phases,
+// subsets 1..7 then all with API-width signature success:
+// 241/237/244/319/323/312/338/339. Original phase results, header return and body restored.
 // Round 514: stable file handles shared by seek/write pairs, header/extension/
 // header+extension/publication/header+publication/extension+publication/all/shared-all
 // 154/238/279/294/312/312/332/332. Original complete body restored;
@@ -1094,6 +1108,9 @@ struct s_signed_file_write_parameters
 // Round 314: Dispatch orders 0231/0321/1230/1302/1320/2031/2130/2310 on the
 // direct-header-return graph 294/292/320/327/314/326/317/320. Original complete cases
 // restored; early capacity acquisition and extension offset/buffer homes remain.
+// P260: Scratch extension file extent retained for offset and remaining bytes,
+// before/after getter, both sum orders and both minimum orders: 244 each.
+// Frame grows to 0x1c; original observations, getter and complete body restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

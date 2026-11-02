@@ -2293,6 +2293,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 40, continued (fast): the first slot mask written out at each use 222 (1066 bytes), the second 155, both 222; arg_3 and arg_1 used directly, singly or together
 // 155/155/155; all four 222. Compile-only (350 random forms of offset, 0x400 and 0x800 declaration orders, 0x2000 test, loop declarations, child defaults, slot pointer, tail
 // declarations, plain 0x400000 test): aligned 156 at best against a control of 160, no structural move.
+// DL238: Parent-root scope followed by raw/typed tail root, each original/named-slot/native-
+// short/both: 293/253/238/277 repeated. Complete parent-position memcpy in the same four
+// index/parent forms 155/154/289/288; memmove 247/247/298/298. One-point lead rejected; every
+// original observation, root lifetime, helper, store and loop restored. Header/object/offset and
+// low-mask homes remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

@@ -428,6 +428,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 8/95/95/110/110/33/111/111/128/128/90/68/68/105/105/8/82/82/110/110/8/82/82/110/110
 // 8/95/95/110/110/33/111/111/128/128/90/68/68/105/105/8/82/82/110/110/8/82/82/110/110
 // Then on the chain: the pass tag not named, const or dword 8/8/8; the material tag named 8, with the zeros after it 41.
+// DL238: Complete actual directory mutable/immutable/memcpy/memmove values 195/195/195/202; with
+// final grouped cache zeros 196/196/196/203. Original whole body, directory observations, helper,
+// cache/mask lifetime, includes and all calls restored; fallback EDX masking, stage/pass and
+// unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

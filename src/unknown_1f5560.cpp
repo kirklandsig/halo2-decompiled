@@ -959,6 +959,10 @@ real normalize2d(point2f *v);
 // N271: complete actor/unit/speed-table receiver observations at use, seven subsets
 // 308/135/135/324/308/135/324; all with existing request point setter 336.
 // Original receivers and body restored; DL success retention and movement/request exits remain.
+// Round 319: Coordinated byte/signed-char return domains with bool/byte trajectory storage 135/135/135/135; each with validity-byte invalid tail 135/135/135/135. Original return contract, both declarations and full body restored.
+// DL240: Coordinated force formal byte/signed-byte/word/short: 135/135/246/246; with direct
+// request return 182/182/253/253. Original Boolean formal, body and both declarations restored; DL
+// trajectory residence and shared return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

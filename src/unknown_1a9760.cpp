@@ -169,6 +169,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // (at entry, or late) the x87/SSE order is retail's, so retail's flag store takes no issue slot from the rows where ours does.
 // Round 40, continued: dword counter 4, counter declared ahead of the flag 4, `<= 2` 4, `!= 3` 238 (962 bytes, not unrolled), `do` loop 238 (962). Two loops with the flag
 // between them: position+half-step then offset 14 (the flag moves just before the offset loads), half-step then the rest 202 (1004); the flag before both 4, after both 18/202.
+// Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
+// named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
+// root before the offset loop 181. Original body restored at 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
