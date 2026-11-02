@@ -620,6 +620,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // assigned in place 190 (same code), with a byte flag 190 (same code); the `&&` flag renamed to sort first or
 // last 200/200 (same code); a forceinline tail helper taking the flag and allow_exit by value with the `&&` def
 // 199 (865 bytes), with the if/else def and the false at the scan's start 199.
+// Lane 12 r72 (fast): the bitwise flag as a long 172; declared bare at the function top and assigned in
+// place 47 (same code); the tag pointer folded into the type read 47 (same code); `& actor->unknown268`
+// without the `!= 0` 193; `if (type == 6 && byte) { special = true; goto tail; } special = false;` before
+// the scan, the label opening the tail, 200 (872 bytes: the special path stores 1 to the argument slot and
+// the tail is laid out right after it, so the tail-after-the-scan layout is not a threading copy).
 // Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
 // == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
 // scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
@@ -641,6 +646,17 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // scan's exit, the scan laid out before the tail) but 233 (839 bytes: allow_exit then lives in BL, so NONE
 // takes EBP and the frame is 0x30). Without a statement at the end of the scan arm the empty join is removed,
 // the tail is laid out after the special arm and the flag stays in memory; retail's IR had something there.
+// Round 110 (m3 lane 7, fast): retail homes the flag in the dead actor_index parameter slot. `bool special = type
+// == 6; special &= actor->unknown268 != 0;` 47 (same code); the if/else def with `special = false` opening the
+// scan and the tail's prop test nested under `if (special)` 200 (872 bytes); the if/else def with `special`
+// declared before `allow_exit` 200 (872 bytes); the bitwise def with `(bool)actor->unknown268` 47 (same code);
+// `special` declared bare before the tag lookup 47 (same code); the permuter (anneal, 600 s, 55 variants) found
+// nothing below 47.
+// Round 47 (m3 lane 14, fast): a second `allow_exit = true` at the end of the scan arm, keeping the one after
+// the seat call, with the if/else flag 233, the `&&` flag 233 (the first store is dropped as dead, giving the
+// lead's code with allow_exit in BL), the bitwise flag 156; `allow_exit = true` before the seat call: bitwise
+// 48, if/else 200; at the scan's start: if/else 200, bitwise 48. Retail's join of the scan exits (the CL
+// reload at 0x1bc16f) is not an allow_exit store.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

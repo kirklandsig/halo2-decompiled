@@ -131,6 +131,27 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // wrapper taking the size pointer 128; the clamp and terminator before the token-array/counter
 // initialisation 129; the size zero-initialised (`long size = 0` + cast, as file_read_string 0x121a40 does)
 // 122 (6-point gain: the top zero becomes `xor ebx, ebx`, aligned count 51 -> 52; not kept); `dword size = 0` 122.
+// Round 49 (lane 11, fast): retail's clamp reads like `if (size > 0x7ff) size = 0x7ff;` on a size that is never
+// enregistered (load for the compare, select reloading it, store, reload for the index), the way 0x121a40 keeps its
+// out-count in memory; ours caches it in EAX. The zero-initialised `long` size form above with the clamp as an if
+// 122 (same score: the clamp spelling changes nothing; the zero store before the read call is not retail's); the
+// three read outputs declared at the block top 128; declared size/success/done 128 (the reversed outputs again);
+// the tokenizer `inline` without `static` 128; the path copy through a file-local csstrncpy (as 0x1a08d0's file has
+// it) 128; the new-index arm first (`== NONE`) 188 (764 bytes); the token stored after the duplicate search 215 (756
+// bytes). Diagnostic only, not keepable: the done flag `bool volatile` (the wait's parameter type) 128. The
+// compile-only screen does not reproduce this body (the wait helper is not inlined across files there).
+// Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
+// 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
+// have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128
+// (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
+// loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
+// its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 325: Existing tokenizer cursor held in its actual output parameter, with empty-result select,
+// retained-token delimiter input and counters-before-table subsets, all eight 248 at 733 bytes.
+// Original tokenizer and loader restored; outer EBP preservation and read-size homes remain.
+// Round 275: bounded search ordinal in short/word/byte storage 213/213/208; ordinal result
+// in short/signed-byte 139/218; both short 214; byte token/unique counts 236/178.
+// Original body restored; early EBP preservation and read-size/count/cursor homes remain.
 // Round 31 (m3 lane 2, fast): the token walk with one tokenizer call in the while condition (next
 // starting at the buffer) 287 (690 bytes); the done flag declared `bool volatile` as file_read_string
 // 0x121a40 does 128 (same code); that with the size zero-initialised as there 122 (the earlier 6-point
@@ -144,6 +165,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // array 122. Diagnostic: the token stored to a global after the loop 149. Compile-only: a use of the token
 // after the success block moves `push ebp` to the block's start (retail's place); renaming the size, next,
 // count and unique locals (four orders, prefixes included) never changes their slot order.
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // Round 35 (m3 lane 2, fast): the success and size outputs initialised (`= false`, `= 0`) 228 (789 bytes); the
 // duplicate search ending on the found index (`&& local_14 == NONE`, no break) 214 (758 bytes); the read outputs
 // and both counters declared at function scope 128 (same code); the tokenizer `__forceinline` with the walk as a
@@ -151,12 +175,25 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // unique (five orders) never moves their slots; the slot order matches the count of memory references (retail:
 // cursor 5, size 5, next 4, count 4, unique 3; ours gives size 3, so it sits after count), so the size home
 // follows from the memory-resident clamp.
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
 // Round 20 (lane 17, fast): round 60's `long size = 0` passed as `(dword *)&size`, re-measured with round
 // 33's counters declared before the token array, 122 (the gain is the zero store, which retail does not
 // have); the counters before the token array alone re-measured 126; diagnostic, the token loop hand-inverted (`if (token) do ... while (token)`) 128
 // (same code; reverted); the found index declared at the token loop's top 128; one tokenizer call in the
 // loop condition 287 (690 bytes: retail inlines the tokenizer twice); the search index declared before
 // its for loop 128; the found test's arms swapped (`== NONE` first) 188 (764 bytes).
+// Round 490: unchanged ordinal search with a common mapping store: direct conditional, conditional
+// mapped result, initialized mapped result, branch-assigned mapped result 203/188/219/188; with
+// delayed token-table publication 214/218/219/218. Original search, mapping and loader graph restored.
+// Round 47 (m3 lane 14, fast): diagnostic, the token declared NULL at the block top and stored to a global
+// after the success block: 129 at 779 bytes, but aligned 51 -> 40, `push ebp` at the block start with ESI/EDI
+// and popped after the g_4e3b40 store as retail (a compile-only screen agrees: only a token live across the
+// whole block moves the save; token scope, a for walk, the loop after the success block, a nested first-token
+// test do not); the search as `j < count && found == NONE` 214 (758 bytes); the search index tested after a
+// `break` loop (no found index) 132; the count and unique declarations swapped 128; both counters declared
+// before the token array, unique first 127.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

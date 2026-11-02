@@ -179,6 +179,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // on the one-read body the owner read once through `&owner` 96 [13], the level through `&level` 96 [13], the kind
 // through `&kind` 65 at 260 bytes [194: kind on the stack, ret 0xc], the rigid body as `base + index * sizeof`
 // byte arithmetic 96 [13]. Every one-read body takes component in ECX and the index in EAX.
+// Round 39 (lane 15, fast): one type read with a `dword` object_index 94 at 256 [13] (component ECX, index EAX);
+// one read with the kind-7 switch listing cases 0/7/11 and an `__assume(0)` default 121 (284) [13]; two reads with
+// the main switch's through `component->object_index` 91 at 256 [146] (component on the stack, kind EDX), with
+// the kind-7 read through it instead 96 [0] (same code); one read with the body array named first 94 [13].
+// Round 240: Primary body result default, crossed with secondary body default, one byte type
+// and native object-byte shift: 100/108/91/91/100/108/91/91. Original body restored;
+// shared-type forms lose the matched caller (13); the five-point gain is below the keep gate.
+// Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
+// 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
+// the matched caller (13). Original separate flag cases, both type reads and body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -285,29 +295,14 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-/* a flag field read as word bits: retail reads these flags with a load, a
-   shift and a test of the low bit */
-struct s_flag_word_bits
-{
-	word bit0 : 1;
-	word bit1 : 1;
-	word bit2 : 1;
-	word bit3 : 1;
-	word bit4 : 1;
-	word bit5 : 1;
-	word bit6 : 1;
-	word bit7 : 1;
-	word bit8 : 1;
-	word bit9 : 1;
-	word bit10 : 1;
-	word bit11 : 1;
-	word bit12 : 1;
-	word bit13 : 1;
-	word bit14 : 1;
-	word bit15 : 1;
-};
-
-// score 241 (was 241): frame 0x18, current ESI, groups EBX and the body loop index EDI now agree. Left: the
+// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
+// back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
+// through the group pointer, count and first body), the section loops load the component's object index after
+// both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
+// loop latch with the `first_body = NONE`, has-next, `*active = true` and recursion blocks placed after the
+// epilogue (ours keeps them inline before the latch; a compile-only screen of three branch orders never moves
+// them past the epilogue).
+// Earlier at 241 (was 261): frame 0x18, current ESI, groups EBX and the body loop index EDI agreed. Left then: the
 // model pointer is in ESI where retail uses EDX, the output body index and the replaced flag swap BL/CL, the
 // availability stays in memory where retail reloads it into DL (so ours hoists 0x80000 into EBP), the two
 // flag bytes swap frame slots 2/3, and `next` is compared as a short where retail sign-extends it once.
@@ -422,6 +417,30 @@ struct s_flag_word_bits
 // Round 484: explicit empty-group return with mask/late availability/admitted policy
 // lifetime subsets 241/279/252/279/258/296/277/296. Frame stays 0x18; status,
 // model and promoted-neighbor homes remain. Complete original method restored.
+// Round 39 (lane 15; fast screens, kept forms confirmed plain): on the 241 body, round 35's lead re-measured 252;
+// with the mask test 279; a separate output index declared first 295 (934 bytes), with the mask 269 (output
+// spilled, available in BL); declared after the flags 279 (copy-propagated); output/available/replaced with the
+// mask and the lead 190; a `char` output index 269. Kept: the separate output index, the flags declared output,
+// available, replaced and bit 5 as `body->flags & 0x20` (the word-bitfield view removed) 182 (plain), the same
+// without the mask 295 (934 bytes). On 182: `short next_group` selected then widened into a `long next` 196 (933
+// bytes, `xor; mov ax` and a re-widen), `long next` loaded directly 192; kept: the entry tests as early
+// `continue`s on a short `next_group` read once with `long next = next_group == current ? entry->groups[1] :
+// next_group;` 172 (plain), the same with the if selection 177 (nested-if or continue form alike), with `long
+// next;` declared first 177. On 172: the `next != NONE` branch first 192 (901 bytes); the file's section-test
+// helper for both db540 calls 178 (933 bytes); the ternary's arms swapped 172, `first_body` as a ternary 172,
+// `long next;` declared before the selection 172, the entry test as `!(a || b)` 172 (all the same code).
+// Round 239: On the retained output/early-continue graph, native selected neighbor, terminal scan-index
+// completion and explicit empty-recursion continuation, seven subsets, 184/340/185/172/184/340/185;
+// native overwrite selection 189. Original method restored; frame 0x18 agrees, exit placement and neighbor/key homes remain.
+// Round 242: Uniform two-query object/first-key/second-key snapshots in both scans,
+// seven input subsets 330/329/377/327/376/321/375; all inputs with long keys 370.
+// Every snapshot has two real uses and preserves the read-only query values, but
+// frames/code grow. Original method, field rereads, counts and recursive arguments
+// restored; frame 0x18 agrees, neighbor/key ownership and cold exit placement remain.
+// Round 244: actual section-element references and direct indexed key fields in the two scans,
+// eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
+// References canonicalize; direct fields grow or rotate allocation. Original method and
+// both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
@@ -436,9 +455,10 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
             long body_index = (current == NONE ? groups->groups[256].bodies[i] : groups->groups[current].bodies[i]);
             s_physics_graph_model *model = (s_physics_graph_model *)owner->model;
             s_physics_graph_body *body = &model->bodies[body_index];
-            bool replaced = false;
+            long output_index = body_index;
             bool available = false;
-            if (TEST_FIELD_BIT(((s_flag_word_bits *)&body->flags)->bit5))
+            bool replaced = false;
+            if (body->flags & 0x20)
             {
                 short replacement = body->replacement;
                 long bounded = replacement < 0 ? 0 : replacement > model->body_count - 1 ? model->body_count - 1 : replacement;
@@ -448,11 +468,11 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
                     if (replace)
                     {
                         replaced = true;
-                        body_index = replacement;
+                        output_index = replacement;
                     }
                 }
             }
-            output[(*output_count)++] = (char)body_index;
+            output[(*output_count)++] = (char)output_index;
             if (replaced)
                 component->unknown04 |= 0x100000;
             if (available)
@@ -463,61 +483,60 @@ void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, cha
         for (long entry_index = 0; entry_index < owner->model->entry_count; ++entry_index)
         {
             s_physics_graph_entry *entry = &((s_physics_graph_model *)owner->model)->entries[entry_index];
-            if ((entry_mask[entry_index >> 5] & (1 << (entry_index & 31))) &&
-                (entry->groups[0] == current || entry->groups[1] == current))
+            if (!(entry_mask[entry_index >> 5] & (1 << (entry_index & 31))))
+                continue;
+            short next_group = entry->groups[0];
+            if (next_group != current && entry->groups[1] != current)
+                continue;
+            long next = next_group == current ? entry->groups[1] : next_group;
+            long first_body;
+            if (next != NONE && groups->groups[next].count > 0)
+                first_body = groups->groups[next].bodies[0];
+            else
+                first_body = NONE;
+            if (first_body != NONE && (kinds[first_body] == 6 || (visited[next >> 5] & (1 << (next & 31)))))
+                continue;
+            if (next == NONE)
             {
-                short next = entry->groups[0];
-                if (next == current)
-                    next = entry->groups[1];
-                long first_body;
-                if (next != NONE && groups->groups[next].count > 0)
-                    first_body = groups->groups[next].bodies[0];
-                else
-                    first_body = NONE;
-                if (first_body != NONE && (kinds[first_body] == 6 || (visited[next >> 5] & (1 << (next & 31)))))
-                    continue;
-                if (next == NONE)
+                for (long j = 0; j < entry->section_count; ++j)
                 {
-                    for (long j = 0; j < entry->section_count; ++j)
+                    s_physics_entry_section *section = &entry->sections[j];
+                    if (!function_db540(component->object_index, section->key_a, section->key_b) &&
+                        !function_db4c0(component->object_index, section->key_a, section->key_b))
                     {
-                        s_physics_entry_section *section = &entry->sections[j];
-                        if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                            !function_db4c0(component->object_index, section->key_a, section->key_b))
-                        {
-                            *active = true;
-                            break;
-                        }
+                        *active = true;
+                        break;
                     }
                 }
-                else
+            }
+            else
+            {
+                if (groups->groups[next].count > 0)
                 {
-                    if (groups->groups[next].count > 0)
+                    if (entry->section_count == 0)
                     {
-                        if (entry->section_count == 0)
-                        {
-                            long this_body = (current == NONE ? groups->groups[256].bodies[0] : groups->groups[current].bodies[0]);
-                            long next_body = groups->groups[next].bodies[0];
-                            if (kinds[this_body] == 7 || kinds[next_body] == 7)
-                                continue;
-                        }
-                        else
-                        {
-                            long j;
-                            for (j = 0; j < entry->section_count; ++j)
-                            {
-                                s_physics_entry_section *section = &entry->sections[j];
-                                if (!function_db540(component->object_index, section->key_a, section->key_b) &&
-                                    !function_db4c0(component->object_index, section->key_a, section->key_b))
-                                    break;
-                            }
-                            if (j >= entry->section_count)
-                                continue;
-                        }
+                        long this_body = (current == NONE ? groups->groups[256].bodies[0] : groups->groups[current].bodies[0]);
+                        long next_body = groups->groups[next].bodies[0];
+                        if (kinds[this_body] == 7 || kinds[next_body] == 7)
+                            continue;
                     }
-                    if (first_body != NONE)
-                        static_cast<s_physics_component_walk *>(component)->function_1d6630(owner, kinds, entry_mask, groups, context, current, next,
-                            output, output_count, other_context, visited, active);
+                    else
+                    {
+                        long j;
+                        for (j = 0; j < entry->section_count; ++j)
+                        {
+                            s_physics_entry_section *section = &entry->sections[j];
+                            if (!function_db540(component->object_index, section->key_a, section->key_b) &&
+                                !function_db4c0(component->object_index, section->key_a, section->key_b))
+                                break;
+                        }
+                        if (j >= entry->section_count)
+                            continue;
+                    }
                 }
+                if (first_body != NONE)
+                    static_cast<s_physics_component_walk *>(component)->function_1d6630(owner, kinds, entry_mask, groups, context, current, next,
+                        output, output_count, other_context, visited, active);
             }
         }
     }
