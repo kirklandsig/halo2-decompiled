@@ -1775,6 +1775,7 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
 // interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
 // static 119/128/120/128. Original fields, six calls and complete body restored.
+// DL246: common result exits for weapon/query, mode and pickup failure subsets 1-7 give 60 each; full exit graph with earlier result lifetime 130. Two read-only player queries at their consumers on four new exit graphs give 72 each, rejected as nonmatches. Request/weapon homes and getter expansion still differ; original body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

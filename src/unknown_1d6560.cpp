@@ -318,7 +318,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// score 146 (was 146): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
 // neighbor/key homes and remaining cold-block placement differ.
 // Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
@@ -475,6 +475,9 @@ struct s_physics_component_walk : s_havok_component
 // Round 118 (fast): the object index in a local for the first section query 179 (930 B), in both section loops 179;
 // the next group overwritten by `if` then widened 151; a key_b local 153; a const alias of the component for the
 // section queries 146 (same code).
+// DL246: terminal/neighbor/both section cursors 306/204/331; both with object input 260;
+// short/long keys 312/294, complete short/long inputs 322/305. Original indexed scans,
+// query rereads and complete method restored; frame 0x18 agrees, neighbor/key homes and cold exits remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
