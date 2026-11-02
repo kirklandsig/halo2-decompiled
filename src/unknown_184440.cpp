@@ -260,6 +260,9 @@ __forceinline bool function_184448(long arg_0)
 // Round 458: Actual external face-plane/polygon-vertex transfers, native/memcpy/memmove
 // pairs excluding native/native: 965/1021/965/965/1021/989/989/1027. Original source transfers and
 // existing in-place transforms restored; frame 0x11d4 versus 0x11cc remains.
+// Round 463: complete normalizer output publication, scalar/native early result, direct/scalar/native
+// common result, then early scalar/common direct/common native with inverse declared first:
+// 965/1087/988/988/1062/965/988/1062. Original helper restored; frame excess remains.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

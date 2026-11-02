@@ -1634,6 +1634,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 293: Complete default/history memcpy or memmove publications, four pairs with
 // original/confined history scopes: 220/417/404/438/220/417/404/438 (fast control 220, full 218).
 // Original body restored; frame, look and unit/mode homes remain.
+// Round 463: plain two-axis look-spring traversal with actual paired clamp inputs,
+// long/short/dword/word counters, direct/shared actual output-state access:
+// 642/643/642/643/639/639/639/639. Grouped inputs require a match; original independent calls restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

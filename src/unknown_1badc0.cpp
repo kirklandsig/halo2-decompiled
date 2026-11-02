@@ -207,6 +207,9 @@ real normalize2d(point2f *arg_0);
 // Round 451: Existing state-spill declaration at entry/after actor/near entry/after input,
 // with captured/direct global receiver: 211/211/211/211/211/211/211/211. Original declaration, receiver, stores and full body restored;
 // output EBP and point/vector homes remain.
+// Round 463: optional adjusted result at the geometry join, positive/complementary
+// bool/byte/short/long carriers 236/236/238/237/236/236/235/236; exact-match-only flags.
+// Original direct optional stores and complete executable body restored.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
