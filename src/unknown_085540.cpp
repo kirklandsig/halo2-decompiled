@@ -948,6 +948,10 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
 // wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
 // the reader's local non-volatile 250 (its zero stores vanish).
+// Round 114: separate allocation scopes 22; one combined allocation-output declaration 22;
+// a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
+// `+= 1` for either count 22; result declaration split from its initialization 22;
+// the header scoped to the write/serialization block 22.
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
