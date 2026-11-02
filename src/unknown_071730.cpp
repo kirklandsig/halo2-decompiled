@@ -226,6 +226,14 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Round 241: Shared long balance-output scratch with completed roster count/deadline/final deadline,
 // singles/pairs/all 439/441/439/441/439/441/441; all with first elapsed result 441.
 // Original separate scalar phases and complete body restored; frame and result/state/getter homes remain.
+// Round 120 (fast): a separate local for the second session state 439 (same code); the existing
+// session_state_is_live() at both live-state tests 484 (1554 bytes); the missing variant/data tests as
+// two ifs (retail repeats the mode-7 arm) 445 (1590 bytes); retail's positive transition flag (`transition =
+// function_72140(arg_0)`, retail stores AL to its byte home) 449 (1578 bytes, LCS-aligned 199 -> 192); with
+// a bool reset flag 464 (1568 bytes, frame 0x3e4 agrees, aligned 184; result byte still +0xe against +0xf).
+// Retail's byte homes: transition +0x11, reset +0x12, result +0x13 (after four pushes). Retail also calls
+// get_data_4a00 (0x5b080, its only out-of-line call site; 0x7e210 and network_session_client.cpp inline it)
+// where ours inlines it. Restored.
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
