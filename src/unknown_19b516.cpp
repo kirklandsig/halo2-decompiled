@@ -178,6 +178,9 @@ void c_widget::v16()
 
 // score 2 (was 2): only the loop's shared tail differs: retail copies the previous widget to ESI and tests
 // ESI, ours tests EAX before the copy (`test eax, eax; mov esi, eax`).
+// Round 52 (lane 13, fast): the eligibility result as a named bool 2; a `found` result set in a for loop
+// with the focus after it 56 (101 bytes); `while (widget != NULL)` with `this->` at the entry 2; one `goto`
+// to a single focus exit after the loop 2; the eligibility test negated with the step in the then-arm 2.
 // Before round 9, score 12 (was 20): only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // only the entry differs: retail finds the first widget in EAX/EDX, saves ESI after it
 // and joins the loop's `mov esi, eax; test esi, esi` tail; ours finds it straight into ESI (push first).
