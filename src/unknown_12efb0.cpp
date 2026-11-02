@@ -340,6 +340,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // bytes, masked 131 against 130), read right after the palette call 705; long slot with the test on the byte field 761
 // (3856); the record pointer cleared only in the palette arm, retail's `xor ebx, ebx` position, 616 (same code), with
 // the char slot 705. The -1 in EAX tie stays.
+// N306: Native output combined/separate rejection, nested/intensity-first acceptance, each with
+// original/early-exit merge: 616/616/616/616/616/616/616/616. Original helpers and complete body restored;
+// palette/record and SIMD zero/contribution carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

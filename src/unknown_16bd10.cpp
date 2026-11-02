@@ -865,6 +865,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // overlap-safe whole-value transfers, seven subsets, then all with memcpy normal input:
 // 455/402/490/374/482/483/400/400. Original pose observations, transfers, projection and body restored;
 // direction preload, normal/length/zero allocation and flag scheduling remain.
+// Round 463: actual partial length accumulation, full successive/leading-pair,
+// zero-first factor result and uniform product directions, 256/236/371/368/256/236/371/368;
+// original (k+j)+i grouping and complete executable source restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
