@@ -507,6 +507,8 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // under `if (two_step)` 364 (1375 bytes); `previous` declared first 295 (same code).
 // Round 275: Truncation polarity bool/byte/short/long, each with long/short
 // link count, 333/362/333/362/356/347/357/348. Original completion, counters and full body restored.
+// DH278: Separate short/long traversal index crossed with short/long previous and bounded link carriers 347/396/380/392/383/384/384/386.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -931,6 +933,8 @@ bool function_2715a0(byte *buffer)
 // (retail's setg) and per-case `child->depth = node->depth + N` stores with case 2 reading `child->unknown14`, all
 // together: 486 at 2076 bytes (same count; opcode-only alignment 121 -> 104, the closest structure so far). The
 // four-register rotation (state EBX/EBP) remains; the compile-only harness puts state in EDI, so it cannot screen it.
+// DH278: Entry-owned candidate point/projection direction/attraction output, seven subsets and complete behavior names 486/486/486/486/486/486/486/486.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

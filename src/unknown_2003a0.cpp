@@ -520,6 +520,8 @@ s_squad_definition_entry *function_203330(s_squad_definition_view const *squad);
 // definition/palette/definition+palette/handle/definition+handle/palette+handle/all; all with
 // branch-owned next 74/129/129/74/74/129/129/129.
 // Original executable body and declarations restored; remaining allocation differences persist.
+// DH278: Separate short/long parent traversal with early/scan-local ordinal and compound/separate ordered exits 74/74/92/92/141/141/98/98.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x204ec0
 void function_204ec0(s_squad_iterator *iterator, short squad_index, short flags, short mode)
 {
@@ -3418,6 +3420,8 @@ void function_2011f0(long arg_0);
 // Round 327: Count parameter as the sole remaining-attempt carrier in do/for loops 386/318;
 // last-producer short/long/word/unsigned-long countdowns 364/357/378/357; last-producer
 // short/long for loops 357/375. All restored; frame and placement/chain carriers remain.
+// DH278: Persistent success logical/bitwise accumulation with final-node receiver and scalar-mask subsets 350/350/340/340/361/361/351/351.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

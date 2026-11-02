@@ -522,13 +522,13 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 276): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
+// score 265 (was 265): 2592 bytes against retail's 2596; frame 0xa8 against retail's 0xac (ours now spills
 // case 0's first.y as retail, one slot lower); the first point and the half width take XMM5/XMM6/XMM4 and XMM3
 // where retail has XMM6/XMM5/XMM3 and XMM4; local slots are permuted (vertex cursor and state width swapped,
 // pixel and u/v homes). Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
-// score 276 (was 276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
+// Earlier (276): length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // length 2596 agrees; frame 0xa0 against retail's 0xac (retail spills the first
 // edge point's y at +0xb4); retail gives the second edge point XMM0-2 and the half width XMM4 where
 // ours gives the first point XMM0/1/4 and the half width XMM6, which moves every geometry case; slots
@@ -717,6 +717,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 64 (lane 9, fast): case 0's edge points written component-interleaved 276 (same code); case 0's x
 // and y as chained assignments (`first.x = second.x = ...`) 375 (2600 bytes); `0.5f * width` 276 (same
 // code); the half width computed after the u/v stores 283; after the second-vertex pointer 276 (same code).
+// DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
