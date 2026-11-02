@@ -226,6 +226,10 @@ real normalize2d(point2f *arg_0);
 // ordinals, original/joined optional-index guard: 267/237/237/267/284/236/236/284.
 // Joined guards change the convention and lose three caller matches. Original sum,
 // guard and complete body restored; output EBP and point/vector homes remain.
+// Round 518: common completion initialized from direct-output mode, entry
+// bool/byte/short/long results 270/250/256/251; after actor lookup
+// 270/254/225/229. Original body restored; caller conventions regress, and
+// output EBX/EBP, native point/vector homes and shared false exit remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

@@ -1216,6 +1216,13 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // M294: Per-attempt scalar candidate graph/index short/short, short/long, long/short, long/long,
 // defaults before/after lookup:
 // 1012/1012/1012/1012/1012/1012/1012/1012. Original complete executable source restored.
+// P260: Partial resolved-output sentinels before result construction, subsets
+// mode/class/both/type/mode-type/class-type: 830/830/979/830/979/979; mode/class after it
+// 830/830. Original constructor, iterator and complete body restored.
+// N308: Shared resource/inheritance counter zero lifetimes and independent resource ordinals,
+// seven subsets 1011/902/1007/828/1011/902/1007; complete graph with plain inheritance while 1007.
+// Several shared users regress; every helper and original body restored. Return/output/candidate
+// homes, class/NONE roles and persistent zero carrier remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1396,6 +1403,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 828/828/828/828/828/828/828/1059. Original complete body, output order, native identifier and
 // iterator restored; frame 0x2c agrees, class/NONE and result/candidate/output homes plus late
 // zero carrier remain.
+// N308: Shared resource base/native list metadata/empty-request return, seven subsets,
+// 1098/1436/1546/828/1098/1436/1546; complete graph with readonly metadata 1546. Several
+// shared users regress; all helpers and original body restored. Result/output/candidate homes,
+// class/NONE roles and persistent zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

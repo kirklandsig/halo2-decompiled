@@ -258,6 +258,9 @@ const dword g_455978[81] = {
 // `vector3f_scale` 338, one table-entry pointer for both copies 338, shape declared before the body 338 (same code
 // each). The first difference is then +0xe, arg_10/arg_9 and body/shape swapped in ESI/EDI and the cursor spilled,
 // the webs that go back to retail's with 0x11bed0 out of line: BLOCKED-BY 0x11bed0's inlining here.
+// Round 284: joint optional bounds/index/computed vertical-product identities, six lexical
+// priorities 298 each; two complete vertical-scalar declaration lifetimes 298 each.
+// Original body restored; optional scalar homes and selective helper expansion remain.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

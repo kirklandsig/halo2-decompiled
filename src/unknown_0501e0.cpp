@@ -254,6 +254,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 504: twice-used scalar origin capture orders xyz/xzy/yxz/yzx/zxy/zyx
 // 281/280/281/281/280/281; shared per-axis origin in long/dword offset loops 226/226.
 // Complete original offset loops, helper and body restored; extra frame word remains.
+// Round 518: on separate offsets/cursor outputs, in-place first/second/both
+// transforms 285/259/275; with the first transform before second offsets
+// 291/279/262; both in-place with indexed output 278, early shared scale 306.
+// Original helper/body restored; extra frame word and coefficient/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

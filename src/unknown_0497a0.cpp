@@ -739,10 +739,17 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
 // DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
 // Complete opening body restored; no qualifying keeper.
+// Round 466: Complete independent current-position scalars in vertical/planar/camera
+// geometry subsets 1..7, then shared before dispatch: 570/576/570/568/559/626/538/582.
+// Frame/spill homes remain; original coordinate observations and full body restored.
 // Round 316: Paired planar/camera/both offsets 376/388/493; native position
 // alone/with planar/camera/both and assigned native position 669/657/633/628/628.
 // Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0
 // 400/308/407/428/408. Original geometry, products, observations and case order restored.
+// Round 518: half-width across tint on the entry-correct paired-point graph,
+// original/staged side/staged normal/both 325/325/325/325; with vertical normal
+// previous/neighbor/both order 321/334/406; both staged and both orders 406.
+// Original body restored; frame 0xa8/0xac and point/color/conversion homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
