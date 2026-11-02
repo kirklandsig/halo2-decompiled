@@ -213,6 +213,11 @@ static __forceinline long real_to_long(real value);
 // tick stores 56. Retail here, in 0x1b3ee0 and in 0x1c0430 keeps 0x4ac/0x504 after the NONE stores; our
 // build sinks the NONE stores past them in all 240 statement orders screened (compile-only, 0x1b3ee0).
 // MiniMax D (11-01): no new form, no lower score.
+// score 17 (was 17): the seed store still precedes the first doubling, the NONE stores
+// follow the zero fields, and the second scale precedes the tick-count load. Round 123:
+// sample reused for the second draw 17; forced outer/inner random declarations 17/17;
+// forced reset declaration 17; first/second/both sample scopes 17/17/17; delay and wait
+// declared before the slot view 17. All helper declarations were restored.
 // @retail 0x1befd0
 bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {
