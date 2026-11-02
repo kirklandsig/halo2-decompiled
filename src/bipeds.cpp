@@ -2744,6 +2744,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // hit producer 499. Both distance-scan values (494 plain, 1874/1908, frame 0x50
 // versus retail 0x4c) NOT kept: struct copies in two of the three scans, the subset
 // picked by score (mass scan keeps its pointer). Body restored at 530.
+// Y539: Test-produced ragdoll/model admission and the existing bit-test producer,
+// subsets 1/2/4/3/5/6/7: 530/537/530/537/530/537/537; complete graph with
+// natural shared completion 539 (1859 bytes, incoming index differs). Original
+// guards, bit tests, exits and complete body restored; frame/result homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4897,6 +4901,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 1/2/4/3/5/6/7, then all with read-only tag receiver: 729/770/741/773/744/780/775/775
 // (fast control 655). All regress; complete original body restored. Frame 0xd0 agrees;
 // animation/state/tag homes and completion expansion remain.
+// Y539: One completion call after the complete mode dispatch, with test-produced
+// admitted/blocked eligibility in bool/byte/word/long: fast 655 each against control
+// 655 (full 648). Compiler completion cloning and frame/homes remain; original
+// switch, repeated calls and complete body restored. Every checked peer is unchanged.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

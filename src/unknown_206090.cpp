@@ -320,6 +320,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P275: Actual contact-settings control bitfield with native point-row typing, read-only
 // receivers and full-width zero/one control, subsets 0-7: 1355/1355/1355/1355/1356/1356/1356/1356.
 // Original types and full body restored; frame 0x5cc/0x58c and component/velocity/query homes remain.
+// Y539: Existing peak/release lifecycle boundaries 1389/1389; native object/clock getters
+// 1355/1355; peak/release with object or clock 1389 each. Original helpers and body
+// restored; lifecycle APIs shorten to 6201 bytes without recovering frame 0x58c.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
