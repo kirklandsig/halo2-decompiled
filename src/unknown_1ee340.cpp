@@ -366,7 +366,7 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // and returned by value (retail's slot +0x3c, hidden pointer in EAX) 203; a literal 0.0f for field_c (xmm6 shared with the
 // positive test) 203; the count read into a dword local before the call (`push edx`, this moves to ESI, 1001 bytes) 179; the
 // normal read through a local pointer in the hit block (retail's in-place j/k normalize) 91; offset assigned directly 58;
-// `long const &axis_ref = function_120850(..); short axis = (short)axis_ref;` (retail's dead movsx) 19; fraction from a
+// `long const &key_ref = function_120850(..); short axis = (short)key_ref;` (retail's dead movsx) 19; fraction from a
 // forceinline helper returning it, the hit point through vector3f_add_scaled 7; the result normal through a
 // `vector3f *const &` temporary (fraction store first) 2; only the two lea lines left. Without the chain, no gain: normalize
 // statement orders on the 203 form: each `*=` written out, scale local 205, vector3f_scale with a scale local 205, normalize_inline 213; the hit point
