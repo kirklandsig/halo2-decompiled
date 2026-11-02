@@ -1739,6 +1739,8 @@ void function_b7360(long object_index);
 // 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
 // enclosed short selector 466. Original admission, selector observations and complete body restored;
 // entry carriers and the 24-byte deficit remain.
+// Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
+// 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
