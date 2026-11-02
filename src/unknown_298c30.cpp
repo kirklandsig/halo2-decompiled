@@ -486,6 +486,11 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 286: one result exit with bool/byte/short/long carriers 789/818/819/819;
 // selected-index-derived obstacle results with those carriers 780/812/808/808.
 // Frame 0x120 remains above 0x114; original result topology and whole body restored.
+// Round 28 (lane 17, fast; base 719 [452], with registers and slots masked 159): result through a pointer local 719,
+// the radius through a pointer local 719, both 719 (same code); the obstacle block as a force-inlined helper, result
+// through a pointer 716 (frame 0x120), the same with the outer test kept out 716, returning a bool 820 [439] (3340
+// bytes, frame 0x11c); both side-point pairs through one inline 719 (same code), with those two helpers 716/820.
+// The entry hoist of the radius into XMM5 stays in every form, a volatile read of it included (772, 726).
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

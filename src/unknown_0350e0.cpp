@@ -3598,6 +3598,12 @@ long __stdcall function_3ddd0(long object_index);
 // Direct/commuted pointer addition, cache/slot declarations swapped, role-based local names, an unsigned index,
 // one-byte memcpy, implicit byte conversion and a four-element array reference: all 1. Original body restored.
 // Round 447: entry-scope previous/cache/nullable-table lifetimes, subsets 1..7: 105/1/105/162/147/162/147; complete lifetimes after float workspace 147. Original body restored; indexed-byte SIB order remains.
+// Round 28 (lane 17, fast): global read through a const cast 1; named index local 1; whole read as an inline
+// getter 1; slot from an inline getter, indexed in two statements / one expression 1/1; read through an inline
+// taking (table, index) 1; both inlines 1; struct at +0xbc with a levels array, indexed / pointer sum 1/1; record
+// struct with a levels member, element form / record pointer 46/46 (491 bytes); uninitialized slot declared at
+// the top / before / after the previous byte 1/1/1; one-byte element struct 1; pointer to a one-byte row 1; read
+// through a cast of the element address 1; slot as long 1. Original body restored.
 // @retail 0x4c450
 long function_4c450(long object_index, real distance, real const *definition, real *fraction)
 {
