@@ -215,7 +215,7 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 			sound_mixbins_initialize(&settings);
 			if(mode==0 || mode==1)
 				for(long send=0;send<=mode;++send)
-					sound_mixbins_add(&settings,voice->unknown00,gain);
+					sound_mixbins_add(&settings,voice->unknown00,*(s_decibels const *)&gain_bits);
 			function_2215d0((s_mixbin_list *)&voice_properties,&settings,stream->stream);
 			stream->stream->SetVolume(sound_decibels_to_volume(0.0f));
 		}
