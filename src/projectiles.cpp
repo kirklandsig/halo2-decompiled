@@ -1006,6 +1006,8 @@ real function_30bf0(vector3f *v);
 // branch-produced long/short/real sign 262/254/261; default negative/positive integer sign 261/261.
 // Exact-only receivers restored; latter six forms lose five matched callers. Original pointer
 // contract, frame 0x28/0x30, rounded horizontal root and separate-division gap remain.
+// M290: Independent/shared rounded polynomial-root storage with solver/entry declarations and original/shared horizontal-square storage:
+// 232/232/232/232/232/232/232/232. Original executable body restored.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,

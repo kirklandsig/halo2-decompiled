@@ -284,6 +284,9 @@ static inline void quaternion_transform_vector(
 // 241 (1318 bytes); the axis crossed into its own vector then scaled into the quaternion with cross3f /
 // cross3f_staged 241/240 (1317 bytes, frame still 0x1c). Retail never reads the quaternion's slot after loading
 // it (0x1418d5-0x1418f8) yet gives the transform spills five slots of their own; ours overlay two on it.
+// Round 294: Complete rotated-vector memcpy/memmove publication with staged-cross/independent-half
+// combinations 334/311/334/311 and 348/383/348/383. Original helper/body restored; frame and
+// quaternion/cross spill sharing remain.
 // Round 267: result-component loop on staged-axis/real-scale construction,
 // long/short/byte/word ordinals with paired halves 266/1023/1023/1023,
 // independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line

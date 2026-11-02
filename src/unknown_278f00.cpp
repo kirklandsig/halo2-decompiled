@@ -216,6 +216,10 @@ bool function_a7670(long object_index);
 // Round 251: Disjoint native first/second search ordinal lifetimes, bounded retry loop and all three role
 // names: 153/153/153/153/153/153/153/153. Original complete body restored; initial scratch phase,
 // selector/island/count homes and admission BL remain.
+// DH round 270: actual two-attempt retry as byte/short/word/dword, then each with the nonzero list arm
+// first, 262/259/259/153/262/259/259/153. Byte retry shrinks the frame to 0x420; original 0x424 frame and
+// selector/list/island/count homes remain. Original retry domain, both eager scans, live body bound,
+// consumed island index, indexed cleanup, call cycle and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {
