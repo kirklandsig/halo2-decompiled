@@ -716,6 +716,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // bitwise OR pairs, positive-test bool 288/304/318/315 and byte
 // 288/304/318/321. Original conditional collectors restored; count ECX,
 // prior-side byte and SIMD homes remain.
+// Round 359: Prior signed-distance state with test-assigned fraction, nonzero/zero first,
+// native/full-decision clamp and both denominator product parts: 270/270/270/270/255/255/255/255.
+// Original state and arithmetic graph restored; count/prior-side and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

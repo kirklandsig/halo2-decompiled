@@ -2372,11 +2372,11 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): frame 0xa0 and loop constants agree; first +0xb saves
+// score 132 (was 132): frame 0xa0 and loop constants agree; first +0xb saves
 // EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
 // also differs. Tried: all six
 // MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
-// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
+// Earlier: retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
 // loaded inside it, and the depth dot product orders its terms differently. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
@@ -2404,6 +2404,10 @@ s_cached_input_list g_5234e8[4];
 // graphs, reduced 148/133/147/132/126/135/148/133 (control 136). The native signed-short ordinal plus total
 // reaches 548 bytes in preview but plain is 142 at 562 bytes; restored. Original frame 0xa0 and
 // list/cursor/index register split remain.
+// Earlier entry counts 139, r581 139, and 146 to 139 on a 169-source reduced image.
+// Round 360: native selected-count/view/total lexical home priorities, seven subsets,
+// then complete input-list/ordinal names, all 139/549 on a reduced control of 139/549
+// (full 132/554). Original scalar names and executable body restored; list/cursor split remains.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2979,6 +2983,7 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
+// score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -3006,6 +3011,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F320: native alpha/kind, position/region and output-byte role-name subsets 177 each (seven forms);
 // all names with entry-declared byte outputs 177. Frame 0x18 versus 0x1c and fade scratch homes persist;
 // all executable source restored.
+// Round 360: elapsed accumulation/native signed-byte kind/result-from-alpha-test subsets,
+// 177/208/177/208/177/208/208; all with byte result 213. Native byte kind reaches
+// 773 bytes but retains the smaller frame. Earlier counts 175/194; original body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4236,7 +4244,7 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
     return false;
 }
 
-// score 138 (was 210): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
+// score 138 (was 138): the passes now use draw_selected_source_pass (shared with 0x423c0), whose `enabled` is a separate
 // variable so retail's `shr eax,N; and al,1; mov [esp+0x14],al` appears. Still different: retail
 // calls function_14b60 with flags in eax (the stub declares it __stdcall, 4 stack args), retail
 // stores 1 into the slot after function_15680 in both arms of pass 3, and the three passes with
@@ -4264,6 +4272,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // threaded away in every form (pass 3 then has no store at all): retail keeps it because the value is
 // 0x44370's result, and its dead loads come from the cull mode read from 0x44370's mode table, which
 // retail folds late from .rdata; ours (g_render_modes_storage) is a non-const global in a contributor file.
+// Round 360: complete conditional gate results in byte/bool/long/dword, shifted-bit/native-mask,
+// 207/207/241/241/207/207/241/241. Every shared user also regresses; original helper restored.
+// Earlier starting score 210; flag-store timing, dead mode loads and clear-call convention remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

@@ -2242,6 +2242,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // 1-7: 505/470/496/469/505/470/503; direct fields with threshold-first comparison 505. Original
 // facing value, helper boundaries, all sums and body restored; actor/state ownership and first-point
 // home remain.
+// Round 359: Complete spatial/countdown arm priorities 4/0/7/5, 7/4/0/5, 0/4/7/5,
+// 5/4/7/0, 0/5/4/7, 7/0/5/4, 5/7/0/4, 0/7/4/5: 469/473/469/478/478/492/476/473.
+// Original arms and full body restored; actor/state ownership and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
