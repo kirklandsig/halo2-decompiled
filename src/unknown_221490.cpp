@@ -224,7 +224,8 @@ set_all:
 	IDirectSoundStream_SetMixBins(stream, &settings->mixbins);
 }
 
-/* the same for a buffer */
+/* the same for a buffer; a mismatch sets set_all instead of jumping to a
+   shared call, as in 0x2aeb20 where this is inlined with no list */
 // @retail 0x2216f0
 void function_2216f0(
 	s_mixbin_list *list,
@@ -237,6 +238,7 @@ void function_2216f0(
 	dword changed_mask;
 	dword seen_mask;
 	bool changed;
+	bool set_all = true;
 	long i;
 
 	out_mixbins.dwMixBinCount = 0;
@@ -244,11 +246,9 @@ void function_2216f0(
 	changed_mask = 0;
 	seen_mask = 0;
 
-	if (!list)
-		goto set_all;
-	if (list->count != (long)settings->mixbins.dwMixBinCount)
-		goto set_all;
+	if (list && list->count == (long)settings->mixbins.dwMixBinCount)
 	{
+		set_all = false;
 		long count = list->count;
 		DSMIXBINVOLUMEPAIR *list_pairs = list->pairs;
 		changed = false;
@@ -259,7 +259,10 @@ void function_2216f0(
 			dword bit;
 
 			if (list_pairs[i].dwMixBin != (dword)mixbin)
-				goto set_all;
+			{
+				set_all = true;
+				break;
+			}
 
 			long volume = settings->pairs[i].lVolume;
 			if (list_pairs[i].lVolume != volume)
@@ -267,10 +270,11 @@ void function_2216f0(
 				bit = 1 << mixbin;
 				if (seen_mask & bit)
 				{
-					if (settings->pairs[i].lVolume != values[i])
-						goto set_all;
-					if (changed_mask & bit)
-						goto set_all;
+					if (settings->pairs[i].lVolume != values[i] || (changed_mask & bit))
+					{
+						set_all = true;
+						break;
+					}
 				}
 				changed_mask |= bit;
 				changed = true;
@@ -287,13 +291,12 @@ void function_2216f0(
 			}
 		}
 
-		if (changed)
-			IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
-		return;
 	}
 
-set_all:
-	IDirectSoundBuffer_SetMixBins(buffer, &settings->mixbins);
+	if (set_all)
+		IDirectSoundBuffer_SetMixBins(buffer, &settings->mixbins);
+	else if (changed)
+		IDirectSoundBuffer_SetMixBinVolumes(buffer, &out_mixbins);
 }
 
 /* a sound class of the sound classes tag. Retail calls it out of line
