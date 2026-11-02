@@ -474,6 +474,18 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // P263: positive validity byte/signed-byte/short/word/long/dword with native byte ordinal
 // 80/80/205/205/203/203; validity declared after ordinal/at entry 80/144.
 // Original helper and body restored; validity home and validation carriers remain.
+// M3 lane 4 r155 (fast): count-one reads declared b, count, c 71 (plain; case 2/4's index*5 and table registers then match
+// retail; not kept by the coordinator: retail loads c, b, count at 0x99053-0x99059, so this order was picked by score); other orders count,c,b 76 (count-one block exact, case 2/4 not), b,c,count 72, c,count,b 83; names of those
+// three locals do not matter (12 renamings, same scores). Loop: retail's cursors are ordinary spilled values that lose to the
+// handle by a small weight: diagnostic only, a second `entries[...].handle == local_1` test in case 2/4 (code +12 bytes) gives
+// retail's whole validation loop with the natural index loop (126); items[0] in place of items[i] (diagnostic) 144. New: data
+// pointer declared before a for loop with the items by index 78 (cursor homes exact, but its init lands before the count
+// guard), stepped in the increment 75 (comma), inside a guard with do-while 207; items pointer with data by index 219; data
+// base pointer indexed 209; `info` pointer local 206; index written `local_1 & 0x3ff` at the case 2/4 / count-one uses 206
+// (same code; CSE'd references add no weight); nested ifs in case 2/4, `break` for the early return, index read from the
+// request 206; while form of the index loop 206. Re-measured on this body: c,b,count (the reverse reads) 86; natural index
+// for loop 206, through the helper 207; dword handle 206; memcmp sized by the request count 195 (handle split at entry), with
+// the index loop 208; entry element pointer in case 2/4 80 (same code).
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
