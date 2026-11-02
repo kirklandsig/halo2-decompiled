@@ -423,6 +423,9 @@ __forceinline short function_1a1fb0(short height)
 // Round 70 (--fast): a byte type 9; the clamp as a nested ternary 44 (216 bytes); each height
 // initialised from the clamp 9; an early return for the NONE object 9; the type mask named once
 // (as motion_sensor_object_type does) 60 (213 bytes, the mask held in ebx).
+// Round 76: helper parameter name 9; view declared after the type call 9; initial blip read before
+// the type call 24; primary/secondary direct clamp initialisation 9/9; primary separate clamp output 9;
+// helper const input with a separate result 9; named state 9. Original body restored.
 // @retail 0x1a1faf
 void motion_sensor_blip_set_type(long local_player_index, long object_index, s_motion_sensor_blip *blip)
 {

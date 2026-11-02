@@ -466,6 +466,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // parameter 18 (its movsx is then hoisted to entry, the field read folds); the field read
 // through its address without volatile 85; the volatile read after the index 83 (statistics is
 // then hoisted), inside the subscript or as a row offset 85 (folded).
+// Round 76: a plain field snapshot reused for the team update 85; a register snapshot with two/one
+// uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
+// plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
+// local 13. Original body and declarations restored.
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
