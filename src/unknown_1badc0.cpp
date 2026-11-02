@@ -180,6 +180,30 @@ real normalize2d(point2f *arg_0);
 // integer copy through its `long *` and the output stays EBX); that with the to-centre vector initialised
 // from the input point and differenced in place 233 (1023), with `2.0f - distance` in the normalize block
 // 274, with the centre/radius call before the input copy 220. Retail's inlined radius is a movss load.
+// Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
+// point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
+// Original scalar expressions, publication and complete body restored; output/vector homes remain.
+// Round 238: plain second-perpendicular two-component sign traversal, long/short/dword/word
+// ordinals, 211/217/211/217; with the existing shared scaled-add output, 211/217/211/217.
+// Original scalar signs, offset producer, include list and complete body restored.
+// Round 51 (lane 11, fast): the found-flag clear before the actor lookup 261, without the output
+// self-address read 275 (both change the convention: 0x1ba5c0/0x1bdad0/0x1bff80 stop matching); the point
+// copy declared at function scope 211 (same code); the output self-address read after the actor lookup 211
+// (same code); the object lookup before the point copy 211 (aligned 170 -> 200); the radius after the
+// centre copy 215. The inline route to 0x30c60 needs its definition changed (unknown_030290.cpp, held by
+// another lane this round).
+// Round 445: Native double squared-distance/projection/radius-clearance domains, seven
+// subsets and complete far-mode scalar graph: 279/262/265/293/261/258/274/274.
+// Original complete executable body restored.
+// Round 294: complete adjusted-point xy/yx producers 211/211; complete displaced-
+// point xyz/zyx producers 211/211; all four paired producer schedules 211 each.
+// Original scalar expressions, publication and complete body restored; output/vector homes remain.
+// Round 449: Complete projected-interval/nearby-length/far-separation admission results, bool subsets 1..7
+// 211/211/211/211/211/211/211; all with native long results 211 (fast control 211, full 211).
+// Original complete executable source restored; opening structural differences remain.
+// Round 451: Existing state-spill declaration at entry/after actor/near entry/after input,
+// with captured/direct global receiver: 211/211/211/211/211/211/211/211. Original declaration, receiver, stores and full body restored;
+// output EBP and point/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

@@ -745,6 +745,23 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // bytes), normalized in the local and then copied 254 (1292); previous_up through the out-of-line player state
 // getter 367 (1244: retail inlines it here); diagnostic: the distance not stored 218 at retail's 1261 bytes (the
 // three bytes go, but the second product keeps our operand order: the store does not set it).
+// Round 151 (lane 4, fast with 0x1f0870 listed so the helper inlines; without it fast builds 1224 bytes): the
+// one extra byte is the second product's second `movss xmm, [forward.k]` load (retail loads forward.k once and
+// copies right's registers). Products (first, second): function_1f087b then cross3f 222 (1273 bytes), then
+// cross3f_staged 221 (1272); forward-first cross3f (forward x previous_up) then function_1f087b(right, forward)
+// 224 (1270); the first product from the direction local with function_1f087b second 43 (1261 bytes, first
+// difference +0x200, but the first product then reads the direction's stack copy and interleaves with the
+// forward copy where retail reads command->forward after it: a different shape, not kept); both products from
+// the direction local with function_1f087b second 229. On the 43 form: right declared first 43, const
+// previous_up 43 (same code each); the second product through scripted_cross_product 217, through cross_11e130
+// 217 (1261 bytes each).
+// Round 24 (lane 17, fast with 0x1f0870's file, which the reduced image needs to inline function_1f087b; it then
+// agrees with the full build at 45): diagnostic dead temps at the top (period 8, in pairs) on this body 45/45/49/49/
+// 219/219/49/49 for 0-7 (219 at 1261 bytes is a shifted allocation that also loses previous_up's load order), on
+// cross3f_staged for the second product 217/217/221/221/223/223/221/221, on the else-branch forward pointer 43/47/
+// 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
+// and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
+// output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

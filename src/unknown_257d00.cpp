@@ -1709,6 +1709,23 @@ void function_b7360(long object_index);
 // as retail, arg_0 ESI); `if (local_4) return 0; return 2;` 527 (1800); `if (!local_4) return 2; return 0;`
 // 527; both 541 (1796); the wait block as a forceinline helper called from the 1/19 and 15/16 paths in
 // place of the goto 513 (1872: the call is repeated as retail, but each copy keeps its own tail).
+// Round 327: Shared movement-query tail after dispatch, success-first bool/byte/short/long
+// 470/470/493/492; failure-first 473/473/490/494. Original case flow and body restored; entry
+// carriers and length gap remain.
+// Round 329: Independent movement/direct/point conversion workspaces declared at callback
+// scope, subsets 1-7 and all with coherent product/tick names, 471 each. Original
+// declaration scopes, conversion operations and complete executable body restored.
+// Round 331: Common case-thirteen notification with branch/conditional flag values and
+// orientation/point result stores: 471/483/512/521/471/493/519/528. Original terminal cases, output
+// producers and complete body restored; actor/pool/output allocation and length gap remain.
+// Round 223: Native orientation/motion/direct planar values in subsets 1-7
+// 502/470/508/459/495/469/500; all with explicit component construction 500.
+// The direct-field temporary at 459 is exact-only; intrinsic/native direct copies
+// without that temporary both 471. Original producers and complete body restored.
+// Round 335: Whole countdown case zero before 17/4/7/8/10/5/9/13 gives
+// 470/471/485/524/526/526/528/528 (fast control 471). The one-point reduction
+// is rejected; original complete case order and body restored. Pool/actor/output
+// ownership and the forty-byte length gap remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2104,7 +2121,7 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 	return 1;
 }
 
-// score 478 (was 478): the frame agrees at 0x1c; retail computes the actor base in EBX
+// score 469 (was 469): the frame agrees at 0x1c; retail computes the actor base in EBX
 // and spills it at [esp+0x10] before the type dispatch, ours computes it in EDI just
 // before its use and reuses EBX for the state pointer. The body is 2400 bytes against
 // retail's 2396.
@@ -2182,10 +2199,26 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // aggregate: 591/506/506/612/600/514/512/513. Turning construction restores actor/state ownership and point +0x10
 // but regresses; constant-first distance/common result exit on turning/all graphs: 591/629/620/616.
 // Original complete body restored; actor/state ownership and first-point home remain.
+// Round 327: Complete pending-request arm orders 6/18/14/21, 6/21/18/14, 6/14/18/21, 18/6/21/14,
+// 18/21/6/14, 21/6/18/14, 14/6/18/21, 14/21/18/6 give 471/474/469/480/476/480/472/480. Order
+// 6/14/18/21 retained at 469 by ordinary full validation; all arm bodies remain unchanged.
+// Round 331: Separate scalar initialization of turning/animation/motion planar copies, subsets 1-7:
+// 591/502/612/490/600/510/620; all with Boolean completion 620 (fast control 485; full 469). Original
+// copies and complete body restored; turning forms recover the entry but regress overall.
 // Round 273: On the recovered turning-constructor register prefix, coherent
 // admission/alignment/search workspace names in seven subsets and all with
 // planar role names 591/591/591/591/591/591/591/591 (fast control 491; full 478).
 // First point/prefix recover but later homes regress; original complete body restored.
+// Round 499: One candidate handle for query and publication, crossed with candidate/point scopes
+// and both distance-comparison orientations: 490 each (fast control 485; full 469). Original
+// observations, scopes, case order and body restored; actor/state and point homes remain.
+// Round 223: Complete search arm before 1/4/7/0/5/9/10/12 gives
+// 630/481/469/489/489/488/464/468; five-point gain rejected. On before-ten graph,
+// first/both request receivers at uses and native bit updates alone/with both receivers
+// 481/481/502/489. Original body restored; actor/state and first point homes remain.
+// Round 335: Complete turning/alignment/both-distance product parts, subsets 1-7,
+// 485 each; all parts const 485 (fast control 485; full 469). Actor/state allocation
+// and first point home remain; all original products, cases and body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2328,6 +2361,14 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_3 = false;
 		}
 		break;
+	case 14:
+		if (!(local_2->field_3 & 0x20))
+		{
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
+			local_3 = false;
+		}
+		break;
 	case 18:
 		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28) && function_25ab50(local_1->unknown2c))
 		{
@@ -2348,14 +2389,6 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
 			local_2->field_3 |= 0x20;
 			*(short *)g_502400 = 0x82;
-			local_3 = false;
-		}
-		break;
-	case 14:
-		if (!(local_2->field_3 & 0x20))
-		{
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
 			local_3 = false;
 		}
 		break;

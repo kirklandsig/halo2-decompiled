@@ -316,7 +316,7 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // MiniMax R (11-01): no new form, no lower score; retail still takes the state pointer in EAX and
 // the tag on the stack where ours takes the tag in EAX and the state on the stack, and the only
 // form that fixes that moves 0x189fe0's request into EDX and loses its eight matched callers in
-// src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0.
+// src/unknown_189010.cpp: still BLOCKED-BY 0x189fe0. Codex F (11-01): no new in-file form either.
 // score 181 (was 204): BLOCKED-BY 0x189fe0. Frame eight versus four, the state/tag registers and the
 // opposite start/delete expansion remain (ours takes the tag in EAX and the state on the stack).
 // Earlier (204): no new in-file form moves it; the request has to reach 0x189fe0 in EAX or eight
@@ -440,6 +440,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // home its request in EBX). On 181: the allocation through function_21d2c1 193 (on 193, the same
 // code), the delete out of line 214, start-result arms swapped 180 (fast), one exit 182 (fast), the
 // no-effect path first 200 (fast), the platform handle by an if/else 181 (fast, same code).
+// Round 283: shared start with a multiply-used effect-admission fact, bool/byte/short/long,
+// nested lifecycle 223/223/205/207; combined success/failure lifecycle 223/223/205/207.
+// All eight sensitive callers preserved; original body and expansion policy restored.
 // @retail 0x21d110
 long function_21d110(s_sound_play_state *state, long tag_index)
 {

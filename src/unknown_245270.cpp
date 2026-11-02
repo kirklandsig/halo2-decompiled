@@ -496,6 +496,40 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 259: complete first/second/both material-code reads at every use, with captured/live
 // table, 237/208/209/208/207/222; both code observations with native signed low-word
 // material field and captured/live table 209/222. Two-point best rejected; original restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
+// Round 53 (lane 10, fast): ours keeps the material table in EBX for the whole body and the matrix in EBP
+// from entry; retail spills the table (+0x18) and the first material index (+0x1c) and uses EBX for the
+// second code, the plane table and the side bit. The final call's fields read through `arg_1->field_2c` 205
+// (0x245aa0 107); the first material index as `short` 207; the code test as `second != first` 209 (same
+// code); the second code read first with that test 208; a first-material record pointer for the final call 209.
+// Round 43 (lane 14, fast): plane table read after the edge vector 203 / after the long code copies 203 /
+// that with the side bits before the plane pointers 203 (all three move the source back to EDX, 0x245aa0 3);
+// side bits before the plane pointers alone 209; second material through a record pointer 209; the emit
+// call's material fields read through the source again 205 (0x245aa0 107).
+// Round 65 (lane 16, fast): 0x244de0 now takes the point in ECX and the vector in EAX as retail (its first
+// difference is at +0x141), so the call setup is not the cause. The side bools named once more as
+// `bool same_side = local_10 == local_11;` before the plane test 209 (identical); as one named comparison of
+// the shifted codes 225 (767 bytes, frame 0x28: the matrix is no longer held in EBP from entry and EBP takes the
+// second code, but the sides still fold into the branch); that with the second material read first 225; that
+// with the plane table read after the edge vector 227 (and 0x245aa0 113: the source then arrives in EDX); the
+// facing dot through dot3f 237 (755 bytes).
+// Round 493: all three facing projection parts in ijk/ikj/jik/jki/kij/kji order 208/208/208/208/208/208;
+// sequential accumulation with complete parts in kji/ijk order 209/209. Original expression
+// restored; frame 0x24/0x2c, side bytes and delayed matrix load remain.
+// Round 260: existing native 3x3 rotation with staged cross/shared dot/unsigned decoded words,
+// 253/254/236/237/253/254/236/237; longer bodies and frame 0x24 remain, all restored.
+// Round 263: Joint paired-mask/xor side equality, signed/unsigned material words and existing staged-cross combinations
+// 239/239/211/211/239/239/211/211. Original side producers, material carriers, cross call and complete body restored.
+// DH round 265: complementary facing rejection with bool/byte/word/long sides, original/staged cross:
+// 211/211/211/211/211/211/211/211. Original complete body restored.
+// Round 288: existing axis-accumulator rotation with staged cross, native side-byte and
+// two-use plane-ordinal subsets 253/254/253/254/256/256/256/256; no match.
+// Original in-place rotation and complete executable body restored.
+// Round 337: target inline contract with late plane-table, native signed-word sides and
+// second-code-first subsets 209/203/224/226/208/206/223/224. Six-point best fails the retention
+// margin; original body and contract restored. Frame and independent side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

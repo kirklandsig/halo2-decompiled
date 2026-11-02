@@ -6,19 +6,9 @@
 #include "camera_storage.h"
 #include "frame_storage.h"
 #include "unknown_0259d0.h"
+#include "unknown_033a0b.h"
 #include "globals.h"
 #include "normalize3d.h"
-
-struct s_33a0b_view
-{
-	byte unknown00[0x10];
-	vector3f vector10;
-	byte unknown1c[0x14];
-	vector3f vector30;
-	vector3f vector3c;
-	vector3f vector48;
-	vector3f vector54;
-};
 
 struct s_33a0b_default
 {

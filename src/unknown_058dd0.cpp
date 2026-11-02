@@ -757,6 +757,7 @@ void c_session_client::function_06dbc0()
 	function_06dc60(this, 3);
 }
 
+// MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
 // score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
 // the mode and member index take esi; separate case 7 and 8 labels (retail's direct
 // table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
@@ -804,6 +805,9 @@ void c_session_client::function_06dbc0()
 // joined, nested, session per use) gives the direct table with this still in EDX; descending cases, an
 // explicit default, grouped returns with 3/5 to the default, a member-index local, `&*id`: no change. Real
 // (fast): grouped returns 43, member-index local 43, descending cases 43 (identical code).
+// Round 275: existing busy predicate with a separate producer force-inline declaration, bool/byte/
+// short/long results and early/combined admission, eight forms 100 each (84 bytes). Predicate remains
+// out of line; original body and producer declaration restored. This/id register ownership remains.
 // Round 113 (lane 8): separate case 7 and case 8 bodies (0x58d90's own form) re-measured 47 (plain check
 // agrees): retail's direct 7-entry jump table, and the only difference left is `this` in EDX where retail
 // moves it to EBX at entry (mode/index then take ESI for retail's EDX, id EBX for retail's EBP). On that
@@ -816,6 +820,17 @@ void c_session_client::function_06dbc0()
 // `if (!flag) break; return;` 65 (148 bytes); the type tested before the mode 49. `mov ecx, 2` is the
 // `repe cmpsd` count reused for the mode compare (ours has it too); retail allocates as if the compare
 // clobbered EDX (this in EBX, id in EBP). Original grouped body restored.
+// Round 25 (lane 17, fast): 0x6d380 as a __stdcall member of c_session_client (definition, declaration and
+// both calls) 43 (same code); the compare and call inside the switch's default with cases 2/4/6 breaking 43;
+// early returns on the mode/type test and on an equal id 43; those early returns with separate case 7 and 8
+// bodies 47; the in-switch compare with separate case 7 and 8 bodies 47. In every form mode and member index
+// take a callee-saved register because this already holds EDX; retail colours mode/index first (EDX).
+// Round 71 (lane 9, fast): a `client` copy of this passed to the call 43; a member pointer declared with
+// `s` before the switch 48 (with separate case 7/8 bodies 49); the id compare as a named bool 43; an early
+// return on mode/type before the compare 43; a local pointer for the memcmp's first operand 43; a return
+// after the call 43. Compile-only diagnostic: a second identical 0x6d380 call after the first gives retail's
+// whole head (this in EBX, id in EBP, mode and index in EDX), so retail allocated this as if live across a
+// call; the only candidate is the busy-state switch, which retail inlines and ours keeps out of line.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {
