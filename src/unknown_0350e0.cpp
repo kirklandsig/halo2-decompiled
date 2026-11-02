@@ -2317,6 +2317,9 @@ real magnitude3d(vector3f const *v);
 // Round 527: Native real absolute/sine/cosine API subsets 1/2/4/3/5/6/7 and all with separate
 // sine/cosine declarations: 170 each. Original math APIs and complete executable body restored;
 // frame 0x38 agrees, raw-length/dot/angle homes and rotation allocation remain.
+// Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
+// bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
+// Both exact controls survive; original body, math APIs and all rounding/grouping restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2716,6 +2719,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // 1/2/4/3/5/6/7 give 511/520/537/514/530/535/528; all with shared maximum scaling 526.
 // Six-point lead rejected; original flags, helper formals, rate and full body restored.
 // Frame 0x60 versus 0x38, stored velocity reads and loop ownership remain.
+// Round 530: native acceleration vector alone, with shared add, divisor scale, add/divisor,
+// add/normalization, add/maximum, add/divisor/normalization and all scales: 517 each.
+// Caller stays 251; original scalars, helpers, observations and complete body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3538,6 +3544,9 @@ bool __stdcall function_391f0(void *state);
 // Round 527: Two-use previous timestamp/native short frame/single-exit admission subsets
 // 1/2/4/3/5/6/7 give 294/262/251/290/294/262/290; all with double previous time 324.
 // Original time observations, frame carrier, gates and complete body restored; extra frame dword and zero/loop homes remain.
+// Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
+// minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
+// 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
