@@ -576,6 +576,9 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 
 // score 27 (was 281): one byte long; two store-before-push orders (mixbin 7 with the front level, mixbin 10) and a nop remain.
 // Earlier 281 (was 299): Workspace frame/prologue and repeated conversion coalescing remain.
+// Workspace frame/prologue and repeated conversion coalescing remain.
+// Aligned frame 0x144 versus retail 0x94, native zero-temporary copies and repeated conversion coalescing remain.
+// Earlier at 281: Workspace frame/prologue and repeated conversion coalescing remain.
 // Aligned 0x144 frame and zero-temporary/descriptor copies versus retail 0x94; repeated converter coalescing remains.
 // Earlier at 299 (was 328): Workspace frame/prologue and repeated conversion coalescing remain.
 // Workspace frame/prologue and repeated conversion coalescing remain.
@@ -715,6 +718,17 @@ __forceinline void sound_stream_append_mixbin(s_mixbin_settings *settings, long 
 // On that form: sends through add_send with mode 0 27; rear level declared first 27; both levels declared
 // apart 27; a named zero 27; the front level copied at its second send 27; that send on the settings field
 // 293 (1071 B; EBX taken for the settings copy). The remaining byte is a nop before the third SetMixBins call.
+// Round 453: Complete initial-zero sharing between real descriptors, first/second pair roots,
+// first/second/third common roots and three chains: 298/298/303/303/303/303/303/303.
+// Original executable body restored.
+// Round 300: On explicit third sends, direct braced descriptor zeros, subsets 1..7,
+// 295/283/301/302/332/326/343 fast; all at first use 343 (control 297). Second-only confirms 280
+// plain versus 281: one-point gain rejected. Original native value constructors, full zeros, table,
+// helpers, observations and complete body restored; aligned 0x144/0x94 frame and conversion reuse
+// remain.
+// Round 239: On explicit third sends, single static table and first/second phase-owned descriptors,
+// seven subsets 315/289/333/300/336/358/383 fast; all plus both reused levels 432.
+// First phase alone 289 fast (control 297), 312 plain versus 281; frame 0xfc/0x94, original whole initializer restored.
 // @retail 0x2aeb20
 void c_sound_effects::initialize(s_sound_effect_settings *settings, s_sound_effect_buffers *buffers, bool rear)
 {

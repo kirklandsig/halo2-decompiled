@@ -202,8 +202,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 279: Complete independent orthogonalized scalar results before stores in all six
 // producer row orders 188 each; with all three removed products named 188, existing staged
 // cross 208. Scalar frames 0x144, staged cross 0x14c; original helper and full body restored.
+// Round 264: Common completed normalization outputs in ijk/ikj/jik/jki/kij/kji store orders 151/151/151/151/150/150; existing setter 151; early short result 110. Original four-use helper and complete body restored; forward late-k/reciprocal ownership and later magnitude/projection schedules remain.
 // Round 291: up evaluated before forward, returned/pre-call receiver masks and symmetric
 // dot roles, 112/112/153/153/112/112/153/153. Original helper and body restored.
+// Round 222: named rotation member 110; complete matrix receiver in loop/branch/entry
+// 149/149/149; direct forward/up/both consumers 160/169/181; native helper component
+// array on the named-member graph 110. Original private helper and complete body restored.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

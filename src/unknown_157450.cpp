@@ -622,14 +622,23 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // then hoists as retail's); the volatile present declared first 39. Diagnostic: the word form keeps
 // retail's entry but reloads the spilled word at each use (movzx in the compare, `mov esi` dword in
 // the update), where retail reloads it once into ECX at the loop exit with playing in EDX.
+// Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
+// receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
 // Round 39 (fast): the present update written `(1 << team) | present` 32 (same code), on the word mask 77; the
 // word mask with `(flags & 2) == 0` 77, updated in place then stored through the pointer 77; the word mask read and
 // stored straight through globals 129 (375 bytes, either test order, `|=` or the bit-first form), the dword mask
 // read through globals 130 (374 bytes); present not volatile with the tests' operands swapped and direct stores 101
 // (378 bytes). A compile-only screen (48 forms) ranks the non-volatile forms best, but the real build does not
 // follow it here (the LTCG loop keeps present in a register).
+// Round 232: Twice-used team-bit producer with the inherited present qualifier removed, saved
+// team/playing masks in full/word storage: 107/136/72/147 with long team, 108/137/74/148 with
+// signed-byte team. All original observations and qualifiers restored; word-mask head and shared
+// post-loop reload remain.
 // Round 496: Condition-scoped player, complete native iterator initializer and immutable globals
 // receiver, seven nonempty combinations 32 each; all with the word old-mask slot 77. Original body restored.
+// N295: Playing predicate before present-mask publication in bool/byte/short/long storage,
+// with dword old mask 47/47/48/48 and word old mask 87/87/88/88. All exact-only copies
+// restored; word entry storage and the shared post-loop old-mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4068,6 +4077,7 @@ static __forceinline long nonnegative_15ce70(long value)
 // score 456 (was 456): the mode dispatch written as an if/else chain instead of a switch, and the
 // award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
 // attacker parameter is still copied into EDX in the entry block.
+// Earlier score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier at 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
 // Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
 // tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
@@ -4143,6 +4153,7 @@ static __forceinline long nonnegative_15ce70(long value)
 // Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
 // 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
+// Round 264: Independent native first/second/both event entry lifetimes, marker combinations, subtype declaration and direct elapsed publication: 456/455/536/456/455/536/536/536. One-point leads rejected; original event scopes/names, all producers and complete body restored. Extra frame word and attacker/category/NONE homes remain.
 // M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
 // 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
 // first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
@@ -4500,11 +4511,18 @@ void function_15fe20(long team_index, color3f *color);
 // Round 480: Filled team-color output objects, rival/own/both, with native publication
 // 302/552/564; with library copies 302/552/564; overlap-safe publication 423,
 // complete individual palette copies 564. Original body restored; native color transfers remain.
+// Round 232: Native component-aggregate captures at rival team/own team/both/rival palette
+// 624/599/643/553; whole-color byte-copy captures at rival team/own team/both/all outputs
+// 65/405/46/46. One-use values restored without a byte match; native color transfers, NONE reuse
+// and byte shift remain.
 // Round 496: Standard forward color ranges, rival/own/both team/all four publications
 // 563/236/569/588; backward ranges 568/544/567/592. Original aggregate copies and body restored.
 // M283: Native color/palette output initialization subsets 1-7 via aggregates 610/560/626/552/686/620/684;
 // all outputs via memset 671. Original output objects, return-pointer copies and complete body restored;
 // frame 0x48c and early homes agree, but native team-color transfers, sentinel reuse and byte shift residency remain.
+// N295: Native object exchanges at rival/own team/individual palette subsets 1-7,
+// 564/536/561/478/567/539/589; complete standard range exchange 673. All exact-only forms
+// restored; native team-color transfers, shared NONE and shift-count residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5635,11 +5653,19 @@ void __stdcall function_d6bc0(long object_index);
 // Round 266: eight dependency-safe initial tag/preset/rate/scenario declaration orders
 // 233/231/231/233/233/231/231/231. Original input observations and full body restored;
 // frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Round 232: Complete conditional modifier selection with short/short, short/long, signed-
+// byte/short and signed-byte/long kind/modifier carriers 159/144/156/160; branch-defined default
+// selection with the same carriers 159/144/156/160. Frame 0x14/0x18 and the independent timer
+// home remain.
 // Round 496: Countdown value owning both zero scheduling and positive expiry, short/long
 // storage with word/Boolean schedule and short/byte-kind plus word/long modifier:
 // 156/168/169/176/161/172/183/190. Original timer observations and body restored.
 // M283: Retained divisor/scenario/preset lexical spill-home subsets 1-7 score 144 each; all three with the initial tag receiver renamed 144.
 // Original names and body restored; frame 0x14/0x18, independent timer home and entry-base reloads remain.
+// N295: Multiply-used placement-point/object-point/live-radius pointers, subsets 1-7,
+// 144/189/189/239/239/245/245; all with read-only point receivers 245. Original body restored;
+// frame 0x14/0x18, independent timer spill and entry-base reloads remain.
+// Object-point storage recovers frame 0x18 at 189/872 bytes but worsens the register lifetimes.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

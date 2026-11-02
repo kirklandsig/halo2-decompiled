@@ -748,6 +748,12 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // total summed body first, same code. A remaining-count inline helper for both arms 34 (same code); the
 // clamp as `if (size > body_size - body_offset) size = ...` 34 (same code); per-case body_size locals
 // (body case, both cases) 162 (689 bytes); the body test as `body_size > body_offset` 162 (689 bytes).
+// Round 484: native header/body/signature file/read failure ownership, subsets
+// H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
+// Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
+// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
+// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // Lane 12 r72 (fast; 0x2adb10 in brackets): the signature case as `default:` with no `__assume(0)` arm
 // 177 (688 bytes); `parameters->task->state = 4;` ahead of the total 232; the body case's position
 // written at both uses with no local 213; the signature case's likewise 221 (694 bytes); the getter
@@ -760,9 +766,6 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // 221 (694); the body position at both uses 213; the signature case as the switch's `default:` label 177
 // (688). Diagnostic: 1-7 dead long temps leave the code byte-identical (34), so these colour ties do not
 // follow the temp count.
-// Round 41 (lane 13, --fast; 0x2adb10 129 throughout): the task state store ahead of the total 232; the total and its
-// conversion declared before the byte count, `size` declared before `buffer`, `byte *buffer = NULL`, and position
-// declared with buffer/size and assigned later: 34 each (same code). All restored.
 // Round 442: complete output-task/file-handle/signature-handle observations, seven subsets
 // 196/169/177/255/252/245/255; complete graph with conversion after state publication 255.
 // Original handles, observations and body restored; total and seek/size coalescing still differ.
@@ -791,6 +794,24 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 56 (m3 lane 10; compile-only exact here, real --fast in brackets): retail's entry total and signature sum are
+// compiler temporaries (sum into a fresh EDX; body size ECX, header EDX, `lea esi`). The total converted in place (no
+// total local) with the signature position passed to a forceinline (file, position) seek helper gives both: 16 [28];
+// left only the body case, whose body_size load goes straight into size's ESI (retail a temporary ECX), so the
+// signature sum is coalesced again and the head merge carries ESI. Not kept: a new one-caller helper, and the helper
+// at 0x2adb10's five seeks [0x2adb10 308, 956 bytes] or at its signature seek only [315, 960 bytes]. The helper in the
+// body case too 174 (no total local 149, long parameter 174); the position written in place with the equality reversed
+// (signature/body/both) 210/208/212 (the call still runs first and the sum is reloaded); reversed equality on the local
+// 23. On the helper form: remaining set in both arms 22 (copy-propagated, sums header first); one size assignment after
+// the arms (`body ? remaining : MIN`) 148 positional (aligned 9: buffer/size/position as retail, but body_size loaded
+// into size's EDI and the hoist gone); remaining in both arms with `if (body || size > remaining)` 151 (body_size into
+// the temporary ECX, but body_offset loaded first, so no head merge). Random search of 400 forms (helper type and use,
+// total local, total and signature sum orders, bytes placement, six body-arm forms, buffer/size declaration and
+// statement orders, function-scope position, test operand order): none below 16; 250 forms without the helper (adding
+// signature position spellings `p = a; p += b`, function scope, long, const, after the buffers): none below 22.
+// Round 246: Byte/short/bool/word common task results, declared before the request
+// view or after total conversion, 269/264/257/252/269/264/257/252. Original returns
+// and cleanup restored; fresh total EDX and seek/size ESI/EDI allocation remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1016,6 +1037,9 @@ struct s_signed_file_write_parameters
 // ure/header+scratch+signature/header+direct+signature/header+publication+signature/header+scratch+pub
 // lication+signature 129/147/147/147/131/147/147/131. Capacity claim and extension homes remain;
 // original body restored.
+// Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
+// transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
+// minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
 // Lane 12 r72 (fast; 0x2ad7c0 in brackets): the getter returning the buffer with the size through
 // `dword *` 279 (944 bytes) [34]; the extend arm's memset ahead of the offset 301 (948 bytes); the header
 // memset count as `MIN(header_size, buffer_size)` 129 (same code); one function-scope buffer and size for
@@ -1042,6 +1066,9 @@ struct s_signed_file_write_parameters
 // Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
 // transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
 // minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
+// Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
+// success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
+// result, success carriers and body restored; capacity scheduling and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -1711,6 +1711,9 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // the squad read from the iterator 2, the index read first 2; squad declared in the while
 // condition 2; squad index read before the NULL test 2; next index read before the pool in the
 // shared step 2.
+// Round 75 (lane 12, fast): step's index test inverted 80 (392 bytes); the squad index field read at each use 2;
+// search result stored in the iterator's index and tested there 113; distance test as a continue 2;
+// squad index read after the flag test 2.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;

@@ -210,6 +210,12 @@ struct s_24e9c7_bounds
 // scalars with scalar up/back and `0.0f -` 155 (735 bytes); scalar back only 146 (739); no back, negated
 // side terms at the corners 170 (718); side as a point built from across and scaled in place with scalar
 // up/back 139 (742); the half width named and multiplied first 143 (739).
+// Round 493: double size/across-pair/scale precision subsets 169/166/166/189/202/201/201;
+// complete double graph with double returned-height carrier 211. All real carriers restored;
+// early across spill, shifted scalar homes and SSE schedule remain.
+// Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
+// 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
+// geometry, observations and complete body restored; early spill/scalar homes remain.
 // Round 71 (lane 12): a compile-only /FAs screen names each home: a spilled 8-byte point always homes below
 // bitmap_index, a spilled scalar above result (so retail's -0xc/-8 are two scalar homes, -0xc never used, as if
 // two spilled scalars were later merged into one slot), and none of 48 across/side/up/back point-or-scalar shapes
@@ -235,6 +241,12 @@ struct s_24e9c7_bounds
 // across products and scaled in place, `0.0f -`, back scalars, up point 155; same, no back variable, up
 // scalars 153 (732 B); same as the first with unary minus 155; separate across scalars, back scalars, up
 // point 155; in-place side, back point, up scalars 147 (735 B otherwise); all sink the across products.
+// Round 194: a compile-only /FAs frame screen puts an 8-byte side point between the scalars once its
+// address goes to an inline pointer helper (side -0x10, between result -8 and kind -0x14; retail's pair
+// sits above result); with its address taken first (perpendicular then scale helpers) it stays below them.
+// Real (fast), side scaled in place by the half width through a pointer helper 134 (752 bytes), with up
+// and back as scalars 134; side from the negated forward scaled by size and then by the half width 145
+// (755); up scaled through the helper as well 143 (745); back negated through a helper 172 (766).
 // Round 150, each on the early-across form (`size * (0.0f - forward_j)`): side products across-first 138 (739
 // bytes); a named real half width for both side products 134; up computed before the half width 134; up as
 // `0.0f -` products 147 (735); the across pair declared right after size 138.
@@ -244,6 +256,8 @@ struct s_24e9c7_bounds
 // Round 233: y-first coordinate producers upper/side/reverse, each pair and all three
 // 137/125/125/139/137/125/139; all three with early upper displacement 122. Original
 // geometry, observations and complete body restored; early spill/scalar homes remain.
+// Round 342: Across scalars scaled into the actual side displacement, upper/reverse scalar-pair and shared real half-width subsets: 125/125/133/133/123/123/132/132.
+// Original complete body restored; early across spill, shifted scalar homes and SSE schedule remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

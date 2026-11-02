@@ -720,6 +720,8 @@ union s_60403
  long field_00;
 };
 
+// MiniMax I (11-01): no new form, no lower score; the entry's EBX/EBP choice follows which of the
+// two pointers the body weighs more, and no source order I tried flips it.
 // score 149 (was 149): the member's changed test is one condition, so the body has retail's
 // 1497 bytes; what still differs is the current/previous register rotation (retail EBX previous,
 // EBP current), the mapping-loop count homes and the discriminator's carrier (retail: a lone

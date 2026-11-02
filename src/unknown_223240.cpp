@@ -78,10 +78,10 @@ void function_2232a0(void)
 // score 109 (was 109): the tail call still needs 0x2b5d0's own body (it takes the mode
 // in EAX and the count on the stack), which is disabled here and stubbed in src/stubs/lane_k.cpp,
 // a file this lane may not edit: BLOCKED-BY 0x2b5d0.
+// Earlier: one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier at 109: one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier at 109 (was 109): one-dword frame agrees; the count block, the count/layout join and the layout
 // Earlier (109): one-dword frame agrees; the count block, the count/layout join and the layout
-// Earlier: one-dword frame agrees; the count block, the count/layout join and the layout
 // arms now have retail's code: the clamp is the ternary the other player-count clamps use, and the
 // loop counter's zero assigned before the layout test keeps the join from being jump-threaded (with
 // it anywhere later every count-one path threads straight to the layout stores); the slot scan uses
@@ -211,6 +211,9 @@ void function_2232a0(void)
 // Round 81: combined entry/found source clears in do/for traversal 124/120; entry clear with
 // original arms 109/138; entry clear without the empty-arm store 122/158; entry clear without
 // the final null-arm store 123/160. Original source assignments and traversal restored.
+// Round 284: native multi-use options receiver with a complete positive layout result,
+// bool/byte/short/long on the recovered source graph: do 109 each; pretested for 138 each.
+// Original complete body restored; outer pretest, optional-source home and tail transport remain.
 // Round 50 (m3 lane 11, fast; 0x2b5d0 now ours, activated in src/unknown_023540.cpp with the stub removed, all
 // reverted): the disabled body as it is 106 (0x2b5d0 takes mode in EAX, the rest on the stack); without its
 // parameter-address reads 106; its loop as a plain for loop over the views (count not modified) 109, two register

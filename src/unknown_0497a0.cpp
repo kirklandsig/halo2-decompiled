@@ -167,12 +167,14 @@
 // Round 460: Native three-component basis-copy loops v2/v3/v4, subsets 1-7, then all with origin,
 // 688/725/716/714/763/757/777/803. Original copies and body restored; frame 0x58/0x60,
 // shape/basis homes and thirteen excess bytes remain.
-// Round 286: Native library maximum boundaries in first/second/final producer
-// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
-// component-maximum production 771. Original maxima, includes and body restored.
+// Round 259: Entry uninitialized scaled-product/maxima/wave-scalar storage, seven subsets, then all plus the existing truncation carrier
+// 581/581/581/581/581/581/581/581. Original body and producer sites restored.
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 286: Native library maximum boundaries in first/second/final producer
+// masks 1/2/3/4/5/6/7 give 747/760/748/790/800/769/771; all with reversed
+// component-maximum production 771. Original maxima, includes and body restored.
 // Round 211: existing double-factor scaler for complete primary/depth/displacement
 // families and combinations 632/694/699/684/702/682/694; all with both wave scalers 768.
 // The primary/depth pair reaches 2622 bytes at 684, frame 0x64; no frame 0x60 recovery.
@@ -185,6 +187,13 @@
 // Round 480: Native library-copy origin/basis/fallback-axis domains, masks 1/2/4/3/5/6/7,
 // then all with late input copies, 581/581/581/580/581/581/580/580. One-point lead dropped;
 // original body restored; frame 0x58/0x60, shape/basis homes and excess bytes remain.
+// Round 75 (lane 12): retail stores both sines as floats and scales them in SSE (s1's fsin at its definition);
+// ours folds `* 0.03`/`* 0.025` into x87. Only a sine with several uses is stored: the waves per
+// component with the scale product repeated give retail's x87/SSE split but 678 (frame 0x50); with
+// the plain sixth product 664, with the entry shape pointers 624, with both 635. The trig factors (and
+// the 8.2x phase) as named doubles 651; named reals, an inline four-factor helper, sinf/cosf and the
+// global point are forward-substituted (compile-only screens). Retail keeps the factors on the x87
+// stack (fmul st(1)/st(2), fadd st(3), three late pops), order 8.2x, sin x, cos 7.8y, cos 7.75y.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
