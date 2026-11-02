@@ -232,6 +232,7 @@ void __stdcall function_1160c0(real dt)
 	}
 }
 
+// MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
 // score 179 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;

@@ -10,6 +10,7 @@ struct s_visibility_bound_record
     byte padding[3];
 };
 
+// MiniMax S (11-01): the entry address and the flags load keep the first difference at +0x10; no lower score.
 // score 406 (was 406): Frame 0x74a4 and list strides agree; entry/table and plane homes remain.
 // Earlier: frame/list strides and entry/table/plane homes differed.
 // Earlier: Frame 0x7494 versus 0x74a4; list strides, entry/table and plane homes differ.
