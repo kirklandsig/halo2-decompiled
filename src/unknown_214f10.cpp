@@ -284,6 +284,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
 // Handle ECX and stored-success memory test remain; original task values, waits, completion
 // qualifier and complete executable body restored.
+// N303: Native file/success operation result, both member orders at iteration/completed-open
+// scope: wide admission 48/48/48/48, published-byte admission 54/54/54/54. Exact-only
+// grouped results restored; handle ECX and success-byte memory test remain.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

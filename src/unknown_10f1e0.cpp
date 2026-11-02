@@ -3172,6 +3172,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // round, so the class return (frame 0x38) waits for the next round. The overlay test through the file's
 // channel-validity helper 44 (same code); the `type < 3` test as its own enclosing if 44; the force decisions
 // as an else-if ladder 44; play flags as a ternary 99; the selected mode as a ternary 205.
+// N303: Disjoint action/channel scratch unions, byte/word/dword at entry/set/paired scopes,
+// 17 each: frame 0x38 recovered, action still in channel scratch (exact-only). Native
+// two-byte/word decision records with byte-order and constant-init point/order combinations
+// 134/135/240/238/134/135/238/240. All grouped storage restored; original action/flag homes remain.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
