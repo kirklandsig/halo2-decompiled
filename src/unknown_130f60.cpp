@@ -304,6 +304,13 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // 344/343/337/326/344/343/341; all with a distinct normalized weight 421
 // (fast control 336). Color/scalar alone is 333 plain, 1877/1892; rejected.
 // Original complete helper and body restored; ESI/unit/reciprocal scheduling remains.
+// Round 77 (m3 lane 12, fast control 336, full 324): a three-caller reset helper (memset, then
+// `remaining = 1.0f`) for the entry clears 336 (same code: 1.0 stays in XMM5); third remaining read
+// before the first/second product 336; each loop weight named before its accumulate call 337;
+// the accumulate helper as plain `inline` 336, with the named weights 337. Original body restored.
+// Y522: Existing accumulator member/color-input capture/normalized-weight ownership, seven subsets
+// 350/616/596/421/420/685/685; complete overlap-safe color capture 1067 (fast control 336, full 324).
+// Original free accumulation helper, record layout and complete body restored; ESI/unit scheduling remains.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

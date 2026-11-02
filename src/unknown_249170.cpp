@@ -164,6 +164,10 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // then scaled into azimuth 2 (same code); assigned from the draw then `*=` 16 (the tail's first scale row
 // turns into movaps/mulss-from-memory, the swap stays); sine and radius declared at the top of case 1, either
 // order, 2/2 (same code). Body restored.
+// Round 56 (lane 11, fast; aligned where noted): on the case 1 fsin/xorps swap, a const zero local for both stores 24
+// (2352 bytes); integer zero literals 2 (same code); `velocity.i = position.x = 0.f` chained 4; a named cosine beside
+// the sine 24 (2352 bytes); position.x stored first and read back into velocity.i 4; no sine local 286 (aligned 13: the
+// swap stays and cases 6 and 7 move). Only the first fld after the radius call stays unfilled in retail's cases 1 and 4.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
