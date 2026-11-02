@@ -3897,6 +3897,10 @@ extern byte g_5107ee;
 // the middle point 41 (kept); copy after the memset 39 (retail stores two words before it, not kept);
 // dot declared where computed 41; dot3f(normal, facing) / dot3f(facing, normal) 45/45; a pointer to
 // effect_markers[6] 41; the reflection through vector3f_assign 41.
+// Round 90: incoming/normal/bounce pointers 45; incoming+normal 45; bounce alone 41;
+// sequential dot with component midpoint stores 165 (frame 0x8bc), with the whole copy 47;
+// reflection-order pointers 45, also before the vector providers 45; point setter 154
+// (frame 0x8bc); normal pointer 43; incoming pointer 45. Original executable body restored.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

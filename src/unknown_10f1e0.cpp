@@ -3226,6 +3226,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // 17 each: frame 0x38 recovered, action still in channel scratch (exact-only). Native
 // two-byte/word decision records with byte-order and constant-init point/order combinations
 // 134/135/240/238/134/135/238/240. All grouped storage restored; original action/flag homes remain.
+// Round 90: one-short array with returned query 44; two-short output first/second 39 each
+// (action in channel scratch; NOT kept: under eight and wrong frame); scalar/one-short local
+// comparisons 60 each; set-scoped scalar 44; set-scoped second-short output 39, with the
+// predicate declarations swapped 39. Original executable body restored.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
