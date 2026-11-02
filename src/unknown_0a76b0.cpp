@@ -1377,6 +1377,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
+// direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
+// extra frame word, second entry lookup and hand transport remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
