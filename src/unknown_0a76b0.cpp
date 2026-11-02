@@ -877,6 +877,10 @@ extern vector3f *g_4687b0;
 // scaled aim blend retained. The direct random-call producer removes the one-use
 // scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
 // Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
+// Round 326: Remaining tag-pointer/released-index/saved-type lexical roles,
+// seven subsets, then all with the uninitialized type declaration before the
+// released index: 309 each. All capture points fixed; original complete body
+// restored. Definition/index/type/direction homes and offset/SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -4364,6 +4368,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
 // Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
 // 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
+// Round 326: Actual away/left/world entry declaration lifetimes, seven subsets,
+// then all with the actual entry frame: 175 each. All producer points unchanged;
+// original declarations and native output restored; frame 0x110 versus 0x11c remains.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

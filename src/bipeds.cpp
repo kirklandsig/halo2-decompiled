@@ -2667,6 +2667,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // 529/547. Common exit 527/509, with signed view 527/508 (redundant result stores,
 // restored). Deduplicated exits 531; per-path result 591; false-default/result-first
 // 542/542. Original complete body, owning field and helper declarations restored.
+// Round 326: Existing complete centroid/direction/fallback scale producers,
+// seven subsets, then all with the per-body impulse scale before lift: 530 each.
+// Original component producers and body restored; frame 0x44 versus 0x4c,
+// result byte, state width and centroid/impulse homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3216,6 +3220,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
 // subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
 // Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
+// Round 326: Cached scale/shared scale producer/branch-owned scaled point in
+// the existing pivot helper, subsets 1-7: 369/369/369/366/367/367/367; all with
+// the native point declaration first 367. Two-point lead rejected; original
+// alias-safe helper and body restored. Matrix/origin and paired pivot homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
