@@ -762,6 +762,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
 // and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
 // output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
+// M297: Completed direction workspace reused for the first product, direct/staged; prior-up
+// workspace reused with the existing staged producers; direct forward normalization with
+// direct/staged/k-first first products and prior-up reuse [49, 45, 63, 56, 360, 360, 360, 364]. Original workspaces restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

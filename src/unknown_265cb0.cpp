@@ -1920,6 +1920,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 // through a function pointer for the relative vector (diagnostic) did not change that (487).
 // Round 295: all-axis normalized direction scalars before contact or velocity normalization,
 // mutable/const and forward/reverse declaration orders, each 194. Original consumers restored.
+// M297: Complete product terms named uniformly in all three scoring dots, six
+// declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

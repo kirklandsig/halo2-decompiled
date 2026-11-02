@@ -1115,6 +1115,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
 // Round 295: positive perception/unit creation producers and both, each 253; with settings
 // admission each 253; both/all with conditional squad bit 337. Original failure exits restored.
+// M297: Without the redundant squad-index gate, inner/outer substitution outputs,
+// retained/omitted overwritten enabled default and guarded/conditional replacement
+// [384, 382, 384, 382, 395, 380, 395, 380]. Original gate, defaults and lifetimes restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1788,6 +1791,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
 // Round 295: per-use unit receiver, first phase 306; second 254; both 315; private queries 330;
 // first/private 360; second/private 337; all 372; all with long ordinal 361 (fast). All restored.
+// M297: Current-only/secondary-only default-result, failure-exit and complete
+// branch-result producers, then mixed default/failure and failure/default
+// [279, 251, 251, 251, 251, 251, 278, 278]. Both original private queries restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

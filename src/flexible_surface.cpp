@@ -687,6 +687,9 @@ void function_117dd0(long index, vector3f *wind)
 // Round 339: Native acceleration aggregate, paired weighted-point aggregates and uniform vertex-count
 // observation, seven subsets 187/265/265/2540/2692/2248/2373; all with CRT wind transfer 2373.
 // Original producers/counts restored; frame agrees, preheader and vector scheduling remain.
+// M297: Actual current/history/both point-field workspaces, then each with shared
+// symmetric scaling, current with early weights, both/scales with early weights
+// [174, 221, 235, 174, 222, 207, 174, 207]. Original private point workspaces and publication restored.
 // @retail 0x118140
 void function_118140(long index)
 {
