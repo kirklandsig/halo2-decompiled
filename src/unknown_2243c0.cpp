@@ -356,6 +356,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 495: Native standard predicate search with signed/unsigned result, cache-zero
 // boundary and fallback-mask combinations 199/199/203/203/211/211/210/210. Original body
 // restored; fallback normalization and stage/pass homes remain.
+// Round 231: On the saved-EDI entry graph, repeated shader input with grouped zeros/late
+// mask/reused stage-pass subsets 146/168/162/164/146/168/162/164. Late-mask forms lose the
+// matched wrapper; all restored. Fallback masking and stage/pass homes remain.
 // Round 277: standard find with original/final zeros and word/masked fallback 132/155/136/153;
 // standard equality-predicate search on the same four graphs 199/211/203/210. Original body restored.
 // Round 193 (lane 3, fast; control 117): the flags read at each use (in the call's mask and the cache
