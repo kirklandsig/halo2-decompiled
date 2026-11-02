@@ -856,6 +856,11 @@ __forceinline long vehicle_round(real value)
 // angular output as axis workspace 30, with byte mode 174. Post-reader mode
 // byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
 // direct/staged before rate clamp 194/194, after clamp 223/223.
+// Round 134 (lane 6), at 8: a pointer-returning cross helper at both crosses 8; the file's own vehicle_cross at both
+// crosses 8; the positive test with the clears in an else 12; a two-level nested test with the clears under
+// `if (!result)` 12; the pointer-returning cross with the angular scale after the projection 33. Compile-only screen
+// (exact for these products): the pointer-returning or file cross at either cross alone, the angular scale after the
+// projection, `v * s` scale helpers and `up.k <= 0.9f` keep all four flips.
 // @retail 0xef870
 bool function_ef870(long vehicle_index)
 {
@@ -2490,6 +2495,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
+// Round 134 (lane 6), at 10: the wrap helper's ternary as if/else 54 (993 bytes); the loop counter declared in
+// the for statement 10; the gear arm as `torque = 0.0f; if (gear != NONE) torque = ...;` (0xf1cd0's shape) 198
+// (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
+// test as `*spin < 0.0f` 10. A compile-only (no /GL) listing shares torque with the throttle as retail does and
+// homes the loop offset in a parameter slot, so it does not reproduce the LTCG frame.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

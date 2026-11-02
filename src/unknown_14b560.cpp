@@ -1079,6 +1079,11 @@ bool function_14ed80(void)
 // player 49-50, the rest 8-9; no globals local (the global read at each use) 53 (first then takes
 // EDX, the globals EDI); index declared first 8, after the outputs 8; the third-person field assigned
 // first 9; renaming the globals or first local 8 (names do not steer it).
+// Round 135: no globals local with the player declared first 10 (first takes EDX as retail, the
+// globals EDI, their load after the NONE stores); third first 52; 30 orders x reads through a local
+// or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
+// 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
+// index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1646,6 +1651,8 @@ struct s_unit_player_assignment
 // at each use 17; both together 17; the outer comparison's operands swapped 18; the remap as one
 // conditional expression 17; the unit pointer declared before the player 17. Matched 0x14f190
 // makes the same 0x1682bf call with our schedule.
+// Round 135: `inline` on 0xb58c0, 0x1872d0, 0x1682bf, 0x13ac42, all four: 17, 17, 17, 17, 17; the
+// existing remap helper directly in the 0x1682bf argument list 17, through a local 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
