@@ -791,6 +791,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 246: Byte/short/bool/word common task results, declared before the request
+// view or after total conversion, 269/264/257/252/269/264/257/252. Original returns
+// and cleanup restored; fresh total EDX and seek/size ESI/EDI allocation remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1042,6 +1045,9 @@ struct s_signed_file_write_parameters
 // Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
 // transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
 // minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
+// Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
+// success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
+// result, success carriers and body restored; capacity scheduling and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
