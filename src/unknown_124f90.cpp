@@ -2145,57 +2145,17 @@ void sound_update_locations(void)
 	}
 }
 
+/* moves an angle toward a target, by at most maximum */
+static inline void approach_angle(real *angle, real target, real maximum)
+{
+	real delta = target - *angle;
+
+	approach_126660(angle, delta, maximum);
+}
+
 /* moves the sound system's two environments toward the two requested:
    each request takes the slot already holding it or a faded-out one and
    fades it in over its transition time; slots no request takes fade out */
-// MiniMax R (11-01): a 99-second permuter run over the three step adds finds nothing below 13.
-// score 13 (was 13): retail adds the clamped unknown14 step in place and the fade-in step through a
-// copy register; ours does the opposite, so the two sites trade xmm1 and xmm2.
-// Earlier, at 14 (from 17): retail adds the clamped unknown18 step through a copy
-// register and adds the clamped unknown14 step in place; ours does the
-// opposite, so the two sites trade xmm1 and xmm2.
-// Round 29: target-first helper on the first three/four clamps 33/33; forceinline 33;
-// third clamp only 130; symmetric bounds 106; value-first 122; both fades 96;
-// clamp-first addition 33; named delta 104; target pointer 99. Original restored.
-// Round 39: the third/fourth add forms follow position, not spelling: written third, the helper,
-// `+=`, `x = x + PIN` and `x = PIN + x` all add in place (the two swapped: 19, now in retail's
-// add forms but stores 14/18 reversed). Fourth through the helper adds in place as retail but
-// lengthens the rest (102). Both helper 133; both `+=` 34; `x = PIN + x` forms 34/34/17; named
-// `0 - step` bound 140/119, with a named `0 - maximum` 152; a target-taking helper (delta inside)
-// at the third 126/87, also on the first two 134; all 27 helper/`+=`/target combinations of the
-// third, fourth and fade 34-136.
-// Round 33 (lane 13; LTCG harness, base 17 = 17): the add forms follow the whole function's IL, not the
-// line: the first loop's step without its transition-time local 75 (third add now a copy as retail,
-// fourth still a copy, 188 instructions), the same in the fade-out loop alone 75 or both 75; on it the
-// fourth through the helper 94, as `PIN + x` / `x + PIN` 75/75, the third as `+=` 29, the fade through
-// the helper 94, third and fourth swapped 16. Fade test inverted (`fade > 0.001f` first) 138; the
-// environment pointer declared first 106; a const environment pointer 17; `used` initialised in its
-// declaration 17; the slot declared at function scope 75; the fade-out loop as a for 112-117. All 255
-// combinations of helper or `+=` on each of the six adds with or without each loop's transition-time
-// local: best 14 (first loop's step without the local, third as `+=`, fourth through the helper: third
-// in place, fourth a copy); retail's third/fourth forms appear only with the first two adds or the
-// fade-out add flipped and the 1.0 no longer hoisted (122).
-// Round 34 (lane 13, real check): kept the round-33 screen's best: the first loop's step without its
-// transition-time local, the unknown18 add as `+=` and the unknown14 add through the helper, 17 -> 14
-// (left: the unknown18 add is in place and the unknown14 add goes through a copy, retail the reverse).
-// Lane 18 round 14: approach_126660 takes (value, delta, maximum) and forms the lower bound after the
-// delta (every caller passed `0 - x, x`; 0x1269f0 matched with it). With the round-34 mix 29; all 64
-// helper/`+=` choices for the six adds screened (LTCG probe): all six through the helper 13 (kept, plain),
-// helper except the second loop's fade 13, unknown10/fade-in/fade-out as `+=` 14; none of the other 60 below 14.
-// J223: one receiver 176; elapsed read once 198; both 198; scalar bitmap 243;
-// bitmap with receiver/elapsed/both 245/228/228 (fast previews).
-// Lane 18 round 16 (one-link LTCG env, exact 13; fast): the existing bit_vector_test/bit_vector_set 13; early
-// `continue` for a NONE request and for no free slot 13; the unknown14 add as `+= PIN_126660` 77 (the fade-in add
-// then copies as retail, unknown14 still copies; the unknown18, unknown14 or fade-in add alone as `+=`, `x = x + PIN`
-// or `x = PIN + x` all give that code); `maximum` computed beside `step` 33; unknown10/fade-in/fade-out as `+=` with
-// the fade-out reading SOUND_SYSTEM and the search index declared in its for 14. Env only: any local renamed (same
-// code); the environment pointer before `step` 103; unknown14 before unknown18 19; a 700-form screen (helper or `+=`
-// per add, maximum local, fade-out locals, inverted fade test, transition-time local, continues, index scope) never
-// below 13: the three step adds come out copy/copy/in-place, in-place/copy/copy or copy/copy/copy, never retail's
-// copy/in-place/copy. Permuter (600 s, 63 tries) none below 13.
-// Round 111: candidate-environment cursor 13; fade-out environment cursor 25 (627 bytes), both cursors 25;
-// direct fade-out globals 111; direct request-element accesses 204 (641 bytes); unsigned selected slot 14
-// (only its bit-vector shift changes); fade-out environment declared after step 13; unsigned request counter 13.
 // @retail 0x126660
 void sound_environments_update(s_sound_environment const *requests)
 {
@@ -2239,8 +2199,8 @@ void sound_environments_update(s_sound_environment const *requests)
 				{
 					real maximum = step * k_pi;
 
-					approach_126660(&environment->unknown0c, request->unknown0c - environment->unknown0c, maximum);
-					approach_126660(&environment->unknown10, request->unknown10 - environment->unknown10, maximum);
+					approach_angle(&environment->unknown0c, request->unknown0c, maximum);
+					approach_angle(&environment->unknown10, request->unknown10, maximum);
 				}
 				approach_126660(&environment->unknown18, request->unknown18 - environment->unknown18, step);
 				approach_126660(&environment->unknown14, request->unknown14 - environment->unknown14, step);

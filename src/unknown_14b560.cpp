@@ -3052,6 +3052,14 @@ struct s_unit_flags_14d8b0
 // Round 145: one forceinline engine-slot notify helper for both slot blocks 9; root walk as a while
 // loop from NONE 9, as a do/while 9; reset countdown through a short pointer 9; both slot blocks reading
 // the engine globals directly 9 (all the same code: mode pointer EDX, retail ECX).
+// Round 39 (lane 2, fast): an inline `mode != 4` helper at the last test, all four tests, the last two 9/9/9; an inline
+// options-pointer helper at the last test, all four 9/9. Diagnostics (reverted): the two countdowns removed, one, three,
+// swapped 171/153/132/13; the slot block removed 393; the slot written without its local 9; the root walk removed 142;
+// the 0x1521d0 call removed 132; the flag store after the slot block 16; the first mode test removed 163; a named options
+// pointer at the second test, the first, the join 9/9/9; a byte mode local 9. Deleting any statement (compile-only: every
+// statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
+// One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
+// scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
