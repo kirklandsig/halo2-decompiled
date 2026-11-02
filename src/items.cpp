@@ -1558,6 +1558,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // P261: shared contact/event point at entry/active scope 137/137 (three-point gain, rejected);
 // with sentinel before/after point query 157/160 in either scope; separate points with
 // sentinel before/after 160/161. Paired setters, spin capture and complete body restored.
+// P264: constant accumulator before object acquisition, bool/byte/short/long
+// 143/144/160/160; between object/tag acquisition 143/144/160/160.
+// Original result lifetime, paired point setters, two-use spin and body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -641,6 +641,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // the `||` form 64. Aligned, those differ from retail by one instruction: `cmp [esp+0x30], eax` where retail reloads a
 // spilled value (`mov ecx, [esp+0x30]; cmp ecx, eax`). A named copy of the reference 65. Lead: retail's order with a
 // spilled (not address-taken) first result.
+// P264: whole/header-team best publication via memcpy/memmove, native candidate
+// 67/83/79/95; default-built memmove candidate 185/173/197/186.
+// Native copies, original candidate lifetime, queries and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
