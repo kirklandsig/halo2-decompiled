@@ -1614,6 +1614,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH round 266: indexed coordinate reduction, long/short/word/byte axis crossed with
 // double/real root carriers: 611/609/630/630/630/630/630/630, all 1332 bytes.
 // New reduction storage fails the movement/reset/material-call graph; original arithmetic restored.
+// Round 256: all three named dot products in the existing shared helper, six producer
+// orders 227 each; first/last orders with real movement 228/228. Original helper,
+// magnitude and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
