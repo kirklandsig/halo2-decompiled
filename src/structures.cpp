@@ -385,6 +385,10 @@ static __forceinline bool structure_bsp_collision_available()
 // Round 300: Complete positive/rejection availability with common result exit and native
 // short/long object policy, default/type-arm and conditional producers:
 // 95/95/97/97/95/95/97/97. Original complete body restored; exclusion BL and source-slot join remain.
+// Round 519: Complete native collision-input assignment/memcpy/memmove after admission
+// 156/156/154; after triangle resets 156/156/154; early assignment/memcpy with byte
+// acceptance 156/156. Assignment/copy forms lose the matched caller; all restored.
+// Exclusion BL and source-slot publication/reload remain.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1064,6 +1068,10 @@ done:
 // Round 300: Complete positive-admission/done-exit availability graphs with native short/long
 // policy merges, default/type-arm and conditional producers:
 // 136/136/147/147/136/136/147/147. Original complete body restored; exclusion/result/NONE and direction homes remain.
+// Round 519: Complete direction value shared by both probes and retry advance,
+// admitted/per-pass samples with original eligibility 177/165; positive eligibility
+// 177/165; existing availability producer 142/147; both changes 142/147.
+// All lose the matched caller; original direction observations and complete body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

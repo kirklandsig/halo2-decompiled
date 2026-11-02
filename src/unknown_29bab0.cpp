@@ -193,6 +193,24 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // setter, real absolute API and single normalizer exit combinations
 // 812/813/815/817/768/829/768/829. Original input access, helper and body restored; early
 // input/heading and normalization homes remain.
+// Round 29 (lane 17; register-masked aligned difference 156 -> 122, 3499 bytes). Kept, all retail's shapes: the first clamp as MIN
+// of the expression (retail evaluates it twice), normalize3d(), planar struct copies, a named blend complement, one test for the
+// two false dot/range exits, the float sqrt(1 - g*g). Fast, from the old body: the volatile parameter
+// read at each use 824 (3516 bytes), with normalize3d 766 (3502), with the planar copies too 760 (3479), planar copies alone 807; MIN
+// at both clamps 922 (3589; masked 140), first only 859 (3537), second only 861 (3547); on normalize3d and the planar copies, MIN
+// at both 838 (3553; masked 118), first only 727 (3509), second only 780 (3519), with the float sqrt 785/788. Grid of those plus the
+// single radial test: 63 forms 727..., best without MIN 767 (normalize3d, float sqrt). On the 727 form: dots named before the inverse
+// 771 (3503), with the named blend 720 (3504; call results in one-use locals, not kept), named blend 768 (3500; masked 112), complement
+// only 768 (3503), i and j stored before the second clamp's test 791 (3518), with the named dots 784; single radial test through
+// magnitude2d or sqrt 818/818 (3474, frame 0x8c: retail's shape but its x87 squares need two more slots), with one false test 827;
+// direct input 714 (3499, frame 0x8c: the input moves to EAX, not retail's stack argument, so the reference stays), with one false
+// test 743, float sqrt 770, both 720, named dots only 768, named blend only 712, neither 721. One false test alone 742, float sqrt
+// alone 785, both 719, with a named factor and complement 718 (masked 114; the factor copy beside a direct read of the field is a
+// mix, not kept), with the complement only 716 (kept).
+// On the kept body: MIN at both clamps 771 (3546 bytes; masked 109), as retail evaluates both; at neither 817 (3461; masked 127).
+// The two clamps differ only because of those scores: the second still needs its MIN once other bytes fall.
+// Not kept at review (11-02): the set needs MIN at the first of two identical clamps only, chosen by score (a mix);
+// no consistent form beats 750 (on that body MIN at both 771, at neither 817), so the body is restored at 750.
 // DH282: Complete double squared-magnitude producer with repeated component inputs, all square parts and
 // single-result completion, seven nonempty subsets then all with k/j/i component declaration priority [750,
 // 750, 805, 798, 798, 798, 801, 801]. Original executable body restored.

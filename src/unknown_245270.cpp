@@ -536,9 +536,19 @@ void function_245400(s_source_245400 const *source, long index,
 // and coordinate-before-translation subsets 209/209/209/209; one scale observation
 // 213/213/213/213, also raising matched helper user 0x245400 to 44. Complete helper
 // and body restored; frame 0x24/0x2c, matrix lifetime and independent side homes remain.
+// Round 467: Existing point helper consumed by explicit destination/final conditional selection,
+// phase/entry point storage and point production after/before direction: 209/211/209/211/210/209/210/209.
+// Frame and independent side homes remain; original helper and complete body restored.
 // Round 355: native paired index/side fields at the actual material record, complete
 // first/second material values and existing staged-cross subsets: 210/231/228/229/210/231/228/229.
 // Original record and body restored; frame/table/matrix and independent side homes remain.
+// Round 59 (m3 lane 10, fast): the matrix in EBP from entry is what keeps retail's shape away. The matrix block under one
+// more folded test (the material test again) 209, under two 404 (588 bytes: the two transforms go out of line and EBP goes to
+// the material table); force-inlined transforms at no / two / three / four extra tests 209 each (still EBP). Diagnostic, removed
+// at once: a volatile read of the matrix at its test 209 (EBX plane table, borrowed EBP, later saves as retail, frame still
+// 0x24, sides still folded, so a volatile cast alone would not match and is not allowed). A local copy at the block 213, a read through its
+// address 213 (both still EBP from entry). The rotation through a `matrix3x3` local 208, axis pointer locals 208, axis pointers
+// as a helper's parameters 208 (one instruction, not kept); a scale local 209; `arg_2 != NULL` 209.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

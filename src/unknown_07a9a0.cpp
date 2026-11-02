@@ -1350,6 +1350,11 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // complete body restored; frame/session/lookup remain.
 // M299: Native short identity/player/group induction subsets
 // [871, 863, 865, 873, 881, 886, 885], all word 885. Original long counters restored.
+// Round 136 (m3 lane 6, fast): the loop's variant check through the existing 0x192db0 876 (2768 B; that call stays
+// out of line); through 0x192e60 857; 0x192e60's own body calling 0x192db0 766 (same code everywhere); 0x192e60 as
+// a ternary or as if/else with no default 908 (60 B, and 0x63220/0x73ca0 then inline it, 112/140). LTCG's inline
+// choice follows 0x192e60's compiled size, so retail's out-of-line top call has to come from this function's side.
+// Also round 136: `bool result = true;` declared first 766 (same code).
 // M302: Independent all/eligible phase cells byte/word, word/byte, byte/byte,
 // byte/dword, each aggregate/library first clear: 823/830/816/826/831/839/835/850.
 // Original word workspace and both populations restored; frame/session/lookup remain.
