@@ -908,7 +908,7 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // MiniMax R (11-01): no new form, no lower score; retail keeps the excluded-XUID cursor in EDI
 // and passes it to 0x63d00 in EDX, while our LTCG keeps the cursor in EDX and passes it in ECX,
 // so the difference is still 0x63d00's parameter order and clobber set in another lane's file.
-// score 81 (was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
+// Earlier (81, was 81): this round: the listing was re-read only. Retail keeps the excluded-XUID
 // BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
 // BLOCKED-BY 0x63d00's LTCG register information. Retail's 21 calls of 0x63d00 (a leaf
 // that never writes EDX) all reload EDX, as for a callee built without LTCG; ours keeps the exclusion cursor in
@@ -997,6 +997,10 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // alone in a `/O2 /Ob1 /Gr /GL-` file it still matches, and this function reaches retail's length (121 at 462
 // bytes; with the if-set exclusion 66 at 458 bytes, without the volatile message read 148), while 0x1a460f and
 // 0x1a4692 move 0 -> 7 and 0x19ad39 0 -> 41 (fast). A flags decision for the user.
+// Round 284: receiver after eligibility, with player/name/payload ownership subsets, 134 each
+// (eight forms); added-count home becomes +0x68 but sender/cursor allocation still differs.
+// Complete positive exclusion predicate bool/byte/short/long 127/127/128/132;
+// with the eligibility-bound receiver 140/140/144/142. Original body restored.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1515,7 +1519,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
 // pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
 // the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
-// score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
+// Earlier score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
@@ -1599,6 +1603,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // Round 326: accepted-work/whole-function task-handle snapshots with original counts 220/220,
 // friend-first counts 239/227, counts after user copy 229/229, both count forms 239/229.
 // Complete original body restored; count homes, early retention and membership reloads remain.
+// Round 301: equality consumer/provider/both inline 117/195/195; force-inline
+// 117/297/297; ordinary inline with friend-first counts / symmetric equality roles
+// 200/192. All provider metadata and complete body restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

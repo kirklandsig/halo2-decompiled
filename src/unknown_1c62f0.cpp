@@ -779,6 +779,23 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // DH round 266: writable incoming frame with delayed variant identity, limit-after-clamp
 // and chained event clears, eight subsets 130/129/130/130/134/133/134/134 (525 bytes).
 // All three matched callers stay exact; original frame transport and callback observations restored.
+// Round 136 (m3 lane 5, fast with 0x1c68c0/0x1c6920/0x1cb710 and callees, plain confirmed): flags word read into a local for
+// the two loop tests, tested as a mask 85 (531 bytes, aligned 16 -> 9: the third dispatch's rotation is gone, part of the
+// gain is the length coming into line; not kept at review: retail tests flag 1 as `mov dl, al; shr dl, 1; test dl, 1`, which
+// the mask drops, so the 8 points are a trade, not retail's form; the byte shift forms below also give 85). Loop position in its own local 93; end test as a named bool 93; variant through its
+// own local stored to the identity after the rate 94 (537). On the flags local: `(bool)((flags >> 1) & 1)` 93 (535: shr/test
+// as retail, third dispatch rotated again), with the variant local 94; plain pointer at all reads 136, with the variant 137;
+// plain parameter 128 (callers 16/8/19), with the variant 129; a temp for the re-fetched animation 93; chained identity
+// store 93; `next_frame -=`/`+=` 93; named bit bool 93; low byte local `>> 1` 85; `(bool)((byte)flags >> 1 & 1)` 85; the bit
+// field with the local for 0x20 93; dword local 93; short local 93; byte-cast shifts 93/93; `(bool)((dword)flags >> 1 & 1)`
+// 93; `(flags & 2) >> 1` 93; byte local 86/86; long local 93; rate test through a word local 93, through the flags local on
+// the shift form 93; loop frame local 93; restart bool 93; nested restart tests 93; flags read before the events merge 94.
+// On the mask form: variant local 90 (532, aligned 8); plain pointer 124 (532); plain first read with volatile second and
+// third 85 (same); rate test through the flags local 81 (531, aligned 12: no re-read where retail re-reads after the call,
+// not kept); parameter at the first read 124.
+// Round 256: named wrapped-frame subtraction, producer/declaration and conversion
+// orders, real carrier 93/93/93/93; double carrier 91/91/91/91 (531 bytes,
+// two-point gain rejected, precision exact-only). Original complete body restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

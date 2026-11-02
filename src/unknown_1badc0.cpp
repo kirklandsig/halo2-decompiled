@@ -207,6 +207,9 @@ real normalize2d(point2f *arg_0);
 // Round 451: Existing state-spill declaration at entry/after actor/near entry/after input,
 // with captured/direct global receiver: 211/211/211/211/211/211/211/211. Original declaration, receiver, stores and full body restored;
 // output EBP and point/vector homes remain.
+// Round 463: optional adjusted result at the geometry join, positive/complementary
+// bool/byte/short/long carriers 236/236/238/237/236/236/235/236; exact-match-only flags.
+// Original direct optional stores and complete executable body restored.
 // Round 120 (fast with the callees and the three matched callers, all still matching): `return false`
 // moved to the end under an if/else 211 (same code); a single-exit bool result (false by default, set
 // true in the found arm and at the end of the far path) 249 (1005 bytes: the output pointer then stays in
@@ -216,6 +219,17 @@ real normalize2d(point2f *arg_0);
 // difference 240 (1034 bytes, aligned 114); the to-center vector initialised from the input and
 // differenced in place 240 (1034 bytes, aligned 115). Lead: the single-exit result plus a fix for the
 // center/vector scheduling (retail copies the input a second time into +0x28 and differences in place).
+// DL237: Existing complete planar setters at first/second perpendicular construction and
+// sign-selection boundaries, masks 1/2/3/4/8/12/15/5: 262/226/296/249/247/236/323/278. All
+// restored; output EBP and point/perpendicular homes remain.
+// Round 465: ordered native squared-length fold, long/short/signed-byte/int
+// ordinals, original/joined optional-index guard: 267/237/237/267/284/236/236/284.
+// Joined guards change the convention and lose three caller matches. Original sum,
+// guard and complete body restored; output EBP and point/vector homes remain.
+// Round 518: common completion initialized from direct-output mode, entry
+// bool/byte/short/long results 270/250/256/251; after actor lookup
+// 270/254/225/229. Original body restored; caller conventions regress, and
+// output EBX/EBP, native point/vector homes and shared false exit remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

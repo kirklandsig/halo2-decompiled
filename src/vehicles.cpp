@@ -860,6 +860,10 @@ __forceinline long vehicle_round(real value)
 // angular output as axis workspace 30, with byte mode 174. Post-reader mode
 // byte/staged-side/short/long 10/19/38/31 (partial observations, exact-only). One common cross
 // direct/staged before rate clamp 194/194, after clamp 223/223.
+// Round 80: side cross from the axis copy 113 (731 bytes); scale coefficient from axis.k 51;
+// the two-flip form with axis.k 57, with the side cross from axis 116 (730), with both 124 (728);
+// projection through axis then copied back 73 (775), on the two-flip form 72 (775), with the
+// velocity call selecting its output 157 (795). Restored.
 // Round 134 (lane 6), at 8: a pointer-returning cross helper at both crosses 8; the file's own vehicle_cross at both
 // crosses 8; the positive test with the clears in an else 12; a two-level nested test with the clears under
 // `if (!result)` 12; the pointer-returning cross with the angular scale after the projection 33. Compile-only screen
@@ -2345,6 +2349,7 @@ PRIVATE inline real vehicle_wheel_spin(real spin, real const *period)
 // Round 250: complete paired side-torque stages, named turn parts and named drive products 101 each;
 // gear-only scope alone and with each producer 101; scoped contact ordinal with stages/gear 101.
 // Original body and spin helper restored; NONE edge, zero/product carriers and spin staging remain.
+// Round 319: Per-contact selected torque result right-default/left-default/branch/conditional 101/101/101/101; each with NONE-first gear 127/127/127/127. Original complete body restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2515,6 +2520,11 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // renamed 10 (identical); the period as one named pointer for both wraps 65; the contact and
 // contact-definition pointers declared at function scope 10; throttle declared with the other locals 10; the
 // rotation declared in each steering branch 186 (frame 0x40).
+// Round 81: contact-definition/contact/both names 10 each; `axle_torque` 10; `const delta` and
+// `real *const spin` 10 each; a local advance name 10; torque/braking declarations swapped 10;
+// definition/contact/both pointer arithmetic 10 each; a spin reference and helper advance/spin names 10 each;
+// throttle/torque joint declarations in either order 10 each; the wrap helper defined after its caller 10.
+// Opening body restored.
 // Round 134 (lane 6), at 10: the wrap helper's ternary as if/else 54 (993 bytes); the loop counter declared in
 // the for statement 10; the gear arm as `torque = 0.0f; if (gear != NONE) torque = ...;` (0xf1cd0's shape) 198
 // (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
@@ -2625,7 +2635,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 706 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 692 (was 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
 // normalize/mass scales 861; cross/scales 836; sums/scales 865; all 846; all with
@@ -2650,6 +2660,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // Round 251: Angular-output/banking/conversion lifetime subsets 1/2/4/3/5/6/7 with a distinct relative
 // transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
 // complete body restored; retail frame 0xfc and scalar/transform homes remain.
+// Round 319: Complete bounded forward/left/up speeds before reciprocal with distinct relative output, six producer orders 699/699/699/699/699/699; immutable 699; original output 692, kept and plain-confirmed. All fraction trees and original observations preserved.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2689,10 +2700,13 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 	vehicle_approach(&vehicle->unknown370, (real const *)(definition + 0x22c), elevation, dt);
 
 	real speed = vehicle->speed * boost;
+	real bounded_forward_speed = PIN(speed, 0.0f - maximum_speed, maximum_speed);
+	real bounded_left_speed = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed);
+	real bounded_up_speed = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed);
 	real inverse_maximum = 1.0f / maximum_speed;
-	real forward_fraction = PIN(speed, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real left_fraction = PIN(vehicle->turn, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
-	real up_fraction = PIN(vehicle->unknown370, 0.0f - maximum_speed, maximum_speed) * inverse_maximum;
+	real forward_fraction = bounded_forward_speed * inverse_maximum;
+	real left_fraction = bounded_left_speed * inverse_maximum;
+	real up_fraction = bounded_up_speed * inverse_maximum;
 	vector3f up;
 
 	up.i = -(facing->k * facing->i);

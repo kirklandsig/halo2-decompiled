@@ -310,11 +310,16 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // 6); the current body with 0x11c9a0 40 (same code); 1-7 dead temporaries (diagnostic) leave 40/28/21 unchanged.
 // Round 217: shared bounded-length short/word/int/unsigned-int counter, then nonzero-only
 // input advance: 40/40/40/40/58/58/60/60. Original helper, body and all matched callers restored.
+// M303: Shared bounded helper with library byte search, conditional/early return, original/direct source and flat/nested guards: 50 in all eight forms; shared find 37 and caller 84/75 regress, so helper and body restored.
 // Round 38 (m3 lane 2, fast with 0xb5f10/0xb61d0): retail moves start to EDI at entry so the inlined
 // length counter takes start's ECX (as 0xb61d0's counter takes start's EAX); ours keeps start in ECX and
 // counts in EDX. `(long)length >= count + start` 40; the length test nested under the sign tests 40; the
 // source formed in the copy call as `start + (long)string` 28 (counter ECX as retail, but start arrives in
 // EDX; 0xb5f10 6); `return true` / `return false` with no result 48 (94 bytes); `if (++count > 0x200)` 40.
+// Round 51 (m3 lane 13, fast with 0xb5f10/0xb61d0): the volatile string parameter advanced (`string += start`)
+// instead of start 43 (108 bytes, 0xb5f10 6), advanced before the clamp 47 (108 bytes, 0xb5f10 6); the clamp to
+// 0x1ff before `count++` 40 (same code); the length test first, then the sign tests 46 (92 bytes, 0xb5f10 6);
+// the function `static` 40 (same code).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

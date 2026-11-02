@@ -736,6 +736,16 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // 47/219/219/47/47/43 (the pointer counts one), real-typed dead temps 45/49/49: the temp count has four states here
 // and none gives retail's right.i/right.j colours. function_1f087b reading forward through a second view of the
 // output 216 (1265 bytes). No existing direction-from-angles helper takes this observer through a pointer.
+// Round 50 (lane 14, fast with 0x1f0870/0x23d790): `right` in a local two-field struct or as element 0 of a
+// two-element array 45/45, element 1 216 (1265 bytes), the same with the staged second product 217/217/217; both
+// products through named component locals in all 36 row orders 228 (1272 bytes each: the order does not reach the
+// code); both products staged re-measured 221 (1272); the second product into a local vector copied to the output
+// field by field, or a local two-field struct, through cross3f, staged or function_1f087b, 232 each (1272); the first
+// product into a local copied to `right` field by field, through any of the three, 49 (1264), with the staged second
+// product 221 (1272). A force-inline difference-of-products helper taking its operands by const reference: second
+// product rows i, j, k 58 (1264), staged rows in either order 211 (1261 bytes, retail's length, aligned 35, but up.k
+// goes to xmm2 and the rows interleave with the stores); first product through it with function_1f087b 219 (1261,
+// aligned 53), with the staged second product 228 (1272).
 // Round 510: whole-function forward/up receivers and native trig setter, seven subsets
 // 354/349/354/159/354/346/354; all with position receiver 372. Original complete body restored;
 // product colors, forward.k reuse and angle receiver stores remain.

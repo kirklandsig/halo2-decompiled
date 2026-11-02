@@ -1222,6 +1222,13 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // header from a forceinline accessor bound to a const reference 41 (1392 bytes), the parent object the same way 41; one
 // function-scope parent index assigned in each branch 44, with the accessor 41. Retail keeps the pool in ECX and the
 // parent index in ESI there (ours takes ECX for the index as nothing reads the pool). The guard stays match-only.
+// Round 28 (m3 lane 18, fast, on the count > 0 guard diagnostic, 44 at 1390 bytes): `orientations` or `stored`
+// escaping through a scratch global (diagnostics) 353/403; the no-model parent matrix through a file-local inline
+// node-matrix helper 20 (1399 bytes; its lookup reloads both g_4e0300 and data, retail only data), the helper
+// taking the pool 20, with a pool local in the no-model branch 20, with a pool local shared with the current
+// lookup 292; a dummy store through the object before the no-model lookup 53 (a pointer store kills g_4e0300
+// too). Retail's "pool held, data re-read" is matched sibling 0xb7740's volatile data-field read; find its
+// natural source.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

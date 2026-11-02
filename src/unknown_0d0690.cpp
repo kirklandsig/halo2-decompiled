@@ -1461,6 +1461,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // Round 273: Repeated primary/secondary/ambient output-field pointers in single/pair/all
 // subsets 535/529/530/532/533/537/533; all with primary direction 532. Original fields,
 // native workspaces, helper contracts and body restored; frame 0x2c versus 0x28 remains.
+// Round 235: Complete selection-header value with native-entry/combined-mask/entry-false
+// result subsets 567/568/573/572/544/545/571/572. Frame 0x28 is recovered but type moves
+// to the stack; original scan inputs, result, helpers and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1760,6 +1763,12 @@ dword function_015cd0(long index, dword entry);
 // Round 118: the buffer declared in the conversion block 4; a short result 19; the bsp globals
 // pointer in a local 4; the bitmap tested before the status 4; the result declared after the
 // buffer 4 (a compile-only build keeps the same two registers in every form).
+// Round 136 (m3 lane 6, fast): a sample pointer local set in each arm (0xd30d0's shape) 68 (312 B, block
+// order flips); UV filled by field stores 4; UV declared at function scope 4; palette colour as two unpack calls 4;
+// converted surface in a named local 6 (the d15e0 call moves ahead of the push, buffer still ECX); buffer declared
+// before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
+// shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
+// general registers as retail, so no register-summary gap there.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

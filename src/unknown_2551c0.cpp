@@ -233,6 +233,22 @@ short __stdcall function_2551c0(long actor_index)
 // Round 275: Complete sequential/interleaved cross accumulators, crossed with the
 // cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
 // Original helper, payload view and complete body restored.
+// Round 74 (lane 9, fast): vector_k named with `dot + 1` and the distance part named (`alignment`, `reach`, in
+// either order) 6 (814 bytes, first +0x23c): every line is retail's but the score dot's six (ours k, i, j with
+// the j term direction first; retail j, k, i, forward first). Not kept: vector_k is a partial naming, kept
+// only on a match. The two names without vector_k 42 (first +0xf5). On that base: the dot's arguments swapped
+// 6; `1.f + dot` 6; `reach * alignment` 6; the comparison flipped 6; forward after best 6; trace at outer
+// scope 6; direction at outer scope 6; sine and cosine named 6; found declared first 8; best update direction
+// first 10, found first 11; the dot named first 65 (818 bytes); `alignment += 1.f` 65 (818); a distance local
+// 65 (818); the angle inline 122; an axis local 75 (820). Other component sets on it: i, j, k named in six
+// orders 114/115/114/114/115/115 (815); j 116; i 125; j and k 65 (818); i and k 154; i and j 116 (816).
+// Without `alignment`: vector_k with reach alone 36 (815). Written-out dots with vector_k 146 in four orders;
+// without it 72 (i, j, k and j, k, i), 146 (i, k, j and k, j, i). Diagnostics, not keepable: a dead leaf on
+// the base, forward.i 118, forward.j 25, forward.k 25, direction.i 140 (847), direction.j 52, direction.k 51.
+// A private dot helper (not kept, a body written by hand): right-grouped i + (k + j) 61 (818), staged j, k, i
+// 120, and the 60 helper and naming sets that give retail's dot order in a compile-only screen, best 30 (815).
+// Compile-only: 299 neutral forms on the base and all output statement orders leave the dot at k, i, j.
+// The state through the typed slot data block: tried before, 89 (820 bytes).
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -774,6 +790,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // observation and complete body restored; initial unit-call scratch rotation remains.
 // Round 263: Uniform radius through a multi-use properties receiver with shared projection/alignment dot subsets 220/220/220/220;
 // pure getter at both radius uses with those subsets 153/153/153/153. Original snapshot, products and body restored.
+// Round 353: Second-probe-only reverse producer, existing setter, scoped second output
+// and probe-output role names, 135/135/191/191/135/135/191/191. Original probe workspace
+// and complete body restored; unit-call scratch register and length/projection/query homes remain.
 // Round 507: Uniform three-use object radius after properties/delta/projection/positive
 // admission 221/221/216/215; opposite sum operands give the same four scores. Original
 // field observations and body restored; unit-argument and scalar homes remain.

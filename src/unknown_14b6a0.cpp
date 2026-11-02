@@ -404,6 +404,12 @@ void function_14bac0()
 // native-array producers, masks 1..7, 241/268/274/299/310/310/330; all with
 // standard displacement subtraction 364. Original returned output, native point
 // copies, selected unit and body restored; frame/readiness/recipient sharing remains.
+// Round 307: Actual accepted-marker/accepted-bounds destination-source enum/word, general/source-
+// specific radius admission, original/native result-tested recipients: 261/260/261/261/245/255/245/254.
+// Original Boolean readiness, point storage and both scans restored; frame and iterator overlap remain.
+// Round 309: Plain native component loops for displacement/returned-position addition/all accepted-point
+// transfer subsets 1..7: 222/222/247/263/263/246/263/298; the eighth uses short counters. Original body restored;
+// frame, point/iterator overlap and readiness carriers remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

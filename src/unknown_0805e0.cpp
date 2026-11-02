@@ -199,9 +199,15 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // Original record, helpers and complete body restored; eleven control matches survive.
 // M296: Cheap-flag-gated two-use identity, nested/continue admission and break/direct
 // success, then those four with single flag observation [43, 52, 43, 52, 43, 52, 43, 52]. Original admission restored.
+// M303: Selected entry/player address result, before/after index declarations and break/single-exit completion: 51 in all eight forms, 133/127 bytes; Boolean result and native copy restored.
 // N301: Cheap-gated complete native identity value, nested/continue with result/direct
 // completion 52/56/52/56; native identity pointer counterparts 43/52/43/52.
 // Value forms also regress both matched callers; all restored. Early ESI, successor and mask remain.
+// Round 60 (m3 lane 1, fast; one-link harness matches the listing): the entry bound as a reference 43 (same code); a
+// successor local read after the entry pointer, `index = next` at the loop end and `break` 51; a guarded do-while
+// with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
+// loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
+// not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -707,6 +713,9 @@ void function_1537f0(s_profile_record *record);
 // Round 343: Four-aligned profile/property sources with original/late mutable or immutable
 // identity: 53/74/53/74/53/74/53/74. Original types, includes, initializer tuple, pointer walk and
 // every byte restored.
+// Round 352: Native identity constructors with library/chained field zeros, per-visit/outer
+// lifetime and ordinary/forced expansion: 53/83/53/83/72/72/72/72. Identity homes still fold; all
+// constructors, original type, initializer calls and 350 visits restored.
 // DH274: Native full-byte bitfields at the four source header bytes, separately, as low/high pairs, together, and together with a signed first word: eight scores 53. Every file sibling also ties its preview. Original type/body restored; three identity homes and frame 0xa0 remain unresolved.
 // DH276: current pointer walk with adjacent link library fill, late/early flags
 // and late/early links, each with separate/chained global sentinels:
@@ -715,6 +724,13 @@ void function_1537f0(s_profile_record *record);
 // N301: Pointer/no-source-tail invariant identity/source/both/native immutable identity
 // 83/79/82/79; each with the destination zero-tail before construction 85/82/88/82.
 // All restored; identity homes still fold and the native entry-end bound remains absent.
+// Round 60 (m3 lane 1, fast; the one-link LTCG harness with 0x1537f0's file matches the listing): the identity
+// zeroed by the memset whose return value is passed to 0x7f8b0 keeps the identity in memory (frame 0xa0 as retail; a
+// steering form, match-only), but its zeros are stored after the record initializer and a 4-byte pad sits below it
+// (identity +0x14, record +0x20; retail +0x10/+0x1c): index loop 53 (261 bytes), with the 4-aligned s_profile_record
+// record 53 (261), with the source declared first 53 (261); the index loop with s_profile_record and a plain memset 78
+// (238); the identity as a const reference bound to a value-initialized temporary 53 (same code). Harness only: an
+// identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1199,9 +1215,17 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // matches survive; original entry, range, repairs and complete tail restored.
 // M296: Range-relative copy ordinals forward/reverse/both, then each with the real
 // range count, then both unsigned/short [376, 369, 373, 380, 367, 373, 369, 418]. Original absolute copy indices restored.
+// M303: Paired source/destination cursors forward/reverse/both with ordinal bounds, pointer bounds, then mixed bounds: [414, 396, 412, 421, 402, 418, 418, 421]; original native copies restored.
 // N301: Standard directional copy forward/backward/both 393/387/386;
 // direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
 // All restored; initial admission/removal and upper-bound register ownership remain.
+// Round 60 (m3 lane 1): the one-link harness matches the listing; 40 random combinations of the removed read
+// (mixed/plain/as the call argument), both min/max spellings, explicit or plain three-way arms, count-path order, flag
+// and test, bound declaration order, decrement order, a function-scope copy index and the shift test all leave upper
+// in EAX. Fast: mixed read, cmovle lower, `position < removed` upper, explicit arms, count path lower first with its
+// flag, function-scope copy index 55; with `removed < position` upper, upper first, `g_4cf978 > position` 55; mixed
+// read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
+// `removed <= position` lower, count path lower first 62.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

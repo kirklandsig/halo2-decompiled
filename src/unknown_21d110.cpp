@@ -940,6 +940,8 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // repeat_state 30 (identical code each time). One-file LTCG harness (reproduces our frame): scope,
 // declaration order and names never move a slot; a long flag (832 bytes) lands beside repeat_state
 // (flag below it), so only the flag's one-byte size sends it to the lowest unit.
+// Round 39 (lane 2): repeat_state and the flag packed into one struct local matches (0); not kept, packing
+// locals into a struct is against the lane rules. A form that places the two the same way without the struct is the lead.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {

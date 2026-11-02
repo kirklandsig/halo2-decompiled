@@ -751,6 +751,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // Y499: closed ancestry/range/marker phase subsets on the real-angle tree with direct double
 // radius operand 246/246/246/247/247/247/247; all with bool result 260. Reduced forms self-align
 // with both callers present, but frame 0xac versus 0xb4 and scalar homes remain. Original body restored.
+// M305: Paired radius/distance/normalization scalar lexical identities, eight direct-radius combinations 246 each.
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
@@ -1555,6 +1556,9 @@ done:
 // sign-extended into EAX at its load and the palette added just before its push as retail, but scenario ESI,
 // definition ECX, type EDI, index BX), and on it the same width/palette screen with both product orders and the
 // palette declared before or after the datum 27/33 (palette local) and 17/27 (palette at the call).
+// Round 80: a second descriptor receiver for size and placement offset 17; with wide size 27 (236 bytes);
+// with all offsets wide 27; all offsets wide and palette at the call 32; with a wide index 32; with a
+// datum local 31; the second receiver for size only 17, for placement offset only 17. Restored.
 // Round 57 (lane 10): retail reads palette, size, offset, with the type in ECX, the definition copied
 // to ESI after its first read, and the palette added and the size multiplied late. All offsets long
 // with the palette at the call 32 (236 bytes); the same with a long index declared at each of seven
@@ -1887,6 +1891,7 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // Round 289: existing point-helper coordinate captures yxz/xzy/zyx/yzx/zxy
 // 284/285/293/288/293; yxz/xzy/zyx with native activity 282/283/294. The shared sibling
 // regresses 62/127/125/50/127/62/127/125; original helper and full body restored.
+// M305: Terminal missing-component negative guard with shared-exit/bit-vector/ordinary-node subsets 285/285/291/291/285/285/291/291.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

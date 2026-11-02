@@ -221,6 +221,14 @@ void function_213970(void);
 // acquisition and independent dirty-first publications: 131/126/131/126/131/126/131/126.
 // Five-point forms dropped above 30; original complete body restored. Two whole-block clears
 // still require the protected global definitions.
+// Round 28 (m3 lane 18, fast): block B's scalar resets in descending address order 131; the NONE/flag stores
+// after the language update 131; the language update before the scalar resets 131; the NONE/flag stores
+// between the string and request clears 131; the scalar resets before the first clear 131 (all the same code:
+// separate globals let the compiler order the stores freely). Still BLOCKED-BY the separate definitions
+// (block A: src/unknown_213760.cpp, held by N306 this round; block B: g_55bd04/g_55bd08 in src/unknown_12be90.cpp, M1).
+// DL235: Native complete progress reset with requested-language reads at each use,
+// native handle/NONE-chain/scalar-zero-chain subsets: 172/184/172/184/163/176/163/176.
+// All restored; protected separate storage still prevents the two retail bulk clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {
