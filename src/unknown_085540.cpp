@@ -948,6 +948,9 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // after the 0x6a860 call 30 (its store then rides EBP into 0x86800's pushes: retail's interleave,
 // wrong call). Shared helper, all nine users identical or worse: the elapsed reader result named 22;
 // the reader's local non-volatile 250 (its zero stores vanish).
+// Round 135: allocation helper shapes: elapsed declared at its top 22; elapsed test as a nested inline
+// helper taking start 22; start declared then assigned 22. Reader: memset of a local, a volatile, a
+// long[2], a LARGE_INTEGER 250, 250, 250, 250 (621 bytes, the zero stores vanish).
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {

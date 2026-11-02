@@ -2330,28 +2330,9 @@ real function_e1670(long arg_159e6d)
 	return result;
 }
 
-real function_1d1230(long rigid_body_index, s_havok_component *component);
 bool __stdcall function_e1b60(long arg_159e6d, point3f const *point, real value);
 
 /* starts a fallen biped's ragdoll from its main rigid body */
-// score 2 (was 2): the extent call's argument setup is still emitted in the other order (ours
-// mov ecx,esi then mov eax,ebx, retail mov eax,ebx then mov ecx,esi); 0x1d1230 itself matches
-// retail and takes the index in EAX and the component in ECX, so only the caller's spelling is
-// left; retail calls it as a member of s_havok_component, which needs the callee's own file
-// (include/unknown_1cec30.h and src/unknown_1cec30.cpp), outside this lane's files; round 162
-// found that the member form matches both the caller and the callee there, so the fix only
-// waits for that file to be free
-// score 2 (was 2): only argument preparation before the extent call differs: mov ecx,esi precedes mov eax,ebx.
-// Shared main-index helper with short 34, with long 31; long ternary 76; shared point setter 52; long helper/setter 24;
-// typed body getter 61; short helper/setter 27; both typed body helpers/setter 24; typed three-use point source 2, kept; earlier uninitialized index declaration 2.
-// Setter result as point argument 2; returned pointer 2; returned reference 2; split extent declaration 2;
-// point storage first 2; source pointer declared first 2; initialized point-first declarations 2; const extent result 2.
-// Extent formal order reversed 0 but loses its matched callee (1, address base/index); separate noinline and inline
-// extent declarations original/reversed 2/0 with the same callee loss; outer early exit, split inner guard, both early exits 2/2/2;
-// explicit cdecl and stdcall original/reversed 2/0 with the same callee loss; signed int extent index original/reversed 2/0, same loss.
-// Round 162 (harness, both files): the extent query as a member of the component (this first, index parameter),
-// written with havok_component_rigid_body_get(index, this) or rigid_bodies[index]: 0 here and the callee unchanged.
-// Not applied: the callee's file was held by another lane this round.
 // @retail 0xe1a80
 void function_e1a80(long arg_159e6d)
 {
@@ -2364,7 +2345,7 @@ void function_e1a80(long arg_159e6d)
 
 		if ((TEST_FIELD_BIT((component->unknown04 >> 11) & 1)) && rigid_body != NONE)
 		{
-			real value = function_1d1230(rigid_body, component);
+			real value = component->function_1d1230(rigid_body);
 			point3f const *position = (point3f const *)((byte *)havok_component_rigid_body_get(rigid_body, component)->m_motion + 0x70);
 			point3f point;
 			real_point3d_set(&point, position->x, position->y, position->z);

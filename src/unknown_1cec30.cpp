@@ -1914,10 +1914,10 @@ class c_extent_shape;
 real __stdcall function_182aa0(c_extent_shape *shape, real *minimum, real *maximum);
 
 // @retail 0x1d1230
-real function_1d1230(long rigid_body_index, s_havok_component *component)
+real s_havok_component::function_1d1230(long rigid_body_index)
 {
     real minimum, maximum;
-    hkRigidBody *body = component->rigid_bodies[rigid_body_index].rigid_body;
+    hkRigidBody *body = rigid_bodies[rigid_body_index].rigid_body;
     return function_182aa0(*(c_extent_shape **)((byte *)body + 0xc), &minimum, &maximum);
 }
 
