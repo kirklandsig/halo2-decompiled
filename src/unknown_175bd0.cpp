@@ -1778,6 +1778,8 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
+// MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
+// it measured a variant.
 // score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
@@ -2071,6 +2073,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // complete point and plane with named distance, mutable/const 379/379. Original zone producer
 // restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
 // Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
+// Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
+// 128/138/138/128/138/128/128/128. Original case order, body and zone producer
+// restored; early color/query ownership and frame 0x40 versus 0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3150,6 +3155,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // domains restored; frame 0x4c/0x54 and system/successor/color homes remain.
 // Round 260: coherent separate inline color/location/matrix declarations, seven subsets 93;
 // all three with per-call mode 108, losing the matched caller. Original declarations/body restored.
+// DH round 270: complete native transform result in the existing matrix, crossed with per-call mode, twice-
+// used node word and traversal-scope matrix, 110/140/110/140/110/140/110/140. Cached-mode forms retain frame
+// 0x4c and add copy work; per-call forms recover frame 0x54 but lose matched caller 0x176f60 (25). All
+// exact-only forms, input contracts, pointer-result ownership and complete original body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3389,6 +3398,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
+// association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
+// restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

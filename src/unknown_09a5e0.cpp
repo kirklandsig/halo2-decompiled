@@ -2265,6 +2265,8 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // original tail domains, entry lookup and complete body restored.
 // DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
 // 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
+// Round 304: high-first/combined-mask/low-bank-fold/high-bank-fold admission 285/267/264/262;
+// with the actual entry slot named 285/267/264/262. Original request tests and full body restored.
 // Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-
 // slot value: 202/202/193/194/202/202/193/194. Exact-match-only flags restored with the original
 // three outcomes, qualified receiver, child masks, cursor and countdown; indexed lookup,

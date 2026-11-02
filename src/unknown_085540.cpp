@@ -870,6 +870,9 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // stores keep program order); two partial memsets 18 again (head store order is retail's, but the zero is a shared
 // constant: `cmp eax, ecx` and the terminal `mov word [esp+0x16], cx`), with `remaining >= 1` 21, `0 < remaining`
 // 18; `= { 0 }` in place of the memset 9 (409 bytes); permuter 2.
+// Round 49: memset and kind 1 in each arm 74 (424 bytes; a /FAs compile hoists the arms' stores into retail's
+// zero/kind/zero head with `test eax, eax`, but LTCG keeps them in the arms); a named header type 14; header
+// declared at function scope 14; with the named data pointer: the header at function scope 2, the named type 2.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
@@ -1251,6 +1254,8 @@ bool function_68670(byte *source, long size, void *block);
 // kept); that with case 0 sending a block-local `long value` copy 120 (header at retail's +0xc, first
 // difference +0x90, but start forwarded in ESI and `used` updated through a register); that guard with
 // the copy count from header.size too 79.
+// M291: Complete outgoing-message aggregate/full memset initialization, each with native/separate sequence and function/loop received-header lifetimes:
+// 110/137/131/131/110/137/131/131. Original executable body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

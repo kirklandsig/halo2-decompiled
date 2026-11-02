@@ -246,6 +246,10 @@ __forceinline bool function_184448(long arg_0)
 // (three-point gain, not kept); on it: the per-face bounds initialized at the top of the face loop 974; the plane
 // transform reading the normal into scalars (i, j, k) 975 (4557 bytes, frame 0x11cc as retail), captured k, j, i
 // 996 (4541), j, k, i 975 (4557); scalars plus face-top bounds 1021 (4538). Body restored.
+// Round 245: repeated request position/direction/location snapshots, seven subsets:
+// 1025/1005/1100/992/1076/1056/1124; all three acquired after admission 1112.
+// Location captures raise caller 0x9cca0 from 9 to 12; all eight regress.
+// workspaces, transforms, random sequence and complete executable source; frame/homes remain.
 // DH round 268: complete dot-input vector/point/both captures 1018/1035/1081;
 // paired polygon projections through the same dot producer, original/vector/point/both inputs
 // 977/1020/1133/1236; complete product parts 1236. Original dot helper and body restored.
