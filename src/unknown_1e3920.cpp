@@ -666,6 +666,9 @@ real function_267370(long object_index);
 // (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
 // cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
 // `carrier` declared at the top of the block 98 (same code).
+// DL234: shared predicate result from its final test, with direct cluster/entry keys
+// and a reused zone byte: 96/96/96/96/164/164/164/164; shared provider 0 -> 20/37 in the
+// first/last four. All rejected; header restored. Frame 0x90 agrees; NONE sharing and cross operands remain.
 // Round 508: Uniform three-use class snapshots short/byte/long at the original capture
 // 369/158/139; before the pure parent lookup 263/312/299; live class reads 125, with
 // child-default/parent-override carrier 388. Sentinel field fills, seven subsets and
@@ -1118,6 +1121,12 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// Round 464: separate actual request records at case-entry/successful-producer scopes,
+// four phase pairs with each genuine case order: 254 each. Original shared request restored;
+// persistent sentinel and substitution/squad homes still differ at the matching frame and length.
+// DL234: current definition-table field at every use, guarded/conditional replacement,
+// inner/outer query storage and mutable/readonly metadata: 397/396/397/396/397/396/397/396.
+// Original observation and query-output lifetimes restored; sentinel and stack homes remain.
 // Round 295: positive perception/unit creation producers and both, each 253; with settings
 // admission each 253; both/all with conditional squad bit 337. Original failure exits restored.
 // M297: Without the redundant squad-index gate, inner/outer substitution outputs,
@@ -1799,6 +1808,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // read once into a named local for the second block 251 (same code); the loop as `for (short i = 0; i < 2; i++)` 251
 // (same code). Diagnostic (plain, reverted): src/character_tag_accessors.cpp renamed to link after this file, as
 // retail's layout does, leaves this body at 251 (and costs 0x73360), so callee link order is not the purity cause.
+// DL234: actual grenade-reset admission produced as bool/byte/short/long, complete
+// condition or guarded result: 251 each. Original predicate and body restored; actor/options,
+// retained pool and scalar homes remain. Shared query summaries and all draw guards are unchanged.
 // Round 295: per-use unit receiver, first phase 306; second 254; both 315; private queries 330;
 // first/private 360; second/private 337; all 372; all with long ordinal 361 (fast). All restored.
 // M297: Current-only/secondary-only default-result, failure-exit and complete

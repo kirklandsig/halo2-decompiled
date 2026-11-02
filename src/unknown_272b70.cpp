@@ -1445,6 +1445,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // requests on those graphs 60/60/64/64. Iterator scaling, leave-selector and publication homes remain.
 // Round 275: Load-request families T type, O object, S seat, F flags, ordered
 // OSTF/OSFT/FTOS/FOST/SOTF/SOFT/TSOF/FSOT 32/34/34/34/31/33/32/34. Original helper and complete body restored.
+// Round 316: Selected-seat word-first invalidation / failed-request continue /
+// both 34/32/34; later pure receiver alone/with invalidation/continue/both
+// 42/44/42/44; all with chained identical extent stores 46.
+// Original receiver, request continuation, invalidation and extent stores restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2665,6 +2669,9 @@ struct s_scenario_scripting_view
 // Round 232: Explicit signed-short wrapping in long/int induction carriers, then unsigned word/dword
 // carriers with uniform signed-short observations; early/loop-owned pairs 93/96/93/96/80/87/80/87.
 // Original complete search restored; actor/counter homes and delayed scripting observation remain.
+// Round 317: Common final-exit graph crossed with sign-extended selector, delayed short counter and
+// admitted scripting-data read 80/96/87/92/96/95/98/99 fast. Original complete search restored.
+// Actor/set/counter homes and delayed scripting-data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

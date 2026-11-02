@@ -516,6 +516,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // link count, 333/362/333/362/356/347/357/348. Original completion, counters and full body restored.
 // DH278: Separate short/long traversal index crossed with short/long previous and bounded link carriers 347/396/380/392/383/384/384/386.
 // Complete opening body restored; no qualifying keeper.
+// Round 257: Actual geometry step/edge cursors and remaining paired distance-difference helpers,
+// seven subsets, then full-width geometry ordinal: 341/367/296/378/341/367/378/378. All regress;
+// original traversal, initialization, link memcpy and complete body restored. Frame
+// 0xe8/0xe4 and node/flag/previous homes remain.
 // DH280: Admitted-depth/previous-point/converted-coordinate branch ownership, seven subsets then all with
 // bounded short link count [350, 332, 336, 297, 354, 345, 334, 366]. Original executable body restored.
 // DH283: Repeated depth captured as short, with parent/edge/both field captures

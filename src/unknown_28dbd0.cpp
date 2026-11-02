@@ -222,6 +222,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // Original executable body and helpers restored.
 // Round 291: Heading/paired transform/fallback-point overlap-safe CRT copies, subsets 1/2/4/3/5/6/7,
 // then all with shared velocity scale, 264/299/206/280/275/313/296/296. Original full file and helpers restored.
+// Round 256: fused per-coordinate rotation weighting/publication, long/dword/short/byte
+// counters 225/225/216/216; separate axis scale with fused cross/direction/output
+// 229/229/257/257. Original separate shared scales, helper and complete body restored.
 // DH282: Complete caller heading/axis and inlined cross lexical priorities abc/acb/bac/bca/cab/cba; first
 // with native request/transform/result identities, last with those and all scalar role names [173, 173,
 // 173, 173, 173, 173, 173, 173]. Original executable body restored.

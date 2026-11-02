@@ -7129,6 +7129,10 @@ real function_50650(real cosine);
 // DH277: complete prediction field/scalar accumulators and radial/cosine terms 566/566/563/556; with shared
 // cross 585/585/585/595. Seven-point cosine-term lead at 2479/2483 rejected below eight; original body and
 // transform helpers restored.
+// Round 316: Native prediction input copy mutable/const, before-angle/after-trig
+// 614/614/614/614; component aggregate counterparts 563/563/563/563.
+// Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.
+// Original prediction input, axis, reciprocal and complete body restored.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

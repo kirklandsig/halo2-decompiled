@@ -1135,6 +1135,10 @@ bool function_108530(long device_index, long name)
 // body restored; initial-velocity register and ramp-down residency remain.
 // DH round 262: immediate phase-distance selections 125/121/125; conditional phase derivatives
 // 121/121/121; both producer families 125, with field-owned cruise speed 141 (529 bytes). All restored.
+// Round 305: complete immutable bounded-time producers with mutable/cruise-const/
+// half-const/all-const phase nodes give 142/157 in each local/field cruise pair.
+// All eight are 500/523 bytes and change caller allocation; original argument, clamp,
+// phase lifetimes and field publication restored. Initial velocity residency remains.
 // Round 38 (m3 lane 2, fast, both callers 31/13 unchanged): retail reads the ramp-down time from its slot at
 // every use (as if address-taken); ours keeps it in xmm1 from the zero clamp to the half time. The pinned
 // target in its own local (target parameter dead after the pin) 121 (same code); that with the per-branch
@@ -1627,6 +1631,9 @@ bool function_0b6760(s_index_pair const *pair);
 // qualifiers restored; frame/index/header/state/result homes remain.
 // DH round 262: byte/short/long/dword active-channel counts 320/409/411/411; entry initialization
 // 320/409/411/411. Frame remains 0x1c versus 0x20; original activity result and complete body restored.
+// Round 305: finite first-motion/integration/second-motion completion domains,
+// subsets 1..7, 389/327/407/344/395/341/423; all with finite activity 433. Original
+// bool carriers, activity, inherited qualifiers and body restored; frame/homes remain.
 // Round 38 (m3 lane 2, fast; masked-aligned counts in brackets, this body 294 [156]): plain index with both
 // event ids as selects between two field reads 367 [123] (1488 bytes, frame 0x20; slots F+0xc previous, F+0x10
 // index * 12, F+0x14 position where retail has index * 12, position, previous; index*12 in ESI and the index in

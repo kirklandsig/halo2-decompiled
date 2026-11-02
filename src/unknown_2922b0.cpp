@@ -253,6 +253,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // word ordinal 726/726/726/726. Native countdown widths canonicalize; word ordinal loses the matching frame
 // and shrinks away from retail. Entire original body, hit/result producers, helpers and in-place snapshots
 // restored; success/input/minimum/hit homes remain.
+// Round 257: Actual ray/projection coordinate consumers and every rotation-row product node,
+// seven subsets, then short coordinate counters: 630/639/624/638/628/641/644/720. Original
+// private producer, complete in-place snapshots and full body restored; success/input/
+// minimum/hit homes and inactive-return placement remain.
 // DH280: Existing native cross/point/rotation publication subsets, then all with the native ray publisher
 // [618, 630, 630, 628, 623, 630, 624, 628]. Original executable body restored.
 // DH283: Native coordinate input/origin/projection producer subsets 1-7
