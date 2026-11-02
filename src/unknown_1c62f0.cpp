@@ -805,6 +805,10 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // original position with word/short/dword events 12/12/12; separate loop-start
 // and directly initialized replacement 130. Original retained callback/variant
 // graph restored; third-dispatch scratch rotation remains.
+// N320: Distinct wrapped-result ownership with separate/reused loop start, explicit/embedded delta and
+// pre/post-dispatch transfer grows the frame and regresses all three callers; third-dispatch scratch
+// rotation remains. Scores 135/136/135/136/142/143/142/143.
+// Original executable source restored.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

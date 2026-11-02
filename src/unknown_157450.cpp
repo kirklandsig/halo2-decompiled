@@ -654,6 +654,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in a local struct or a two-element array, read through the pointer 61 (aligned 34), direct 139.
 // The whole body in a scoped block, word direct/pointer 139/63; the accumulators and what follows in
 // a scoped block with the masks outside it 139.
+// Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
+// subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
+// reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
