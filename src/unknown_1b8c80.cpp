@@ -1507,6 +1507,9 @@ void function_1f86a0(long actor_index);
 // Round 462: fallback-failure guard, absent-selection guard, both, both with common
 // cleanup-result exit, each with native/original slot payload: 232/232/138/138/232/232/237/237.
 // Original payload and exits restored; frame, mask spill and entry/root carriers remain.
+// Round 465: admission field captured before the root calls, bool/byte/short/long,
+// each with native/original payload: 225/225/225/225/214/214/225/225.
+// Original field observation restored; frame, mask spill and entry/root homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

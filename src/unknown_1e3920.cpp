@@ -1118,6 +1118,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // grenade tests and a squad grenade local 347; int grenade compares alone 352 (frame changes); `squad` declared at
 // the top of the block 254 (same code). Loop guards folded into the while condition (retail's unrotated loop) 445 /
 // `if (substitute) while (squad && squad_index != NONE && ...)` 439: both inline 0x1e4990 at the in-loop call.
+// Round 464: separate actual request records at case-entry/successful-producer scopes,
+// four phase pairs with each genuine case order: 254 each. Original shared request restored;
+// persistent sentinel and substitution/squad homes still differ at the matching frame and length.
 // Round 295: positive perception/unit creation producers and both, each 253; with settings
 // admission each 253; both/all with conditional squad bit 337. Original failure exits restored.
 // M297: Without the redundant squad-index gate, inner/outer substitution outputs,
