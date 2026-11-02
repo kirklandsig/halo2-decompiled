@@ -1229,6 +1229,12 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // lookup 292; a dummy store through the object before the no-model lookup 53 (a pointer store kills g_4e0300
 // too). Retail's "pool held, data re-read" is matched sibling 0xb7740's volatile data-field read; find its
 // natural source.
+// Round 124: cached data-member pointer with a direct no-model pool read 87 (1392 bytes; NOT kept: a pointer
+// to the pool's data member read at two uses and the pool read directly at the third, picked by score; body
+// restored at 97); with the
+// node-count guard 20 (1399, match-only); unified data-member reads 44 (1390, match-only); const pool pointer,
+// shared header accessor, header pointer arithmetic, nonconst data-member pointer and typed current view 20 each
+// (all with the match-only guard). The guarded forms were restored to the 87 form.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

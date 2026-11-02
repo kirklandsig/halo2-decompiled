@@ -960,6 +960,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Round 112: vector3f_assign 6, with the position inline 6, double products 6 or forward declared
 // first 6; a `T *const` flag 6; only the first or only the second horizontal product commuted 6/6;
 // position as `point3f *const` (rather than a pointer to const) 6. Every form keeps the same schedule.
+// Lane 16 round 74: a compile-only build (no ESI/EBX saves) places both push 1 ahead of the first fld
+// as retail does; in the build the ESI save lands after the table add. Real: angles in locals 27;
+// the call's result returned 6; k first 19; the normal named before the vector 6; a direction local 6.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

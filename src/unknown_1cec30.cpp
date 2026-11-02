@@ -919,7 +919,7 @@ void hkRigidBody::motion_transform_set(hkTransform const &transform)
 void function_1d1260(s_havok_component *component);
 void function_1d1540(s_havok_component *component);
 
-// score 65 (was 81): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
+// score 65 (was 65): frame 0x84 versus 0x88; the index/component still arrive on the stack rather
 // than ECX/EBX, and the constructor copy uses rep movsd rather than aligned SIMD. The two-use body
 // slot receiver recovers the fixed-first guard and ordinary-path body lifetime; the post-reset
 // body is fetched again. The convention still follows the call cycle outside this file.
@@ -1011,6 +1011,9 @@ void function_1d1540(s_havok_component *component);
 // Keep constructor copy with two-use slot pointer and fixed-first guard, ordinary whole-program
 // confirmed; post-reset lookup retained. Component/index stack transport, 0x84/0x88 frame and
 // rep/SIMD copy remain.
+// Round 330: early native slot pointer/reference, constructor/set copy, before-copy then
+// after-copy-before-inverse acquisition 86/85/86/85/88/85/88/85. Original body restored;
+// frame/component transport remains; two early-constructor forms lose matched 0x1d1b60.
 // DH298: Copy after inversion, assignment/set/memcpy/memmove with inverse at use
 // 140/140/84/99; inverse at entry 140/140/84/99. All regress and are restored; fresh
 // post-reset lookup and matched caller survive; frame and argument transport remain.
@@ -2358,6 +2361,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // DL242: Complete direction memcpy before normalization 211; library constant-vector
 // normal/fallback/velocity copy subsets 1..7 all 91. Original copy, normalizer, helper and body
 // restored; early velocity j/k and property-zero residence remain.
+// DL245: Aligned frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. Native velocity scalar sums with original/direct defaults and setter/aggregate publication 258/233/342/249; with property value constructed first 259/247/351/249. All regress and disturb the previously matching prefix. Original accumulators, normalizer, property helper and complete body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
