@@ -385,6 +385,12 @@ static __forceinline bool structure_bsp_collision_available()
 // Round 300: Complete positive/rejection availability with common result exit and native
 // short/long object policy, default/type-arm and conditional producers:
 // 95/95/97/97/95/95/97/97. Original complete body restored; exclusion BL and source-slot join remain.
+// Round 197 (lane 3, fast with the callees and 0xd2bb0): a plain collision pointer parameter in place of the by-value source
+// 110 (frame 0x5c; 0xd2bb0 keeps its match); that with a `modeled` flag and nested tests 127 (262 bytes), with a bool result
+// 137 (252 bytes); bool result alone 116 (271 bytes); requery split from the collision set with a second flag test 100
+// (290 bytes; 0xd2bb0 21). Compile-only, the join test threads with a ternary, `&&`, do/while(false), `__assume` or `__noop`
+// or an empty statement or goto label at the join, and a flag copied at the join into a variable with a second definition;
+// only `found && !flag` (an extra test and an entry `xor`) and a store between the two tests keep it. Body restored.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1064,6 +1070,10 @@ done:
 // Round 300: Complete positive-admission/done-exit availability graphs with native short/long
 // policy merges, default/type-arm and conditional producers:
 // 136/136/147/147/136/136/147/147. Original complete body restored; exclusion/result/NONE and direction homes remain.
+// Round 197 (lane 3, fast with 0xd2a50): a `modeled` flag set in the scenery test's else arm 125; a false probe arm with the
+// flag set after 0x14a8e0 125 (same code), as an else-if chain 125; `requery` preset true and cleared in both arms 125, or
+// from `!excluded` with the 0x14a8e0 arm clearing it 161 (485 bytes); the excluded result cleared in a nested else 137 (471
+// bytes). The join test stays threaded in all of them. Body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

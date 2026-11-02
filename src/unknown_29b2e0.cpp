@@ -255,6 +255,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 307: Complete projection-dot/cross producers at eight pairs of native trig boundaries on
 // the in-place angle/rotation graph, 178 each (1711 bytes). All matched controls preserved;
 // original helper and body restored. Unity register, root/yaw and rotation homes remain.
+// Round 197 (lane 3, fast with 0x29b990): the pitch's final value in its own local after a separate delta 176 (same code), the
+// clamp as its add's left operand 260 (1716 bytes); both rotations on the first copy with a final copy, re-measured 194 (1713
+// bytes; retail's slot, other registers); cross terms in other statement orders, the i term written in its row, the
+// projection term first in the i and k rows (six forms) 176 (same code); sine, cosine, yaw, pitch and root renamed to sort
+// first or last, all 32 combinations 176: names do not move these homes. Body restored. Retail's rows: i projection first,
+// j cosine first, k projection first, cross_i computed after cross_j and cross_k and spilled into the cosine's home.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
