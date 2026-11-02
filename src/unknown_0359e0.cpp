@@ -174,10 +174,16 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 495: Nonzero scans with negative-seeded index or complete bit length,
 // zero-before/after result selection and long/short counts: 101/94/114/95/100/98/112/93.
 // Original helper and body restored; coordinate promotion and count homes remain.
+// Round 499: Reused width/height dominance with bool/long decisions and private/shared
+// logarithms: 101/95/101/101/107/88/97/90. Original decisions, coordinates, helpers and body
+// restored; promotions and count homes remain.
 // Round 223: Isolated non-SSE unit 94 (diagnostic); immutable/next-bit windows,
 // descending index/mask, ascending thresholds and three-/two-bit chunks give
 // 88/103/97/105/97/96/132/99. The next-bit/index/mask/first-threshold forms lose
 // the exact caller. Original file, table, private scan and full body restored.
+// Round 231: Actual excess relation reused at minimum and suffix, width/height bool/long
+// 101/107/101/97; with shared logarithms 95/88/101/90. All callers and neighbours survive;
+// original helper calls, relations and body restored.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

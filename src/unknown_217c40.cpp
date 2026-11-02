@@ -151,6 +151,10 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // Round 222: first/second/both native coordinate reads at every use 550/474/550;
 // normalized-output/double-angle/both/coordinate-trig/all scalar identities 474 each
 // on the shared-scale, output-first graph. Original body and both helpers restored.
+// Earlier 474 from 501: the per-controller block and the preferences are declared in retail's order,
+// Round 338: native external input axes/channel-word/trigger views in seven subsets,
+// then all with a read-only receiver, 474/474/474/474/474/474/474/474. Original input layout,
+// observations, helper input copies and complete body restored; frame/angle/snap homes remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

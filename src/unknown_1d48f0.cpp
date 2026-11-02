@@ -252,6 +252,12 @@ const dword g_455978[81] = {
 // DL226: Bounded table cursors on the retained planar scratch, vector-row/dword strides,
 // direct/cached range ends and relational/sentinel termination: eight forms 354. All restored;
 // optional bounds/exclusion homes and selective location/release expansion remain.
+// Round 70 (m3 lane 16, fast): the existing shared `normalize_inline` (include/unknown_0259d0.h) on a k-zeroed
+// three-component copy gives the planar block without the private 0x29b2e0 helper; with round 87's sample-end copy
+// and in-place adds 338 (2104 bytes, aligned 137); on that: `normalize3d` 339, radial scale through
+// `vector3f_scale` 338, one table-entry pointer for both copies 338, shape declared before the body 338 (same code
+// each). The first difference is then +0xe, arg_10/arg_9 and body/shape swapped in ESI/EDI and the cursor spilled,
+// the webs that go back to retail's with 0x11bed0 out of line: BLOCKED-BY 0x11bed0's inlining here.
 // @retail 0x1d48f0
 bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long arg_2, point3f const *arg_3,
  vector3f const *arg_4, s_location *arg_5, real arg_6, real arg_7, bool arg_8,

@@ -183,12 +183,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Round 112 (lane 8, fast): group-table pointer declared first and assigned at its test 398; scenario
 // pointer declared first 398; no structure-BSP local (global read at both uses) 398; the three defaults
 // declared in reverse order 398; the group-table pointer as one ternary initialiser 398 (all same code).
+// Round 494: complete point-input copies inside squared/length metrics, first/second/both
+// in each alone, then both squared with first/both length: 439/437/473/558/555/787/677/892.
+// Original input reads, metric helpers and entire body restored; selected homes and table roles remain.
 // Round 221: native selected group/terminal/both 466/394/459; with native group input 513/470/471
 // (native input control 496); complete graph with short byte-narrowed terminal producer 433. Native
 // selected terminal plus actual output-record cursor and consistent point-table fields 390, kept:
 // best-distance home agrees at frame 0x64. Separate short/long output-point induction 415/412; with one
 // shared computed step 418/427. Original signed-short input scans, byte narrowing, metric helpers and
 // validator tuples remain; selected-default, bitmap/endpoint, root-table and x87 homes still differ.
+// DH round 264: Actual destination-record cursor with short/word/byte/long output ordinals 402/402/402/404;
+// with consistent point-table fields 391/391/391/392. Indexed destination with those fields 412;
+// point-first/terminal-first eligibility on the 391 graph 391/391. Seven-point lead below gate;
+// original body restored; selected-default/root roles and metric/bitmap homes remain.
 // Round 51 (lane 11, fast): round 86's t19 form rebuilt on this body 437 with the byte selected point,
 // 188 (aligned 46) with it short again; on that graph the existing distance3d (0x3ea30, inlined) for the
 // three point distances with b - a operands 185 (aligned 57), with a - b 216; the distance helper through

@@ -186,6 +186,12 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // DL226: One completed native layer result across both kind routes, byte/char/short/word,
 // kind-arm defaults 97/99/125/125 and entry defaults 97/97/122/122. All lose 0x1d5bf0;
 // original result flow, repeated type observations and incoming convention restored.
+// Round 240: Primary body result default, crossed with secondary body default, one byte type
+// and native object-byte shift: 100/108/91/91/100/108/91/91. Original body restored;
+// shared-type forms lose the matched caller (13); the five-point gain is below the keep gate.
+// Round 243: shared primary/secondary flag-selection cases, main type byte/short/long/dword
+// 132/136/128/128; the group after the object case 131/136/126/126. All grow and lose
+// the matched caller (13). Original separate flag cases, both type reads and body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -292,7 +298,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 172 (was 241): the body loop now matches retail except the order of the groups/current reloads at its
+// score 172 (was 172): the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
 // through the group pointer, count and first body), the section loops load the component's object index after
 // both keys where retail loads it between them, and retail lets the `next == NONE` section loop fall into the
@@ -426,6 +432,18 @@ struct s_physics_component_walk : s_havok_component
 // next;` declared first 177. On 172: the `next != NONE` branch first 192 (901 bytes); the file's section-test
 // helper for both db540 calls 178 (933 bytes); the ternary's arms swapped 172, `first_body` as a ternary 172,
 // `long next;` declared before the selection 172, the entry test as `!(a || b)` 172 (all the same code).
+// Round 239: On the retained output/early-continue graph, native selected neighbor, terminal scan-index
+// completion and explicit empty-recursion continuation, seven subsets, 184/340/185/172/184/340/185;
+// native overwrite selection 189. Original method restored; frame 0x18 agrees, exit placement and neighbor/key homes remain.
+// Round 242: Uniform two-query object/first-key/second-key snapshots in both scans,
+// seven input subsets 330/329/377/327/376/321/375; all inputs with long keys 370.
+// Every snapshot has two real uses and preserves the read-only query values, but
+// frames/code grow. Original method, field rereads, counts and recursive arguments
+// restored; frame 0x18 agrees, neighbor/key ownership and cold exit placement remain.
+// Round 244: actual section-element references and direct indexed key fields in the two scans,
+// eight nonoriginal pointer/reference/indexed pairs, 172/314/172/172/314/280/280/304.
+// References canonicalize; direct fields grow or rotate allocation. Original method and
+// both callback tuples restored; frame 0x18 agrees, neighbor/key homes and exit placement remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

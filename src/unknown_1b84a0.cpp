@@ -459,6 +459,7 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // with one `return result` 274; `bool result = false;` set true inside a prop-index block that holds the
 // ready test 281 (1056 bytes); 0x25d690 called directly in the marker call's argument (no wrapper) 113
 // (same code: the call still follows the first two pushes).
+// Round 264: Complementary missing-prop bool/byte/signed-byte/long, declarations after/before actor: 117/117/117/276 twice. Narrow forms recover frame 0x162c at 1068 bytes; movement-limit reads at use alone/with consistent native slot-data receivers 113/113 on that frame. No count gain; original result, receiver and full body restored. Slot-data form was already applied.
 // Round 291: result identity before readiness/availability, all readiness/availability/
 // selection identity subsets, 113/113/113/113/113/113/113/113. Original body restored.
 // Round 133 (m3 lane 6, fast with the file and its callees listed): the node state read into a block local before the

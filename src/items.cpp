@@ -572,6 +572,9 @@ struct s_item_collision_bsp
 	s_item_collision_instance *instances;
 };
 
+// MiniMax D (11-01): no new form, no lower score; the frame still gives the speed slot 0x10 and the spin slots
+// 0x20 where retail has the spin at 0x10 and the speed at 0x28, so the spin scale stays in a stack slot instead
+// of x87 st(1) and the plane joins keep their own xmm order.
 // score 211 (was 211): Frame 0xa0 agrees; protected plane-index width, plane joins and pending spin-k homes differ.
 // Earlier 211 (was 249): one shared spin scale for both spin branches, with the third spin
 // component scaled after the branch so the pending value and the scale stay on the x87 stack.
@@ -1492,6 +1495,11 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // masks 0..7, 242/233/242/233/242/234/242/234. Native Boolean units move the frame to 0xa8 and disrupt
 // entry allocation; original word units, shared release helper, paired point setters and full body
 // restored.
+// Round 242: On the paired-setter/two-use-spin graph, native short/long countdown values
+// captured before admission or after the positive test, with spin consumed after damping,
+// 140/176/140/144; before damping 173/178/173/173. Original timer reads, spin consumption,
+// paired event setters and full body restored; frame 0xac, return-byte +0xe/+0xf and
+// release/event homes remain. Earlier terminal-only short work preceded this graph.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
