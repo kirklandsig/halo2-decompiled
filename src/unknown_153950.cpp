@@ -636,6 +636,13 @@ struct s_player_axes_153d10
 // screen of the whole SSE block (exact here: 2, 6, 10, 16 as the plain checks) over ~1100 spellings of
 // each cross/dot read through forward/up or axes and both pointer orders found none at 0 (best 10);
 // a few spellings fix the cross alone but then reorder the dots.
+// Round 134 (plain): forward's dot read through axes (no forward pointer) 2 (product 5 right, product 1
+// flips); parentheses around every cross product 8; each row as `x = a; x -= b;` 4; delta as three
+// statements 2; parentheses around every dot product 6. A one-file LTCG harness (cross/dot block exact)
+// shows the six operand orders follow a period-4 count of expression nodes anywhere in the block (an
+// extra paren or cast shifts them; unused locals only move the dots); every shift flips products 1 and 5
+// together (up.k against forward.j and forward.i), and none of 64 dot spellings, 64 paren sets, 32 j-row
+// pointer spellings, the cross helpers or row orders separates them.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

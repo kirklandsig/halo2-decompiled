@@ -581,6 +581,16 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // (same code); the would-block arm ending in its own `goto return_exit` 10 (same code); the count as
 // `written ? send : 0` 44; `result = true` after the partial-position update 30; `sent = 0` then
 // `if (written)` 47. Every same-CFG spelling keeps the restore exit ahead of the shared false exit.
+// Round 134 (lane 5, fast; a one-file LTCG harness of this file plus its two callees' files gives 10 here):
+// the shared return as a label inside `if (sent != -2)` with the would-block arm `return true` 72 (retail's
+// block order, but every result folds to a constant); the same label with every exit jumping to it 10;
+// a completion flag set in an `if` and tested after the loop 10 (VC threads it away); the flag assigned from
+// the comparison 41 (sete); the restore after the loop on a `sent` re-test 10; break exits with the completion
+// re-tested after the loop 47; an empty `else` beside the would-block arm 10; the would-block arm returning
+// true with the other exits sharing the label 44 (208 bytes: success shares BL and falls into that return);
+// `while (result && ...)` with the completion guarded after the loop 44. Retail = four-way join (BL for the
+// false exits, CL for success, constant 1 for the restore) with the restore's copy laid out last; VC keeps the
+// function's single return block last whatever the source order.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {
