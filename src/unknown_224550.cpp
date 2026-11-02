@@ -312,6 +312,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 325: Existing UV producer consumes its real four-element input array, pointer/reference
 // input and output with original/scalar pivot storage: 232/232/232/232/325/325/325/325. All alias-safe captures,
 // original contracts, workspaces and complete body restored; tint/secondary-UV homes remain.
+// Round 318: Direct-bounds UV outputs encoded independently by the existing encoder,
+// geometry/output phases GAB/AGB/ABG/GBA, then a shared two-use selector;
+// 645/645/645/645/575/575/573/575. Original whole body and helpers restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

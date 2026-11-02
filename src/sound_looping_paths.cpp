@@ -670,6 +670,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 479: Coordinated portal-angle register-parameter orders RLBP/BRLP/LRBP/RBLP/LBRP/BLRP/RLPB/LRPB
 // (R reverse, L listener, B BSP, P portal), fixed point/radius/output tail: 156/150/156/150/156/150/156/156.
 // Original provider signature, declaration, call and complete caller restored; BSP/count homes remain.
+// Round 318: Complete native request-row publication with temporary/direct angle output,
+// fade/tag order and iteration/query row lifetime: 368/304/368/304/368/304/368/304.
+// All grouped-storage forms are exact-only; original whole body and helpers restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
