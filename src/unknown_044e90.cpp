@@ -197,6 +197,11 @@ struct s_visibility_bound_record
 // at 1744 bytes; query data as if/else arms 446 [361]; both 459 [407] at 1760; loop counters at branch or function
 // scope 406; the plane copy at branch scope, after the query, at or before the top of the function 406 each; planes
 // and query at function top, either order 413 [389]. Body unchanged.
+// Round 525: Complete input-plane memcpy/memmove with native/library normal and center transfers,
+// eight graphs 406/406/444/444/456/458/445/446. All original transfers and full body restored; entry/table and plane/query homes remain.
+// Round 527: Uninitialized reciprocal declaration at function/query/view/frustum scope,
+// each with the original/fallback-entry center-output scope: 406 each. Every original
+// reciprocal producer, center scope and full body restored; entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
