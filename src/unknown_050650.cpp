@@ -660,6 +660,9 @@ struct s_collision_result_buffer_1697c0
 // shared setter and complete coordinate products: 322/323/322/322; with one length-result exit
 // 341/340/341/341. Original private normalizer and sampler restored; frame 0xa8 agrees,
 // normalization scratch/axis homes and initialization/rotation schedules remain.
+// Round 507: Normalized component publication ikj/jik/jki/kij/kji 321/320/319/324/324;
+// complete product publication ikj/jki/kji 322/320/325. Three-point best rejected;
+// original normalizer restored. Scratch, axis and rotation homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

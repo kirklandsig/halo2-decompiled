@@ -384,6 +384,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 505: Complete branch-owned return predicate, long/bool, entry/after-factor declaration,
 // predicate after/before output stores: 203/235/203/235/210/245/210/245.
 // All regress; original early returns, alias-safe helper and frame defaults restored.
+// Round 507: Direct translated-row publication xzy/yxz/yzx/zxy/zyx 216/213/227/220/230;
+// complete parallel product publication xzy/yzx/zyx 214/225/227. Product forms recover
+// frame 0x2c but not inverse homes; original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
