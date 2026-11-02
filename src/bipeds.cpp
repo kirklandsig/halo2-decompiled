@@ -2251,6 +2251,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // so 0x1d5120 declares its count before its result pointer; with that order (diagnostic, 0x1d5120 77 unchanged)
 // the argument setup is retail's (92 with the long body form; EBP still holds the early Havok data load and 0x9fff
 // is hoisted into EDI). 0x1d5120's file was another lane's this round.
+// Round 259: Native body field at every selection use with retained/at-use count, entry/at-use
+// tag and local/entry-zero query output 67/82/74/85/77/91/83/94. All restored;
+// extra EBP, native validation and flag-store schedule remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3947,6 +3950,9 @@ real magnitude3d(vector3f const *v);
 // Round 514: long falling/byte event/both 214/33/222; shared complete flight scale 2,
 // with long falling/byte event/both 214/33/222; uninitialized event at entry 2.
 // Original body restored; final actor move versus second argument push remains.
+// Round 259: Bounded event enum with retained/at-use time, long/native-word ticks and
+// original/shared complete flight scale 2/30/2/184/2/30/2/184. All restored;
+// actor move versus second argument push remains the only two differences.
 // @retail 0xe3380
 void __stdcall function_e3380(long arg_159e6d)
 {
@@ -4666,7 +4672,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
-// score 648 (was 742): the logic was walked against retail block by block and agrees (callees, argument order,
+// score 648 (was 648): the logic was walked against retail block by block and agrees (callees, argument order,
 // field offsets, condition directions, constants 0.1/0.15/0.5/0/+-32768/4/6/+-1). The later velocity is
 // move.velocity itself: retail adds to it in place (0xe2a2c-0xe2a38, [esp+0x44]), stores it to linear_velocity and
 // passes &move.velocity to 0x1c4b00 (0xe2b3b), so the second copy is gone and `velocity` lives only in the matrix
@@ -4688,6 +4694,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // the +0x10a test through the bit view 674; both 694 (the head is then retail's up to the early return); the count read
 // once into a `char` local with `0 >= x`/`x <= 0`/`+=` forms 655 each (identical code: ours re-reads after the call);
 // the early return as one goto to an exit after the final return 655, with the `still` form 686, with both 694.
+// Round 259: Direct animation-result initialization after the names store, complete shared orientation
+// setters and state-before-tag acquisition in seven subsets 681/678/720/655/681/678/720;
+// all three with shared squared length 720 (unchanged reduced control 655). Original body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -819,6 +819,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // classification crossed with flag/size output phases: eight forms all 161. Flag-before-size forms
 // also raise the other user from 129 to 138. Original helper/body restored; fresh total and
 // size/seek carriers remain.
+// Round 259: Header/body/signature ReadFile results at their actual producers, seven subsets,
+// then all with native signature-finalization status: 34/34/34/34/34/34/34/34. All one-use
+// result forms restored; entry total and size/seek coalescing remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

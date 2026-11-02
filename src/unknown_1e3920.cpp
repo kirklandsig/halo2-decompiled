@@ -1822,6 +1822,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // DH282: Complete probability-default/increased-selection/delay-default ownership, seven subsets then all
 // with native signed-word tick storage [251, 251, 251, 251, 251, 251, 251, 251]. Original executable body
 // restored.
+// Round 259: One actor unit handle throughout both phases 347; with current/secondary/both
+// default query results 348/352/356, current/secondary/both rejection results
+// 352/352/350, mixed default/rejection 352. Original body and both queries
+// restored; actor/options/pool residency and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
