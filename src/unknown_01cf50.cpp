@@ -7879,6 +7879,8 @@ void __stdcall function_21a80(real, real, real);
 // MiniMax D (run 37): retail calls 0x16ac0 out of line, our build inlines it; the inlining is
 // decided by the /Ob flag of the defining file src/unknown_0167a0.cpp (not mine). A single
 // expression for world_effects gives 65; the original 16 is kept.
+// Coordinator ruling 2026-11-02 (the user deferred): /Ob1 on src/unknown_0167a0.cpp matches 0x13680 (MiniMax R) but
+// loses 0x13c20, so that file's flags stay; the lead is a source form that keeps 0x16ac0 out of line here.
 
 // @retail 0x13680
 void function_13680(bool skip_effects)
