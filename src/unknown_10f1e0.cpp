@@ -1457,6 +1457,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // pointers 328/321/344/328/321/344; both with native success 320/320. Original queries, canonical
 // statuses, own-parameter observation, case sets and entire executable body restored; pool/state
 // allocation and count joins remain.
+// AC460: Canonical permission assigned by status tests in primary dispatch, byte/bool/short/long
+// 164/194/377/381; both dispatches 164/194/377/381. Original expression producers, byte result,
+// unconditional queries, signed observations, parameter handling and complete body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1672,6 +1675,10 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 273: Reused two-request primary membership bool/byte/short/long before the
 // predicate call 497/497/474/472; inside dispatch 482/482/478/482. Original request
 // comparisons, case results and complete body restored; frame eight versus twelve remains.
+// AC460: Live true permission with complete conditional failure stores for base status,
+// depletion and conditional-request families, seven subsets, then all at entry:
+// 487/491/499/483/475/499/511/511. Entry unit EDI/ret 8 and both caller scores regress;
+// executable differences also rise. Original result graph, defaults and body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2016,6 +2023,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // Round 273: Repeated native slot receivers 4/3/0, pairs 4-3/4-0/3-0, all and
 // all declared at entry 790/796/793/796/793/799/799/796. Original receiver expressions,
 // native direction copy, helpers and body restored; frame 0xcc versus 0xd4 remains.
+// AC460: Both blend products inside the positive-weight admission, canonical activity
+// bool/byte/short/long 881/881/857/861; both products inside the two-screen admission
+// 881/881/857/861. Original product lifetimes, activity and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
