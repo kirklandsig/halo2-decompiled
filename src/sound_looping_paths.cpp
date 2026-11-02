@@ -261,6 +261,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC477: Next-free choice/target/existing collection builders, subsets 1..7, then word
 // completed choice count: 955/945/962/926/977/953/981/981. Original arrays, counts, scans,
 // helpers and body restored; entry zero, target/query/count homes and choice carriers remain.
+// DH round 290: sequential record-count, sound-index-list and outer-ordinal identities,
+// seven nonempty subsets, then all with one inner-search ordinal: 887/886/887/886/887/886/887/887.
+// Original separate workspaces, phase initializers, loop domains and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

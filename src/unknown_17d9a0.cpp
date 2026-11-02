@@ -319,6 +319,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // shared edge norms and shared determinant subsets 1/2/4/3/5/6/7: 91/130/44/165/87/130/165;
 // all with both squared lengths named 154. The two-point determinant gain is ineligible;
 // original helper, edge type and body restored; plane base and product ranks remain.
+// DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
+// native/array planar sums, native/array parallel products and native running coordinates
+// 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -845,6 +848,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // against unchanged fast 795. Bounds snapshots plain 574 at 3616/3647, versus
 // opening plain 539/3647; rejected. Original body and every helper restored;
 // tag/count/plane homes and rotation spills remain.
+// DH round 290: unconditional decoded plane owned by native value or destination,
+// scalar fields/plain vector loop, then each with common angle result:
+// 896/897/753/753/864/898/737/739. All regress; original decoders, angle gate and body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
