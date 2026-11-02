@@ -1320,6 +1320,12 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // same code); the clamp compare operands swapped 3; the object handle read through its own address for the
 // point query 2; the clamp as matched 0x182020's if/else 2; a named component index 2. Still BLOCKED-BY
 // 0x1d0a20 (its definition file and the held src/impacts.cpp calls).
+// Round 116: the statement point query (re-measured, 18 at 467 bytes) loads the body index first as retail
+// does and leaves one difference, `lea ecx, [esp+0x20]` for retail's `mov ecx, esi` (VC rematerialises the
+// frame address; retail keeps it in ESI across 0xb9dd0). On that: a point pointer at the top of the support
+// block 18; a velocity pointer local 18; the point cast to const 18; the nested query's result in a point
+// declared before the clamp 128; the statement query before the body index read 97. Still BLOCKED-BY
+// 0x1d0a20 (src/impacts.cpp is held this round too).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {

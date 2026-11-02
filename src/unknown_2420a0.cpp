@@ -1649,6 +1649,21 @@ long function_2421d0(long team)
 // by one, ecx/edx/eax then edx/eax/ecx); the peer tested first with the type if/else inside 57;
 // the peer local declared before the type 33; the type read at each test, no local 59; the peer
 // as a bool 61.
+// Lane 15 round 42 (fast): the type test first with the peer read inside each nested arm, no type local 74 (212
+// bytes), with a type local 74, with a peer local per arm 74; arms swapped 75; a type local used in two tests
+// (`else if (type != 9)` or two && tests) 64 (211 bytes; retail's entry and first-arm peer, second arm rotated by
+// one); that with the helper as one expression, a tag local, `&...->block[0]`, tag and block locals, a tag
+// instance pointer, a block local per arm, a {count, address} block struct with a reference helper or field 64
+// each; the chain written out in each arm 74/74/64; a helper per field with its own NONE result (`or eax, -1`
+// lands before the compare as retail, and the source stays natural) 64 (211 bytes) with a ternary or if/else;
+// a pragma for size (diagnostic) 109.
+// Lead: retail's arms colour alike only when the block pointer is a register variable (two uses) in each arm,
+// and the only such form found has a test always true where it stands: a block local with `definition_index =
+// type == 9 ? block->bomb : block->flag` in both arms of `if (type == 9) ... else ...` MATCHES byte for byte (first
+// arm only 10). Not kept: identical arms and an always-true test are reverted even with a match. Single-use forms
+// (reference local, by-value or reference helper, member helper, typed casts, dead second reads) stay cycling in a
+// compile-only copy. 0x2c0980 has the same chain and a second `or eax, -1` before its peer test, so look for one
+// shared helper.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
@@ -1712,6 +1727,10 @@ void function_2422d0(long slot)
 // Round 53: function-scope object index reused for the second loop's element 7; permuter (58
 // variants) 7; lookup written without the inline getter 7 (diagnostic); a `long i` per loop 7;
 // `dword` object index 7; the eligibility result in a named bool 79.
+// Lane 15 round 42 (fast): object and slot declared before the index 7; no slot local 79 (index EDI and object EBP
+// stay); `short slot` 7; nested tests through a table-entry pointer with `continue` 7; one && test with `continue` 7;
+// a named team entry pointer 7; the table value named in the test 7; the flag cleared after the reject store 9
+// (with a named eligibility bool 9); `++i` 7.
 // @retail 0x2423f0
 bool function_2423f0()
 {

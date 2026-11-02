@@ -47,7 +47,7 @@ void __stdcall function_b8890(long arg_0);
 
 bool function_a7670(long object_index);
 
-// score 153 (was 181): frame 0x424 and retail's 954-byte length agree; entry scratch-register
+// score 153 (was 153): frame 0x424 and retail's 954-byte length agree; entry scratch-register
 // phase, selector/island homes, admission register and membership block layout still differ.
 // Consumed next-island indexing, native body bound and indexed cleanup retain the 28-point gain.
 // list reference 212; island reference 212.
@@ -213,10 +213,20 @@ bool function_a7670(long object_index);
 // 260/257/179/153/253/244/122/96; kept native bound plus indexed cleanup 153 (plain).
 // Two-point 179 and match-only shared-result 122/96 restored. Completed shared/named membership,
 // both completed ordinals and completed first result on the new graph 153/153/236/255; restored.
+// DL228: two-list byte/short/word/dword selector with consumed/explicit index steps
+// 161/260/260/153/161/260/260/153; selector zero initialized before guard/admission/arrays
+// 154/162/162. Original native selector, initialization and complete body restored.
+// Round 251: Disjoint native first/second search ordinal lifetimes, bounded retry loop and all three role
+// names: 153/153/153/153/153/153/153/153. Original complete body restored; initial scratch phase,
+// selector/island/count homes and admission BL remain.
 // DH round 270: actual two-attempt retry as byte/short/word/dword, then each with the nonzero list arm
 // first, 262/259/259/153/262/259/259/153. Byte retry shrinks the frame to 0x420; original 0x424 frame and
 // selector/list/island/count homes remain. Original retry domain, both eager scans, live body bound,
 // consumed island index, indexed cleanup, call cycle and complete body restored.
+// DH272: Native first/deferred processing ordinal long-byte/long-short/byte-long/byte-byte/byte-short/short-
+// long/short-byte/short-short 258/195/300/305/304/299/305/304. All grow beyond retail length; original long
+// processing indices, eager searches, live body bound and consumed island index restored. Entry scratch,
+// scalar homes and admission register remain.
 // @retail 0x278f00
 void function_278f00()
 {
