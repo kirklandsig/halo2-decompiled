@@ -2729,6 +2729,11 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // and the existing complete along-difference producer, seven subsets:
 // 530/548/530/548/530/563/563; all with velocity role name 563. All restored;
 // frame 0x44 versus 0x4c, result byte and native scalar/vector homes remain.
+// Round 371: Native per-body position values in mass/farthest/push scans,
+// subsets 1/2/4/3/5/6/7: 546/513/506/515/524/494/499; all with immutable
+// hit producer 499. Both distance-scan values (494 plain, 1874/1908, frame 0x50
+// versus retail 0x4c) NOT kept: struct copies in two of the three scans, the subset
+// picked by score (mass scan keeps its pointer). Body restored at 530.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3297,6 +3302,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
 // sum 364. Exact-length 364/363 gains are below threshold. Original complete body
 // restored; matrix/origin and paired pivot/property homes remain.
+// Round 371: Native travel-limit decision before original target copy,
+// byte/short/word/long 372/376/376/375; complementary truth representation
+// 372/376/376/375. Original predicate and body restored; matrix/pivot homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4012,6 +4020,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // helper and target body restored; normalized-axis SIMD and trig/rotation homes remain. Scores
 // 183/197/263/200/217/201/285/218.
 // Original executable source restored.
+// Round 371: Rounded sine/cosine wider storage and named cosine-complement,
+// subsets 1/2/4/3/5/6/7: 182/231/175/276/192/240/286; all with angle
+// producer declaration 286. Original real coefficients, helper and body restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

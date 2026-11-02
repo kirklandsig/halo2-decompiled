@@ -867,6 +867,9 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // first grouping plane stays independent; tag/count/plane homes remain.
 // Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
 // ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
+// Round 372: first-present-face searches ending with break, short/word/int/long, then separate
+// bounded scans: fast 779/803/776/776/810/792/780/780 versus control 795.
+// NOT kept: retail prologue/frame lost; original body restored, tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

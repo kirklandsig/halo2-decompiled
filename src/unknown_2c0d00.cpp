@@ -1619,6 +1619,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
 // circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
 // Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
+// Round 371: Native selected successor/type/link widths, subsets 1/2/4/3/5/6/7,
+// 455/424/463/462/456/424/458; all with full output count 503. Original short
+// carriers and complete pointer body restored; radius/zero/metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
