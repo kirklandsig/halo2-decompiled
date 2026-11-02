@@ -647,6 +647,11 @@ struct s_item_collision_bsp
 // Round 309: Genuine uninitialized final-linear/final-angular/both-plane output declarations reserved at
 // entry, subsets 1..7, then all after admission: 213/211/213/211/213/211/213/213. Original declaration lifetimes
 // and body restored; plane width, plane joins and spin/speed homes remain.
+// Round 312: Both getter results consumed through actual returned plane inputs, with
+// scalar/native untransformed publication, original/setter transformed normals and both
+// plane declaration orders: 261/283/261/283/261/283/261/283. Native plane publication
+// grows frame to 0xa4; original producers and full body restored. Protected index width,
+// plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1173,6 +1178,10 @@ struct s_item_flags_view_10b850
 // angular projection producers, subsets 1..7, then all unsigned counters: 862/871/970/856/866/833/929/929. Some loops
 // reach frame 0x148 but regress. Original output producers and body restored; frame, entry Boolean
 // and native workspace homes remain.
+// Round 312: Actual private producer output pointers consumed at basis-cross, cross-normalizer
+// and carrier-add motion boundaries, subsets 1-7, then all with library matrix transfer:
+// 813 each. Matched cross-helper sibling preserved throughout; all helper interfaces,
+// consumers and entire body restored. Frame 0x154/0x12c and Boolean/native homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

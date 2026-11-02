@@ -301,6 +301,10 @@ static inline void quaternion_transform_vector(
 // P260: Independent half-angle lexical homes before/between/after rotation, four
 // forms 267 each; with independent transform cross scalars 252 each. The latter
 // reaches frame 0x24 but grows to 1336/1317; original helper and body restored.
+// Round 312: Alias-conditioned native/CRT vector input capture in the existing rotation helper,
+// original/staged cross and paired/independent halves: 347/347/340/340/340/340/320/320.
+// Independent halves recover frame 0x24 and first +0x163 but grow code; original helper,
+// paired halves and complete body restored. Quaternion/cross spill overlap remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

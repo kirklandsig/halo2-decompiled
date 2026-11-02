@@ -1155,6 +1155,10 @@ bool function_108530(long device_index, long name)
 // M304: Paired unchanged endpoint-speed scalar captures at entry/time bounds/pins/active work,
 // local/field cruise-speed ownership: 121/134/121/134/121/134/121/134. Both callers stay 31/13;
 // original parameter lifetimes, velocity ownership and complete body restored.
+// Round 312: Paired phase-energy numerators before doubled derivative denominators,
+// with endpoint/cruise square-part subsets 0-3: 121 each; field-owned cruise speed 134 each.
+// Original phase expressions, publications and complete body restored; initial velocity
+// XMM6 and ramp-down stack residency remain.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1657,6 +1661,11 @@ bool function_0b6760(s_index_pair const *pair);
 // M304: Word header ordinal with entry false/null and ordinary saved-pointer subsets 0-7:
 // 375/375/375/375/415/415/416/415. Inherited-pointer forms recover frame 0x20 but regress;
 // original full handle/header observations, pointer home and entire body restored.
+// Round 312: Native four-real coefficient-block receiver with inherited/ordinary index and
+// saved-pointer storage: 370/389/378/420; result-first variants 370/389/378/421.
+// Original scalar domains reach retail length or frame separately but regress; temporary
+// rate record, receiver, declarations and whole body restored. Frame/index/header/state
+// and activity-result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
