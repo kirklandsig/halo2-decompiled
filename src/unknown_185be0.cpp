@@ -316,6 +316,10 @@ union s_185be7
 // all four datum carriers 731. Minimum/range/fraction scalar identities on the shared-exponent
 // graph, seven subsets 731 each; exponent identity too 731. Original carriers, names and full
 // body restored; control-root/NONE, settings/zero homes and flag joins remain.
+// Round 245: existing current/previous angle return pointers, separately/together, 805/837/830;
+// selected input source retained alone/with current/previous/both angle returns 961/995/959/980;
+// both returns with complete two-coordinate correction 821. Every form regresses; original
+// input observation, direct output consumers and complete executable source restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

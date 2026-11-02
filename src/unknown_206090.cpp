@@ -270,6 +270,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // 1438/1400/1360/1447/1441/1410/1452; all with contact-velocity publication 1421. Three-point lead
 // rejected.
 // Original executable source restored; Frame 0x5cc versus 0x58c, component/velocity/query homes and contact induction remain.
+// Round 245: direct impact-position scalar stores with descriptor calculation/contact/phases/entry
+// lifetimes 1402/1392/1397/1444; existing point setter with those lifetimes 1404/1392/1397/1444.
+// The scalar forms reduce frame 0x5cc to 0x5c0 but regress; original position copy,
+// descriptor lifetime, magnitude capture and complete executable source restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
