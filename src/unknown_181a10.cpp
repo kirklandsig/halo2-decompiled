@@ -638,6 +638,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // original/native plane input and original/memcpy normal publication:
 // 468/468/514/514/468/468/514/514. Original matrix observations, plane inputs and publication
 // restored; frame 0x48 versus 0x44, classifier and output homes remain.
+// Round 464: direct native normal-field accumulations, rowwise/leading-pair/leading-product/
+// termwise schedules, with original/early plane-normal publication: 321/321/321/321/321/320/321/319.
+// Early leading-pair/termwise publication gains one/two counts, rejected; original normal and plane restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

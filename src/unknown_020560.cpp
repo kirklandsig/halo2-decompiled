@@ -909,6 +909,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Round 301: Direct opposite ordinal on nearest-pointer result, counter/pointer-end bounds 815/700; nearest
 // indexed 782/685; complete query value 654/614, with indexed nearest 623/602. Original visits, float
 // trees and body restored; frame 0x18/0x2c, position transport and scan expansion remain.
+// Round 464: actual fallback-vector entry declaration/entry initialization/branch const/
+// branch setter with common-exit/nested singleton joins: 547/594/547/547/547/594/547/547.
+// Frame remains 0x18 versus 0x2c; original fallback, singleton exit and full body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
