@@ -111,6 +111,10 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // status form with for-scoped indexes 113 (386 bytes), with the entry value in a local 95 (388 bytes);
 // `released + i` with for-scoped indexes 18. Compile-only, every one of ~75 forms (wrappers, getters,
 // locals, a real call in an argument) loads the receiver chain before the arguments.
+// Round 120: common failure publication without/with the outer else 113/113; scoped peers 18;
+// collection for-loop 18; scoped collection for-loop 18; index declared first 18;
+// handle/table acquisition order swapped 18; count before result in the loop test 136.
+// Original body restored at 18.
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {

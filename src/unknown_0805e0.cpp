@@ -203,6 +203,11 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // N301: Cheap-gated complete native identity value, nested/continue with result/direct
 // completion 52/56/52/56; native identity pointer counterparts 43/52/43/52.
 // Value forms also regress both matched callers; all restored. Early ESI, successor and mask remain.
+// Round 60 (m3 lane 1, fast; one-link harness matches the listing): the entry bound as a reference 43 (same code); a
+// successor local read after the entry pointer, `index = next` at the loop end and `break` 51; a guarded do-while
+// with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
+// loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
+// not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -719,6 +724,13 @@ void function_1537f0(s_profile_record *record);
 // N301: Pointer/no-source-tail invariant identity/source/both/native immutable identity
 // 83/79/82/79; each with the destination zero-tail before construction 85/82/88/82.
 // All restored; identity homes still fold and the native entry-end bound remains absent.
+// Round 60 (m3 lane 1, fast; the one-link LTCG harness with 0x1537f0's file matches the listing): the identity
+// zeroed by the memset whose return value is passed to 0x7f8b0 keeps the identity in memory (frame 0xa0 as retail; a
+// steering form, match-only), but its zeros are stored after the record initializer and a 4-byte pad sits below it
+// (identity +0x14, record +0x20; retail +0x10/+0x1c): index loop 53 (261 bytes), with the 4-aligned s_profile_record
+// record 53 (261), with the source declared first 53 (261); the index loop with s_profile_record and a plain memset 78
+// (238); the identity as a const reference bound to a value-initialized temporary 53 (same code). Harness only: an
+// identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1207,6 +1219,13 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // N301: Standard directional copy forward/backward/both 393/387/386;
 // direct capacity entry on those three 376/371/392; both with room admission/native minimum 388/392.
 // All restored; initial admission/removal and upper-bound register ownership remain.
+// Round 60 (m3 lane 1): the one-link harness matches the listing; 40 random combinations of the removed read
+// (mixed/plain/as the call argument), both min/max spellings, explicit or plain three-way arms, count-path order, flag
+// and test, bound declaration order, decrement order, a function-scope copy index and the shift test all leave upper
+// in EAX. Fast: mixed read, cmovle lower, `position < removed` upper, explicit arms, count path lower first with its
+// flag, function-scope copy index 55; with `removed < position` upper, upper first, `g_4cf978 > position` 55; mixed
+// read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
+// `removed <= position` lower, count path lower first 62.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

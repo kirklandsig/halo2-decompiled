@@ -272,6 +272,9 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // breaks the checker's global pairing); a named buffer local for g_55bd18 with ternary/if clamp, with and without
 // the slot local 37/37/115/115; an `s_cache_file *file = &g_557c90[g_55bd10]` pointer in place of the slot local
 // (ternary, if, after the store, first) 250/250/250/275 (1724 bytes).
+// Round 284: complete total/completed/capacity producers with six scalar lexical priorities 36 each;
+// in-place and branch clamp results 38/36. One-point, exact-only forms rejected; original body restored.
+// Request/path order, outgoing file/transfer registers and terminal store scheduling remain.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {
