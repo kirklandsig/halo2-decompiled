@@ -179,6 +179,9 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH round 266: heading/response/spare initialization after input normalization, subsets
 // 1/2/4/3/5/6/7 and all with reversed defaults: 834/827/796/831/831/850/837/837.
 // Direct-input lifetime graphs miss early heading and memory-product homes; original restored.
+// Round 153 (lane 4, fast): collision flag declared first 750; input reference declared after the character
+// lookup 750, at its first use 750; collision flag between the actor and object lookups 750; heading pointer
+// declared const 750 (all the same code: retail still holds the object index in EDI and pushes EBX late).
 // DH271: Native component aggregates for heading/default pair/normalized input, masks 1/2/4/3/5/6/7, then
 // all with reversed independent defaults, 819/840/811/882/784/813/847/832. All new forms use direct input
 // and regress; original input observation, real vector copies, private helpers and full body restored. Early
