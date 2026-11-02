@@ -218,20 +218,27 @@ static __forceinline void apply_second_pair_fallback(float impulse,
 	*result += impulse;
 }
 
-static __forceinline void apply_second_pair_first_impulse(float const volatile &source,
+// Read the stored float for x87 consumers; SIMD transfers can copy its bits.
+static __forceinline float load_stored_impulse(float const &value)
+{
+	float const volatile &stored=value;
+	return stored;
+}
+
+static __forceinline void apply_second_pair_first_impulse(float const &source,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
 	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, __m128 const &axis_linear,
 	float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
-	float impulse = source;
+	float impulse = load_stored_impulse(source);
 	union
 	{
 		unsigned long bits;
 		float value;
 	} rounded;
-	rounded.bits = *(unsigned long const volatile *)&source;
+	rounded.bits = *(unsigned long const *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
@@ -249,19 +256,19 @@ static __forceinline void apply_second_pair_first_impulse(float const volatile &
 	*result += impulse;
 }
 
-static __forceinline void apply_second_pair_second_impulse(float const volatile &source,
+static __forceinline void apply_second_pair_second_impulse(float const &source,
 	solver_linear_row_31e7b0 const *row, solver_velocity_31c940 *a, __m128 &linear_velocity_b,
 	__m128 *const volatile &angular_b_pointer, __m128 const &inverse_b, float *result)
 {
 	// These normal-pair impulses have already been spilled to float. Load that
 	// value for accumulation and copy its bits into the SIMD scalar.
-	float impulse = source;
+	float impulse = load_stored_impulse(source);
 	union
 	{
 		unsigned long bits;
 		float value;
 	} rounded;
-	rounded.bits = *(unsigned long const volatile *)&source;
+	rounded.bits = *(unsigned long const *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
@@ -318,15 +325,15 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	float const volatile &mass_a_source = terms[2].m128_f32[3];
 	float mass_a = mass_a_source;
 	mass_a *= error_a;
-	volatile float impulse_a = mass_a + error_b * operation_float(op, 4);
+	float impulse_a = mass_a + error_b * operation_float(op, 4);
 	// Capture the second mass before its coupled product.
 	float const volatile &mass_b_source = terms[5].m128_f32[3];
 	float mass_b = mass_b_source;
 	mass_b *= error_b;
-	volatile float impulse_b = mass_b + error_a * operation_float(op, 4);
-	if (impulse_a > 0.0f)
+	float impulse_b = mass_b + error_a * operation_float(op, 4);
+	if (load_stored_impulse(impulse_a) > 0.0f)
 	{
-		if (impulse_b > 0.0f)
+		if (load_stored_impulse(impulse_b) > 0.0f)
 		{
 			__m128 const *inverse_b_pointer = &b->inverse_inertia;
 			apply_second_pair_first_impulse(impulse_a,
@@ -659,7 +666,7 @@ union solver_velocity_or_kind_31c940
 	int kind;
 };
 
-// score 1968 (was 1974): reuse scalar storage across solving and writeback.
+// score 1967 (was 1968): retain rounded x87 reads with ordinary SIMD bit copies.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
