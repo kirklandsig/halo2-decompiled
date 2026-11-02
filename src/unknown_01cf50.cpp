@@ -62,7 +62,7 @@ extern byte g_485a76;
 struct s_type_7ba8e9;
 s_type_7ba8e9 *function_137550(long tag, short bitmap);
 bool function_14390(short stage, s_type_7ba8e9 *bitmap, real priority);
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 bool function_01dd60(long index, long *width, long *height);
 long function_25960(void);
 struct s_shader_cache;
@@ -715,37 +715,35 @@ bool function_14480(long tag, short stage, short index)
     return result;
 }
 
-// score 17. Lead (lane 9 r74, --fast only, no plain or full check yet): a byte match with two calls to
-// 0x14390 in place of the goto, the count read at each use, no address-taken fallback (no volatile), and
-// the parameters in the order retail's callers set up: (short stage, long fallback, long tag,
-// short fallback_index, short index, real priority), with the calls in unknown_03f2b0.cpp and
-// unknown_023540.cpp updated in place. Its --fast effect: 0x2a8d0 251 -> 154, 0x44040 100 -> 76,
-// 0x19530 619 -> 587, 0x29b00 282 -> 366 (a positional shift; first difference unchanged). To check:
-// 0x44040 and both 0x19530 calls pass fallback 1 where retail passes 0; at 0x44040 retail also passes
-// fallback_index 1 and the bitmap as index.
+// score 17 before the lane 9 r74 lead, now applied: two calls to 0x14390 in place of the goto, the count
+// read at each use, no address-taken fallback (no volatile), and the parameters in the order retail's
+// callers set up: (short stage, long fallback, long tag, short fallback_index, short index, real priority).
+// Retail takes tag/stage/fallback in EAX/ECX/EBX, the rest on the stack (ret 0xc). Its --fast effect then:
+// 0x2a8d0 251 -> 154, 0x44040 100 -> 76, 0x19530 619 -> 587, 0x29b00 282 -> 366 (a positional shift; first
+// difference unchanged). The call values are retail's too: both 0x19530 calls pass fallback 0 and
+// fallback_index 1 (EBX zeroed, ECX = 1 from entry pushed), and 0x44040 passes fallback 0, fallback_index 1
+// and the bitmap as index (0x440d6-0x440e3); they passed fallback 1.
 // @retail 0x144f0
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority)
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority)
 {
-    long const *fallback_reference = &fallback;
-    s_type_7ba8e9 *bitmap;
     if (tag != NONE)
     {
         byte *group = g_4e3b44[tag & 0xffff].bytes;
-        long count = *(long const volatile *)(group + 0x44);
-        if (count > 0)
+        if (*(long *)(group + 0x44) > 0)
         {
-            bitmap = function_137550(tag, (short)(index % count));
-            if ((long)*(short *)((byte *)bitmap + 0xa) == *fallback_reference)
-                goto selected;
+            s_type_7ba8e9 *bitmap = function_137550(tag, (short)(index % *(long *)(group + 0x44)));
+            if (*(short *)((byte *)bitmap + 0xa) == fallback)
+            {
+                function_14390(stage, bitmap, priority);
+                return;
+            }
         }
     }
-    tag = *(long *)(g_485a80 + *fallback_reference * 8 + 0x64);
+    tag = *(long *)(g_485a80 + fallback * 8 + 0x64);
     if (tag == NONE) return;
-    bitmap = function_137550(tag, fallback_index);
+    s_type_7ba8e9 *bitmap = function_137550(tag, fallback_index);
     if (!bitmap) return;
-selected:
-    real selected_priority = priority;
-    function_14390(stage, bitmap, selected_priority);
+    function_14390(stage, bitmap, priority);
 }
 
 short g_55ece0, g_55ece2;
@@ -4495,7 +4493,7 @@ again:
             if (*(long *)(g_4858c4 + 0xe0) != NONE && !g_485a77)
                 function_14f60(*stage_reference, 13);
             else
-                function_144f0(*(long *)(g_4858c4 + 0x7c), *stage_reference, 1, 0, 0, 0.0f);
+                function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         }
         else
         {
@@ -4510,7 +4508,7 @@ again:
         return;
     case 12:
         if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, *stage_reference, 0.0f);
-        else function_144f0(*(long *)(g_4858c4 + 0x7c), *stage_reference, 1, 0, 0, 0.0f);
+        else function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         return;
     case 13:
         function_14f60(*stage_reference, 9);

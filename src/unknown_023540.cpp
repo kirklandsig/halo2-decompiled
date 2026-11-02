@@ -2416,7 +2416,7 @@ void __stdcall function_352e0(long target, bool multiple)
         *multiple_reference ? 0.5f : 0.0f, 1.0f, count, true, true);
 }
 
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
@@ -2546,7 +2546,7 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_0222d0(D3DRS_STENCILENABLE, 0);
     function_0222d0(D3DRS_ZENABLE, 0);
     function_0222d0(D3DRS_ZBIAS, 0);
-    function_144f0(tag, 0, 0, 0, (short)bitmap_index, 0.0f);
+    function_144f0(0, 0, tag, 0, (short)bitmap_index, 0.0f);
     sampler_state_write(0, D3DTSS_ADDRESSU, 1);
     sampler_state_write(0, D3DTSS_ADDRESSV, 1);
     sampler_state_write(0, D3DTSS_ADDRESSW, 3);
@@ -2930,7 +2930,7 @@ void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     long stage = 0;
     do
     {
-        function_144f0(tag, (short)stage, 0, 0,
+        function_144f0((short)stage, 0, tag, 0,
             (short)(stage == 0 ? first_bitmap : second_bitmap), 0.0f);
         sampler_state_write(stage, D3DTSS_ADDRESSU, 3);
         sampler_state_write(stage, D3DTSS_ADDRESSV, 3);

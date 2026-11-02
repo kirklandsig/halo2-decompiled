@@ -448,7 +448,7 @@ bool g_4c8780;
 dword g_4c8784;
 long g_4c8788, g_4c878c;
 long g_4c8790;
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 void function_1cf50(void);
 
 #pragma inline_depth(0)
@@ -517,7 +517,7 @@ void __stdcall function_44040(long cell, short mask)
                     long bitmap = *(signed char *)(entry + 0x29);
                     g_4c8788 = bitmap;
                     g_4c878c = tag;
-                    function_144f0(tag, 0, 1, (short)bitmap, 0, 0.0f);
+                    function_144f0(0, 0, tag, 1, (short)bitmap, 0.0f);
                     function_1cf50();
                 }
                 dword color = *(dword *)(entry + 0x24);
