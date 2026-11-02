@@ -293,6 +293,8 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // M309: Reused self-object header/table 330/332; with uniform per-use state,
 // complete local role names, or both 330/332 each. All eight restored;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// Round 368: Reused current-state read before the pure query/actions lookup, long/dword and
+// mutable/input-only actions: 346/346/346/346/345/345/345/345; original complete body restored.
 // F329: Retained masked self-header index, long/word domains crossed with four
 // disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
 // frame 8 and incoming unit/name/actions ranks remain.
@@ -892,6 +894,8 @@ extern vector3f *g_4687b0;
 // restored. Definition/index/type/direction homes and offset/SSE schedules remain.
 // Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
 // 309/309/309/309/309/309/309/308. Original executable source restored.
+// P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
+// Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1369,7 +1373,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 95 (was 136): frame 0x18 agrees; entry table/hand homes and second unit load remain.
+// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1416,6 +1420,8 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // F332: Actual two-element array cursor, endpoint/long/short/word termination
 // 103/186/187/187; with consistent direct receiver observations 264/266/267/267.
 // Original indexed scan and receiver ownership restored; entry pool/hand and second load remain.
+// Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
+// 95/96/95/96/94/95/94/95; original complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1774,6 +1780,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Round 364: Real shared request payload, pointer/direct access, original/entry result,
 // original/split admission: 60/60/130/130/60/60/130/130.
 // Original request union, body and input observations restored; request/weapon homes remain.
+// N320: One admission/pickup phase result, bool/byte storage, nested admission and native
+// switch/if-chain: all regress and add storage or length. Request/weapon homes and getter expansion
+// remain; original source restored. Scores 141/143/141/143/167/165/167/165.
+// Original executable source restored.
 // Round 366: Native admission field and input-only weapon/pickup contracts, seven
 // subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
 // interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
@@ -2644,6 +2654,12 @@ long function_c8f60(long unit_index, short seat_index);
 // at both uses kept plain at 293 (1221/1209 bytes); original unit/header receivers and
 // transfers retained. Header/vehicle form 289 restored as a repeated computed address.
 // Entry vehicle promotion, unit/ordinal residence and state comparison width remain.
+// DH298: Reset output from the state-name test 264; final success from occupant
+// admission 305, both 274; short-circuit result 299, with reset 276; native long
+// branch/short-circuit/both-with-reset 296/296/288. NOT kept: the 264 form re-tests
+// `state_name == NONE` after the block to set reset, while retail stores 1 inside it
+// (0xea58f, no setcc); a redundant test picked by score is kept only with a match. Body
+// restored at 293.
 // Round 328: actual unit-slot pointer/reference with native state and vector-zero
 // combinations 308/303/308/303 each. Frame 0xec and entry vehicle in EBP;
 // original native acquisition, scopes, observations and full body restored; residence remains.
@@ -4432,6 +4448,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 330: consumed away/forward, side/frame-left and object/world position storage,
 // subsets 1-7 then all with native memcpy transfers 174/183/182/223/222/204/204/202. Original body restored;
 // frame and basis/point homes remain; original quaternion operands retained.
+// DH298: Complete forward/inverse point products and parallel row-pair sums,
+// seven subsets 175/175/173/175/173/173/173; all with late relative position 199.
+// Every form also raises the other helper caller from 0; both helpers and body restored.
+// Frame 0x110 versus 0x11c and point/basis scheduling remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

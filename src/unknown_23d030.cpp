@@ -126,7 +126,7 @@ byte g_51ec12;
 real g_470a24 = 1.f;
 extern byte g_51ec11;
 
-// score 89 (was 102): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
+// score 89 (was 89): frame 0x4c agrees; zero XMM3 (retail XMM1), normalize_inline's i-first squared length and
 // the side/up/roll SSE colouring differ. Kept: both cameras share one state type and the forward vector comes from
 // this file's direction helper, which puts the side.i copy and the movement x87 block where retail has them.
 // Earlier side-vector assignment orders (k/j/i, j/i/k, i/j/k, j/k/i) and a
@@ -363,6 +363,10 @@ extern byte g_51ec11;
 // F332: Consumed roll cosine/sine coefficient reused for inverse scale, phase/entry
 // storage and consistent matrix-scale observation, 319/322/319/322 in both cases.
 // Original scalar lifetimes and full body restored; zero/side/up allocation remains.
+// N320: Shared direction-helper pitch/yaw observations and scalar/native vector publication regress
+// the target and the matched second user. Original helper restored; zero, normalization and up/roll
+// allocation remain. Scores 291/128/280/304/101/307/295/345.
+// Original executable source restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

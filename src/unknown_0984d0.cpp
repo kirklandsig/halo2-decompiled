@@ -492,6 +492,8 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F332: Paired validity/byte-ordinal lexical priorities, four pairs 80 each;
 // the same pairs with ordinal storage inside the count guard 207 each. Original
 // names, lifetimes and complete body restored; validity/cursor homes and loop entry remain.
+// M316: On signed-byte ordinal graph: size/handle producer forwarding with inherited/plain cursor reads, then long producer result 188/194/189/209/209/209/209/80.
+// Validity home, validation carriers and loop-entry reload remain; original helper and inherited cursor reads restored. Original executable body restored.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
