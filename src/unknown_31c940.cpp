@@ -170,6 +170,8 @@ static __forceinline void solve_linear_friction(float target, float limit, float
 	apply_linear(impulse, row, a, b, result);
 }
 
+// score 2113 (was 2115): retain the first circular-friction square before
+// adding the second. Register allocation, stack homes, and shared tails differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
 	solver_velocity_31c940 *bodies, float *impulses)
@@ -284,7 +286,9 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				volatile float maximum_squared = maximum * maximum;
 				float impulse_a = row[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
 				float impulse_b = row[1].b.m128_f32[3] * error_b + error_a * operation_float(op, 8);
-				float norm = impulse_a * impulse_a + impulse_b * impulse_b;
+				// Retain the first tangential square before adding the second.
+				float norm = impulse_a * impulse_a;
+				norm += impulse_b * impulse_b;
 				if (norm > maximum_squared)
 				{
 					float factor = sqrtf(maximum_squared / norm);
