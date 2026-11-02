@@ -1114,7 +1114,7 @@ void function_2118c0(void)
 
 	g_4f93bc.cell_count = (short)globals->count;
 }
-// score 10 (was 14): retail steps b * 8 in esi and adds it to the wrapped
+// score 10 (was 10): retail steps b * 8 in esi and adds it to the wrapped
 // indices (lea/add, add esi, 8) where ours steps b and scales it (lea with
 // esi*8); that is four instructions, the rest of the count is the shift they
 // cause. Earlier forms, before previous and ta to tc moved into the band loop:
@@ -1140,6 +1140,12 @@ void function_2118c0(void)
 // explicit components and an inline cubic helper; for loops: all fully reduce the rows to pointers, or
 // leave the 10. Only a truncated sum (short index), a volatile index (diagnostic, removed) or a row
 // computed under a real test keeps `add esi, 8` with the rows unreduced, each with extra code.
+// Round 361: Native byte/signed-char/dword band domains across both passes or a
+// separate interpolation pass 10/10/134/10/10/134; byte sample with byte/shared
+// or dword/separate band 10/134. Original domains and body restored; partial
+// scaled induction remains. Earlier short/long/word screens excluded these domains.
+// Round 469: Disjoint band/knot bit composition, seven wrapped-row subsets and all five rows: 134/134/134/104/104/104/103/190. Original row sums restored; scaled induction remains.
+// Round 87: output from row 150; output from p1 / p1 from output 194/194; word band and a separate unsigned second-pass band 10/10; band != 3, <= 2 and prefix increment 10 each. Original body restored; partial row induction remains.
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2829,6 +2835,10 @@ void function_20fda0(long arg_0);
 // local before the owner 19; masked index local before the owner 19; owner and node offsets both named
 // 22. A compile-only screen (its listing agrees with the real one) of ~680 owner, node, pool, inline
 // helper and typed element forms: none loads the data into EAX.
+// Round 122: full owner layout with array-element arithmetic 19; typed node element and fields 19;
+// owner declared first 19; raw call result with the pool read before sign extension 19; event callee
+// inline declaration 19; both/false-path/flag-path void-return cleanup expressions 19/19/19;
+// owner base then offset 19; owner base then offset with typed node element and fields 19.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

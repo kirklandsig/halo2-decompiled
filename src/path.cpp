@@ -522,9 +522,21 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 0xe8/0xe4 and node/flag/previous homes remain.
 // DH280: Admitted-depth/previous-point/converted-coordinate branch ownership, seven subsets then all with
 // bounded short link count [350, 332, 336, 297, 354, 345, 334, 366]. Original executable body restored.
+// Round 73 (m3 lane 16, fast; positional/aligned, 0x270930 kept throughout; 295 stands): short link count 366/210 (1368);
+// with special false at the in-range arm's start and set by an if 363/190 (1370); plus count zeroed after the init loop
+// 371/211; count after the loop alone 371/230; short + early special + link test as an inline predicate with a result
+// variable 361/186 (1374); that with count after the loop 365/207; a named initial node pointer 361 (same code);
+// increment split after the copy 360/210 (1373); with `(dword)flags >> 7` in the predicate 359/208 (1374: retail's
+// movsx/shr/and/store sequence); `previous = NULL` assigned after the declarations or after the clamp 359 (same code).
+// Left on that form: retail keeps previous in EDI from entry (`xor edi, edi` shared with the count test and the link count
+// store, stored to its home, reloaded after the fill and at the back edge) where ours sinks the NULL past the fill, and the
+// slots run previous/count/previous index where ours run count/previous index/previous.
 // DH283: Repeated depth captured as short, with parent/edge/both field captures
 // 425/401/378/420; corresponding long depth forms 426/402/406/420.
 // Original indexed memcpy, field observations, private helpers and complete body restored.
+// DH296: Complete projection/displacement/shared-setter producer subsets
+// 313/295/313/297/313/297/313; all with bounded short link count 354.
+// Original parallel products, point stores and entire body restored; frame and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -962,6 +974,9 @@ bool function_2715a0(byte *buffer)
 // DH283: Repeated decremented-count/child-heap-index/stored-cost ownership subsets
 // 486/494/494/486/486/494/494; complete graph with promoted remaining count 516.
 // Original heap observations, cost casts, helper calls and complete body restored.
+// P270: complete point memcpy at goal/child/both/closest/goal+closest/child+closest/all,
+// then memmove at all three: 486/486/486/486/486/486/486/520. Original aggregate
+// transfers and complete body restored; state/node/link and scalar homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

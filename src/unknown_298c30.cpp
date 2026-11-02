@@ -197,6 +197,14 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // 1/2/3/4/5/6/7 give 395/401/401/451/451/449/449; complete graph with named squared sum 449. Original point
 // storage, expressions and every helper restored. Frame and cleanup agree; normalized XY/magnitude homes and
 // center retention remain.
+// Round 44 (lane 15, fast): retail takes the loop's distance on x87 from the centre point's memory home, with dx and
+// dy live on the x87 stack, and keeps the outer counter in EBX with a dword spill compared through bx. Double dx/dy
+// 437 (1712 bytes, aligned 243, masked 111, against 235 and 111); with both 16-bit counters 488 (1669, masked 108);
+// centre built through an output-pointer inline 395 (same code), with double dx/dy, dy first 437; the difference
+// through a named point 450 (1751); centre built from the input copy 398.
+// DH295: Retained evaluation-first emitter with candidate/endpoint short-byte, byte-short,
+// short-short, long-byte, byte-long, short-long, long-short and long-long ordinals:
+// 464/402/471/442/420/481/444/457. All restored; normalized homes and entry sum remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -505,6 +513,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 504: shared planar/edge-distance/normalized-sweep differences, seven subsets
 // 723/719/719/723/723/719/723; full graph with native sector-result records 723.
 // Original helpers, native workspaces and body restored; frame 0x124/0x114 remains.
+// M315: current ordinary-result graph with consistent index/transform/both inline contracts,
+// without/with complete sweep scope 759 each; both with separate phase cosines, without/with
+// full sweep scope 753/753. All body and declaration trials restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

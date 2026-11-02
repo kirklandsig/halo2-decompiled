@@ -1189,9 +1189,13 @@ PRIVATE __forceinline s_prop_node_view *actor_next_prop(s_actor_prop_iterator *i
 
 long function_25d810(long object_index, long actor_index, bool create);
 
-// score 17 (was 183): the player loop keeps the player record and the object headers in the
+// score 17 (was 17): the player loop keeps the player record and the object headers in the
 // other of esi and edi, with minor instruction ordering there, and the prop capsule call loads
 // its arguments in another order.
+// Round 530: direct header-table observations, native iterator current player, both, loop-scope
+// header workspace, its native-player pairing, complete player/header role names, native player
+// with role names and direct table with role names: 18 each on reduced control 18 (plain 17).
+// Original complete executable body restored; prop-call setup and player/header register split remain.
 // @retail 0x1c89b0
 short __stdcall function_1c89b0(long actor_index, short maximum_count, s_ai_capsule_view *capsules)
 {
@@ -1534,6 +1538,10 @@ long __stdcall function_1dfb90(long definition_index)
 
 long function_11ea30(point3f const *a, vector3f const *u, point3f const *b, vector3f const *v, real radius);
 
+// score 62 (was 62): frame 0x508 and exact length agree; origin/callee argument registers and stack cleanup differ.
+// Round 530: result initialized at scan, blocker initialized at scan, native long ordinal,
+// both producers, result/ordinal, blocker/ordinal, all three and complete scan role names: 67/62/64/67/64/64/64/64.
+// Original executable body restored; the geometry-call register contracts remain.
 // @retail 0x1c8d20
 bool function_1c8d20(long actor_index, point3f const *origin, long excluded_object,
     vector3f const *direction, long *blocking_index)

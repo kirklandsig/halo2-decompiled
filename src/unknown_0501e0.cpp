@@ -258,6 +258,17 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // transforms 285/259/275; with the first transform before second offsets
 // 291/279/262; both in-place with indexed output 278, early shared scale 306.
 // Original helper/body restored; extra frame word and coefficient/result homes remain.
+// Round 521: real endpoint-pair array traversal, separate/fused phases, long/short
+// endpoint indices and cursor/indexed view rows 389/373/380/376/380/377/376/374.
+// Grouped workspace forms do not match; original helper and body restored.
+// Round 524: real forward-coefficient cursor with complete raw/scaled inputs,
+// explicit arms ijk/kji and separate/shared scale 295/297/295/297;
+// default-first counterparts 241/242/241/242. The latter recover frame
+// 0x14 and 1136 bytes but regress. Original helper, observations and body restored.
+// Round 526: Actual coefficient-row vectors consumed by existing dot3f, original/native
+// input ownership, cursor/indexed output and both product orientations:
+// 254/254/250/250/254/254/250/250 at 1136 bytes. Original helper/body restored;
+// extra frame word and coefficient/input/result homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

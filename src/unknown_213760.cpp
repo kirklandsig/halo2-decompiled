@@ -1442,6 +1442,16 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N306: Finite native validity-slot/current-result/pending-cleanup domains, seven subsets, then
 // all with readonly expected size: 272/134/287/102/274/195/289/289. Original objects and body restored;
 // query/count homes and write/checksum/header-validation joins remain.
+// Round 56 (lane 11, fast): round 53's three match-only forms rebuilt at 7 (aligned 6) and the write-local form at 114
+// (917 bytes, aligned 6). Diagnostics on them (all reverted): an extra dword load and global store after the write's
+// wait, on the write-local form, 109 at 930 bytes brings the close's `mov ecx, eax` copy back, so that copy is the
+// scratch rotation landing on ECX, not a coalescing rule, and only the probe's two lines and the checksum's EDX are left;
+// the same probe in the resized block on the 7 form 140 (933 bytes; handle ECX, flags still EAX); before the close test
+// 169 (946 bytes, frame moves). On the write-local form: the count through a local 114; reversed compare 114; a bool
+// from the compare 114; `sizeof(empty_header)` 114; `written = bytes_written == 0x800` 107 (930 bytes, sete join), with
+// a redundant `if (written)` around a second assignment 107. No zero store, current graph, re-measured 157 (masked
+// stack offsets 20). Next: a form that takes one scratch step after the write and one before the checksum, no code.
+// Round 87: reversed size/write-count/close/open comparisons 33 each; header-read else-if 103 (932 bytes); plus write-result assignment 111; success under its own test 7 (exact-only); an explicit by-value write-handle temporary on that graph 114 (917 bytes). Original body restored.
 // @retail 0x213970
 void function_213970(void)
 {

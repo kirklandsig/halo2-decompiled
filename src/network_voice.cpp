@@ -1369,6 +1369,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // whole-scan header bytes/channel count/payload bytes 143/143/143; header and payload totals 132;
 // channel count and payload total 122; unsigned header/payload totals 132. Separate accumulators
 // grow scratch to 8 versus 4 and spill the identity flag. Original restored.
+// Round 61 (lane 1, fast): has-player helper as early return/if-first return 94/94 (0x56160 40/25), ternary 103 (356 bytes,
+// aligned 66 -> 43; 0x56160 25, 0x56380 74, 0x55c40 140), if/else result 94 (0x56160 71), bit shifted down 133, named mask
+// 94 (same code); the test written at the call site, `active && mask test` or nested, 118 (324 bytes; flag AL and mask EBX as
+// retail, but player EDI and total ESI, 0x54990 5), as a ternary 95 (354 bytes, 0x54990 5). All restored.
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1682,6 +1686,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // Eager gates combine the two tests; snapshots still defer or combine loads. Original restored.
 // DH round 265: complementary eager unavailable bool/byte/short/long, separate/shared policy gates:
 // 101/101/97/99/111/111/94/116. Original complete body restored.
+// Round 61 (lane 1, fast): muted mask through an inline getter, as an expression/as a local 85/85 (same code); mode-allowed
+// mask computed first, `remote & ~muted & allowed`, 95 (431 bytes); mode read once through voice_get_mode() 104 (406 bytes);
+// 0x53bb0 `inline` (diagnostic) 102 at 446 bytes, aligned 20 -> 11, but 0x54890 83 and 0x53a20 84: restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3183,6 +3190,14 @@ struct s_voice_route_choice
 // radio 363/363/411/411; with shared headset player bit
 // 391/391/411/411. Original body restored; entry saves, cursor bias
 // and tail priority merge remain.
+// Round 61 (lane 1, fast): mode local with a re-read after the settings store and branch radio 409 (1276 bytes), through
+// a per-choice pointer 405 (1287 bytes); both with the bitwise radio 514/525; the pointer at function scope, set per
+// iteration, branch radio 410 (same code). Compile-only screens of retail's remainder (eax = i*12, `[eax + choices + k]`):
+// all 64 pointer/direct mixes of the six field reads, a long mode local, named count, while loop, unsigned count, extra
+// statements ahead and choices forced into a register keep the pointer walk; only a hand-named byte offset gives it,
+// and that loses the main loop's pointer. Mixes move the main bias (+4, +0x10 = retail, +0x14, +0x1c).
+// Round 520: native byte/word bitwise radio, with actual receiver/talker mask/both:
+// 363/432/395/438/391/409/394/408. Original bool result, masks and body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3456,6 +3471,14 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // original/independent packet cursor gives 143/161/167/162/144/161/167/162. All regress; original AND-not
 // removal, member domain, live header counts, cursor, calls and body restored. Channel/packet/member
 // ownership and route homes remain.
+// Round 61 (lane 1, fast; 0x564c0 matched each time): cursor with the order size, consumed, stride, cursor 162 (479
+// bytes, aligned 59 against 70; the member still takes EBP); plain-arm talker test through a one-line inline taking the
+// channel 162; no __stdcall 139, with the cursor 162; positive nested member/mask/size tests, each and all, 162; bit
+// test and clear through by-value/by-pointer inlines and word_flags_set 162; relay/direct arm as __forceinline helpers
+// 162/162 (plain inline helpers stay out of line 375/227); the relay helper without the cursor 139 (all same code).
+// Round 520: native unsigned/short current member on original/word current-kind and
+// original/independent cursor graphs: 139/166/137/169/164/159/140/150.
+// Two-count word-kind lead remains below the keep floor; original body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
