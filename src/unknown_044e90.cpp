@@ -180,6 +180,9 @@ struct s_visibility_bound_record
 // Round 248: Complete independent scalar normal results joined after both transform arms,
 // loop/frustum/view/query declaration scopes with normal-first/distance-first publication: 459 each.
 // Original input plane, scalar lifetimes, publication and zero-scale behavior restored.
+// Round 311: Complete fallback bound value, const value and library copy 434/434/434;
+// with native fallback transform values 467/467/467; value/const bounds with library transform copies
+// 467/467. All actual record observations restored; entry/table and plane/query homes remain.
 // Round 515: Boolean instance selector with coherent live flags/table input/branch-owned
 // query-data subsets 419/444/442/447/453/443/462/448. Original selectors, observations,
 // zero-scale behavior and complete body restored; entry/table and plane/query homes remain.
@@ -187,6 +190,8 @@ struct s_visibility_bound_record
 // both uninitialized at entry 413; both per view/frustum 407/407; entry array with view/frustum
 // query 407/407; both initialized at entry 422. Original declaration scopes and all values restored;
 // entry/table and plane/query homes remain.
+// Round 471: Uninitialized containment output at entry/fallback/part-loop/part/record/transform/point-input/query,
+// 433 each. Original false initialization and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

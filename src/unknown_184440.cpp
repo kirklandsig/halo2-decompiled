@@ -273,6 +273,12 @@ __forceinline bool function_184448(long arg_0)
 // Round 465: complete plane input before orientation, native/memcpy/normal-distance/
 // normal setter-distance, at face/entry scope: 987/987/966/973 twice.
 // Original split plane producer and body restored; frame and geometry homes remain.
+// P263: existing dominant-axis provider 1057; six persistent instance/geometry/material
+// pointer priorities 965/965/965/965/965/965; first/last with late worklist 965/965.
+// Original body and declaration restored; excess frame and geometry homes remain.
+// DH285: Joint projection-origin/perpendicular-origin/grid-spacing scalar lexical
+// priorities, six, then two with uninitialized face-owned spacing: 965/965/965/965/965/965/965/965.
+// Original complete body restored; eight-byte frame excess and initial geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
