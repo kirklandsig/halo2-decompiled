@@ -2251,6 +2251,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 361: Complete case-one/fallthrough group after arms 4/7/0/5/9/10/12/11:
 // 625/618/618/624/620/628/618/613 (fast control 485; full 469). Original full
 // case graph and body restored; actor/state ownership and first-point home remain.
+// Round 363: Complete native CRT vector publications turning/state/current, subsets 1/2/4/3/5/6/7
+// 485/485/485/485/485/485/485; all with facing input copy 485 (fast control 485; full baseline 469). Original
+// transfers and body restored; actor/state registers and first-point home remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

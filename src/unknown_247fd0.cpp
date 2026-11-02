@@ -289,6 +289,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // seed pointer for the fifth draw 133; `==` with an empty then-arm 133; the fifth sample through the reference helper into
 // field_38 133; the cached record read into a local before the fifth draw 144. Kept order: creation time through a real
 // local 70 (same code); reciprocal as a default plus if 96; rate through a local with a default 98.
+// Round 363: Plain four-sample traversal into native output word array, helper/direct draws with long/short
+// ordinal 405/405/419/419; retail timestamp order 406/406/420/420. Original fields, draws and body restored;
+// timestamp/compare and child register allocation remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
