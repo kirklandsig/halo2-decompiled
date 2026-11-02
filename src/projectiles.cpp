@@ -991,6 +991,13 @@ real function_30bf0(vector3f *v);
 // Round 495: Whole fallback/default/publication CRT-copy subsets on the shared-scale/path
 // graph 232 each (seven forms); complete copies with entry result 245. Original body
 // restored; frame, rounded-root scheduling and separate divisions remain.
+// Round 497: Entry chosen-speed/time/inverse-time storage, seven nonempty subsets, 232 each; all
+// with path-distance storage 232. Every producer stays at its original use; original body restored.
+// Frame 0x28/0x30, rounded horizontal root and separate divisions remain.
+// Round 243: existing horizontal dot producer alone/both norms 232/232; with complete
+// displacement helper 235/236; entry-result counterparts 245/245/228/228. The 228 forms
+// recover frame 0x30 but gain only four and lose four matched callers. Original helpers,
+// inputs, scalar trees, result lifetime and inherited optional-pointer contract restored.
 // M287: Native double a/b/discriminant-base storage subsets and the complete
 // solved-coefficient storage:
 // 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
@@ -1565,11 +1572,13 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
-// score 315 (was 315): HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
-// first +0 is entry scheduling; frame 0xc versus retail 4.
+// score 307 (was 307): first +0 is entry scheduling; frame 0xc versus retail 4.
 // Pool/input and tag receiver allocation still differ.
 // Speed update is still called instead of expanded; 1239/1261 bytes.
 // HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// HELD (MiniMax C, 11-01): 0xfbfd0 marked `inline` (it is @Banshee64's finished code,
+// first +0 is entry scheduling; frame 0xc versus retail 4.
 // #9, so it waits for their OK) with a definition local at entry gives 304: the speed update expands where
 // retail expands it, the definition goes to EDI and the body is retail's 1261 bytes; the definition local
 // without the inline is 380. On that 304 form: retail keeps the pool pointer in EDX from the entry to the
@@ -1877,6 +1886,13 @@ real function_17c900(short function_type, real input);
 // variants 464 (eight forms); forced original graphs 410/348, forced shared-reciprocal
 // single-exit graphs 398/344 (344 raises other users 0 to 8 and 3 to 10). All helper
 // changes restored; stacked-index/output transport and component homes remain.
+// Round 497: Uniform parallel/cosine-axis/sine-cross term subsets 366/348/348/348/366/348/348; all
+// with per-use lead field 369. Original body restored; stacked-index/output-EBX transport and
+// normalized component homes remain.
+// Round 244: existing moving/havok object getters, each with early/drift-local salt
+// and common/branch-final point output: 348/377/365/382, twice. Original macro,
+// salt, point workspace and final publication restored; frame 0x30 agrees, stacked
+// index/output-EBX contract and point/direction homes remain.
 // M287: Complete multi-use normalized-component storage in six producer
 // orders, then mutable/immutable turn-scope ownership:
 // 348/348/348/348/348/348/348/348. Original vector reads restored;

@@ -384,6 +384,9 @@ void function_07b3e0(void)
 // 53/57 (125/121 bytes). Original cursor and body restored.
 // Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
 // existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
+// Round 243: one next-input cursor, long/int/dword/unsigned-int, through the original
+// scanner 65/65/57/57; dynamic-bound scanner counterparts 65/65/57/57. All shorten
+// and regress; original last-found cursor, shared helpers and terminal stores restored.
 // M287: Signed nonnegative/greater-than-NONE scan admission, cached/dynamic
 // existing scanner and immutable receiver combinations:
 // 53/39/53/39/53/39/53/39. Original sentinel loop restored;

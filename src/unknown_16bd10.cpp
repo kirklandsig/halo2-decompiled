@@ -707,22 +707,14 @@ struct s_observer_command
 	real unknowna4;
 };
 
-struct s_unknown_13bf00;
-extern s_unknown_13bf00 *g_510c50;
 extern real g_54e854;
-
-/* the field of view interpolation's switch (g_510c50) */
-struct s_camera_field_of_view_flags
-{
-	byte unknown0[5];
-	bool active;
-};
 
 matrix3x3 *function_142d10(vector3f const *up, vector3f const *forward, matrix3x3 *out);
 void function_11da10(quaternionf const *a, quaternionf const *b, quaternionf *out, real t);
 matrix3x3 *function_141e10(matrix3x3 *out, quaternionf const *q);
 void function_23c0e0(long object_index, s_observer_command *command);
 void function_172520(s_observer_command *command);
+bool function_13cb40(void);
 
 PRIVATE inline real game_ticks_to_seconds(long ticks)
 {
@@ -857,6 +849,12 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // `flags = 8` store is retail's. Timer as an if/else statement 244 (1700 bytes); length summed j-first
 // 238; both 246; distance dot with position first 236 (same code), with the j-first sum 238. Unused-local
 // probes +1/+2/+3/+4/+8/+12 236/245/369/236/236/385 (diagnostic). Original body kept.
+// Round 25 (lane 18, fast): the field-of-view switch test is the existing 0x13cb40 test (LTCG inlines it, as
+// retail does), 236 with identical code (kept in place of its body copied through a made-up struct); on it the
+// field-of-view fields read at each use 258 (1704 bytes; retail reads time/duration at each use but keeps the
+// target loaded for `fov = target`); the length as dot3f(direction, &plane.n) 251 (d.j preload, i-first sum);
+// the plane distance as dot3f(&plane.n, offset) - d 236 (same code); the length before the plane offset 241.
+// Retail's plane distance computes the i product first in n.i's register (n.i xmm3 dies first), ours last.
 // Round N284: Projection zero-first, absent-object-first and unfinished-FOV-first branch
 // subsets 1..7 score 236/260/260/236/236/260/260; all with nested FOV guards 260.
 // Original native normal copy, branch graph, captures and complete body restored.
@@ -1027,7 +1025,7 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 	camera = camera_scripting_state;
 	field_of_view = g_54e854;
 	camera->active = false;
-	if (g_510c50 && ((s_camera_field_of_view_flags *)g_510c50)->active)
+	if (function_13cb40())
 	{
 		real target = camera->field_of_view_target;
 		if (target != 0.0f)
