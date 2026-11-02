@@ -1813,6 +1813,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // data reloads come back, but unit_index takes EBX and the weapon EBP, frame 0x24), declared first 87, after the
 // player unit 96, inside the weapon block 121, with the player index read in place 87.
 // DH274: Guarded empty-weapon/failed-transfer exits without a persistent given result, crossed with direct/shared pool observations and original/captured player input, 124/132/125/132; positive success exits on the same four graphs 122/124/123/126. All restored; frame/result and unit/weapon homes remain.
+// F321: complementary give result in bool/byte/word/long storage, each with
+// original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
+// Original executable body restored; frame/result and pool/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)

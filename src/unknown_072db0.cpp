@@ -1558,6 +1558,10 @@ struct s_rating_summary
 // Round 290: On explicit team lower-result production, separate team value/change/level carriers,
 // all seven subsets, 61 each; all four team results separated 61. Original shared results restored;
 // summary scheduling and team counter/cursor homes remain, with exact frame and length.
+// Round 322: Native team receiver shared by player-summary/team passes, crossed with copy-result
+// termination, counter declaration scope and full lower-result arms: 65/68/65/68/65/68/65/68 at
+// retail length; first gap moves to +0x4c. Original complete body restored; summary scheduling and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

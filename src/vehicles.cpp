@@ -580,6 +580,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // full-width reversing truth subsets 0-7: 507/507/576/576/508/508/575/575. All helper and
 // target source restored; frame/velocity-copy, early 1.0 residence and later SSE colouring
 // remain.
+// F320: initial existing fallback normalizer, complete 2D role names and repeated steering-product
+// name subsets 349/126/349/126/349/126/349; all with component direction copy 310. The normalizer
+// forms grow to 1189/1170 bytes; neutral forms retain 1144. Original body/helper restored; initial
+// velocity receivers and 1.0 SSE residence remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2666,6 +2670,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // transform 707 each, 3245/3244 bytes, frame 0x104; all three on the original in-place graph 706. Original
 // complete body restored; retail frame 0xfc and scalar/transform homes remain.
 // Round 319: Complete bounded forward/left/up speeds before reciprocal with distinct relative output, six producer orders 699/699/699/699/699/699; immutable 699; original output 692, kept and plain-confirmed. All fraction trees and original observations preserved.
+// Round 322: Complete interleaved bound/fraction producers with reciprocal after first bound, six
+// orders on distinct relative output 718/723/731/730/735/734; immutable retail order 718; original
+// output 710. Original complete body restored; frame/scalar homes and friction/trig scheduling
+// remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4732,7 +4740,7 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
    start, thrust toward the speed along the facing (faster diving, with
    boost), strafing, lift against gravity, and a torque that turns the
    vehicle toward its facing, pitched and banked into its turns */
-// score 1126 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
+// score 1117 (was 1126): Frame 0xf8 versus 0xd8; index/offset and vector/rotation homes remain.
 // Pitch magnitude 1375; scalar control magnitudes with original steering fabs and
 // desired-up add-scaled 1166; the flip-output matrix workspace 1181 (frame 0xdc).
 // Repeated compound argument: controls/normalization/all magnitudes/target scales
@@ -4756,6 +4764,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // one-point side-flip addition and five-point flip-only form restored.
 // P255: Angular-output/quaternion-conversion/late-force lifetime subsets 1-7 all 1126;
 // consistent vector-role names 1126. Frame 0xf8 and index/vector/rotation homes remain; restored.
+// F323: Frame 0xf8 versus 0xd8 and index/rotation homes remain. Sequential target reuse is plain-confirmed at 5056/5094 bytes.
+// Target/drift, target/strafe, acceleration, target+drift+strafe, drift+acceleration,
+// strafe+acceleration, all, all+rotation reuse 1130/1117/1127/1145/1130/1117/1145/1145.
+// Naming only 1126; target/strafe reuse with original names 1117 (plain). Keep only that reuse.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4870,7 +4882,6 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		real strafe_maximum = *(real *)(definition + 0x1f4) * flip_scale;
 		real strafe = vehicle->turn * flip_scale;
 		real strafe_fraction;
-		vector3f strafe_target;
 		vector3f strafe_velocity;
 		vector3f strafe_acceleration;
 
@@ -4882,16 +4893,16 @@ void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state
 		{
 			strafe_fraction = 0.001f > (strafe_maximum >= 0.0f ? strafe_maximum : 0.0f - strafe_maximum) ? 0.0f : 0.0f - strafe / strafe_maximum;
 		}
-		strafe_target.i = strafe * facing.left.i;
-		strafe_target.j = facing.left.j * strafe;
-		strafe_target.k = facing.left.k * strafe;
+		target.i = strafe * facing.left.i;
+		target.j = facing.left.j * strafe;
+		target.k = facing.left.k * strafe;
 
 		real side_speed = facing.left.i * velocity.i + facing.left.j * velocity.j + facing.left.k * velocity.k;
 
 		strafe_velocity.i = facing.left.i * side_speed;
 		strafe_velocity.j = facing.left.j * side_speed;
 		strafe_velocity.k = facing.left.k * side_speed;
-		function_f1380(&strafe_acceleration, &strafe_target, &strafe_velocity,
+		function_f1380(&strafe_acceleration, &target, &strafe_velocity,
 			*(real *)(definition + 0x234) * strafe_fraction,
 			strafe_fraction * flip_scale * *(real *)(definition + 0x238), g_510c54->rate);
 
