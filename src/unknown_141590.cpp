@@ -944,6 +944,10 @@ void function_143250(
 // Original scalar and publication graph restored; frame, rotation admission and basis homes remain.
 // The full identity/literal graph has 917 numeric declarations, EAX rotation and frame 0x304
 // in the reduced image, but regresses to 1986 at 10988 bytes.
+// Round 222: numeric scalar identities, mutable first-assignment declarations,
+// first-producer/final-consumer declaration order, double-first/real-first declarations,
+// numeric first-assignment and reverse numeric declarations: 1766 each. Every expression,
+// precision boundary and publication retained; complete original scalar graph/body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -362,6 +362,11 @@ static __forceinline bool structure_bsp_collision_available()
 // non-inline exclusion helper 103 (240 bytes: LTCG keeps it out of line); the kept form with the collision
 // read through the source at every use 53 (same code); a `short policy = 2` local set by 0x10a0b0 for
 // scenery and tested `== 2` before 0xbf9a0 and `!= 2` before the requery 62.
+// Round 221: coordinated byte return with native byte/bool result and direct/materialized model return
+// 63/63/63/63; signed-byte return on those four graphs 63/63/63/63, all 269/286 bytes. The 0x60 frame
+// and availability prefix remain correct; return normalization disappears but exclusion BL and
+// source-slot publication do not appear. Every matched caller and file control survives. Original
+// Boolean return, caller declaration, byte result, direct model return and complete body restored.
 // Round 110 (m3 lane 7, fast): a compile-only screen keeps the join's flag test un-threaded (retail's `mov bl, 1;
 // jmp`, `xor bl, bl` just before 0xbf9a0 and `test bl, bl` after it) when the flag reaches the test through a copy
 // into a variable that has another live definition (as matched 0x1a0560's `result = loaded;`): a function-scope
@@ -1011,6 +1016,12 @@ done:
 // through a `found` flag 139 (471 bytes); either with the existing availability helper 148 (470 bytes: the
 // failure exit inline as retail's, but ESI pushed after it) / 150; the plain form with `*probe = *point`
 // before the flags computation 128.
+// Round 221: coordinated byte result parameter and caller declaration 119; independent retry count 126;
+// existing initial point setter 142; both 143. Signed-byte parameter on those four graphs
+// 119/126/142/143. Byte and signed-byte forms retain the caller at 119, but gain six and fail the
+// eight-point gate; setter forms lose the matched caller. Original Boolean parameter, caller
+// declaration, grouped storage, point copy and entire body restored. Frame 0x64 agrees; exclusion BL,
+// result stack home, direction ESI and NONE ownership remain.
 // Round 110 (m3 lane 7, fast): the flag through a function-scope `excluded` copied from a `scenery_excluded` &&
 // local inside the requery's else-if test (diagnostic: an assignment in a test) 125 (same code); `*probe = *point;`
 // first at entry 128; `result = false;` first 130; the collision's NONE store first 130; the probe step through the

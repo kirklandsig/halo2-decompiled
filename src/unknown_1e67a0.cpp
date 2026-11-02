@@ -944,6 +944,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // producers 213/213. Original sampled-vector, frame 0x18 and full body restored.
 // DL220: Native scalar rotation-cross storage, crossed with original/axis scalar observations and complementary cosine:
 // 196/203/248/236/196/221/247/228. Sample home and rotation/output scheduling remain. Original body restored.
+// DL224: Final direction decision in bool/long/byte storage, bit before/after publication:
+// 173/166/173/166/173/166; selected direction pointer consumed twice, bit before/after publication
+// 213/215. All restored; sampled-vector slot and rotation/output schedule remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

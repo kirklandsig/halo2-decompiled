@@ -333,6 +333,9 @@ public:
 // (`field_34 + i * 0xb8`, no offset local) 59: the strength-reduced offset is set after the zero-trip test and
 // the count compared in ECX as retail, but head is still copied before the test, so the snapshot and the
 // offset share a slot (frame 0x10); on it the snapshot walked as the head 243, head declared in the for-init 59.
+// Round 222: unsigned byte offset 54; live count 242; both 242; remembered/current
+// child identities 54, with unsigned offset 54, live count 242, both 242; complete
+// graph with separately declared ordinal 242. Original count, offset, identities and body restored.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

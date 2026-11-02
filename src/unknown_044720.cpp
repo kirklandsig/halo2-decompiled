@@ -449,6 +449,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 499: All three squared-displacement products named, with completed distance/radius and
 // reversed ordered comparison subsets: 182/184/182/184/182/184/182/184. Original products, frame
 // and body restored; entry spill and point homes remain.
+// Round 223: Existing node-cache publication before tag/after tag/after matrix
+// 182/182/182; with provider-filled count 194/194/192; before-tag short/dword
+// cache 209/182. Original cache timing, count storage and complete body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
