@@ -200,7 +200,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
-// score 32 (was 32): the limit test is written the other way round, so the comparison matches
+// score 32 (was 32): Frame 0x10 and prediction prefix agree; first +0x59 converts ticks
+// into XMM4 rather than XMM3. Velocity/delta scheduling and correction products/adds remain.
+// Earlier: the limit test is written the other way round, so the comparison matches
 // retail's operand order and its branch, but the scheduler computes the components i, j, k where
 // retail does j, i, k, so the tick conversion takes xmm4 where retail reuses xmm3, the deltas land
 // in other registers and the limit is computed before the squared length. Converting the ticks
@@ -453,6 +455,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // orders, the conversion inline/at the top/before the call, a separate predicted point, three declaration
 // orders, dot3f, seven correction forms) found none closer than 3 aligned below the kept form; `sqrtf` for
 // the root changes nothing.
+// DH269: On the named-length graph, native output/local/common base accumulations
+// 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
+// and common-expression publication 50/50. All regress; original body, includes,
+// parameter storage, length lifetime, delta order and correction producer restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

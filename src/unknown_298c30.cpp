@@ -77,8 +77,6 @@ real function_50650(real cosine);
 __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f const *arg_3,
 	point2f const *arg_4, long arg_5, s_298c30 const *arg_6, real arg_7, real arg_8, point2f const *arg_9, point2f *arg_10)
 {
-	g_5047f8[arg_0].field_0 = arg_1;
-	g_5047f8[arg_0].field_4 = arg_2;
 	point2f &local_0 = *arg_10;
 	if (arg_2 < 0.0f)
 	{
@@ -87,13 +85,15 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 	}
 	else
 		local_0 = *arg_3;
-	g_5047f8[arg_0].field_1 = local_0.y * arg_4->y + local_0.x * arg_4->x < 0.0f;
+	g_5047f8[arg_0].field_4 = arg_2;
 	g_5047f8[arg_0].field_c = *arg_3;
+	g_5047f8[arg_0].field_0 = arg_1;
+	g_5047f8[arg_0].field_1 = local_0.y * arg_4->y + local_0.x * arg_4->x < 0.0f;
 	function_298c30(arg_5, arg_6, arg_7, arg_8, &g_5047f8[arg_0], arg_9);
 	g_5047f8[arg_0].field_18 = arg_0;
 }
 
-// score 408 (was 408): Frame 0x64 agrees; entry loads, normalized XY/magnitude homes and 0x18 versus 0x1c cleanup differ.
+// score 395 (was 408): Frame 0x64 and 0x1c cleanup agree; entry schedule and normalized XY/magnitude homes differ.
 // Earlier: Frame 0x64 agrees; entry loads, normalization homes and 0x18 versus 0x1c cleanup differ.
 // The pointer-to-parameter trick for arg_3 is gone and the score is unchanged; the parameter's own use
 // still differs from retail's stack home.
@@ -189,6 +189,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DH round 266: actual two-angle emission table with emission/candidate/endpoint byte-or-short
 // ordinals, all eight combinations 562/543/578/564/562/543/578/564. Plain emission
 // induction shrinks to 1556-1594 bytes and misses frame/entry/cleanup; original restored.
+// DH269: Existing emitter side/angle/direction publication phase subsets 1/2/4/3/5/6/7,
+// 404/412/408/409/404/412/411; evaluation followed by angle/direction/side/facing 395 kept,
+// plain 395 at 1732/1732 bytes; caller 0x29a190 445 -> 389, no other user regresses.
+// Entry stack load and 0x1c cleanup recover; first +0xa and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

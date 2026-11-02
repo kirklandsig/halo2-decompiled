@@ -446,6 +446,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 332: Masks computed at each use with word cache, filled count and inner matrix scope, subsets
 // 0-7: 215/226/202/217/215/226/202/217.
 // Original executable source restored; no eligible gain.
+// DH269: Native bound-point/mask/bound-ordinal declarations before traversal,
+// subsets 1/2/4/3/5/6/7 182,182,182,182,182,182,182; all with coherent role names 182.
+// Every guarded initialization stays in place; original whole body restored. Entry/index
+// spill and query/point homes remain; frame and retail length agree.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
