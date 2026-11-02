@@ -1660,6 +1660,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Round 503: angle/result-only, scalar-projection, vector-receiver and complete slot names
 // 193/193/193/193; the same four graphs with a double result carrier 290/290/290/290.
 // Original real result and every expression restored; separate result stack home remains.
+// Round 524: shared projection families 1/3, 2/4, both 410/200/402; with one exit
+// 410/200/402; both with complete displacement copies, original/one exit 402/402.
+// All original source restored; independent result home and frame 0x14 versus 0x18 remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2246,9 +2249,10 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 182 (was 182; earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// score 170 (was 182): plain fallback component loop recovers retail frame 0x38;
+// first +0x30 stores the raw length at +4 rather than +0xc; rotation allocation still differs.
 // MiniMax R (11-01): 132 with the shared or staged axis cross and the rotated components as named locals, but it costs 0xc2d00 its match in the full build like the held cross3f form, so it is not kept; the named components alone (182) and the axis written out in the helper's operand order (182) change nothing.
-// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// Earlier baseline 182 (193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2270,6 +2274,11 @@ real magnitude3d(vector3f const *v);
 // scalar rotation results 198. Magnitude and protected neighboring body stay matched in previews. Frame 0x34
 // versus 0x38 and raw-length/dot/angle/cosine homes remain; entire original body and every arithmetic tree
 // restored.
+// Round 524: explicit current/target/both repeated magnitude clamps 182/182/182;
+// bounded deltas alone/with current/target/both clamps 163/163/163/163; all with cosine first 164.
+// Repeated per-axis blocks 163 discarded; rotation-only/fallback-only clamps 180/166.
+// Plain fallback component loop, original/bounded rotation-size expression 170/170.
+// Keep shared loop and original rotation-size expression: plain 170; raw length/dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2307,12 +2316,13 @@ void function_3e5a0(vector3f *current, vector3f const *target, real step)
     }
     else
     {
-        real delta = target->i - current->i;
-        current->i += delta < -step ? -step : delta > step ? step : delta;
-        delta = target->j - current->j;
-        current->j += delta < -step ? -step : delta > step ? step : delta;
-        delta = target->k - current->k;
-        current->k += delta < -step ? -step : delta > step ? step : delta;
+        for (long component = 0; component < 3; ++component)
+        {
+            real delta = target->n[component] - current->n[component];
+            if (delta < -step) delta = -step;
+            else if (delta > step) delta = step;
+            current->n[component] += delta;
+        }
     }
 }
 
@@ -3428,9 +3438,9 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 251 (was 272): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
+// score 251 (was 251): frame 0x74 versus 0x70, early zero and portal/fog loop homes remain.
+// Earlier short-fog gain 272 -> 251; 257 with a volatile counter was not retained.
 // MiniMax R (11-01): no new form, no lower score.
-// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
 // Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
@@ -3452,6 +3462,9 @@ bool __stdcall function_391f0(void *state);
 // fog word with byte flags 251; byte flag initialization 299; all three 291;
 // fog word plus long count 300; all three plus long count 301. Keep only the fog word;
 // retail tests AX before widening the index. Frame 0x74 versus 0x70 and early zero remain.
+// Round 524: native short portal side, array declarations reversed, both 297/251/297;
+// native short fog-pass ordinal, with side/array/both 323/325/323/325; all with short
+// visible ordinal 274. Complete original body restored; narrow-side/fog homes do not recover frame.
 // @retail 0x36b50
 void function_36b50()
 {

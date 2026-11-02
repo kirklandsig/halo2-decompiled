@@ -218,6 +218,10 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 521: symmetric native table-expression indices/low/high nodes, seven subsets
 // and unshifted high node 82/82/82/82/82/82/82/82. All original executable code
 // restored; coordinate promotion and height/common homes remain.
+// Round 524: top-down unsigned mask scan with long/dword/short/word counts
+// 111/111/112/118; top-down bit-index scan with the same domains
+// 105/105/118/139. Original helper and body restored; delayed coordinate
+// promotion, height/common homes and branched minimum remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
