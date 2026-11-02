@@ -239,6 +239,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // forms (rows as 0xd0080, itself unmatched, writes them: `axis * along + x * cosine - (cross term) * sine`) found none near
 // retail, but that screen's measure is register-sensitive, so it does not rule the shapes out. Retail's rotation: heading
 // zero in xmm3 replaced by 1.0 after the dot, memory 0.0 then `xorps` later.
+// DH296: Velocity publication before moving/fixed position offsets, native/shared
+// scaler and original/late sine: 227/227/227/227/191/191/191/191. Every frame
+// remains 0x11c; original offsets, velocity, private rotation helper and full body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

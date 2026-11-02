@@ -1329,6 +1329,9 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // block 18; a velocity pointer local 18; the point cast to const 18; the nested query's result in a point
 // declared before the clamp 128; the statement query before the body index read 97. Still BLOCKED-BY
 // 0x1d0a20 (src/impacts.cpp is held this round too).
+// Round 86 (KIMI2): entry/scoped multi-use object handle 2/2; body declaration before support 2;
+// clamp declaration first 2; returned point dereference/re-address 2; support/component role names 2;
+// header/unit role names 2; all four role names 2. Original body restored.
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {

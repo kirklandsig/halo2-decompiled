@@ -311,6 +311,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 916/916/911/921/913/913/929/917 fast. Original full body restored.
 // Paired-marker ordinary 918; original body restored.
 // Actor/unit and priority/query/marker homes and excess twelve frame bytes remain.
+// M315: native returned object count with complete priority/ordinary actor-unit/independent-query
+// home subsets 0..7: 915/919/993/1011/903/943/1000/1013 fast (control 931).
+// Count plus independent query, count alone and count plus priorities: 903/938/923 plain.
+// Original body restored; frame, actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1603,6 +1607,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 427/420/415/422/473/420/473/420; eager word with paired corner results
 // short/word/byte/long 451/451/415/424. Five-point 415 lead rejected above 30;
 // original classification, Boolean corners and complete body restored.
+// Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
+// circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
+// Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

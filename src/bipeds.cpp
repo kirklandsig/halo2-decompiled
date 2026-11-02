@@ -2294,6 +2294,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // Round 259: Native body field at every selection use with retained/at-use count, entry/at-use
 // tag and local/entry-zero query output 67/82/74/85/77/91/83/94. All restored;
 // extra EBP, native validation and flag-store schedule remain.
+// DH295: Complete per-use component getters with retained/at-use settling count, promoted/native
+// main-body result and entry/at-use tag: 74/99/74/89/86/103/87/101. All restored;
+// extra EBP, native body transport and flag scheduling remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2698,6 +2701,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // seven subsets, then all with the per-body impulse scale before lift: 530 each.
 // Original component producers and body restored; frame 0x44 versus 0x4c,
 // result byte, state width and centroid/impulse homes remain.
+// F329: Shared push/fallback velocity workspace, hit snapshot at its direction consumer,
+// and the existing complete along-difference producer, seven subsets:
+// 530/548/530/548/530/563/563; all with velocity role name 563. All restored;
+// frame 0x44 versus 0x4c, result byte and native scalar/vector homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2950,6 +2957,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Full-width special/wall/left truth subsets 1/2/4/3/5/6/7 and all native bytes
 // fast 600/639/652/631/615/633/622/642 (control 642); special alone plain 561,
 // 2728/2712 bytes. Keep only long special; every producer, condition and call is original.
+// F329: Shared wall side, shared angle sine/cosine and complete triple-product crosses,
+// seven subsets: 611/604/669/598/643/669/669; all with direct cross producer 643
+// (unchanged reduced control 600; full 561). The 598 form gains only two. All restored;
+// frame 0x78, flight scalar/byte homes and wall-vector scheduling remain.
 // M313: Native orientation/shared short-hand getter/entry scalar declaration subsets, then branch scalar declaration; original body restored;
 // fast 600/616/616/600/600/616/616/616.
 // @retail 0xe01d0
