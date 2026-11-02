@@ -607,6 +607,18 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // candidate)` / `spread_equal(reference, candidate)` helpers 65 (the reference-left code). Retail queries the left
 // operand first in both the spread compares (candidate left) and the cost compare (reference left); ours queries
 // the stack candidate last in every form.
+// Round 69 (lane 16, fast): the candidate as a reference bound to a copied temporary 123 (535 bytes); a
+// `__forceinline` free `operator<` on two solution references, `candidate < *reference`, 67 (same code), with the
+// cost written candidate first inside it 67; the first test as a `? true :` ternary 67 (same code); diagnostic: the
+// reference as a full stack copy (`s_balance_solution const reference = improved ? best : current;`) 126, its
+// count_spread (the newer, higher stack copy) still runs before the candidate's.
+// Round 441: byte/word outer and inner ordinal domains (word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, word/byte, byte/word) 146/146/151/142/148/150/155/144.
+// All regress; narrowed inner domains also lose the matched caller. Original body restored;
+// reference-first spread queries and the extra two bytes remain.
+// Round 276: complete selected-solution value after edits with no/candidate/reference/both
+// retained spread results 126/97/100/99; before candidate copy 183/152/155/139.
+// Original selected-pointer graph restored; candidate-first query ownership remains.
 // Round 21 (lane 17, fast; compile-only /FAs screen agrees): the candidate in a one-member struct 67 (same code), a
 // `static` candidate 183 (546 bytes), the reference from a two-entry pointer table 108 (523 bytes), the reference as
 // a byte offset from `this` 80 (516 bytes), all diagnostics; a stack or global candidate is queried after any
@@ -919,6 +931,14 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // operand order follows the parameter declaration order, not the sum's spelling, and the fill value has to
 // be evaluated after the count and destination, which here only a non-leaf value does (a load through a
 // register such as `party_indices[0]` is placed last; every local, global or folded form loads first).
+// Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
+// the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
+// 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the
+// copy loop with the array declared first 73; the fill counted down from `total - 1` 72 (193 bytes); open slots
+// as the capacity then `-= total` 34; the fill bound `i != total` 35; 1-7 dead temporaries (diagnostic) 34 each.
+// Round 276: standard count-based fill with difference/extra count, alone 62/60,
+// with excess maximum 82/82, party maximum 118/115, both maxima 116/113.
+// Combined scan, original fill and clamp restored; EAX/EDX count ownership remains.
 // Round 127 (lane 5, fast with 0x91e30): the copy stored before the maximum update 82 (170 bytes);
 // next_party set to 0 just before the copy loop 34; the fill through a block-scoped element pointer 34;
 // the clamp as `if (excess < 0) excess = 0;` 46; the fill through a pointer to next_party 34
@@ -930,6 +950,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // loaded first); the extra-first sum with the clamp's subtraction written in place 45 (192 bytes); the fill
 // bound `i != total` 35; the maximum test as `party_indices[i] + 1 >= next_party` 35. Re-measured
 // (diagnostic, value-changing): `(short)next_party` in the fill 7 with retail's roles.
+// Round 279: standard maximum element selection, reduction/copy first, maximum/reverse-minimum
+// comparator, if/conditional lower bound: 72/80/84/94/78/87/84/90.
+// Original combined scan, fill and clamp restored; count ownership remains.
 // Round 21 (lane 17, fast): `(void)&next_party;` 34 (same code); next_party `volatile` (diagnostic, reverted) 59 with
 // the player count still in EDX; total written `extra_count + player_count` with the clamp's subtraction in place
 // 45 (192 bytes); a dead `next_party = NONE;` after the fill (diagnostic) 34; the party index named once in the

@@ -71,6 +71,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 }
 
 // score 408 (was 408): frame 0x3c versus 0x34; observer/channel/result and counter homes remain.
+// MiniMax I (11-01): 374 with the has-host and packet flags as words (score-picked, see below), the record as
+// observer + index*0x528 with the 0xa8 folded into the field offsets, the search through the channel array and
+// the counter snapshot through the existing union; with the two flags back to bool 430, also without the union
+// snapshot 411. Not kept; body unchanged.
 // Earlier: the 388 form below (four call-result and state locals as word, exact
 // 1369-byte length) was not kept: retail keeps these in 32-bit homes with no 16-bit operations,
 // so the word type is score-picked. Frame 0x3c versus retail 0x34; homes differ.
@@ -129,6 +133,10 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // Round 260: Shared threshold/payload/both rounders 428/428/437; separate raw/capped allowance 408, with
 // shared rounders 437; query-phase zero packet result 407, with shared rounders 438, all 438. All
 // restored.
+// Round 211: late secondary-output producer/host-first admission/fallback flag and their
+// combinations 453/426/418/449/434/437/457; joint budget arm 457. Fallback flag alone
+// recovers frame 0x34 at 418; with indexed channel fields 426, plus branch window 410.
+// Original complete state graph and body restored; observer/result/counter homes remain.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

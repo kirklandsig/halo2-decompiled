@@ -3646,7 +3646,8 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 
 /* retail calls 0x5f6a0 and 0x58d20 here instead of inlining them */
 #pragma inline_depth(0)
-// score 101 (was 101): frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
+// score 101 (was 101): Frame 0x3c agrees; held timeout owner spill and identifier/reply allocation remain.
+// Earlier: frame 0x3c agrees; held timeout owner spill and message/reply allocation still differ.
 // Earlier: frame 0x3c agrees; retail loads session+0x10 and spills it, and splits the
 // member-state lea, before the timeout call (BLOCKED-BY 0x769a0, held file; same spill in 0x5e7f0),
 // which shifts everything after it; announcement id/member scheduling also differs.
@@ -3695,12 +3696,40 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // the inner parentheses 101; `leave` declared first 103; `value44` cleared before `member_index` 100.
 // Lead (scratch copy): owner also on 0x62da0 (send to members) with an `owner` local passed to both calls 127:
 // the store lands in retail's slot (+0x14), but at the top instead of just before the timed-out call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
 // Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
 // early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
 // `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
 // block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
 // word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
 // identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 47 (m3 lane 13, fast; aligned counts in brackets, baseline [30]): constant true/false exits 116 [29];
+// with the guarded leave 123 [29]; the guarded leave alone 131 [30]; identity source before the memset 101 [27];
+// constant exits with the reply member pointer before the id 116 [23]; those three together 123 [23];
+// `if (peer) {...; return true;} return false;` with the guarded leave and member pointer first 121 [15]: every
+// block but the timed-out call setup (retail's owner spill and split member-state lea, 3 instructions more)
+// and the announcement's member offset (retail scales it before the memset) is then retail's, but the 3-line
+// shift there keeps the positional count up. Keep that form for when the timed-out call is solved.
+// Round 22 (lane 18), fast (aligned difflib counts in brackets, start 101 [38]): an early `return false`
+// with the guarded leave and the reply pointer first 123 [31]; `result = false` ... `result = true` with both
+// 119 [19]; `if (is_peer) { ...; return true; } return false;` with both 121 [17] (exits, leave and reply
+// blocks as retail; only the timeout setup and the announcement's load order left); plus the identity
+// address named before the memset 121 [14]; plus the id stored after the identity copy 121 [24]. Retail's
+// only other 0x769a0 caller, 0x5e7f0, has the same dead session+0x10 store before the call.
+// Y492: complete bool/long/short/byte admission results all 101;
+// each with reply-member-before-id production 94. Seven-point leads rejected;
+// all restored. Held timeout owner spill and message/reply allocation remain.
+// Round 34 (aligned counts in brackets, opening [38]): guarded `if (state == 7 && flag) leave = true;` 131 [36];
+// early `return false` when not a peer 116 [42]; both 123 [40]; the peer block first ending `return true`, then
+// `return false`, member-state pointer before the id, with the guarded leave 121 [17] (both exits and the leave
+// block exact); plus the identity source pointer before the memset 121 [14] (only the blocked spill and the id's
+// word order around the memset left); id copied field-wise 121 [14]; identity pointer after the memset 121 [17];
+// identity memcpy before the id 121 [26]. Positional rises, not kept: try the [14] form once 0x769a0 takes the owner.
+// Round 332: Reply id aggregate; announcement id as a copy, reversed fields, fields or memcpy,
+// each with original reply order or member before id: 101/94/101/94/101/94/101/94.
+// Seven-point gain rejected; original executable source restored.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -4543,6 +4572,19 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // the received block 305; `result` before the sender lookup 310; `result` between sender and state 305;
 // `!memcmp` identity test 305; state-8 sender test inverted 305. Owner also on 0x616e0 (enter state 9) with
 // an `owner` local 374 (scratch copy; loaded at the top).
+// Round 287: Shared timeout identity publication with conditional reason and original/newer/
+// equal/both selection predicates 322/331/324/330; explicit reason arms with those same four forms
+// 322/331/324/330. Original timeout publication, selection producers and body restored.
+// Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
+// acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
+// state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
+// code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
+// Round 215: complete decision outputs recover result +b; dword/byte/short counts
+// on that graph 298/314/299; native received packet 298, with those domains 298/314/299;
+// complete native stored fields 323. Seven Boolean-home name combinations 298 each;
+// all names without redundant selection defaults 298. Seven-point leads rejected;
+// original body, packet types, output states and held interfaces restored.
+// Identity/selection byte homes and acknowledgement/rejection placement remain.
 // Round 34: state-8 site as `if (sender == NONE) { result = true; goto done; } goto acknowledge;` 305 (same code);
 // acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
 // state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical

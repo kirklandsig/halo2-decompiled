@@ -232,6 +232,23 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // Round 470: unsigned raw decibel words in choice/target/datum records, all
 // seven subsets 886 each; all with unsigned helper transport 886. Original
 // records, helpers and body restored; entry zero and target/query/count homes remain.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
+// Round 54 (m3 lane 1, fast): retail reads the query count straight from the out-parameter as a dword and keeps
+// the choice count in ESI as a dword (the entry zero in ESI becomes the count; `cmp esi, 2`): the count read
+// directly with a long choice count 927 (3297 bytes; aligned differing lines 700 -> 585), with the short choice
+// count 919; on the long counts `s_loop_path_choice *choice = &choices[choice_count++]` with retail's store
+// order (tag, source, decibels, cluster) 960 (our choice address becomes an induction variable; retail
+// recomputes it from the count); the three 1.0f defaults as statements in retail's store order (inside, portal,
+// outside; the chained assignment stores them reversed) 886, with the long counts 927. Array names (two full
+// prefix orders) and declaration order leave the four query-array homes unchanged (retail: gains +0xec, indices
+// +0x1f0, portals +0x2f0, clusters +0x3f0; ours portals, indices, clusters, gains).
+// Round 446: native persistent/query/search scalar lexical homes, seven subsets
+// and all with Boolean local roles 886 each. Original scalar names, body and helpers restored.
+// Round 494: short persistent target count with native long query/choice and
+// bounded short existing-count subsets: 925/930/954/975/915/921/943/947. Two native-count forms
+// recover 3327 bytes but regress; all original counter domains, helpers and body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -621,6 +638,8 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // instruction behind: retail re-reads g_4e0348 for the transition definition); on that the transition
 // definition through g_4e0348 278 (1037 bytes: bsp takes retail's +0x14 home but a zero takes ESI for
 // the 0x18dc90 NULL, the count test and the cue stores).
+// Round 263: Native query-tail sentinel chains in six array orders 161/162/162/161/161/159; original-order chain with short/word
+// bounded fill induction 256/256. Original fill producer, count, helpers and complete body restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
