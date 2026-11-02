@@ -219,6 +219,9 @@ real normalize2d(point2f *arg_0);
 // difference 240 (1034 bytes, aligned 114); the to-center vector initialised from the input and
 // differenced in place 240 (1034 bytes, aligned 115). Lead: the single-exit result plus a fix for the
 // center/vector scheduling (retail copies the input a second time into +0x28 and differences in place).
+// DL237: Existing complete planar setters at first/second perpendicular construction and
+// sign-selection boundaries, masks 1/2/3/4/8/12/15/5: 262/226/296/249/247/236/323/278. All
+// restored; output EBP and point/perpendicular homes remain.
 // Round 465: ordered native squared-length fold, long/short/signed-byte/int
 // ordinals, original/joined optional-index guard: 267/237/237/267/284/236/236/284.
 // Joined guards change the convention and lose three caller matches. Original sum,
