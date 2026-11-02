@@ -1661,6 +1661,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P263: complete selected-normal/final-vector native/memcpy/memmove pairs
 // 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
 // Original transfers, magnitude, call sites and complete body restored.
+// DL247: Flat native material/speed admission with original dot, native movement,
+// contact fields at use and ordinary fallback inline: 221/224/222/221/221/224/222/221.
+// All restored; zero width, reset/selection homes and selective material-call expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

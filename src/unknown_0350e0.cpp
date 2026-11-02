@@ -2058,6 +2058,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // AC480: Local/forward assignment initialization and existing native result setter, subsets
 // 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
 // original producer and body restored. Frame and independent vector-copy homes remain.
+// DL247: Existing angle producer output reference / returned pointer / aggregate vector /
+// immutable aggregate, forced/ordinary inline: 224/224/224/224/177/239/177/239.
+// All restored; nonmatching output contracts shorten past retail, and the 0xc0 frame remains absent.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2630,6 +2633,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
 // subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
 // All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
+// DL247: Standard alias-safe swap with swap/clamp inline and completed clamp result:
+// 568/568/568/568/600/600/600/600; original swap with independent helper inline
+// subsets 317/317/317, completed result alone/with either/both 404/404/404/404.
+// All restored; state/prefix homes and rotated decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3626,6 +3633,9 @@ bool __stdcall function_391f0(void *state);
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// DL247: Standard count/end-point distance fill with CRT zero, aggregate false,
+// count false or end-point false fill: 295/295/296/296/295/279/296/296.
+// All restored: shorter than retail, no frame recovery, and a reduced control regresses.
 // @retail 0x36b50
 void function_36b50()
 {

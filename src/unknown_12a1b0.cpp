@@ -1369,6 +1369,9 @@ struct s_looping_detail_request
 // All restored; first-player expansion and detail/offset homes remain.
 // Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
 // 154/173/155/162/136/169/151/149; original complete body restored.
+// DL247: Coordinated ordinary-inline first-player contract with native offset, CRT source
+// copy and repeated definition index: 110/134/110/134/141/165/141/165. All provider users
+// retain their preview scores; query still expands. Original contracts and body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
