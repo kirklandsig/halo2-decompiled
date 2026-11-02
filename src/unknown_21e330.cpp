@@ -749,6 +749,13 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // initialization 116; split first / all result declarations 25/25; the first gain read
 // through its own address 25, through the integer bits' address 92; helper conversion
 // order 25.
+// Round 134: each next sum named before the previous level's scaling, the levels named 81 (0x12aff0
+// touches no memory, so the sums hoist above the calls); the gain by const reference with the field by
+// value read through its address, as bits 107 (391 bytes), as real 144 (360 bytes), a real gain reference
+// 144; the field as bits by value with a real gain, a real gain reference or a local copy of the bits 106
+// each (392 bytes; the copy is propagated away); one function-scope variable for all four sums 55 (399
+// bytes); the double cast on the copy's side 25. Compile-only: the sum on a 4-byte struct or union by value
+// (new result, in place on the copy, or returning real) is SSE with no x87.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

@@ -63,6 +63,10 @@ struct s_6ec83
 // 223, the counter declared outside 223, explicit NULL tests 223, explicit zero tests 223. Diagnostics:
 // a repeated pointer test 13 (folded); the memcpy under `if (local_2)` 68 (977 bytes, slots unchanged),
 // so the slots do not follow reference counts here.
+// Round 77: a shared short NONE predicate 273 (981 bytes); with the mask scoped: a signed mask
+// 223; readiness from the mask/data tests 227; the short initialized at entry 237; the pointer
+// initialized at entry 261; both entry initializers 260; a register mask 223; a const machines
+// pointer 223.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

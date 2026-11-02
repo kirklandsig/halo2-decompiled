@@ -1217,6 +1217,11 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // render branch ending in `return` with the no-model code after it 44; parent read through
 // s_object_transform_view 44; parent header through a file-local inline lookup taking the pool pointer as a
 // parameter (diagnostic) 44, same code.
+// Round 59 (m3 lane 1, fast, on the count > 0 guard diagnostic, 44 at 1390 bytes, aligned 8, only the no-model lookup
+// left): the object table bound to a `void const *const &` temporary 44, from a by-value accessor 44; the parent
+// header from a forceinline accessor bound to a const reference 41 (1392 bytes), the parent object the same way 41; one
+// function-scope parent index assigned in each branch 44, with the accessor 41. Retail keeps the pool in ECX and the
+// parent index in ESI there (ours takes ECX for the index as nothing reads the pool). The guard stays match-only.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
