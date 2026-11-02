@@ -1660,6 +1660,7 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // Round 503: angle/result-only, scalar-projection, vector-receiver and complete slot names
 // 193/193/193/193; the same four graphs with a double result carrier 290/290/290/290.
 // Original real result and every expression restored; separate result stack home remains.
+// Round 469: Single result exit with entry-zero/if-else/conditional/inverse-if producers, then conditional named double angle: 193/296/296/296/193/296/296/296. All original sums, switch and result restored; independent result home remains.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3428,9 +3429,9 @@ bool __stdcall function_38450(byte *state, byte const *definition, real remainin
 bool __stdcall function_37a60(void *state);
 bool __stdcall function_391f0(void *state);
 
-// score 251 (was 272): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
+// score 251 (was 251): earlier 257 with a volatile counter; frame 0x74 vs 0x70, early zero and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
-// score 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
+// Earlier 272 (was 272; earlier 257 with a volatile counter): frame 0x74 vs 0x70, early zero and loop homes differ.
 // Earlier: no volatile any more. The portal loop is now `while (remaining-- > 0)` with
 // `*portals++` and the two sides are a real 2-iteration loop (`for (side...) if (sides[side] == cluster) break;`), which compiles
 // to retail's loop (movsx ebp, word [portal+eax*2]; inc eax; cmp eax, 2; jl). A plain `for (; remaining > 0; --remaining)` counter
@@ -3452,6 +3453,7 @@ bool __stdcall function_391f0(void *state);
 // fog word with byte flags 251; byte flag initialization 299; all three 291;
 // fog word plus long count 300; all three plus long count 301. Keep only the fog word;
 // retail tests AX before widening the index. Frame 0x74 versus 0x70 and early zero remain.
+// Round 469: Direct global step/update-success loop condition/render-success loop condition subsets 1-7, then complete graph with short visible ordinal: 249/277/298/265/276/296/318/316. Two-point direct-step lead rejected; original observations and loops restored.
 // @retail 0x36b50
 void function_36b50()
 {
