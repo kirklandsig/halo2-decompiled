@@ -27,53 +27,27 @@ PRIVATE const dword g_4507c8[24] =
 
 typedef void *(__stdcall *texture_allocate_proc)(long size, long alignment);
 
-// score 28 (was 28): retail reads width and height as full dwords (its only caller sign-extends
-// both), so its prototype has 32-bit dimensions; the caller's declaration is short. Retail also
-// spills the header register into the dead width slot before the allocation call and makes the null
-// result only on the failure path. Tried: the dimensions used directly 46; each path storing the
-// outputs and returning 52 (retail's tests, no spill); `if (!result) buffer = 0;` 28; a named
-// validity bool 28; a dword aligned size 28; long width/height here and in the caller's
-// prototype 27 (176 bytes: the entry and the caller's movsx pushes as retail; the spill, the
-// early null and the field order still differ); with that, result starting as the header and cleared with the buffer 42 (failure
-// path as retail), result = header at the top 69 (header moves to eax), result set in both arms
-// or the test inverted 69, the lock store first 31 (43 with the header result).
-// Round 12 (fast): ours makes the null result in ECX before the tests (`xor ecx, ecx; cmp edi,
-// ecx`), and that extra instruction stands where retail's dead spill is, so the positions after it
-// line up. Result set in both arms 69; result = header just before the allocation call, cleared
-// in the else 69 (copy coalesced into the header's register, header moves to eax); `return buffer
-// ? header : 0` with no result 68 (branchless sbb, but the Lock store then takes EBX's zero);
-// result = 0 at the top 83 (own stack slot); `result = header` first in the success arm and
-// result = 0 in the else 51 (both tails and the tests exactly retail's, ECX then stays reserved
-// through the arm); that with the Lock store first 51 (180 bytes, Lock from EBX as retail); that
-// with long width/height here and in the caller's prototype 52 (176 bytes; caller 244 -> 246);
-// with long width/height, the header itself cleared in the failure arm 68, result set at the end
-// of the arm 68. Retail's result is set late yet not coalesced with the header, and its spill
-// stores the header register: a copy of the header defined after width's read and live across
-// the allocation call would give both; no source form tried keeps that copy apart.
-// The failure result rewritten 69 (181 bytes); the result declared before allocation 28; the buffer
-// before aligned 28; all declarations at entry 28; the result before Lock/Data 33/35; a promoted
-// height with the failure result 66 (182), with Lock first 31. Body restored.
 // @retail 0x23e340
-D3DTexture *function_23e340(short width, short height, short format,
+D3DTexture *function_23e340(long width, long height, short format,
 	texture_allocate_proc allocate, long *size, void **data, D3DTexture *header)
 {
-	long w = width;
-	long bytes = function_1366d0((short)w, height, 1, format, 0x40, 0);
+	long bytes = function_1366d0((short)width, (short)height, 1, format, 0x40, 0);
 	long aligned = (-bytes & 0x7f) + bytes;
+	D3DTexture *result = header;
 	void *buffer = allocate(aligned, 0x80);
-	D3DTexture *result = 0;
 	if (header && buffer)
 	{
-		header->Format = (g_4507c8[format] << 8) | 0x10029;
-		header->Size = (((((dword)w * 4) >> 6) - 1) << 24) | ((height - 1) << 12) | (w - 1);
+		dword texture_format = g_4507c8[format];
 		header->Lock = 0;
+		header->Size = (((((dword)width * 4) >> 6) - 1) << 24) | ((height - 1) << 12) | (width - 1);
+		header->Format = (texture_format << 8) | 0x10029;
 		header->Data = (dword)buffer & 0x0fffffff;
 		header->Common = 0x40001;
-		result = header;
 	}
 	else
 	{
 		buffer = 0;
+		result = 0;
 	}
 	*size = aligned;
 	*data = buffer;
