@@ -511,6 +511,9 @@ struct s_1f8a70_actor
 // route/radius/node admission 228/377/307. Original gates, values and complete body restored.
 // Round 476: Disabled admission-produced bool/byte/short/long return with ordinary false after unit 432/442/466/466; after actor resets 432/442/462/460.
 // Frame 0x80 and entry pool/data order recover, first +0x27; extra predicate materialization and result homes regress. Original body restored.
+// DL225: distinct scratch-conversion result, bool/byte/short/long, published before/after
+// release 424/424/424/424/432/432/433/433. All restored; frame 0x84, early false and
+// unit-output/route/result homes remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
