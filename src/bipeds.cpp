@@ -3207,6 +3207,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 359: Independent pivot transform order, delayed direction copy and existing back scale,
 // subsets 1/2/4/3/5/6/7, then all with entry limit: 381/388/369/407/382/388/408/431.
 // Original producer order, scalar lifetimes and complete body restored; matrix/origin homes remain.
+// Round 365: Shared world-offset/placement-difference-plus-origin/final-displacement
+// producers, subsets 1-7: 364/387/388/368/364/369/363; all with shared contact scaled
+// sum 364. Exact-length 364/363 gains are below threshold. Original complete body
+// restored; matrix/origin and paired pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

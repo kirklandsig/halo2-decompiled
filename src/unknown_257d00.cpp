@@ -2254,6 +2254,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 363: Complete native CRT vector publications turning/state/current, subsets 1/2/4/3/5/6/7
 // 485/485/485/485/485/485/485; all with facing input copy 485 (fast control 485; full baseline 469). Original
 // transfers and body restored; actor/state registers and first-point home remain.
+// Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
+// existing actor perception view: 485 each (fast control 485; full 469). Original complete
+// record layout, observations and executable body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

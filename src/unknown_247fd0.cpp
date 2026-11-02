@@ -292,6 +292,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // Round 363: Plain four-sample traversal into native output word array, helper/direct draws with long/short
 // ordinal 405/405/419/419; retail timestamp order 406/406/420/420. Original fields, draws and body restored;
 // timestamp/compare and child register allocation remain.
+// Round 365: Missing-bit mask reused for evaluation/publication, current-record and
+// two-consumer value-array inputs, masks 0-3: 77/89/77/89; retail timestamp order
+// 126/68/126/68. Two-point gains rejected. Original mask, receivers, timestamp and
+// complete body restored; folded comparison and child scratch rotation remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -617,6 +621,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // indexed reference/direct producers 527/450/527/450, real-array pointer walks
 // 517/469/517/469. Original record layout, draw sequence and complete body restored;
 // late EBP preservation and random/blend/getter homes remain.
+// Round 365: Plain native-array blend/contact/velocity traversals, subsets 1-7,
+// 376/374/374/376/376/374/580; all with short component ordinals 528. Original
+// complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

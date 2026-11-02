@@ -370,6 +370,9 @@ public:
 // Round 363: Separate-allocation graph with complete native CRT link/flag/age fills, subsets 1/2/4/3/5/6/7
 // 106/54/130/106/142/130/142; all with zero fields first 142. Original scalar initialization and body
 // restored; child preheader/pool ranks/retest/link construction remain.
+// Round 365: Native location first/tail/emitter link-array access, subsets 1-7, and
+// all with chained invalid-link initialization: 54 each. Original complete layouts,
+// scalar stores and body restored; child preheader, pool/NONE and salt construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
