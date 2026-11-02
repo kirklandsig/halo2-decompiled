@@ -29,7 +29,7 @@ struct s_245850
 };
 
 #pragma inline_depth(0)
-// score 1 (was 14): only the plane index is loaded with a 16 bit move where retail sign extends it.
+// score 1 (was 1): only the plane index is loaded with a 16 bit move where retail sign extends it.
 // Round 117: shared scalars with plane, point or matrix union views 11 each; the returned plane
 // pointer 100; the existing in-place rotation helpers 203 each; the existing point setter 145;
 // shared scalars with separate point input/output pointers 5; successive local_3.j accumulation 1;
@@ -61,6 +61,9 @@ struct s_245850
 // retail, j row's first two products swapped), with it the 8 j-row spellings 11-26 and the other
 // five plane copy orders 15-30. A long plane index needs declarations in items.cpp and
 // unknown_181a10.cpp (other lanes' files this round).
+// Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
+// 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
+// field, shared scalars and every transform/call restored; short lookup contract remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

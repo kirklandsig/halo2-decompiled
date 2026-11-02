@@ -961,6 +961,10 @@ struct s_flags_1f0870
 // forms revisit the clean store graph; original observations and full body restored.
 // Round 296: Actual bounded-step result long/dword/short/word at its producer, then the same four entry
 // declaration lifetimes. Scores 590/590/590/590/590/590/590/590. Original complete body restored.
+// Round 257: Native coordinate consumers for general delta/bounded scale/publication, seven subsets,
+// then all with history publication: 587/587/587/752/752/752/752/764. Individual loops reach
+// retail length at 587; the three-point gains are rejected. Original complete body restored;
+// frame 0x34 and direct/vector homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1614,6 +1618,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH round 266: indexed coordinate reduction, long/short/word/byte axis crossed with
 // double/real root carriers: 611/609/630/630/630/630/630/630, all 1332 bytes.
 // New reduction storage fails the movement/reset/material-call graph; original arithmetic restored.
+// Round 256: all three named dot products in the existing shared helper, six producer
+// orders 227 each; first/last orders with real movement 228/228. Original helper,
+// magnitude and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

@@ -635,6 +635,9 @@ done:
 // Round 347: Default before each genuine case on the retained repeated-copy graph:
 // 32/32/32/32/32/32/32/32.
 // Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
+// Round 355: complete readonly shared getter with readonly UI receiver, direct selector
+// and repeated/shared copy tails: 32/32/44/44/54/54/57/57. Original getter and body restored;
+// early EDI save, tag/selector schedule and scratch-address cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -735,6 +735,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
 // DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
 // Complete opening body restored; no qualifying keeper.
+// Round 316: Paired planar/camera/both offsets 376/388/493; native position
+// alone/with planar/camera/both and assigned native position 669/657/633/628/628.
+// Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0
+// 400/308/407/428/408. Original geometry, products, observations and case order restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
