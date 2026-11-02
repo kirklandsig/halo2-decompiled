@@ -692,6 +692,10 @@ bool sound_driver_voice_create_buffer(
 // pair array and shared/per-phase mixbins 82/146/82/146; spatial-first counterparts
 // 180/208/180/208. Original descriptors, arrays, predicates and complete body restored;
 // spatial/play and descriptor zero/input homes remain.
+// Round 466: Native submix/buffer output-slot pointers, each/both at admission/SDK
+// phases, then both with indexed receivers: 82/158/170/82/100/111/176/109.
+// All preserve the caller but move saves earlier (+0xc); original direct outputs,
+// spatial/play carriers, descriptors and full body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
