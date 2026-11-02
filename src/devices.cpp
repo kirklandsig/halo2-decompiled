@@ -813,9 +813,18 @@ struct s_device_machine_view
 // second-bit local 122. Screen: that bool tested nested, after a `first` bool, with `!= 0` on the first bit,
 // as `second == true`, const, through a `both` bool, through a ternary value, or braced: all the shift
 // (aligned 2); `&` of the bits 13.
+// Round 310: Complete device/tag receiver observations at each use, bool/byte/word/long
+// success carrier without/with power-velocity zero default: 494/512/518/515 and
+// 497/515/521/518. Original cached receivers and body restored; native word-load
+// sharing and velocity-zero join remain.
 // Round 284: complete case-local numeric result production, conditional delay/position/power
 // selected-value subsets 151/150/123/143/134/145/120; all with native group masks 155.
 // Original body restored; word-load/EAX sharing and power-velocity zero join remain.
+// Round 78 (m3 lane 12, fast; word flags + the 0x1200055f zero store, aligned 4): a forceinline word getter taking the group pointer 122, a const pointer copy of
+// the group at the read 122, nested word tests 122, the pointer scoped to a block that ends before the tests 122 (all the pushed ESI, same code).
+// AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
+// before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
+// masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1145,9 +1154,20 @@ bool function_108530(long device_index, long name)
 // cruise store 134 (524 bytes); the ramp-down minimum as `if (ramp_down_time > remaining)` 121; the half times
 // named before the cruise time 121; the distance as `real distance = (real)fabs(delta);` inside the duration
 // test (no copy at the top) 121.
+// Round 310: Initial reset as contiguous zero span/native initialized reset/native zero reset/whole clear,
+// with local cruise speed 142/170/181/140; field-owned speed 138/178/189/147. All reset
+// forms restored; frameless ramp-down and initial-velocity residency remain.
 // M304: Paired unchanged endpoint-speed scalar captures at entry/time bounds/pins/active work,
 // local/field cruise-speed ownership: 121/134/121/134/121/134/121/134. Both callers stay 31/13;
 // original parameter lifetimes, velocity ownership and complete body restored.
+// Round 312: Paired phase-energy numerators before doubled derivative denominators,
+// with endpoint/cruise square-part subsets 0-3: 121 each; field-owned cruise speed 134 each.
+// Original phase expressions, publications and complete body restored; initial velocity
+// XMM6 and ramp-down stack residency remain.
+// Round 333: One-observation position pin with distinct target and complete initial/duration/cruise
+// field domains: 142/142/142/142/106/106/106/106. Original-target and ordered-pin/complete-field/early-down-half
+// refinements 106/106/106/140. The 106 forms introduce a frame and raise the second caller 13 -> 28;
+// original input observations, publications and complete body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1643,9 +1663,21 @@ bool function_0b6760(s_index_pair const *pair);
 // EDI where retail has EBX/ESI, EBX pushed late, the result in DL); that with a plain definition 405 [130];
 // `previous` renamed (sorting before `position`) on that form 367 and on this body 294 (same code each); the
 // position local renamed twice on that form 367/367 (same code): the slot order follows neither name.
+// Round 310: Shared real group and repeated channel receivers across both group phases,
+// with ordinary index/saved pointer/result-first storage subsets 0..7:
+// 360/378/372/435/360/378/372/436. Original receivers, scalar qualifiers and
+// body restored; frame/index/header/state/result homes remain.
 // M304: Word header ordinal with entry false/null and ordinary saved-pointer subsets 0-7:
 // 375/375/375/375/415/415/416/415. Inherited-pointer forms recover frame 0x20 but regress;
 // original full handle/header observations, pointer home and entire body restored.
+// Round 312: Native four-real coefficient-block receiver with inherited/ordinary index and
+// saved-pointer storage: 370/389/378/420; result-first variants 370/389/378/421.
+// Original scalar domains reach retail length or frame separately but regress; temporary
+// rate record, receiver, declarations and whole body restored. Frame/index/header/state
+// and activity-result homes remain.
+// Round 333: Complete typed tag receiver and direct selected event fields, with ordinary
+// index/saved-pointer/result-first domains: 342/367/400/405/342/367/400/406. All regress; original
+// tag type, both declarations, qualifiers, field observations and body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

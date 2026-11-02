@@ -468,6 +468,11 @@ static inline bool teams_enabled_19e1c0()
 // Round 464: repeated event input snapshots for cause/effect/both players and all player/team
 // values before pure token comparisons: inherited result 418/433/441/452, ordinary result
 // 632/632/643/574. All regress; original observations, result storage and full body restored.
+// Existing admission result as conjunction/early failure/complete arms/conditional:
+// inherited result 454/390/414/414; ordinary final result 736/691/698/698.
+// Round 482: One shared final result read after independent dispatch prefixes of
+// 1/2/4/6/8/10/12 arms, then every arm with ordinary result storage: 390/390/390/458/451/436/390/691.
+// Original chain and result restored; frame/capacity homes and separate copy tails remain.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

@@ -363,6 +363,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 354: Full-width current/next address indices and later key acquisition subsets
 // 1..7, then readonly keys: 216/12/217/9/82/9/82/82. Original short lookahead, key observations,
 // shared fraction, frame/timing and helper calls restored.
+// Round 83: short current frame for offsets with the table after the fraction 84 (660 bytes);
+// full-width current offset index 9, plus full-width next offset index 9, plus a following-key pointer 9;
+// guarded do loop 9; split restart initialization 9; explicit restart branches 9; nested continuation 9;
+// combined two-point interpolation with staged scalars 26, with copied input records 151 (611 bytes).
+// Original index reads, helper contract and complete body restored; the boundary edge and table schedule remain.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

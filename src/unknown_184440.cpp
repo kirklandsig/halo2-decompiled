@@ -273,6 +273,24 @@ __forceinline bool function_184448(long arg_0)
 // Round 465: complete plane input before orientation, native/memcpy/normal-distance/
 // normal setter-distance, at face/entry scope: 987/987/966/973 twice.
 // Original split plane producer and body restored; frame and geometry homes remain.
+// Round 523: Scalar plane-transform input with complete scalar/native normalizer capture,
+// early/common result and original/scalar point input, 999/1080/1011/1052/1060/982/1033/976.
+// First form recovers frame 0x11cc and first +0x1d but regresses; original in-place inputs,
+// helpers, projection lifetimes and complete body restored.
+// P263: existing dominant-axis provider 1057; six persistent instance/geometry/material
+// pointer priorities 965/965/965/965/965/965; first/last with late worklist 965/965.
+// Original body and declaration restored; excess frame and geometry homes remain.
+// DH285: Joint projection-origin/perpendicular-origin/grid-spacing scalar lexical
+// priorities, six, then two with uninitialized face-owned spacing: 965/965/965/965/965/965/965/965.
+// Original complete body restored; eight-byte frame excess and initial geometry homes remain.
+// M3 lane 4 r155 (fast; also LCS-aligned counts, base 710): retail stores the four projected cell bounds as one packed
+// short rectangle (word stores at +0x3e/+0x3c/+0x42/+0x40 for left/top/right/bottom, zeroed bottom/right/top/left). The bounds
+// as the existing short_rectangle2d (fields left, top, right, bottom assigned, loops over top..bottom / left..right) 1007
+// (4630 bytes, aligned 709; ours then packs it at +0x2c, frame still 0x11d4), with the zeroing in retail's order 1007 (chained
+// or as four statements), declared at function scope 1007 (aligned 709); the per-face projected bounds initialized by four
+// statements 969 (4595 bytes, aligned 718). Re-measured: record/surface declarations before the instance pointer 965, surface
+// before record 965, rectangle plus that order 1007.
+// Retail keeps the record pointer (+0x98) and surface pointer (+0xe4) in memory from the start; ours holds them in EDI/EBX.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

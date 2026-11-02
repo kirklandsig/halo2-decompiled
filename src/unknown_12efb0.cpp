@@ -336,9 +336,19 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // ICWR/IWCR/IWRC/WICR/WRIC/CWIR/CWRI/CRWI (C RGB, I intensity, W weight, R remainder)
 // 775/775/775/748/748/616/614/612; two/four-point leads rejected. Original helpers and complete body
 // restored; palette/record and SIMD carriers remain.
+// Round 44 (lane 15, fast, with a CAVEAT line): the palette slot as a char local, retail's `cmp cl, al`, 705 (3835
+// bytes, masked 131 against 130), read right after the palette call 705; long slot with the test on the byte field 761
+// (3856); the record pointer cleared only in the palette arm, retail's `xor ebx, ebx` position, 616 (same code), with
+// the char slot 705. The -1 in EAX tie stays.
 // N306: Native output combined/separate rejection, nested/intensity-first acceptance, each with
 // original/early-exit merge: 616/616/616/616/616/616/616/616. Original helpers and complete body restored;
 // palette/record and SIMD zero/contribution carriers remain.
+// P271: Conditional intensity computed after the RGB stores, load/default, guarded
+// default, if/else and named conditional, with short/char palette:
+// 609/712/720/720/698/702/708/708. Original helper and body restored; palette/record/SIMD homes remain.
+// P271 follow-up: Late two-use intensity with CWRI/CRWI/CWIR, conditional-result
+// CIWR/CWRI/CRWI/CWIR, and late two-use CRIW: 703/703/609/609/703/703/609/703.
+// Original helpers/body restored; isolated seven-point lead remains below the keep gate.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

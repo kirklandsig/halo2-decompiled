@@ -406,7 +406,8 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 	}
 }
 
-// score 112 (was 112): retail takes the object index in eax and the entry
+// score 112 (was 112): Frame 0x48 agrees; object/entry registers, early physics-pointer spill and center/projection scheduling remain.
+// Earlier at 112 (was 112): retail takes the object index in eax and the entry
 // index in ecx (ours the other way round, which is also 0xb7060's last
 // difference), and orders the dot product's terms k, j, i (ours k, i, j;
 // the source order of the terms does not change the code). Retail copies the
@@ -524,6 +525,27 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // original center 147/147/328/219, native center 177/177/305/255. Forced existing getter expansion
 // on the four native-output graphs 261/219/248/255. Original getters, center and body restored;
 // object/entry roles, physics spill and projection schedule remain.
+// Round 310: Plain component loops for previous transform/previous vector family/current center,
+// subsets 1..7 then all unsigned counters: 382/233/364/224/401/219/384/384. Matrix and
+// center loops recover the input register pair and caller 0xb7060, but regress the body;
+// center alone first differs at +0x35 and reloads its source receiver per component.
+// Original copies, getters and body restored; physics/default/search/projection scheduling remains.
+// N313: Existing default producer owns the complete marked-body search; eager/late fallback with
+// latch/early return 525/524/525/525; existing native center conversion 519/518/519/519.
+// The larger existing helper stays out of line, shrinking the caller to 659..666 bytes and worsening
+// its caller to 11; exact-only boundary forms restored. Original default producer, search and center
+// transfer restored; frame 0x48, input register pair and physics/projection scheduling remain.
+// N314: Force expansion of the existing complete default/search selector and both velocity getters;
+// eager/late fallback with latch/early result 251/272/199/275, existing center conversion 241/264/254/268.
+// The selector now expands, but input roles and scalar/transfer scheduling regress; six forms worsen the
+// caller from 2 to 11. All complete-search ownership, helper qualifiers, center transfers and executable
+// body restored; original private selector, getters, caller inputs and arithmetic retained.
+// N316: Natural predicate/bound inner search with direct-result/count/center combinations:
+// 157/243/223/209/180/243/234/245. Original search, center copy, helper bodies and caller retained; input
+// roles and physics/projection scheduling remain.
+// N318: Complete current-center memcpy/memmove/standard forward/backward copy
+// 112/125/128/128; with complete previous-transform memcpy 116/128/123/123. Original
+// center/copies and full body restored; input roles, physics spill and projection scheduling remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

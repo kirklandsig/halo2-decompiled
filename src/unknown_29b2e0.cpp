@@ -51,7 +51,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
+// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
@@ -246,6 +247,8 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // axis 239, both 237; renames of the vectors or pitch 178 (seven forms). Retail's frame shows the rotations on the first copy's slot (+0x20).
 // M293: First clamp limit before yaw/after yaw/after gain/after signed target pitch,
 // conditional then if-else producers: 344/290/279/282/344/290/279/282. Original lifetime restored.
+// Round 286: Joint four-vector lexical priorities for both inputs, result and pitch axis, eight
+// forms 176/176/176/176/176/176/176/176. Original in-place body and helpers restored; unity/root/yaw and rotation homes remain.
 // Round 517: On the in-place angle/rotation graph, returned first magnitude 263; entry declaration
 // 263; XY before second vector 261; both input copies before first normalization 370; first
 // magnitude after second normalization 407; early XY with original output/returned magnitude
@@ -255,6 +258,12 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 307: Complete projection-dot/cross producers at eight pairs of native trig boundaries on
 // the in-place angle/rotation graph, 178 each (1711 bytes). All matched controls preserved;
 // original helper and body restored. Unity register, root/yaw and rotation homes remain.
+// Round 197 (lane 3, fast with 0x29b990): the pitch's final value in its own local after a separate delta 176 (same code), the
+// clamp as its add's left operand 260 (1716 bytes); both rotations on the first copy with a final copy, re-measured 194 (1713
+// bytes; retail's slot, other registers); cross terms in other statement orders, the i term written in its row, the
+// projection term first in the i and k rows (six forms) 176 (same code); sine, cosine, yaw, pitch and root renamed to sort
+// first or last, all 32 combinations 176: names do not move these homes. Body restored. Retail's rows: i projection first,
+// j cosine first, k projection first, cross_i computed after cross_j and cross_k and spilled into the cosine's home.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

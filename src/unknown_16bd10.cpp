@@ -873,6 +873,24 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // Round 463: actual partial length accumulation, full successive/leading-pair,
 // zero-first factor result and uniform product directions, 256/236/371/368/256/236/371/368;
 // original (k+j)+i grouping and complete executable source restored.
+// Round 57 (lane 11, fast; control 236, positional rises while the shape gets closer). LEAD, 337 at 1696 bytes, aligned
+// 125 from 139: FOV tail read at each use with a `start` local; a `seconds` local in the tick helper; plane.n copied from
+// camera->point.left with no direction local; length `dot3f(&plane.n, &camera->point.left)`; the position through a
+// file-local forceinline `a + b * scale` helper writing through a result pointer. The plane block then equals retail
+// (normal XMM3/4/5, the third dot's in-place i product, the load-first pos.i product) but for the length's j/k load
+// order and the length/zero roles; what is left follows the zero constant colouring XMM1 for retail's XMM0
+// (t, length, timer, distance, fov one register off). Stores through a pointer also fuse `or [ebp], 0x40` as retail:
+// the flags load cannot be hoisted past them. The default arm's `or`/xorps stays fused where retail splits it (its xorps
+// tail hosts the NONE path's block). Forms: position through a pointer local 367; FOV tail alone 264 (1708 bytes);
+// tick seconds + FOV 395 (1704); + pointer 356; + dot3f length 343; third dot dot3f(offset, n) with dot3f length 344
+// (aligned 127); + 23 declaration orders of the plane block 344 each; dot/pointer/position grid of 36 forms 337-390;
+// six explicit length term orders on the lead, either operand side, 356-359; normal + distance locals with no plane
+// struct 379 (distance forward-substituted); on the lead field_of_view declared at its assignment 337, active cleared
+// first 337, distance/timer stores swapped or chained 339/339; direct position stores 349 (1700 bytes).
+// Round 289: Standard native-array normal/basis/converted-animation transfers, subsets 1..7,
+// then backward normal with all: 446/475/474/337/464/465/437/437. Coherent output-first
+// matrix-builder formal/declaration/call order 236, matched callee preserved. All transfers,
+// include, interfaces and complete executable source restored; direction and zero homes remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

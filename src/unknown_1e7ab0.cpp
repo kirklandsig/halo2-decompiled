@@ -343,10 +343,21 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // Round 354: Native metadata flag, readonly lookup result and branch-completed nullable
 // result subsets 1..7, then native flag bitfield: 118/118/118/118/118/612/612/612. Original metadata
 // layout, getter, complete case graph and matched sibling restored.
+// Round 286: Existing metadata getter forced inline, original/table-first/readonly/guard exits/
+// completed result/conditional result/entry-owned result/coordinated roles: 118/118/118/118/118/118/118/118. Original
+// helper and complete body restored; metadata table/result scratch rotation remains.
 // Round 517: On the recovered entry graph, validity-player-permission order 366; validity-
 // permission-player 367; entry/player nested admissions 366/118; complete metadata permission in
 // bool/byte/short/long 630/630/631/630. Original admission, getter, case graph and body restored;
 // metadata table/result scratch rotation remains.
+// Round 197 (lane 3, fast): BLOCKED-BY 0xd0590: both retail callers set its register arguments `lea ecx, iterator` then
+// `mov edx, object`, last to first, so its parameters run (object_index, iterator). Diagnostic only, that function being a
+// contributor's: with the order changed everywhere 0xd0590 and 0x1e83c0 still match and this drops 118 -> 111 (the case 4
+// parent takes ESI as retail), 110 with the parent tested before the seat is read. On that diagnostic, without a kept
+// form: the getter with direct global reads, with the result declared after the table, as `result = NULL` then an array
+// sum (118 each, before the order change), and early-return, if/else, ternary, written in the caller, nested ifs, force
+// inline (111 each); a named parent object, a named definition index, both (110 each). Rotations left: entry EAX/table ECX
+// at the getter, and each later case block's scratch. All restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

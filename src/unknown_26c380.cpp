@@ -246,9 +246,34 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH round 279: Current-sector parameter ownership with long/bool/byte/word success and valid-walk/entry
 // next-sector declarations; all forms also lose four matched callers [426, 422, 424, 430, 426, 422, 424,
 // 430]. Original executable body restored.
+// Round 236: Native first endpoint value with original/long count, then staged cross,
+// 667/670/667/670; both endpoint values with those same subsets 671/680/671/680.
+// First-only frame 0x68 loses twelve matches; paired frame 0x74 preserves matches.
+// Original pointer geometry and complete body restored; full/planar normal homes,
+// byte state and separate output tails remain.
 // DH281: Complete endpoint-source/first-edge-source/hit-tail priorities, seven subsets then all with native
 // Boolean success; the one-point 409 form is below the retention gates [446, 410, 449, 419, 441, 419, 444,
 // 409]. Original executable body restored.
+// P262: Native counted sector for with short/word/long/dword count and long success
+// 410/410/409/409; with Boolean success 448/448/446/446. Original while,
+// count scope, long success, normal storage and every output tail restored.
+// P264: negative edge-search outcome bool/byte/short/long, long success
+// 423/423/404/409; Boolean success 458/458/437/443. Six- and one-point reductions rejected;
+// original positive hit, normal storage, tails and complete body restored.
+// P266: Native two-component normal-copy for with long/dword/short/word ordinal
+// 459/459/464/464; plain while 459/459/464/464. Frame 0x64 recovered,
+// but all grow to 1667 bytes; original scalar transfers and complete body restored.
+// DH292: Pending-sector parameter owns the genuine next-sector query output, long/bool/byte/short
+// success with short count 440/444/433/439; with long count 449/447/442/453.
+// Original pending/current histories, normal homes, count, result and complete body restored.
+// DH294: Shared terminal-point producer with long/bool/byte/short success and bool first
+// 410/432/414/419; word first 442/415/396/447. Original point calls with byte success/word
+// first also 396 at 1606/1605 bytes. Not kept (coordinator): retail keeps first as a byte (byte
+// stores of 1/0 to [esp+0xf], read through al), so the word is a score-picked type; byte success
+// alone (retail's byte at [esp+0xe]) is 414. Both declarations restored at 410.
+// DH296: Outer input-admission conjunction partitions 1-7 all 410; fully
+// phased admission with byte success 414 (1598 bytes). Original guards and body restored;
+// independent normal homes, frame 0x5c/0x64 and result/first/hit tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

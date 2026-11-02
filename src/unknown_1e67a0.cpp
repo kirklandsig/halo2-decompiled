@@ -428,6 +428,8 @@ struct s_character_physics_component
 	byte has_position;
 };
 
+#include "unknown_1dacb0.h"
+
 struct s_type_94656b
 {
 	long unknown00;
@@ -436,7 +438,7 @@ struct s_type_94656b
 	point3f point2c;
 	point3f point38;
 	point3f point44;
-	long unknown50;
+	c_type_709360 unknown50;
 	byte unknown54[0x58];
 	point3f pointac;
 	byte byteb8;
@@ -495,7 +497,7 @@ void function_1e67a0(s_character_physics_component *component, s_type_94656b *da
 }
 
 // @retail 0x1e67f0
-void function_1e67f0(s_type_94656b *datum, s_character_physics_component *component, long animation_id, point3f *p1, point3f *p2, point3f *p3)
+void function_1e67f0(s_type_94656b *datum, s_character_physics_component *component, c_type_709360 animation_id, point3f *p1, point3f *p2, point3f *p3)
 {
 	datum->unknown50 = animation_id;
 	datum->point2c = *p1;
@@ -720,6 +722,19 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
 // 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
 // Constant/limit XMM ownership, movement outputs and jitter spills remain.
+// DL239: Indexed animation scale/normalization/projection-and-movement stage subsets 1..7, all
+// with ordinary sample: 130/130/132/178/192/192/172/138. Two-point retail-length forms rejected.
+// Original complete body, sample qualifier, magnitude observations and frame 0x28 restored;
+// constant/limit ownership and jitter spills remain.
+// DL241: Complete direction memcpy with existing normalized scale/projected update and ordinary
+// sample subsets 0..7: 132/132/181/181/170/170/146/146. No gain; original vector copy, sample
+// qualifier, helpers, includes and whole body restored. Unity/limit XMM ownership and
+// direction/jitter homes remain.
+// DL243: Matched movement-provider inline with existing animation-scale/direction-scale/jitter-add
+// subsets 0..7: 132/132/132/132/130/130/130/130. Retail-length forms gain only two; scale-producer
+// one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
+// declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
+// remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -988,6 +1003,10 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL237: Existing complete scalar setter at sampled velocity, crossed with complete
 // cross/rotation setters and uniform live scale: 186/155/186/157/209/182/187/182. All restored;
 // sample home and rotation/output scheduling remain.
+// DL239: Complete native up-vector for rotation and side tests, four acquisition phases with
+// original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
+// complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
+// rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

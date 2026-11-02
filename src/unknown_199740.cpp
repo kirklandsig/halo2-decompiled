@@ -76,6 +76,17 @@ long __stdcall function_2cb5b0(byte *destination, long *destination_size, byte c
 // the decompressor context declared at the top and assigned in the block 22; the pool freed through the
 // context local 24; the pool flags set through the context local 53. Compile-only: /G5, /G6, /G7 and /GB
 // all hoist the first zero store above PUSH EDI the same way.
+// Round 29 (lane 17): the screens suggest the hoist comes from the reader's volatile pair: it is ordered low, high, asm,
+// which schedules the low store above the last push; a non-volatile local whose stores survive gives retail's order.
+// Reader in the shared header, non-volatile with `if (0) __asm lea eax, local_0` before rdtsc: MATCH here and at 0x12d400
+// and 0x6a8a0, 0x80e10 13, but 0x18f260 12, 0x146e30 124, 0x862e0 24 (the lea makes the local address-taken, so start's
+// spilled high half and the pump counter no longer share its slot); not kept, the shared reader may not raise a user and
+// the dead asm is a steer. The same use after rdtsc 112 (328 bytes); a live `__asm mov eax, dword ptr local_0` before rdtsc
+// 96 (326; retail's frames at 0x18f260 and 0x862e0, but a mov retail lacks); `volatile long local_0[2] = {0}` 103 (one
+// store only); the lea form with the local in its own block 115. Compile-only: plain, LARGE_INTEGER, array, struct, memset,
+// pointer, inner-function and member forms all lose the stores; a read under if (0) or a folding condition, __assume and
+// __noop lose them; the count of dead lea references and the local's name do not move the frame.
+// Round 87: condition-declared pool 3; direct result/pool initialization 3/3; null-initialized pool 3; explicit/reversed null tests 3/3; condition assignment 3; direct context initialization 3. Original body restored; the low timing-zero store hoist remains.
 // @retail 0x199740
 bool __stdcall function_199740(byte *buffer, long size, byte *destination, long *decompressed_size)
 {

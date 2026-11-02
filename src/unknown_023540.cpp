@@ -2416,13 +2416,13 @@ void __stdcall function_352e0(long target, bool multiple)
         *multiple_reference ? 0.5f : 0.0f, 1.0f, count, true, true);
 }
 
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 void function_0224f0(dword stage, D3DTEXTURESTAGESTATETYPE type, dword value);
 dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 251 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
+// score 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
 // Earlier: 252 fast (was 335 fast): the standard marker gives retail's stack convention (ret 0x34,
@@ -2502,6 +2502,8 @@ dword __cdecl function_131fc0(real alpha);
 // Round 133 (ret 0x34 already agrees): both alpha clamps in 0x2a2f0's shape 247 (four points, not
 // kept); defaults built unconditionally, source first, then selected 260 (1711 bytes); both 256;
 // clamps with reciprocal-first UV products 247, with the defaults too 256 (same code each).
+// Round 122: 0x144f0 now matches and takes the fallback in EBX, so EBX no longer caches the inverse: 154 at retail's
+// length (first difference +0x32b).
 // Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0, whose convention is now
 // found: it matches as (short stage, long fallback, long tag, short fallback_index, short index, real
 // priority) with two calls to 0x14390 in place of the goto, the count read at each use, no address-taken
@@ -2546,7 +2548,7 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     function_0222d0(D3DRS_STENCILENABLE, 0);
     function_0222d0(D3DRS_ZENABLE, 0);
     function_0222d0(D3DRS_ZBIAS, 0);
-    function_144f0(tag, 0, 0, 0, (short)bitmap_index, 0.0f);
+    function_144f0(0, 0, tag, 0, (short)bitmap_index, 0.0f);
     sampler_state_write(0, D3DTSS_ADDRESSU, 1);
     sampler_state_write(0, D3DTSS_ADDRESSV, 1);
     sampler_state_write(0, D3DTSS_ADDRESSW, 3);
@@ -2723,18 +2725,18 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             *(long const *)(*(byte const **)(structure + 0x84) + 0x1c) != NONE &&
             *(long const *)(*(byte const **)(structure + 0x84) + 4) == *(long const *)((byte *)g_4e0348 + 8);
         real red[16], green[16], blue[16];
-        long level = 5 - order;
-        if (level > layout->level_count - 1) level = layout->level_count - 1;
-        long stride = layout->groups * (layout->columns * 3 + 4);
-        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
-        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
-        long bytes = total * stride * sizeof(real);
         if (!use_samples)
         {
             vector3f direction = { 0.0f, 0.0f, -1.0f };
             spherical_harmonics_evaluate_directional_light(&direction, layout->order,
                 1.0f, 1.0f, 1.0f, red, green, blue);
         }
+        long level = 5 - order;
+        if (level > layout->level_count - 1) level = layout->level_count - 1;
+        long stride = layout->groups * (layout->columns * 3 + 4);
+        s_bucket_source const *buckets = (s_bucket_source const *)vertices;
+        long total = function_023540((short)count, buckets, &g_4b89b0[g_5093e8], stride);
+        long bytes = total * stride * sizeof(real);
         if (!bytes) goto done;
         long next = g_487b18.size + bytes;
         if (next <= 0x27000)
@@ -2747,17 +2749,48 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
             {
                 byte const *pair = (byte const *)vertices + 4 + bucket * 4;
                 word available_samples = *(word const *)(pair + 2);
-                short samples = available_samples > 2 ? 2 : available_samples;
-                if (!samples) continue;
+                if (!available_samples) continue;
                 real const *source = (real const *)((byte const *)vertices + 0x44 + *(short const *)pair * 0x30);
                 transform4x3f matrix;
+                matrix3x3 rotation;
+                real rotated_red[16], rotated_green[16], rotated_blue[16];
+                real determinant;
                 function_0235a0(source, &matrix);
-                for (short sample = 0; sample < samples; ++sample)
+                if (use_samples)
                 {
-                    if (sample) function_0235a0(source + 12, &matrix);
+                    point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 0);
+                    if (position)
+                    {
+                        byte *bsp = *(byte **)(structure + 0x84);
+                        function_22cf0((s_light_sample_source const *)(bsp + 0x38), red, green, blue,
+                            (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
+                    }
+                }
+                determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
+                function_143600((real const *)&rotation, 3, red, rotated_red);
+                function_143600((real const *)&rotation, 3, green, rotated_green);
+                function_143600((real const *)&rotation, 3, blue, rotated_blue);
+                function_023ca0((s_block_layout const *)layout, layout->data + layout->levels[level].offset, rotated_red, rotated_green, rotated_blue, output);
+                output += stride;
+                if (available_samples > 1)
+                {
+                    function_0235a0(source + 12, &matrix);
+                    determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
+                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
+                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
+                    determinant -= matrix.left.k * matrix.up.j * matrix.forward.i;
+                    determinant -= matrix.up.k * matrix.forward.j * matrix.left.i;
+                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
+                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
                     if (use_samples)
                     {
-                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, sample);
+                        point3f const *position = (point3f const *)function_23600(tag, indices, bucket, object_index, 1);
                         if (position)
                         {
                             byte *bsp = *(byte **)(structure + 0x84);
@@ -2765,15 +2798,6 @@ bool __stdcall function_23690(s_coefficient_layout const *layout, short order, l
                                 (byte)layout->order, &g_4b89b0[g_5093e8].scale, position);
                         }
                     }
-                    real determinant = matrix.left.k * matrix.forward.j * matrix.up.i;
-                    determinant += matrix.forward.k * matrix.up.j * matrix.left.i;
-                    determinant += matrix.up.k * matrix.left.j * matrix.forward.i;
-                    determinant -= matrix.forward.i * matrix.left.k * matrix.up.j;
-                    determinant -= matrix.forward.j * matrix.left.i * matrix.up.k;
-                    determinant -= matrix.forward.k * matrix.left.j * matrix.up.i;
-                    matrix3x3 rotation;
-                    function_142bf0((matrix3x3 const *)&matrix.forward, determinant, &rotation);
-                    real rotated_red[16], rotated_green[16], rotated_blue[16];
                     function_143600((real const *)&rotation, 3, red, rotated_red);
                     function_143600((real const *)&rotation, 3, green, rotated_green);
                     function_143600((real const *)&rotation, 3, blue, rotated_blue);
@@ -2803,7 +2827,7 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 282 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
+// score 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
@@ -2894,13 +2918,16 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // Round 133: 0x131fc0's locals declared pixel-first 282 (0x131fc0 then differs, 2); scales normalized
 // in their parameters 343 (2013 bytes); with half extents 368 (2007); half extents alone 334 (2022);
 // coordinate arrays declared second-first 282; declared just before the bounds 282.
+// Round 122: 0x144f0 now matches, called (stage, 0, tag, 0, index, 0.0f). That alone 366 (2044 bytes); with the first
+// bitmap formal `long` (retail reads it as a dword and selects it with cmovne, like the second) 279 (2042): the stage
+// loop is now retail's instruction for instruction, and the rest is the six excess bytes and the homes above.
 // Round 74 (lane 9, fast; 0x144f0 edits temporary, restored): BLOCKED-BY 0x144f0; see the form that matches it
 // in 0x2a8d0's note. This function's count under each callee form: fallback read directly 283; plus an
 // address-taken priority 280; direct without the volatile 283; two calls 366 (2044 bytes, a positional shift,
 // first still +0x17); two calls in order (tag, fallback, stage) 345; (fallback, tag, stage) 346; (stage, tag,
 // fallback) 366; (stage, fallback, tag) 366; (fallback, stage, tag) 365; with the matching 0x144f0 366.
 // @retail 0x29b00
-void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
+void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
     real second_angle, real second_scale, bool screen_target)
 {
@@ -2930,7 +2957,7 @@ void __stdcall function_29b00(long tag, short first_bitmap, real first_alpha,
     long stage = 0;
     do
     {
-        function_144f0(tag, (short)stage, 0, 0,
+        function_144f0((short)stage, 0, tag, 0,
             (short)(stage == 0 ? first_bitmap : second_bitmap), 0.0f);
         sampler_state_write(stage, D3DTSS_ADDRESSU, 3);
         sampler_state_write(stage, D3DTSS_ADDRESSV, 3);
