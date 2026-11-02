@@ -463,6 +463,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 505: Independent scalar bound coordinates XYZ/ZYX and coherent coordinate names,
 // original query 185/185/185/185; separate center/native query 177/177/177/177.
 // Single-use memory snapshots and the five-point gain are ineligible; original point/body restored.
+// Round 508: Actual part/bound/both table bases in both declaration orders, mutable/read-only
+// geometry 215/266/282/282/215/266/282/282. Original field observations and body restored;
+// entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

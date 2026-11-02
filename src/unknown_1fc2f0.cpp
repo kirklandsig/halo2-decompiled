@@ -466,6 +466,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // 146/137/110; the corresponding shared-add forms 130/137/110; complete native result
 // and common-expression publication 50/50. All regress; original body, includes,
 // parameter storage, length lifetime, delta order and correction producer restored.
+// Round 508: Existing complete vector setter at delta/tick/input producers, seven subsets,
+// then all with correction publication, without the own-parameter address read:
+// 104/99/104/99/104/99/104/102. Original body restored; tick/delta/correction homes remain.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

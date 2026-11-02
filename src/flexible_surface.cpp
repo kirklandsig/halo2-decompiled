@@ -541,6 +541,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
 // M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
 // 178/178/178/189/189/189/178/178. Original executable body restored.
+// Round 508: Source-local forceinline cross with publication ijk/ikj/jik/jki/kij/kji
+// 139/139/139/139/157/157; staged-cross declaration with ijk/jki 139/139.
+// Direct publication ikj/jik/jki/kij/kji and staged ikj/jki/kji
+// 139/139/139/157/157/139/139/157. Original declarations and full body restored;
+// frame 0x28 and input/rotation/tail homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

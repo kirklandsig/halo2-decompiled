@@ -666,6 +666,11 @@ real function_267370(long object_index);
 // (0x11c120 49); a named `byte zone` local in the shared helper 342 (0x11c120 18); the first cross through plain
 // cross3f into a local copied to the field 175 (1749 bytes); the up copy component by component 188 (1760 bytes);
 // `carrier` declared at the top of the block 98 (same code).
+// Round 508: Uniform three-use class snapshots short/byte/long at the original capture
+// 369/158/139; before the pure parent lookup 263/312/299; live class reads 125, with
+// child-default/parent-override carrier 388. Sentinel field fills, seven subsets and
+// all with short-mode clear, 357/357/357/96/357/357/357/357; two-point gain rejected.
+// Original observations and body restored; early NONE sharing and cross operands remain.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
