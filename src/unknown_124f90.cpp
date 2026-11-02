@@ -1240,6 +1240,7 @@ long function_2197f0(real gain);
 // retail uses EDX, the first branch still multiplies the fade-out time before the inverse (so the
 // elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
 // the hold branch still copies the ducking gain through a stack temporary our code folds away.
+// Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
 // Earlier at 137 (was 137): Frame 0xc and gain home agree; table/index entry order, elapsed/interpolation scheduling and hold-gain copy remain.
 // Earlier at 137 (was 137): frame 0xc agrees; early table load, interpolation homes/scheduling and copied hold gain still differ.
 // Earlier at 137 (was 137): the gain is a decibel struct (retail copies decibels as a whole, as 0x218d70 does): it
@@ -1329,6 +1330,10 @@ long function_2197f0(real gain);
 // J225: shared ducking-array receiver 164; external ducking-record references 137; array and references
 // 164; native fade-record value 174; fade value and array 181; fade value and references 174; fade value,
 // array and references 181; native ducking-record values 284. Original body restored.
+// F320: on the aggregate gain graph, shared time/fraction/both producer workspaces 137/137/137;
+// each with native table/raw class entry 146/146/146 (672 bytes, entry agrees). Both workspaces with
+// negated hold-first arm 157; table entry too 160. Frame 0xc and elapsed/endpoint homes persist;
+// original executable body restored.
 // N313: Integer-contract interpolation with both real inputs captured, native table/raw-class entry,
 // expression/staged result 146/146; shared hold addition 116/116; complete reused attack durations
 // 155/155, with shared hold addition 116/116. The 116 forms write the aggregate through its own
@@ -2811,6 +2816,7 @@ static inline short sound_voice_find_available_channel(char type)
 // and its channel search keeps the channel in EDI with one `or ebp, -1` shared between the channel
 // compare and the driver and buffer defaults. A `bool` result carrier on this body measures 113 at
 // retail's length and was reverted.
+// The twelve-byte frame, byte result normalization, initial voice/global load order and
 // Earlier at 96 (was 96): The twelve-byte frame, byte result normalization, initial voice/global load order and
 // early failure tail remain; long search-result boundaries do not change the selected code.
 // Earlier at 96 (was 96): retail loads the voice index into ecx before the frame setup, keeps the `NONE` constant in
@@ -2887,6 +2893,9 @@ static inline short sound_voice_find_available_channel(char type)
 // direct search exits all 96; long workspace with Boolean body result and long/short helper returns 113/113;
 // explicit committed success 122 (430 bytes); existing byte success declared at entry on the long search graph
 // 96. Original executable body and private helper restored; every calibrated match preserved.
+// F320: shared search mask/word ordinal/both 125/149/158; each with chained driver/buffer
+// defaults 120/149/158; both with cached upper bound 158; all 158. The frame remains twelve
+// versus eight, with a saved result byte and early failure tail. Original body/helper restored.
 // N313: Channel-search receiver read at every field use, chained defaults/byte status complement
 // subsets 0..3: 128/123/103/98; with explicit Boolean commit result 117/124/116/122.
 // Original receiver, independent defaults, byte result and full body restored. Frame twelve versus
@@ -3679,6 +3688,7 @@ struct s_128ca0
 // retail's and the gain argument's homes and the joined clamp stores still differ.
 // score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
+// Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
 // Existing shared bit clamp 234; unsigned gain carrier 241; shared branch gain workspace 241;
 // long next-chunk candidate 254; completed-chunk early exit 241.
@@ -3782,6 +3792,9 @@ struct s_128ca0
 // shared scale/both 222/269/277/249, with shared branch gain workspace 222/269/277/249. Inner reference
 // alone recovers frame 0x494 and first +0x44 but regresses; the packet stores fold away. Original body,
 // gain homes, scale observations, helpers, countdown arms and protected call inputs restored.
+// Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
+// Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
+// Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

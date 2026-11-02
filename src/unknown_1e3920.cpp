@@ -676,6 +676,9 @@ real function_267370(long object_index);
 // Original observations and body restored; early NONE sharing and cross operands remain.
 // Round 295: field-sized library fills for first/second/both invalid handles 357 each;
 // conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
+// DL239: Complete default-forward/stored-forward/up memcpy subsets 1..7 score
+// 98/96/96/98/98/96/96; all memmove 226. Two-point leads rejected; original whole body restored.
+// Frame 0x90 agrees; early NONE sharing, carrier and cross operand homes remain.
 // Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
 // 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
 // Early shared NONE and cross operands remain; every original destination and body restored.
@@ -1146,6 +1149,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // settings/squad and before final settings guard: 341/341/341/341/340/336/254;
 // entry declaration with original initialization 254. Original lifetime/body restored;
 // sentinel EDI/ESI and squad/substitution homes remain at agreeing frame and length.
+// Round 520: all six lexical orders of the native query-enabled/query-forced/squad
+// Boolean homes, then probability-home names at both endpoints: 254 each.
+// Original names and complete body restored; sentinel and squad/query homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

@@ -215,6 +215,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 518: independent unsigned quotient scan with long/dword/short/word
 // counts 98/98/98/98, with zero-first exit 105/105/103/103. Original helper
 // and body restored; delayed coordinate promotions and height/common homes remain.
+// Round 521: symmetric native table-expression indices/low/high nodes, seven subsets
+// and unshifted high node 82/82/82/82/82/82/82/82. All original executable code
+// restored; coordinate promotion and height/common homes remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
