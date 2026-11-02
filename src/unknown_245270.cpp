@@ -536,6 +536,9 @@ void function_245400(s_source_245400 const *source, long index,
 // and coordinate-before-translation subsets 209/209/209/209; one scale observation
 // 213/213/213/213, also raising matched helper user 0x245400 to 44. Complete helper
 // and body restored; frame 0x24/0x2c, matrix lifetime and independent side homes remain.
+// Round 355: native paired index/side fields at the actual material record, complete
+// first/second material values and existing staged-cross subsets: 210/231/228/229/210/231/228/229.
+// Original record and body restored; frame/table/matrix and independent side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

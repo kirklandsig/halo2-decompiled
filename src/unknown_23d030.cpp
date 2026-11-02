@@ -330,6 +330,9 @@ struct s_free_state_23d260
 // Round 353: Final camera-position, command-position and offset copy setters, seven
 // subsets then all with earlier bare position storage, 316/293/335/152/306/320/338/338.
 // Original output publications and complete body restored; zero/side and up/roll allocation remain.
+// Round 355: shared complete roll cross, direct/staged, on accumulated projection/rows,
+// with pitch observation and named projection complement subsets: 282/282/298/298/191/191/347/347.
+// Original body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

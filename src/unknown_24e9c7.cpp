@@ -267,6 +267,9 @@ struct s_24e9c7_bounds
 // Round 347: Existing two-component setter at upper/side/both/reverse/upper-reverse/side-
 // reverse/all/all-with-direct-across producers: 125/125/125/137/137/137/137/137.
 // Original complete body restored; early across spill and shifted scalar homes remain.
+// Round 355: reused output-corner receivers for each corner, upper/lower pairs and all
+// corners 125/125/125/125/125/125/125; all with early upper displacement 123.
+// Two-point reduction rejected; original body restored, early spill/scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
