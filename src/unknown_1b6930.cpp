@@ -126,6 +126,9 @@ short __stdcall function_272af0(s_match_globals *structure, point3f const *point
 // typed source pointer 2; +0x72 before the copy 14; both scalar stores before the copy 66;
 // scalar stores before the state 140; +0x72 first with state before the copy 140 (both
 // +0x74 positions).
+// Round 53 (lane 11, fast): a non-const definition pointer 2; the cluster chosen in an if/else 2; the
+// sign-bit test as `== 0` 2; a const direction pointer 2; the target type as a ternary 44 (687 bytes);
+// re-measured: +0x74 before +0x72 6, the copy as memcpy 2.
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {

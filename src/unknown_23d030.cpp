@@ -320,6 +320,9 @@ struct s_free_state_23d260
 // taking the yaw/pitch pair by a pointer to the yaw (both callers) 279 [69] (the forward/side x87 then
 // retail's except normalize_inline's i-first length; zero XMM3); that with 0x11d090's j-first side form
 // 270 [80], with normalize3d 267 [82] (as round 29's s_view_angles forms).
+// Round 340: coordinated roll-cross/row/trig workspace names on the retained
+// accumulated-row graph, seven subsets and all six cross/row declarations at entry, 102 each.
+// Original body restored; zero XMM3/XMM1 and side/up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
