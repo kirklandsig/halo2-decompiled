@@ -33,6 +33,7 @@ public:
 	lane_a_ball_socket(c_component_joint_snapshot_4 const *description);
 	__m128 pivot_a, pivot_b;
 	lane_a_solver_result results[3];
+	virtual void *v3();
 	virtual lane_a_solver_result *runtime();
 	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 3; }
@@ -49,6 +50,7 @@ public:
 	__m128 pivot_a, pivot_b;
 	float length;
 	lane_a_solver_result results[1];
+	virtual void *v3();
 	virtual lane_a_solver_result *runtime();
 	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 1; }
@@ -66,6 +68,7 @@ public:
 	__m128 frame_b[3];
 	float minimum, maximum, friction;
 	lane_a_solver_result results[7];
+	virtual void *v3();
 	virtual lane_a_solver_result *runtime();
 	virtual void build(lane_a_solver_input const *input, lane_a_solver_output *output);
 	virtual long result_count() const { return 7; }
@@ -102,6 +105,7 @@ public:
 	__m128 position_a, rotation_a, position_b, rotation_b;
 	float distance_a, angle_a, distance_b, angle_b;
 	c_314710(hkEntity *entity);
+	virtual void *v3();
 	s_1d1870 function_3144b0(void *body);
 	s_1d1870 function_314580(void *body);
 	float update_radius_squared(shape_bounds_314650 const *shape);

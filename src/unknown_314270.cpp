@@ -62,3 +62,32 @@ lane_a_spring *__cdecl create_spring_314880(c_component_joint_snapshot_3 const *
 // @retail 0x314c20
 lane_a_prismatic *__cdecl create_prismatic_314c20(c_component_joint_snapshot_5 const *description)
 { return new lane_a_prismatic(description); }
+
+// The class objects v3() hands back: zero in retail's data (the startup code
+// fills them), 0x28 bytes apart.
+struct class_object_314270
+{
+	byte unknown00[0x28];
+};
+
+class_object_314270 g_4806d0;
+class_object_314270 g_4806f8;
+class_object_314270 g_480720;
+class_object_314270 g_480748;
+
+// @retail 0x3140b0
+void *lane_a_ball_socket::v3() { return &g_4806d0; }
+// @retail 0x314370
+void *c_314710::v3() { return &g_4806f8; }
+// @retail 0x314850
+void *lane_a_spring::v3() { return &g_480720; }
+// @retail 0x314ba0
+void *lane_a_prismatic::v3() { return &g_480748; }
+
+// The three constraints' destructors are the empty runtime layer's, which
+// keeps its own out-of-line copy (a jump to lane_a_constraint's); the linker
+// folded their identical deleting destructors and their interface
+// adjustors into one each.
+// @retail 0x314b40 destructor lane_b_rigid_constraint
+// @retail 0x3142c0 deleting lane_a_ball_socket
+// @retail 0x314f90 adjustor lane_a_ball_socket 8
