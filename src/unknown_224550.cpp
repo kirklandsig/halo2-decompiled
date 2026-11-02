@@ -262,6 +262,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 302: Common UV encoding after geometry, original/outer pivot and scalar/copied second defaults
 // 697/697/690/690; late blend on those four graphs 734/734/726/726. Frame shrinks and tint/UV homes
 // regress; complete original body and alias-safe helper restored.
+// Round 308: Native bitmap-default copy primary to secondary with original/input-RGB/seed-RGB/both loops
+// 347/347/350/347; reverse default ownership 348/348/351/348. The caller-owned tint frame
+// remains 0x60, but the swapped homes persist and the copy grows code to 1952 bytes.
+// Original separate default stores, RGB statements and helper input captures restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

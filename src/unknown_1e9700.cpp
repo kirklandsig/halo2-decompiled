@@ -308,6 +308,10 @@ struct s_object_damage_view
 // Round 305: Record-pointer selection, assist admission and both award-prefix scans, seven subsets:
 // 461/379/465/370/480/398/485; all with native short teams 494. Original body restored; frame/scalar
 // homes and the biased history cursor remain.
+// Round 308: Long/dword/short/word event-code carriers 423/423/453/453;
+// with both team results short 454/454/456/456. Every code remains in 0..255 and all
+// callback arguments stay unchanged. Wider carriers disturb the entry and do not recover
+// retail result homes; original byte code, long teams and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

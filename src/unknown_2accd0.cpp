@@ -944,7 +944,7 @@ struct s_signed_file_write_parameters
 };
 #pragma pack(pop)
 
-// score 129 (was 129): with the address-taken scratch record and the two-pointer getter (see
+// score 115 (was 129): with the address-taken scratch record and the two-pointer getter (see
 // 0x2ad7c0) the header site loads the buffer straight into EDI as retail; left: retail loads the
 // scratch size into EAX and copies it to EBX after the memset count (ours loads it into EBX), and
 // the extend arm keeps the offset in EBX and the size in EBP with the buffer spilled (ours spills the
@@ -1048,6 +1048,11 @@ struct s_signed_file_write_parameters
 // Round 290: Test-produced capacity-first minimums for header clear/transfer/both and clear+extend/
 // transfer+extend/all 217/133/218/220/264/221; remaining-first header/both phases 281/281. Original
 // minimums restored; capacity scheduling and extension offset/buffer/size homes remain.
+// Round 308: Direct successful header return 115 fast/plain at 928/940 bytes (kept);
+// scratch/direct-extension/body-publication returns 241/237/222; header with scratch/direct/body
+// 222/234/207; all four returns 307. The 0x18 frame stays; capacity staging and extension
+// buffer/offset residency still differ. Only the header success returns directly; all I/O,
+// empty-header and zero-capacity behavior and shared failure cleanup are preserved.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
@@ -1102,7 +1107,7 @@ PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_
 			}
 			if (success)
 			{
-				result = 0;
+				return 0;
 			}
 		}
 		break;
