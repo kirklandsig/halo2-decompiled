@@ -478,6 +478,8 @@ struct s_physics_component_walk : s_havok_component
 // DL246: terminal/neighbor/both section cursors 306/204/331; both with object input 260;
 // short/long keys 312/294, complete short/long inputs 322/305. Original indexed scans,
 // query rereads and complete method restored; frame 0x18 agrees, neighbor/key homes and cold exits remain.
+// Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
+// conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

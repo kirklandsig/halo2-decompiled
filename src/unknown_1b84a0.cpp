@@ -494,6 +494,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 256: nullable marker-list at the query producer, branch/conditional output,
 // early result storage and limit-field observations: branch 236 each, conditional 233 each.
 // Original readiness Boolean, list construction, movement snapshot and complete body restored.
+// N320: One function-result exit on the common-release graph, true/false defaults, early/late constant
+// result and native/aligned request: all regress. True-first restores AL production but moves actor
+// offset to EAX; original result and tail homes remain. Scores 112/270/131/268/112/270/131/268.
+// Original executable source restored.
 // Round 529: selection result from both eligibility arms, crossed with outer reference lifetime,
 // availability default before location query and reference role name: 50/50/53/53/50/50/53/53.
 // Frame and length agree; table/result producer and tail register cycle remain. Original body restored.
