@@ -664,6 +664,16 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // KIMI1 r94: width/height output helper 86; height-first output helper 85;
 // ordinary inline extents helper 86; returned point extents 118; bounds corner
 // helper 86; reversed corner helper 86; width-only and height-only helpers 86 each.
+// Round 71: retail's colours (height and the bottom sum xmm0, corner temps xmm1, width and y0 xmm2) only come
+// with the bottom sum in height's web: a named bottom right after the extents 16 and `height += bounds->y0`
+// there 16 (286 bytes: retail's sequence but `addss xmm0, [eax + 8]` at the top for its later `addss xmm0, xmm2`).
+// Written later, height's definition sinks to it: `height +=` after corner 1 21 (286), named bottom before
+// corner 2's y 23 (284). Height after corner 1's y 89 (290); named top before the extents 92 (275), after
+// corner 1's x 21 (285); corner 2's y right after corner 0 19 (285); height then width with the corners in
+// order 85 (288). Compile-only, none in retail's shape: 16 x/y orders with both sum operand orders, all
+// orders with corner 1's y after the bottom sum, 1000 random statement orders with named sums and read-back
+// corners, inline extent getters and a corners helper writing through a pointer.
+// The point setter's shape for each corner (x then y, y then x, returning the point, forceinline): same colours as the plain form.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

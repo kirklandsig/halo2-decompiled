@@ -353,6 +353,10 @@ static inline real interpolate_linear(real a, real b, real t)
 // 40/40/40/40/40/40/40; minimal flags/fraction 9; entry-wide flags 226; flags captured in
 // both exclusive policy arms 9, plain whole-program confirmed. Keep the uniform branch-local
 // flag observations and earlier fraction; all other declarations and helpers remain original.
+// DH276: complete retention outcome in Boolean/byte/short/native storage
+// 102/102/212/210; each with complementary continuation 224/224/213/211.
+// All restored; frame 0x10 and timing agree, direction/frame/flag and
+// lookahead/fraction ownership remain. Original policy outcomes retained.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

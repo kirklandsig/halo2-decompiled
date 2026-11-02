@@ -21,7 +21,7 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 }
 
 /* Expands a face index and two six-bit coordinates to a unit direction. */
-// score 19 (was 50): the components are stored in retail's order (i, j then
+// score 19 (was 19): the components are stored in retail's order (i, j then
 // k), so our zero is materialised after the multiplies where retail keeps it
 // in xmm3 from the top of the function; the low six bits also come from a
 // byte move here instead of retail's full copy of the index. Tried: a long
@@ -50,6 +50,11 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // and the scale local 19, with short x and direct scale 53; mixed long x/short y 57; staged outputs 53;
 // existing in-place scale helper 87; scale as a helper parameter 27; staged outputs with long x and
 // direct scale 50 (242 bytes). Original helper and coordinates restored.
+// Round 152: on the long coordinate with the scale read at each use (37: only the zero, made after the
+// products in xmm2, and the face add after the products differ): the grid stores through the existing
+// vector3f_assign 68 (254 bytes), with the scale local 57 (239 bytes); real x/y locals 37; a shared
+// step constant 68; the casts named before the products 68; the index used directly 68; a face pointer
+// local first or after the coordinates 75 (256 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

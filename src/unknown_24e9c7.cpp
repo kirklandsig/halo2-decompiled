@@ -261,6 +261,12 @@ struct s_24e9c7_bounds
 // Round 232: Complete rectangle zero-fill then maxima through memset/zero aggregate, at
 // group/selector/bitmap/default-workspace boundaries 211/191/221/191/222/192/222/192.
 // Original defaults and body restored; early across spill and shifted scalar homes remain.
+// Round 344: separate real geometry height with long/double return carriers at producer, width
+// and draw boundaries, late real return carrier, then long carrier with early upper displacement:
+// 153/153/147/161/161/150/187/152. Original body restored; early spill and scalar homes remain.
+// Round 347: Existing two-component setter at upper/side/both/reverse/upper-reverse/side-
+// reverse/all/all-with-direct-across producers: 125/125/125/137/137/137/137/137.
+// Original complete body restored; early across spill and shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

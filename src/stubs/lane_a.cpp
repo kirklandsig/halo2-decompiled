@@ -30,8 +30,8 @@ long const g_444ae0 = 0;
 
 
 // retail .rdata 0x44f70c, 0x44f710
-real const g_44f70c = 0.0f;
-real const g_44f710 = -64.0f;
+s_decibels const g_44f70c = 0.0f;
+s_decibels const g_44f710 = -64.0f;
 
 /* the saved game files manager (0x216000-0x218000) */
 struct s_saved_game_file_location;

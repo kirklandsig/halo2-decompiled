@@ -107,6 +107,10 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // `if (!result || !call) result = false; else result = true;` 113; the inner update as
 // `result = call ? true : false;` 113; the entry index as a local 18 (same code); the inner
 // `if (result)` dropped (the loop condition implies it) 126 (370 bytes).
+// Round 195 (lane 3): both indexes for-scoped 18; the entry value through an inline getter 18; the `&&`
+// status form with for-scoped indexes 113 (386 bytes), with the entry value in a local 95 (388 bytes);
+// `released + i` with for-scoped indexes 18. Compile-only, every one of ~75 forms (wrappers, getters,
+// locals, a real call in an argument) loads the receiver chain before the arguments.
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {

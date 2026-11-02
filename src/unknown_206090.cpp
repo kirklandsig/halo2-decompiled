@@ -277,9 +277,22 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // DH round 268: retained second-input scalar capture orders ikj/jik/jki/kij/kji
 // 1363/1363/1383/1383/1383; const captures ijk/kji/kij 1363/1383/1383.
 // All inputs stayed before the first store; frame 0x5cc remained. Original helper and body restored.
+// Round 505: Existing impact initializer, calculation/contact/phase/entry descriptor scopes,
+// each with original/existing-setter position: 1401/1401/1358/1358/1383/1383/1439/1439.
+// Contact-scope five-point gain rejected; original field construction and all body scopes restored.
 // DL227: Real collected-array duplicate/active search cursors, index/relational/sentinel pairs
 // 0-1/0-2/1-0/1-1/1-2/2-0/2-1/2-2: 1415/1415/1432/1432/1432/1433/1433/1433. Original searches
 // restored; frame 0x5cc and component/velocity/contact homes remain.
+// Round 309: Direct absolute force/range/nonnegative-root predicate subsets 1..7
+// 1415/1389/1411/1388/1419/1386/1407; paired strict open intervals 1442.
+// Original conditional magnitudes, both root guards, captures, private helpers and complete body restored; frame/home differences remain.
+// Round 312: actual selected friction vector, default/explicit selection with native/setter
+// transfer and separate/in-place normalized direction: 1417/1372/1465/1395;
+// 1357/1474/1485/1400. Native explicit selection with a separate direction gains six
+// at 6243 bytes, below the gate; pointer selection, original copies, all kernels and body restored.
+// M298: Separate collected membership and compatible-contact searches; body/head
+// membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
+// [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

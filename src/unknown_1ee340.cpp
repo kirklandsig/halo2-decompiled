@@ -357,6 +357,21 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // Round 450: Existing dot-helper complete products/partial sum/accumulation/native inputs,
 // original then shared polygon count, 192/253/253/320/193/269/269/315. Original complete shape
 // query and shared dot helper restored; frame 0x84 and retained-origin/edge homes remain.
+// Round 59 (m3 lane 1, fast; all restored, match-only forms). BLOCKED-BY 0x23a220: every retail caller (0x173910, 0x184440,
+// this one) sets up the point in EBX before the points in EDX, so its points parameter comes before point; the swap keeps
+// 0x23a220 matched, but its definition is in src/unknown_239b80.cpp, another lane's file this round. With that swap, the
+// chain below gives a byte match in the fast check. The chain, each on the last: ray start, ray end and the second and
+// third vertices copied into named points through real_point3d_set, directions from those copies, 192 (aligned 120: all six
+// loads first, origin in xmm6/xmm7, frame 0x90); fraction by if/else 216; the hit flag as a one-byte class with a ctor, local
+// and returned by value (retail's slot +0x3c, hidden pointer in EAX) 203; a literal 0.0f for field_c (xmm6 shared with the
+// positive test) 203; the count read into a dword local before the call (`push edx`, this moves to ESI, 1001 bytes) 179; the
+// normal read through a local pointer in the hit block (retail's in-place j/k normalize) 91; offset assigned directly 58;
+// `long const &key_ref = function_120850(..); short axis = (short)key_ref;` (retail's dead movsx) 19; fraction from a
+// forceinline helper returning it, the hit point through vector3f_add_scaled 7; the result normal through a
+// `vector3f *const &` temporary (fraction store first) 2; only the two lea lines left. Without the chain, no gain: normalize
+// statement orders on the 203 form: each `*=` written out, scale local 205, vector3f_scale with a scale local 205, normalize_inline 213; the hit point
+// through real_point3d_set 62, a forceinline point helper 58 (on 58); side index, row pointer and named axes before the hit point 19/87/114/117 (on 19);
+// four caller-side argument temporaries 2 each.
 // DL227: Existing shared difference: complete first/second/both point inputs 431/390/566;
 // corresponding scalar inputs 192/192/192; staged scalar/vector outputs 192/466. Original shared
 // helper and body restored; frame 0x84, retained-origin/edge homes and ray loads remain.
