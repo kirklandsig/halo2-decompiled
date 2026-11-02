@@ -1681,6 +1681,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M317: Native bounded mode char/byte/short/word, each with long/Boolean hand on the original branch-only
 // graph: 146/154/146/154/137/145/137/145.
 // Same-block pool reload and selected-weapon/mode homes remain. Original executable body restored.
+// P279: Existing hand-array selected-slot/shared-getter/both forms 138/138/138;
+// complete array graph with short slot / Boolean hand / both / forced accessor / all:
+// 136/146/143/138/143. NOT kept: best 136, gain 2 below the gate. Original body and helper
+// restored; frame 0xc, same-block pool reload and weapon/mode homes remain. All shared users unchanged.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1902,6 +1906,10 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // M317: Actual admission/weapon predicates owning the returned transfer result, bool/byte/short/long with
 // early/nested admission: 121/118/142/112/156/138/153/131.
 // Frame/result, pool reloads and unit/weapon homes remain. Original executable body restored.
+// P279: Original result graph with direct player field / forced existing hand accessor /
+// native drop-request call scope, subsets 1/2/4/3/5/6/7: 97/97/97/97/97/97/97; native byte
+// argument store 97. All sixteen shared-accessor users and notification control stay at
+// calibrated scores. Original helper and body restored; frame/result and pool/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
