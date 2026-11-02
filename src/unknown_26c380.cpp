@@ -236,6 +236,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // folds and the false tails merge), plus `success = false;` at the two breaks 604 (folded away). Value difference:
 // the no-target over-distance tail stores `(dword)NONE` (0xffffffff) where retail stores 0xffff; `(word)NONE` there
 // 429 (1585 bytes: that tail then merges into the final tail), not kept. `edge` declared first 409.
+// DH round 279: Current-sector parameter ownership with long/bool/byte/word success and valid-walk/entry
+// next-sector declarations; all forms also lose four matched callers [426, 422, 424, 430, 426, 422, 424,
+// 430]. Original executable body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

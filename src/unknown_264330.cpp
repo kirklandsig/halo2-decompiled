@@ -430,7 +430,7 @@ void *function_1e5240(long actor_index);
 real function_2683f0(long actor_index, long node_index, short type);
 void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *sample, s_2640c0 *motion);
 
-// score 412 (was 420): the frame is 0xa4 against retail's 0xa0; retail takes the actor
+// score 412 (was 412): the frame is 0xa4 against retail's 0xa0; retail takes the actor
 // index in EAX where ours loads the argument from the stack. The body is 1620 bytes
 // against retail's 1616.
 // Frame 0xa4 versus 0xa0; stacked actor and node/workspace homes still differ.
@@ -569,6 +569,9 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // 413/413/413; native signed prior-state carrier 412, plain-confirmed and kept.
 // The seven-point order alone and two-point orders were rejected; keep only the
 // combined form at 1620/1616 bytes. Frame 0xa4, stacked actor and flag homes remain.
+// DH round 279: Spatial-first case priorities 24013/24031/24103/24130/24301/24310/23401/23410 on the
+// retained signed prior-state graph [423, 434, 421, 417, 448, 421, 447, 425]. Original executable body
+// restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
