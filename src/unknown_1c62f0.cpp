@@ -805,6 +805,12 @@ long animation_events_dispatch(s_graph_tag *graph, s_animation *animation, dword
 // original position with word/short/dword events 12/12/12; separate loop-start
 // and directly initialized replacement 130. Original retained callback/variant
 // graph restored; third-dispatch scratch rotation remains.
+// Round 273: integer loop-start used by both conversions, short/long before/after wrap
+// and branch/entry variant 13/2/13/2/13/2/13/2. Single conversion with four index names
+// uses original position 12 each, separate real start 13 each; two-difference graph with
+// eight scalar/identity names 2 each; uniform loop-field observations 13. The two-point
+// forms move the loop-start spill to the retired callback slot and repeat the conversion;
+// exact-only, rejected. Original complete body restored; scratch rotation remains.
 // @retail 0x1c66a0
 void __stdcall c_animation_channel_advance(c_animation_channel *channel, real frame, s_animation_state *state,
 	animation_event_callback callback, long user)

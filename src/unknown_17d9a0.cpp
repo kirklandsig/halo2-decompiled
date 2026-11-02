@@ -325,6 +325,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
 // native/array planar sums, native/array parallel products and native running coordinates
 // 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
+// Round 273: complete native input captures (both bounds/both basis vectors/origin),
+// subsets 1/2/4/3/5/6/7, then all with entry axis declaration:
+// 137/734/734/747/747/734/747/747. Basis/origin copies end full corner inlining.
+// Original helper/body restored; plane base, selectors and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

@@ -2323,7 +2323,7 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 /* the physics of type 0 vehicles (the differential-steered ones): the
    engine drives each side's contacts, the turn trading torque between
    the sides */
-// score 42 (was 101): frame 0x10 agrees; turn-product schedule and spin temporary/store placement remain.
+// score 42 (was 42): frame 0x10 agrees; turn-product schedule and spin temporary/store placement remain.
 // 115 before round 114; the frame now agrees (0x10; round 114 removed 0x2056e0's named double, whose
 // alignment need LTCG had pushed onto this caller); before that, frame 0x14 against 0x10 (one dead
 // slot below gear_throttle; the four used slots agree but sit 4 higher); zero/scalar residency and
@@ -2377,6 +2377,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // M314: Existing spin helper owns advance and in-place output, branch/default result with entry/per-use
 // time-rate and original/NONE-first torque: 120/121/170/164/42/133/176/199. Branch result,
 // entry time-rate and NONE-first torque kept, plain 42 at 685/682; every other user unchanged.
+// Round 273: existing spin helper returns its real wrap result to the field assignment,
+// branch/default/advanced-value/entry-result forms 127/133/127/127; those with one
+// shared absolute-turn producer 104/109/104/104. Intermediate advance stores and all
+// period observations preserved. Original helper/body restored; product and spill schedule remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
