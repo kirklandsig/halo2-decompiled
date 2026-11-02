@@ -1419,6 +1419,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // All other full-image measurements stay unchanged; entry table and second unit load remain.
 // Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
 // 95/96/95/96/94/95/94/95; original complete body restored.
+// AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
+// each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
+// long result and complete body restored; second entry lookup and hand spill remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

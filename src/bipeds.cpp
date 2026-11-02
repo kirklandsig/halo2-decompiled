@@ -1356,6 +1356,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 0xfc. Original getter use, value graph and complete body restored. Scores
 // 608/608/608/608/628/628/628/628.
 // Original executable source restored.
+// AC483: Discarded point output reused as eye/center/body/eye+body/center+body,
+// then eye+nearest-center/center+nearest-eye/eye+body+nearest-center:
+// 612/605/614/622/609/604/609/605. Several reach 2828 bytes; frame/material/animation
+// homes still differ. Original point outputs, helpers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
