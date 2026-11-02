@@ -289,6 +289,9 @@ static inline void quaternion_transform_vector(
 // independent halves 276/1023/1023/1023. Short ordinals retain an out-of-line
 // transform at 596 bytes; original helper, halves and complete body restored.
 // Frame 0x1c/0x24 and quaternion/cross spill overlap remain.
+// DL228: plain forward/up/left field-table traversal, long/dword/short/word ordinals,
+// ordinary and forced existing helper: 279/279/745/745/279/279/745/745.
+// Original three in-place calls, helper and body restored; quaternion/spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

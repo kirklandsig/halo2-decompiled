@@ -279,6 +279,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // wide/byte outcome, 44/57/95/107/95/107; long ordinal plus advancing cursor wide/byte 116/129.
 // Handle ECX and stored-success memory test remain; original task values, waits, completion
 // qualifier and complete executable body restored.
+// DL228: complementary failed-open bool/byte/short/word outcomes on native object/scalar
+// handle flows 41/41/43/43/41/41/43/43. One-point gains rejected; original full-width
+// outcome, success publication, native file object, both waits and body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

@@ -213,6 +213,9 @@ bool function_a7670(long object_index);
 // 260/257/179/153/253/244/122/96; kept native bound plus indexed cleanup 153 (plain).
 // Two-point 179 and match-only shared-result 122/96 restored. Completed shared/named membership,
 // both completed ordinals and completed first result on the new graph 153/153/236/255; restored.
+// DL228: two-list byte/short/word/dword selector with consumed/explicit index steps
+// 161/260/260/153/161/260/260/153; selector zero initialized before guard/admission/arrays
+// 154/162/162. Original native selector, initialization and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {
