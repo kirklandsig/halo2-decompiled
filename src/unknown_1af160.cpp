@@ -98,6 +98,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 0x1f4a20 flags declared before the 0x262b40 result 9 (same code); the five cleared flags as one
 // chained assignment 13; the result declared right before the search-result test 58; the 0x1af530
 // range output declared at the top of the found branch 9 (same code).
+// Round 51 (m3 lane 14, plain; fast control 209): the reference copy declared after the 0x1e4be0 result
+// 14 (the field read moves after the call; homes unchanged); confirmations of earlier forms: the bool
+// output declared first 9, both 0x261280 outputs declared at the top 9. Retail calls 0x25d690 twice as
+// ours does. Still BLOCKED-BY 0x260670: its real body is disabled in src/unknown_261280.cpp (held).
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

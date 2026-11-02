@@ -315,6 +315,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // stores 142 (964: both copies go through integer registers), y first 142; a corner local copied out 244 (1039); a
 // two-call component helper 144; a row pointer local 142. Forward/left pointer locals 64, with origin 60; references for
 // the coordinates 46; box fields 50, with pointers 62; rows z, y, x 79; rows y, x, z 71.
+// Round 328: existing vector/point normal setters with copied/source/plane/normal
+// receivers 207/211/209/213 and 207/211/209/211. Original normal block copy,
+// all consumers, corner helper and complete body restored; plane base and product ranks remain.
 // Round 364: On by-value selectors/component-array/point-setter graph, plane receiver,
 // shared edge norms and shared determinant subsets 1/2/4/3/5/6/7: 91/130/44/165/87/130/165;
 // all with both squared lengths named 154. The two-point determinant gain is ineligible;
