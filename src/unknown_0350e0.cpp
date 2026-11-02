@@ -2206,7 +2206,7 @@ bool function_39a80(byte *state)
 
 real magnitude3d(vector3f const *v);
 
-// score 182 (earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
+// score 182 (was 182; earlier 193, 324; 147 with the shared cross3f axis, held: see Round 435): PIN reevaluates the clamped expression as retail does (the target's
 // sqrt is computed up to three times, with its x*x term hoisted and added last). Retail's
 // frame is one slot larger (0x38): its unclamped current length, the dot product, the angle
 // and the cosine share the slot at +0xc while the temporary at +8 stays separate; here the
@@ -2223,6 +2223,11 @@ real magnitude3d(vector3f const *v);
 // 0xc2d00 (unknown_0bffa0.cpp) lose its match (DIFF at +0x12e), so the axis stays written out; staged axis cross 147; shared/staged rotation tangent 196;
 // both cross boundaries in all four pairings 154. Raw current length reused by clamp/guard with
 // axis-only/both boundaries 255/276; both raw lengths reused 330/342. Frame remains 0x34 vs 0x38.
+// DH round 270: existing vector setters at normalization/rotation/both/final-scale/normalization-and-
+// scale/rotation-and-scale/all boundaries 198/188/204/182/198/188/204; normalization and final setters with
+// scalar rotation results 198. Magnitude and protected neighboring body stay matched in previews. Frame 0x34
+// versus 0x38 and raw-length/dot/angle/cosine homes remain; entire original body and every arithmetic tree
+// restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2299,8 +2304,9 @@ void function_4a7c0(s_cached_input_list *state, s_cached_input const *inputs, lo
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step);
 s_cached_input_list g_5234e8[4];
 
-// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): retail keeps 0.0f, 0.1f and 2.0f in xmm5-xmm7 across the loop; here they are
-// loaded inside it, and the depth dot product orders its terms differently. Tried: all six
+// score 132 (was 132; 139; r581: 139; 146 -> 139 on a 169-source fast image): frame 0xa0 and loop constants agree; first +0xb saves
+// EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
+// also differs. Tried: all six
 // term orders and several groupings (140), constants in locals (140). The flag as a branchy
 // && stored through a long (136).
 // Round 186 (plain checks, positional | LCS-aligned, base 132 | 71): retail keeps `list` in a frame slot
@@ -2323,6 +2329,10 @@ s_cached_input_list g_5234e8[4];
 // Round 226: native shape/list/output-record reference subsets and enclosing native shape each 136 on a
 // reduced control of 136; native shape/list plain 132. Coordinated callee inline 136 reduced, 139 plain
 // (549 bytes); restored. The list/cursor register split remains; original body and contracts restored.
+// DH round 270: bounded short/word scan ordinals on original/direct-state/native-total/streaming-output
+// graphs, reduced 148/133/147/132/126/135/148/133 (control 136). The native signed-short ordinal plus total
+// reaches 548 bytes in preview but plain is 142 at 562 bytes; restored. Original frame 0xa0 and
+// list/cursor/index register split remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2908,6 +2918,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // Round 226: table already in EBP, frame 0x18 versus 0x1c and missing final fade scratch stores remain.
 // Native object/mode/both 177; alpha first with those view subsets 212 each; byte result 173 at
 // 768 bytes (four-point gain below the retention bar). Original body and shared helper restored.
+// DH round 270: temporal/final/both clamps as PIN value expressions 177/177/177; each with live first-fade
+// field reads 204/204/204; both with those reads and reversed cases/shared position lifetime 204/204. Frame
+// stays 0x18 versus 0x1c; initial alpha/kind scheduling and final fade scratch stores remain. Entire
+// original body, output roles and distance helper restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
