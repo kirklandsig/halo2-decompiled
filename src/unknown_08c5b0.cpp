@@ -129,6 +129,12 @@ static inline long bungienet_user_voice_setting(short kind)
 // selector without inline, availability force-inline, controller access force-inline,
 // const request parameter, const scalar/pointer locals and external-inline selector 4 each.
 // Original helper boundaries, parameter and local forms restored; request/kind registers remain.
+// Round 58: plain reads: a bool from the kind 32 (95 bytes); kind plus an unused bool 32; `setting = 1` seeded 30
+// (94 bytes); seeded `kind == setting` 30; the ternary with `: kind` in the not-available arm 4 (same code as the
+// volatile read, the assignment only steers; not kept), with the index first 5, selector first 23 (kind AX, request EDX), if/else
+// form 4. Field pointers: kind 32, index 32, both 32, index with the volatile read 4, kind or index with the `: kind` arm 4/4.
+// `request->kind` written at each use (no local): index first 32, selector first 30, in both arms 32, `else if` setting 45 (110 bytes); a
+// second `kind == 1` in the else 4.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

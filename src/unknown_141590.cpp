@@ -980,6 +980,10 @@ void function_143250(
 // masks 1..7, 1767/1767/1767/1766/1766/1771/1771; complete graph with independent
 // original basis/matrix storage 2237. Squares and reused values retained; all executable
 // source restored. Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// Round 72 (lane 16, fast): single-use terms written into the next statement, first 420 and all 648 eligible 1775/1775
+// (10763 bytes, rotation EAX, ret 4, frame 0x30c); on the 648 form the leading terms as plain locals, with a matrix
+// pointer or a plain array 2238/2238 (10297 bytes, frame 0x2fc); plain leading locals keeping every term 2114 (10412).
+// Restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -378,6 +378,9 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // DL233: Whole-plane native/library publication, zero-d before/after normalization, producer/entry
 // plane storage: 257/257/259/259/257/257/259/259. Original plane/output body restored;
 // origin retention and edge homes still leave frame 0x84 versus 0x90.
+// DL235: Retained projection-table row, pointer/reference, original/shared polygon count,
+// short/long axis: 231/231/247/247/231/231/247/247. All restored;
+// frame 0x84 versus 0x90, retained-origin and edge spills remain.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {

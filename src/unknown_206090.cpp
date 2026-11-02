@@ -290,12 +290,17 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // transfer and separate/in-place normalized direction: 1417/1372/1465/1395;
 // 1357/1474/1485/1400. Native explicit selection with a separate direction gains six
 // at 6243 bytes, below the gate; pointer selection, original copies, all kernels and body restored.
+// Round 314: Captured magnitude through the existing k/j/i dot kernel, with original/
+// first/second/both shared scale tails, mutable or immutable capture, all 1403 at 6259
+// bytes. Original magnitude, normalizers, includes and body restored; frame remains 0x5cc.
 // M298: Separate collected membership and compatible-contact searches; body/head
 // membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
 // [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
 // Round 356: Existing scaled translation with point/contact/both lever-arm subtraction,
 // without/with shared contact-velocity sum: 1355/1407/1380/1362/1355/1407/1380/1362.
 // Scaled translation alone kept, 1355 plain at 6243/6238; original captures and helper bodies preserved.
+// DL236: Branch-owned tangent default/late force default/live control-bit subsets 1..7, then shared scalar default setters: 1365/1376/1367/1425/1423/1391/1382/1423.
+// Native byte/short/long/dword final result at completion/entry: 1411/1407/1408/1408/1423/1392/1393/1393. All restored; frame 0x5cc versus 0x58c and component/velocity/query/list homes remain; Boolean interface and caller preserved.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
