@@ -241,6 +241,10 @@ struct s_spawn_scenario_23aea0
 // Every other user keeps its score in reduced and ordinary checks; all matches survive.
 // M293: Retained-setter override early exit, paired scalar observations, actual record cursor,
 // their combinations, then native scalar truth tests: 61/75/75/76/76/93/93/61. All restored.
+// Round 246: Native source vector/array records on the retained setter graph, flat/nested
+// 61/61/61/61; native vector assignment/library copy 256/256; both-phase setter 73;
+// mutable nested source records 61. Original source view and complete body restored;
+// integer destination induction and staged default-input loads remain.
 // @retail 0x23aea0
 void function_23aea0()
 {

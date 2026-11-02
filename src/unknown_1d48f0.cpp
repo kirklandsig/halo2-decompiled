@@ -249,6 +249,9 @@ const dword g_455978[81] = {
 // +0x44, sample +0x48). On that form: the endpoint copied from *arg_11 then offset in place 337 (2104 bytes);
 // the sample renamed, the radial scale through vector3f_scale, the endpoint declared at the loop top 306 each
 // (same code). Restored; a later round should keep this helper form once the homes can be moved.
+// DL226: Bounded table cursors on the retained planar scratch, vector-row/dword strides,
+// direct/cached range ends and relational/sentinel termination: eight forms 354. All restored;
+// optional bounds/exclusion homes and selective location/release expansion remain.
 // Round 70 (m3 lane 16, fast): the existing shared `normalize_inline` (include/unknown_0259d0.h) on a k-zeroed
 // three-component copy gives the planar block without the private 0x29b2e0 helper; with round 87's sample-end copy
 // and in-place adds 338 (2104 bytes, aligned 137); on that: `normalize3d` 339, radial scale through

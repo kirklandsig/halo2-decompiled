@@ -628,6 +628,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // 67/67/67/67/67/67/67/67. Original complete executable source restored.
 // M296: Single current-team count observations A/B/both, mutable then const,
 // then both with reverse declaration priority [75, 151, 154, 75, 151, 154, 154, 154]. Original per-use count reads restored.
+// Round 341: Equality-first lexicographic acceptance in bool/byte/short/long
+// result storage 92/92/106/105; complementary rejection results 92/92/106/105.
+// Bool/byte reach 512 bytes but lose the original frame; original query graph restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -968,6 +971,16 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // 82/85/82/82/82/85/82/82. Original executable body restored.
 // M296: Sixteen-slot shared short/word/byte/char ordinals, then separate short/long,
 // long/short, short/short and word/word [79, 79, 78, 78, 79, 76, 79, 79]. Original long induction restored.
+// Round 56 (m3 lane 10; one-file LTCG harness, exact here; the first form confirmed --fast): `int next_party` 34; `int
+// parties[]` 34; `dword parties[]` 34; `(long)next_party` in the fill 34; next_party declared after the index 34; a
+// forceinline fill helper (first, last, value) 34, plain inline 34, (pointer, count, value) 56; a static next_party 60
+// (diagnostic); a one-element array 34; next_party read through its own address in the fill 34. Diagnostics
+// (value-changing): the fill value `(short)` or `(unsigned short)` 4 (retail roles; left the movsx, `lea ebx, [edx +
+// eax]` and the clamp register), `next_party + 1` 38 (retail roles), `(char)` 63, `-next_party` 48, `^ 1` 48, constant
+// 5 31, no maximum update 66 (retail roles): the player count gets EAX only when the rep stosd value is a temporary
+// computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
+// keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
+// alike, so it is no proxy for these roles.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

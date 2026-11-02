@@ -794,6 +794,24 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 56 (m3 lane 10; compile-only exact here, real --fast in brackets): retail's entry total and signature sum are
+// compiler temporaries (sum into a fresh EDX; body size ECX, header EDX, `lea esi`). The total converted in place (no
+// total local) with the signature position passed to a forceinline (file, position) seek helper gives both: 16 [28];
+// left only the body case, whose body_size load goes straight into size's ESI (retail a temporary ECX), so the
+// signature sum is coalesced again and the head merge carries ESI. Not kept: a new one-caller helper, and the helper
+// at 0x2adb10's five seeks [0x2adb10 308, 956 bytes] or at its signature seek only [315, 960 bytes]. The helper in the
+// body case too 174 (no total local 149, long parameter 174); the position written in place with the equality reversed
+// (signature/body/both) 210/208/212 (the call still runs first and the sum is reloaded); reversed equality on the local
+// 23. On the helper form: remaining set in both arms 22 (copy-propagated, sums header first); one size assignment after
+// the arms (`body ? remaining : MIN`) 148 positional (aligned 9: buffer/size/position as retail, but body_size loaded
+// into size's EDI and the hoist gone); remaining in both arms with `if (body || size > remaining)` 151 (body_size into
+// the temporary ECX, but body_offset loaded first, so no head merge). Random search of 400 forms (helper type and use,
+// total local, total and signature sum orders, bytes placement, six body-arm forms, buffer/size declaration and
+// statement orders, function-scope position, test operand order): none below 16; 250 forms without the helper (adding
+// signature position spellings `p = a; p += b`, function scope, long, const, after the buffers): none below 22.
+// Round 246: Byte/short/bool/word common task results, declared before the request
+// view or after total conversion, 269/264/257/252/269/264/257/252. Original returns
+// and cleanup restored; fresh total EDX and seek/size ESI/EDI allocation remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1051,6 +1069,9 @@ struct s_signed_file_write_parameters
 // M293: Task result carries header completion: for assignment/for branches/while/failure break,
 // original then test-produced extension result:
 // 342/342/342/306/371/371/371/308. Original complete executable source restored.
+// Round 246: Byte/short zero-or-one task results crossed with full-width header/signature
+// success carriers, masks 0/H/S/HS, 161/147/160/150 and 151/162/161/167. Original
+// result, success carriers and body restored; capacity scheduling and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
