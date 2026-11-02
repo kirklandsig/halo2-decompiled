@@ -1248,6 +1248,8 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 	return result;
 }
 
+// MiniMax D (11-01): no new form, no lower score; the declaration order may not change, and the
+// flag's register follows the shared helper that the matched 0x56160 and 0x56380 pin.
 // score 94 (was 94): the flag stays in bl (retail al), so the loop temporaries take eax/al where retail uses
 // ebx/cl; retail loads the count into ebp before the multiplier and adds 2 before the total (ours folds the load
 // into imul and uses one lea). Frame, prologue, unrolling and cursor agree (347 bytes).
@@ -3168,6 +3170,9 @@ struct s_voice_route_choice
 // Round 237: existing bit-vector settings/headset/both producers 1067/592/1058
 // with conditional radio 1068/563/1070; both with actual choice receiver 1058/1070
 // Original executable body and helpers restored.
+// Round 502: settings exclusion-mask production at iteration/entry, original/element
+// receivers 428/396/426/383; with conditional radio 395/410/400/410. Original
+// positive-mask observations, mixer workspaces and body restored; entry/cursor homes remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3427,6 +3432,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // 164 (478 bytes: retail's EDI cursor, the member in EBP); with the member and packet-kind tests split 164;
 // the cursor advanced before the size and count updates 167; the member declared, then assigned 164; the
 // member bit cleared before the talker test 161 (469 bytes).
+// Round 502: retained full-length remaining/end-offset bounds, retained payload bound and
+// admission-time budget debit 161/161/146/161; with independent packet cursor
+// 167/155/148/173. Original byte budget and complete body restored; channel/cursor homes remain.
 // Round 241: Route output initialized at relay entry/member result/member-set/after local delivery
 // 163/163/163/139; the same boundaries with an independent packet cursor 165/167/168/168.
 // Original route initialization, live count reads and complete body restored.

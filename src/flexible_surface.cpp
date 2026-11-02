@@ -337,6 +337,8 @@ void function_117510(long index)
 // DH round 273: complete real link input value with immutable/local endpoint-field/native difference
 // subsets: 204/204/204/204/204/204/204/204. Original link pointer, both endpoint snapshots, root
 // arithmetic, pin observations and body restored; entry and correction homes remain.
+// M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
+// 148/156/156/189/180/183/183/183. Original executable body restored.
 // @retail 0x117790
 void __stdcall function_117790(long index)
 {
@@ -543,6 +545,8 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // DH round 273: native real tail trigonometric results at first/second/third/fourth/first-pair/last-
 // pair/all producers 155/139/155/139/155/155/138; all with real double-product arguments 163.
 // Precision-only forms restored; frame and seed/rotation staging remain.
+// M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
+// 178/178/178/189/189/189/178/178. Original executable body restored.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -1778,6 +1778,8 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
+// MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
+// it measured a variant.
 // score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
@@ -2071,6 +2073,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // DH round 273: complete transform values in existing/distinct output, crossed with native node word
 // and iteration scope: 161/197/161/197/161/197/161/197. Original pointer-result ownership, node
 // observations, workspaces and body restored; early color home and frame remain.
+// Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
+// 128/138/138/128/138/128/128/128. Original case order, body and zone producer
+// restored; early color/query ownership and frame 0x40 versus 0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3396,6 +3401,9 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // scale prefix and point Y-copy remain.
 // Round 260: complete native location matrix with original/house scale, original/shared normal
 // kernel and color observation order: 410/420/410/420/410/420/410/420; frame 0xa4, all restored.
+// Round 501: bounded iterator mode word/byte/signed-char/dword, with repeated/once-captured
+// association index, 74/74/351/351/351/351/74/74. Original mode, observations and body
+// restored; scale prefix and point Y-copy remain. Shared transforms stay unchanged.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

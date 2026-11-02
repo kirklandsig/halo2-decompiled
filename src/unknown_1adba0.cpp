@@ -472,7 +472,7 @@ real function_1c9ee0(real arg_0);
 void __stdcall function_26c2d0(long arg_0);
 bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool arg_3);
 
-// score 15 (was 41): only the EBX/EBP pair differs: retail keeps the -1 sentinel and then the
+// score 15 (was 15): only the EBX/EBP pair differs: retail keeps the -1 sentinel and then the
 // game-time pointer in EBP and the 0x1e5380 result in EBX, ours the other way round (so the
 // prologue pushes and every use of the two registers differ). Tried: the result as a const
 // pointer 15; the result/ticks/unit index declared elsewhere 15; the enable test nested 15; a
@@ -493,6 +493,10 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // passed directly 41.
 // Round 28: descriptive local names 15; the random compare written `f() < chance` 15; the prop
 // state named at its test 15; the rate first in the elapsed product 15; `!= NULL` result test 15.
+// Round 48: the permuter (46 forms, 600 s) 15; the result declared bare at the top 15, NULL at the
+// top 15, bare beside the unit index 15; the settings factor first in the cooldown product 15. The
+// two webs' instructions are identical in both builds, only their registers swap; the callee
+// 0x110ab0 (unmatched, src/unknown_10f1e0.cpp) builds differently in the reduced image.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {
