@@ -473,6 +473,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // movement field reads and native request masks 0..7: 248/249/248/249/248/249/248/249.
 // Result-first forms recover frame 0x162c but worsen state-base/register homes.
 // Original scalar state resets, result, request, field snapshot and complete body restored.
+// Round 465: marker pointer produced at collection/request start/geometry/movement,
+// current/full-body common result: 199/242/248/201/252/253/246/202.
+// Last two recover frame 0x162c but regress; original pointer lifetime and result restored.
 // Round 256: nullable marker-list at the query producer, branch/conditional output,
 // early result storage and limit-field observations: branch 236 each, conditional 233 each.
 // Original readiness Boolean, list construction, movement snapshot and complete body restored.

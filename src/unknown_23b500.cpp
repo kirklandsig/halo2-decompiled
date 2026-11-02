@@ -249,6 +249,21 @@ struct s_spawn_scenario_23aea0
 // 61/61/61/61; native vector assignment/library copy 256/256; both-phase setter 73;
 // mutable nested source records 61. Original source view and complete body restored;
 // integer destination induction and staged default-input loads remain.
+// Round 55 (lane 11): a compile-only sweep of 300 forms: every stride-1 counter folds the destination (array classes
+// with an inline operator[], typed arrays, an element pointer, a separate offset beside the counter), but a byte-offset
+// loop variable keeps retail's integer offset and its signed compare: `for (long o = 0x18; o < 0xa8; o += 0x48)` around
+// an inner six-record loop that VC unrolls fully. That holds only while the base is at most 8 bytes above the
+// displacement: displacement against the symbol +24 to -8 integer, -9 to -48 pointer with a countdown; the global's
+// declared size, element type and the start value do not move it. Retail's -16 from g_502258 therefore needs a symbol
+// at 0x502250 or below (nothing else reads 0x502250/0x502254). Real fast trials: the nested loop on `(byte *)g_502258
+// - 16` 140 (377 bytes), through an extern const base pointer 146 (390 bytes). MATCH (plain, not kept, BLOCKED-BY 0x157450,
+// whose file holds the definition and is another lane's this round; a lead only, because retail shows nothing else at
+// 0x502250..0x502257, so what lives there has to be established first): `dword g_502250[0x29]` as the definition,
+// g_502258 as `g_502250 + 2` here and in src/unknown_2bd960.cpp, `byte *source = definition + 0x184;`, the loop above
+// with `, source += 0xa8`, `record = (s_spawn_influence_type *)((byte *)g_502250 + o - 8)` and the inner loop reading
+// `source + j * 0x1c - 4`, `source + j * 0x1c` and `source + j * 0x1c + 4`. 0x157450, 0x23ba10, 0x23b060, 0x23b500 and
+// 0x2bf740 stay matched. On that symbol a source walked by the batch without the bias 20, the type counter advanced
+// with the batch 6 (definition in ECX with `add ecx`), a named records pointer 25.
 // @retail 0x23aea0
 void function_23aea0()
 {

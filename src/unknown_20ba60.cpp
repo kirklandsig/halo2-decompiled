@@ -54,7 +54,7 @@ void function_20cbd0(short arg_0, s_audio_priority_table *arg_1, long arg_2,
 short function_20f0a0(s_audio_weighted_entry *arg_0, short arg_1);
 struct s_object;
 s_object *function_badc0(long arg_0, dword arg_1);
-void function_20c440(byte const *arg_0, s_audio_priority_table *arg_1, long arg_2,
+void function_20c440(s_audio_priority_table *arg_1, byte const *arg_0, long arg_2,
     long arg_3, long arg_4, long arg_5, short arg_6, short arg_7,
     short arg_8, short arg_9, s_audio_selection *arg_10, short *arg_11);
 
@@ -202,7 +202,7 @@ bool __stdcall function_20cdc0(long arg_0, long arg_1, long arg_2, s_audio_selec
                     case 4: *(short *)(local_7 + 8) = 11; break;
                     }
                     *(short *)(local_7 + 0xc) = 0;
-                    function_20c440(local_7, local_2, arg_0, local_5 ? arg_1 : NONE,
+                    function_20c440(local_2, local_7, arg_0, local_5 ? arg_1 : NONE,
                         arg_2, NONE, 0, NONE, NONE, NONE, local_6, (short *)&local_0);
                 }
                 else if ((local_10[4] & 2) && *(short *)(local_10 + 0xa) != NONE &&
