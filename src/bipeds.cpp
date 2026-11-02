@@ -2706,6 +2706,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // seven subsets, then all with the per-body impulse scale before lift: 530 each.
 // Original component producers and body restored; frame 0x44 versus 0x4c,
 // result byte, state width and centroid/impulse homes remain.
+// Round 532: separate output-query/body admission, case-one-first dispatch and case-owned query
+// workspaces, seven subsets 530/541/541/530/530/541/541; all with complete query-role names 541.
+// All remain 1834/1908 bytes, frame 0x44 versus 0x4c. Original compound query, case order and body restored.
 // F329: Shared push/fallback velocity workspace, hit snapshot at its direction consumer,
 // and the existing complete along-difference producer, seven subsets:
 // 530/548/530/548/530/563/563; all with velocity role name 563. All restored;
