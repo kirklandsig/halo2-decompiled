@@ -475,6 +475,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Round 511: full-array memmove, block/indexed receivers and live/shared copy count
 // 169/162/165/151; late cursor pairs 169/164/165/151. Original
 // memcpy and body restored; scaled-index, first-index and copy/count homes remain.
+// Round 514: combined required-mask equality/zero optional mask/bit-index test/mode
+// optional mask, block receivers 150/139/180/164; indexed receivers 159/159/188/181.
+// Original admission, copy and complete body restored; scaled-index/count/first homes remain.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {
