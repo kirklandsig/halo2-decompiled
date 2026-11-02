@@ -158,6 +158,9 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // AC474: Existing snap-producer input-pair/angular-scratch/magnitude lexical identities,
 // seven subsets then complete quadrant identity: 474/474/474/474/474/474/474/474.
 // Original helper and full body restored; frame 0x38/0x40 and angle/snap homes remain.
+// AC484: Separate native short/word/byte/long quadrant components with a short total
+// 474/474/488/474; with a long total 474/474/488/474. Original components, helper
+// and body restored; frame 0x38/0x40, rounded angles and simultaneous snap homes remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

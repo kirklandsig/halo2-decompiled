@@ -208,6 +208,10 @@
 // output modes 959/959/956/962; selected-factor counterparts 997/997/994/1000. Original products,
 // repeated clamp arms, mode publication and sixth-component conversion restored; frame and
 // shape/basis/wave homes remain.
+// Round 333: Perspective rows through separate existing scale/add producers, cross/output
+// receivers, complete rows/paired phases and separate/nested returned receivers:
+// 772/772/844/766/925/837/909/839. All regress; original perspective expressions, helpers,
+// frame graph and sixth-component conversion restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,

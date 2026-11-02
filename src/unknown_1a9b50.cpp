@@ -858,6 +858,8 @@ static __forceinline long real_to_long(real value);
 // direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
 // each. Original workspaces, entry/result graph, query aliases and entire body restored; early
 // rejection and magnitude/query homes remain.
+// Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
+// Original result, admission and complete body restored; early exit and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
