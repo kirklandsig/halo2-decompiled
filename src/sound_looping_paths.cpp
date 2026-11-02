@@ -673,6 +673,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 479: Coordinated portal-angle register-parameter orders RLBP/BRLP/LRBP/RBLP/LBRP/BLRP/RLPB/LRPB
 // (R reverse, L listener, B BSP, P portal), fixed point/radius/output tail: 156/150/156/150/156/150/156/156.
 // Original provider signature, declaration, call and complete caller restored; BSP/count homes remain.
+// N326: Query-fill/processing ordinal shared, independent/shared sentinel ordinal,
+// long/int/short/signed-char storage: 150/150/279/277/150/150/279/277.
+// Original induction, query scope and body restored; BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

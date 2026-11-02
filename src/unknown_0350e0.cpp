@@ -2490,6 +2490,10 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// N326: Native absolute-depth / named ratio / projected-radius producers, seven
+// graphs and direct final score publication: 153/136/136/153/153/136/153/153, fast control 136.
+// Absolute forms add frame 0xa4 versus 0xa0 and regress; original floating tree,
+// observations and complete body restored. Full baseline remains 132.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {

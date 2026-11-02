@@ -1785,6 +1785,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
 // interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
 // static 119/128/120/128. Original fields, six calls and complete body restored.
+// N326: Failure-owned result defaults on admission/mode/pickup edges, seven graphs
+// and complete leaf-owned result: 158/137/143/136/158/154/128/128.
+// Original result initialization, body and all calls restored; request/weapon homes remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2663,6 +2666,9 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 330: marker inverse in place, native seat-quaternion output and shared request,
 // subsets 1-7 then all with guarded full-width state 287/311/320/305/300/318/320/317. Original body restored;
 // entry vehicle/unit/ordinal residence remains.
+// N326: Completed marker/matrix-input/inverse/output and relative-transform
+// workspace lifetimes: 293/293/293/293/293/293/293/293. All tie at 1221/1209.
+// Original scopes, observations, outputs and body restored; entry vehicle/unit homes remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
