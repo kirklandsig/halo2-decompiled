@@ -340,6 +340,9 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // Round 354: Native metadata flag, readonly lookup result and branch-completed nullable
 // result subsets 1..7, then native flag bitfield: 118/118/118/118/118/612/612/612. Original metadata
 // layout, getter, complete case graph and matched sibling restored.
+// Round 286: Existing metadata getter forced inline, original/table-first/readonly/guard exits/
+// completed result/conditional result/entry-owned result/coordinated roles: 118/118/118/118/118/118/118/118. Original
+// helper and complete body restored; metadata table/result scratch rotation remains.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

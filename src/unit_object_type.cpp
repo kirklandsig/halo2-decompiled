@@ -7133,6 +7133,9 @@ real function_50650(real cosine);
 // 614/614/614/614; component aggregate counterparts 563/563/563/563.
 // Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.
 // Original prediction input, axis, reciprocal and complete body restored.
+// Round 286: Current native-axis graph with target/current-direction storage reuse and joint
+// motion-record lexical order, seven subsets then all with complete cosine parts: 563/563/563/563/563/563/563/556. Original
+// storage lifetimes and body restored; frame, vector homes and prediction/motion scheduling remain.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

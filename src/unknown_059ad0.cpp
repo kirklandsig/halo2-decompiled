@@ -3572,6 +3572,9 @@ long network_observer_attach_channel(s_network_observer *observer, long owner_in
 // success storage, original/scoped machine copy 143/143/126/126/145/145/153/153.
 // Exact-length negative continuation still regresses; original early admission,
 // independent failures, success qualifier and complete body restored.
+// Round 286: Joint member/channel/time/clock/reservation/counter lexical priorities, six forms,
+// then ordinary/direct success ownership on that graph: 76/76/76/76/76/76/116/116. Original body and result qualifier
+// restored; eligibility edge and member/reservation scratch rotation remain.
 // @retail 0x5c720
 bool __stdcall function_5c720(c_class_58d20 *session, const s_session_member_identity *identity,
 	long player_count, const dword *identities, const long *values, bool reserve,
