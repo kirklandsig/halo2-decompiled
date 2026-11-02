@@ -217,6 +217,9 @@ void function_213970(void);
 // acquisition and independent dirty-first publications: 131/126/131/126/131/126/131/126.
 // Five-point forms dropped above 30; original complete body restored. Two whole-block clears
 // still require the protected global definitions.
+// DL235: Native complete progress reset with requested-language reads at each use,
+// native handle/NONE-chain/scalar-zero-chain subsets: 172/184/172/184/163/176/163/176.
+// All restored; protected separate storage still prevents the two retail bulk clears.
 // @retail 0x2136c0
 void function_2136c0(void)
 {

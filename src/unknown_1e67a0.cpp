@@ -703,6 +703,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
 // products, sample qualifier and complete body restored; constant/limit ownership and jitter
 // spills remain.
+// DL235: Complete conditional factor expression, crossed with direct definition observations,
+// reused speed factor and ordinary sampling: 213/245/213/245/241/273/241/273.
+// All restored; constant/limit XMM ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -956,6 +959,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL226: Existing complete vector setter at goal output, rotated output and original-input
 // copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
 // Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
+// DL235: Native output bitfields at input/support/turn boundaries, subsets 1..7,
+// then all with word bit storage: 372/206/398/155/372/206/398/396.
+// Original record and body restored; sampled-vector and rotation/output homes remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
