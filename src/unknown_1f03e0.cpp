@@ -968,6 +968,10 @@ struct s_flags_1f0870
 // Round 311: General movement through the existing output-pointer scale, plain/shared difference and
 // ordinary/returned-output ownership 590 each; all four with native two-component direct delta 589 each
 // (one-point gain rejected). Original body restored; frame, flag homes and normalization continuations remain.
+// DL238: Native grounded/gravity-disabled/direct-disabled predicate subsets 1/2/3/4/5/6/7/all plus
+// damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
+// damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
+// Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, byte const *state, byte *out)
 {
@@ -1624,6 +1628,13 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // Round 256: all three named dot products in the existing shared helper, six producer
 // orders 227 each; first/last orders with real movement 228/228. Original helper,
 // magnitude and complete body restored.
+// Round 518: one complete velocity sample for scan/fallback, with native
+// movement, earlier sentinel phase and count capture masks 0-7,
+// 334/332/335/333/334/332/335/333. Original observations and body restored;
+// zero-load width, reset/selection homes and selective material calls remain.
+// P258: Two-/three-step left-associated dot sums, original/early eligibility
+// and double/real movement: 229/223/229/223/224/226/224/226. Other dot users stay
+// 590/418; original helper, eligibility, magnitude and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

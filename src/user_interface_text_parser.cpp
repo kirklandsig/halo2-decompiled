@@ -638,6 +638,7 @@ done:
 // Round 355: complete readonly shared getter with readonly UI receiver, direct selector
 // and repeated/shared copy tails: 32/32/44/44/54/54/57/57. Original getter and body restored;
 // early EDI save, tag/selector schedule and scratch-address cache remain.
+// Round 357: Complete if/else or conditional-expression name results, selected-name/numeric priorities and repeated/shared copy completions 57/57/57/57/68/68/68/68. Original switch, single scratch object and body restored; early EDI save and tag/scratch allocation remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

@@ -7129,6 +7129,9 @@ real function_50650(real cosine);
 // DH277: complete prediction field/scalar accumulators and radial/cosine terms 566/566/563/556; with shared
 // cross 585/585/585/595. Seven-point cosine-term lead at 2479/2483 rejected below eight; original body and
 // transform helpers restored.
+// Round 515: Complete prediction through the existing vector setter, with magnitude-squared
+// part, paired frame/motion names and phase-entry result declarations: 563/567/563/567/563/567/563/567.
+// Frame/input homes remain; complete original body and every shared helper restored.
 // Round 316: Native prediction input copy mutable/const, before-angle/after-trig
 // 614/614/614/614; component aggregate counterparts 563/563/563/563.
 // Early native copy reserves 0x98, late copy 0x8c; both matched callers stay exact.

@@ -817,6 +817,9 @@ struct s_device_machine_view
 // success carrier without/with power-velocity zero default: 494/512/518/515 and
 // 497/515/521/518. Original cached receivers and body restored; native word-load
 // sharing and velocity-zero join remain.
+// Round 284: complete case-local numeric result production, conditional delay/position/power
+// selected-value subsets 151/150/123/143/134/145/120; all with native group masks 155.
+// Original body restored; word-load/EAX sharing and power-velocity zero join remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1149,6 +1152,9 @@ bool function_108530(long device_index, long name)
 // Round 310: Initial reset as contiguous zero span/native initialized reset/native zero reset/whole clear,
 // with local cruise speed 142/170/181/140; field-owned speed 138/178/189/147. All reset
 // forms restored; frameless ramp-down and initial-velocity residency remain.
+// M304: Paired unchanged endpoint-speed scalar captures at entry/time bounds/pins/active work,
+// local/field cruise-speed ownership: 121/134/121/134/121/134/121/134. Both callers stay 31/13;
+// original parameter lifetimes, velocity ownership and complete body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1648,6 +1654,9 @@ bool function_0b6760(s_index_pair const *pair);
 // with ordinary index/saved pointer/result-first storage subsets 0..7:
 // 360/378/372/435/360/378/372/436. Original receivers, scalar qualifiers and
 // body restored; frame/index/header/state/result homes remain.
+// M304: Word header ordinal with entry false/null and ordinary saved-pointer subsets 0-7:
+// 375/375/375/375/415/415/416/415. Inherited-pointer forms recover frame 0x20 but regress;
+// original full handle/header observations, pointer home and entire body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

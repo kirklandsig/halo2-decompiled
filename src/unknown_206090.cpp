@@ -141,7 +141,7 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 
 #pragma inline_depth(1)
 #include "vector_products.h"
-// score 1363 (was 1363): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
+// score 1355 (was 1363): frame 0x5cc versus 0x58c, component/velocity homes and indexed contact induction remain.
 // Frame 0x5d0 versus 0x58c; component/velocity homes, contact induction and scheduling remain.
 // Earlier 1585 (was 1596): Frame 0x590 versus 0x58c; component/velocity homes and contact induction remain.
 // Earlier 1600 from 1600: frame 0x580 versus 0x58c; velocity homes and contact induction differ;
@@ -296,6 +296,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // M298: Separate collected membership and compatible-contact searches; body/head
 // membership exits, byte/native list indexing and admitted/rejected filtering, eight forms
 // [1449, 1449, 1449, 1449, 1449, 1449, 1449, 1449]. Original nested searches and all helpers restored.
+// Round 356: Existing scaled translation with point/contact/both lever-arm subtraction,
+// without/with shared contact-velocity sum: 1355/1407/1380/1362/1355/1407/1380/1362.
+// Scaled translation alone kept, 1355 plain at 6243/6238; original captures and helper bodies preserved.
 // DL236: Branch-owned tangent default/late force default/live control-bit subsets 1..7, then shared scalar default setters: 1365/1376/1367/1425/1423/1391/1382/1423.
 // Native byte/short/long/dword final result at completion/entry: 1411/1407/1408/1408/1423/1392/1393/1393. All restored; frame 0x5cc versus 0x58c and component/velocity/query/list homes remain; Boolean interface and caller preserved.
 // @retail 0x206090
@@ -495,9 +498,7 @@ bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, 
                         local_48 = *g_4687b0;
                     real local_71 = -(*(real *)(local_40 + 0xc) - local_0->field_b10[local_38].field_84 - 0.0001f);
                     point3f local_100;
-                    local_100.x = local_46->i * local_71 + local_0->field_b10[local_38].field_34.x;
-                    local_100.y = local_46->j * local_71 + local_0->field_b10[local_38].field_34.y;
-                    local_100.z = local_46->k * local_71 + local_0->field_b10[local_38].field_34.z;
+                    vector3f_add_scaled((vector3f const *)&local_0->field_b10[local_38].field_34, local_46, local_71, (vector3f *)&local_100);
                     s_impact_data local_72;
                     local_72.unknown00 = false;
                     local_72.component_a = *(long *)(local_2 + 0xb4);
