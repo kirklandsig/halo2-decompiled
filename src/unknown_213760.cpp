@@ -1433,6 +1433,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Round 313: Query output initialized to zero/expected size, crossed with false resize output
 // and pre-write count initialization: 41/54/219/214/95/110/213/188. Original outputs and failure-only
 // count initialization restored; query/count homes and write/checksum/validation joins remain.
+// N306: Finite native validity-slot/current-result/pending-cleanup domains, seven subsets, then
+// all with readonly expected size: 272/134/287/102/274/195/289/289. Original objects and body restored;
+// query/count homes and write/checksum/header-validation joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
