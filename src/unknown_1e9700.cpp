@@ -326,6 +326,9 @@ struct s_object_damage_view
 // P263: original byte code with native victim/killer/both signed-byte teams 488/381/485;
 // corresponding short teams 366/357/366; both byte/short teams with long consideration 480/401.
 // Original domains and body restored; scalar homes and biased history cursor remain.
+// Round 370: Chained team/credit, selection and award-count defaults, subsets
+// 1/2/4/3/5/6/7, then all with earlier parameter-derived code: 353/463/355/463/355/463/463/463.
+// Selection chains grow frame to 0x54; original body restored. Scalar homes and biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

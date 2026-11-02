@@ -587,6 +587,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M314: Existing squared-length helper with named squares/running sum/native input value/scalar
 // inputs 126/144/331/138; each with library velocity copy 130/148/331/142. Complete original
 // helper and target restored; early 1.0 residence and velocity-copy receivers remain.
+// Round 370: Initial/helper reciprocal lifecycles and complete helper-output staging,
+// subsets 1/2/4/3/5/6/7, then all with enclosing speed: 278/126/507/278/502/507/502/502.
+// Complete staged graph with existing normalizer forced inline 348; original helper/body restored.
+// Velocity receivers, early 1.0 residence and later SSE/x87 colouring remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3523,6 +3527,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // P268: Rotated output forward/up/both field receivers after/before the matrix copy:
 // 141/193/184/141/193/184; both with complete forward/forward-and-up product parts
 // 194/195. Original body restored; projection/cross ranks and angle/trig homes remain.
+// Round 370: Complete forward parts with cosine-up/sine-axis/outer-trig declaration
+// subsets 1/2/4/3/5/6/7, then all with native fallback copy: 145/156/131/155/145/156/155/159.
+// Five-point best rejected; original body restored. Projection/cross ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

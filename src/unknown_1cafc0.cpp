@@ -628,6 +628,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // byte/byte-byte/word-bool/bool-word/word-word/long-bool/bool-long:
 // 348/382/382/348/382/382/348/382. Original entire body and both Boolean declarations restored;
 // frame twelve agrees, graph/request homes and final byte normalization remain.
+// Round 370: Corrected twelve-byte shared expansion, native byte/char/word/short flag
+// formals with byte status 357/357/357/357; Boolean status 481/481/481/481.
+// Both declarations and original body restored; graph/base request allocation and byte return remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

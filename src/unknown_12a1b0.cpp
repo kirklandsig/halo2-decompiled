@@ -2348,6 +2348,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
 // Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
 // Round 308: and record/track ownership remain.
+// Round 370: Actual byte/char/word/short request-flag formals 617/617/601/601;
+// paired with signed-word class payload 617/617/601/601 (fast control equals full 597).
+// All three declarations and original body restored; entry true/flags, record/track homes and loop padding remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
