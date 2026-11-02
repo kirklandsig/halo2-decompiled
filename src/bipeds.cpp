@@ -2619,7 +2619,8 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
+// score 530 (was 540): Frame 0x48 versus 0x4c; result byte, scalar homes and native point loading remain.
+// Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
 // loops). The flag tests are TEST_FIELD_BIT (retail `shr; test r8, 1` at 0xe1079, 0xe109d, 0xe10a8, 0xe118c).
 // Still differs: retail returns through one exit with result on the stack (init 0 at 0xe0f1c, stored 1 at
@@ -2632,6 +2633,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // frame 0x50, and 0xdd360 goes 280 -> 281); flags_348 copied to a word local 552; hit position as three reals 568;
 // result declared first (same). Earlier lane forms (names, order, exits): single result exit 861, complete
 // reciprocal, workspace role names, body count at every use, separate scan ordinals, complete offset vectors.
+// M288: Uniform per-use tag fields 530 (plain, kept); complete center/hit setters
+// alone 571/569, tag+center/tag+hit/both setters/all three 562/562/556/546; all plus
+// mass/push role names 546. Every caller and all other file measurements stay unchanged.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -2643,7 +2647,6 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 	case 0:
 	{
 		byte *ragdoll = (byte *)biped + 0x3ec;
-		byte *definition;
 		byte *model;
 		bool held;
 
@@ -2652,8 +2655,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 		{
 			return false;
 		}
-		definition = BIPED_DEFINITION_GET(biped);
-		model = g_4e3b44[*(long *)(definition + 0x38) & 0xffff].bytes;
+		model = g_4e3b44[*(long *)(BIPED_DEFINITION_GET(biped) + 0x38) & 0xffff].bytes;
 		if (*(long *)(model + 0x24) == NONE || TEST_FIELD_BIT((biped->flags_348 >> 10) & 1))
 		{
 			return false;
@@ -2664,7 +2666,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 			*((byte *)&biped->flags_348 + 1) |= 1;
 			return true;
 		}
-		if (TEST_FIELD_BIT((*(dword *)(definition + 0x1f0) >> 11) & 1))
+		if (TEST_FIELD_BIT((*(dword *)(BIPED_DEFINITION_GET(biped) + 0x1f0) >> 11) & 1))
 		{
 			return true;
 		}
@@ -2747,7 +2749,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 						direction.k -= along.k * dot;
 						if (function_30bf0(&direction) != 0.0f)
 						{
-							real push = *(real *)(definition + 0x258) > 0.7f ? 0.7f : *(real *)(definition + 0x258);
+							real push = *(real *)(BIPED_DEFINITION_GET(biped) + 0x258) > 0.7f ? 0.7f : *(real *)(BIPED_DEFINITION_GET(biped) + 0x258);
 							real farthest = 0.0f;
 
 							push *= strength;
@@ -2859,7 +2861,8 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 /* turns the biped toward its desired facing: flying ones by their flight
    controls, walking ones at the definition's turn rate (or by a turning
    animation when they stand), and a grabbing one toward its target */
-// score 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
+// score 600 (was 600): Frame 0x78 agrees; flight-call homes, state bytes and vector scheduling remain.
+// Earlier: 604 (was 654): the logic now follows retail (see below); frame is 0x78 like retail. Still differs: the
 // `special` flag (retail stores 0 before the 0x6000084 test and 1 under the 0x7000039 test; the plain compare gives
 // sete, and the flag-set-inside-a-test form scores 571 but is the form review rejects), register assignment and the
 // scheduling of the wall-turn vector maths, `or byte ptr [edi+0x348], 0x20` (ours loads al first).
@@ -2874,6 +2877,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // change), unsigned `>> 5` for the node count (658-660), `changed = mode != 3` as an initialiser (663), shared
 // cross products / unified workspaces / one exit (earlier rounds, 672-720). Retail's `shr eax, 5` on the movsx'd
 // short at 0xe097f is not reproduced (ours is sar).
+// M288: Direct flight-rate argument 593 (seven-point gain, rejected); staged shared
+// projections 633, both 616; complete facing/turn setters 624, with rate 624, with staged
+// projections 616, all three 616, with role names 616. Original complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3126,7 +3132,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
+// score 368 (was 368): Frame 0x12c agrees; first +0x71 is the body-matrix home, +0x60 versus +0x50.
+// Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
 // placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
 // out-alias test `cmp edi,[esp+0x10]` of function_2477b1), so it goes through function_2477b1 instead of a second
 // scaled point transform (505). Which pivot is parent follows retail's registers (0xe1d33-0xe1d6f: esi/edi
@@ -3158,6 +3165,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // !hit` 447. Remaining: retail pairs world_pivot's home with delta/back and child_world's with the copy (ours the
 // reverse), property_b's with limit; retail keeps 1.0f in xmm4 across both pivot transforms; retail materializes
 // `limit > distance` in AL before the target copy; the pivot select (`mov ecx, edi; je` to an out-of-line lea).
+// M288: On the retained exact-frame graph, pivot-result/body-transform/property-placement
+// role names separately and all together 368/368/368/368; complete scaled-point setter
+// 421, with all role names 421; setter plus default pivot selection 424, with all names 424.
+// Original helper, selection and executable body restored; origin/matrix and paired point homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

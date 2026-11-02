@@ -1245,6 +1245,7 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // reverted as well. The permuter on this function was stopped by its time limit without printing
 // anything. Still differs in the owner, the name count and the zero's allocation and the requested
 // cursor.
+// Earlier (184, was 184): this round: reading the parameters at the call site instead of through the
 // Earlier (184, was 184): reading the parameters at the call site instead of through the
 // shared helper (the live-state test in the caller, the parameters pointer chosen in each arm)
 // compiles to the very same bytes, so the parameters null test still compares with the zero in
@@ -1421,6 +1422,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // receivers in seven subsets 308/184/307/184/308/184/308; all with entry output workspace
 // 308. Array receivers tie; clear-return aliases shorten to 825 bytes but regress.
 // Original body restored; owner/count/zero and requested-record induction remain.
+// Round 285: full record clear before membership; no early defaults/array zeros/byte zeros/
+// array-and-byte zeros/sentinels/array-and-sentinels/byte-and-sentinels/all defaults
+// 181/205/183/203/193/187/193/185. Three-point form rejected; complete body restored.
 // Round 41 (lane 14): 16-byte group as a memset 240 (943 B); with no `current` 226; no `current` with the
 // 12-byte group as a memset 229, both groups 224 (930 B), the 12-byte memset first 224 (930 B; retail's EAX
 // block for the 16-byte group, but the 12-byte group/team/0x7d zero lands in EDX, retail ECX).
@@ -1433,6 +1437,9 @@ static void network_session_interface_update_local_properties(c_class_58d20 *ses
 // the name count in memory. Name count declared before the names table 184; the loop index first 184; the mask
 // first 184; the name pointer taken as `->name` of the record 184; the previous-record pointer declared after
 // the names (memcmp on the table entry) 184 (all the same code).
+// M288: Existing membership helper in collection/update/both 232/216/247; name-copy
+// return used for its terminator 183 (one-point gain, rejected); with collection/update/both
+// 231/215/246, all with count initialized beside the mask 246. Original body and includes restored.
 // @retail 0x65cb0
 void network_session_interface_update_player_properties(c_class_58d20 *session)
 {

@@ -239,6 +239,9 @@ struct c_aggregate : c_child
 // Round 296: Independent outputs with collection/dispatch/both short, collection/dispatch/both word,
 // then collection/dispatch byte ordinals. Scores 145/145/161/145/145/161/145/145. Original complete body
 // restored.
+// M287: Cleanup driven by the actual item-array cursor and signed array distance,
+// shared query output/block cursor/boundary-dispatch subsets 0-7:
+// 85/89/85/89/151/150/151/150. Output/loop homes still differ; original signed traversals restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

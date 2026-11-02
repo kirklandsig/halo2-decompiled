@@ -690,6 +690,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Round 293: Plain indexed jitter sign/on, per-coordinate, on-first and branch-selected stages,
 // inherited sample 182/238/165/177; ordinary sample 222/179/218/243. The first and third
 // recover 1.0 in XMM3 but disturb other scalar/limit homes; original body restored.
+// Round 286: independent multi-use directional limits in ijk/ikj/jik/jki/kij/kji
+// producer order 158/160/158/158/160/160; immutable ijk/kji 158/160. Scalar forms
+// shrink the frame to 0x24; original 0x28 vector frame, limits and body restored.
 // DL220: Separate native limit/direction/jitter-offset scalar storage, seven subsets; all with ordinary bit sample:
 // 158/230/231/164/190/258/261/294. Constant/limit XMM ownership and jitter spills remain. Original body restored.
 // Round 450: Complete limit/weighted-acceleration/projection product-node subsets 1..7, then all

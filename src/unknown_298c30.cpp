@@ -480,6 +480,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // Round 338: both shared trig workspaces on the ordinary-result/in-place-scale graph,
 // with live radius/delegated clamp/shared difference subsets 730/784/774/876/730/784/774/876.
 // Original trig homes, radius, clamp, direction helper and full body restored; frame/trace homes remain.
+// Round 286: one result exit with bool/byte/short/long carriers 789/818/819/819;
+// selected-index-derived obstacle results with those carriers 780/812/808/808.
+// Frame 0x120 remains above 0x114; original result topology and whole body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

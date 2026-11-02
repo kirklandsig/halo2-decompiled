@@ -664,6 +664,9 @@ bool sound_driver_voice_create_buffer(
 // with the count stored before the zeroing 80, after the input mixbin 73, before the zeroing 71 (same
 // code), after the input mixbin with the count stored first 73. Play keeps BL in all five. Permuter
 // (anneal, 600 s, 67 tries): best 71.
+// Round 285: destructive spatial-first flag shift with short/word/long/dword result
+// 182/178/158/158; playback-first flag mask 71/75/158/158. Matched caller retained;
+// original flags, result and body restored.
 // Round 216: Selected count owns returned result, short/long domain with play/spatial producer order and receiver before/after predicates:
 // 160/167/180/182/160/167/180/182. Original executable source restored.
 // Round 331: Complete final-value descriptor initializers first/spatial/both 176/157/211;

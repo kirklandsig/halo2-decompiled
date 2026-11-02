@@ -998,6 +998,10 @@ real function_30bf0(vector3f *v);
 // displacement helper 235/236; entry-result counterparts 245/245/228/228. The 228 forms
 // recover frame 0x30 but gain only four and lose four matched callers. Original helpers,
 // inputs, scalar trees, result lifetime and inherited optional-pointer contract restored.
+// M287: Native double a/b/discriminant-base storage subsets and the complete
+// solved-coefficient storage:
+// 270/263/247/264/269/268/262/320. All precision and original pointer contracts restored;
+// frame, rounded-root scheduling and separate divisions remain.
 // @retail 0xfa1a0
 bool function_fa1a0(real speed, real gravity_scale, point3f const *origin, point3f const *target,
 	real *minimum_speed, real const *time_scale, real const *forced_speed, bool high_arc, vector3f *direction,
@@ -1887,6 +1891,10 @@ real function_17c900(short function_type, real input);
 // and common/branch-final point output: 348/377/365/382, twice. Original macro,
 // salt, point workspace and final publication restored; frame 0x30 agrees, stacked
 // index/output-EBX contract and point/direction homes remain.
+// M287: Complete multi-use normalized-component storage in six producer
+// orders, then mutable/immutable turn-scope ownership:
+// 348/348/348/348/348/348/348/348. Original vector reads restored;
+// stacked-index/output transport and normalization homes remain.
 // @retail 0xf87f0
 void function_f87f0(long projectile_index, point3f *aim_point)
 {

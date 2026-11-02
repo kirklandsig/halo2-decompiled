@@ -2260,6 +2260,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // Round 282: Changed-mask production from parent-pair/child-metadata/child-state predicate
 // outcomes, seven subsets 291/208/307/189/300/235/329; all outcomes as bytes 329.
 // Native object/offset and low-mask homes remain; original tests, stores and body restored.
+// Round 286: named entry slot with uniform signed-byte/byte/short/long tail results before clamps
+// 154/154/165/168; after clamps 157/157/153/156. Two-point best gain rejected;
+// original tail domains, entry lookup and complete body restored.
 // DL220: Independent object/child/tail changed-mask accumulators, seven subsets; all with entry result declaration:
 // 274/262/274/166/290/267/257/257. Indexed lookup, object/offset homes and low-mask ownership remain. Original body restored.
 // Round 450: One native tail-change outcome bool/byte/short/long, original then captured object-

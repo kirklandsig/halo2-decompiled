@@ -379,11 +379,18 @@ void function_07b3e0(void)
 // index_to_datum_index 55 (115); the out-of-line data_datum_iterator_next loop 86 (93, stays a call);
 // diagnostic file-local step copies passing `iterator->data` to the scan and using a `data` copy for the
 // datum, and the reverse, 58/58 (the copies coalesce into one pool register, as the iterator form).
+// Round 285: separate next-search/found-index carriers long/long and dword/long
+// with pre/post-release advancement 61/65 (117/113 bytes); long/dword and dword/dword
+// 53/57 (125/121 bytes). Original cursor and body restored.
 // Round 333: Separate next-start cursor long/dword before release 61/61, after release 65/65;
 // existing dynamic scanner counterparts 61/61/65/65. Pool residency remains unresolved.
 // Round 243: one next-input cursor, long/int/dword/unsigned-int, through the original
 // scanner 65/65/57/57; dynamic-bound scanner counterparts 65/65/57/57. All shorten
 // and regress; original last-found cursor, shared helpers and terminal stores restored.
+// M287: Signed nonnegative/greater-than-NONE scan admission, cached/dynamic
+// existing scanner and immutable receiver combinations:
+// 53/39/53/39/53/39/53/39. Original sentinel loop restored;
+// split scan/datum pool residency and found-arm layout remain.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -1314,8 +1321,14 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // 2792 bytes); the matched accessors 0x193440/0x1933d0/0x1933a0/0x193400/0x1934d0/0x1934b0/0x193470 for
 // this file's helpers 904 (0x193300 too) / 840 with the capacity helper forceinline (2828 bytes, aligned
 // 447 against 515) / 869 with the loop getter; every helper `__forceinline` 906, with the loop getter 859.
+// Round 285: three multi-use pointer-home names independently and five joint lexical
+// orders 766 each; original pointer names, workspaces and body restored.
 // Round 333: Uniform identity memcpy/memmove with word cells 766/855, dword cells 844/876; scoped
 // ID counterparts 766/855/844/875. Frame/session/lookup remain; original transfers restored.
+// M287: Existing matched minimum/maximum/team selectors in seven subsets,
+// all with the existing limited selector:
+// 808/814/906/816/921/899/910/910. Original private selectors and body restored;
+// frame/session/initial lookup expansion remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
