@@ -253,6 +253,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // word ordinal 726/726/726/726. Native countdown widths canonicalize; word ordinal loses the matching frame
 // and shrinks away from retail. Entire original body, hit/result producers, helpers and in-place snapshots
 // restored; success/input/minimum/hit homes remain.
+// Round 257: Actual ray/projection coordinate consumers and every rotation-row product node,
+// seven subsets, then short coordinate counters: 630/639/624/638/628/641/644/720. Original
+// private producer, complete in-place snapshots and full body restored; success/input/
+// minimum/hit homes and inactive-return placement remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
