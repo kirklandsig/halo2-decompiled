@@ -161,6 +161,11 @@ point3f *function_b9ef0(long object_index, point3f *result)
 }
 
 // score 2 (was 2): only constant-one and crouching-height load scheduling remains; frame 0xa4 and all other instructions agree.
+// Lane 16 round 74: compile-only, the load order follows what comes between the z store and the next
+// call: a call right after the store gives the 1.0-first order, any store there (the origin and forward
+// copies, the sentinel) gives ours. Real: if/else crouch with a named height sum and the sentinel first 2;
+// one-statement height with the forward copy first 32; inverted if/else with a scaled height and
+// origin/forward/sentinel order 252; sentinel ahead of the first call 31; origin declared at its copy 2.
 // Round 74: named call result in a ternary/if-else 2/2; immutable crouch 2; immutable/read-only unit 2/2;
 // immutable inner tag pointer 2; shared height-pair pointer alone/with immutable crouch 2/2. Opening graph restored.
 // Round 73: definition-pointer rename 2; direct explicit read-add-store 17; explicit store on the two-local graph 2;

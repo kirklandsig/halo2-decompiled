@@ -1967,6 +1967,13 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 520: conditional approach maximum/complete absolute producer/native established
 // byte subsets, then all with native visibility: 194/371/371/194/194/371/371/371.
 // Maximum selection is neutral; complete absolute production regresses. Body restored.
+// AC481: consume the actual point-provider result through the existing difference
+// helper or a thrice-used position pointer; original/copied relative input and
+// pure pre-clear result defaults, masks 0..7: 521/521/449/446/518/518/446/443.
+// Complete original body restored; entry operands, byte homes and direction residence remain.
+// DH297: Late score/facing/approach zero lifetimes, subsets 1-7, then all with
+// native byte positive: 745/715/749/365/688/704/749/749. Score/facing release shrinks
+// the frame below 0x80; original early zeros, predicates, observations and whole body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {
