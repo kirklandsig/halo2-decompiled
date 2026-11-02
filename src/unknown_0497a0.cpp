@@ -735,6 +735,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
 // DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
 // Complete opening body restored; no qualifying keeper.
+// Round 466: Complete independent current-position scalars in vertical/planar/camera
+// geometry subsets 1..7, then shared before dispatch: 570/576/570/568/559/626/538/582.
+// Frame/spill homes remain; original coordinate observations and full body restored.
 // Round 316: Paired planar/camera/both offsets 376/388/493; native position
 // alone/with planar/camera/both and assigned native position 669/657/633/628/628.
 // Geometry case orders 0-4-12/12-0-4/12-4-0/4-0-12/4-12-0

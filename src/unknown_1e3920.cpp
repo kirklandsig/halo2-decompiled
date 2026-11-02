@@ -676,6 +676,9 @@ real function_267370(long object_index);
 // Original observations and body restored; early NONE sharing and cross operands remain.
 // Round 295: field-sized library fills for first/second/both invalid handles 357 each;
 // conditional reset alone 96; combinations and short mode clear 357. Original assignments restored.
+// Round 466: Multiply-used carrier/holder/mode scalar output-field pointers, subsets
+// 1..7 then all at actor admission: 351/104/351/104/348/101/351/351.
+// Early shared NONE and cross operands remain; every original destination and body restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1135,6 +1138,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // N302: Complete paired equipment lookup loop, long/short/word/byte ordinal, defaults
 // at pair / at each producer: 345/369/369/369/336/369/369/369. Exact-only output pair and all
 // original code restored; frame agrees, sentinel/squad/substitution homes remain.
+// Round 466: Direct guarded substitution-output consumption / complete branch producer,
+// inner/outer real query storage and retained/omitted overwritten enabled default:
+// 348/275/348/275/348/275/348/275 on the retained mode/field/squad-bit graph.
+// Omitted default expands frame to 0x11c; original 0x118-frame body and all outputs restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

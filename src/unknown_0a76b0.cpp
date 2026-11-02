@@ -280,6 +280,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 271/271/271/271/279/279/279/279.
 // Frame 8 agrees; unit/name/actions register ranks and shared-call threading remain. Original executable
 // body restored.
+// AC468: Case-owned action receiver after the pure state query, crossed with branch-owned unit
+// and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
+// 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
+// frame 8 and incoming unit/name/actions ranks remain unresolved.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -2201,6 +2205,9 @@ __forceinline char unit_action_round(real value)
 // Complete animation/success local role names 235; with seconds/shorts/both 234/279/278;
 // all with success at the final return 278. Sub-eight forms and all other trials restored.
 // DH274: First-person default only in the two unsynchronized arms, separate/chained paired names, name/type first and original/common animation-failure exits: 305/306/305/306/305/306/305/306. All restored; frame 0x14 agrees, pool/index/type/name homes remain.
+// AC468: Object-kind predicate byte/long/direct with Boolean result 235/325/331;
+// with byte result 235/325/331; direct/byte predicate with long result 331/235.
+// Original domains and observations restored; frame 0x14 agrees, pool/type/name and success-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4284,7 +4291,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 201 (was 201): the result is now retail's (per-case `result = b8d30 > 0 && f10f430`, body under
+// score 175 (was 201): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
+// Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
+// (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
 // away/left and frame-left xmm colouring (retail loads up before forward), the seat offset scaled with the
 // component as destination (1406 bytes against 1388) and the transform rows' sum order.
@@ -4313,6 +4322,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // cross first 204; up declared before forward 201.
 // M291: Existing staged crosses at all seven basis subsets, then all with entry frame lifetime:
 // 201/201/201/201/201/201/201/201. Original executable body restored.
+// AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
+// Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
+// 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
@@ -4362,7 +4374,6 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 		byte *seat_transform = (byte *)unit + *(short *)((byte *)unit + 0x10e);
 		transform4x3f frame;
 		point3f world;
-		point3f local;
 		quaternionf object_orientation;
 		quaternionf inverse_rotation;
 		quaternionf orientation;
@@ -4373,13 +4384,12 @@ bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 		frame.up = up;
 		frame.position = object_matrix.position;
 		unit_action_transform_point(&object_matrix, (point3f *)(seat_transform + 0x10), &world);
-		unit_action_untransform_point(&frame, &world, &local);
+		unit_action_untransform_point(&frame, &world, (point3f *)(seat_transform + 0x10));
 		function_141f60(&object_matrix.rotation, &object_orientation);
 		function_141f60(&frame.rotation, &inverse_rotation);
 		inverse_rotation.w *= -1.0f;
 		function_11d820(&object_orientation, (quaternionf const *)seat_transform, &orientation);
 		function_11d820(&inverse_rotation, &orientation, &orientation);
-		*(point3f *)(seat_transform + 0x10) = local;
 		*(quaternionf *)seat_transform = orientation;
 
 		actions->hoist_ticks = *(short *)((byte *)request + 4);
