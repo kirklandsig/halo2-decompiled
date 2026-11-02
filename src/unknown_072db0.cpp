@@ -1927,6 +1927,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // property copy, admission helper kept after it: after identity 709/709/709/761;
 // before identity 709/709/709/767. One-use producers require a match; all
 // restored. User cursor base/home, slot conversion and later homes remain.
+// M321: Returned identity/property copy destinations, mutable/immutable receivers, then either overlap-safe transfer
+// 709/709/709/709/709/709/768/756. NOT kept: local output aliases require a match. Original body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
