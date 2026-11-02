@@ -230,6 +230,9 @@ short __stdcall function_2551c0(long actor_index)
 // projection accumulation, first with the native slot payload: 150/131/68/130/134/42/133/133.
 // On the 42 graph, complete rowwise/phasewise cross accumulators without/with
 // cosine complement 73/73/126/126. The 42 form gains only one; all original source restored.
+// Round 275: Complete sequential/interleaved cross accumulators, crossed with the
+// cosine complement and complete dot, 72/72/70/70/70/70/68/68; payload-view counterpart 89.
+// Original helper, payload view and complete body restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

@@ -4157,6 +4157,10 @@ static __forceinline long nonnegative_15ce70(long value)
 // M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
 // 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
 // first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
+// DH272: Signed-byte category/modifier/award subsets 1/2/3/4/5/6/7 give 520/491/517/532/611/582/578; all
+// signed-word 567. Modifier alone recovers frame 0xe0 at 491. On that graph, complete pure decode after
+// elapsed/penalties/ticks/at classification gives 554/566/565/508. All regress; original domains, lifetimes,
+// event workspaces and body restored. Frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {

@@ -1945,6 +1945,8 @@ real function_2683f0(long actor_index, long node_index, short type)
 // mutable/const and forward/reverse declaration orders, each 194. Original consumers restored.
 // M297: Complete product terms named uniformly in all three scoring dots, six
 // declaration orders kji/kij/jki/jik/ikj/ijk, then const kji/ijk [194, 194, 194, 194, 194, 194, 194, 194]. Original expressions restored.
+// DH round 279: Player-visit native forward/point/direction scratch, seven declaration subsets then
+// complete role names [194, 194, 194, 194, 194, 194, 194, 194]. Original executable body restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

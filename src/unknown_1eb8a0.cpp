@@ -325,6 +325,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // One-point reductions rejected; original counter result, output pointer and body restored.
 // DL230: native complete squared lengths at activation/remaining displacement/sample, seven subsets: 680/642/668/642/680/642/666/670.
 // Last form also names the complete direction dot at its comparison; original expressions restored.
+// DH277: complete native component-square products at activation/displacement/sample sites, subsets 1-7,
+// 683/642/671/642/683/642/671; complete ordered sums 668. Unlike whole squared-length names, all product
+// terms were explicit; all restored with original 0x24 frame, inputs, counter qualifier and exact caller.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

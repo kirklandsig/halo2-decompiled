@@ -289,6 +289,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // outcome, success publication, native file object, both waits and body restored.
 // DL230: independent open/resize ordinary completion destinations at loop/function/operation scopes: 47/47/47/47/47/47/47/47.
 // Handle carrier and stored success-byte reload remain; original executable source restored.
+// DH277: two file-indexed success destinations, uninitialized/zeroed and wide/byte guards on local/direct
+// file flows 89/96/98/101/69/72/96/70. All exact-only table forms restored; original scalar outcome, file
+// value, waits and completion qualification retained.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

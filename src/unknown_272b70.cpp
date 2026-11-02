@@ -1443,6 +1443,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // 32/32/183/183/159/159/203/201. Original executable source restored.
 // Round 350: Nested actor/capacity and ordered collection rejection gates 32/32/36/36; walk-first
 // requests on those graphs 60/60/64/64. Iterator scaling, leave-selector and publication homes remain.
+// Round 275: Load-request families T type, O object, S seat, F flags, ordered
+// OSTF/OSFT/FTOS/FOST/SOTF/SOFT/TSOF/FSOT 32/34/34/34/31/33/32/34. Original helper and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

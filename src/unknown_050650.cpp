@@ -896,6 +896,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // bool/byte/short/long 355/355/347/347; actual direction-only complement with
 // false default 355/355/347/347. Calibrated fast control 258/1448 versus full
 // 257/1448; all exact-only predicate-lifetime forms restored with original cases.
+// Round 275 (fast control 341): Complementary failure result bool/byte/short/long,
+// each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
+// plain 323 versus baseline 257. Original result, presence and full body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

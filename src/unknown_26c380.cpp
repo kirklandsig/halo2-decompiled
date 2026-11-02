@@ -243,6 +243,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // Round 506: common second-endpoint producer, native orientation/vertex-table/paired-scope
 // combinations 524/524/528/528/518/518/416/416; best graph with complete planar library
 // copy 444. Original producers and full body restored; frame, byte state and tails remain.
+// DH round 279: Current-sector parameter ownership with long/bool/byte/word success and valid-walk/entry
+// next-sector declarations; all forms also lose four matched callers [426, 422, 424, 430, 426, 422, 424,
+// 430]. Original executable body restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

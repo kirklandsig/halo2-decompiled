@@ -375,6 +375,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // 249/260; one native count for all admitted phases 274. Follow-ups restored.
 // Round 351: Heading/departure/current lifetimes on the retained native output-ordinal graph;
 // 204/215/254/244/209/245/244/228. Original executable source restored.
+// Round 275: Native current/next indices together, crossed with Boolean departure,
+// early heading and overlap CRT compaction 269/272/269/281/275/262/273/284. Every form loses
+// the matched caller; original word indices, helper and complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -3449,6 +3449,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // with original/admission byte debit 163/172/176/176; unsigned ordinals
 // 163/172/176/176. Original body restored; channel/cursor/member
 // and route homes remain.
+// DH272: Known-present recipient bit removal by XOR/subtraction with long/short current member and
+// original/independent packet cursor gives 143/161/167/162/144/161/167/162. All regress; original AND-not
+// removal, member domain, live header counts, cursor, calls and body restored. Channel/packet/member
+// ownership and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

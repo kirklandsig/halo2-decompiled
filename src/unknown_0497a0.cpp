@@ -733,6 +733,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // M298: Actual first/second output-position workspaces, direct/local, local/direct,
 // direct/direct, pointer/local, local/pointer, pointer/pointer, direct/pointer, pointer/direct
 // [623, 621, 641, 623, 621, 641, 641, 641]. All output-timing forms restored; temporary points retained.
+// DH278: Complete vertical/planar/camera component-square subsets and separate camera roots 265/265/265/374/374/374/492/497.
+// Complete opening body restored; no qualifying keeper.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -293,6 +293,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // M292: Existing double-factor opposite scale with direction/angle CRT and double reciprocal
 // masks 0-7 (fast control 336; full 324):
 // 392/392/392/392/393/393/393/393. Original executable body restored.
+// DH277: outer native count/table/cursor subsets 463/383/363/430/479/430/478; complete readonly record
+// graph 478 (fast control 336, full 324). All restored; entry ESI save, unit constant and
+// scale/accumulation schedules remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

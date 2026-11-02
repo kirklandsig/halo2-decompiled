@@ -2073,6 +2073,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // complete point and plane with named distance, mutable/const 379/379. Original zone producer
 // restored; early color spill, query/cursor homes and frame 0x40/0x44 remain.
 // Complete point/plane/both/const-both values with forced zone expansion 280/281/406/406; restored.
+// DH round 273: complete transform values in existing/distinct output, crossed with native node word
+// and iteration scope: 161/197/161/197/161/197/161/197. Original pointer-result ownership, node
+// observations, workspaces and body restored; early color home and frame remain.
 // Round 501: complete placement case orders 0132/0213/0231/0312/0321/1023/1032/1230
 // 128/138/138/128/138/128/128/128. Original case order, body and zone producer
 // restored; early color/query ownership and frame 0x40 versus 0x44 remain.
@@ -3165,6 +3168,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 312: negative tint/multiplication/both query outcomes 113/112/130;
 // paired byte/signed-char/short/word/long storage 130/130/147/147/147.
 // All inverse-outcome forms restored; caller convention, frame, system/successor and color homes remain.
+// DH round 273: native pooled-location pointer frontier with live mode/native node word/inactive-
+// return subsets: 170/181/170/181/161/177/161/177. All original handle cursors, mode observation, node
+// tests, successor result and executable body restored; frame and system/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

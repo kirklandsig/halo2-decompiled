@@ -334,6 +334,9 @@ void function_117510(long index)
 // Round 41 (lane 13, --fast): per-use link fields 154 (742 bytes; ours colours delta j/k/i xmm5/xmm6/xmm4 and length
 // xmm2, retail xmm6/xmm4/xmm3 and xmm5); on it `real length`, `real squared, length`, `vector3f delta` or the link
 // pointer declared at function scope 154 each (scope reaches neither the re-read nor the colouring). All restored.
+// DH round 273: complete real link input value with immutable/local endpoint-field/native difference
+// subsets: 204/204/204/204/204/204/204/204. Original link pointer, both endpoint snapshots, root
+// arithmetic, pin observations and body restored; entry and correction homes remain.
 // M290: Exact 1..15 bounded counts long/short/word/byte on indexed links, then each on the live-count link cursor:
 // 148/156/156/189/180/183/183/183. Original executable body restored.
 // @retail 0x117790
@@ -539,6 +542,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // i, j, k where retail forms j, k, i), with dot3f(&old, &axis) 148, with cross3f_staged 148, with `projection*axis` rows
 // 148; cross3f_staged alone 159; the projection before cross3f on the struct copy 161 (885 bytes). Diagnostics (scalar
 // cross, kept only with a match): 0x177d10's j, k, i cross on the field-wise `old` 176 (853), on the global 181 (850).
+// DH round 273: native real tail trigonometric results at first/second/third/fourth/first-pair/last-
+// pair/all producers 155/139/155/139/155/155/138; all with real double-product arguments 163.
+// Precision-only forms restored; frame and seed/rotation staging remain.
 // M290: Completed rotation in the consumed direction/axis/cross workspace, then projection-first on each and staged cross with direction/axis output:
 // 178/178/178/189/189/189/178/178. Original executable body restored.
 // Round 508: Source-local forceinline cross with publication ijk/ikj/jik/jki/kij/kji
