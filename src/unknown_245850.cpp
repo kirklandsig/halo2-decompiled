@@ -65,6 +65,9 @@ struct s_245850
 // encoded inputs, word/long orientation publication and full orientation arms:
 // 155/152/1/155/155/156/151/152. Descriptor, lookup contract and complete body restored;
 // the sole short-load/sign-extension difference remains.
+// Round 354: Native signed 16-bit plane field, whole point and normal-only input subsets 1..7
+// 1/162/162/162/162/188/188/188; final complete inputs with separate normal scalars included last. Original
+// field, shared scalars and every transform/call restored; short lookup contract remains.
 // @retail 0x245850
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -1515,7 +1515,7 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // MiniMax R (11-01): no new form, no lower score; the member count is still read into ESI and
 // pushed where retail keeps it in EAX, and the friend/presence pointers still stay in EDX across
 // the 0x63d00 calls; still BLOCKED-BY 0x63d00 and 0x2b642e in other lanes' files.
-// score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
+// Earlier score 117 (was 117): count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // count homes, delayed count loads and membership flag reloads differ; BLOCKED-BY 0x63d00 (below).
 // Round 19: unchanged; the count homes, the delayed count load and the post-membership flag
 // reloads remain; still BLOCKED-BY 0x63d00.
@@ -1599,6 +1599,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // Round 326: accepted-work/whole-function task-handle snapshots with original counts 220/220,
 // friend-first counts 239/227, counts after user copy 229/229, both count forms 239/229.
 // Complete original body restored; count homes, early retention and membership reloads remain.
+// Round 301: equality consumer/provider/both inline 117/195/195; force-inline
+// 117/297/297; ordinary inline with friend-first counts / symmetric equality roles
+// 200/192. All provider metadata and complete body restored.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

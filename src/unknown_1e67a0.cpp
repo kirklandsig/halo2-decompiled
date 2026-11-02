@@ -703,6 +703,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // forms reach 1077 bytes at 130, only two points better, so reverted. Original observations,
 // products, sample qualifier and complete body restored; constant/limit ownership and jitter
 // spills remain.
+// DL235: Complete conditional factor expression, crossed with direct definition observations,
+// reused speed factor and ordinary sampling: 213/245/213/245/241/273/241/273.
+// All restored; constant/limit XMM ownership and jitter spills remain.
 // Round 76 (lane 12, fast, 0x24590 listed; al = aligned count against this body's 104, st = with registers masked against
 // 49): movement and projection through vector3f_scale (direction), dot3f, vector3f_add_scaled and vector3f_add 177, al
 // 103, st 46; retail-order jitter (on/off, signs, scales, plain long) added straight into the velocity 239, al 101,
@@ -714,6 +717,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // 159/246/243/128/160/241/246; all with ordinary sample 279; scale plus velocity receiver,
 // with/without shared jitter add 128/128. Four-point leads rejected; original body restored,
 // constant/limit ownership and jitter spills remain.
+// Round 317: Boolean sign/on/half bit-predicate groups 1..7, all with ordinary sample
+// 148/139/166/142/165/159/175/150 fast. Original complete body and sample qualifier restored.
+// Constant/limit XMM ownership, movement outputs and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -972,6 +978,9 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // DL226: Existing complete vector setter at goal output, rotated output and original-input
 // copy boundaries, subsets 1..7 then all with the complete rotated producer: 164/201/193/218/210/224/216/213.
 // Both output setters reach 1382 bytes at 193; all restored. Sample/rotation/output homes remain.
+// DL235: Native output bitfields at input/support/turn boundaries, subsets 1..7,
+// then all with word bit storage: 372/206/398/155/372/206/398/396.
+// Original record and body restored; sampled-vector and rotation/output homes remain.
 // Round 510: overlap-safe original-input/goal-output/rotated-output library-copy subsets
 // 202/162/222/155/225/168/228; all plus initial native copies 386. Rotated-output-only reaches retail
 // length but ties 155; broad copies raise the unmatched caller. Original body restored; sample home

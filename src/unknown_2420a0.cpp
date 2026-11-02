@@ -564,6 +564,14 @@ long function_243b10(long key_b, bool team_only, long *second)
 // the top of each k iteration 169 (717 bytes; the slot parameter moves to the stack, the table is hoisted to
 // EDI and caller 0x240160 drops to 46), with the accumulated distance 169; `long j` declared in the for 173;
 // count declared before the results array and assigned from the query 173.
+// Round 55 (lane 11, fast with 0x19ec40's callees, each on the accumulated distance): the table assigned per
+// select arm, read through the table 184, through the global 184, the read before the assignment 184 (717 B each,
+// the table hoisted to EDI, the slot on the stack, caller 0x240160 46); the select's else arm through an inline
+// getter with its own table local 200 (688 B); the marker test through an inline bool helper on the entry 173,
+// forced inline 173, on the flags with an options local 173, with an if/return body 173 (same code); the marker
+// position through an entry pointer local 172, with const entry and other 172, entry local with the fields copied
+// y first 190, x first 190. Diagnostic, reverted at once: the else arm through a const cast of the global's
+// address 199 (692 B; frame 0x44 and retail's else-arm reload appear, caller 0x240160 7).
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1319,6 +1327,11 @@ void c_game_engine_markers::v21(long object_index)
 // function_2411b1 123 (426 bytes); `unit` declared before `slot` (declaration only) 119, and on the kept
 // form 40 (same code). In that form only the options pointer's allocation differs (CSE'd from entry and
 // kept in EDX, where retail reloads it into ECX at the compare and the type test takes EDX/ESI).
+// Round 55 (lane 11, fast): the mode test through the existing 0x138880 40, through 0x138860 40 (same code); with
+// the team at each call 119 each; the flag sets through a two-use flags pointer 94 (429 bytes); the unit's player
+// index read at both event-block uses 40 (same code); an object local after the type test with the unit fetched
+// before the slot read 120 (427 bytes); that with the team at each call and the slot first 130 (419 bytes); the
+// team at each call with the player built from the absolute index 120 (429 bytes).
 // @retail 0x240ff0
 void c_game_engine_markers::v23(long object_index, long unit_index)
 {
@@ -2119,6 +2132,14 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // both 64; guard return on the mode and range tests 53 (same code); one table local for the time test and the
 // final store 59, with the getter tail 60. Diagnostics: without the cause-player store the engine type takes
 // EBX (options in ECX, table in EDI); with a constant subtype the table and the engine type share EDI.
+// Round 55 (lane 11, fast): an engine-type local before a subtype local 53, the engine-type local alone 53, with
+// a type local too 53 (same code); the initializer through a local inline with its parameters in any of four
+// orders 53 (same code: parameter order does not move the ternaries); the mode test through 0x138880 or 0x138860
+// 53; inline helpers for the cause-player setter, the time test or the final store 53 each; the whole event block
+// forced inline with (player, flag), (player, type, subtype) or (type, subtype, player) 53 each; the type ternary
+// in a forced-inline getter 53. Diagnostics, reverted: a local initializer storing the subtype first 64 (256 B),
+// the type last 63 (256 B), both 63 (retail's fill order, but the options move to EDX and EBP stays); an options
+// local 60 again (the player index then arrives in EDI, 0x241620 at 23).
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {

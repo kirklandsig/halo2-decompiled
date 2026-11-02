@@ -80,6 +80,18 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // Original helper and body restored.
 // Round 119 (lane 5): `count` used without the `original_count` copy 178 (699); negative counter declared first 7;
 // sides declared before the copy buffer 5; result declared after the early exits 168 (680); short counters 118.
+// Round 121 (lane 8, fast): the loop temporaries are created by a backward scan of the loop body, so retail's setup
+// order needs no `points[current]` in the copy or the second intersection and no `sides[current]` in the second
+// test. A `side` local alone 7; `side` with a current-point pointer at the loop top for the copy and both
+// intersections 8 (setup and slots retail's, all numerator products flipped); with that pointer only in the else arm
+// 6, (plane, second, first) or (second, plane, first) parameters 6; pointers for both points at the loop top 16-30;
+// previous-point pointers in one arm 6, in both arms 4 (first intersection x-first); that with the numerator through a
+// named `dot` local, `-=` or a dot helper in a local 2 (the first intersection's x product still loads the plane
+// first); the same dot without the previous-point pointers 6, with the two parameter orders above 4. On the 2 form:
+// parameter orders, `long size` for the copy, term and operand spellings, a named current point in the first arm, side
+// at outer or function scope, denominator spellings 2; normal pointer 4-6, plane or d local 6, plane-distance helper
+// 6-8, scaled locals 6, `dx *=` 6, y output first 64; `+=` numerators give the first intersection exactly but flip
+// the second 4. Unused locals (diagnostic) rotate the second intersection's products only.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)

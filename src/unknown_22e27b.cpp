@@ -360,6 +360,9 @@ static inline real interpolate_linear(real a, real b, real t)
 // Round 307: Twice-used current offset as point pointer/reference or key pointer/reference,
 // captured before/after the fraction: 76/76/77/77/17/17/30/30. Original indexed expressions,
 // post-store scale refresh and complete body restored; restart edge and key-address scheduling remain.
+// Round 354: Full-width current/next address indices and later key acquisition subsets
+// 1..7, then readonly keys: 216/12/217/9/82/9/82/82. Original short lookahead, key observations,
+// shared fraction, frame/timing and helper calls restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
