@@ -622,6 +622,8 @@ struct s_collision_result_buffer_1697c0
 // initial best memcpy 322, with squared terms 334; initial pitch setter 334, with squared
 // terms 337; both startup setters with squared terms 342. Original helper and body restored;
 // frame 0xa8 agrees, startup root acquisition, normalization scratch and axis homes remain.
+// Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
+// 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -855,6 +857,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // each with bool/byte point presence, 351/351/351/351/312/312/348/348; short failure
 // plain 323 versus baseline 257. Original result, presence and full body restored.
 // Round 469: Weapon-aim success-first/failure-first/two-use outcome/common failure join, bool/byte point presence: 270/264/265/258/270/264/265/258 (fast control 258). Original result graph and whole body restored; byte homes and case-tail predecessor remain.
+// P264: complete direction/output library contracts, native+memcpy/native+memmove/
+// memcpy+native/memcpy+memcpy/memcpy+memmove/memmove+native/memmove+memcpy/memmove+memmove
+// 258/333/258/258/333/421/421/415 (fast control 258); original transfers and body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

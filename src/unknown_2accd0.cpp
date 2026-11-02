@@ -794,6 +794,14 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 484: native header/body/signature file/read failure ownership, subsets
 // H/B/S/HB/HS/BS/HBS and HBS with header-signature failure guards, all 34.
 // Total EAX/EDX and size/position ESI/EDI roles remain; complete original body restored.
+// Round 59 (m3 lane 10; compile-only, base 22, exact here): reasons for the fresh sums, each with two callers. An inline
+// signature-position helper (the sum returned; inline or forceinline, either sum order) used at the signature case
+// alone 22; with the total through it 22; in place 67, helper first in the sum 67. A forceinline seek-and-read helper
+// taking the parameters (the file is read twice, as retail) at the body and signature cases 27 aligned (235 instructions,
+// 155 positional), without the total local 60 (67); signature case only 22, without the total local 60 (67); its body as
+// early returns, both cases 35 (239), without the total 76, signature only without the total 71 (237).
+// Real --fast (0x2adb10 115 throughout): position helper with the total through it 34, total in place 88; seek-and-read helper at
+// both cases 161 (689 bytes), without the total 88, signature only without the total 88; early-return body at both cases 216 (699 bytes).
 // Round 56 (m3 lane 10; compile-only exact here, real --fast in brackets): retail's entry total and signature sum are
 // compiler temporaries (sum into a fresh EDX; body size ECX, header EDX, `lea esi`). The total converted in place (no
 // total local) with the signature position passed to a forceinline (file, position) seek helper gives both: 16 [28];
