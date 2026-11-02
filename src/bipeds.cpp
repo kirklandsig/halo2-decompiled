@@ -932,6 +932,13 @@ extern long *g_51e9cc;
 // Original executable body restored; lookup receiver retention and store scheduling remain.
 // M306: Combined initialize/surface admission crossed with enclosing lookup, chained contact clears and branch-owned instance index: 42/39/46/43/42/39/46/43. All restored.
 // M306: Direct crouch update then clamp with branch-owned index/contact setters/terminal setter: 280/296/310/318/280/296/310/318. All restored.
+// N317: Current-crouch bounded state direct/successive 42/42; shared word flags
+// 35/35; branch-owned instance/contact-first publication 27/27; actual shared lookup
+// receiver 2/2 at 1481 bytes. Incoming field capture and receiver alias are exact-only;
+// the two crouch-add operands still reverse. Earlier uninitialized delta declarations
+// before object/gate/component/root, original/offset names, 2 each (eight forms).
+// Common real lookup/getter record declarations 42, joint publication 27; all other
+// lookup-user scores unchanged. Original body and all supporting declarations restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {

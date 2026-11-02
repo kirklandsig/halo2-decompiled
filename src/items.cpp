@@ -655,6 +655,10 @@ struct s_item_collision_bsp
 // N315: Shared actual collision-instance pointer/readonly pointer/reference/readonly
 // reference, with separate/direct matrix fields, 211 each (1365/1361 bytes).
 // Original receivers, matrix observations and body restored; plane width, join and spin homes remain.
+// N317: Actual fallback-speed scalar reserved at workspace/entry, crossed with
+// earlier common-factor and axial-vector storage, all eight forms 211. Original
+// uninitialized declarations and complete body restored; protected plane width,
+// plane-join allocation and native spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1188,6 +1192,10 @@ struct s_item_flags_view_10b850
 // N315: Complete axial-dot producer, direct/successive accumulation, original/
 // early plain-cross phase and complementary-cosine node, masks 0..7:
 // 813/823/814/823/813/823/814/823. Original helper/body restored; frame and native homes remain.
+// N317: Successive destination rotation rows, two/three stores, immediate/early
+// complete cosine products and compound/explicit updates: 877/914/902/915/
+// 877/914/902/915. Frame stays 0x154; original helper and whole body restored;
+// entry Boolean publications and native collision/carrier/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

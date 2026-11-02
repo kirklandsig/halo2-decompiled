@@ -314,6 +314,10 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // N315: Complete accumulated destination values, native/CRT before/after clamp,
 // 979 each (frame 0x90); complete RGB values in those four forms 790 each
 // (frame 0x54). Original helper and full body restored; full 324, fast 336.
+// N317: Paired native sample-bound observations, either declaration order, with no
+// expression node/named span/named offset/both: 411/411/411/411/400/400/426/426
+// (fast control 336, full 324). Original observations, helper and body restored;
+// ESI/unit-constant/reciprocal and accumulation schedules remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
