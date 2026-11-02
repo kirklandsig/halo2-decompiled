@@ -299,6 +299,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // at every interpolation site 280/232/245; with branch-produced primary aspects
 // 279/262/239; complete stages with secondary-first reciprocals, original/branch
 // primary 239/245. Next-term stages kept at plain 232; other bodies restored.
+// Round 526: Native evaluated RGB apart from alpha/tint, publication before/after input
+// modulation, field/library transfers and original/entry seed workspace:
+// 236/236/486/486/236/236/498/498. Original tint/UV body and includes restored;
+// tint/secondary-UV homes and blend/reciprocal residence remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

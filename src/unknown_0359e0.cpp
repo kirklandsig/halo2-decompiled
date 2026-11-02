@@ -222,6 +222,9 @@ PRIVATE inline long swizzle_log2(dword value)
 // 111/111/112/118; top-down bit-index scan with the same domains
 // 105/105/118/139. Original helper and body restored; delayed coordinate
 // promotion, height/common homes and branched minimum remain.
+// Round 526: Repeated whole-nibble/byte logarithm scans with threshold/window tests and
+// long/short counts 134/134/135/135/136/136/135/135. Original helper/body restored;
+// delayed coordinate promotion, height/common homes and minimum branch remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {
