@@ -181,6 +181,55 @@ static __forceinline float const &load_friction_scale(solver_step_31c940 * const
 	return step->friction_scale;
 }
 
+// The spin block retains B's field addresses across its projections and
+// tangential updates. Keep the two projections' separate A-field loads.
+static __forceinline __m128 project_first_spin_vector(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, solver_velocity_31c940 *b)
+{
+	__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear), b->linear);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
+	return _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
+}
+
+static __forceinline __m128 project_second_spin_vector(solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &linear_b, __m128 const &angular_b)
+{
+	__m128 relative = _mm_sub_ps(a->linear, linear_b);
+	__m128 angular = _mm_add_ps(_mm_mul_ps(_mm_load_ps((float const *)&a->angular), row->a), _mm_mul_ps(angular_b, row->b));
+	return _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
+}
+
+static __forceinline float project_spin_angular_velocity(solver_angular_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 const &angular_b)
+{
+	return sum_three_31c940(_mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b))).value;
+}
+
+static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e7b0 const *row,
+	solver_velocity_31c940 *a, __m128 &linear_velocity_b, __m128 &angular_velocity_b,
+	__m128 const *const volatile &inverse_b_pointer, float *result)
+{
+	// SSE consumes a rounded float while result accumulation retains the x87
+	// value. Passing the impulse by reference would round both paths early.
+	float rounded_impulse;
+	float volatile &store = rounded_impulse;
+	store = impulse;
+	__m128 scalar = _mm_load_ss(&rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	a->linear = _mm_add_ps(a->linear, linear_a);
+	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_b);
+	// Reload the axes after both linear writes, then form both contributions
+	// before either angular write. Row storage may overlap the body fields.
+	__m128 angular_a = _mm_mul_ps(change_a, row->a);
+	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	a->angular = _mm_add_ps(a->angular, angular_a);
+	angular_velocity_b = _mm_add_ps(angular_velocity_b, angular_b);
+	*result += impulse;
+}
+
 // Retain the first row's unshifted cursor alongside the second row's B axis.
 // Their separate uses keep retail's cursor bias over the same row storage.
 static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, unsigned char *op,
@@ -705,7 +754,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1944 (was 1960): retain the solver state and each friction limit's home.
+// score 1943 (was 1944): retain B field addresses through spin-friction projections and updates.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -785,11 +834,15 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			contact_friction:
 			{
 				solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(((solver_linear_row_31e7b0 *)terms) + 2);
-				float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
-				solver_scalar_31c940 projected_a = linear_velocity(((solver_linear_row_31e7b0 *)terms), a, b);
-				solver_scalar_31c940 projected_b = linear_velocity(((solver_linear_row_31e7b0 *)terms) + 1, a, b);
+				solver_velocity_31c940 *body_b=b;
+__m128 *volatile linear_b_pointer=&body_b->linear;__m128 *angular_b_pointer=&body_b->angular;
+float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
+				solver_projection_31c940 projected_a = sum_three_projection(project_first_spin_vector(
+					((solver_linear_row_31e7b0 *)terms), a, body_b));
+				solver_projection_31c940 projected_b = sum_three_projection(project_second_spin_vector(
+					((solver_linear_row_31e7b0 *)terms) + 1, a, *linear_b_pointer, *angular_b_pointer));
 				// Round the initial spin before the coupled tangential calculation.
-				volatile float initial_spin = (spin_target * load_friction_scale(step) - angular_velocity(spin, a, b) * load_velocity_scale(step)) * spin_mass;
+				volatile float initial_spin = (spin_target * load_friction_scale(step) - project_spin_angular_velocity(spin, a, *angular_b_pointer) * load_velocity_scale(step)) * spin_mass;
 				float error_a = ((solver_linear_row_31e7b0 *)terms)[0].linear.m128_f32[3] * load_friction_scale(step) - projected_a.value * load_velocity_scale(step);
 				float error_b = ((solver_linear_row_31e7b0 *)terms)[1].linear.m128_f32[3] * load_friction_scale(step) - projected_b.value * load_velocity_scale(step);
 				float impulse_a = ((solver_linear_row_31e7b0 *)terms)[0].b.m128_f32[3] * error_a + error_b * operation_float(op, 8);
@@ -809,8 +862,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				}
 				// Scale and round spin before either linear update can change ((solver_linear_row_31e7b0 *)terms) storage.
 				volatile float rounded_spin = impulse_spin * operation_float(op, 20);
-				apply_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a, b, result);
-				apply_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a, b, result + 1);
+				__m128 const *volatile inverse_b_pointer = &b->inverse_inertia;
+				apply_spin_linear(impulse_a, ((solver_linear_row_31e7b0 *)terms), a,
+					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result);
+				apply_spin_linear(impulse_b, ((solver_linear_row_31e7b0 *)terms) + 1, a,
+					*linear_b_pointer, *angular_b_pointer, inverse_b_pointer, result + 1);
 				apply_angular((float)rounded_spin, spin, a, b, result + 2);
 				terms += 8; result += 3; op += 24;
 				break;
