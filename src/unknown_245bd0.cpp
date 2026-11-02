@@ -407,6 +407,8 @@ PRIVATE inline void shape_copy_header(s_shape_header const *source, s_shape_head
 // field by field (`d.i * scale`, `scale * d.j`, `d.k * scale`, diagnostic) 57 (same code); the matched 0x2461a0's
 // form, a named `d_j` copy with a statement sum: i, k, j 57; that with the normal by fields reading `d_j` 57; k, i,
 // j (0x2461a0's own order) 59. No existing helper squares only i and k through a pointer.
+// Round 342: Complete nondegenerate/degenerate normalization predicates in bool/byte/word/long native storage: 57/57/57/57/57/57/57/57.
+// Original complete body restored; sphere displacement/normal XMM homes and reciprocal-one hoisting remain.
 // @retail 0x245ef0
 bool function_245ef0(s_shapes const *shapes, point3f const *point, s_shape_result *result)
 {

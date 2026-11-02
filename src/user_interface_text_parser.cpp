@@ -618,6 +618,8 @@ done:
 // the variant declared bare before the definition getter 54 (as round 41's function-scope declarations); the default case copying and returning 63 (180
 // bytes); `case 5: case 6: default: goto done;` 54; the tag and name declared before the variant, the tag assigned
 // after it 54; `if (globals != NULL)` 54.
+// Round 342: Seven complete cyclic case priorities and one paired priority on the repeated-copy graph (33 executable differing rows each versus 25): 52/42/50/50/50/50/38/50.
+// Original complete body restored; early EDI save, tag/selector schedule and scratch-address caching remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
