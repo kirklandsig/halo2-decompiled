@@ -688,6 +688,10 @@ bool sound_driver_voice_create_buffer(
 // Round 340: shared creation HRESULT on native descriptor scopes, spatial/play
 // producer order, status-selected result and entry/success status declaration combinations
 // 71/182/191/192/71/182/191/192. Original body restored; spatial/play and zero/input homes remain.
+// Round 313: One actual SDK descriptor reused across both current native phases, separate/reused
+// pair array and shared/per-phase mixbins 82/146/82/146; spatial-first counterparts
+// 180/208/180/208. Original descriptors, arrays, predicates and complete body restored;
+// spatial/play and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

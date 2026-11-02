@@ -1459,7 +1459,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 73 (was 102): frame 0x14, NONE/owner and Boolean stack homes agree;
+// score 73 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
 // flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
@@ -1565,6 +1565,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 337: raw view classification consumed by both zero-status tests, long/dword/short/byte,
 // default/query then conditional producer: 137/137/135/155/136/136/134/149. Wider raw carriers
 // recover the first EBP save but worsen later homes; original availability and body restored.
+// Round 313: Complete camera result after the unchanged attachment query, bool/byte/short/long,
+// original/shifted-word eligibility: 143/133/157/147/148/138/147/137. Original camera producer and
+// complete body restored; eligibility width and availability/view carriers remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -4306,6 +4306,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // receiver), full scalar graph 222. Direct parameter on up/contact 213; direct up with bool/short/byte
 // contact 215/210/215; one result exit with bool/long/short contact 210/209/206 (four-point gain rejected).
 // All executable forms restored; the 0x24/0x28 frame and overwritten state-base lifetime remain.
+// Round 313: Natural-parameter component loops for relative/kick/actor-ground subsets
+// 240/228/176/228/240/228/167; complete dot/norm products 228.
+// All three loops reach 167 plain at 683 bytes, but lose matched callers; restored.
+// The 176 form also uses a register argument and ret instead of retail ret 4; restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
