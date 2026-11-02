@@ -1011,6 +1011,9 @@ void function_1d1540(s_havok_component *component);
 // Keep constructor copy with two-use slot pointer and fixed-first guard, ordinary whole-program
 // confirmed; post-reset lookup retained. Component/index stack transport, 0x84/0x88 frame and
 // rep/SIMD copy remain.
+// DH298: Copy after inversion, assignment/set/memcpy/memmove with inverse at use
+// 140/140/84/99; inverse at entry 140/140/84/99. All regress and are restored; fresh
+// post-reset lookup and matched caller survive; frame and argument transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
