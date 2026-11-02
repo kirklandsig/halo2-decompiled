@@ -2271,6 +2271,8 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 	return comparison > 0;
 }
 
+// MiniMax D (11-01): a local that holds the count once does not move the subtraction before the
+// last push either, and the stipple block's order lies inside the XDK macro.
 // MiniMax D (11-01): no new form, no lower score.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
@@ -2313,6 +2315,8 @@ void function_1e370(void)
 	}
 }
 
+// MiniMax D (11-01): the permute run on this function was stopped at its time limit without a
+// measured variant.
 // MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
 // the allocator all tie or regress at 8 differences; no lower score.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
@@ -2615,6 +2619,8 @@ struct s_queued_material_payload
 	byte data[1];
 };
 
+// MiniMax D (11-01): both builds push the five stack arguments and only the count's register
+// differs, which 0x4b220's own declaration fixes.
 // MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
 // seventh parameter to give its count retail's register home.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
@@ -3133,6 +3139,8 @@ void function_13d80()
 
 extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 
+// MiniMax D (11-01): the setup's order follows the callee's parameter home in
+// src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax D (11-01): no new form, no lower score.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
@@ -4772,6 +4780,10 @@ void __stdcall function_352e0(long target, bool multiple);
 long function_35510(long format);
 void function_1bd50(void *state);
 
+// MiniMax D (11-01): the two-call form retail uses scores 20 here (the fallback's word load
+// lands in ecx and each arm pushes its own value); the mixed-type ternary reaches 15 with the
+// branch and the phi in eax, but the element push stays after the branch and the load is movzx
+// where retail widens the word with an xor.
 // MiniMax D (11-01): the fallback as a word cast, as a ternary and as a word local all score 15
 // or worse; our load stays a movzx where retail widens the word with an xor.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
@@ -6088,6 +6100,8 @@ void function_46ea0(long tag, point3f const *position);
 
 // Tried (MiniMax S run 10): writing the g_4b8438 store through an unsigned int lvalue
 // (*(unsigned int *)&g_4b8438 = 0) scores 73 against 76; not kept (a cast of the global's address).
+// MiniMax D (11-01): both builds store the shadow global from ebx, but ours is sunk past the
+// device load and the range comparison of the inlined macro.
 // MiniMax D (11-01): no new form, no lower score; the store before the inlined call is only
 // reachable through a cast of the global's own address.
 // score 3 (was 22): the g_4b8438 store is emitted after the range comparison of the inlined call,
