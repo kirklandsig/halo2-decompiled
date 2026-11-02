@@ -1858,6 +1858,10 @@ void function_dfd70(long arg_159e6d)
 // Round 314: Mode-three forward traversal 248; side-vector scaled add 240; both 240;
 // forward scaled add 240; both scaled adds 203 (shared user regresses); traversal/CRT
 // origin 248; scaled add/CRT origin 240; point origin setter/traversal 263. Original restored.
+// Round 324: single complete mode dispatch orders 0123d/3012d/d0123/1203d/2103d/3201d/013d2/d3210
+// 392/375/392/393/393/378/388/375; shared user 610 -> 614 in all. Original helper restored.
+// Common origin setup once with mode orders 312d/123d/d312/1d23/2d31/321d/d213/231d:
+// 254 each; direct helper users unchanged, dispatcher 108 -> 109. Original helper restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2652,6 +2656,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // P258: Advancing body receivers in mass/farthest/both scans 530/530/530;
 // push/mass+push/farthest+push/all scans 534/534/534/534; all receivers
 // with uniform per-use counts 544. Original indexed scans and body restored.
+// Round 324: complete centroid scalar storage in both input-read orders, each with/without
+// reciprocal and all weighted products beside their consumers: 562 each. Frontloaded
+// weighted products also 562, reverted. Original aggregate centroid and body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3196,6 +3203,8 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 514: native input memcpy/memmove with direct output 368/383; aggregate
 // input with output memcpy/memmove 895/875; paired input/output copies 895/895/875/875.
 // Original helper and body restored; matrix/pivot homes and scalar transport remain.
+// Round 324: last-use scopes for parent matrix/world pivot/child world, subsets 1-7,
+// then all with matrix declared before origin: 368 each. Original scopes restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
