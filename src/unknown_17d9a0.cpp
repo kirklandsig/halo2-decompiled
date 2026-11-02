@@ -858,6 +858,15 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH round 290: unconditional decoded plane owned by native value or destination,
 // scalar fields/plain vector loop, then each with common angle result:
 // 896/897/753/753/864/898/737/739. All regress; original decoders, angle gate and body restored.
+// Round 532: native axis/bound-pair/up-component cursors, seven subsets and all with short
+// orientation ordinal: fast 779/771/802/793/779/771/809/873 versus unchanged fast 795.
+// Minimal axis/bounds cursors plain 574/591 at 3631/3599 bytes versus full 539/3647; both rejected.
+// Original indexed component loops, complete body and all helpers restored; tag/count/plane homes remain.
+// Round 330: sequential outer/inner signed-short ordinal and candidate/selected-plane
+// storage subsets 1-7, then all with bound-first search, fast 771/780/781/762/822/807/774/770. Original body restored;
+// first grouping plane stays independent; tag/count/plane homes remain.
+// Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
+// ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

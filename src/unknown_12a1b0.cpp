@@ -1256,8 +1256,8 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 110 (was 110): return result first restores entry load allocation; the first-player expansion remains (retail
-// calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
+// score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
+// instead of retail's temporary/copy, and the first-player query still expands.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
 // the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
@@ -1370,6 +1370,8 @@ struct s_looping_detail_request
 // N322: Original positive byte/char/short/word/long/dword completion carriers:
 // 131/131/135/135/134/134; native long/byte admission-produced results 176/159.
 // Original common tail, result, native offset and complete body restored; first-player expansion remains.
+// Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
+// 154/173/155/162/136/169/151/149; original complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2349,6 +2351,7 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
 // Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
 // Round 308: and record/track ownership remain.
+// DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

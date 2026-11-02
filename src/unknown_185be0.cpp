@@ -361,6 +361,9 @@ union s_185be7
 // N322: Late action-eligibility/selected-input/hold-release phase scopes, subsets 1/2/4/3/5/6/7,
 // then complete phase-carrier names: 690/690/690/690/690/690/690/690. All generated target metrics
 // tie; original complete body restored, control-root/NONE, settings/zero homes and flag joins remain.
+// AC480: Native entry array, branch-owned angular output and shared two-coordinate difference,
+// subsets 1/2/4/3/5/6/7, then branch output with early uninitialized response vector: 690/839/764/839/764/855/855/839.
+// Original complete body restored; control-root/NONE and scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
