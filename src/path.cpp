@@ -1014,6 +1014,10 @@ bool function_2715a0(byte *buffer)
 // 0x210be0 call.
 // M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
 // 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// M3 lane 6 r142 (fast): the pop-or-NONE forceinline loop with 0x271fd0 declared `__forceinline` (diagnostic) 556
+// (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
+// before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
+// not kept). Original body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
