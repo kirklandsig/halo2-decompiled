@@ -280,6 +280,14 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // M334: Existing normalizer absolute-length predicate as bool/byte/short/long results,
 // then their exact tiny-path complements, 156 in all eight forms at 634/630 bytes.
 // Original test, helper and body restored; early Y transport and XMM roles remain.
+// Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
+// 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
+// written y first 92. Original normalizer and body restored; early Y load remains.
+// Round 57 (m3 lane 13, fast): the direction as an aggregate initializer with the distance declared at the call 92
+// (same code); fabsf in the normalizer 156 (634 bytes); `real const` direction locals 92 (same code); the
+// normalizer on two component pointers (`&direction.x, &direction.y`) 92 (same code); the reaches flag declared
+// after the direction locals 166 (638 bytes). Retail's `direction->y * inverse` keeps y as the register operand
+// (preloaded), where ours commutes it to `inverse * [y]`.
 // Round 79 (m3 lane 9, fast): the reaches flag declared after the other locals 92; distance declared before
 // direction 92; sqrtf in the normalizer 156 (634 bytes); the normalizer plain `static inline` 92; the ancestor
 // walk as `while` with the step at its end 92 (all 92 forms same code). Early Y load still missing.

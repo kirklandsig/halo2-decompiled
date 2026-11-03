@@ -777,6 +777,9 @@ void function_1537f0(s_profile_record *record);
 // 55 (259 bytes: frame 0xa0 and retail's `cmp edx, end; jl` exit, but the identity at +0x14 with a 4-byte pad under
 // it, the record at +0x20 and the pointer in EBP); that with the 4-aligned s_player_properties record 55; the source
 // declared before the identity 55; a function-scope identity 55; the identity named to sort after the source 55.
+// Round 57 (m3 lane 13, fast): the 0x7f8b0 identity copy as memcpy 53 (same code); the identity as a plain
+// `dword identity[3]` (the 0x18fe9e form) zeroed by memset 53, declared after the source 53, `= { 0, 0, 0 }` 74
+// (254 bytes); an index loop with that array 78 (238 bytes). The identity still folds in all of them.
 // Round 141 (m3 lane 5, fast): the identity and a 36-dword record in one local object (not an accepted form without a
 // match) on an index loop 45 (259), with flags and time as two plain stores 49 (258 bytes, aligned 33: left NONE hoisted
 // into EBP and the record's two zeros sharing EBX); the real record type in that object 52; pointer walk 86 (272); on the
@@ -1297,6 +1300,14 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // count path share retail's flag store, but upper coalesces with the count in EAX (retail copies it to ECX) and the
 // removed index loads into ESI before EDX; on it upper declared first 56, `g_4cf978 > position` 58, `lower = removed
 // <= position ? removed : position` 58, the bounds declared before `removed` 378.
+// Round 57 (m3 lane 13, fast with 0x80330/0x80490): the count arm first (`if (removed == NONE) { if (position <
+// g_4cf978) ... } else ...`) 55; the bounds as an if/else on `removed > position` with the `<` test nested in the else
+// 375; short bounds 373 (1179 bytes); the repair loop as a pointer walk 807 (744 bytes, not unrolled); the `<` arm as
+// `position--; upper = position;` 48 (retail decrements upper then position, `dec ecx; dec edi`), with the cmovle
+// lower 48, with upper declared first 48, with upper first and `lower = removed > position ? position : removed` 46
+// (3 counts, not kept; left: the cache_full entry and upper in EAX), that with the count path upper first 47, with
+// `downward = true` first 47, with `long removed = NONE; if (g_4cf978 == 350) {...}` 368 (1162 bytes), that plus
+// explicit `>` and count-path `downward = false` 361.
 // Round 141 (m3 lane 5, fast with 0x80490; al = aligned count): retail's count reload sits only in the full arm. Plain entry
 // `removed = NONE`, `removed > position ? position : removed` lower, the flag set first in the `<` arm, the count path lower
 // first, a forward cursor `from = &g[lower + 1]` stepped in the loop (`from[-1] = *from`) and explicit `downward = false`
