@@ -313,6 +313,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DH308: Direct-file graph completion/success, outcome/ordinal and path lexical-home
 // subsets 1/2/4/3/5/6/7, then all with reversed byte declarations: 44 each. Original file value,
 // wide outcome, waits and body restored; ECX handle and stored-success memory test remain.
+// Lane 18 round 34 (fast): success straight from the handle test, `if (success != false)` 55 (351 bytes); a bool
+// opened copied to success 55 (351); `if (!opened) continue;` 42; the file declared at the loop top and assigned
+// after the wait 42; `success = opened ? true : false` 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

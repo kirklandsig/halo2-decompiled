@@ -352,6 +352,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 541: Standard weighted-array multiplication ranges a/b/c, seven subsets and returned
 // output-iterator chain: 795/789/773/804/780/754/766/774. Frame becomes 0x4824; every
 // form regresses. Original ten stores, includes, helpers and complete body restored.
+// Lane 18 round 34 (fast): the flag declared before the index output and palette call 618; the best-weight locals
+// declared after the clears 779 (3827 bytes, +0xa); the previous-index test inverted with the scenario lookup nested
+// 616; the flag declared after the source stores 616; the short slot read right after the palette call 616.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
