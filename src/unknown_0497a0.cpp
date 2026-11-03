@@ -786,6 +786,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // phase subsets 1/2/4/3/5/6/7, 553/550/265/588/553/550/588; all with width owning
 // its transition input 582. Next-phase forms recover frame 0xac but grow the body;
 // NOT kept: no gain or match, and changed load ownership. Original complete body restored.
+// F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
+// field then actual opacity value storage: 265/269/265/269/276/278/276/278.
+// Original product, its intermediate, signed zero, record publication and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

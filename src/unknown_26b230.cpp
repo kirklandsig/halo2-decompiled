@@ -2262,6 +2262,8 @@ void function_269250(long clump_index, long actor_index)
 // result 137/137/247/249. False Boolean with group/unit and unit/group chained initializers
 // 83/85, also 83/85 with native node datum. Six- and four-point forms rejected;
 // original whole-group result, categories, deletion, node and tracking walks restored.
+// DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
+// Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {
