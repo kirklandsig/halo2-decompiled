@@ -1468,6 +1468,9 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // upper conversion); one result long redefined by `decibels_add(result, decibels_add(class call, gain))`
 // 27, gain-first 27, through decibels_sum 16. Compile-only, 23 tail forms (in-place `+=` on a real or a
 // long, calls inside the arguments, accumulators, either argument order) all fold the converted gain.
+// Round 132: direct typed definition uses 15; scoped class/sum tail 15; reference inner sum 24
+// (112 bytes); const bound/linear values 15/15; named interpolation scalar 15; early class
+// declaration 15; commuted interpolation 15. Original body restored.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -2938,6 +2941,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
 // references with complemented playing status 127. Original pointers, saved byte result, search and full
 // body restored; frame twelve/eight and failure-tail placement remain.
+// Round 552: direct unchanged/commit/failure Boolean returns without a saved carrier, native
+// outer/early unchanged guards crossed with independent/chained defaults and original/complemented
+// status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

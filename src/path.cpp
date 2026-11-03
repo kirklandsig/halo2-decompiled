@@ -540,6 +540,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH303: Real eight-byte node metadata record with memcpy/aggregate transport
 // and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
 // layout and body restored; extra output cursor, initial zero and flag homes remain.
+// M3 lane 13 r54 (fast; 0x270930 kept): the edge array declared after the flags 295; the clamp as
+// `maximum_steps < initialize_count` 295; the converted points named begin/end 295; the output-index compare
+// swapped 295; margin declared at the top 295 (all same code). Retail's start/end conversion homes stay swapped.
 // B383: Predecessor retained only as its short/long index, direct array fields or
 // a branch-local multi-use receiver, crossed with long/short link count:
 // 294/391/378/399/295/373/382/386. NOT kept: the 294 form gains one point; retail retains
@@ -1000,6 +1003,13 @@ bool function_2715a0(byte *buffer)
 // original scalar producers and complete body restored.
 // M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
 // 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// Round 44 (m3 lane 2, fast): the pop-or-NONE forceinline loop again 512 (diagnostic; retail's prologue and
+// un-rotated loop, state EBX); with the location order, `!(d > 0.09f)`, the setg flag and per-case depth
+// stores all together 526 (2056 bytes); with each alone 528 (2056)/517 (2064)/512/504. The diameter written
+// at each use, `(radius * 2.0f) * (radius * 2.0f)`, 481 (2084 bytes; retail reloads the radius and
+// re-multiplies in the second test, as this gives; five points, a computed value at each use, not kept).
+// The root stored back into the squared length (diagnostic) 486, same code: the fsqrt still sinks past the
+// 0x210be0 call.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

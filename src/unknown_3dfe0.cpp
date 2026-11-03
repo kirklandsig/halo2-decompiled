@@ -42,6 +42,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // push, so 0xd4080's last two parameters swap (flag, then record; 0x3d2c0 stays matched, 0xd4080 364 -> 363): 23, special
 // declared first 21, with update assigned in both arms 222 (aligned 7: only the early false store and retail's object
 // reload in the force arm remain). All 24 entry orders with either arm on that lead: 21 is the lowest count, aligned 7.
+// Round 121 (fast; 0xd4080's definition is still in another lane's file): on `update = false` before force, sample and update
+// timestamps named 218, only sample named 218, only update named 218, the update test's two sides flipped 218 (aligned 34, control 18;
+// the swapped esi/edi follow 0xd1850's EDI and 0xd4080's ESI arguments, so the lead above comes first).
+// Also round 121 (fast): the stationary test as one `!valid || !(dot < limit)` with the difference above it 120 (831 bytes); the
+// lighting record through a named pointer 27, with special declared before type 26.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

@@ -1226,6 +1226,9 @@ struct s_equipped_object_view
 // 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
 // threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
 // test nested 15 on the NONE-after form.
+// Round 139 (lane 6): the comparison written definition >= threshold 12; a tag-instance pointer for
+// the held definition 6; the definition read inside the compare 6; thresholds read after the
+// definition 6; a real pointer to the definition field 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1989,6 +1992,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
 // boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
 // established/visible homes and normalized direction residence remain.
+// N340: Whole actor/vehicle admission regions, original/failure-first/success-first
+// trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
+// lookup operands, established/visible homes and direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

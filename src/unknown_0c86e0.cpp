@@ -204,6 +204,11 @@ static __forceinline long weapon_get_zoom_out_sound(long weapon_index)
 // the weapon query before the player queries 107 (378 bytes); the player test as `!= NONE` first 117; the
 // sound test with the zoom flag first 125. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided): our
 // link knows it writes no memory and merges retail's second unit fetch into the entry fetch.
+// Round 125 (lane 8, fast): the existing event_player_get for the user index 107 (same code); the sound helper
+// plain `inline` 162 (318 bytes); the player helper __forceinline 107; the weapon flag as `weapon_index != NONE
+// && function_100f70(weapon_index)` 100 at 376 bytes (flag materialized with `mov cl, 1` where retail keeps the
+// call result in AL; a positional gain, not kept); the sound index as one ternary 107; the sound part behind an
+// early return 107. Still BLOCKED-BY 0xbadc0 (src/unknown_0bad50.cpp, avoided).
 // @retail 0xc86e0
 void function_c86e0(long unit_index, bool keep_weapon_zoom)
 {

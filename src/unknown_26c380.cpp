@@ -277,6 +277,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH303: Common first-endpoint producer, native orientation/vertex-table ownership,
 // and planar memcpy 465/467/449/440/413/406/388/392. NOT kept: all lose four matched
 // callers. Original body restored; normal/planar homes and byte/output tails remain.
+// M3 lane 13 r54 (fast): `first = true` at the top of each sector iteration (retail's store before the flag
+// test) 412; the sector flags read without the sector pointer 425 (1611 bytes); the hit test without its bool cast
+// 410 (same code); the blocked result assigned directly without its bool temporary 425 (1611 bytes); the count
+// initialized at its declaration 410 (same code). Retail's separate planar normal copy and byte success remain.
 // B383: Standard forward/backward copy of the genuine two planar components,
 // each with long/bool/byte/short success: 432/550/529/437/432/550/529/437.
 // NOT kept: all forms lose ten matched callers and regress; original scalar transfer, result and whole body restored.
@@ -287,6 +291,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
 // 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
 // restored.
+// Round 202 (lane 3, fast): the full normal declared at function scope 410, the planar normal at function scope
+// 410, both 410 (frame stays 0x5c: retail keeps a separate planar copy made with integer moves at 0x34/0x38 from
+// the full normal at 0x40); last_distance declared with the entry locals 412; the count and next-sector locals
+// initialised at their declarations 410 (same code). Restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

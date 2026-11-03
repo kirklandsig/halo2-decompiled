@@ -172,6 +172,11 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // Round 349: cap then compound tick-rate product, with native stored-short count,
 // entry rejection result and final team after the notification, eight subsets 86/86/86/86/254/254/254/254.
 // The compound product alone compiles identically; original producer and all lifetimes restored.
+// Round 63 (m3 lane 10, fast): three callees are still unmatched (0x242ba0 12, 0x242e00 13, 0x2430a0 53; all called
+// with stack arguments). The slot predicate taking the flag byte by value 86 (same code); the engine-table receiver in
+// a named local 86 (same code); the existing unit_index local passed to 0x244680 232 (917 bytes); the p35/0x138880
+// guard as nested ifs 86 (same code); the permission block's flag test split from its mode tests (nested ifs) 86.
+// Pool reload still BLOCKED-BY 0x101280's summary (its other caller 0x241520 sits in a file another lane holds).
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {

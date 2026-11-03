@@ -249,12 +249,20 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // AC488: native candidate range/type, best-score/validator and final-selected admission
 // nesting subsets 1/2/4/3/5/6/7: 390/390/390/390/390/390/390; all with native long group 461.
 // Original body restored; selected defaults, root/group roles, point bitmap and pass homes remain.
+// M3 lane 13 r54 (fast): the structure table read before the root-table test 452; the group record pointer
+// formed right after the group bit is set 438 (1576 bytes); a link-count local for both link loops 439 (1576
+// bytes); the nearest-distance compare swapped 390 (same code); the path sum written last-to-first 390 (same code).
 // DH312: Single native input reads through own addresses, five direct consumers then
 // entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
 // own-address and one-use aliases did not match; the record alias also demotes
 // the caller. Original full body restored.
 // M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
 // then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
+// Round 202 (lane 3, fast): retail reads the group with `movsx ebx` (32-bit compares) and recomputes the set's word
+// address first, then the mask (bit_vector_set's shape). On this body: `long local_15` 461 (1560 bytes); long with
+// bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with
+// bit_vector_set for the set only 424 (1567); the found flag declared once per group and cleared per pass 390 (same
+// code). Restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

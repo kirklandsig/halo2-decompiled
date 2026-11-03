@@ -637,6 +637,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 86 (KIMI2): dot inputs reversed 77; opposite-side cross 79; both reversed 79;
 // reversed cross with the original left predicate 79; shared three-component facing pointer 148;
 // two-use magnitude scale 85; named determinant 77; read-only magnitude 77. Original body restored.
+// Round 35 (m3 lane 18, fast with 0x1ecf50 and 0x2b400), zero-first comparisons re-measured on the
+// two-pointer helper form: `0.0f < magnitude` 77; `0.0f > dot` 77; `0.0f < cross` 77; the turned pair's
+// normalize as `0.0f < ...` 77 (all same code); the k copy before the turned pair's normalize 174 (788
+// bytes). Retail rematerialises the test zero (xorps after the scale products) and multiplies the
+// rotation's cosine from memory; ours keeps one zero in XMM6 from above the divide through the rotation.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {
