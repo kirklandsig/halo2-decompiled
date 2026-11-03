@@ -69,6 +69,10 @@ void function_1d6ad0(s_havok_component *arg_0, s_physics_model_owner *arg_1);
 // literal 0x20 count 9.
 // Round 49 (plain): mask declared at the clear 9; loop bound as `field_38 > index` 11; header test
 // `(...) == 0` 9; header index product `12 * index` 9; switch result declared at function scope 9.
+// Round 31 (lane 17, plain): owner's node-list field typed as the list struct (casts dropped) 9; the
+// result and body-count zero stores moved up to the clear 194 (696 bytes); clear ahead of the section
+// call 17; second loop bound read through the node-list local 59; first body slot passed as the bare
+// array 9.
 // @retail 0x1d5940
 long __stdcall function_1d5940(s_havok_component *arg_0, bool arg_1, bool arg_2, bool arg_3)
 {
