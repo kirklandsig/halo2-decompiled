@@ -1712,6 +1712,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
 // Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
 // projected-storage form; original long selection, movement and complete body restored.
+// N342: Existing shared dot input components staged for left/right/both/paired axes,
+// original then real movement result: 280/280/280/280/279/279/279/279. Both other users checked.
+// NOT kept: one-use input carriers do not match and length grows to 1071/1066;
+// original helper, magnitude, observations, field values and complete body restored.
 // DH315: Shared score/predicate/ordinal initialization masks 1/2/4/3/5/6/7,
 // then all with real movement: 227/225/225/229/229/227/221/224. Original
 // independent initializers, magnitude, observations and complete body restored.

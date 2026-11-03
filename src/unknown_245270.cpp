@@ -566,6 +566,10 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 139 (m3 lane 6, fast): the plane table read after the edge vector, as retail schedules it, 203 (and
 // after the two point pointers 203), but the source then arrives in EDX and 0x245aa0 drops to 3, so not kept;
 // the existing cross3f_staged 209; the side flags before the plane pointers 209; the dot as i, j, k 209.
+// Round 390: Complete material-to-facing admission outcome, bool/byte/short/long,
+// branch/conditional facing producers: 201/201/231/230/201/201/231/230.
+// NOT kept: state set in a test needs a match; every extent grows away from 783.
+// Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

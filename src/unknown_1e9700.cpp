@@ -345,6 +345,9 @@ struct s_object_damage_view
 // object+0x2f0, but the assist loop keeps its own base: retail spills one object+0x2f0 for both loops); both
 // with a walked record pointer in the selection loop 390, started from a history local used by both loops 392;
 // killer/victim_team/damage_code renamed in all six name orders in the harness, one order in --fast, 353 (the slots never move). Restored.
+// Round 390: External amount-field identity after timestamp acceptance, original/whole
+// record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
+// Original body restored; scalar homes, amount-biased cursor and attribution remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

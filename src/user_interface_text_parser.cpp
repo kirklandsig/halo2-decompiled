@@ -662,6 +662,9 @@ done:
 // default-first/conditional producers with repeated then shared copy: 32/48/53/48/54/54/59/54.
 // Default-first provider loses the matched variant parser (22); provider, callers and complete
 // original body restored. Early EDI save, tag/selector and scratch cache remain.
+// Round 141 (m3 lane 5, fast; parse_variant stays matched), on the natural one-copy form 54 (173 bytes): a const pointer
+// local for the translator's buffer 54; `&g_55c6e4[0]` 54; a named copy source 54; a named selector 54; the tag read in the
+// translator call 45 (171). The EBX hoist of the buffer stays in all of them.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

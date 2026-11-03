@@ -448,6 +448,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // after the search loop 147, at the top of the draw block 117; the root tag local passed to 0x1bbf0 130
 // (first difference +0x2); first cache zero after the material record lookup 117; the search count read
 // once before the loop 117. Original body restored.
+// Round 390: Complete callback context after search, field/aggregate construction,
+// crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
+// Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
