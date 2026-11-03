@@ -155,6 +155,9 @@ static __forceinline long real_to_long(real value);
 // the helper's argument 4; a facing reference for the dot 6. Harness probes: parentheses (1-7) anywhere
 // in the function leave it at 2 (only around the i product: 6); unused locals only swap the j/i terms;
 // an earlier read of direction->i or of the facing's i (diagnostic) 80-117.
+// Round 30 (lane 18, fast): result declared before the actor 2; const prop state 2; const prop 2; the
+// k clear through the direction pointer 3; the facing's components through n[] 2. 0x1ac610's forward
+// product shows the same last-term load order, and swapping its source operands changes nothing (29).
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

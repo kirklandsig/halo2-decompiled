@@ -200,7 +200,20 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 114 (was 124): flag 4 read through a word bitfield view gives retail's load-and-shift; the rest still differs.
+// score 114 (unchanged): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
+// header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
+// because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
+// call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
+// keeps the call out of line (105) but is a flag set inside a test, so it isn't kept; `/Ob1` on unknown_1916dc.cpp
+// (106) is another file's flags. The word-bitfield view stays.
+// Still differing: retail forms the player before it loads g_4e0300 (ours hoists that load above the pushes, so
+// ecx/edx and the first lines are off by one register), loads the 0x130 float into xmm0 before the cvtsi2ss (ours
+// folds it into the mulss), holds the ticks in edx (ours eax), and tests kind == 3 as `movsx eax, si; sub eax, 3; je`
+// with the 0 and 1 stores on branches (ours branches on `cmp ax, 3`; the ternary and every if/else spelling give
+// `setne` instead, 106). Tried: object/player through pointer locals (same), header first (128), header by
+// tail_object_get (100), flag test before the ticks (108), the float in a local first (same), `seconds * field` or
+// `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
+// table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -394,19 +407,27 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
+// score 31 (was 66): logic walk against retail found no behaviour difference (same player identifier
+// at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
+// bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
+// retail keeps the options pointer in ebx, the identifier in eax and the compare result in edx; ours
+// puts the identifier in ebx, the options pointer in edx and the result in eax, and loads
+// g_4e0350/g_4e6948 at different points. Tried: identifier hoisted/late (67), index form
+// players[i] (66-67), do-while (31), memcmp() == 0 without the result variable (80), != 0 (80),
+// scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
-	byte const *identifier = ((s_tail_player_identifier *)tail_player_get(player_index))->identifier;
+	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
+	s_tail_player_identifier *player = (s_tail_player_identifier *)tail_player_get(player_index);
 	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	bool alternate = false;
 
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
-	for (long i = 0; i < 16; i++)
+	for (long i = 0; i < 16; i++, entry++)
 	{
-		s_tail_options_player *entry = &((s_tail_options *)g_4e6948)->players[i];
-		long difference = memcmp(entry->identifier, identifier, sizeof(entry->identifier));
+		long difference = memcmp(entry->identifier, player->identifier, sizeof(entry->identifier));
 
 		if (difference == 0)
 			return &entry->traits[alternate ? 1 : 0];
@@ -1208,6 +1229,13 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// score 43 (was 43): the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
+// offsets, mode == 4 byte test, result kept in bl with its stack copy). Only the callee-saved pair is swapped:
+// retail keeps the player in esi and the hand in edi (edi pushed late), ours the reverse, and the unit index and the
+// `primary` temporary sit in ecx/edx and edx/al instead of edx and cl/eax. Tried: hand declared before the player
+// (43), result declared first (43), `primary ? 0 : 1` / `primary == 0` (43), `primary ^ 1` (75), bool hand (89),
+// hand after the unit lookup (70), unit_index cached in a local (43), modes declared at the top (43), the weapon and
+// mode tests nested (47).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1707,6 +1735,13 @@ void function_150400(long player_index, vector3f const *forward, vector3f const 
 void __stdcall function_ccff0(long unit_index);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 
+// score 91 (was 91): logic walk against retail found no behaviour difference. The whole score comes from the
+// first test: retail loads the flag with "mov cl,[edi]; xor al,al; test cl,cl" (return value preset to
+// false), ours emits "cmp byte ptr [edi],0" and the shift makes the rest of the function count as
+// different (align.py shows only that one hunk). Tried: byte/char/long local copy of the flag (91),
+// result preset before the test (72, result lands in ebx), single success variable (109),
+// early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
+// not natural source, so it is not used.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {

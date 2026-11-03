@@ -350,6 +350,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // ordinary/inline/force-inline contracts in eight nonoriginal pairs, all 46 on the retained
 // by-value-selector/component-array graph. Original declarations, helper and body restored;
 // live-plane store base, first axis/side roles and product memory sides remain.
+// AC493: First/second/both plain two-corner row walks, long/short: 66/56/62/295/336/415;
+// both with continuous output cursor long/short 235/407. All original corner calls, helper and
+// complete body restored; plane-store base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
