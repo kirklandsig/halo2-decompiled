@@ -1256,8 +1256,8 @@ struct s_looping_detail_request
 	short tracking_data_size;
 };
 
-// score 110 (was 110): return result first restores entry load allocation; the first-player expansion remains (retail
-// calls 0x14dde0, ours inlines it), and the audible arm keeps the detail in EDI where retail reloads it.
+// score 110 (was 110): frame 0xc and entry copy agree; audible offset uses request storage
+// instead of retail's temporary/copy, and the first-player query still expands.
 // Round 28 (lane G): what still differs is the first-player query: retail calls 0x14dde0 out of line
 // and our build inlines it, and the audible arm's detail then stays in EDI where retail reloads it;
 // the rest of the body is retail's. The out-of-line forms are the implied-test ones the 2026-10-30
@@ -1359,7 +1359,26 @@ struct s_looping_detail_request
 // Round 253: Final-position offset production with native count, source flag member and byte-result
 // subsets 0-7: 161/161/161/161/164/164/164/164. All original storage and source restored;
 // frame ownership regresses and the first-player query still expands.
+// DL241: Counted actual first/next-query dispatch, long/short/word/dword visits with
+// native/temporary audible output: 195/199/199/194/217/222/222/216. All regress; original two-
+// stage selection and body restored. Entry frame/copy agree; first-player expansion and detail
+// retention remain.
 // Round 469: One counted first/next-player traversal, short/word/long/dword visit counter, then enclosing selected-player lifetime: 121/121/129/131/121/121/129/131. Original two-stage selection restored; query expansion remains.
+// Round 473: Complete failure-valued bool/byte/short/long completion, with
+// request/native-local audible offsets: 144/144/143/142/168/168/168/167.
+// All restored; first-player expansion and detail/offset homes remain.
+// N322: Original positive byte/char/short/word/long/dword completion carriers:
+// 131/131/135/135/134/134; native long/byte admission-produced results 176/159.
+// Original common tail, result, native offset and complete body restored; first-player expansion remains.
+// Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
+// 154/173/155/162/136/169/151/149; original complete body restored.
+// DL247: Coordinated ordinary-inline first-player contract with native offset, CRT source
+// copy and repeated definition index: 110/134/110/134/141/165/141/165. All provider users
+// retain their preview scores; query still expands. Original contracts and body restored.
+// DH301: Whole detail-input native/immutable/assignment/memcpy ownership, each with
+// original or twice-used definition-index ownership: 167 in all eight forms. All regress;
+// original complete input observations and body restored. Detail/offset transport and
+// first-player expansion remain; frame 0xc agrees on the original body.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1706,6 +1725,13 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // Round 308: boundary 479/486/452/438/494/469/469/488 reduced (control 479); sound/detail plain 421,
 // Round 308: playback word plain 467 against full 305. Original real types and complete body restored;
 // Round 308: frame 0x11c versus 0x128 and playback/NONE/range homes remain.
+// Round 137 (m3 lane 6, plain; --fast is not usable here, its reduced image scores 477 on the request trial):
+// the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
+// playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
+// plain 9-step loop 335; `long selected` 427 (1908 bytes).
+// AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
+// with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
+// NOT kept: one-use captures without a match; original body restored, frame/homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2327,10 +2353,22 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // normalization scale produced after energy 746 each (unchanged reduced control 694, full baseline 597).
 // Original ordinal, scale lifetime and complete body restored; entry truth, record/track homes and loop
 // alignment remain.
+// Round 473: Native impulse-mask byte/word/signed-byte/short domains, then
+// paired alternate-mask domains: 682/669/698/689/684/641/701/687.
+// Reduced control 694; full 597. Plain paired-word/word/byte/paired-byte
+// 658/661/672/675; all restored; entry truth and record/track homes remain.
 // Round 308: native persisted sound/outer-tag/track-tag flag domains, seven subsets then guarded alternate,
 // Round 308: 740/748/647/795/716/740/786/772 reduced (control 694); track fields alone plain 643,
 // Round 308: against full 597. All real record declarations and executable body restored; entry true/flags
 // Round 308: and record/track ownership remain.
+// Round 370: Actual byte/char/word/short request-flag formals 617/617/601/601;
+// paired with signed-word class payload 617/617/601/601 (fast control equals full 597).
+// All three declarations and original body restored; entry true/flags, record/track homes and loop padding remain.
+// DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
+// F336: Paired initial/replacement state publication from their actual selected values,
+// char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
+// 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
+// the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

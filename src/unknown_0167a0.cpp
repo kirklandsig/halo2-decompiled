@@ -1532,6 +1532,10 @@ void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 // and long/short ordinals. Mapped descriptor word-load test remains; sampler/writers
 // unchanged.
 // Scores 301/379/135/217/307/468/461/467; original executable body restored.
+// Round 84: early output-category from loop-top packed 283; category reread 229; branch- or function-scope
+// packed declarations 130 each; a full post-sampler word used only for rescaling 130; that word also selecting
+// the output category 291; a twice-used post-sampler descriptor pointer or reference 130 each. None gives the
+// mapped rescale test retail's `mov ax,[ebx]; test ah,8`; the original 130 body and matched sampler/writers remain.
 // @retail 0x19ca0
 void function_19ca0(byte *state, word const *range)
 {

@@ -142,6 +142,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // capacity/result/counter lifetimes restored at 408. Frame 0x3c versus 0x34 and
 // observer/result/counter homes remain. Late selected limits alone 448 and late pacing alone 453
 // recover frame 0x34 but lose the early default stores; their combination over-shrinks it.
+// DH298: Final success lifetime/direct forcing-state output/capacity-output arm,
+// seven subsets 420/453/451/433/435/439/444; final capacity-produced result with direct
+// forcing-state output 447. All restored; frame, observer and counter homes remain.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,
