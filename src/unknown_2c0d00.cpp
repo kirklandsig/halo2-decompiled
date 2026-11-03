@@ -1191,6 +1191,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // 1..7, tie 324; complete fields with first-history declaration first 322.
 // Two-point gain rejected; original headers and complete traversal restored.
 // Frame 0x30/0x28, zero/radius residency and endpoint/history homes remain.
+// M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
+// then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
+// names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1631,9 +1634,15 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Typed-selection, trace-admission and found-result branch orientations and their pairs/all
 // 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
 // and metadata homes remain; original body restored.
+// M326: Native data-availability bool/byte/short/long predicates, conditional/default-null
+// pointer production, 420/420/420/420/420/420/420/420. All canonicalize to the original
+// radius stage and zero/metadata homes; complete original body restored.
 // N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
 // step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
 // scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
+// Round 380: Complete positive-distance/avoidance admission, bool/byte/short/long
+// acceptance then rejection complement: 420/420/420/420/420/420/420/420. All canonicalize; radius staging,
+// persistent zero and metadata homes remain. Original separate guards/body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

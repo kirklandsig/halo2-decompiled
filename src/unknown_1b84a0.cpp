@@ -518,9 +518,16 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // 51/52/52/55/55/55/55; complete entry storage 55. Exact-only field pointers restored.
 // Original frame/result home and native clear-address sequence already agree; table/result producer,
 // marker setup and tail homes remain.
+// Round 378: Combined available/success admission result at its actual tail producer,
+// bool/byte/short/long complete and pending truth, 49 in all eight. Exact-only one-use
+// admissions restored with the complete body; actor-table/result production, marker setup
+// and actor/reference/slot tail homes remain. Indexed slot-data form is already applied.
 // P278: On recovered ordinary-result/common-release graph, call-owned marker indices, movement-bound
 // phase and search-owned entry, seven subsets 49/49/49/108/108/108/108; all with search-request role
 // name 108. Original storage restored; entry result, marker setup and tail homes remain.
+// P282: Actual named readiness field, twice-used prop handle and both 49; positive comparison-result
+// work graph, alone/with each and both, 267/267/267/267; compound positive admission 267. Original
+// observations/result graph restored; table/AL, marker setup and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

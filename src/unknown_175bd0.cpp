@@ -1846,6 +1846,15 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
 // reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
 // with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
+// Round 123 (lane 8, fast with 0x178360): node-first merges `movsx edx, dx` upward because its else arm's index
+// takes EDX and its base EAX, where this order (and retail) has index ECX, base EDX. On node-first: the scale in a
+// local read before the marker 101; the node index through a local 101 (alone 9); the marker address by byte offset
+// 101; a reference to the else arm's position 101; a forceinline marker getter in the matrix arm, the else arm or both
+// 101/101/101 (alone 9/9/9); a matrix-arm base local 101 (alone 9). Diagnostic only: `> 0.0f` for the scale test (no
+// lahf) 193, alone 192: the matrix-arm base still avoids EAX, so the flags read does not explain it.
+// Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
+// the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
+// base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2077,6 +2086,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 478: complete native zone-entry/cluster/both/const-both values with
 // cached/live zone selectors: 379/375/375/375 in both sets. Every producer
 // outlines; original complete zone helper, observations and body restored.
+// M328: Post-transform node rejection by OR/conditional/branch/default-result,
+// bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
+// body restored. Early color/query homes and frame 0x40/0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3199,6 +3211,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // matched caller but still regresses. Separate signed/bitwise tests on fields
 // or one native node word, cached/live: 94/109/105/113/94/109/96/115.
 // Original complete body restored; frame and system/color/definition homes remain.
+// M328: Post-transform inverse node admission, complement/OR in
+// bool/byte/short/long: 111/111/107/108/111/111/107/108. All regress; complete original
+// body restored. Frame, system/successor/color homes and cached mode remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

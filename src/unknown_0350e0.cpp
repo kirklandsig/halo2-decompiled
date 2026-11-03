@@ -111,6 +111,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // setters and matrix/trig role names 422/422/478/478/422/422/478/478; original-graph trig/vector/matrix
 // home names 356/356/356/356/356/356/356; complete names with row-local diagonal differences 356.
 // Original helpers/body restored; frame 0x98 versus 0x90 remains.
+// Round 490: Existing builder consumes caller-computed sine/cosine, pair ownership
+// call/first/second/both 355/355/358/357; with two-use real angles 368/368/357/370.
+// NOT kept: one-point lead below gate; hoisted one-use trig results require a match.
+// Original helper signature, both helpers and complete body restored.
 // M323: Component-loop producer with long/dword/short/word ordinal 356/356/715/715; the same with native running sum 356/356/732/732. Narrow loops reach frame 0x90 but lose native extent; original producer and body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
@@ -1691,6 +1695,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
 // result home remains.
 // Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
+// DL249: Complete scalar basis/direction/first-cross ownership, seven subsets, then
+// all with native result library initialization: 192/229/421/193/192/230/421/360.
+// One-point basis gains rejected; direction captures worsen the caller and move length
+// away. Original entire helper, result, switch, arithmetic and input observations restored.
 // F339: Whole local declaration orders ryxvp/rpxyv/rvpyx/yxrpv/pvyxr/xyrvp/
 // vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
 // 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
@@ -2094,6 +2102,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // All tie; complete original drawing objects, helper calls and body restored. Frame
 // 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
 // M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
+// M326: Complete left-cross/rotation/draw-position accumulations, subsets 1/2/4/3/5/6/7,
+// 178/174/177/174/178/174/174; all with earlier bare output declarations 174. NOT kept:
+// three-point gains above 30; frame/copy homes remain. Complete original body restored at 177.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2420,9 +2431,17 @@ real magnitude3d(vector3f const *v);
 // P275: Complete current/target/both input snapshots 246/288/266; same native vectors
 // normalized in place 245/287/265; both inputs captured at entry 272; both with early
 // normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
+// J241: Complete rotation output in first/second/rotation/current workspaces 175/170/175/174;
+// uniform scalar row staging 170/170/170/174. Real/double absolute-value stages 170/196; NOT
+// kept: one-use call-result forms do not match. Scoped precision diagnostic 547 at 1287
+// bytes, excluded from real trials and reverted. Original whole body, expressions and helper
+// contracts restored; raw-length and promoted-dot homes remain.
 // P277: Existing scale helper at current/target/both/output/current+output/target+output/all
 // boundaries 191/170/190/170/191/170/190; double-factor helper at all boundaries 224.
 // Original body restored; raw-length/dot/angle homes remain with retail frame 0x38.
+// AC492: On the retained fallback loop/frame, explicit current/target clamp producers
+// 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
+// Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3222,6 +3241,12 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
 // fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
 // 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
+// DL249: Existing final property getter with real+byte/real/byte/no receiver defaults
+// 176/176/176/176; guarded-first 204; both property boundaries with both/real/byte defaults
+// 206/206/206. Final getter plus alpha-tested final result 168 plain, 773/773 bytes: NOT kept
+// (re-tests result after the fade, as J240's 168; retail clears dl after one comiss at 0x3dace).
+// Both getters on that result graph 197; ordinary kind 143, 764 bytes: NOT kept because
+// length moves away from the verified retail-length body. Inherited kind qualification restored.
 // J240: Pure ordinal long/dword/word 177/177/203; with final logical result 168/168/192; shared point
 // 168/192. Minimal original lookups plus only the logical result 168 (retail length 773) NOT kept:
 // `result = result && !(alpha <= 0.0f)` re-tests result, which retail does not (0x3dace: one comiss,
@@ -3515,12 +3540,16 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
         y = matrix->scale * y;
         z = matrix->scale * z;
     }
-    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x + origin->x;
-    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y + origin->y;
-    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
+    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x;
+    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+    vector3f_add((vector3f const *)corner, (vector3f const *)origin, (vector3f *)corner);
+    corner->z += 0.001f;
 }
 
-// score 394 (was 394): the four corners are written out (retail has four copies of the scale
+// score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
+// 1820 bytes (retail 1819), first difference the frame size at +0x2.
+// Earlier 394: the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3548,6 +3577,17 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
 // names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
 // frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
+// F341: Native scaled-input point 523/525; uniform rotation subtotals 412/404;
+// uniform translated subtotals 412/390 (without/with native colour). Existing
+// complete origin sum 231 (kept), with native colour 225 (gain 6, under the bar).
+// On that producer, three-use negative radius 398, with native colour 379 (frame 0xe0
+// and retail length 1819, but worse than 231; not kept). Full scalar role names 231/225.
+// Offset inputs stay staged before stores; the sum accepts its first input in
+// place. Corner, offset and origin are distinct at all four calls. Shared helpers unchanged.
+// P283: Complete final-coordinate scalar staging with direct stores, native color and
+// three-use negative-radius subsets: 388/388/407/389; with the existing point setter:
+// 412/403/417/409. All regress; original helper, full body and alias-safe input capture
+// restored. Frame/radius/scaled-coordinate homes remain; no one-use scalar staging retained.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -4539,6 +4579,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Y538: Existing selected-bit admission with completed enabled result before depth in
 // byte/bool/short/long 257/235/240/212; after depth 234/262/198/239. Every shared user
 // regresses. Original helper/caller restored; late pass bytes, dead mode loads and clear convention remain.
+// F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
+// then gate versus complete admission: 218/218/228/231/210/210/242/247.
+// Every shared user regresses; original helper and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

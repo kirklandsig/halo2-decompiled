@@ -316,8 +316,15 @@ static inline void quaternion_transform_vector(
 // code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
 // the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
 // existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
+// N329: Actual half-angle outputs own cosine/sine/both-sequential/both-early radicands: paired storage
+// 253/253/249/289, independent halves 270/270/258/258. All regress; original root expressions, paired
+// storage, helper and full body restored; frame and spill overlap remain.
 // DH304: Cosine/zero/default-quaternion/common-scalar construction results, paired/independent halves, 277/283/244/300/246/308/243/241.
 // NOT kept: moved stores/observations or common one-use scalar without a match. Original construction restored; quaternion/spill homes remain.
+// N333: Plain indexed quaternion dot reductions, long/dword/short/word ordinals
+// 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
+// Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
+// NOT kept: indexed reductions regress and fail the exact-match gate.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1020,6 +1027,10 @@ void function_143250(
 // give 1952/1805/1778/1767/1779/1786/1859/2210. Exact scalar sequence and all 49
 // matrix values retained in every trial; original publication graph and body restored.
 // Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
+// N333: Single-consumer double roots in bands two/three and double product ownership,
+// families 1..7: 1767/1767/1767/1767/1767/1767/1766; complete immutable reused root 1766.
+// All 84 typed outputs/call phases agree; original graph restored; frame/admission/homes remain.
+// NOT kept: precision-sensitive compaction remained unmatched and tied or regressed.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

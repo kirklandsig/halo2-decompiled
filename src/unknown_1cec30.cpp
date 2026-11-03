@@ -1023,6 +1023,9 @@ void function_1d1540(s_havok_component *component);
 // N324: Native slot retained through common setter with fresh post-reset slot lookup; bool/byte/word/dword
 // reset results, aggregate then aligned set copy 81/81/85/87/56/56/55/54. NOT kept: aligned forms lose
 // matched 0x1d1b60 at 59; reset-result form remains unmatched. Frame and incoming argument transport remain.
+// P281: Whole rotation/translation or SIMD-member aggregate initialization, inverse entry scope and
+// actual slot before inversion: 106/90/106/90/101/85/101/85. All regress; early rotation/translation
+// forms also lose the matched caller at 1. Original constructor, slot timing and complete body restored.
 // M322: Slot-preserving nested/early/named reset guards with constructor
 // 65/65/133; assignment 90/90/157; aligned setter nested/early 90/90.
 // Assignment recovers SIMD/ECX index but frame 0x84 and stacked component
@@ -1030,6 +1033,12 @@ void function_1d1540(s_havok_component *component);
 // N328: Actual twice-used rigid-body reference, direct/getter acquisition and fixed-first/ordinary-return
 // admission, original then aligned input copy: 85/85/85/85/88/88/88/88. Original slot graph restored;
 // frame and incoming component/index remain.
+// Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
+// then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
+// original flag observation, native slot, fresh refetch and complete body restored.
+// DH309: Actual whole-array data receiver as pointer/field reference, original/aligned copy,
+// with inverse at use/entry: 86/86/85/85/87/87/88/88. Original element receiver restored;
+// frame, input copy and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2375,6 +2384,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // normal/fallback/velocity copy subsets 1..7 all 91. Original copy, normalizer, helper and body
 // restored; early velocity j/k and property-zero residence remain.
 // DL245: Aligned frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. Native velocity scalar sums with original/direct defaults and setter/aggregate publication 258/233/342/249; with property value constructed first 259/247/351/249. All regress and disturb the previously matching prefix. Original accumulators, normalizer, property helper and complete body restored.
+// DL248 (reduced): Shared completed normalization result, complete scale products and private complete
+// root result, masks 1/2/3/4/5/6/7 [91, 91, 91, 91, 91, 91, 91]; all with shared squared magnitude 91.
+// Shared native input captures, mutable/const and completed/staged graphs [223, 223, 223, 223]. Aligned
+// frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. NOT
+// kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
+// length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
+// and shared-helper body is restored. Original executable source restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

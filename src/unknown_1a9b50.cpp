@@ -548,6 +548,9 @@ extern point2f *g_468778;
 // Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
 // primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
 // early actor/settings/prop carriers and prediction homes remain.
+// AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
+// seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
+// guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -860,6 +863,9 @@ static __forceinline long real_to_long(real value);
 // rejection and magnitude/query homes remain.
 // Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
 // Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// DL249: Coherent original-provider inline contracts, seven subsets, then all with an
+// earlier uninitialized result declaration: 466/440/507/382/466/440/507/507.
+// The isolated third contract ties; others lose matched callers. All declarations and bodies restored.
 // AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
 // branch-owned complement 437/437/448/453. Original result and whole body restored;
 // early rejection placement and magnitude/query homes remain.
@@ -867,6 +873,9 @@ static __forceinline long real_to_long(real value);
 // 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
 // readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
 // remain.
+// AC492: Complementary internal eligibility, test-produced bool/byte/short/long
+// 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
+// eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

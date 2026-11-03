@@ -890,6 +890,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // F336: Positive case-2/case-1 remembered-state nesting and normalized publication
 // ownership, seven subsets, then positive result/presence with nested optional outputs:
 // 341/341/341/341/341/341/341/341 (fast control 341; full 257). Complete original body restored.
+// M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
+// 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
+// NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
