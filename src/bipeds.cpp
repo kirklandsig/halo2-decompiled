@@ -3098,6 +3098,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then all references: reduced 607/683/690/630/598/687/638/638 (control 600).
 // NOT kept: 598 gains only two; first +7 is entry scheduling; original entire
 // body restored. Full 561 retained; flight-result/scalar and vector homes remain.
+// M342: Both native double trig results at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
+// then all const: fast 623/605/601/602/623/623/602/602 (control 600, full 561). NOT kept:
+// no exact native-result lifetime graph. Original complete body restored; flight/result/vector homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -4178,6 +4181,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // on the indexed-dot graph 145/224/211/145; with a separate magnitude result
 // 137/224/228/137. NOT kept: 137 uses a one-use call-result local without a
 // match. Original body/helper restored; normalization SIMD and coefficient homes remain.
+// M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
+// consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
+// output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
