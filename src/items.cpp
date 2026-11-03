@@ -1241,6 +1241,9 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// N352: Actual item/typed-tag/external-hit-header bindings, families 1..7 and
+// complete read-only views: 813 each. NOT kept: one-use/combined record forms
+// remain unmatched; original body/helpers restored, frame stays 0x154/0x12c.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1680,6 +1683,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // B395: Captured-spin logical OR on paired point setters, result/spin-first with
 // bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
 // regress; original bitwise join, two-use spin value, helper and complete body restored.
+// N352: Eight return/spin lexical home pairs on the paired-setter graph: 140 each.
+// NOT kept: return byte stays +0xe/+0xf and release/event homes remain; original
+// names, declaration sites, helper, paired setters and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -1498,6 +1498,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
 // depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
 // with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
+// N352: Actual unit/control/state record-reference families 1..7 and complete
+// read-only bindings: 164 each. NOT kept: pool/state/SETLE/result homes and
+// byte normalization remain; original receivers, scalar argument read and body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1742,6 +1745,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// N352: Actual unit/control/state record-reference families 1..7 and complete
+// read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
+// with 424 code differences; original pointer receivers and full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {

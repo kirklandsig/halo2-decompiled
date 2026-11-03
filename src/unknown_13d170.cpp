@@ -389,6 +389,9 @@ struct s_block_candidate
 // N350: Final-link successor handle captured for all consumers, long/const long/
 // dword/const dword, pointer/reference predecessor element: 347 each. NOT kept:
 // unchanged frame/page-ring homes; original pooled observations and body restored.
+// N352: Post-callback allocator-clock long/dword, occupied/segment/admitted/entry
+// declarations: 347 each. NOT kept: one-use clock forms remain unmatched and retain
+// frame 0x1050/0x1054 and page/ring homes; complete original body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
