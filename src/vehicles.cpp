@@ -3005,6 +3005,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // N322: Scalar control/upright-target/upright-error storage, subsets 1/2/4/3/5/6/7:
 // 1095/1076/1076/1061/1053/1069/1061; all plus scalar lateral storage 1077.
 // Control/error storage reaches retail length with frame 0x84 but regresses; original body restored.
+// F344: Completed speed/acceleration-policy/yaw-policy scopes, seven nonempty
+// subsets, and completed airborne target/axis/error scope: 1052 each. Frame stays
+// 0x80 versus 0x74; original complete body restored. Extra scope-only probe 1052
+// excluded from eight-trial credit because it closes no additional local lifetime.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3562,6 +3566,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 370: Complete forward parts with cosine-up/sine-axis/outer-trig declaration
 // subsets 1/2/4/3/5/6/7, then all with native fallback copy: 145/156/131/155/145/156/155/159.
 // Five-point best rejected; original body restored. Projection/cross ranks and angle/trig homes remain.
+// F344: Native final-left fields as projection/flip-axis workspaces, direct
+// projection/axis/both 220/207/288; field receivers 215/219/291; mixed receivers
+// 288/287. NOT kept: output-storage graph adds nonretail stores and length.
+// Original complete body, actual helper contracts and real precision restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
