@@ -214,6 +214,7 @@ struct s_flag_word_bits
 // tail_object_get (100), flag test before the ticks (108), the float in a local first (same), `seconds * field` or
 // `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
 // table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
+// Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -263,6 +264,7 @@ void function_151ea0(long player_index, long object_index)
 // (67, the register assignment changes from the prologue on), `return result;` there (67), `!(a < b)` test first
 // (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
 // copy label (67), copy label in the same arm with `return result` (69).
+// Permuter (25 min on r654, about 1030 variants): nothing below 1.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -415,6 +417,8 @@ struct s_tail_player_identifier
 // g_4e0350/g_4e6948 at different points. Tried: identifier hoisted/late (67), index form
 // players[i] (66-67), do-while (31), memcmp() == 0 without the result variable (80), != 0 (80),
 // scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
+// Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
+// from the indexed form).
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1183,6 +1187,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
 // inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
+// Permuter (25 min on r654): best 12, only with a volatile read of the unit index; not kept.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1236,6 +1241,8 @@ void function_150820(dword *bits, bool local_only)
 // (43), result declared first (43), `primary ? 0 : 1` / `primary == 0` (43), `primary ^ 1` (75), bool hand (89),
 // hand after the unit lookup (70), unit_index cached in a local (43), modes declared at the top (43), the weapon and
 // mode tests nested (47).
+// Permuter (25 min on r654): best 16, only with a volatile read of the unit index and the held slot read as a
+// char (a behaviour change); not kept.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1742,6 +1749,7 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // result preset before the test (72, result lands in ebx), single success variable (109),
 // early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
 // not natural source, so it is not used.
+// Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {
