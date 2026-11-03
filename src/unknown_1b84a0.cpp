@@ -534,6 +534,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 546: Complete geometry/reference snapshot/reference output library-copy
 // subsets 1/2/4/3/5/6/7: 49/49/49/49/49/49/49; all alias-safe 251.
 // Original record transfers and complete body restored; entry/result and tail roles remain.
+// Round 76 (m3 lane 16, fast with the file): success declared before available 49 (same code); the search
+// call's other-actor/flag outputs at function scope 96; the tail's found/not-found arms swapped 110 (1028
+// bytes); `bool result = true;` with `return false` for the missing prop 287 (1053 bytes, folds); `return
+// result` for the missing prop 49 (same code). The tail's actor index/reference/slot stay EBX/ESI/EDI.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -380,6 +380,12 @@ public:
 // M327: Separate allocation receivers with failure return / success-owned rejection / two-use allocation
 // admission / one exit: 54/54/102/54 with original for, 54/54/102/54 with plain while.
 // Original full body restored; child preheader, pool/NONE ranks, second allocation test and salted link remain.
+// Round 76 (m3 lane 16, fast with 0x175270/0x247470/0x1751d0/0x2483f0/0x248cc0/0x248d90): the emitter's
+// salt typed short and the link handle built in place from it 176 (716 bytes); that with `head = child_index`
+// before the break test 248 (723 bytes: the location becomes the register argument in EBX and the flag goes
+// to the stack, 0x175270 100; retail has the flag in AL kept in BL and the location stacked in EDI); on it the
+// location's first/last links through two field pointers 248, the element taken from the allocation result
+// 248; data_datum_index on `head & 0xffff` 155 (698 bytes).
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

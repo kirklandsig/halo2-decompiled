@@ -652,6 +652,9 @@ done:
 // availability and absence, 68/68/68/68/68/68/68/68. Exact-only post-test flags
 // restored with the complete original switch/body; early EDI save, tag/selector
 // schedule and scratch-address caching remain.
+// Round 76 (m3 lane 16, fast; parse_variant stays matched), on the kept form: name_id declared at the function
+// top 32, at the block top 32 (same code); const variant and const tag 32; the tag declared with name_id and
+// assigned after the variant 32; the variant getter called in the switch with the tag read first 44.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
