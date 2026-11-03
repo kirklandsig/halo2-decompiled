@@ -200,6 +200,10 @@ PRIVATE __forceinline long function_2b2ed6(XUID const *xuid, bool *active)
 // Original complete body restored; child/text/layout homes and suffix address rederivation remain.
 // Round 301: complete available/disabled/muted query-result arms, subsets 1-7,
 // 633/617/625/554/639/633/637; all with reused valid-player predicate 642. Original body restored.
+// Round 207 (lane 3, fast): the >= 10 invitation icon as one call with `received ? 28 : 17` 358 (2328 bytes);
+// the > 1 icon as one call with `invitations + (received ? 18 : 7)` 383 (2357 bytes); the status visibility
+// as `(empty || self) ? false : true` 330 (same code); a short invitation count 339 (2338 bytes); voice
+// availability as `player != NONE && ...` 631 (2325 bytes). Homes still BLOCKED-BY 0x230134 as noted.
 // @retail 0x2b2ed4
 void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     c_class_1a2c81 *item, s_friend *datum)

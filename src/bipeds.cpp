@@ -974,6 +974,8 @@ extern long *g_51e9cc;
 // M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
 // 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
 // Nonmatching single-consumer truth carriers restored.
+// F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
+// 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2345,6 +2347,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M338: Complete validated-query result in bool/byte/short/long, positive/complementary channels:
 // 63/63/63/63/63/63/63/63. Original body restored; extra EBP, body transport and flag schedules remain.
 // Nonmatching single-consumer query results restored.
+// F355: Condition-declared signed settling count in char/short/long/read-only-long, original/entry query output:
+// 82/84/63/63/82/84/63/63. NOT kept: no gain; original body restored.
 // N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
 // validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
@@ -2796,6 +2800,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
 // 530 each. Original declarations, component producers and entire body restored;
 // frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
+// B395: One actual result exit, byte/signed-byte/short/word accumulator, case-one true
+// at completion/admission: 539/539/539/539/523/522/523/522. NOT kept: 522 reaches the
+// gain bar but uses EAX input/ret instead of native stack input/ret 4 and a word result
+// conversion. Original result graph, all input observations and complete body restored.
 // AC504: Push-setting receiver at random/centroid/average/push boundaries,
 // mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
 // give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
@@ -4187,6 +4195,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
 // consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
 // output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
+// Y559: Full unrounded CRT cosine/sine/both double results, original then
+// producer declarations; float trig pair with original/producer declarations:
+// 223/182/276/223/182/276/191/191. NOT kept: no byte match; normalization SIMD,
+// native cosine/sine and rotation/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4686,11 +4698,17 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
 // actual admission result 83. NOT kept: six-point criterion gain is below eight; all
 // executable forms restored. Native support/result byte homes and early success store remain.
+// N346: Independent state-criterion argument in bool/byte/short/long, mutable/const,
+// 144/144/144/144/146/146/146/146. NOT kept: one-use argument producers remain unmatched;
+// original support/result lifetimes and complete body restored. Native byte homes remain.
 // Y557: State criterion assigned to the returned result within the existing
 // call argument, with success at actor/support/velocity/entry boundaries:
 // OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
 // NOT kept: the six-point best is below eight and an embedded assignment
 // requires byte equality. Original result/support lifetimes and full body restored.
+// B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
+// 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
+// and native support/result homes remain. Original Boolean result and complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

@@ -302,6 +302,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // search as a loop with `break` 1001; the override target filled by index after `target_count++` 886 (3327 bytes).
 // Retail keeps the target count in memory at +0x88 (re-read in the attenuation loop) and forms each new target and choice
 // address from the incremented count. Body restored.
+// M3 lane 4 r161 (fast): query count read directly with a long choice count and `&choices[choice_count++]`
+// as a choice pointer 960 (3308 B; the pointer becomes an induction variable); with the count incremented
+// first and the pointer from `choice_count - 1` 953; one function-scope fade-definition pointer for both
+// loops 959 (retail reads the global again); the override's suppression gain hoisted out of its loop 962
+// (retail calls it per target); the duplicate scan tested `!duplicate` first 917 (3327 B).
 // P295: Late second-limiter bound with original/gain/fade/both/query/inactive/all macros,
 // then the bound before listener publication: 866/866/865/865/866/866/870/870. NOT kept:
 // one-point gain only; complete macro forms grow to 3333/3327. Original body/helpers restored.

@@ -1416,6 +1416,10 @@ struct s_looping_detail_request
 // B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
 // with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
 // original completion and full body restored; first-player call and detail/offset homes remain.
+// M343: One admitted-request graph from the reused attached-source outcome, bool/byte/short/long,
+// with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
+// complete body restored; query expansion and detail/offset homes remain.
+// NOT kept: unmatched admission outcomes; every form regresses.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1798,6 +1802,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // P298: Detail-query acceptance in bool/byte/short/long, complete short-circuit results
 // 305/305/305/305; query-failure completion 442/442/444/443. Exact-only carriers restored;
 // native frame and playback/NONE/range/request homes remain.
+// M343: Canonical inactive-range predicate bool/byte/short/long with original request
+// 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
+// in EDI and no predicate form matches. Original mask, request and full body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2459,6 +2466,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
 // renamed to sort after maximum/minimum 615 (no home moves); inside the availability block 596 at 2518 bytes; with
 // distance declared before maximum 596; after the definition lookup 602.
+// M343: Complete pending-valued return graph, bool/byte/short/long direct initial state test
+// 668/668/799/793; default-true state-test counterparts 755/755/800/794.
+// All regress; original completion polarity, sole exit and complete body restored.
+// NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

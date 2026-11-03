@@ -97,7 +97,7 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 		{
 			s_pathfinding_node const *sector = &pathfinding->nodes[next];
 
-			result->blocked = !(sector->flags & 1) || ((sector->flags & 2) && function_1fa6b0(sector, pathfinding));
+			result->blocked = !(sector->flags & 1) || ((sector->flags & 2) && function_1fa6b0(pathfinding, sector));
 		}
 		result->sector_index = sector_index;
 		result->edge_index = edge_index;
