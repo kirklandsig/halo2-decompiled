@@ -538,6 +538,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the axis draw 121; the projection as `(1 - cosine) * dot3f(..)` 117; sine and cosine declared separately 117; `cross`
 // declared ahead of the trig values 117; the frame-count store as a plain `g_55e710 = g_4ba034;` 207 (886 bytes,
 // 0x118140 0 -> 53: the reload after the call is needed).
+// N343: Initial definition record/tag-handle/tag-table receiver families, seven subsets then
+// table-first, 117/117/117/117/117/117/117/117. Original acquisition and full body restored;
+// frame, seed/time and direction/cross homes remain. NOT kept: unmatched one-use receivers.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
