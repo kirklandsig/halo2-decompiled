@@ -289,6 +289,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P285: Existing shared used-mask/runtime-word/fixed-word flag helpers, subsets 1..7,
 // then complete helpers with CRT bit-vector initialization: 917/876/927/926/931/928/928/928.
 // All original helpers, direct flag operations, counts and complete body restored.
+// AC502: Shared pin macro at range/blend/active fade/active gain/inactive fade/inactive gain,
+// then all body/all logarithmic clamps: 866/866/865/865/862/866/853/853. NOT kept:
+// compound-only gain misses the native active-bound reload/lifetime. Original body/helpers restored.
 // F351: Native 64-bit used-vector word/byte/wide storage 867/874/886;
 // dword/word/byte/wide start after collection 880/866/871/886; word CRT zero 871.
 // NOT kept: no gain with retail storage/frame evidence. Original mask, lifetimes and complete body restored.

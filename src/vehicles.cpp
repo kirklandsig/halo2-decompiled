@@ -2808,6 +2808,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M333: Actual bound/reciprocal, directional-mass and projected-speed/force lexical
 // homes, seven subsets: 692 each; all with independent relative output 699. Frames
 // remain 0xd0/0x104 versus 0xfc; original full body and all producers restored.
+// Round 555: Existing squared-length/dot/inline-normalizer/called-normalizer
+// producers, original then independent relative output: 692/692/692/739/699/699/699/731.
+// NOT kept: no byte match; changed normalization grouping/precision is exact-only.
+// Original whole body, normalization and output graph restored.
 // F350: Native definition control/linear/angular field domains, seven subsets and complete
 // immutable receiver, 692 each. Existing staged cross products for side/bank/current/desired
 // axes, side-bank/matrix pairs/all/all with independent relative output:
@@ -3102,6 +3106,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // N335: Native inverse-scale/paired damping/final mass loops, subsets 1/2/4/3/5/6/7:
 // 1080/1068/1091/1080/1086/1102/1088; complete unsigned loops 1088. All regress with frame 0x80.
 // Original body restored; velocity and force homes remain.
+// Round 555: Existing setters for acceleration, both lateral axes and boost
+// direction, seven subsets; all plus yaw update: 1052/1060/1053/1060/1053/1060/1060/1060.
+// Original complete body restored; frame/force/velocity ownership still differs.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

@@ -1375,6 +1375,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // retail, but player EDI and total ESI, 0x54990 5), as a ternary 95 (354 bytes, 0x54990 5). All restored.
 // Round 198 (lane 3, fast with 0x54990): by-value size helper `count * (mask ? 13 : 11) + 2`, named entry size, multiplier
 // first, staged add, named count, named count and size 94 each (same code; `imul ecx, [mem]` and `lea` remain).
+// Round 204 (fast with 0x54990): a hoisted `long size = getter == player ? 13 : 11` 165 (294 bytes, 0x54990 13);
+// early `return 0` for the failed entry test 109; a named per-channel contribution 94 (same code); the size as
+// `11 + 2 * flag` 150 (309 bytes, 0x54990 13); the counter declared at the block top 94 (same code). Restored.
 // Round 59 (m3 lane 11, fast with 0x54990/0x56160/0x56380): the 2 added after the loop (`total += 2`) 99; `total += 2` in
 // place of `total = 2` 94 (same code); `11 + (is_unknown00 ? sizeof(word) : 0)` 130 (329 bytes, 0x54990 13); a named
 // entry size from the getter compare in place of the flag 165 (294 bytes, 0x54990 13); the product written in each ternary
@@ -1732,6 +1735,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // 0x53a20 with one more test ahead of the call (64 at 229 bytes with a size test, 67 at 224 with `player < 16`; 2/3/5 tests
 // 79/92/118); nested ifs, `!(a || b)` and a named first test stay inlined 84; a shared `a || b` inline 138 (386 bytes), 0x54890
 // 88, 0x53a20 92 (neither query inlined inside it).
+// Round 204 (fast): the active-mask test as plain availability reads 85 (same code); muted declared before the
+// local/active test 118; the existing voice_test_unknownF0 for the inner F0 test 136 (387 bytes, called); an early
+// return on !enabled 85 (same code); mask from remote, masked in the availability arm 130 (400 bytes). Restored.
 // Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
 // `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).

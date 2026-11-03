@@ -1051,6 +1051,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // B384: Current rotation-helper input with shared sample/rotation workspace, native/CRT/forward/backward
 // copies; independent CRT/forward/backward/setter copies: 176/176/193/189/114/188/188/205. Original helper input,
 // separate sample and rotated values and complete body restored; rotation product allocation remains.
+// AC502: Three nested animation admissions, four independent failure-prefix lengths and
+// complete admission with small-angle failure: 114 each. Original guard, shared rotation call,
+// vector storage and complete body restored; rotation multiplicands and exit scheduling remain.
 // F351: Exhaustive nested/conjunction moved-away results, bool/byte/short/long
 // 114/114/119/118/114/114/119/118. NOT kept: no match for result/domain forms;
 // original rotation graph and complete body restored; j/k products and output scheduling remain.

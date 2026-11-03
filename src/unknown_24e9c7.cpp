@@ -302,6 +302,9 @@ struct s_24e9c7_bounds
 // read before the across products 125 (same code); first_bitmap and bounds declared before the group 125;
 // back as `half_width * -across` products 154 (753 B); upper vector before the half width 123 (gain
 // under four, not kept). Original body restored.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
