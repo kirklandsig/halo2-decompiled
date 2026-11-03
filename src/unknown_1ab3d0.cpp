@@ -158,6 +158,9 @@ static __forceinline long real_to_long(real value);
 // Round 30 (lane 18, fast): result declared before the actor 2; const prop state 2; const prop 2; the
 // k clear through the direction pointer 3; the facing's components through n[] 2. 0x1ac610's forward
 // product shows the same last-term load order, and swapping its source operands changes nothing (29).
+// Round 97 (fast): existing vector3f_assign 2; void helper with output reference 2; vector temporary 2;
+// three-real array temporary 2; const aggregate temporary 2; named output result 6; state/slot declarations
+// swapped 2; const actor view 2. Original two-difference body restored.
 // @retail 0x1ab4b0
 bool __stdcall function_1ab4b0(long actor_index, s_slot *slot)
 {

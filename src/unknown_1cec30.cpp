@@ -1045,6 +1045,10 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// Round 550: Sole-return done exit with constructor/assignment/set/memcpy/memmove
+// copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
+// NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,
+// two-use slot and fresh post-reset lookup restored. Frame and component/index transport remain.
 // F350: Native transform/reset word masks 89/90/94; shifted Boolean word
 // forms 65/65/65; direct bitfields 94; both masks with the existing aligned
 // copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
@@ -2402,6 +2406,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
 // length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
 // and shared-helper body is restored. Original executable source restored.
+// DL251: Existing normalize/scale declaration boundaries and private-property inline; ordinary
+// annotations tie, automatic annotations lose matched users and are NOT kept:
+// 91/91/91/91/247/247/366/430.
+// Original complete source restored; no eligible gain.
+// B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
+// then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
+// denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

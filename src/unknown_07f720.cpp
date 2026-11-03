@@ -6,7 +6,7 @@
 #include "unknown_0259d0.h"
 #include "unknown_07f720.h"
 
-color3f *function_1a06a0(long index, color3f *color);
+color3f function_1a06a0(long index);
 
 /* the default team colour */
 color3f const *g_468734;
@@ -26,7 +26,7 @@ struct s_multiplayer_globals
 };
 
 // @retail 0x7f720
-color3f *function_7f720(color3f *color, short team)
+color3f function_7f720(short team)
 {
 	short team_index = (short)team;
 	long tag_index = g_4e034c->index;
@@ -42,22 +42,16 @@ color3f *function_7f720(color3f *color, short team)
 		}
 	}
 
-	*color = result;
-	return color;
+	return result;
 }
 
 // @retail 0x7f790
 void function_7f790(short team_index, bool use_default, s_player_appearance const *appearance, color3f *colors)
 {
-	color3f color;
-
-	colors[0] = *function_1a06a0(appearance->colors[0], &color);
-	color3f color1 = *function_1a06a0(appearance->colors[1], &color);
-	colors[1] = color1;
-	color3f color2 = *function_1a06a0(appearance->colors[2], &color);
-	colors[2] = color2;
-	color3f color3 = *function_1a06a0(appearance->colors[3], &color);
-	colors[3] = color3;
+	colors[0] = function_1a06a0(appearance->colors[0]);
+	colors[1] = function_1a06a0(appearance->colors[1]);
+	colors[2] = function_1a06a0(appearance->colors[2]);
+	colors[3] = function_1a06a0(appearance->colors[3]);
 
 	if (use_default)
 	{
@@ -69,8 +63,8 @@ void function_7f790(short team_index, bool use_default, s_player_appearance cons
 		long team = *(volatile long *)&team_index;
 		if ((short)team != NONE)
 		{
-			colors[0] = *function_7f720(&color, team);
-			colors[1] = *function_1a06a0(appearance->colors[0], &color);
+			colors[0] = function_7f720(team);
+			colors[1] = function_1a06a0(appearance->colors[0]);
 		}
 	}
 }

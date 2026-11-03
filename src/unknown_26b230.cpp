@@ -2007,6 +2007,10 @@ void function_269250(long clump_index, long actor_index);
 // excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
 // exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
 // remain.
+// Round 63 (m3 lane 1, fast; this body 89 fast): in-arm compare 126 (480, retail's fcompi); with the datum index
+// 128; in-arm with `best < score` 126, score declared per actor 126, team test as `continue` 126.
+// Also round 63 (in-arm form): best/selected declared before the activity snapshot 126; best before selected 126;
+// the actor walk as a for loop 126.
 // F350: Native created-center memcpy/memmove, actual output pointer/reference,
 // original then shared selected/created result: 87/125/87/125/87/125/87/125.
 // memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
@@ -2278,6 +2282,10 @@ void function_269250(long clump_index, long actor_index)
 // original whole-group result, categories, deletion, node and tracking walks restored.
 // DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
 // Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
+// Round 63 (m3 lane 1, fast): the 3 form re-built 3 (pool roles only); node head through prop_get(props.index)
+// 89 (same code), on the 3 form 3; head from the current prop 208 (709); nodes through prop_ref_get 180 (759).
+// Also round 63: unit initialised once from `((1 << type) & 3) != 0` 211; unit declared before the group flag
+// 87 (only the two clears swap; slots stay), on the 3 form 5.
 // F350: Native final tracking/state receiver with same/other-object cleanup
 // predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
 // One-use predicates are exact-only and restored; original categories, mutation
