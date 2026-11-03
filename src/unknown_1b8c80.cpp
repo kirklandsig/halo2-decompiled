@@ -1545,6 +1545,10 @@ void function_1f86a0(long actor_index);
 // Y561: Read-only actor/unit/loop-candidate/all receiver contracts,
 // each through member/original payload, eight at 134. Original mutable
 // receivers and payload restored; mask spill and EBX entry remain.
+// AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
+// with indexed native member payload first and original payload: eight at 134.
+// NOT kept: alias contracts do not recover the mask spill or EBX entry; original
+// callback definition/declaration, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "slot_handler.h"
 #include "unknown_11cc90.h"
+#include "normalize3d.h"
 #include <math.h>
 
 struct s_29ab90
@@ -54,12 +55,6 @@ PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
 PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 {
 	return arg_1 > arg_0 ? arg_1 : arg_0 > arg_2 ? arg_2 : arg_0;
-}
-PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, vector3f *arg_2)
-{
-	arg_2->i = arg_0->i * arg_1;
-	arg_2->j = arg_0->j * arg_1;
-	arg_2->k = arg_0->k * arg_1;
 }
 
 // score 345 (was 345): frame 0x58 versus 0x64 (query output vector shares the magnitude copy slot) and magnitude/vector/query homes remain; actor EAX and stack input now agree.
@@ -312,6 +307,11 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
 // code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
 // magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
+// M3 lane 9 r83 (fast): the private v*s scale copy replaced by the existing vector3f_scale 345 (identical code, kept);
+// the magnitude helper zeroing its own root in place 421 (1854 bytes); the planar steps through normalize2d_fast,
+// re-measured, 369 (1868); the blend rows with the weight complement written first 345 (same code); the weight
+// field read at each use (retail reads +0x64 twice) 345 (1865 bytes), plus the history read in place through a
+// pointer 361 (1845). Retail's blend computes the k row first and reads the history fields in place.
 // M3 lane 6 r142 (fast): local_5 by components and local_6 as the struct copy 493 (1913 bytes); local_6 copied from
 // local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
 // local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
@@ -342,14 +342,14 @@ void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	if (local_2)
 	{
 		if (!*(bool *)(local_0 + 0x5d0) || *arg_7)
-			function_29ab94(local_3, 2.0f, arg_2);
+			vector3f_scale(local_3, 2.0f, arg_2);
 		bool local_10;
 		bool local_11;
 		vector3f local_12;
 		if (function_1f9760(arg_0, arg_1, &local_7, local_9, &local_10, &local_11, &local_12))
 		{
 			*arg_7 = true;
-			function_29ab94(local_3, 2.0f, arg_2);
+			vector3f_scale(local_3, 2.0f, arg_2);
 		}
 		function_26c180(arg_0);
 		vector2f local_13 = { arg_2->i, arg_2->j };

@@ -1133,6 +1133,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // (315): the normal copied before the plane point 564. On 290: a plane3f pointer for n and d 543; plane point
 // declared at the cone arm's top 290; the point scaled by the shape's offset field 554; projection products
 // written point-first 290 (same code); the left vector through direction_normalize_c0840 290 (same code).
+// Round 82 (m3 lane 16, fast with 0xc1a80/0x141590/0x163db0/0x11f5f0/0x30bf0): the plane distance as dot(normal,
+// plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
+// `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
+// at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
 // Round 81 (m3 lane 9, fast): the first cross through the file's cross_product_c1a80 (operands swapped) 290 (same
 // code); both crosses through it 433 (2821 bytes); only the second 433; a one-caller cross with the i term written
 // `b->k * a->j` (diagnostic, removed) 290 (same code: the operands re-sort; retail's first cross differs only in

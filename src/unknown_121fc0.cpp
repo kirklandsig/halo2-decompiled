@@ -242,6 +242,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // token walk as the matched font_table_parse's for loop (token declared before it) 128; the next-token cursor
 // declared at the block top 128; both counters at the `if (!g_4e3b40)` block top 127; the token table cleared by
 // memset 257 (724 B). EBP is still saved at the token walk.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
