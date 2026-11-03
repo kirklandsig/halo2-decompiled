@@ -672,6 +672,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 377: Original-RNG packed header, combined/named initial mask and native category/shifted-bit
 // producers, eight forms 356/359/359/359/359/359/360/360. Original header publications, helper graph and
 // complete body restored; late EBP save and random/geometry/getter homes remain.
+// AC501: Read-only descriptor count/entry/terminal query declarations, masks 1/2/4/3/5/6/7,
+// then all with read-only descriptor receiver: 356/356/356/356/356/356/356/356. Original interface and
+// full body restored; late EBP save and random/blend/getter homes remain.
 // B385: Record link/time scalar copies through memcpy/memcpy, memmove/memcpy,
 // memcpy/memmove and memmove/memmove 356/448/383/450; each with the complete
 // trace-direction setter 356/448/383/450. Original complete body/includes restored;

@@ -331,6 +331,9 @@ static inline void quaternion_transform_vector(
 // N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
 // independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
 // paired halves and complete body restored; frame/quaternion/cross homes remain.
+// N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
+// with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
+// NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1053,6 +1056,11 @@ void function_143250(
 // 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
 // NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
 // original polynomial, conversion producers and complete body restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
+// N343: Real storage for both second-band roots, each third-band root, all third-band roots
+// and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
+// NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
