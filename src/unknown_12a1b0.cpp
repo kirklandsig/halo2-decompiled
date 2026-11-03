@@ -1423,6 +1423,10 @@ struct s_looping_detail_request
 // B406: Final output-mode completion, bool/byte/short/long positive 146/146/146/146;
 // complementary output-mode completion 145/145/145/145. Original carried AL result
 // and entire body restored; native first-player call and offset/detail homes remain.
+// B410: Native input-detail/pooled-sound/output-source lexical homes, seven subsets,
+// then the complete request/tag/player/camera/completion identities: 110 each.
+// Original names and whole body restored; first-player call expansion and native
+// detail/offset transport still differ.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

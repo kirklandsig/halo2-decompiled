@@ -169,6 +169,10 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // atan2-producer lifetimes 485/558/558/561; producer-only first/second/both 501/499/563;
 // complete rounded-angle graph with entry declarations 561. NOT kept: no exact match or gain;
 // original helper, full double inputs and complete body restored; frame/angle/snap homes remain.
+// B410: Existing clamp result-first branch/default/complete/lower-default/upper-default/
+// bound-predicate/lower-expression/upper-first results: 577/474/483/545/549/826/558/538.
+// NOT kept: neutral or nonretail result/compare shape and frame/length regressions.
+// Original six-use clamp, snap helper, complete body and alignment evidence restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

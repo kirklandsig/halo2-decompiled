@@ -661,6 +661,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B406: Retained actual fallback pointer with common test-produced byte/bool/short/long
 // status 635/640/593/602; conditional common success 643/648/614/613. All regress;
 // original fallback stores, graph/request homes, byte status and complete body restored.
+// B410: Actual fallback output-name results, long/dword scalar families with unconditional/
+// success-guarded publication 667/659/667/659; native record with aggregate/field publication
+// and both guards 665/679/647/665. NOT kept: one-use captures/native value copies and
+// nonretail publication/frame/extent; original outputs, shared request call and body restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
