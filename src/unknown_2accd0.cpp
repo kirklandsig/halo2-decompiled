@@ -833,6 +833,13 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 333: Shared successful header/body progress producer, dword/real numerator,
 // named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
 // Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
+// Round 61 (m3 lane 11, fast; 0x2adb10 102 throughout): no existing seek wrapper fits (grep of SetFilePointer callers). The body offset
+// in a local used three times 34 (same code); the signature's body size in a local 34 (same code); the body test as `!=` 161 (689 bytes). On
+// round 56's helper form (a new one-caller seek helper, not kept): `remaining` in both arms with `body_size > body_offset` 29; remaining with
+// one `if (body || size > remaining)` after the arms 166 (698 bytes). No existing helper gives the sums' fresh registers.
+// N340: Complete header/body extent snapshots, mutable/const individually and
+// together, then const total/denominator: 218/219/193/218/219/193/193/193.
+// NOT kept: unmatched extent observation/storage changes; original full body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1144,9 +1151,21 @@ struct s_signed_file_write_parameters
 // or clear-produced transfer pointer, eight nonoriginal pairs: 101/101/102/101/101/102/101/101.
 // NOT kept: one-point reductions and one-use call-result carriers without an exact match.
 // Original complete body restored; capacity EAX/EBX and extension buffer/offset homes remain.
+// J243: On the direct-header-return/live-seek graph, capacity-default minimum
+// clear/transfer/both/extension/clear+extension/transfer+extension/all: 95/101/96/229/226/230/227;
+// complete remaining-default producers 166. NOT kept: seven/one/six-point reductions are below the keep
+// bar; extension forms regress. Frame 0x18 agrees; capacity EAX-to-EBX staging and extension
+// buffer/offset homes remain. Original minima and complete body restored.
 // DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
 // callback inline metadata: 102/102/102/102/102/102/102/102.
 // Original complete source restored; no eligible gain.
+// Round 61 (m3 lane 11, fast; compile-only aligned in brackets, base 59 on the 940 form): retail's header success is not a direct return: its tail
+// `mov [esp+8], 0; mov eax, [esp+8]` after the pops is `result = 0;` reaching the threaded `if (result)`, and that form is retail's 940 bytes: 125 [59]. Retail's
+// setle/dec/and with the sum loaded fresh is the expression repeated (`x > 0 ? x : 0`, no offset copy): on the direct return 103, on `result = 0` 129 (944 bytes) [52].
+// A local for the direct arm's header-size position 115, with `result = 0` 129 [65], position then body then size [69]. Compile-only on `result = 0` plus the repeated
+// expression, no change [52]: the sum as body + (header - size) or header + body - size, a body-first file-size test, body-first size clamp, 96 declaration and clamp
+// combinations (other offset spellings 54-125), a stride local, a separate capacity local for the clear count, the clear count named, the clamp as a written ternary.
+// Left on it: capacity EAX/EBX in the header site, extend arm offset EBX / size EBP / buffer spilled and body-first sum.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

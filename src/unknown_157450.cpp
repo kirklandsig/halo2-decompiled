@@ -660,6 +660,15 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N331: Actual notification eligibility bool/byte/short/long on the saved-word graph,
 // original site 77/77/77/77; before bitmap stores 106/106/106/106. NOT kept: one-use
 // admission needs an exact match. Original body restored; shared old-mask reload remains.
+// Lane 14 r53 (fast): both old masks word, through the pointer 59 (aligned 30), the second read direct 131
+// (374 bytes), present not volatile 139, the OR uncast 59. Present not volatile on the word team mask, bit
+// from the local 72, the flag test ahead of the present update 59 (aligned 46), the compare's operands
+// swapped 63, a pointer to each mask 63. Fourteen declaration orders and widths (accumulators, iterator or
+// present first, the pointer or team mask ahead of the playing mask, unsigned short, short, long
+// accumulators) 63 each, the two tests swapped 104: declarations do not move present out of EDI. Getter
+// for the playing store 63, the index field in a local 63, the added mask at entry 140 (368 bytes) or
+// after the stores 65, the change test staged in a bool 110. The word team mask with the volatile keeps
+// retail's entry through +0x60 (77, aligned 19): the block reload into ECX remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4272,7 +4281,7 @@ void function_15fe20(long team_index, color3f *color);
 // mask alone is 87 (was 88). One-use locals are kept only with a match.
 // The remaining differences are register homes (the mode global in EDX against retail's EAX, the
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
-// score 88 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
+// score 42 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
@@ -4420,6 +4429,16 @@ void function_15fe20(long team_index, color3f *color);
 // publication 88/88/88; corresponding native member publication 562/534/563; both
 // with library/filled-output publication 88/564. Types, include and complete body restored;
 // returned-color capture, final NONE carrier and byte-shift residency remain.
+// Lane 14 r53 (fast unless noted): the team colour copies are by-value returns: 0x7f720 and 0x1a06a0 returning
+// color3f, every call updated, 46 (plain; 0x7f790, 0x23418a and 0x2419c0 keep their matches without their one-use
+// locals or struct); the best defaults ahead of the player-index store plus the rival text cleared before its
+// lookup 42. Before that, one-use colour locals rival/own/both 65/405/46 (aligned 45/73/26), with the shift 45 (25), a const
+// reference 88, memcpy 88. On the 42 form: byte shift count 41. Weapon section with the shift: default before the
+// test `NONE != unit_index` 72 (2688 B, aligned 19), slot compared with the weapon local 70 (aligned 13), through
+// `unit_index != weapon` 70, cast to short 72, a long slot index 74 (aligned 15), default in the selection as a
+// ternary or if/else 41 (2692 B, aligned 22), named absolute index 72, named absolute with the slot compare 70,
+// a headers pointer 72, a named byte offset 72. Left: -1 stays immediate where retail compares with ESI, the unit
+// index in EAX for retail's ECX, and the pool read ahead of the index.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -4491,8 +4510,7 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                     text[0] = 0;
                     function_159130(best_score, text);
                     unicode_string_copy(display->rival_text, text, 8);
-                    color3f color;
-                    display->rival_color = *function_7f720(&color, (short)best);
+                    display->rival_color = function_7f720((short)best);
                     display->rival_score = best_score;
                     display->leading = score > best_score;
                     display->rival = true;
@@ -4507,16 +4525,15 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                     unicode_string_copy(display->score_text, text, 8);
                 }
                 display->score = score;
-                color3f color;
-                display->color = *function_7f720(&color, player->team);
+                display->color = function_7f720(player->team);
             }
             else
             {
                 long field = rounds ? 7 : 0;
                 long score = ((short *)&stats->players[player_index & 0xffff])[field];
-                display->player_index = player_index;
                 long best = NONE;
                 long best_score = -32768;
+                display->player_index = player_index;
                 s_engine_player_iterator iterator;
                 iterator.data = g_4e8c24;
                 iterator.absolute_index = NONE;
@@ -4531,9 +4548,9 @@ bool function_15f3a0(long local_index, s_player_score_display *display)
                 }
                 if (best != NONE)
                 {
-                    s_engine_player *other = engine_player_get(best);
                     word text[256];
                     text[0] = 0;
+                    s_engine_player *other = engine_player_get(best);
                     function_159130(best_score, text);
                     unicode_string_copy(display->rival_text, text, 8);
                     color3f colors[4];
@@ -5589,6 +5606,17 @@ void __stdcall function_d6bc0(long object_index);
 // 168/168/150/154; exhaustive branch default: 168/168/150/154. NOT kept: unmatched complementary
 // result carriers all regress. Original schedule, timer observations and complete body restored;
 // frame 0x14/0x18 and timer/base homes remain.
+// Lane 14 r53 (fast, aligned counts in brackets; baseline 144 [84]). Applied together, not kept (score rises): the
+// timer field read directly at every use (no pointer) gives retail's lea, its spill and frame 0x18: 176 [87]; with no
+// schedule temporary in the block, schedule a bool defaulted true and threaded, 188 [79]; with a short modifier
+// 184 [77], a signed char kind 188 [79], a short/long schedule 184/186 [80/81]. Direct timer plus that block 184 [71],
+// short modifier 178 [69]; case 1 placed first or second, or the distance as assignment/if, 191/184/182/178
+// [60/58/65/63]; word bitfields tested with TEST_FIELD_BIT on 0x12c/0x10a give retail's bit tests: 157 [53],
+// through a const pointer 158 [49] (861 B), dword bitfields 158/152 [55/55], byte bitfields 188 [58]; modifier
+// zero in an else arm [49] against an initializer [53]. On the 158 form: `(void)&entries` 158, entries read through
+// its address at every use 158 [49], a second index local 158, the countdown forms 158, 158. Left: EDI holds
+// entries across blocks where retail reloads it into a scratch at each use and holds the timer in EDI (8 bytes),
+// the case 1 branch polarity, the modifier default's thread, the pool read ahead of the index.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
