@@ -1138,6 +1138,9 @@ done:
 // reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
 // 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
 // (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
+// Zero/one exclusion in signed-byte/short/word compound producers 125/125/125;
+// complete branch producers 133/133/133; short/word conditional producers 133/133.
+// Original Boolean exclusion, result parameter, grouped storage and complete body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

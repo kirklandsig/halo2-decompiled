@@ -3607,6 +3607,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // M344: Relay formal char/signed-char/byte/short/word/int/long/dword
 // 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
 // wider forms regress and lose the parser. Original bool contract/body restored.
+// Twice-used relay payload at entry/member/admission/mask producers: indexed
+// packets 139/139/139/139; independent packet cursor 164/164/164/164 (478 bytes).
+// Original payload expressions, live count reads, traversal and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

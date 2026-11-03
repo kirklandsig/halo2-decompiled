@@ -682,6 +682,9 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// Native normalization result, squared-speed producer and measured/selected-speed
+// ownership on the common pending-k graph: 211/211/245/211/245/245/245;
+// complementary speed admission 252. Original complete body and protected plane contract restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
