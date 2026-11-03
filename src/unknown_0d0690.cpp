@@ -2188,6 +2188,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
 // M321: Dynamic-status-owned validity, phase/absent-block failure and ternary/branch status; direct/post-phase validity
 // 640/584/640/584/609/608/609/608. Original flag/result graph and full body restored; status/mesh/sample homes and helper expansion remain.
+// N336: Independent first-path mesh/part declaration scopes before the input view or after
+// status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
+// its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

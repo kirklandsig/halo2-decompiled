@@ -319,6 +319,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P288: Complete name-case priorities grouped by actual output outcomes, eight forms
 // 271 each; original full dispatch and body restored. Frame 8 and incoming
 // unit/name/actions ranks, shared-call threading remain.
+// M333: Actual hand-result/count/output lexical identities on original receivers,
+// seven subsets, then complete observed-state/unit/actions identities: 271 each.
+// Original full body restored; incoming unit/name/actions ranks and shared calls remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -934,6 +937,10 @@ extern vector3f *g_4687b0;
 // seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
 // Original fields, scalar producers, vector operations and full body restored;
 // frame 0xcc and tag/index/direction spill and SSE schedules remain.
+// AC496: Complete parent/seat attachment result, bool/byte/short/long:
+// predicate producers 377/377/375/370; exhaustive branches 371/371/376/373.
+// NOT kept: no exact match; original default, full body, vector inputs and calls
+// restored. Tag/index/type/direction homes and offset scheduling remain.
 // P285: Existing complete scalar-output setters at left/normal/position producers,
 // subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
 // Original scalar trees, stores, helpers, scopes and complete body restored.
@@ -1484,6 +1491,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
 // positive/complementary polarity: 95 each. NOT kept: staged search flags require
 // exact equality. Original indexed scan, direct exit and complete body restored.
+// Round 549: Conditional/zero-default/one-default/complete-arms hand results at the
+// original boundary 95/185/184/95; before unit acquisition 189/188/188/189.
+// NOT kept: no match or gain; original hand, lookups and complete body restored.
 // F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
 // then all with completed state selection:
 // 95/95/95/95/95/95/95/95. Original complete executable body restored.
@@ -1891,6 +1901,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M329: Independent request/weapon/result/modes declarations separated from their
 // original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
 // 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
+// F347: Explicit case 2/default failure after 01/before 01/after 3/after 4/after 5/after 6:
+// 60/60/60/60/60/60; reverse 6543 with failure before 01/first: 119/119. Original
+// complete body restored; request/weapon homes and getter expansion remain.
 // M331: Isolated mode-0/1 query-result producers, admitted overwrite/positive gate/negative gate/rejection
 // disjunction/conditional/full test/sequential rejection/query leaves: 70/70/70/60/70/60/60/60. NOT kept:
 // no qualifying gain or byte match. Original complete body restored; request/weapon EBX/EBP homes and
@@ -2826,6 +2839,9 @@ long function_c8f60(long unit_index, short seat_index);
 // P289: Real unit seat/node offsets, paired seat velocities and activity byte,
 // seven field subsets and guarded full-width activity result: 293/293/293/293/293/293/293/296. Original
 // complete record/body restored; entry vehicle/unit/ordinal residence remains.
+// F348: Native typed seat receiver mutable/readonly with original, complete, conditional
+// and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
+// All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
