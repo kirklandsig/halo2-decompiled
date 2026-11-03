@@ -1579,6 +1579,14 @@ struct s_rating_summary
 // DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
 // receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
 // Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
+// Round 376: On adjusted-value team graph, shared player/team first/second/third statistic
+// carriers in seven long-valued subsets 31/31/31/31/31/31/31; complete native word carriers 275.
+// Original statistic scopes, producers and body restored; formatter/count scheduling and team/counter
+// homes remain. Existing reduced unresolved-global caveat persists.
+// Round 378: Actual dynamic team-bound admission at the loop head, bool/byte/short/long,
+// within and past truth, 31 in all eight. Exact-only one-use admission results restored;
+// original per-iteration switch, loops and complete body retained. Formatter/count schedule
+// and team/counter homes remain; existing reduced unresolved-global caveat persists.
 // P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
 // roles independently, then all: 31 each. Original body restored; formatter/count setup and
 // team/counter homes remain.
@@ -1939,6 +1947,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // property copy, admission helper kept after it: after identity 709/709/709/761;
 // before identity 709/709/709/767. One-use producers require a match; all
 // restored. User cursor base/home, slot conversion and later homes remain.
+// M321: Returned identity/property copy destinations, mutable/immutable receivers, then either overlap-safe transfer
+// 709/709/709/709/709/709/768/756. NOT kept: local output aliases require a match. Original body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

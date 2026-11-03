@@ -765,6 +765,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // forms rejected. Right i/j carriers, forward.k reuse and ordinary-angle stores remain.
 // J239: prior-up setter 252; published-forward snapshot 226; both captures 258; forward setter 231; paired setters 245; paired aggregate capture with k-first product 258; paired setters with k-first product 245; paired setters with i-first product 245.
 // Original input snapshots, products and body restored.
+// M320: First product native/const/library/overlap-safe result copies 289/289/289/391;
+// each with the existing staged second producer 301/301/301/400. NOT kept: native copies require a match.
+// Original frame, product inputs and complete body restored; colors and forward.k reuse remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

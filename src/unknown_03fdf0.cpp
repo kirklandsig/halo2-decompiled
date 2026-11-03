@@ -492,6 +492,9 @@ void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_
 // Original executable source restored; first-index spill still uses the retired mode-parameter home rather than the material slot.
 // DL244: Native first/material/ordinal domains 2/2/2/108/108/108/108/150; paired first/material declarations by function/guard scope, both orders and index scope, 2 in all eight forms.
 // Original body restored at 2; first still spills in the retired mode-parameter home instead of the material slot.
+// Round 127: const first, selection, index, entry pointer, weight, shape, material index and
+// geometry pointer 2 each; the first spill remains in the retired mode-parameter home.
+// Original body restored.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

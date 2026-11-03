@@ -319,6 +319,16 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
 // interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend
 // homes remain.
+// F335: complete lower/upper clamp passes, lower-first then upper-first, both direct ordinal
+// directions in each pass: 267/269/271/271/272/272/272/273. Tint/secondary-UV homes persist;
+// original component-owned clamp, alias-safe UV producer and complete callback restored.
+// Round 376: Optional-bitmap admission truth in bool/byte/short/long,
+// valid-first and invalid-first, 232/232/232/232/232/232/232/232.
+// Exact-only one-use admission forms restored; tint/secondary-UV homes and blend residence remain.
+// Round 378: Shared pivot complement on the retained next-product graph, inner/outer storage,
+// recomputed aspect result and before/after first next-product producer: 232/232/306/306/232/232/306/306.
+// Original separate complement producers, all arithmetic, native buffers and body restored;
+// tint/secondary-UV homes and blend residence remain.
 // P278: Geometry/primary/secondary UV declarations at entry, seven subsets, then all with seed-
 // colour scratch at entry: 232 each. All initializers and observations fixed; original
 // declarations/body restored. Tint/secondary UV and blend homes remain.
