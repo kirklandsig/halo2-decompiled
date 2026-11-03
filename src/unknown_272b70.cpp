@@ -1511,6 +1511,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH329: Native inner seat cursor, short/word/long/dword ordinals, mutable/read-only
 // rows 34/176/165/165/34/176/165/165. Original ordinal loop and complete body restored;
 // NOT kept: no match or qualifying gain; iterator/leave-request/publication homes remain.
+// DH337: Read-only returned-actor for ownership and displacement-output lifetimes:
+// 276/276/276/276/276/276/276/276, frame 0x6b0 and 975 bytes. NOT kept: regressions;
+// original iterator/body restored, iterator/leave-request/publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

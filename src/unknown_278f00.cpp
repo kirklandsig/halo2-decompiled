@@ -300,6 +300,9 @@ bool function_a7670(long object_index);
 // DH328: Last-completed island ordinal with original/first/second/both standard membership
 // searches 295/316/294/313; category acquired after both searches 321/315/314/347.
 // NOT kept: all regress, grow the frame and lengthen beyond retail; complete body restored.
+// DH337: Complete first/second private-prefix absence in bool/byte/short/long:
+// 270/270/270/270/278/278/298/278. NOT kept: unmatched result flags and longer
+// scans; original stopping searches/body restored, selector/count/admission homes remain.
 // @retail 0x278f00
 void function_278f00()
 {
