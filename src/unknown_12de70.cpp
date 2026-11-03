@@ -551,6 +551,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // store 27; the release under `if (!linked) continue;` 27; the address as `(byte *)g_4e6494 + (offset <<
 // shift)` 27; the physical block looked up at entry, before the block test, 27 (all identical code). In-loop
 // block still goes straight to ESI (retail EDX, copied late).
+// Round 95: the cache block's declaration split from its lookup 27; the loop block declared
+// before the loop 27; the physical block declared before the block guard 27; the time field
+// pointer declared before its assignment 27; the loop block initialized before the loop and
+// refreshed in it 27; the tail pointer declaration split 27; the pool release written in both
+// block arms 75 at 277 bytes; the parameter renamed by its cache role 27 (all others 265 bytes).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

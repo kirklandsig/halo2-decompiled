@@ -1146,6 +1146,8 @@ void function_2118c0(void)
 // scaled induction remains. Earlier short/long/word screens excluded these domains.
 // Round 469: Disjoint band/knot bit composition, seven wrapped-row subsets and all five rows: 134/134/134/104/104/104/103/190. Original row sums restored; scaled induction remains.
 // Round 87: output from row 150; output from p1 / p1 from output 194/194; word band and a separate unsigned second-pass band 10/10; band != 3, <= 2 and prefix increment 10 each. Original body restored; partial row induction remains.
+// Round 33 (lane 17): the wrapped rows as `(b << 3) + w` with no row local 150; row declared ahead of previous 10;
+// p1 and out as `(b << 3) + k` 10; `dword row` 10; the wrapped indices as `long w = (k + n) & 7` 180 (756 bytes).
 // @retail 0x211cc0
 void function_211cc0(void)
 {
@@ -2555,6 +2557,13 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // block agrees with the real one) of about 480 forms, every helper difference order, outer local order
 // and selector position, with staged, parenthesized and named sums: y first only comes with y in XMM1
 // (helper) or sum XMM1 (no helper).
+// Round 33 (lane 17): the helper as a vector delta with `j*j + (i*i + k*k)` 25; as `v = b - a`, sum k, i, j,
+// called (target, source) 25 (x scheduled first); distance_test declared after squared 3; the switch on
+// the request field in place 333; the helper's differences b - a, called (target, source) 3.
+// Round 130: selector after the helper 3; shared y helper input 26; split declarations with y-first evaluation 26;
+// source-z snapshot 418 (1944 bytes); y-first helper with reversed case declarations 22; staged source z and x 413
+// (1952 bytes); union array view 3; y product operands swapped 3; caller y before the unchanged helper 422.
+// Original 3 form restored.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
@@ -2839,6 +2848,9 @@ void function_20fda0(long arg_0);
 // owner declared first 19; raw call result with the pool read before sign extension 19; event callee
 // inline declaration 19; both/false-path/flag-path void-return cleanup expressions 19/19/19;
 // owner base then offset 19; owner base then offset with typed node element and fields 19.
+// Round 33 (lane 17): short team and side locals (0x20f1a0's form) 19; the flag test un-negated, release arm
+// first 31; the flag read into a named bool 19; node ahead of the owner with a short team and long side 24
+// (141 bytes: pool loaded first, node add explicit, but the side multiply moves up); the same with a short side 24.
 // @retail 0x20fec0
 void function_20fec0(long arg_0, long arg_1)
 {

@@ -224,9 +224,16 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N328: Object receiver after sum/normalization/endpoints/at projection, original then native velocity
 // fields on the retained emitter graph: 395/407/434/436/397/407/434/448. Original receiver timing and
 // body restored; entry sum and normalized XY/magnitude homes remain.
+// DH310: Complete normalized scalar outputs/native point/library copy/component point, original/early-reject guard,
+// 395/467/467/385/395/467/467/385. NOT kept: the unmatched 385 groups outputs in another point record;
+// only SSE ranks improve, native XY/magnitude homes remain. Original helper and entire body restored.
 // AC492: Emitter direction after facing/exhaustive facing/direct output formal
 // 412/398/395; their three pairs 408/412/398, all 408; native signed evaluation point 402.
 // Original emitter and whole body restored; entry sum and normalized XY/magnitude homes remain.
+// F348: Existing shared 2D dot at input-facing, velocity, endpoint and signed-facing
+// consumers, then input pairs and all consumers: 410/395/395/395/410/410/410/410.
+// NOT kept: shared real-result/operand-order forms do not match; original expressions,
+// helpers and full body restored; entry sum and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -542,6 +549,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
 // NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
 // frame, radius and trace/trig/pivot homes remain.
+// DH312: Existing direction producer as native coordinate-array loops, long/dword/short/byte
+// ordinals, streaming 760/760/746/746; complete difference publication 785/785/828/828.
+// Original scalar producer and whole body restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

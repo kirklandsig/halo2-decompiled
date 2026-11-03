@@ -645,6 +645,11 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // with native byte success, original/shared differences 358/366. Original helper calls,
 // result qualifier, includes and complete body restored; early root/actor ownership remains.
 // M323: Actual first-edge/second-edge/projection-field references, seven subsets and complete trace-element references, all 278. Original body restored; early root/actor ingress and vector scheduling remain.
+// Round 33 (m3 lane 18, fast; 0x270d90 295 throughout): the result as a plain bool (the volatile dropped)
+// 340 (1252 bytes); case 5's actor test as an outer if 278; one function-scope position pointer for cases
+// 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`
+// 278 (each the same code). Retail's case 5 tests the actor in EAX loaded at entry while case 2 reloads it
+// from the stack. All restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

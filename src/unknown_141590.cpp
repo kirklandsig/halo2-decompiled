@@ -325,6 +325,9 @@ static inline void quaternion_transform_vector(
 // 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
 // Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
 // NOT kept: indexed reductions regress and fail the exact-match gate.
+// N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
+// independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
+// paired halves and complete body restored; frame/quaternion/cross homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1031,6 +1034,15 @@ void function_143250(
 // families 1..7: 1767/1767/1767/1767/1767/1767/1766; complete immutable reused root 1766.
 // All 84 typed outputs/call phases agree; original graph restored; frame/admission/homes remain.
 // NOT kept: precision-sensitive compaction remained unmatched and tied or regressed.
+// N335: Disjoint second-band real/third-band real/both-band double temporary lifetimes, subsets
+// 1/2/4/3/5/6/7: 2186/2262/1767/2722/2186/2262/2722; complete last-available reuse 3063. Third-
+// band sharing recovers ret 4 but frame 0x324 and length grow; double-only frame 0x30c regresses
+// by one. NOT kept: unmatched shared-storage forms; all 84 typed outputs agree, original body
+// restored.
+// N337: Last-use same-type second/third-band subtraction and zero-minus accumulators,
+// family subsets 1..7: 1766/1788/1788/1766/1766/1788/1788; all with right-first ownership 1774.
+// All 84 typed outputs agree. NOT kept: unmatched storage reuse ties or regresses and changes
+// length away from retail; original scalar graph and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

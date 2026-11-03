@@ -1204,6 +1204,8 @@ static inline long render_memory_allocate(long bytes)
 // with byte casts at both uses or one. Without the second call the three arrive in eax, edx and ebx directly.
 // Fast: a lod local 1; a permutations local 1; result declared first 1; a false local 1; bytes declared first 15 (157 bytes);
 // out declared first 28 (158 bytes).
+// Round 79 (fast): a dword extra_bytes 1; a dword model index 1; dword bytes 1; a named total 1; the count read back through
+// *node_count 1; the output test as `result >= 0` 2 (jl for js).
 // @retail 0x3e380
 long function_3e380(long model_index, byte lod, transform4x3f const *nodes,
     byte const *permutations, long *node_count, long extra_bytes)

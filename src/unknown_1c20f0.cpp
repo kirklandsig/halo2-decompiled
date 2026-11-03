@@ -110,6 +110,8 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // from the existing vector3f_add_scaled 23; end declared first in the loop block 23; node_index declared at
 // its call 23; the direction read through a pointer to the parameter dropped 23 (same code, kept).
 // 0x26d100's file is on another lane's list this round, so its reorder was not retried.
+// Round 138: node_index/location/ahead-and-end at function scope 23/23/23; the collision buffer before origin 23;
+// the final distance from `scale` 217 (923 bytes). 0x26d100's file was again on another lane's list.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
