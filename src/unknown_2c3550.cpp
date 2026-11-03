@@ -277,6 +277,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // AC475: Existing in-place normalizer with distance output by pointer/reference, branch/common
 // publication and original/shared subtraction: 92/91/96/98/92/91/96/98. Complete shared dot/cross
 // consumers on the four subtraction/output graphs 144/160/144/160; original helper and body restored.
+// M334: Existing normalizer absolute-length predicate as bool/byte/short/long results,
+// then their exact tiny-path complements, 156 in all eight forms at 634/630 bytes.
+// Original test, helper and body restored; early Y transport and XMM roles remain.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -805,6 +808,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // AC475: Native outgoing mask byte/signed-byte/word/dword with long success
 // 774/774/675/675; with Boolean success 775/775/754/754. Original mask, result and full body restored.
+// B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
+// bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
+// without an exact match. Original actor observations, bit consumer and full body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
