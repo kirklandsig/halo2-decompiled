@@ -102,6 +102,10 @@ void function_265c30(long arg_0, long arg_1, bool arg_2);
 // 14 (the field read moves after the call; homes unchanged); confirmations of earlier forms: the bool
 // output declared first 9, both 0x261280 outputs declared at the top 9. Retail calls 0x25d690 twice as
 // ours does. Still BLOCKED-BY 0x260670: its real body is disabled in src/unknown_261280.cpp (held).
+// Round 96 (plain): second source result assigned to the existing pointer 9; second position expression
+// direct 9; equal-case actor lookup assigned to the existing actor pointer 9; search result assignment
+// rather than copy initialization 9; saved reference assignment 9; Boolean output explicit predicate 169;
+// source pointer declaration split 9; actor pointer declaration split 9. Original body restored.
 // @retail 0x1af160
 bool function_1af160(long arg_0, s_1af160 *arg_1)
 {

@@ -1180,6 +1180,12 @@ bool function_108530(long device_index, long name)
 // reset, with original parameter arithmetic 128/123/123/126; consistent stored-speed
 // arithmetic 128/123/123/126. NOT kept: early publication/disabled-path clears add
 // stores absent in retail and grow length; original complete body and callers restored.
+// Round 63 (m3 lane 10, fast, both callers 31/13): retail stores the zero straight into the ramp-down slot at its
+// clamp and compares the minimum against memory, never touching xmm6 before the inner block. The three zero clamps
+// written `0.0f < x ? x : 0.0f` 121 (same code); both ramp-down clamps as one PIN(ramp_down_time, 0.0f, remaining) 127;
+// the zero-denominator velocity as `(target - position) / duration` 149 (533 bytes); the position pinned at the top
+// before the time clamps 139 (525 bytes, the fast image changes both callers' conventions); the ramp-down zero clamp
+// after `remaining`, right before its minimum 123.
 // Round 34 (lane 17, fast, with both callers): the initial velocity moved to the second parameter
 // (definition and both calls; diagnostic, no retail order evidence) 123 (callers 25/23, still six
 // stack floats); the ramp-down minimum written `ramp_down_time < remaining ? ...` 121; the target

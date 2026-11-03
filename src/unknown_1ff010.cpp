@@ -640,6 +640,11 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 46 (m3 lane 2, fast with 0x1ecf50 and 0x2b400): `magnitude != 0.0f` 128 and the second normalize
 // `!= 0.0f` 108 (both 850 bytes but `ucomiss`/`lahf` where retail has `comiss`/`jbe`), both together 134 (854);
 // speed read right after the direction copy 175 (864); the k copy before the second normalize 174 (788).
+// Round 35 (m3 lane 18, fast with 0x1ecf50 and 0x2b400), zero-first comparisons re-measured on the
+// two-pointer helper form: `0.0f < magnitude` 77; `0.0f > dot` 77; `0.0f < cross` 77; the turned pair's
+// normalize as `0.0f < ...` 77 (all same code); the k copy before the turned pair's normalize 174 (788
+// bytes). Retail rematerialises the test zero (xorps after the scale products) and multiplies the
+// rotation's cosine from memory; ours keeps one zero in XMM6 from above the divide through the rotation.
 // @retail 0x1ff360
 long function_1ff360(long actor_index, point3f const *target, vector3f *velocity)
 {

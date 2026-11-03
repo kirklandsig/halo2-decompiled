@@ -355,6 +355,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 0.866 test's products written d first 642 (same code); the alignment dot written a first 642 (same code); the
 // zero-counter fallback as `vector3f qr = counter == 0 ? *g_4687a4 : *q;` (q not reassigned) 686 (2857 bytes,
 // caller kept). Original body restored.
+// Round 81 (m3 lane 12, fast, caller checked): the first length sum written i, j, k 642; the delta computed before
+// the scaled alignment 641 (one point); the 12/8 factor after t, before the 0.001 test 666 (2871 bytes, caller
+// 0x1eb6f0 22); v as `PIN(s->alignment * 1.5f, 0.f, 2.5f) * 0.4f` after the delta 681; the step clamp as one
+// ternary 645. Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
