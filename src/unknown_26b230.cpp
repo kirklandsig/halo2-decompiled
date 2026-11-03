@@ -525,6 +525,11 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // a pointer to the field 25; a long read through `*&` 31; clump computed before the result test 12, with a long or
 // short team 31/31; before the first call with a short team 31; a long team getter by pointer or by index 3/3;
 // `clump->team + 0` 3; a pool local with a long team 31.
+// Round 41 (lane 2, fast): retail's load keeps the separate add with a widening load, a long local folds the add into the
+// load 31. Long team with a dead second field read after or before the call 31/31; a dead test of the long team 31; a
+// short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
+// before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
+// and a dword cast 3 each (all still the 16-bit load).
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -1998,6 +2003,10 @@ void function_269250(long clump_index, long actor_index);
 // DH296: Joint function-owned group iterator/selected/best storage subsets
 // 1-7 and all with persistent score storage, eight forms 87 each. Every original
 // per-actor initialization and per-candidate assignment retained; full body restored.
+// Round 379: Native team-admission truth at its comparison, bool/byte/short/long eligible then
+// excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
+// exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
+// remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

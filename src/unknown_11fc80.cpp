@@ -162,6 +162,9 @@ static inline real distance_squared(point3f const *a, point3f const *b)
 // Round 118: second root cross through function_1f087b/cross_11e130/function_25a131/
 // vector_basis_cross/matrix_cross 12/62/122/2/2 (plain); up/forward/both input copies
 // 149/138/176. Original helper and body restored.
+// Round 30 (lane 18, fast; returns agree at `ret 8`): the second root cross's i product loads the forward
+// vector's j first (retail the up vector's k). Const node pointer locals 2; const parameters 2; const
+// mid/end lengths 2; the remaining length after the height 201; new_mid computed after the mid crosses 295.
 // @retail 0x120220
 void function_120220(
 	transform4x3f *target,

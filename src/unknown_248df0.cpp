@@ -170,6 +170,13 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void *arg_2,
 // vector made case 13 exact (4 with those cases 9/10), and the helpers then fixed case 12's sides. Before that: forward
 // pointer in 12 70; forward and up pointers in 13 30; dying-operand product order 30; 18 named one-use locals 26.
 // A 600 s permuter run on the final form, none below 2.
+// N334: Complete nullable source/system result assignments and projection admission, subsets 1-7,
+// 108/156/156/147/112/150/150; every result arm with an explicit default and no entry zero 207.
+// Original switch, helpers and full body restored; frame 0x1c and case-12 i/j schedule remain.
+// AC492: On the plain-vector/helper graph, case-9/case-10/both retained effect indices
+// 2/2/2; first/second/both native word-channel inputs 2/2/2; case-11 value fraction
+// 155; complete immutable remainder/result arms 164. Original whole body and helpers restored;
+// case-12 i/j projection scheduling remains. One-use field carriers NOT kept without a match.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

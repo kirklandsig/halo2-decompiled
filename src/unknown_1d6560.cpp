@@ -215,6 +215,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
 // with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
 // forms lose the matched caller; original observations, body and convention restored.
+// F344: Actual object-getter acquisition before handle/body/result/main dispatch,
+// repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
+// one-use getter pointer and early object-pointer read; several forms also lose
+// the matched caller. Original body, both observations and caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -489,9 +493,17 @@ struct s_physics_component_walk : s_havok_component
 // DH303: Promoted/branch/table neighbor producers, default first-body outcomes
 // and producer-scoped group receiver 181/163/289/318/316/318/292/303. Original method
 // restored; neighbor/key carriers and cold exits remain (one historical control excluded).
+// Round 542: Native two-fact replacement status, separate/guarded/common/branch publications,
+// unsigned/signed full-width 289/329/315/314/289/329/315/314. No exact form; original separate facts,
+// output, clamp and complete method restored; latch reload and neighbor/key carriers remain.
+// NOT kept: the status-mask producers and publications do not reproduce retail.
 // DH307: Object formal first/middle/last in both section-query interfaces, all eight
 // nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
 // tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
+// DL250: Complete native entry admission, first-body rejection and neighbor-body availability
+// predicates, subsets 1..7 then method-scope predicate declarations:
+// 146/146/146/146/146/146/146/146.
+// Original complete source restored; no eligible gain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

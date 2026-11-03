@@ -637,6 +637,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // as `g_4e6378 + voice_index` with the index advanced in its own statement 3; a long type counter 28;
 // the bound as a short member of the counts struct 3; `system->voice_count +=` 3, with the two final
 // stores through system too 59 (561 bytes).
+// Round 129: typed three-count array reference 3; whole count-record pointer 3; const voice pointer 3;
+// short-sentinel chain 5; stream_reset beside definition_type 11; driver identifier beside sound
+// identifier 8; pointer fields before short sentinels 8; definition_type after the zero bytes 5.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1604,6 +1607,11 @@ void looping_sound_controller_release(long index);
 // controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
 // through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
 // the unknown03 test nested 40; `(word)` controller index again 31.
+// Round 131: duplicated controller release 37; conditional decrement 5; tail-only pool local 5;
+// decrement in the release argument 59; global pool reference 27; const pool local 43; effect handle
+// for guard and release 34 (pool reaches EBX, but the entry and byte temporary move; NOT kept);
+// release-only handle after the decrement 5; effect field reference 34; release-only handle from
+// entry 34 (the guard coalesces with it, giving the same form as guard and release).
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -3393,6 +3401,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // inline (pool, index) next-datum helper with data_find_index 49; that helper in the for loop with `case 1:
 // continue;` 78; a helper taking only the index and reading the pool global after the start index, in the for
 // loop with `case 1: continue;` 78 and in the do-while 49.
+// Round 130, with the range in case 0: definition reference 78; split range declaration 78; mode declared before
+// definition 78; default-first mode 66 (entry registers right, `test al, dl` rather than `test dl, 1`); flag-first
+// if/else 78; named predicate with default-first mode 66; const definition pointer 78; default-first self-select 66;
+// default-first with a flag-arm assignment 78. Original 24 form restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

@@ -958,6 +958,13 @@ extern long *g_51e9cc;
 // F340: Last-consumer scopes for root/input/height, seven subsets, then all with
 // a role-named contact lookup: 42/42/42/42/42/42/42/42. Original complete body restored;
 // frame 0xb8 agrees; receiver rematerialization and crouch/contact schedules remain.
+// Lane 1 round 62: the existing word_flags_set for every +0x348 write 35 (7 points, under the gate); with a crouch
+// field pointer (read and store) 35, the pointer alone 39 (store before the `and` as retail); with case 4's 0x354
+// store ahead of 0x364 30 (score-picked, retail stores 0x364 first); case 5 without the bsp local 198, also without
+// the definition local 198, the surface flag in a long local 194. Crouch operands, compile-only (they reproduce the
+// listing): field pointer, staged `+=`, a capture, an if/else clamp, the sum through an inline pin or add, the sum
+// assigned back to crouch_change: field first in all. The velocity block's conditional call is what flips it: the
+// block ending in an unconditional call loads crouch_change first, any `if` around 0xb7360 loads the field first.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1260,38 +1267,41 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 	byte *self_definition = BIPED_DEFINITION_GET(self);
 	real crouch;
 
-	if (mode)
-	{
-		*point = *origin;
-		if (mode == 3)
-		{
-			point->x += forward->i * offsets[0];
-			point->y += forward->j * offsets[0];
-			point->z += forward->k * offsets[0];
-			point->x += offsets[1] * (0.0f - forward->j);
-			point->y += offsets[1] * forward->i;
-			point->z += offsets[1] * 0.0f;
-			point->z = offsets[2] + point->z;
-			return;
-		}
-	}
-	else
+	if (mode == 0)
 	{
 		function_b9dd0(arg_159e6d, point);
 	}
-	switch (mode)
+	else
 	{
-	case 1:
-		crouch = 0.0f;
-		break;
-	case 2:
-		crouch = 1.0f;
-		break;
-	default:
-		crouch = function_e0dc0(arg_159e6d) ? 0.0f : self->crouch;
-		break;
+		*point = *origin;
 	}
-	biped_eye_raise(arg_159e6d, self, self_definition, crouch, point);
+	if (mode != 3)
+	{
+		switch (mode)
+		{
+		case 1:
+			crouch = 0.0f;
+			break;
+		case 2:
+			crouch = 1.0f;
+			break;
+		default:
+			crouch = function_e0dc0(arg_159e6d) ? 0.0f : self->crouch;
+			break;
+		}
+		biped_eye_raise(arg_159e6d, self, self_definition, crouch, point);
+	}
+	else
+	{
+		vector3f side;
+
+		side.i = 0.0f - forward->j;
+		side.j = forward->i;
+		side.k = 0.0f;
+		vector3f_add_scaled((vector3f const *)point, forward, offsets[0], (vector3f *)point);
+		vector3f_add_scaled((vector3f const *)point, &side, offsets[1], (vector3f *)point);
+		point->z = offsets[2] + point->z;
+	}
 }
 
 /* fills the biped's character physics input for its physics mode: walking
@@ -1378,6 +1388,14 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // N330: Existing three-dimensional/planar difference and planar magnitude producers,
 // then each with named nonnegative length selection: 585/585/589/589/599/599/600/600.
 // Frame stays 0xf8 versus 0xfc; original scalar deltas, helpers and complete body restored.
+// F342: Initialization-phase last-use scopes for speed/material/boost/turning,
+// speed+material/speed+boost/material+boost/all: 584/585/585/585/585/584/585/585. NOT kept: no byte
+// match; original complete body and every helper restored. Frame and material/airborne/animation homes
+// remain.
+// M329: Complete airborne false-default/true-default/positive-if-else/negative-if-else
+// producers 648/648/585/585; turning false-default/true-default/first-test/final-chain
+// 585/585/556/556. NOT kept: 556 uses a distinct turning-result branch graph from retail
+// and keeps frame 0xf8 versus 0xfc; original bool producers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1575,88 +1593,6 @@ void function_b75a0(long object_index, point3f const *point, vector3f const *for
 /* a biped's response to a damage impulse: it starts flinching or falling,
    a hard one knocks it over (and a ragdoll gets a random spin), and on
    the ground it turns to face away from the hit */
-// MiniMax D (11-01): the mode byte now has a byte home (mode_byte) beside its long copy, so the 4/5 tests widen it
-// into eax and the 3 test keeps it in cl as retail does; the 0.5 scale goes through the existing vector3f_scale and
-// the magnitude is written i, k, j, which fixes the x87 squares.
-// score 20 (was 20): the two jne targets and the spin.i product (retail multiplies the angle into axis.i, ours into
-// a register copy) still differ, beside the reduced image's call and global addresses.
-// (axis.i loaded first; retail copies the angle and multiplies by axis.i) and the mode-3 test (retail keeps the byte
-// in cl: mov cl; movzx eax, cl ... cmp cl, 3) still differ.
-// Earlier (score 122 (was 223)): tag/flag carriers, strong-result home, spin scaling and late call/output scheduling.
-// Direct up reads 245; test-produced strong 246, both 245; shared vector producers 241;
-// complete away copy with direct up 247; linear result with direct up 223 (plain), all forms 253;
-// workspace identities 245; linear result alone 241; long strong/spin/both 221/251/245;
-// mode-overridden linear result 231; shared real random 223; linear plus vector helpers 218.
-// The last five-point increment and long-strong two-point increment are not retained.
-// Round 96, kept (942 bytes, retail's length): the flags_10a bit-2 tests through the existing bit view
-// (retail's shr/test), the random draw named as spin_fraction (retail multiplies the scale, the magnitude
-// and pi/2 separately) and the flag store through the existing word_flags_set. Steps: view on the first
-// test only 195, first and third 193, second and third 208, all three 219; each view placement with the
-// named draw 184/182/197/214; draw alone 217; `away = *impulse; away.k = 0.0f;` 214, with a long mode local
-// in the final test 206 (byte mode 214; the test nested under the parent/+0x13c tests 206); then
-// word_flags_set 122 (without the mode local 125, without the away copy 122: both dropped). Without the
-// view 212, without the named draw 138. The existing 0xe4c10 call for the ragdoll block 242 (kept out of
-// line); `byte *ragdoll` as 0xe4c10 writes it 201/193/220/128; bit-2 tests through a fresh lookup
-// 254/284; spin products all angle-first or all axis-first 122/122. Still differ: the seed load and the
-// magnitude's x87 interleave, spin product operands, +0x3ec clears through a pointer, mode byte/long loads.
-// Logic walk against retail (block by block, 0xde620-0xde9c9): no behaviour difference found. Checked: the
-// 0xbc bit-20 early return, strong = |impulse|^2 > 1.96 (0x45e5a8), the 0.5 scale (0x45dbbc) only when
-// flags_10a bit 2 is clear, flags_348 |= 2, the cross product up x velocity (0xde763-0xde7a5, signs and
-// operands), the 1/65535 and pi/2 constants (0x45dc50, 0x4123ec) and their multiply order, spin = axis * angle,
-// spinning = strong || !bit2 (0xde84f-0xde865), the strong block (0xe57e0, then for mode 3 the two byte clears
-// at +0x3f8/+0x3f9, 0x1ed340, 0xe18d0 with true), linear = mode != 3 || strong (0xde9c7 sets bl), the
-// 0xb7880 argument order and its NULL masks (0xde8cd-0xde8e9), the away test order (parent, +0x13c, modes 4/5,
-// +0x34b, strong || mode != 3, |impulse|^2 > 1.96) and 0xb75a0 (eax = 0, ecx = away, edx = up, location and
-// flag 0) with its > 0.0 normalize test (0x45dbd8 is 0). All callers/callees still match (0xd9640 the only
-// caller). Tried (2026-10-31): the away vector as a whole copy of the impulse then k = 0 (retail copies all three
-// dwords at 0xde97c-0xde997 and overwrites the third with xorps) and the +0x3ec block goes through a local pointer
-// (retail clears [ecx+0xd], [ecx+0xc] at 0xde885): both make the region identical to retail's, but
-// the score reads 132 (not kept) because the metric is positional and the spin-product pair below shifts the
-// rest by one line (the align edit blocks fall from 12 to 7). The remaining blocks are: the x87 square order
-// (retail j, k, i; every source order of the three terms, a separate squared local, and the order i/j/k
-// compile to k, j, i), the spin j/k products (retail loads axis.j/axis.k then mulss by the angle register;
-// angle*axis, axis*angle, all-axis-first, vector3f_scale all compile to movaps+mulss mem), and the mode load
-// at 0xde90e (mov cl; movzx eax, cl; cmp eax, 4/5; cmp cl, 3: long local 128, byte local 132, nested under the
-// parent/+0x13c tests 132, nested long 129, switch on the byte 138 because it becomes a range compare).
-// Round 48, kept: the existing cross3f for the axis (spin j/k load the axis first as retail; the spin block regains
-// retail's length, 122 -> 95), the away vector as a whole copy of the impulse with k = 0 and the +0x3ec block through
-// a pointer as 0xe4c10 writes it (95 -> 81), the long mode local nested under the parent/+0x13c tests as 0xddfb0
-// writes it (81 -> 77, plain). Tried: velocity scaled i, k, j 131 (x87 squares as retail, scale/cross colouring
-// moves); cross3f with velocity through vector3f_scale 95; angle declared first 122; the long mode local before
-// the test 81 (load hoisted above the parent tests); the mode-3 test on the byte field 174 (mode block as retail,
-// cross re-coloured; also with `strong ||` first in linear or away declared up front); spin_fraction folded into
-// the angle 131 (the two constants fold). Compile-only screens: spin via vector3f_scale, angle initialised at its
-// declaration, declaration and statement orders, `spin = axis; spin.X *= angle` never give retail's spin.i.
-// Round 39 (fast; a compile-only screen of this file reproduces all three spots and the colour flip): the x87
-// square order follows the creation order of velocity's fields (newest first), set by their first direct mention:
-// the scale through the existing vector3f_scale 77 (same code), with the magnitude written i, k, j 73 (x87 squares
-// as retail; every other term order screened: ijk/jik/jki/kij/kji give kji/kij/ikj/jik/ijk). spin.i follows a
-// direct mention of axis.i before the angle (diagnostic `(void)axis.i;` 60, aligned 9: only the mode block left);
-// natural forms: vector3f_scale(&axis, angle, &spin) 73, the angle passed as an expression to vector3f_scale 71
-// (spin.i and spin.j angle-first), angle/magnitude/fraction declared or initialised in place, spin rows reordered,
-// cross3f_staged (screens) keep spin.i. Mode block: retail's `mov cl; movzx eax, cl ... cmp cl, 3` comes only from
-// the long local for 4/5 plus the field read for 3 (174; with the probe 178; with the spin expression 179), and on
-// cross3f that always re-colours the velocity scale and the cross (xmm2/1/0 -> 0/2/1); the hand-written cross
-// keeps the colours (screen) but turns spin to angle-first in all rows and the squares to i, j, k. A byte mode local
-// with the field read for 3 90 (narrow compares); byte/char/word/short/dword locals (screens) narrow or keep eax.
-// Round 118: the long mode local plus the field read for 3 with the 0.5 scale rows in each other order 168-173;
-// the mode local declared at the block or function top 77 (with the field read for 3 174); the velocity scale
-// through vector3f_scale with the magnitude i, k, j plus the spin through vector3f_scale(&axis, angle, &spin) 73,
-// with the angle expression passed instead 71 (x87 squares and spin.i as retail; left: spin.j, the mode block);
-// that plus the field read for 3 179, plus `(byte)mode != 3` 72, plus a byte local with the long mode copied from
-// it and 3 tested on the byte 16 (mode block and colours as retail; only spin.j left, angle-first where retail
-// loads axis.j; the long copy of the byte local only widens it to split the compares, a cast that only steers
-// the compiler, so not kept without a match). On that 16 form: angle local with vector3f_scale 20, spin = axis
-// then scaled 165, cross3f_staged 16, hand-written cross 128, magnitude/spin_fraction declared in place or swapped
-// 16/16/16, spin rows k, j, i 23. Compile-only screens of it (they reproduce the re-colouring and spin): 28 orders of
-// the top declarations, 6 of the block's, three product orders of the angle, spin_fraction folded in, an in-place
-// axis scale then copy, position/linear/away declared elsewhere: spin.j stays angle-first. Mode spellings screened
-// (no local; unsigned long/int/short/word/dword/char/unsigned short locals, each with the local or the field for 3;
-// nested; const): narrow compares or the re-coloured velocity scale; only the byte+long pair gives both.
-// Round 514: spin without the initial zero copy 228; complete product setter 20,
-// without the copy 228; all three named product parts 20, without the copy 228;
-// sequential same-group angle with rows/setter/product parts 31/31/31 at 942 bytes.
-// Original body restored; early axis.i load versus angle-copy product remains.
 // @retail 0xde620
 void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 {
@@ -1686,8 +1622,8 @@ void __stdcall function_de620(long arg_159e6d, vector3f const *impulse)
 			function_30bf0(&axis);
 			magnitude = (real)sqrt(velocity.i * velocity.i + velocity.k * velocity.k + velocity.j * velocity.j);
 			spin_fraction = (real)random_next(&g_4e7408->unknown0) * 1.5259022e-05f;
-			angle = spin_fraction * magnitude * 1.5707964f;
-			spin.i = angle * axis.i;
+			/* the first row names the angle: retail copies it for this product and loads the other two axes first */
+			spin.i = axis.i * (angle = spin_fraction * magnitude * 1.5707964f);
 			spin.j = axis.j * angle;
 			spin.k = axis.k * angle;
 			spinning = strong || !(TEST_FIELD_BIT(((s_biped_flags_10a_view *)&biped->flags_10a)->bit2));
@@ -1887,7 +1823,7 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
-// score 248 (was 248): Frame 0x8c agrees; first global-load scheduling, the offsets in ECX rather than on
+// score 233 (was 248): Frame 0x8c and 1041 bytes agree; retail's mode 3 arm sits out of line after the mode test, then forward/up homes and the second ray test colours. Earlier: first global-load scheduling, the offsets in ECX rather than on
 // the stack (ret 0x10 versus 0x14), and the forward/up workspace homes remain.
 // Earlier: 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
 // own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
@@ -1941,6 +1877,17 @@ void function_dfd70(long arg_159e6d)
 // forward inputs, seven subsets, then both head publications: 248 in all eight.
 // Every shared-user score unchanged; original helpers and target restored.
 // Object/tag acquisition, stacked offsets and forward/up homes remain.
+// Lane 1 round 62, kept (248 -> 233 at 1041 bytes; 0xcb500 108 -> 24, the convention now retail's): `if (mode == 0)`
+// first, then `if (mode != 3)` around the crouch switch and the raise, mode 3's side vector (0 - j, i, 0) with both
+// offsets through the existing vector3f_add_scaled in its else, the offsets on the stack with no address read.
+// Lead, not kept: the same arm written ahead of the raise with a return 104 (1058 bytes, first difference +0x1bd,
+// mode 3 and the entry exactly retail's), but its symbols come before the raise's in 0xdc5c0 too, which goes
+// 585 -> 589 (positional; aligned full 297 -> 271, its second ray block becomes retail's register for register).
+// Tried: mode first alone 228 (with the offsets' address read), side as written-out adds 226, cached
+// forward.i/along/across 151, scalar side parts 104/143, cached forward.i with along/zero locals 124, the side
+// vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
+// on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
+// head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -3054,6 +3001,13 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P278: Actual flight-clamp/rate, walking-limit/angle/cosine/sine/overshoot scalar lexical homes
 // independently, then all: reduced 605 each, control 605/full 561. Original body restored;
 // scalar/result homes and vector scheduling remain.
+// Round 543: Existing complete vector setter at axial/clamp/pitch producers, seven
+// subsets then all projections: fast 605/601/639/611/673/676/642/677 (control 600; full 561).
+// All regress and grow; original producers, helpers and complete body restored.
+// Round 379: Ordinary-state/planar/right-turn complementary truth subsets 1/2/4/3/5/6/7, then
+// complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
+// Original full-width special and complete truth graph restored; result/flight scalar homes and
+// vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3306,8 +3260,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 /* places one of the ragdoll's bodies: hanging from its constraint's pivot on
    the body placed before it (kept within reach of the ragdoll's center and
    out of the world, turned to follow), or the first body at the point */
-// score 368 (was 368): Frame 0x12c agrees; first +0x71 is the body-matrix home, +0x60 versus +0x50.
-// Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
+// score 368 (was 368): NOT kept (lane 1 r62): the pivot pair as two ternaries on the same property test gave 351
+// (frame 0x12c and 1937 bytes agree, first +0x71 the body-matrix home, +0x60 versus +0x50), but retail compares once:
+// a repeated test picked by score, match only; the if/else restored. Earlier: 368 (was 494; 488 before the logic walk of 2026-10-31, which adds 6 points but fixes behaviour): retail's final
 // placement subtracts the pivot rotated by the turned axes alone (0xe2260-0xe2312: no scale, no position, with the
 // out-alias test `cmp edi,[esp+0x10]` of function_2477b1), so it goes through function_2477b1 instead of a second
 // scaled point transform (505). Which pivot is parent follows retail's registers (0xe1d33-0xe1d6f: esi/edi
@@ -3375,6 +3330,14 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // M325: Nested normalization admissions, real/bool/long results, shared short-circuit/progressive/false-default
 // outcome and early real-result declarations 368/369/369/369/369/369/369/369. All restored;
 // matrix/origin and paired pivot/property homes remain; result carriers do not recover them.
+// Lane 1 round 62, kept: the pivots as two ternaries 351 at 1937 bytes (retail compares once, its child pivot's lea
+// out of line). Declaring the properties at the top in three orders 368 (frame unmoved). On the ternaries, each
+// positional score against aligned mnemonic differences (base 135): x/y/z locals in the transform 414/106, with the
+// target's two arms written out 382/93, plus a bool of limit > distance ahead of the target copy 396/60, plus retail's
+// else arm (the offset from the position, origin overwritten by *point, z lowered; also through
+// vector3d_from_points3d) 378/33. With the if/else select instead of the ternaries 329/42, with its defaults assigned
+// first 326/42, with only the child default 372/42. Lead 326: retail's shape, but the bool is one-use (not kept
+// without a match). Without it: arms 363/69, no arms 391/91, default select with arms 364, without 394.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4100,6 +4063,13 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // and producer/entry side declarations: 170/170/171/171/170/170/171/171 at 887 bytes. All shrink the
 // frame to 0x18 versus retail 0x24 and regress. Original native up snapshot, rotation helper and whole
 // body restored; normalization SIMD/trig/rotation homes remain.
+// Lane 1 round 62: retail's rotation written as dot (1 - cos), scalar cross j and k locals before the in-place rows,
+// cross i inside its row, against this body's aligned 102 mnemonics / 166 full: dot written i, k, j 162 (33/152, first
+// difference +0xc6: the normalization colours become retail's), through dot3f 159 (59/86, 899 bytes), named projection
+// and dot locals 166 (46/110), rows cosine-first 162; dot orders ijk/jik/jki 177 (34/100), ikj/kij/kji 162, axis-first
+// 177/162; three named projections k, i, j 170, k, j, i 170, i, j, k 168; one named projection and cross k ahead 184.
+// Lead: retail's first rotation evaluates v.k * axis.k and v.j * axis.i ahead of the cosine; none of these gives it.
+// All raise the positional score, so this body stays.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4519,12 +4489,11 @@ bool function_e4680(long arg_159e6d)
 	return jumped;
 }
 
-bool function_1f5560(long actor_index, vector3f *facing);
+bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 
 /* jumps: an upward kick to the definition's jump speed (less for a tired
-   player), relative to what the biped stands on; an actor may refuse. The
-   biped index is read once from the stack argument (ret 4) */
-// score 210 (was 210): 640 bytes against retail 683, frame 0x24 versus 0x28. Walked against retail block by block
+   player), relative to what the biped stands on; an actor may refuse. */
+// score 68 (was 210): 683 bytes and frame 0x28 agree; only result=true's position and result/riding's swapped slots left. Earlier (640 bytes against retail 683, frame 0x24 versus 0x28): Walked against retail block by block
 // (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
 // Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
 // biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
@@ -4577,19 +4546,30 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // F340: Natural-input last-consumer scopes for definition/raw/relative, seven subsets,
 // then all with admitted success: 228/228/228/228/228/228/228/224. Frame 0x28 recovers, but
 // length is 626/683 and exact callers lose 61/14; original complete body restored.
+// Lane 1 round 62, kept (210 -> 68 at 683 bytes): retail's name test is the argument of an unused third parameter of
+// 0x1f5560 (LTCG drops the parameter and keeps the argument's stores, retail's dead [esp+0x3c] store) with the state
+// base at entry 162, which also removes the parameter-address read (the natural parameter, callers still match);
+// `result = true` just before the actor test 145; dot3f(&relative, &biped->up) 68. Tried: 0x1f5560 taking &result 210
+// (compiled away); state before definition 162; long riding 174; no name local (two reads) 162; `result = true`
+// after 0x109e00 143 (slot and store as retail, but riding takes BL and the state spills), ahead of it 143, ahead of
+// 0xba1d0 133 (686 bytes), at its declaration 160; on the after-0x109e00 form two reads, declaration order and riding
+// at its assignment 143 each; dot3f(&biped->up, &relative) 144; written orders 145; vector3f_add_scaled kick 144;
+// velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
+// Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
+// the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
-	long const *reference = &arg_159e6d;
-	s_biped *biped = BIPED_GET(*reference);
+	s_biped *biped = BIPED_GET(arg_159e6d);
 	byte *definition = BIPED_DEFINITION_GET(biped);
+	byte *state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 	real jump;
 	vector3f ground;
 	vector3f raw;
 	vector3f velocity;
 	vector3f relative;
 	bool riding;
-	bool result = true;
+	bool result;
 	real along;
 
 	if (function_e4050(arg_159e6d) || biped->unknown34c == 1)
@@ -4613,7 +4593,7 @@ bool __stdcall function_e4770(long arg_159e6d)
 		relative.j -= ground.j;
 		relative.k -= ground.k;
 	}
-	along = biped->up.k * relative.k + biped->up.j * relative.j + biped->up.i * relative.i;
+	along = dot3f(&relative, &biped->up);
 	if (jump > along)
 	{
 		real kick = jump - along;
@@ -4622,9 +4602,12 @@ bool __stdcall function_e4770(long arg_159e6d)
 		velocity.j += biped->up.j * kick;
 		velocity.k += biped->up.k * kick;
 	}
+	result = true;
 	if (biped->actor_index != NONE)
 	{
-		result = function_1f5560(biped->actor_index, &velocity);
+		long name = *(long *)(state + 0x7c);
+
+		result = function_1f5560(biped->actor_index, &velocity, name == 0xa00003e || name == 0xd00003f);
 		if (!result)
 		{
 			return false;

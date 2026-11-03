@@ -1195,6 +1195,10 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
 // Round 128: sequenced AND/XOR/subtract before the call 2/2/18; standalone XOR/subtract 2/18;
 // extracted-bit XOR/subtract sequences 2/133. NOT kept: one-use const retry mask 2; original body restored.
+// Round 31 (lane 18, fast): flags initialised from the object bit with a ternary 140 (454 bytes); flags
+// declared at function scope 2; a force-inline helper returning the flags without bit 0 at the retry 2; a
+// force-inline query wrapper (flags, object, value, query, point) with a status local for both calls 2;
+// permuter 600 s (46 tries) 2. Original body restored.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
@@ -1484,6 +1488,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // final ambient clamp 556. Original complete body and all helper/caller contracts restored.
 // M321: Complete input/normal/limited squared-magnitude stages, masks 1/2/4/3/5/6/7, then complete products
 // 529/529/530/529/530/530/530/574. Original complete body restored; frame 0x2c versus 0x28, selection spill and block/query homes remain.
+// P286: Complete cosine/axis/subtraction vector phases with existing setter/add-scaled
+// subsets 1/2/4/3/5/6/7 554/553/554/554/555/554/555; complete initial-scale helper 554.
+// All restored; frame/selection/query homes remain, both shared-user controls unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1796,6 +1803,9 @@ dword function_015cd0(long index, dword entry);
 // before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
 // shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
 // general registers as retail, so no register-summary gap there.
+// Round 129: callee-side inline sampling declaration 4; inline lock wrapper 4; tag/bitmap-scoped
+// temporary 4/4; tag-scoped UV 84 (303 B); partial aggregate UV 30 (316 B); unsigned result 4;
+// nested sampling guards 4; named palette predicate 4; split bitmap declaration 4.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -2178,6 +2188,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
 // M321: Dynamic-status-owned validity, phase/absent-block failure and ternary/branch status; direct/post-phase validity
 // 640/584/640/584/609/608/609/608. Original flag/result graph and full body restored; status/mesh/sample homes and helper expansion remain.
+// N336: Independent first-path mesh/part declaration scopes before the input view or after
+// status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
+// its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

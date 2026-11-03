@@ -32,6 +32,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
+// a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
+// preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
 // Round 150 lead (best 2, not kept: needs a match): forward's k preload follows how later code reads
 // forward.k. One read of the matrix field `local_1[0].forward.k` in the projection's k row (or the dot's k
 // term), with the i/j rows through `forward`, gives retail's whole forward block (j, i preloaded, `mulss
@@ -236,6 +239,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 318: Complete normalizer scalar input capture in ijk/ikj/jik/jki/kij/kji order, native
 // vector input and native input with squared magnitude; 110/110/110/110/110/110/342/342. Original
 // whole body and helpers restored. Extra input/output helper contracts 110/110/110, excluded.
+// M329: Complete projection products before original stores, ijk/ikj/jik/jki/kij/kji
+// producer orders: 110/110/110/110/110/110; each product named at its own row producer
+// 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
+// four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

@@ -657,6 +657,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
 // subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
 // reload remains.
+// N331: Actual notification eligibility bool/byte/short/long on the saved-word graph,
+// original site 77/77/77/77; before bitmap stores 106/106/106/106. NOT kept: one-use
+// admission needs an exact match. Original body restored; shared old-mask reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2184,6 +2187,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // reversed-upper success continuation 10; rejection with previous-object local 8, coherent class
 // table 8, range result 20, native byte ordinal 38 (192 bytes); combined success continuation 8.
 // NOT kept: no gain. Original body restored; inlined index-scale/data-load scheduling remains.
+// Round 30 (lane 18, fast): retail's out-of-line release (0x15b1e0) loads the base first as ours does,
+// so only the inlined copy's context differs. Old index named once and passed 8; entry element pointer 8;
+// index renamed entry_index 8; the cast receiver as a typed equipment local for every entry access 8;
+// bounds test negated with the clear arm first 8. Restored.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -5572,6 +5579,13 @@ void __stdcall function_d6bc0(long object_index);
 // Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
 // and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
 // domains restored; frame 0x14/0x18 and independent timer spill remain.
+// M327: Native entry-record cursor with body/outer receiver and pointer/reference/direct/early-used timer:
+// 242/242/242/246/242/242/242/246, frames 0x1c versus retail 0x18, extents 879/882 versus 869.
+// Original indexed body restored; independent timer spill and entries-base reloads remain.
+// N335: Complementary waiting decision, bool/byte/short/long with comparison default:
+// 168/168/150/154; exhaustive branch default: 168/168/150/154. NOT kept: unmatched complementary
+// result carriers all regress. Original schedule, timer observations and complete body restored;
+// frame 0x14/0x18 and timer/base homes remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

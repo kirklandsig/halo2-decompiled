@@ -168,7 +168,16 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 9 (was 9): frame, timing and loop registers now agree at 657/657 bytes; one boundary
+// score 1 (was 9): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
+// restart test, ours (knowing the flag is clear there from its false start and the back edge) jumps past it.
+// Round 30 (lane 18): the fraction before the key table with the table read at each use 9 -> 1 (kept; the
+// unused key pointers dropped). Before that: an out-parameter restart helper at all three sites 9; restart
+// in the loop condition with a guarded frame store 130 (652 bytes); fraction before the table local 9. On
+// the kept form: restart as if/else 1, as `false` then `if (...) true` 210 (658 bytes), as a ternary 1,
+// through the out-parameter helper 1; `time >= next_time && !restart` with a guarded store 220 (666 bytes).
+// Diagnostic: an unknown starting value (`time == 12345`) stops the thread, so it comes from the false start.
+// The scale on the kept form through the file's interpolate_linear 25 (659 bytes).
+// Earlier: frame, timing and loop registers agree at 657/657 bytes; one boundary
 // exit span and interpolation key-table/current-frame scheduling remain.
 // Earlier at 96: advance direction/frame/flags rotated through EAX/ECX/EDX/EDI; inactive arm exact.
 // Earlier note: Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
@@ -368,6 +377,15 @@ static inline real interpolate_linear(real a, real b, real t)
 // guarded do loop 9; split restart initialization 9; explicit restart branches 9; nested continuation 9;
 // combined two-point interpolation with staged scalars 26, with copied input records 151 (611 bytes).
 // Original index reads, helper contract and complete body restored; the boundary edge and table schedule remain.
+// AC496: Complete combined restart/disposal action, byte/word/dword/long,
+// conditional producers 310/330/318/318; test-produced results 265/288/267/267.
+// NOT kept: no exact match; original independent outcomes and whole body restored.
+// Single disposal-to-postprocessing exit 1; original guarded interpolation restored.
+// P285: Complete normalized Boolean policy producers, eager outer restart/inner restart/disposal
+// subsets 1..7, then complementary rejection predicates: 213/223/256/252/260/238/247/1.
+// All restored; the high-boundary miss still bypasses the common restart-byte test.
+// Additional loop-only/all-site compound/logical restart accumulation: 184/11/186/16.
+// NOT kept: redundant-state forms do not match; original false start and byte producers restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {
@@ -458,9 +476,6 @@ void c_class_1a2c81::update(dword time)
 		if (!dispose)
 		{
 			short next = animation.valuea + animation.direction;
-			s_widget_animation_key *keys;
-			s_widget_animation_key *current;
-			s_widget_animation_key *following;
 			vector3f delta;
 			real t;
 
@@ -509,12 +524,13 @@ void c_class_1a2c81::update(dword time)
 			{
 				elapsed = 1;
 			}
-			keys = (s_widget_animation_key *)animation.target;
 			t = (real)elapsed / (real)frame_time;
-			vector3d_from_points3d(&keys[animation.valuea].offset, &keys[next].offset, &delta);
-			function_x697631(&keys[animation.valuea].offset, &delta, t, &animation.offset);
-			keys = (s_widget_animation_key *)animation.target;
-			animation.scale = (keys[next].scale - keys[animation.valuea].scale) * t + keys[animation.valuea].scale;
+			vector3d_from_points3d(&((s_widget_animation_key *)animation.target)[animation.valuea].offset,
+				&((s_widget_animation_key *)animation.target)[next].offset, &delta);
+			function_x697631(&((s_widget_animation_key *)animation.target)[animation.valuea].offset, &delta, t, &animation.offset);
+			animation.scale = (((s_widget_animation_key *)animation.target)[next].scale -
+				((s_widget_animation_key *)animation.target)[animation.valuea].scale) * t +
+				((s_widget_animation_key *)animation.target)[animation.valuea].scale;
 		}
 	}
 	else

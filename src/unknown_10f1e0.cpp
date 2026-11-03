@@ -1480,6 +1480,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 531: One shared held-object handle, controlled/entry scope, byte/bool result and guarded second
 // clear 164/164/194/194/328/328/336/336. Original queries and complete body restored; pool/state
 // ownership and count joins remain.
+// N331: Read-only native unit/control/state receiver subsets 1..7 and complete
+// read-only identifiers 164/164/164/164/164/164/164/164. Original receivers, byte
+// result and complete body restored; pool/SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1710,6 +1713,10 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 531: Existing object-header accessor at entry/paired slots/paired counts, seven subsets
 // 450/450/450/450/450/450/450; full accessor graph with read-only receivers 450. Original body and
 // includes restored; frame eight versus twelve and header/state/request homes remain.
+// N331: Nullable first/second/both held-object receivers, conditional/branch producers,
+// 441/441/471/441/441/471; paired Boolean depletion 457/457. NOT kept: raw 441
+// raises code differences 424 -> 431, adds null guards absent from retail, and only
+// improves trailing data. Frame remains eight versus twelve. Original body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2073,6 +2080,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
 // DH304: Existing bounds producer returns the following eligibility query, bool/byte/long/dword with forced/ordinary inline, 840/809/809/809/1057/1050/1050/1050.
 // Original helper contract and complete body restored; frame 0xcc/0xd4 and first converter expansion remain.
+// N333: Common terminal sample from start/set result, bool/byte/short/long,
+// entry false/guarded calls 773/773/779/777; branch-owned results 793/793/793/793.
+// NOT kept: one-use call-result/conditional-state locals and a retained branch test require a match.
+// The 773 previews recover retail length only; original body restored; frame/expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2328,6 +2339,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // reassigned, request priority as long, second NONE test un-nested, request record at function scope:
 // 16 each. Extra NONE stores, diagnostic: 54, 59, 66 (251, 256, 261 bytes) with the roles unchanged, so
 // the NONE register is whatever the index and the priority leave free.
+// Round 199: retail's calls set EAX (entry) before EDX (fallback), so the declared order stands. An early
+// `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
+// fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
+// declared then assigned after the priority 16; the index from an if/else on entry_index 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

@@ -863,6 +863,9 @@ static __forceinline long real_to_long(real value);
 // rejection and magnitude/query homes remain.
 // Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
 // Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// DL249: Coherent original-provider inline contracts, seven subsets, then all with an
+// earlier uninitialized result declaration: 466/440/507/382/466/440/507/507.
+// The isolated third contract ties; others lose matched callers. All declarations and bodies restored.
 // AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
 // branch-owned complement 437/437/448/453. Original result and whole body restored;
 // early rejection placement and magnitude/query homes remain.
@@ -870,6 +873,21 @@ static __forceinline long real_to_long(real value);
 // 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
 // readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
 // remain.
+// N334: Paired query success across fallback, nested/flat/exhaustive/complete fallback arms
+// in bool then byte storage: 461/461/382/461/461/461/382/461. Exhaustive forms tie; other frames move
+// to 0x54 and 1908 bytes. Original query aliases, call roles, result and complete body restored.
+// AC492: Complementary internal eligibility, test-produced bool/byte/short/long
+// 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
+// eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
+// Y547: Active-unit state publication, split/exhaustive-success/conditional/exhaustive-failure,
+// bool admitted result 398/470/384/470; byte result 445/500/429/500.
+// Original field-result graph and complete body restored; early rejection and scalar homes remain.
+// Round 33 (m3 lane 18, fast; 0x1a9d80 and 0x1a9e00 matched each time): the outer test inverted with
+// the false arm first 382 (same code); one goto to the single return, result preset false 496; the
+// game time read at its only use 441 (1907 bytes); the facing threshold as a 0.95 preset with an if
+// 381 (one count, not kept), as a full if/else 382; the distance zeroed in the facing arm 382; the
+// limit declared in the flag block 396, as a ternary there 400; the field_2e approach flag as an if /
+// else-if chain 455 (1912 bytes). All restored; the threaded false exit's place remains.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -115,6 +115,11 @@ bool function_986d0(c_handle_table_450cd0 *self, long index, s_bitstream *stream
 // collection for-loop 18; scoped collection for-loop 18; index declared first 18;
 // handle/table acquisition order swapped 18; count before result in the loop test 136.
 // Original body restored at 18.
+// Round 32 (lane 18, fast): `if (!v0(...)) result = false;` with no true store 124 (375 bytes); `result =
+// v0(...);` in the `if (result)` arm 113 (386 bytes); the entry value named just before the call 18 (the index
+// then takes ECX and the owner/vtable loads follow it as in retail; only the `self->table` load is still
+// hoisted, into EDX), with an owner local after it 18; the `&&` status with `handles[i]` at each use 113
+// (retail's `mov 1; jne; mov 0` status shape, but the index stays in EBX and the frame drops 4).
 // @retail 0x98750
 bool function_98750(c_handle_table_450cd0 *self, s_bitstream *stream, long index, long a3, long reserved_bits)
 {
@@ -508,6 +513,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
 // validation ordinal, separate long notification ordinal, helper and both inherited local-slot
 // observations restored. Validity/cursor homes and loop entry remain.
+// F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
+// completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
+// complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

@@ -340,6 +340,16 @@ struct s_block_candidate
 // N329: Complete branch-owned failure-result defaults at admission/post-scan/no-selection/terminal paths,
 // signed and unsigned handle bits: 399/389/391/393/399/389/391/393. All grow code; original entry NONE
 // and full body restored.
+// N333: Final linking backing/predecessor/successor direct-read subsets 1..7
+// 353/347/381/359/367/355/391; complete direct reads with allocated native lookup 377.
+// Original reads and full body restored; missing frame dword and page/ring roles remain.
+// NOT kept: direct-read subsets tied or regressed and grew beyond retail.
+// N335: Candidate decision initialized from not-have-best in bool/byte/short/long:
+// 350/350/366/360; true-default with the existing guarded policy: 347/347/355/354. All tie or
+// regress; complete original policy/result graph restored. Missing frame dword and page/ring
+// homes remain.
+// N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
+// all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
