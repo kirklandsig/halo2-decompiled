@@ -431,6 +431,8 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 143 (m3 lane 6, fast): retail's sum operands re-measured 195 (same code); the point default moved after
 // the camera and scale defaults 207; displaced sums written z, x, y 216 (982 B), z, y, x 213 (979 B); the origin
 // transform ahead of the displaced sums 270 (994 B); fa/fb declared before ta/tb 195 (same code).
+// Y562: Existing same-camera vector transform, distinct/in-place vector result, scalar/setter
+// point publication, original/direct inverse factors: 222/221/222/221/240/239/240/239. Original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

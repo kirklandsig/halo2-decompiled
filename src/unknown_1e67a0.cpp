@@ -1073,6 +1073,8 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // DH319: Complete final turn-test stop/continue results in bool/byte/short/long
 // storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
 // restored; native j/k products, side-dot and output scheduling remain.
+// Y562: Native real absolute/sine/cosine APIs, subsets 1/2/4/3/5/6/7, then all
+// with a double angle producer: 201/196/196/106/106/101/131/131. NOT kept: combined API gains need a byte match; isolated APIs regress. Original body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

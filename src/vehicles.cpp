@@ -1243,6 +1243,9 @@ long function_10f5f0(long object_index);
 // masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
 // Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
 // Original tests, load widths, API buffer and entire body restored.
+// Y562: Existing six-real API record with long/int count and counter, indexed/remaining
+// traversal: 565/596/565/596/565/596/565/596. Original byte buffer, signed reduction and entire body restored.
+// NOT kept: native record leaves frame 0x1990/0x1984; countdown grows to 2292/2264 bytes.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

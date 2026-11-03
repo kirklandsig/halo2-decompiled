@@ -3292,6 +3292,8 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y562: Native signed-int count/loop/selected ordinal contracts, subsets 1/2/4/3/5/6/7,
+// then complete talker identity: 363/363/363/363/363/363/363/363. Original full-width declarations and full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
