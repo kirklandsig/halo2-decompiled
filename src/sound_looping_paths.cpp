@@ -710,6 +710,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 490: Pre-query native defaults for indices/portals/clusters, subsets 1..7,
 // then complete library defaults: 293/292/309/293/309/309/322/319. NOT kept:
 // retail repairs after the query; all regress. Original complete body/helpers restored.
+// F347: Shared valid-index metadata/angle production, default/branch tag and default/test-derived
+// transition, present then missing arm first: 269/268/275/274/269/267/273/271. All grow the frame or extent;
+// NOT kept: no match or qualifying gain. Original complete body and both helpers restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

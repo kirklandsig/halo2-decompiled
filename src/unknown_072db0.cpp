@@ -1593,6 +1593,10 @@ struct s_rating_summary
 // Round 345: completed name-conversion/summary-publication/adjusted-rating phases, seven subsets; all
 // phases with immutable query table: 31/52/52/31/31/52/52/52. Original body and contracts restored.
 // Formatter/count schedule and team/counter homes remain.
+// F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
+// and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
+// library clears recover extent but regress. Original body restored; formatter/count setup and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
