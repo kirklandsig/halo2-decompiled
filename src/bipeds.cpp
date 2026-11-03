@@ -3054,6 +3054,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P278: Actual flight-clamp/rate, walking-limit/angle/cosine/sine/overshoot scalar lexical homes
 // independently, then all: reduced 605 each, control 605/full 561. Original body restored;
 // scalar/result homes and vector scheduling remain.
+// Round 543: Existing complete vector setter at axial/clamp/pitch producers, seven
+// subsets then all projections: fast 605/601/639/611/673/676/642/677 (control 600; full 561).
+// All regress and grow; original producers, helpers and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

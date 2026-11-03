@@ -1628,6 +1628,9 @@ bool function_17afd0(long effect_index, long value);
 // expression with the shift 123 [51]; false-then-set with every local at function scope, eight orders, 138 [61];
 // effect pointer kept x availability false-then-set, expression, two-step x mask, shift x view reread: 73..160
 // [55..88]. Same view keeps BL over availability in every false-then-set form. Body unchanged.
+// Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
+// original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
+// and complete executable body restored; flag width and availability/view carriers remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
