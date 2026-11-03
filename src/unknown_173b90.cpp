@@ -1168,6 +1168,9 @@ public:
 // constant); valid/fallback arms swapped (`== NONE ||` first) 184 (same code); xyz magnitudes plus the
 // parent colour in a local after the position copy 261 [84] (1363 bytes); arms swapped plus xyz
 // magnitudes 248 [76] (1355 bytes, as xyz alone); magnitudes written in the tests (no locals) 285 [167].
+// Round 85 (m3 lane 12, fast): spawn location index stored before the scale 182, the dt store first 183; the position
+// copy before the 1.0 scale store 184; the tag count test as `tag->count() > child->unknown24` 185, with the location
+// index first 183. Body unchanged.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
