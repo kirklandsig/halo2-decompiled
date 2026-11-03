@@ -209,6 +209,10 @@ bool function_01dd60(long index, long *width, long *height)
 // stores, a pitch helper with a constant and a const multiplier table all fold. In all of retail the unfolded
 // `shr 6`/`shl 0x18` and `shl`/`sub 0x1000` pairs occur only here and in 0x1df20.
 // Also round 136: the packing as compound-assignment statements 24; the subtractions as added 0xff000000/0xfffff000 24.
+// Round 131: byte pitch 18 (80 bytes, movzx; NOT kept: added widening and length); byte pitch and word
+// height 26; pre-subtracted byte pitch 20 (movzx; NOT kept: width-only score steering); pitch subtraction
+// in x 18; word height 18 (movzx, index EAX; NOT kept: retail uses the full input); pre-subtracted word
+// height 21; both pre-subtracted 23; typed SDK Size stores 24.
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {

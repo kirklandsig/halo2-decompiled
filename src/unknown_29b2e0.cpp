@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// score 176 (was 176): Frame 0x2c agrees at 1711/1706 bytes; unity XMM5/XMM4, root +0x10/yaw +0xc and rotation product/register homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -278,6 +278,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // magnitude publication after/before component stores: 241/241/241/241/363/363/401/363.
 // NOT kept: unmatched scalar staging/order; original helper and whole body restored.
 // The shared helper also raises sibling 0x29b990 to 12/15/41; no edit retained.
+// DH311: Plain native rotation component-array production, with complete cosine/projection/sine
+// phase masks 0-7: 218/269/285/340/269/368/315/410. Native output/phase records are exact-only;
+// all regress, original alias-safe helper/body restored; root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

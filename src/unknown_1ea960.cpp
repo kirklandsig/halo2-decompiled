@@ -352,6 +352,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // completion: 153/155/157/159/153/153/159/159. Original hierarchy restored; restore-header order, key and listener lifetimes remain.
 // N340: Complete external-storage predicates, branch-produced storage and count
 // consumers: 249/181/251/249/181/251/454/454. No match; original predicates and complete body restored.
+// DH311: Existing base element retained, default zero initialization deferred to all six derived
+// constructors; scalar/special/composite header-before-element masks 0-7:
+// 204/206/205/207/206/208/207/209. Exact-only constructor ownership/order forms restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {
