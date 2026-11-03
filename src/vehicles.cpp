@@ -2750,6 +2750,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // consumed scale return, crossed with distinct relative output and shared force/torque
 // mass scales: 728/728/738/738/728/728/738/738. Frames remain 0xd0/0x104;
 // original full body restored. Retail frame 0xfc and scalar/vector homes remain.
+// Round 544: Complete projected-up/force/torque setters, subsets 1/2/4/3/5/6/7,
+// then all with independent relative output: 689/691/692/690/689/691/690/698.
+// Best gains three; NOT kept under the gain gate. Original whole body restored.
 // M327: Named squared magnitude / accumulated magnitude / completed short-vector fallback / existing normalization scale:
 // 692/740/708/692 on original output, 699/748/710/699 with independent relative output.
 // Original full body restored; frames remain 0xd0/0x104 versus retail 0xfc.
@@ -3599,6 +3602,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
 // then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
 // Exact-only precision forms restored; original real angle, setters, helpers and body retained.
+// Round 546: Existing sequential cross producers at facing/axis/final-left sites,
+// subsets 1/2/4/3/5/6/7: 138/136/165/166/167/165/167; all with X87 angle 171.
+// NOT kept: no gain; precision form requires a match. Original complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4172,6 +4178,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
 // Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
 // original full body restored. Found-index/world/clamp/final flag allocation remains.
+// Round 544: Four marker-query/name admission scopes with the live field or
+// one twice-used marker identifier, eight forms 176 each. Original marker
+// admission and complete body restored; found-index/world/final flag gaps remain.
 // M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
 // 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
 // 176/176/176. Original full body restored; found-index retest and collision/result homes remain.

@@ -1425,6 +1425,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // N325: Resolved-key sentinel chain/iterator null chain/complete optional-publication
 // results, seven subsets and all with class-rejection result: 828 each. Original
 // initialization, conditions, helpers and complete body restored; homes and zero carrier remain.
+// Round 546: Alias-safe named/returned/both identifier transfers 986/977/992;
+// mixed library boundaries 977/986; alias-safe with native returned/named words
+// 1012/988; both with late candidate 1007. All regress; original complete body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

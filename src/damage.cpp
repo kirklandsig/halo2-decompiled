@@ -994,6 +994,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
 // admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
 // byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
+// Round 544: Two displacement observations, direct/scalar/shared-vector/
+// independent-vector, negative then positive admission: 284/249/284/284/284/249/284/284.
+// No match; repeated-computation forms NOT kept. Original whole body restored.
 // P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
 // 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
 // grow to 874/782, frame still 0x1a4; originals and all observations restored.
