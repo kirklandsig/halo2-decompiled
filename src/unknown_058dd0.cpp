@@ -148,6 +148,9 @@ bool c_session_state_none::update()
 // without inline 5 each.
 // A second session pointer read from the owner for the 2-4 arm, the kind or the switch 5 each; the session read
 // through the owner field directly 5, declared before the owner local 5.
+// Round 79 (fast): a member pointer for the kind read 5, const 5, read at both tests 81 (307 bytes); `long const kind` 5;
+// kind declared then assigned 5; index and kind in one variable 5; an early break on the 0x58d70 test 5. Diagnostics: the session
+// pointer used after the arm 84 (315 bytes) and as a call argument 77 (307 bytes) give the kind eax as in retail, the index stays in edx.
 // @retail 0x6e1e0
 bool c_session_state_pre_game::update()
 {

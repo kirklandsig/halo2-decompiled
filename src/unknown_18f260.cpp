@@ -36,6 +36,9 @@ public:
 // before the time read 75, with a barrier before the read 74, with key locals too 74, key locals and a
 // call-site barrier 75; result and pump count zeroed before the read 75. Diagnostics (reverted): volatile
 // key locals 96; the helper's update/release copied to volatile locals, either order, 22/22.
+// Round 156 (fast): `user_data` local, key b, a locals, then a barrier 4 (only `xor esi` after the key stores: the
+// constant propagates past the barrier); a const reference to the key 4; the key as one __int64 cut into halves 74;
+// the reader's local declared then assigned 4; the reader's local as a two-long volatile array 4; key b, a locals 4.
 // @retail 0x18f260
 long c_resource_lock::method0(long handle)
 {

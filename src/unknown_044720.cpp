@@ -512,6 +512,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
 // graphs with chained or independent count/capacity producers: 182 each. Original
 // types and body restored; entry/index spill and center/query/bound homes remain.
+// P285: Actual query at eight-byte alignment, original/separate center and large-branch
+// producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
+// NOT kept: no exact match; original alignments, native objects and whole body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
