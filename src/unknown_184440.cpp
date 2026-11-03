@@ -294,6 +294,9 @@ __forceinline bool function_184448(long arg_0)
 // AC485: complete plane-transform input including distance, normal-plus-distance/native/scalar/memcpy,
 // direct/native output: 965/1011/999/1011/1046/1041/981/1041; original in-place helper restored.
 // Frame and geometry homes remain; no other helper user exists.
+// AC489: Plain component traversals for normalization output, point input scale and world
+// bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
+// with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

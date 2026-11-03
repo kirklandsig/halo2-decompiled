@@ -298,6 +298,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // F329: Retained masked self-header index, long/word domains crossed with four
 // disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
 // frame 8 and incoming unit/name/actions ranks remain.
+// N330: Early hand ordinal/callback selection, conditional/branch producers before
+// receivers or after input snapshots: 405/405/408/408/405/405/410/410. Frames
+// grow to 0x10/0x14 versus 8. NOT kept: later forms also raise caller 0x111650
+// 666 -> 672. Original hand paths, helpers, observations and complete body restored.
 // J240: Entry active word dword/long 327/327; with conditional outputs 261/261 (NOT kept: retail stores
 // both defaults, then overwrites them, 0xe6b26-0xe6b4d, and reads the word at the tests, 0xe6c97, not at
 // entry; body restored at 271); chained defaults 327/327; constants before calls 345/268. Pure ordinal long/dword/word on
@@ -1451,6 +1455,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 379: Twice-used animation result byte/char/short/long, at its producer then entry storage:
 // 95/95/142/146/95/95/142/146. Original Boolean result and complete body restored; entry pool/hand
 // and second unit load remain.
+// P280: Native object-type predicate byte/char/short/word/long/dword storage
+// 95/95/109/109/108/108; Boolean declarations at observation/before companion test
+// 95/185. Original complete body restored; entry lookup and hand homes remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1839,6 +1846,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // N326: Failure-owned result defaults on admission/mode/pickup edges, seven graphs
 // and complete leaf-owned result: 158/137/143/136/158/154/128/128.
 // Original result initialization, body and all calls restored; request/weapon homes remain.
+// N330: Native weapon reference, complete header-array capture and request-view reference,
+// seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
+// Header capture changes entry shape; original pointers, observations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2363,6 +2373,9 @@ __forceinline char unit_action_round(real value)
 // 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
 // Pool/index/type/name and result-byte homes remain. Original executable body restored.
 // N323: Dual-use mode-two selection in bool/byte/short/long, each with original/default-first combo results: 320/337/320/337/322/340/319/337. Original body restored; pool/type/name and completion-byte homes remain.
+// F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
+// ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
+// Original complete body restored; pool/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4540,6 +4553,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 375: Native/library away-input snapshot before/after up capture, real/double in-place scale:
 // 284/276/284/276/282/276/282/276. NOT kept: input record copies do not match and retain frame 0x110;
 // lengths 1406/1375 versus 1388. Original direct producer and complete body restored.
+// P280: Consumed scale-result cross input, direct existing double-factor scale and
+// its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
+// entry declarations 175/294. Original complete body restored; frame and basis homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

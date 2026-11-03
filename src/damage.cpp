@@ -715,6 +715,10 @@ void function_d6a70(long object_index)
 // N328: Early pool/header ownership ending after notification, fresh/cached initial store and twice-used
 // post-clear receiver: 159/192/183/194/165/190/184/185. Original body restored; frame stays 0x4c versus
 // 0x50 and pool/object/index/owner homes remain.
+// N330: Existing byte/word flag setters at the two native publication sites:
+// initial byte, parent word, both, parent byte, initial word, word/word, word/byte,
+// byte/byte: 174/183/171/183/190/170/170/171. Frame stays 0x4c versus 0x50;
+// original stores, field observations, include set and complete body restored.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -981,6 +985,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
+// N330: Positive player/capacity/annulus/all admissions, each with direct unit fields
+// or the native shared player-unit handle: 206/206/206/206/206/206/206/206.
+// Frame and first verifier expansion remain; original player scan and complete body restored.
 // DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
 // admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
 // byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
@@ -1106,6 +1113,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // Round 379: Late owner sentinel chain/owner-first declaration/owner lexical home, subsets
 // 1/2/4/3/5/6/7, then complete sentinel chain: 286/286/286/286/286/286/286/287. Original clear,
 // local homes and body restored; geometry/cone/node allocation remains.
+// P280: Existing cone squared-length helper, complete unit-length error and
+// clamped-dot expression boundaries, seven subsets 286 each; all with consistent
+// direct cone addresses 286. Original body restored; geometry homes and cone ranks remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

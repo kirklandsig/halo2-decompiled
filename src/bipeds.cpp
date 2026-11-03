@@ -955,6 +955,9 @@ extern long *g_51e9cc;
 // 45/45/38/38/45/45/38/38. Four-point best above 30 rejected; original predicate,
 // declarations, flag stores and complete body restored. Lookup and crouch schedules remain.
 // N323: Upper-first complete crouch sum: ternary/direct-field branches/mutable else-if/successive bounds, each without/with shared word flags: 47/40/295/295/47/40/47/40. Original complete body restored; lookup receiver rematerialization and crouch/contact schedules remain.
+// F340: Last-consumer scopes for root/input/height, seven subsets, then all with
+// a role-named contact lookup: 42/42/42/42/42/42/42/42. Original complete body restored;
+// frame 0xb8 agrees; receiver rematerialization and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1372,6 +1375,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // state reassignment at case entry: plain 585, 2828 bytes as retail, no other measurement changes or
 // match losses. Retail reloads this receiver before the case calls. No new local or helper. Frame stays
 // 0xf8 versus 0xfc; original packed output observation and all other phases retained.
+// N330: Existing three-dimensional/planar difference and planar magnitude producers,
+// then each with named nonnegative length selection: 585/585/589/589/599/599/600/600.
+// Frame stays 0xf8 versus 0xfc; original scalar deltas, helpers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2342,6 +2348,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M319: Full native component-index ownership at admission/getter, long/dword,
 // crossed with original/promoted-shared/native-shared/native-explicit body:
 // 63/73/75/73/63/73/75/73. All restored; extra EBP, body transport and flag stores remain.
+// M325: Complete body-validity bool/byte/short/long before index selection 63/63/63/63;
+// false-default bound results bool/long 85/75, true-default 63/63. All restored;
+// extra EBP, native body transport and flag-store schedule remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3364,6 +3373,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 375: Collision fraction from candidate update/owned candidate/full branches/named distance,
 // storage at producer/parent-block entry: 368/368/368/369/368/368/368/369. Original conditional and whole
 // body restored; frame 0x12c, matrix/pivot/property homes and first +0x71 remain.
+// M325: Nested normalization admissions, real/bool/long results, shared short-circuit/progressive/false-default
+// outcome and early real-result declarations 368/369/369/369/369/369/369/369. All restored;
+// matrix/origin and paired pivot/property homes remain; result carriers do not recover them.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4563,6 +4575,9 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
 // long/short contact truth: 317/228/228/228/228/228/228/231/228.
 // State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
+// F340: Natural-input last-consumer scopes for definition/raw/relative, seven subsets,
+// then all with admitted success: 228/228/228/228/228/228/228/224. Frame 0x28 recovers, but
+// length is 626/683 and exact callers lose 61/14; original complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

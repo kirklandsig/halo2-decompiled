@@ -337,6 +337,9 @@ struct s_block_candidate
 // N325: Actual candidate cursor/physical-block cursor/ring successor reused across
 // disjoint phases, seven subsets and all with bare entry declarations: 347 each.
 // Original independent workspaces and full body restored; frame and page/ring homes remain.
+// N329: Complete branch-owned failure-result defaults at admission/post-scan/no-selection/terminal paths,
+// signed and unsigned handle bits: 399/389/391/393/399/389/391/393. All grow code; original entry NONE
+// and full body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
