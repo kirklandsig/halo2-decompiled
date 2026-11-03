@@ -551,6 +551,9 @@ extern point2f *g_468778;
 // AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
 // seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
 // guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
+// Round 47 (lane 15, fast): actor first with `return` of the expression 393, constant returns 413 (1523 bytes); settings rejected
+// early 410; all rejections early 393; prop declared at entry 395; slot read inside the settings arm 393. Retail keeps arg_0 in EDI,
+// actor EBP, slot ESI, prop EBX with settings only at +0x10; every actor-first form keeps arg_0 in EBX.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

@@ -1043,6 +1043,8 @@ void function_143250(
 // family subsets 1..7: 1766/1788/1788/1766/1766/1788/1788; all with right-first ownership 1774.
 // All 84 typed outputs agree. NOT kept: unmatched storage reuse ties or regresses and changes
 // length away from retail; original scalar graph and complete body restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
