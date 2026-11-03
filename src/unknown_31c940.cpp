@@ -245,7 +245,8 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	solver_projection_31c940 projected_b = project_second_linear_velocity(((solver_linear_row_31e7b0 *)(axis - 2)), a, b);
 	float error_b = axis[-2].m128_f32[3] * parameters->error_scale
 		- projected_b.value * parameters->velocity_scale;
-	volatile float impulse_a = axis[-3].m128_f32[3] * error_a + error_b * operation_float(op, 4);
+	float const volatile &mass_a_source = axis[-3].m128_f32[3];
+	volatile float impulse_a = mass_a_source * error_a + error_b * operation_float(op, 4);
 	// Capture the second mass before its coupled product.
 	float const volatile &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
@@ -411,6 +412,8 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 	float mass_b = mass_b_source;
 	mass_b *= error_b;
 	float impulse_b = mass_b + error_a * operation_float(op, 4);
+	// Keep the first-row fallback in both source paths. The compiler merges
+	// that tail while retaining retail's unordered second-row branch direction.
 	if (load_stored_impulse(impulse_a) > 0.0f)
 	{
 		if (load_stored_impulse(impulse_b) > 0.0f)
@@ -424,23 +427,33 @@ static __forceinline void solve_second_contact_pair(solver_step_31c940 *const &s
 				*inverse_b_pointer, result + 1);
 			return;
 		}
+		{
+			float candidate_a = error_a * terms[1].m128_f32[3];
+			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
+				((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, *angular_b_pointer, b->inverse_inertia,
+				first_linear_axis, result);
+			return;
+		}
 	}
 	else
 	{
-		float candidate = error_b * terms[4].m128_f32[3];
-		// The second-row fallback accepts unordered results in retail.
-		if (!(candidate <= 0.0f))
+		float candidate_b = error_b * terms[4].m128_f32[3];
+		if (candidate_b <= 0.0f)
 		{
-			apply_second_pair_fallback(candidate,
+			float candidate_a = error_a * terms[1].m128_f32[3];
+			if (candidate_a > 0.0f) apply_second_pair_fallback(candidate_a,
+				((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, *angular_b_pointer, b->inverse_inertia,
+				first_linear_axis, result);
+			return;
+		}
+		else
+		{
+			apply_second_pair_fallback(candidate_b,
 				((solver_linear_row_31e7b0 *)(terms + 3)), a, *linear_b_pointer, *angular_b_pointer,
 				b->inverse_inertia, terms[3], result + 1);
 			return;
 		}
 	}
-	float candidate = error_a * terms[1].m128_f32[3];
-	if (candidate > 0.0f) apply_second_pair_fallback(candidate,
-		((solver_linear_row_31e7b0 *)terms), a, *linear_b_pointer, *angular_b_pointer, b->inverse_inertia,
-		first_linear_axis, result);
 }
 
 
@@ -754,7 +767,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1909: callback restoration and captured writeback-header fields.
+// score 1909: callback/header lifetimes and the second normal fallback layout.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
