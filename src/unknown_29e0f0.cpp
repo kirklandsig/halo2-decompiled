@@ -261,6 +261,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with
 // bit_vector_set for the set only 424 (1567); the found flag declared once per group and cleared per pass 390 (same
 // code). Restored.
+// M3 lane 2 r47 (fast): the three NONE defaults renamed (selected group/point/end) 390, homes unchanged; retail keeps
+// the endpoint copy as a dword at +0x4c (copied to the result without extension) and its +0x80 byte is the found flag
+// in arg_2's home: endpoint `long` 436 (1579 bytes, frame 0x68), `short` 446 (1563), long with the flag declared
+// first 436; byte endpoint with the flag declared first 390 (same code).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
