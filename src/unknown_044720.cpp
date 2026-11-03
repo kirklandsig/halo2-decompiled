@@ -526,6 +526,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P289: Native complete geometry/part/bound fields on the positive-count graph,
 // seven subsets and read-only geometry: 182/182/182/182/182/182/182/182. Original body and representations
 // restored; entry/index spill and center/query/bound homes remain.
+// P296: Existing two-use release helper by mutable/const header reference, with bit/sign guards
+// and masked/native element extents: 182/182/209/209/208/208/224/224. Original helper,
+// call inputs and complete body restored; entry spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

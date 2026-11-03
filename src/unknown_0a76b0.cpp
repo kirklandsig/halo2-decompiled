@@ -328,6 +328,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 372; 0xe70b0 defined ahead of this function 271. Retail's switch cases for 0xe68c0 are threaded to one
 // shared call with the weapon tests (ours jump back to the name test), and the twenty extra retail bytes
 // are the name reloads (`mov esi, [esp+0x18]`) in each c7070 arm after its call.
+// P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
+// dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
+// All restored; native unit/name/actions ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -962,6 +965,9 @@ extern vector3f *g_4687b0;
 // F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
 // then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
 // record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
+// P296: Existing bit-vector test for saved flag/word flag clear/seat-bit test,
+// seven subsets then all with the saved flag declared at its producer: 309 each.
+// Original helpers, predicates and body restored; tag/index/type/direction homes remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2885,6 +2891,9 @@ long function_c8f60(long unit_index, short seat_index);
 // F348: Native typed seat receiver mutable/readonly with original, complete, conditional
 // and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
 // All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.
+// P296: Byte-scaled self-header offset at initial unit/header/refreshed-unit consumers,
+// subsets 1/2/4/3/5/6/7: 293 each; entry offset 317 at 1209/1209 bytes recovers the vehicle
+// load but saves EBP early. Entry declaration/admitted producer 293; full body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
