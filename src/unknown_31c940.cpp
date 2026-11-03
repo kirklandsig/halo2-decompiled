@@ -754,7 +754,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1940 (was 1943): first normal projection operand order.
+// score 1938 (was 1940): writeback cursor initialization order.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1256,11 +1256,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 
 	// Publish impulses and remaining error using each header's destination and
 	// result stride. Contact friction records carry a separate result destination.
+	float *result = impulses;
 	unsigned char *op = operations;
 	__m128 *terms;
 	unsigned char *destination;
-
-	float *result = impulses;
 	goto read_results_header;
 	for (;;)
 	{
