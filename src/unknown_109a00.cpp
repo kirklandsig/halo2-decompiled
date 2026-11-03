@@ -587,6 +587,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // the matrix call (not retail's order: retail stores it after the center) 218, but the head then equals retail
 // (object index EAX, entry index ECX, first difference +0x35) and 0xb7060 matches: the register arguments follow
 // where the entry flag store sits, so look for a retail-order form that changes the same first-pass liveness.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

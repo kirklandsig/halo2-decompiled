@@ -1498,6 +1498,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // subsets 150/32/150/32/150/32/150; all four seat/candidate roles 150.
 // NOT kept: no handle/scaling, leave-selector or publication-home recovery;
 // comparator remains exact. Original pointers and complete body restored.
+// M344: Winning-seat presence/absence produced by all original score improvements,
+// bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
+// flags grow the frame and body; original short winner, requests and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2749,6 +2752,9 @@ struct s_scenario_scripting_view
 // receivers and early/loop-owned signed-short traversal 168/164/168/164/168/166/168/166.
 // NOT kept: rooted re-observation grows frame 0x18 to 0x20 and length to
 // 430/433 bytes. Original signed stride/wrap, bounds and complete search restored.
+// B394: Complete packed winner in long/dword storage, winner-produced/retained set bits;
+// and admitted/entry result lifetime; original low-word NONE test retained: 96/94/91/101/96/94/91/101.
+// NOT kept: no exact match; original complete executable source restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

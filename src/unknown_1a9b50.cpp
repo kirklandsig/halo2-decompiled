@@ -562,6 +562,9 @@ extern point2f *g_468778;
 // Round 47 (lane 15, fast): actor first with `return` of the expression 393, constant returns 413 (1523 bytes); settings rejected
 // early 410; all rejections early 393; prop declared at entry 395; slot read inside the settings arm 393. Retail keeps arg_0 in EDI,
 // actor EBP, slot ESI, prop EBX with settings only at +0x10; every actor-first form keeps arg_0 in EBX.
+// AC505: Branch-owned near/predicted request-kind and active-state stores, masks
+// 1/2/4/3/5/6/7, 378/374/375/375/378/374/375; all with bounded request admission 375.
+// NOT kept: best gain 1; original stores and complete body restored. Early carriers remain.
 // Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
 // final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
 // code); the two-use distance local alone 425 (1567 bytes).
@@ -907,6 +910,10 @@ static __forceinline long real_to_long(real value);
 // bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
 // straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
 // second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Y558: Shared add-scaled/difference prediction into a point or consumed direction,
+// squared-length boundary independently, 478/478/478/478; complete relative-velocity
+// input on each graph 474/474/474/474. NOT kept: all regress and change the frame or
+// length. Original prediction, helper set, query aliases and complete body restored.
 // Round 57 (m3 lane 13, fast; 0x1a9d80/0x1a9e00 matched each time): the prop-index test inverted (`== NONE`
 // clears field_2c first) 497; the inner admission test inverted with `local_6 = false` first 382 (same code);
 // local_6 dropped with the second test re-testing field_12/17/18 442 (1907 bytes); the second goto as
