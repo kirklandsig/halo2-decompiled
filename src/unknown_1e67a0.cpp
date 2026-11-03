@@ -735,6 +735,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
 // declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
 // remain.
+// B381: complete normalization predicate, moving/stationary bool/byte/short/long,
+// 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
+// Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -845,6 +848,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// score 114 (was 155): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
@@ -1022,6 +1026,23 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // delayed publication arms 140; native vector result/common exit 114/114; coherent rotation
 // inline/force-inline 114/114. NOT kept: no gain. Original body and every declaration restored; j/k
 // rotation ownership and turn/output scheduling remain.
+// Earlier: 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
+// slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
+// from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
+// last dot's order). Tried on this body (fast with a local copy of the helper, the plain build inlines the existing one
+// the same): `moved_away` preset false and set in the test 92 at 1387 bytes (retail's `xor dl, dl`/`mov dl, 1`; a flag set in a
+// test, match only); the side dots as (up, new) * (up, old) 106 (aligned 51; NOT kept: an operand order picked by score, retail
+// forms the old-cross dot first at 0x1e607d; body restored at 114), (new, up) * (up, old) 107 (aligned 44), (old, up) * (new, up) 111,
+// named side values 150 (1382 bytes, the rotation products all load first), moved_away computed before the crosses 190, the
+// crosses declared apart or swapped 106 (same). Compile-only: parameter orders of the helper, cross or dot orders and
+// operand sides, component locals, named sine/cosine (worse), a named rotation or rate, `angle *= rate`, a named axis,
+// helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
+// retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
+// as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
+// B384: Current rotation-helper input with shared sample/rotation workspace, native/CRT/forward/backward
+// copies; independent CRT/forward/backward/setter copies: 176/176/193/189/114/188/188/205. Original helper input,
+// separate sample and rotated values and complete body restored; rotation product allocation remains.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

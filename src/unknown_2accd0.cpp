@@ -1149,6 +1149,9 @@ struct s_signed_file_write_parameters
 // complete remaining-default producers 166. NOT kept: seven/one/six-point reductions are below the keep
 // bar; extension forms regress. Frame 0x18 agrees; capacity EAX-to-EBX staging and extension
 // buffer/offset homes remain. Original minima and complete body restored.
+// DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
+// callback inline metadata: 102/102/102/102/102/102/102/102.
+// Original complete source restored; no eligible gain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -1607,6 +1607,11 @@ void looping_sound_controller_release(long index);
 // controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
 // through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
 // the unknown03 test nested 40; `(word)` controller index again 31.
+// Round 131: duplicated controller release 37; conditional decrement 5; tail-only pool local 5;
+// decrement in the release argument 59; global pool reference 27; const pool local 43; effect handle
+// for guard and release 34 (pool reaches EBX, but the entry and byte temporary move; NOT kept);
+// release-only handle after the decrement 5; effect field reference 34; release-only handle from
+// entry 34 (the guard coalesces with it, giving the same form as guard and release).
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -3396,6 +3401,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // inline (pool, index) next-datum helper with data_find_index 49; that helper in the for loop with `case 1:
 // continue;` 78; a helper taking only the index and reading the pool global after the start index, in the for
 // loop with `case 1: continue;` 78 and in the do-while 49.
+// Round 130, with the range in case 0: definition reference 78; split range declaration 78; mode declared before
+// definition 78; default-first mode 66 (entry registers right, `test al, dl` rather than `test dl, 1`); flag-first
+// if/else 78; named predicate with default-first mode 66; const definition pointer 78; default-first self-select 66;
+// default-first with a flag-arm assignment 78. Original 24 form restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

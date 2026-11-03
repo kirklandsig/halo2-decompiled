@@ -504,6 +504,10 @@ struct s_physics_component_walk : s_havok_component
 // selection: 295/285/310/175/316/199/319; complete per-use receiver 291. NOT kept: all regress, extents
 // 898-932 versus retail 922, and entry saves rotate. Original value selections and complete method
 // restored; body-latch reload order, neighbor/key homes and cold exits remain.
+// DL250: Complete native entry admission, first-body rejection and neighbor-body availability
+// predicates, subsets 1..7 then method-scope predicate declarations:
+// 146/146/146/146/146/146/146/146.
+// Original complete source restored; no eligible gain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

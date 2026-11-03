@@ -83,6 +83,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
 // its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
 // named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
+// Round 138: the bit-scan asm through EAX or EDX 6/6 (clear still EDX); index declared before the loop 4;
+// `while (remaining != 0)` 4; remaining declared, then assigned 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {

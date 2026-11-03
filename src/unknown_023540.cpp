@@ -1201,6 +1201,8 @@ void __cdecl function_24970(s_histogram_state *state)
 // Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
 // the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
 // compare and the locals in the value 17.
+// Round 138: case 3 zeros chained (`out[3] = out[1] = 0.0f`, out[3] re-stored) 53 (428 bytes); `real const scale` 17;
+// `default` written first in the switch 17; `out[3] = out[1];` 17; the top test as `0.0f >= g_509400` 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {

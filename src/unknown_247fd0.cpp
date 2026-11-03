@@ -324,6 +324,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // direct returns with shared/field fifth outputs, and entry-owned shared output: 55 each. NOT kept: no
 // gain. Original output contracts restored; split post-sample comparison and evaluator/child scratch
 // homes remain.
+// DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
+// and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
+// Original complete source restored; no eligible gain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

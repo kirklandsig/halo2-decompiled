@@ -286,6 +286,14 @@ struct s_24e9c7_bounds
 // 138 (740), all four before up 128 (743, aligned 114), first before size 124, all four before size 131, first before side 138, the points declared earlier 125/125.
 // Grid (corner copies in place/all before up/first two before up/all before side, each with unary or `0.0f -` across and unary or `0.0f -` offsets): 125/139/138/147,
 // 128/128/138/138, 137/137/138/138, 129/139/138/147; best aligned 111 at the 129.
+// P284: Existing shared point type for upper/side/reverse displacements, all seven
+// subsets, then the complete graph with native quad point elements: eight at 125.
+// Original private record types and full body restored; early across spill,
+// eight-byte-high scalar homes and geometric SSE scheduling remain.
+// Round 33 (m3 lane 18, fast; 0x24e59f matched each time): the default bounds as one initializer
+// 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
+// long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
+// computed before the height 131. All restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

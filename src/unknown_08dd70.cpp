@@ -172,6 +172,11 @@ struct s_handler_slot
 // 1/3/4/8-byte memsets and memcpy, /O1, /Os, /Ox, /Ob0/1; only a compound `*p |= x` or a memset of
 // the tested flag keeps a derived pointer. In a one-file LTCG link the link load is hoisted above the
 // clear whether g_510560 is defined in an LTCG object, left unresolved or defined in a /GL- object.
+// Round 156 (fast): the back-pointers cleared by a 4-byte struct assignment from a zeroed local 29 (same code);
+// by a compound `&= 0` through the field address 29 (same code); a `while (*slot)` walk through a
+// pointer-to-pointer 83 (495 bytes); an inline accessor returning a reference 29 (same code); one flag pointer
+// and one back-pointer variable reused for both slots (retail's EAX and EDX carriers, each assigned twice) with
+// plain field stores 67 (462 bytes; retail's store order and EBX zero, but all the addresses still fold).
 // @retail 0x8dd70
 void function_8dd70(void)
 {

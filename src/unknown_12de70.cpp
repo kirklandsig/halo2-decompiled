@@ -547,6 +547,11 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // linked flag, a derived-struct group, the block through a cast of its field's address: aligned 8
 // each, as the helper alone (the in-loop block still goes straight to esi; retail loads edx and
 // copies it to esi); the count stored after the block read 32 (the store sinks past the test).
+// Round 95: the cache block's declaration split from its lookup 27; the loop block declared
+// before the loop 27; the physical block declared before the block guard 27; the time field
+// pointer declared before its assignment 27; the loop block initialized before the loop and
+// refreshed in it 27; the tail pointer declaration split 27; the pool release written in both
+// block arms 75 at 277 bytes; the parameter renamed by its cache role 27 (all others 265 bytes).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {

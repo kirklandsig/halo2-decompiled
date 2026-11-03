@@ -216,6 +216,12 @@
 // point-setter/second-return contract 690/581/690/581; complete read-only basis inputs
 // on those graphs 690/581/690/581. Frame stays 0x58; first-wave shared addition grows
 // to 2654 bytes. All producers, basis contracts and complete body restored.
+// Round 545: Native indexed input scaling/copy producers, first-scale/second-pair/copy
+// subsets 1/2/4/3/5/6/7 and complete unsigned-counter graph 581/581/699/581/699/699/699/699.
+// Original scalar producers, helpers, sixth conversion and body restored; frame 0x58/0x60 remains.
+// Round 548: Complete memmove history/point-publication/fallback-axis boundaries,
+// subsets 1/2/4/3/5/6/7, then all with both input snapshots: 709/688/677/675/725/698/659/694.
+// NOT kept: library/clobber/frame shape misses; every native copy, include and full body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -544,7 +550,8 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 16: the argument registers agree (ECX is the source, EDX the result, the camera and the
 // flags on the stack); retail keeps the vertex cursor in EDI and ours leaves it in its argument
 // slot, and retail reaches the endpoint handling by a forward branch from the loop.
-// score 265 (was 265). Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
+// score 265 (was 265): frame 0xa8 versus retail 0xac; first-edge Y, half-width, cursor and color homes differ.
+// Earlier: Lane 4 r155 reached 230 (not kept by the coordinator, see below): frame 0xac agrees (the u/v texture scale as a vector2f: retail's
 // dead home just below v + width is its unused i), case 1/2's side direction is a vector2f normalized by the existing
 // normalize2d_fast, and case 0's second point takes XMM0-2 as retail; the first point's z/x/y and the half width take
 // XMM4/XMM5/XMM6 and XMM3 where retail has XMM3/XMM6/XMM5 and XMM4; the side's home is one slot above retail's (u and the side
@@ -792,6 +799,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
 // field then actual opacity value storage: 265/269/265/269/276/278/276/278.
 // Original product, its intermediate, signed zero, record publication and complete body restored.
+// Round 545: Native color/width default producers, aggregate/library color seeds,
+// separate/both defaults and positive state arms 336/577/561/615/336/578/558/616. All original
+// output producers and body restored; frame 0xa8/0xac and spill homes remain.
+// Round 548: Complete double length residence in vertical/planar/camera-pair subsets
+// 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
+// NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1181,6 +1194,17 @@ void __stdcall function_43720(s_43740_input *input)
 // readonly aggregate/sparse library copy, count from published request 79/105/105/79;
 // count from producer header 81/105/105/81. Extra producer forms require exact
 // equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
+// Y547: Fresh submitted identity reassigned to the original tag, with shader-relative
+// normal/two-use signed count/direct position masks 0..7: 62/67/64/66/62/67/64/66.
+// Exact-only field-result forms restored; early tag/EBP and signed-slot/shader homes remain.
+// N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
+// nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
+// complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
+// Round 33 (m3 lane 18, fast; 0x42b20 checked each time): a long slot index declared at entry for
+// both arrays 79 (223 bytes, 0x42b20 60); the record as one aggregate initializer 87 (229 bytes,
+// padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
+// filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
+// (203 bytes). All restored; the early EAX/EBP tag split remains.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

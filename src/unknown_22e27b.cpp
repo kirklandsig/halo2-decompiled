@@ -377,6 +377,15 @@ static inline real interpolate_linear(real a, real b, real t)
 // guarded do loop 9; split restart initialization 9; explicit restart branches 9; nested continuation 9;
 // combined two-point interpolation with staged scalars 26, with copied input records 151 (611 bytes).
 // Original index reads, helper contract and complete body restored; the boundary edge and table schedule remain.
+// AC496: Complete combined restart/disposal action, byte/word/dword/long,
+// conditional producers 310/330/318/318; test-produced results 265/288/267/267.
+// NOT kept: no exact match; original independent outcomes and whole body restored.
+// Single disposal-to-postprocessing exit 1; original guarded interpolation restored.
+// P285: Complete normalized Boolean policy producers, eager outer restart/inner restart/disposal
+// subsets 1..7, then complementary rejection predicates: 213/223/256/252/260/238/247/1.
+// All restored; the high-boundary miss still bypasses the common restart-byte test.
+// Additional loop-only/all-site compound/logical restart accumulation: 184/11/186/16.
+// NOT kept: redundant-state forms do not match; original false start and byte producers restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

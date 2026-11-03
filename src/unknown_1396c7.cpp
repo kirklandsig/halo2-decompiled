@@ -65,6 +65,11 @@ s_player_state *function_16f3a0(long index);
 // for z, before or after y, 57/57. Diagnostics: 2, 4, 6, 8, 16, 17 unused initialized locals before the eye 28;
 // 18, 19, 20, 24, 28, 32 57 (all three flip together, so a local's rank never separates z); later reads of up i/j or k 123/101 (no
 // flip); a separate global for up i/j 28. Retail needs z memory-first with a value x/y use height-first.
+// Round 52 (lane 14, fast: base 66 at 609 bytes against plain 28): a volatile later read of the named negation (diagnostic, not kept) gives retail's three
+// products exactly, x/y copying and z memory-first, 108 at 616 bytes for its store: retail's height is still live after z, and no later use shows in
+// its code. An unused later local 79 (removed early: z in place); z written before y 79 (the last row goes in place), z first 79. On the named height:
+// z before y 70; a const reference or a local for k 66/66, a vector pointer for k or i/j 66/66, a const reference height 66, sides swapped 66, k's
+// product named ahead 66. On the expression x/y: the z sum reversed 79, all sums reversed 79, z built with `+=` 79, z's product named 79.
 // @retail 0x1396c7
 void function_1396c7(long a, point2f *point)
 {
