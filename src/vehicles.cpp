@@ -603,6 +603,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M338: Test-owned angular offset/gear/signed rate outcomes, subsets 1/2/4/3/5/6/7 and final flag arms:
 // 211/195/126/224/211/195/224/234. Original body restored; velocity receivers and early 1.0/SSE/x87 homes
 // remain. NOT kept: no gain; non-retail gear-store/length forms restored.
+// F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
+// vector workspaces 225/126/225/126/225/126/225/225.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2464,6 +2467,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // 94/33/33/94/94/33/33/94 (plain 33, first +0x1e2). NOT kept (review): left/right split
 // into base stores plus -=/+= stages, a statement order picked by score from four equivalent
 // graphs (two give 94); body restored at 42. Native first magnitude precedes the turn product.
+// F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
+// original/forced-inline existing helper 213/213/213/213/213/213/213/213.
+// NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3683,6 +3689,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M338: Entry flip truth in bool/byte/short/long, positive/complementary channels:
 // 136/159/240/237/169/169/244/241. Original body restored; projection/cross ranks and angle/trig homes
 // remain. NOT kept: no gain; unsupported truth widths/polarities restored.
+// F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
+// 173/173/159/159/173/173/159/159.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
