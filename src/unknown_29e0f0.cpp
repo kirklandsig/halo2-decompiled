@@ -249,6 +249,10 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // AC488: native candidate range/type, best-score/validator and final-selected admission
 // nesting subsets 1/2/4/3/5/6/7: 390/390/390/390/390/390/390; all with native long group 461.
 // Original body restored; selected defaults, root/group roles, point bitmap and pass homes remain.
+// DH312: Single native input reads through own addresses, five direct consumers then
+// entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
+// own-address and one-use aliases did not match; the record alias also demotes
+// the caller. Original full body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

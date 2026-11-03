@@ -1003,6 +1003,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
 // 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
 // grow to 874/782, frame still 0x1a4; originals and all observations restored.
+// M333: Actual query-mask conditional/zero-default/full-branch/three-default producers:
+// 206/215/207/211; each with distinct policy/damage/preference verifier names repeats
+// those scores. Frame 0x1a4 and first verifier expansion remain; original full body restored.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -4659,6 +4662,9 @@ struct s_damage_object_creation
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.
 // Native handle/offset and detached-mask homes remain unresolved.
+// N336: Combined/separate admission returns, section/tag cleanup joins and detach continues
+// 174 each; bounded-search result and direct selected-node scan 217/217 (811/808 bytes);
+// piece-failure continues 174. Original complete body restored; handle/offset and later homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

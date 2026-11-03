@@ -280,6 +280,10 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // B383: Standard forward/backward copy of the genuine two planar components,
 // each with long/bool/byte/short success: 432/550/529/437/432/550/529/437.
 // NOT kept: all forms lose ten matched callers and regress; original scalar transfer, result and whole body restored.
+// DH312: Terminal-point actual component-array loops with long/dword/short/byte
+// ordinals: streaming 478/478/549/549; complete native point publication 537 each.
+// NOT kept: every form regresses the other matched helper user. Original shared
+// producer and complete body restored; independent normal homes and byte/tail state remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,
