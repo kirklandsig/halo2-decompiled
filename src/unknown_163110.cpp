@@ -379,6 +379,10 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 128: on the two-helper 6 diagnostic, generic one-expression distance 34; position array x 6;
+// normal array x 6; both array x forms 6; position pointer with array x 16; normal pointer with array x 14;
+// both pointers 12; plane3f input/output views 6. NOT kept: the separate top/bottom helper without a match;
+// original helpers and body restored.
 // Round 103: the existing matrix normal rotation 28 (same code); on the top/bottom 6 form, normal pointers
 // or a named normal i 14 each, source/matrix/output formal ranking 6, the final x product folded into the
 // store, normal-first or x-first reassignment 6 each, final i through source 6, all distance normals through
