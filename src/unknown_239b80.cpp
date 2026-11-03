@@ -797,6 +797,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Lane 13 r58 (fast): a `short total = count` copy (as matched 0x23a160) for the previous point and the loop 133;
 // for the loop only 129 (same code); the previous side re-derived from `distance >= 0.f` at the loop end 258; the
 // previous distance folded into the side's initializer 133; `!(distance < 0.f)` for the side 130.
+// B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
+// capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
+// NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

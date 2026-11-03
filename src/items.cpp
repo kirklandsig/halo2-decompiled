@@ -676,6 +676,9 @@ struct s_item_collision_bsp
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
 // restored; protected plane-index width, plane joins and pending spin-k homes remain.
+// DH321: Real/double raw pending-k carriers after i/j scaling, optional random vector,
+// final seed update or scale production: 211/219/219/211/293/286/286/295. NOT kept: one-use/precision
+// forms lack equality; original spin, random draws, protected plane contract and body restored.
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
@@ -1228,6 +1231,9 @@ struct s_item_flags_view_10b850
 // 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
 // falls to 0x148 but scores regress; all snapshots, original field reads, helpers
 // and body restored. Entry Boolean and collision/carrier/rotation homes remain.
+// DH321: Existing shared rotation dot/staged-cross/cosine-scale families, masks 1..7,
+// then all with ordinary helper inline: 858/884/876/876/914/927/884/1926. NOT kept: mixed-read/native-
+// vector storage forms lack equality; original helper, inputs, includes and full body restored.
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
@@ -1658,9 +1664,15 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
 // NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
 // paired point setters and body restored; return-byte, contact/event and release homes remain.
+// N346: Immutable positive twice-used spin bool/byte/short/long, direct/conditional:
+// 140/140/173/173/177/177/176/176. Original mutable spin, paired setters and full body restored;
+// NOT kept: unmatched predicate/representation forms. Return-byte and release/event homes remain.
 // AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
 // entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
 // restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
+// B395: Captured-spin logical OR on paired point setters, result/spin-first with
+// bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
+// regress; original bitwise join, two-use spin value, helper and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

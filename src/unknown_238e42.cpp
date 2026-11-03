@@ -1078,6 +1078,10 @@ bool __stdcall function_2399da(long controller_index)
 // Round 390: Two-stage selected-pointer presence then full identifier validity,
 // positive/negative bool/byte/short/long outcomes: 106/106/110/109 repeated.
 // Original complete body restored; identity/rank EAX/ECX ownership and extra move remain.
+// Round 67 (m3 lane 1, fast): own rank read right after the membership call, ahead of the identity test 90
+// (same code); a `controller_mask` local for the six dialog masks 176 (418 bytes); the identity test as
+// `xuid != NULL && xuid->qwUserID != 0` 90; `own_rank >= rank` 90; `rank != NONE` arm first with the
+// over-rank denial as its first test and the removal in the else 95 (437 bytes).
 // Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
 // removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
 // @retail 0x2393ae

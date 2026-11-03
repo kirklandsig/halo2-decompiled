@@ -984,6 +984,9 @@ real normalize2d(point2f *v);
 // B388: Independent trajectory outcome transferred to outer validity at the final join,
 // bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
 // 193/193/153/173. All regress; original two producers, calls and return graph restored.
+// DH321: Immediate successful retry-output publication with bool/byte/word/long two-use
+// retry outcomes and logical/bitwise success joins on the retained facing graph:
+// 219/198/219/203/225/201/223/212. Original output guards, result transport and complete body restored.
 // AC503: First-type/speed/normalized completion guards, seven subsets 135 each; terminal
 // request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
 // gain appears only with combined forms. Original full body restored; separate facing/default

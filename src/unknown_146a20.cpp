@@ -282,6 +282,11 @@ bool g_47f05b;
 // dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
 // as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
 // `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
+// Lane 12 r86 (fast with 0x146ac0/0x146b80/0x146e30/0x22c3e0): g_479884's NONE stored after both
+// constructions 44 (140 bytes); the buffer as `(void *)((dword)block + 0x30)` 34 (same code); a byte
+// block with `&block[0x30]` and the pool built with `()` 34 (same code); the stores ordered g_479880,
+// g_479884, g_479890 39; header: the size mask moved from the fixed base into the derived constructor's
+// base argument 34 (all 57 functions of the header's ten files unchanged).
 // @retail 0x146a20
 void function_146a20(void)
 {

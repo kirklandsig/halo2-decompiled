@@ -418,6 +418,10 @@ extern byte g_51ec11;
 // On the way: helper taking pointers, rows i,j,k stored k,j,i 68, rows k,i,j stored j,k,i 56; in the body without the pointer 259-269; with the pointer rows k,i,j stored j,k,i 63, stored i,j,k 53; shared with the roll axis
 // 232 (1326), 62, 95; forward.i through the command 227 (1326); speed at function scope 194; plain rows through the pointer 263-265; rows through a side pointer 136; forward pointer before the side fill 190, at the function top 44 (aligned 27: frame homes shift, not taken);
 // side filled j,k,i 281; product text flips in the rows and roll 53 (same code); cross rows k,j,i 79, j,i,k 52; one-expression rotated rows 52; cosine first 59; trig inside the roll block 47; v after axis 232; `cosine * v + rotated` 45.
+// M3 lane 9 r83 (fast, 0x23d790/0x23d030 stay matched): movement.k assigned before i/j 237 (1329 bytes); the free
+// position rows as `camera + speed * movement` 89; the command position stored before the camera state's 125 (1330);
+// the pitch clamp as an if/else chain into the local 274 (1326 bytes); the zero distance stored before the offset
+// copy 101. Zero XMM3/XMM1 and the side/up/roll allocation remain.
 // Round 66 (m3 lane 10, fast): side as an aggregate initializer `{ forward.j, -forward.i, 0.f }` 89 (same code); the up
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
