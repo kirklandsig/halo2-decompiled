@@ -4997,6 +4997,20 @@ struct s_membership_update_snapshot
 // EBX, update reloaded from the stack) and the host-lost arm moves first. On it: `else` around the host-lost arm 772/349;
 // one exit with a late `result = true` 790/350; a named version and update count for the first loop 772/349 (same code);
 // the opening `bool result = ...` test with no later store 813/359, with the late store 809/353.
+// Round 47 (lane 15; plain unless marked, exact aligned line counts in brackets): the lead. Retail's first two member loops, the
+// last player loop and every failure come from a result chain with no goto: typed update records (member change 0x104: old/new
+// index, words, has_properties, properties_valid, properties; player change 0x140), `bool result = base == NONE || base == value4c;`,
+// `for (i = 0; result && i < count; i++)` with `{ result = false; break; }` on each failure in the first two loops (the entry jump
+// and head test appear, aligned lines 151 -> 73, fast 744), each phase under `if (result)`, memset on player_indices at both sites,
+// direct change fields per player case with a player pointer in case 2: 2589 bytes, 745/745 instructions, fast 462. One shared `i` for
+// the first two loops fast 453; `if (added == mask) {...} else result = false;` merges its failure as retail, fast 363, plain 457;
+// `long old_index = new_to_old[i]` in the state loop [114]; 0x5f900 storing unknown00, flag1, unknown04 gives retail's 0x72e0 cursor
+// base and stays matched [104]. NOT kept: the `result &&` head is implied by the breaks (without it m1 609 at 2618 bytes), so it needs a
+// match. Left at 457: slot groups (retail i+player cursor 0x14, change cursor 0x18, moved 0x1c, count 0x20, base copy 0x24, added 0x28,
+// removed 0x2c; ours removed+cursor 0x14, i 0x28) and a register rotation from the second member-state memset on (zero ECX, pointer
+// EDX). No gain on it: renames of the masks 461 fast (at the 453 stage), declaration places of the masks and i 363 fast each; other loops sharing i 363 fast, states+players
+// sharing 473 fast; direct indexed fields for the first/second/both loops 721/646/754 fast; named index locals and player locals 457;
+// bit-first mask tests 457/457; nested player validation with shorts 457 [110]; other 0x5f900 store orders lose 0x5f900.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {

@@ -2202,6 +2202,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N336: Independent first-path mesh/part declaration scopes before the input view or after
 // status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
 // its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.
+// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
+// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
+// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
+// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
+// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
 // Round 79 (m3 lane 9, fast with 0x24590): the final rescale's counter as long instead of short 542 (kept, 3130
 // bytes: that loop now unrolls exactly as retail's). On 542: the dynamic normal normalized first 622; one scale
 // local for both normalizations 542; the weighted sums with the base term first 542; the first arm's outputs

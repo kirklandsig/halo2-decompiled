@@ -618,6 +618,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // (1676); case 1's 0x25c820 and the release one as a single call 457/226 (1592); with the walk 465/212 (1592); with
 // the walk and the inline copy 477/200 (1656); with the short saved state too 476/200. In all of them the actor stays
 // a stack argument, in EDI, with the index in EBX (retail actor EBX, index EDI).
+// Round 203 (fast with 0x1e34e0): `update = sample = true` 413; motion/context at function scope 412;
+// the prior state read after the flag declaration 412; a for loop over the node index with `next` 453
+// (1600 bytes); the sampler failure clearing the sample flag with the 0x264b50 test in its else 452.
+// BLOCKED-BY 0x2641c0 (retail inlines it here; its noinline declaration sits in src/unknown_265cb0.cpp,
+// another lane's file this round). Dropping that declaration inlines it into 0x264210 too (round 114), so
+// the lead is a form that inlines it here but not in 0x264210.
 // Round 35 (m3 lane 17, fast with 0x1e34e0): prior state as short 413; the sampler's result in its own
 // `context_valid` flag (initialised false, tested for the 0x264330 call) 415 (frame 0xa0 and 1616 bytes as
 // retail, but `update` still takes BL and the actor stays a stack argument; a flag tested later, not kept); that
