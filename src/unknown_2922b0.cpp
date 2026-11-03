@@ -276,6 +276,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // product parts, eight non-original pairs: 616/622/614/628/624/627/624/627.
 // NOT kept: shared dots gain at most four and change the sum trees without a match.
 // Original body, helpers and all in-place copies restored; success/input/minimum/hit homes remain.
+// DH311: Joint actual equal-size retained-input/center, basis and final-projection lexical
+// identities, seven family subsets then complete alternate vocabulary: eight at 618. No native home
+// moves; original names/body restored. Success/input/minimum/hit and rotation homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

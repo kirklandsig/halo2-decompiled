@@ -386,6 +386,11 @@ public:
 // to the stack, 0x175270 100; retail has the flag in AL kept in BL and the location stacked in EDI); on it the
 // location's first/last links through two field pointers 248, the element taken from the allocation result
 // 248; data_datum_index on `head & 0xffff` 155 (698 bytes).
+// Round 61 (m3 lane 10, fast with 0x175270): the head/offset set-up inside an `if (child_count > 0)` guard 51
+// (diagnostic only, it repeats the loop's own test: head and offset then load after the zero-trip test as retail,
+// but the counter's zero store moves after it too); the guard with the child table indexed by the counter 60
+// (frame changes); the guard with a pretested while and the increment first in the tail 100; the allocation's
+// break first and the initialization unconditional 54 (same code); `child_count > local_14` 55.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
