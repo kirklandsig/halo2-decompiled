@@ -1379,6 +1379,9 @@ struct s_looping_detail_request
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
 // first-player expansion remain; frame 0xc agrees on the original body.
+// Round 345: existing bounded-draw/next-player/camera forceinline declarations, seven subsets; all with
+// nested generator: 110/110/110/110/110/110/110/110. Original body and contracts restored. Detail/offset
+// transport and first-player expansion remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

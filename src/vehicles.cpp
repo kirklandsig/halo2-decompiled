@@ -2403,6 +2403,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // DH300: Existing spin helper advance owned before the field store, native/staged, with
 // per-use/once period 42/151/42/151; gate-scoped input 51/157; new advance with joined final
 // output 78/191. Original helper and complete body restored; turn-product and spin-store schedules remain.
+// Round 345: completed throttle/side-result/turn-clamp scalar phases, seven subsets; all phases with
+// loop-owned contact ordinal: 42/42/42/42/42/42/42/42. Original body and contracts restored. Turn-product
+// and spin scratch/store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
