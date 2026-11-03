@@ -333,6 +333,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
 // and product ranks remain. Scores 42/87/76/90/54/82/66/90.
 // Original executable source restored.
+// P276: Four-use corner helper transform/horizontal/vertical/axis/side/output/point
+// lexical roles, independently and all together: 46 each at 983 bytes. Original helper
+// and complete body restored; plane base, selector carriers and product ranks remain.
 // DH300: Existing corner helper owns native/immutable/library transform inputs, basis plus origin,
 // immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
 // 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
@@ -340,6 +343,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Round 376: First-corner side truth produced by native tests in bool/byte/short/long,
 // false-default 190/190/194/193; complementary true-default 189/189/193/192.
 // Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
+// P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
+// axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
 // carriers and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)

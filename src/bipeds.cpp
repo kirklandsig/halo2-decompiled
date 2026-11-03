@@ -3022,6 +3022,12 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // subsets 1/2/4/3/5/6/7: 600/600/608/600/608/608/608; all with walking-only state receiver 611.
 // Reduced control 600, full 561; original complete body restored. Flight scalar/result-byte
 // homes and vector scheduling remain; existing matched flight contract preserved.
+// P276: Actual typed animation-state/turn-tag/read-only receiver subsets 1/2/4/3/5/6/7,
+// then full native unsigned state keys: fast 600 each (control 600; full 561). All actual
+// data declarations and complete body restored; flight/result-byte homes and vector schedule remain.
+// P278: Actual flight-clamp/rate, walking-limit/angle/cosine/sine/overshoot scalar lexical homes
+// independently, then all: reduced 605 each, control 605/full 561. Original body restored;
+// scalar/result homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

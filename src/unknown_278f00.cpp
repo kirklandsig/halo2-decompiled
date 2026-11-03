@@ -240,6 +240,9 @@ bool function_a7670(long object_index);
 // P269: native body-array snapshot at pending-island/retry boundaries, each with
 // bool/byte/short/long admission on consumed-index/live-bound/indexed-cleanup graph:
 // 275/275/280/280/275/275/280/280. Exact-only field-pointer forms restored; native homes remain.
+// P277: Actual selector/list/island-index/island/first-count/second-count/admission
+// home identities separately and together on consumed-index/live-bound/indexed-cleanup
+// graph: 153 each. Original body restored; entry scratch phase and native homes remain.
 // @retail 0x278f00
 void function_278f00()
 {

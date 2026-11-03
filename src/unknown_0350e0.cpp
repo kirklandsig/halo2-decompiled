@@ -2292,6 +2292,10 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Round 535: complete squared-norm parts, uniform centered sample producer and independent
 // entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
 // Original body restored; delayed saves and the post-fstp count comparison remain.
+// P279: Existing target inline / random-helper ordinary inline / nominal real-return contracts,
+// subsets 1/2/4/3/5/6/7: 57/57/63/57/63/63/63; ordinary static random helper 57.
+// Both other body users preserve their calibrated scores. Original declarations, helper and body
+// restored; frame 0xc, delayed saves and the split post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2411,6 +2415,9 @@ real magnitude3d(vector3f const *v);
 // P275: Complete current/target/both input snapshots 246/288/266; same native vectors
 // normalized in place 245/287/265; both inputs captured at entry 272; both with early
 // normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
+// P277: Existing scale helper at current/target/both/output/current+output/target+output/all
+// boundaries 191/170/190/170/191/170/190; double-factor helper at all boundaries 224.
+// Original body restored; raw-length/dot/angle homes remain with retail frame 0x38.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2535,6 +2542,10 @@ s_cached_input_list g_5234e8[4];
 // DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,
 // immutable complete zxy, then zxy with full position memcpy: 136 each (fast control 136).
 // Original products, position assignment and complete body restored; list/cursor homes remain.
+// P279: Bounded selected-count/view and Boolean object-predicate native domains,
+// subsets 1/2/4/3/5/6/7: 141/145/140/140/144/143/143; complete byte count/view 146.
+// Reduced control 139/549 versus full 132/554. All regress; original full-width
+// carriers and body restored; retail frame 0xa0 and list/output/index split remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2689,6 +2700,10 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // branch/conditional clamp, safe entry parameter-copy and bounded unsigned-prefix
 // combinations: 377/321/435/321/377/321/435/321. Complete original body restored; frame 0x30
 // and retail length agree, prefix/state and ordinal homes plus decay rotation remain.
+// P279: Requested-copy/found-initialization/uninitialized-tail declaration admission at entry,
+// subsets 1/2/4/3/5/6/7: 413/335/317/413/413/335/413; all with the existing swap
+// scratch declaration separated from assignment 413. Original complete source restored;
+// frame 0x30 agrees, prefix/state and ordinal homes plus the rotated decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
