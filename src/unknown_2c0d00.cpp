@@ -1631,6 +1631,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Typed-selection, trace-admission and found-result branch orientations and their pairs/all
 // 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
 // and metadata homes remain; original body restored.
+// N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
+// step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
+// scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

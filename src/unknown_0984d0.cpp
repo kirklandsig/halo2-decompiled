@@ -504,6 +504,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // items live endpoint 210/212; data live endpoint 203/205. Validity/cursor homes and loop-entry reload
 // remain; original body restored.
 // Unguarded live endpoints 207/150/206/201 NOT kept: mutable count can be negative.
+// N327: One actual element ordinal reused by validation and notification; signed-byte/byte/short/long
+// storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
+// validation ordinal, separate long notification ordinal, helper and both inherited local-slot
+// observations restored. Validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

@@ -2291,6 +2291,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
 // role names 63. Original draws, declarations and complete body restored; lazy saves
 // and the post-fstp count comparison remain.
+// N325: Complete range/normalization/extent validation-result producers, seven subsets,
+// 62/57/57/62/62/57/62; all with outer admission result 62. Original tests and
+// complete body restored; frame agrees, lazy saves and the post-fstp count compare remain.
 // Round 535: complete squared-norm parts, uniform centered sample producer and independent
 // entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
 // Original body restored; delayed saves and the post-fstp count comparison remain.
@@ -2539,6 +2542,10 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// N326: Native absolute-depth / named ratio / projected-radius producers, seven
+// graphs and direct final score publication: 153/136/136/153/153/136/153/153, fast control 136.
+// Absolute forms add frame 0xa4 versus 0xa0 and regress; original floating tree,
+// observations and complete body restored. Full baseline remains 132.
 // Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
 // Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
 // DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,

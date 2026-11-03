@@ -2917,6 +2917,10 @@ static inline short sound_voice_find_available_channel(char type)
 // same scan scores 134. On that graph, long private search input/complemented status/both 107/130/60.
 // Original helper, byte result and full body restored.
 // N319: Split bitmap rejection through continues/nested guards, free/streaming first, byte/Boolean result: 96/96/99/99/113/113/113/113. Original helper and full body restored; frame twelve/eight, result normalization and early failure tail remain.
+// N325: Complete branch-owned driver/buffer defaults, byte/Boolean results, then
+// paired chained defaults: 91/126/120/133/153/149/137/130. Driver-only defaults 91 at 432/430:
+// NOT kept: five-point gain below eight while above 30. Original defaults, byte result,
+// helper and full body restored; frame, shared sentinel and search/failure joins remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

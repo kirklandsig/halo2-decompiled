@@ -376,6 +376,10 @@ extern byte g_51ec11;
 // Actual side/roll-coefficient/movement phase endings and their pairs/all 89/89/89/89/89/89/89; all
 // with transformed-displacement phase ending 89. Zero/normalization/up homes remain; original body
 // restored.
+// N327: Complete control-produced roll retained through both trig uses,
+// branch/conditional/default/additive updates with producer/entry result declarations:
+// 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and
+// complete body restored. Zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -1293,7 +1293,7 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 
 /* fills the biped's character physics input for its physics mode: walking
    (1), flying (2), dead (3), animation driven (4, 5) or grabbing (6) */
-// score 596 (was 596): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
+// score 585 (was 596): Frame 0xf8 versus 0xfc; position, ground, material and animation homes differ.
 // Earlier: (was 612; 635; 1497 before biped_eye_raise was forced inline, 636 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): biped_eye_raise is forced inline (below); the frame, flag homes and argument scheduling still differ.
 // Outer-only inline control 1566; native case order 1562; full vector setter 1555;
 // use-site animation flags 1578; consistent ground observations 1502; default boost 1563;
@@ -1367,6 +1367,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // then eye+nearest-center/center+nearest-eye/eye+body+nearest-center:
 // 612/605/614/622/609/604/609/605. Several reach 2828 bytes; frame/material/animation
 // homes still differ. Original point outputs, helpers and complete body restored.
+// N327: Animation-case receiver reacquired after physics initialization, reused/typed/direct/byte
+// receivers 585/585/604/585; those with actual packed getter return 599/599/612/599. Keep the existing
+// state reassignment at case entry: plain 585, 2828 bytes as retail, no other measurement changes or
+// match losses. Retail reloads this receiver before the case calls. No new local or helper. Frame stays
+// 0xf8 versus 0xfc; original packed output observation and all other phases retained.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1536,6 +1541,7 @@ void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 	case 4:
 	case 5:
 	{
+		state = (byte *)biped + *(short *)((byte *)biped + 0x12a);
 		point3f body;
 		c_type_709360 current;
 
@@ -4071,6 +4077,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 373: Native int/unsigned-int/dword/short/word/char/byte publication ordinals
 // and plain output cursor: 145/145/145/145/145/145/145/175. Original loop/helper/body restored; normalized
 // axis SIMD ranks and coefficient/rotation homes remain.
+// N327: Complete native up-field rotation/reconstruction ownership, ordinary/staged side/up cross subsets
+// and producer/entry side declarations: 170/170/171/171/170/170/171/171 at 887 bytes. All shrink the
+// frame to 0x18 versus retail 0x24 and regress. Original native up snapshot, rotation helper and whole
+// body restored; normalization SIMD/trig/rotation homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

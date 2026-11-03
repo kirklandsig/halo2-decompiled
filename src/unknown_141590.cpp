@@ -1012,6 +1012,10 @@ void function_143250(
 // P264: single-consumer real arithmetic owned by second-band product/sum/all,
 // third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
 // Original scalar graph, workspace, publication phases and complete body restored.
+// N325: Native same-type scalar workspace reuse across complete band boundaries,
+// six distinct boundary graphs, double-only reuse and first-producer declarations:
+// 1767/1767/1788/1766/1788/1780/1767/1788. All 83 typed matrix outputs audited unchanged; original scalar
+// lifetimes and complete body restored. Frame, rotation admission and basis/matrix homes remain.
 // Round 482: Complete seven-row third-band producer-ready columns 0/1/2/3/4/5/6/all
 // give 1952/1805/1778/1767/1779/1786/1859/2210. Exact scalar sequence and all 49
 // matrix values retained in every trial; original publication graph and body restored.

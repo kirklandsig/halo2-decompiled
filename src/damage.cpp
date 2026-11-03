@@ -712,6 +712,9 @@ void function_d6a70(long object_index)
 // 1/2/4/3/5/6/7, then branch-produced flags: 197/148/161/197/194/156/174/174.
 // NOT kept: cursor 148 caches the array base retail reloads each iteration;
 // cursor+bound 156 gains only three and grows to 617/610 bytes. Original body restored.
+// N328: Early pool/header ownership ending after notification, fresh/cached initial store and twice-used
+// post-clear receiver: 159/192/183/194/165/190/184/185. Original body restored; frame stays 0x4c versus
+// 0x50 and pool/object/index/owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -2414,6 +2417,9 @@ struct s_unit_event
 // M322: Direct section/seat/child handle observations, seven subsets 472 each;
 // all with direct seat bound 503 at 1896 bytes. Original body restored;
 // permutation stack/EAX transport, register homes and sixteen-byte excess remain.
+// N328: Native section/seat/child last-consumer scopes, seven subsets, then one reset name carrier across
+// all phases: 472 each. Original body restored; permutation stack/EAX transport, call-cycle register
+// homes and sixteen excess bytes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
