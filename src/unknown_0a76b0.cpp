@@ -931,6 +931,9 @@ extern vector3f *g_4687b0;
 // seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
 // Original fields, scalar producers, vector operations and full body restored;
 // frame 0xcc and tag/index/direction spill and SSE schedules remain.
+// P285: Existing complete scalar-output setters at left/normal/position producers,
+// subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
+// Original scalar trees, stores, helpers, scopes and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
