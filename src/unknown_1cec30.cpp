@@ -1045,6 +1045,9 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// N342: Fixed-path reset flag as bool/byte/short/long enabled truth 93/93/93/93,
+// disabled complement 94/94/94/94. NOT kept: one-use predicates do not match;
+// original constructor, two-use slot, fresh post-reset lookup and full body restored.
 // Round 550: Sole-return done exit with constructor/assignment/set/memcpy/memmove
 // copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
 // NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,

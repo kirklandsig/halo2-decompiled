@@ -666,6 +666,9 @@ struct s_item_collision_bsp
 // Round 541: Separate actual contact/axial marker outputs, contact-query/axial-function/spin-after-contact
 // lifetime subsets 0..7: 217/211/217/217/217/211/217/217. Expanded frame 0x110; narrow
 // contact scope reproduces 0xa0 and the original code. Original marker, spin and body restored.
+// DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
+// 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
+// all controls unchanged. Original body, pending-k join and protected plane contract restored.
 // P292: Common contact completion, bool/byte/word/long admission, compound then nested
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
@@ -1637,6 +1640,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N337: Late selected-parent presence/missing predicates, bool/byte/short/long,
 // 146/146/151/150 in each polarity. NOT kept: conditional predicates remain unmatched;
 // original parent handle, return byte, release helper and complete body restored.
+// AC501: Completed spin/expiry-owner/item-tag phase scopes, masks 1/2/4/3/5/6/7,
+// then all with active-phase spin declaration: 140/140/143/140/143/143/143/143.
+// Original complete body restored; return-byte, release and event homes remain.
 // N339: Staged release rate-to-scale accumulator with native aggregate/setter/array/
 // copied-vector outputs, receiver before then between factors:
 // 140/140/171/237/140/140/140/237. Original helper and full body restored.
