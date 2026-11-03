@@ -313,6 +313,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // `!(flags & 0x2000)` 939; the four record option bits as `(flags & mask) != 0` 902 (same code); the zero vector
 // copied before `if (!local_21) continue;` 909; the shared response fraction declared at function scope 902; the
 // body-slot clamp as a NONE default plus `if (local_14)` 917 (4283 bytes). Original body restored.
+// Round 81 (m3 lane 12, fast): the record's object index named once (three uses) 926 (4283 bytes); the clamp,
+// its test and the simulating query on the record's byte field directly 955 (4244); the second entry flag
+// renamed 902 (same code); the record flag word read at each bit test 964 (4248); the entry flag as `>=` 1009.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

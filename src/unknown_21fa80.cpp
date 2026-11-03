@@ -223,6 +223,10 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // (hoisted above the `changed` test, where retail computes it after) but the /Op float fabs still rounds; that
 // with mode/direct read before the gain 546, with a value (not reference) gain 542, with `0.1f > fabs(...)` 542, with
 // the two-case mode switch for the voice sends 541 (1902 bytes). Original body restored.
+// Round 81 (m3 lane 12, plain unless noted): lane 18's fall-through switch for the mode sends rebuilt 542 (still
+// three under the bar); with one settings record for the voice branch 559 fast; direct and mode before the gain
+// 552 fast; `switch (mode) { case 0: add; break; case 1: add; add; break; }` 568 (1879 bytes, not tail-merged);
+// the voice pointer formed before the stream's voice-properties query 573 (1877). Original body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

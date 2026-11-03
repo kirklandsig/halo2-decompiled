@@ -648,6 +648,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // first); the reference pointer `const *const` 67; the first test as `reference spread - candidate spread > 0` 72
 // (516 bytes); the candidate direct-initialised `candidate(current)` 67; `best = candidate;` before
 // `improved = true;` 71 (517 bytes); the loop counters declared before the loops 67 (same code).
+// Round 81 (m3 lane 12, fast): the reference selected before the candidate copy 128 (512 bytes); the
+// improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
+// spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
+// declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
