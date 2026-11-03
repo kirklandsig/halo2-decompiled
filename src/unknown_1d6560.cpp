@@ -245,6 +245,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // B401: Level-layer preclassification before handle/after selected body, byte/short/long/dword:
 // 105/107/107/107/93/128/125/125; caller 6/6/6/6/6/194/194/194. NOT kept: unmatched
 // one-use outcomes and every caller loss; three-point reduction also below gate. Full body restored.
+// B403: Independent level/primary/object/secondary case returns and level-primary,
+// level-object, level-secondary, primary-secondary return pairs: 96 each. Original
+// result joins and full body restored; caller and all file controls retain their scores.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

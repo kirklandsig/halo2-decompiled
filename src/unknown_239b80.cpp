@@ -811,6 +811,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B401: Crossing-only prior-side updates, inside/outside polarity, entry/intersection-completion
 // and copy/Boolean-transition owners: 163/223/209/219/219/224/214/220. NOT kept: unmatched
 // conditional state forms regress; original unconditional tail, complete body and helper restored.
+// B403: Indexed-output prospective accepted-count decisions, reject/accept/conditional/negated
+// rejection, native short then signed-short-normalized long: 217/255/255/255/238/260/236/260.
+// NOT kept: all regress; original incremental count, indexed outputs and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

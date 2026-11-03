@@ -1240,6 +1240,10 @@ struct s_item_flags_view_10b850
 // B401: Independent fixed predicate with unified post-query position/settle outcomes,
 // byte/word/long/dword bit results then three-state results: 859/880/880/880/882/905/902/902.
 // NOT kept: unmatched conditional results enlarge length/frame; original full body and helpers restored.
+// B403: Complete accumulator base/additive/both scalar inputs 820/813/816;
+// base/additive/both with complete scaled products 816/849/813; reversed paired
+// input priority without/with products 816/813. NOT kept: all remain unmatched;
+// original accumulator and full body restored. Frame and entry Boolean homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1679,6 +1683,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // B401: Complete unchanged-state conjunction accumulator, positive/negative spin truth,
 // bool/byte/short/long: 179/179/186/187/176/176/179/181. NOT kept: unmatched result
 // representations regress; original success accumulator, helper, paired setters and full body restored.
+// B403: Completion-owned damping result after the call, bool/byte/short/long,
+// default-zero 131/129/175/170 and exhaustive outcomes 176/176/180/176.
+// NOT kept: branch-set outcome flags require equality; 129 recovers the return-byte
+// home at retail length but remains unmatched. Original two-use spin and full body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
