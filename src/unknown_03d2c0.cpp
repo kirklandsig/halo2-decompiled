@@ -56,7 +56,7 @@ struct s_3dfe0_cache
     byte unknowna8[0x58];
 };
 long function_d1850(long object_index, bool value, s_effect_color_query *query);
-void function_d4080(long type, s_effect_color_query const *query, s_lighting_record *record, long flag);
+void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record);
 struct s_object;
 s_object *function_badc0(long object_index, dword mask);
 void function_3dfe0(long cache_index, long object_index, real priority);
@@ -126,7 +126,7 @@ s_lighting_record *function_3db00(long object_index, real priority)
     if ((bool)((*(word *)(definition + 2) >> 1) & 1)) special |= 1;
     s_effect_color_query query;
     function_d1850(parent_index, 1, &query);
-    function_d4080(*(short *)definition, &query, &g_55ee60, special);
+    function_d4080(*(short *)definition, &query, special, &g_55ee60);
     return &g_55ee60;
 }
 // score 77 (was 77): retail keeps the result in esi and tests it before the

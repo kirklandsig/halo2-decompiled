@@ -1712,6 +1712,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
 // 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
 // home and frame 0x14 versus 0x18 remain.
+// Lane 16 r80 (fast): retail's xmm0 zero serves the `0.0f -` negations while `result` keeps its own slot; ours
+// folds both into one constant. Negations spelled `-(...)` 193 (identical code); result declared at the y test with
+// `return 0.0f` in case 0/default 291 (904 bytes); case 0 merged into default 194; `return 0.0f` in case 0/default
+// 193; `if (y)` 193. Body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2400,6 +2404,10 @@ real magnitude3d(vector3f const *v);
 // AC492: On the retained fallback loop/frame, explicit current/target clamp producers
 // 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
 // Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
+// Lane 16 r80 (plain): retail's dot is re-read as a float for acos (ours keeps a double copy at +0xc,
+// moving angle/sine/cosine homes); acos on a fresh dot3f 198 (1039 bytes); arms swapped under the
+// inverted test 171; sine, projection dot, cosine, then the product 170; fallback `-step > delta` 170
+// (identical); fallback delta through the nested ternary clamp 188 (1025 bytes). Body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3222,6 +3230,16 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // fades, seven subsets, then the final producer consumed directly:
 // 177/177/177/177/177/177/177/177. Original body and shared helper restored; the four-byte frame
 // gap and initial/final scratch scheduling remain.
+// Lane 16 r80 (fast unless marked plain): kind without volatile 242 (747 bytes); alpha declared ahead of kind 178;
+// the final fade through existing 0xc6b90 (property 0x11000088) 176 plain; that with kind not volatile 242;
+// with the getter's outputs zeroed (`real fade = 0.0f; bool active = false;`, retail's two dead stores and frame
+// 0x1c) and kind not volatile 231 (758 bytes: kind takes EBP, the table is not cached). Diagnostic, NOT kept
+// (re-tests result): that graph with `result = !(alpha <= 0.0f) && result;` 113 (775 bytes, first +0x58: entry,
+// both cases and frame are retail's; left the folded `test [esi+0x10a],4` and the first fade), `result &= alpha >
+// 0.0f` 116; on it the flag as word/dword/byte-cast/no bool cast/`!= 0` 113 each, the first fade read per use
+// 144, kind as signed char 220. On the if-form graph: `!(alpha > 0.0f)`, `0.0f >= alpha`, a ternary, the getter's
+// return tested, the header unnamed, result initialised false 231 each; kind as signed char 211 (773 bytes),
+// short 226, declared after alpha 233. Body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

@@ -212,6 +212,10 @@ void function_1d56f0(s_havok_component *component)
 // that with `inline` on 0x1d0c20 73; 0x1d0c20 and its frame helper ahead of 0x1d0cf0 in the file on the 88 body 73,
 // on the original body 77; the component copied to a local at the 88 body's top 73; m_fixed in a named bool 73;
 // the published count in a named local 77. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
+// Round 48 (fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): the getter called with a const component 77 (same
+// code, still `[eax + edx + 0x40]`); `arg_4 * (real)arg_6` 77 (same code); the result transform declared before
+// the loop 77 (same code); the loop start as `local_4 ? arg_6 - 1 : arg_6 + 1` 113 (822 bytes); the step as
+// `local_4 ? -arg_4 : arg_4` 93 (819 bytes; retail's step is the constant select times the step, as here).
 // Round 140 (m3 lane 5, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): the result flag declared after the transform
 // and volume 86 (first difference moves to +0x1b); the volume pointer declared before the transform 77; both
 // declarations ahead of the floating-point control calls 77; the query info at function scope without its block 195

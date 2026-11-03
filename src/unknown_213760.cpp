@@ -1490,6 +1490,13 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // zero-initialised 153 (frame 0x1140); functional-cast handle copy 114 at 917, the same code as the write local: its two
 // real differences (close copy, checksum EAX) are one rotation step, the copy itself taking the next. Matched 0x7fb50 loads
 // its global handle before the flags zero, so a plain read loads first; `*handle` through the view does not.
+// Round 66 (m3 lane 10, fast): round 56's 7 form (header-read `else if` with `valid = true`, write success set by its
+// own test) reproduces at 7, and with a write handle local 114 (917 bytes; only the close call's `mov ecx, eax` copy is
+// missing: the flags zero takes ECX and the close copy then lands on EAX, where retail's copy takes ECX again, one
+// scratch step later). On that write-local form: the close argument as an explicit `s_file_handle(*handle)` copy 114
+// (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
+// 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
+// needs match-only forms.
 // @retail 0x213970
 void function_213970(void)
 {
