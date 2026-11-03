@@ -355,6 +355,10 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// B399: Standard prefix searches on the two award arrays: find first/second/both
+// 360/360/373; count first/second 360/361; count-find/find-count/both count
+// 374/374/375. NOT kept: every form regresses and shortens away from retail. Original
+// whole body and include list restored; scalar homes and amount-biased history cursor remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

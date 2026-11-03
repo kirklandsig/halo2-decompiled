@@ -441,6 +441,10 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// B399: Complete scalar distance producers on the native output-ordinal graph: double
+// displacements 172; native/wide squared length 170/172; native/wide paired squares 170/172;
+// double displacements with native/wide sum or wide squares 173/172/172. Original body
+// restored; extra frame word, count/departure homes and compaction remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -800,6 +804,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
 // capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
 // NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
+// B399: Pre-collector crossing with immediate prior-side publication plus four complete
+// denominator/fraction/clamp decisions, bool then byte: 239/241/239/241/239/241/239/241. NOT kept:
+// every exact-only combination regresses; original state, fraction and complete body restored.
+// Count/prior-side and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
