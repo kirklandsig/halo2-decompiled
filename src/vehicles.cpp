@@ -2488,6 +2488,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
 // original/forced-inline existing helper 213/213/213/213/213/213/213/213.
 // NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
+// AC509: Shared steering magnitude conditional/complement/branch/library producers,
+// original then library torque magnitude: 122/124/122/128/142/142/142/162. NOT kept:
+// native repeated comparison is lost and code shortens; original body and spin helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

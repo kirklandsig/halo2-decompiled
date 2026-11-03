@@ -906,6 +906,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // length_squared` 250, with plane.n copied from camera->point.left 251; `0.0f != length_squared` alone 235
 // (one point, not kept); the length written i,j,k direction-first 253; plane.d as dot3f(&plane.n, position)
 // 236 (same code), with the dot3f length either operand order 251/251.
+// AC509: Signed-distance/fraction real-double domains (-/double, real/-, real/real,
+// real/double, double/-, double/real, double/double) 407/256/245/413/410/413/413;
+// complete double factor 427. Archived real quotient 236 excluded. Original projection,
+// helpers and body restored; direction/normal/zero homes and flag scheduling remain.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

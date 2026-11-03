@@ -571,6 +571,9 @@ extern point2f *g_468778;
 // AC507: Active/inactive unit-admission call results in bool/byte/short/long storage,
 // 375/375/375/375 and 375/375/375/375. NOT kept: one-use results do not match;
 // original calls, observations and complete body restored. Early carriers remain.
+// AC509: Admission rejection to the sole result return, compound/negative-result/positive-result/
+// settings-owned gates: 374/407/407/374; actor-first versions 413/435/435/413. NOT kept:
+// best gain 1; original acquisition, result, admission and complete body restored. Early carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

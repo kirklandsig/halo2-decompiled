@@ -2236,6 +2236,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// AC509: Existing decoder returns mutable/readonly output references through pointer/reference
+// formals: four ignored results 542, four directly consumed interpolation results 545. Original
+// decoder and three samples restored; status/mesh/sample homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
