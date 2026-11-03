@@ -290,6 +290,10 @@ struct s_24e9c7_bounds
 // subsets, then the complete graph with native quad point elements: eight at 125.
 // Original private record types and full body restored; early across spill,
 // eight-byte-high scalar homes and geometric SSE scheduling remain.
+// Round 33 (m3 lane 18, fast; 0x24e59f matched each time): the default bounds as one initializer
+// 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
+// long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
+// computed before the height 131. All restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

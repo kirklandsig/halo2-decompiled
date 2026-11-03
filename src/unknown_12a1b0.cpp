@@ -1744,6 +1744,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // then preparation rejection: 479/479/479/380/380/380/380/380 fast (control 479).
 // Alternate rejection alone plain 305, tying baseline; original full body restored.
 // Frame 0x11c/0x128 and request/playback/NONE/range homes remain.
+// B383: Native real views of the existing input/output gain fields, each/both,
+// each with complete request storage, then both with per-pass counts and either
+// request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
+// NOT kept: no exact representation match; original fields and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
