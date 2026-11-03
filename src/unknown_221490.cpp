@@ -869,6 +869,10 @@ extern "C" void _ReadWriteBarrier(void);
 // 99; `lRoom = lRoomHF = PIN(...)` 23; both barriers removed 28; memset of sizeof(DSI3DL2BUFFER) 21.
 // Compile-only (same registers as the full build): `= { }`, memset first, the voice pointer after the memset,
 // a forceinline memset wrapper and the zero-memory macro all keep the zero's allocation.
+// Round 32 (lane 18, fast): the shared volume helper's clamp as `volume = PIN(volume, -6400, 0)` 184 (699 bytes;
+// 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
+// pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
+// barrier removed 22.
 // @retail 0x2211e0
 void sound_driver_voice_environment_set(
 	long voice_index,

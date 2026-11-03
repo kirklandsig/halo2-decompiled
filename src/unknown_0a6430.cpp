@@ -35,6 +35,9 @@ PRIVATE byte *update_object_0a6430(long index)
 // Round 48: the 0x200 block's object read before the count 16; the count set in else arms 53 (552
 // bytes); the 0x100 compare against a long state byte 16, the states passed as &state[0x51] 16, the
 // level cast back to short 20 (550 bytes).
+// Round 33 (lane 17): the getter written index-first 16; the 0x200 block's tag index read into a local 16;
+// the 0x100 block through a header pointer (the 0x2 block's form) 16; the 0x200 object ahead of the count
+// with the 0x100 compare state-first 17; the 0x40 flag written in place at the store 36 (548 bytes).
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

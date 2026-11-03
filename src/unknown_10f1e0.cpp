@@ -2339,6 +2339,10 @@ __declspec(noinline) bool unit_submit_entry_request(short fallback_index, short 
 // reassigned, request priority as long, second NONE test un-nested, request record at function scope:
 // 16 each. Extra NONE stores, diagnostic: 54, 59, 66 (251, 256, 261 bytes) with the roles unchanged, so
 // the NONE register is whatever the index and the priority leave free.
+// Round 199: retail's calls set EAX (entry) before EDX (fallback), so the declared order stands. An early
+// `if (!0x114520) return false;` with the request block flat 98 (215 bytes); request priority captured after the
+// fallback block 85 (252 bytes); the request record zero-initialised with `= {0}` 65 (248 bytes); the index
+// declared then assigned after the priority 16; the index from an if/else on entry_index 16.
 // @retail 0x114b60
 bool unit_submit_entry_request(short fallback_index, short entry_index, long unit_index, long priority, void const *extra)
 {

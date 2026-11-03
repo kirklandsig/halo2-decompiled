@@ -1470,6 +1470,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // write-handle local 114 (917 bytes, close copy dropped), the count declared inside the write block 7, the
 // header declared before the resize call 7, `bytes_written >= 0x800` 8. Restored: goto and else-if are both
 // exact-only. Permuter (anneal, 600 s, 54 tries) on the goto/else-if 7 form: best 7.
+// F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
+// all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
+// initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
 // @retail 0x213970
 void function_213970(void)
 {
