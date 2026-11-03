@@ -243,6 +243,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // producer orders: 110/110/110/110/110/110; each product named at its own row producer
 // 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
 // four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
+// Round 38 (m3 lane 18, fast): dot3f over the address expressions `&local_1[0].forward/up` 110; the whole
+// orthonormalisation as a forceinline helper over a transform pointer 149; the dot written out j, i, k 110; the
+// helper's sum written `j_squared + i*i + k*k` 110; the axis pointers taken after both normalisations 110.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

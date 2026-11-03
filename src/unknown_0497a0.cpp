@@ -805,6 +805,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 548: Complete double length residence in vertical/planar/camera-pair subsets
 // 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
 // NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
+// Round 38 (m3 lane 18, fast): v_width renamed to sort first/last 265/265 (identical code); the colour stored
+// `outer->color = vertex[0].color = ...` 263 (retail's store order; a gain of 2, not kept); on it: source and u
+// renamed 263, transition declared at the top 263, a named pixel stored to vertex 0 then outer 263, a named strip
+// start for the tail 615 (2600 bytes), the next state's colour as a color4f 263. Retail leaves 0xa8/0xb0/0xb8
+// (after the pushes) unused and spills point y at 0xb4: its top homes sit eight bytes apart.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

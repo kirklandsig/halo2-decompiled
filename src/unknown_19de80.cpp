@@ -476,6 +476,10 @@ static inline bool teams_enabled_19e1c0()
 // AC489: First-word-only text initialization at entry for player/team/formatted families,
 // subsets 1/2/4/3/5/6/7: 425/427/435/437/451/453/467; team-only with ordinary result 609.
 // Original buffer, result and full body restored; frame/capacity homes and separate copy tails remain.
+// Round 38 (m3 lane 18, fast): the twelve token compares through one inline predicate (token, length, name)
+// 390, with the plain result 691 (both identical code); a block-scoped text buffer in each of the nine cases (one
+// shared slot, frame unchanged) 390, plain 691 (identical); an inline copy helper (length, clamp, copy; four callers)
+// with the volatile result 620 (1237 bytes). The plain result still merges even the name-call setup across cases.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
