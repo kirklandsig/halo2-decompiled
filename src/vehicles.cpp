@@ -2726,6 +2726,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // consumed scale return, crossed with distinct relative output and shared force/torque
 // mass scales: 728/728/738/738/728/728/738/738. Frames remain 0xd0/0x104;
 // original full body restored. Retail frame 0xfc and scalar/vector homes remain.
+// M327: Named squared magnitude / accumulated magnitude / completed short-vector fallback / existing normalization scale:
+// 692/740/708/692 on original output, 699/748/710/699 with independent relative output.
+// Original full body restored; frames remain 0xd0/0x104 versus retail 0xfc.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4131,6 +4134,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
 // Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
 // original full body restored. Found-index/world/clamp/final flag allocation remains.
+// M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
+// 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
+// 176/176/176. Original full body restored; found-index retest and collision/result homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4387,6 +4393,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
 // publication alone 749 fast/plain, 2974/2974 bytes; retained with original
 // bypasses and bool state. Initial SIMD/definition allocation remains.
+// M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
+// tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
+// all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
