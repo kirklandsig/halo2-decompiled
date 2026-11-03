@@ -383,6 +383,9 @@ struct s_block_candidate
 // bytes); oldest_time zero-initialised 392 (1228 bytes); best declared before the candidate ring 347 (same code);
 // the page remainder mask as `~(-1 << shift)` 347 (other code, same count).
 // Retail keeps result's NONE in EAX through the clamp and stores oldest's NONE from it. Original body restored.
+// M352: Final failure-limit observed/capped/branch-produced/complementary minimum,
+// compound/nested independent failure-category guards, eight forms 347/347/347/347/347/347/347/347.
+// All restored; frame 0x1050 versus 0x1054 and page/ring/policy ownership remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

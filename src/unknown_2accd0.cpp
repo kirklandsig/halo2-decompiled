@@ -850,6 +850,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 66 (m3 lane 10, fast; 0x2adb10 102 throughout): the header read test as `header_size == bytes` 36; the body
 // progress sum offset first 34 (same code); the header case's open test as its own if around the read 34 (same code);
 // the scratch clamp as `MIN(remaining, size)` 35; the signature-state test as `!(offset < size)` 34 (same code).
+// M352: Actual header/body progress and integer signature-comparison producers,
+// seven subsets 34/34/34/202/202/202/202; all with one shared progress scalar 202.
+// NOT kept: one-use output/result storage does not match; original body and getter restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

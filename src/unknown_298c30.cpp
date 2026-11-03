@@ -260,6 +260,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
 // read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
 // [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
+// M352: First-trig product pairs before second trig at positive/negative/general rotations,
+// masks 1/2/3/4/5/6/7 397/399/414/395/397/399/414; complete paired products 497.
+// NOT kept: early one-use products and changed real rounding do not match; original whole body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
