@@ -831,6 +831,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // AC498: Activity-owned player query and four canonical joinability producers,
 // bool/byte: 599/605/584/602/599/605/584/602. Original complete body restored;
 // unbiased EBP, allocation 0x860/0x85c and flag/clock homes remain.
+// N336: Ordinary main-buffer scopes at status/data alternatives, message/format/both,
+// 583 each; auxiliary arrays at data entry 512; all four there 583. Frame stays 0x860
+// without native EBP bias; original capacities, clear phases and complete body restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

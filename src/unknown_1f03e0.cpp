@@ -1697,6 +1697,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // AC498: Native sqrtf with direct/shared-square/squared-value/all-product inputs,
 // double/real root carriers: 225/228/225/228/225/228/221/226. Original arithmetic
 // and full body restored; zero width, reset/selection homes and second material expansion remain.
+// N336: Selected ordinal at signed-short/word width, with entry/before-reset/after-reset/
+// before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
+// Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
+// projected-storage form; original long selection, movement and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

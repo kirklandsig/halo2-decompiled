@@ -2098,6 +2098,11 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // AC498: Isolated query-receiver/tint/multiply/placement/transform-result and
 // effect/system/settings formal names: 128 each. Original complete body restored;
 // frame 0x40/0x44, early color/query/cursor and zone-base homes remain.
+// Round 58 (m3 lane 11, fast): spawn stores as location/scale/unknown 128, as unknown/scale/location 124 (gain
+// 4, not kept); spawn declared first 128; location pointer declared in the while condition 128. On the
+// unknown-first form: cursor and colour locals read before the spawn stores 180 (572 bytes); multiplied() as
+// the call's argument 132; spawn declared first 124; effect cursor read after set_location 132; matrix at
+// function scope 124.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2476,6 +2481,10 @@ event_done:
 // Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
 // both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
 // tail object index at function scope 63. Original executable body restored.
+// Round 58 (m3 lane 11, fast): validity test nested under `object != NONE` with `return true` on deletion 206
+// (564 bytes), with the deletion in the if arm and the live work in its else 198 (571 bytes); definition
+// lookup moved into the live arm 85; a `deleted` result flag in place of clearing `effect` 202 (589 bytes);
+// early `return false` without an object, then the validity test 198. Still BLOCKED-BY 0xbadc0.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2867,6 +2876,11 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // compound velocity additions 23; the shared vector-add helper 23; a zero-initialized sound record 104
 // (1363 bytes); a sound location snapshot 26; sound velocity and combined snapshots 23 each. Original
 // body restored.
+// Round 58 (m3 lane 11, fast): detached sound record with the compression after location and velocity 28;
+// velocity copied first of all 28; attached sound test as `!detached && object != NONE` 28; 'snd!' case
+// before 'ligh' 23; light test inverted with the detached call first 23. Every other 0x1895f0 caller fills the
+// record as position, compressed forward, velocity, location (retail's order here too); that order needs
+// 0x189060's register order (round 117 lead), BLOCKED-BY 0xbf600's call (contributor).
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3226,6 +3240,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // AC498: Isolated system/effect/successor/first-color/second-color/type/mode/tint
 // local names, original scopes and observations: 93 each. Original full body restored;
 // frame 0x4c/0x54 and system/successor/color/definition homes remain.
+// Round 58 (m3 lane 11, fast with 0x176f60): the type query fed from `definition` instead of a second
+// function_1751d0() call 85 (331 bytes; not kept, retail makes that call); node predicate before the transform
+// call 115 (0x176f60 25); colours declared before the particle-location cursor 93; location pointer at function
+// scope 93; colours as long 93; location pointer declared in the while condition 93.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3503,6 +3521,11 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // long/short/byte ordinals and repeated scale observation: 387/402/402/387;
 // with default-before-directions scale 354/374/374/354. Both other shared point
 // users regress in every form; original complete helper and body restored.
+// Round 58 (m3 lane 11, fast with 0x17aec0, 0x179fb0, 0x17a380, 0x176bb0): the transform through the existing
+// 0x1778d0 point helper 294 (1535 bytes); the house scale form re-measured 270; house scale with that helper
+// 252 at retail's 1525 bytes (scale block retail's; still no y copy, and the helper's product order is not
+// retail's); house scale with `scale * effect->scale_b` 270; node index named for the test and the call 74,
+// on the house scale form 270.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {
