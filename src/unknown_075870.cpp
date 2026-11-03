@@ -1539,9 +1539,8 @@ void s_network_observer::function_79c00(long index, bool pass_on)
 	if (reduction > cap)
 		reduction = cap;
 	long remaining = old_budget - reduction;
-	long budget = *(long *)((byte *)observer->configuration + 0x14c);
-	if (remaining > budget)
-		budget = remaining;
+	long minimum_budget = *(long *)((byte *)observer->configuration + 0x14c);
+	long budget = remaining > minimum_budget ? remaining : minimum_budget;
 	long burst = budget * old_burst / old_budget;
 	long floor = *(long *)((byte *)observer->configuration + 0xe0);
 	if (burst <= floor)
