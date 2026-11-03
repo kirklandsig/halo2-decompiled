@@ -168,7 +168,16 @@ static inline real interpolate_linear(real a, real b, real t)
 	return (b - a) * t + a;
 }
 
-// score 9 (was 9): frame, timing and loop registers now agree at 657/657 bytes; one boundary
+// score 1 (was 9): only the high-boundary test's miss differs: retail's plain-frame path jumps to the
+// restart test, ours (knowing the flag is clear there from its false start and the back edge) jumps past it.
+// Round 30 (lane 18): the fraction before the key table with the table read at each use 9 -> 1 (kept; the
+// unused key pointers dropped). Before that: an out-parameter restart helper at all three sites 9; restart
+// in the loop condition with a guarded frame store 130 (652 bytes); fraction before the table local 9. On
+// the kept form: restart as if/else 1, as `false` then `if (...) true` 210 (658 bytes), as a ternary 1,
+// through the out-parameter helper 1; `time >= next_time && !restart` with a guarded store 220 (666 bytes).
+// Diagnostic: an unknown starting value (`time == 12345`) stops the thread, so it comes from the false start.
+// The scale on the kept form through the file's interpolate_linear 25 (659 bytes).
+// Earlier: frame, timing and loop registers agree at 657/657 bytes; one boundary
 // exit span and interpolation key-table/current-frame scheduling remain.
 // Earlier at 96: advance direction/frame/flags rotated through EAX/ECX/EDX/EDI; inactive arm exact.
 // Earlier note: Frame 0x10 and timing setup agree; the advance loop is retail's with EAX, ECX and
@@ -458,9 +467,6 @@ void c_class_1a2c81::update(dword time)
 		if (!dispose)
 		{
 			short next = animation.valuea + animation.direction;
-			s_widget_animation_key *keys;
-			s_widget_animation_key *current;
-			s_widget_animation_key *following;
 			vector3f delta;
 			real t;
 
@@ -509,12 +515,13 @@ void c_class_1a2c81::update(dword time)
 			{
 				elapsed = 1;
 			}
-			keys = (s_widget_animation_key *)animation.target;
 			t = (real)elapsed / (real)frame_time;
-			vector3d_from_points3d(&keys[animation.valuea].offset, &keys[next].offset, &delta);
-			function_x697631(&keys[animation.valuea].offset, &delta, t, &animation.offset);
-			keys = (s_widget_animation_key *)animation.target;
-			animation.scale = (keys[next].scale - keys[animation.valuea].scale) * t + keys[animation.valuea].scale;
+			vector3d_from_points3d(&((s_widget_animation_key *)animation.target)[animation.valuea].offset,
+				&((s_widget_animation_key *)animation.target)[next].offset, &delta);
+			function_x697631(&((s_widget_animation_key *)animation.target)[animation.valuea].offset, &delta, t, &animation.offset);
+			animation.scale = (((s_widget_animation_key *)animation.target)[next].scale -
+				((s_widget_animation_key *)animation.target)[animation.valuea].scale) * t +
+				((s_widget_animation_key *)animation.target)[animation.valuea].scale;
 		}
 	}
 	else

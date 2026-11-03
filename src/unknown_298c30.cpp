@@ -215,6 +215,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N324: Raw/bounded projection split with ternary/branch/ceiling-default/independent-bound producers,
 // original then test-produced wrapped-angle sum 395/395/404/421/400/400/407/411. Original complete body
 // restored; entry and normalized XY/magnitude homes remain.
+// DL249: Center-before-object, copy-before-object, both, split-center around object,
+// split-center plus input copy, normalization-before-object, normalization before center,
+// and split center around both: 395/397/407/395/397/407/415/413. All original producers restored.
 // AC486: Double magnitude sum/product/pair/full-product intermediates 395/453/395/453;
 // matching endpoint-distance intermediates 402/442/402/442. NOT kept: precision/grouping
 // forms do not match; original normalizer, distance, helper and whole body restored.
