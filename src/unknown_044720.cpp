@@ -268,6 +268,10 @@ void function_44720(void)
 // transform read as `g_4ba138[(short)index].flags & 0xf` 136 (503 bytes); the cached byte with that
 // transform read 147 (508); level at the call, that transform and the lookup given the indexed entry
 // 157 (515).
+// Lane 18 round 36 (fast): level at the call re-measured 135 (487 bytes); on it `geometry` declared at the
+// loop-body top 135 (same code), a `short` loop index 137 (503 bytes, frame still 0x44), the material index read
+// from the table at each use 135 (same code), `material` declared before the weight 136. 0x41040 (300) and
+// 0x45ce0 (332) now belong to this machine but stay far off; the BLOCKED-BY above stands.
 // @retail 0x44c90
 void __stdcall function_44c90(long group, dword selection_mask, long level,
     dword and_mask, dword or_mask, dword fallback_and_mask, dword fallback_or_mask, bool force)

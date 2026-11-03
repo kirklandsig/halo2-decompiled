@@ -225,6 +225,11 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // epsilon and zero store, but our squares still keep i/j/k on the x87 stack where retail multiplies from the copy's
 // memory, so the length is stored and reloaded); that with the cast on the other operand 798; with the input read
 // directly 805.
+// Lane 18 round 34 (fast): the private normalizer's test as `fabs(local_0) < 0.0001f` 750; its squares as float products
+// (retail's fld/fmul memory squares) 791 at 3499 bytes; that plus the normalize3d-shaped if/else exit (retail's dword
+// epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);
+// plus the scale as `local_1 * v` 771. The input/heading homes (input pointer in EBX from entry, local_2 at
+// [esp+0x2c] for retail's [esp+0x20]) keep the rest positional.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

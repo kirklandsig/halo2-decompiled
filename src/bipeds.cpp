@@ -1823,7 +1823,7 @@ void function_dfd70(long arg_159e6d)
 }
 
 /* a point on a biped (biped_eye_point) */
-// score 233 (was 248): Frame 0x8c and 1041 bytes agree; retail's mode 3 arm sits out of line after the mode test, then forward/up homes and the second ray test colours. Earlier: first global-load scheduling, the offsets in ECX rather than on
+// score 233 (was 233): Frame 0x8c and 1041 bytes agree; retail's mode 3 arm sits out of line after the mode test, then forward/up homes and the second ray test colours. Earlier: first global-load scheduling, the offsets in ECX rather than on
 // the stack (ret 0x10 versus 0x14), and the forward/up workspace homes remain.
 // Earlier: 248 (was 273; 995 before the helper was forced inline; 279 before the collision's NONE moved up in biped_eye_raise, 2026-10-31): the helper is forced inline; 0xdef60 still compiles with another convention than retail, whose
 // own bytes take only `point` in EAX and the other five arguments on the stack (0xcb500's call at 0xcb56c-0xcb571,
@@ -1888,6 +1888,11 @@ void function_dfd70(long arg_159e6d)
 // vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
 // on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
 // head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
+// Lane 18 round 34 (fast): `if (mode != 0)` copy first 252 (1038 bytes, 0xcb500 107); `if (mode == 3)` arm first as an
+// if/else around the crouch switch and raise 104 (1058 bytes, +0x1bd; 0xdc5c0 585 -> 589, its second ray block then
+// register for register retail's, so the rise is positional), that with crouch scoped to the else 104/589; crouch
+// scoped to the mode != 3 block 233; switch cases 2, 1, default 233; default's ternary as if/else 233. In the 104 form
+// the forward/up homes are swapped (forward [esp+0x1c], retail [esp+0x28]) and the to_head terms spill.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2298,6 +2303,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M325: Complete body-validity bool/byte/short/long before index selection 63/63/63/63;
 // false-default bound results bool/long 85/75, true-default 63/63. All restored;
 // extra EBP, native body transport and flag-store schedule remain.
+// Lane 18 round 34 (fast): the call nested in its own if under the body test 63; char steps local 82 (253 bytes);
+// steps read before the definition lookup 63; rate as `0.15f * rate` 63; body selection as an if/else 63.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -4493,7 +4500,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 
 /* jumps: an upward kick to the definition's jump speed (less for a tired
    player), relative to what the biped stands on; an actor may refuse. */
-// score 68 (was 210): 683 bytes and frame 0x28 agree; only result=true's position and result/riding's swapped slots left. Earlier (640 bytes against retail 683, frame 0x24 versus 0x28): Walked against retail block by block
+// score 68 (was 68): 683 bytes and frame 0x28 agree; only result=true's position and result/riding's swapped slots left. Earlier (640 bytes against retail 683, frame 0x24 versus 0x28): Walked against retail block by block
 // (callees, argument order, offsets, constants, condition directions, return values, store paths): behaviour agrees.
 // Remaining difference: on the actor path retail (0xe490c-0xe4929) reads the animation state name at
 // biped + *(short *)(biped + 0x12a) + 0x7c (the base is computed at entry into EBX, 0xe4799/0xe47af, and kept
@@ -4557,6 +4564,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
 // Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
 // the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// Lane 18 round 34 (fast): riding renamed to sort after result 68; result renamed to sort first 68; `result = true`
+// right after 0x109e00 on the dot3f body 143 (686 bytes); result declared before riding 68; no result local, `return
+// true` 151 (672 bytes); riding declared at its assignment 68. The result/riding slot swap (result in the argument slot) remains.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

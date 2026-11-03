@@ -1056,6 +1056,11 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 // external reference with assigned success arms 36. Reason still folds.
 // Round 15: boot arm first 23; the result taken from the host test 35; early false return 36;
 // result set before the arms 35; `result` with the member index first in the comparison 24.
+// Round 35 (m3 lane 18, fast with 0x162d00): the two calls as one ternary statement 23; the boot arm
+// first with the reason as the member comparison 24; the disconnect's declaration `__forceinline` 23
+// (0x5e1a0 stays 10); a long result returned as `!= 0` 58 (122 bytes, 0x162d00 15); diagnostic only,
+// not kept (it writes the disconnect out by hand): the reason in a local passed by address to the
+// file's state-entry helper with state 10 matches, so the cause is 0x616b0's own body (held file).
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {

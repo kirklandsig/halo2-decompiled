@@ -318,6 +318,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // the copy kept with the long assigned 50 (one code each: no xor widening, handle in EAX); without a
 // barrier `success = opened == TRUE; if (opened == TRUE)` 43, `success = opened != FALSE; if (success !=
 // false)` 55 (351 bytes).
+// Lane 18 round 34 (fast): success straight from the handle test, `if (success != false)` 55 (351 bytes); a bool
+// opened copied to success 55 (351); `if (!opened) continue;` 42; the file declared at the loop top and assigned
+// after the wait 42; `success = opened ? true : false` 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
