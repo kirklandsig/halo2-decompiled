@@ -650,6 +650,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC495: Actual cache identity field system/location/particle pointer types, seven subsets,
 // then all with immutable emitter-row receiver: eight at 42, 1130 bytes. Original field types,
 // declarations and complete body restored; offset/default/reload and row-i residence remain.
+// M3 lane 4 r159 (fast): scale first with the emitter definition declared first 40; declared first alone 42; offset as a for-loop init with scale first 40;
+// on the indexed form with scale first: scale through a shared inline 113, rotated offset local 196 (1086 bytes), motion rotated first 116, matrix local 112
+// (1134 bytes), `+=` origin 113, particle copies swapped 121.
 // Round 122 (lane 7, fast; base 42 [aligned 38]): position rotated from the particle's own position into
 // the copy (not in place) 189 (1131 bytes); motion rotated from the particle's velocity into the copy 143
 // (1136); origin/result pointers declared before the rotation 42 (same code); scale first with the motion
@@ -1518,7 +1521,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 73 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
+// score 47 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
 // flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
@@ -1661,6 +1664,14 @@ bool function_17afd0(long effect_index, long value);
 // F346: On the retained two-use effect graph, last-consumer scopes for owner, availability,
 // both and complete effect/classification, each original/shifted-word eligibility:
 // 73/113/73/113/73/113/73/113. Original complete executable body restored.
+// M3 lane 4 r159: 47 (was 73): the shifted flag, owner as if/else without the effect pointer, availability false at the arm's top, `available = !query`, attached
+// testing the effect index. Left: availability's false store belongs after the view read, retail's query test is test/jne/mov bl, 1, and retail reloads the view
+// after the attached query. Tried, aligned count in brackets: availability set only on success 135 [58]; availability false right before the query 133 (488 bytes)
+// [45]; false at the loop-body top 130 (498 bytes) [14]; owner default at the arm's top 47 (495 bytes) [6], owner after the second lookup 133 (496 bytes) [17], owner at
+// the loop-body top 154 (504 bytes) [42]; view at each use 110 (500 bytes) [5]; same_view false at the arm's top, set on the test, availability set on success 111 (492
+// bytes) [3], the closest shape: same_view's early false store keeps it on the stack and BL for availability, but the store shape differs; if/else same_view 131 (504
+// bytes) [57], with an early false 131 [57], with an inline out parameter 131 [57]; byte same_view 121 [51]; byte/char availability 131/131 [57/57]; two-step same_view
+// 117 [55]; named query result 47 [5].
 // Round 122 (lane 7, fast; base 73): availability false-then-set 144 (507 bytes); attachment gated on
 // effect_index != NONE instead of the effect record 102 (486 bytes: owner/NONE coalescing lost); view global
 // at each use 143 (502); bit 9 as (bool)(((dword)word >> 9) & 1) 113 (500); owner declared before the effect
@@ -1677,24 +1688,23 @@ void __stdcall function_174220(bool view_pass)
         s_effect_particle_system_definition *definition = system->function_1751d0();
         short cluster = system->location.cluster_index;
         if (cluster != NONE &&
-            ((*(word *)((byte *)definition + 0x16) & (1 << 9)) ||
+            ((bool)((*(word *)((byte *)definition + 0x16) >> 9) & 1) ||
              bit_vector_test(g_547f88.flags, cluster) || function_3eb20(cluster)) &&
             system->unknown4c == NONE && system->location_index != NONE)
         {
             long effect_index = system->effect_index;
+            bool available = false;
             definition = system->function_1751d0();
-            s_effect_datum *effect = NULL;
-            long owner = NONE;
+            long owner;
             if (effect_index != NONE)
-            {
-                effect = DATUM(g_4ea93c, s_effect_datum, effect_index);
-                owner = effect->unknown58;
-            }
+                owner = DATUM(g_4ea93c, s_effect_datum, effect_index)->unknown58;
+            else
+                owner = NONE;
             long view = g_4b9ed8;
-            bool local_287b6e_2 = view != NONE;
-            if (local_287b6e_2) local_287b6e_2 = !function_155760(view);
-            bool same_view = owner != NONE && view == owner && local_287b6e_2;
-            bool attached = local_287b6e_2 && effect != NULL && function_17afd0(effect_index, view);
+            if (view != NONE)
+                available = !function_155760(view);
+            bool same_view = owner != NONE && view == owner && available;
+            bool attached = available && effect_index != NONE && function_17afd0(effect_index, view);
             bool draw = same_view == view_pass;
             bool camera_relative = false;
             if (same_view)
