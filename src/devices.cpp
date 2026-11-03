@@ -833,6 +833,10 @@ struct s_device_machine_view
 // N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
 // 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
 // native group-word sharing and velocity-zero join remain.
+// Round 81 (m3 lane 9, fast; on the 0x1200055f zero store; /FAs screen of 18 spellings: a read-only word value
+// always puts the group pointer in a pushed ESI, only an in-place `shr al, 1` keeps it in EAX): `bool second =
+// (group_flags >> 1) & 1` 114 (656 bytes); a `both` bool 122; `(bool)(f & 1) && (bool)(f & 2)` 114; first/second
+// bools tested second-first 152 (655); `f & 1 ? (f & 2) != 0 : false` 116 (657).
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1192,6 +1196,14 @@ bool function_108530(long device_index, long name)
 // pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
 // stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
 // denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
+// Round 123 (m3 lane 7, fast with both callers, which stay 31/13): both ramp-down clamps as `<=`/`>=` ifs 122;
+// the ramp-up zero clamp as an if 122; the initial-velocity store first in the inner block 122; an early
+// `return` on the tiny duration 121 (same code); one nested ternary for both ramp-down clamps 127.
+// Round 81 (m3 lane 9, fast with both callers 31/13; /Gd /FAs screen of 48 combinations of inner-local order,
+// pin order, delta/distance naming and duration-first reset: the initial velocity always loads into an xmm
+// register written earlier, never a free XMM6): the duration stored first among the reset fields 121; the
+// distance named first with delta copied from it 123; duration first with the half ramp-down time named first
+// 123; distance first with the cruise time after the half times 123; that with the duration first 123.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1719,6 +1731,13 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// Round 81 (m3 lane 9, fast): the header type byte read through s_device_header (DEVICE_GET's own shape) 285
+// (same code); with a plain index 411 (1466 bytes: retail's 0x20 frame and the index*12 CSE spilled at
+// [esp+0x1c], but in ESI/EDI where retail has EBX/ESI); the state test through the existing
+// device_has_animation_state on this body 393 (1512); on the plain index 384 (1469 bytes: retail's entry from
+// the state test on, `cmp word [ebp+0x12a], -1` then a second movsx read, state at [esp+0x14]; left: the result
+// in DL where retail keeps a stack byte at [esp+0xf], index*12 in ESI not EBX); that without the volatile
+// definition 426 (1437); with the result declared first 384.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

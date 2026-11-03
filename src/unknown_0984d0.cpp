@@ -330,6 +330,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
 // score 80 (was 80): frame 0x1c agrees; native byte validation ordinal reduces the diff; items/data carriers and loop entry remain.
+// Round 40 (lane 17, fast): a long validation counter (retail's dword at esp+0x18) 115: every stack
+// slot is then retail's (flag in the argument slot, counter at 0x18, cursors at 0x14/0x10) and only the
+// loop entry (retail jumps past the items reload) and the 0x991d0 argument registers differ; with the
+// volatile reads dropped 207 (524 bytes); a plain for loop with the long counter 195; the long counter
+// with the two volatile reads swapped 115; with the data cursor's volatile read only 207. Restored.
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.
@@ -516,6 +521,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
 // completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
 // complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
+// Round 80 (m3 lane 9, fast; positional/aligned, base 80/56): the count test's rest nested in `if (local_6)` in place
+// of the return 80/56 (same code); that with a long ordinal 115/42 (long alone 115/42, the volatile reads still
+// add `mov edx, eax`; left: table reads in EBX or ECX at case 5, 2 and the chain call, index*5 in case 2/4);
+// a1 used directly with no s_handle_block alias 80/56 (same code); without the volatile reads, long ordinal, no
+// alias 207/60 (524 bytes); plain cursors with a `for` over the ordinal 209/57 (524 bytes).
 // Round 78 (m3 lane 16, fast): the long validation ordinal (M303's long/case form) re-measured 115, new reason:
 // every frame home is then retail's (validity byte in the dead a1 home, ordinal at +0x18, items +0x14,
 // data +0x10, the count-one reads too); left are the preheader registers, the loop entered at its top (retail

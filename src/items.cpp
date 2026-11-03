@@ -669,10 +669,16 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// B392: Plain normal transfer on every graph with axis/final-output loops and actual matrix-reference
+// masks 0..7: 206/303/206/303/206/303/206/303. Original complete body and protected plane interface
+// restored; plane joins and pending spin-k homes remain. NOT kept: sub-eight-point lead above 30.
 // P292: Common contact completion, bool/byte/word/long admission, compound then nested
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
 // restored; protected plane-index width, plane joins and pending spin-k homes remain.
+// DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
+// 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
+// all controls unchanged. Original body, pending-k join and protected plane contract restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1222,6 +1228,9 @@ struct s_item_flags_view_10b850
 // 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
 // falls to 0x148 but scores regress; all snapshots, original field reads, helpers
 // and body restored. Entry Boolean and collision/carrier/rotation homes remain.
+// B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
+// cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
+// helper and body restored; frame and Boolean/vector homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1649,6 +1658,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
 // NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
 // paired point setters and body restored; return-byte, contact/event and release homes remain.
+// AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
+// entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
+// restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
