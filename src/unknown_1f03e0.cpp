@@ -1031,6 +1031,8 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// M354: Split damping extraction in byte/dword storage, mask at producer/entry/general/consumer:
+// 427/412/627/532/464/451/630/557. NOT kept: split predicate transport needs byte equality.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

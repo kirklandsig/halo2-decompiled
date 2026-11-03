@@ -1042,6 +1042,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Round 200 (m3 lane 3, fast): clamp `(excess > 0 ? excess : 0)` 43, `(excess >= 0 ? excess : 0)` 34,
 // `maximum_imbalance >= (...)` 35; `extra_count + player_count` alone 34; per-loop index declarations
 // (`long i` / `long j`) 34. All restored.
+// M354: Standard forward/backward input copy before/after maximum reduction,
+// branch/conditional maxima 76/76/77/77/76/76/77/77.
+// NOT kept: split library-copy ownership misses the native combined scan/fill allocation.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

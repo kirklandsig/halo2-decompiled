@@ -542,6 +542,8 @@ struct s_physics_component_walk : s_havok_component
 // recursion and the latch as retail, but the latch moves after the cold blocks); that helper with the neighbor
 // branch first 179; the empty-section test's two body bytes as char locals 146 (same code); one entry-scope
 // section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
+// M354: Entry-table base/cursor, mutable/const view and common body/entry ordinal:
+// 304/304/304/304/221/221/221/221. NOT kept: entry transport does not reproduce the native reload/allocation.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
