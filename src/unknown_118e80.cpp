@@ -339,6 +339,9 @@ PRIVATE __forceinline void world_up_1197b0(long object_index, vector3f *up)
 // Round 288: plain world-up component rows with long/short/dword/word counters,
 // scalar/native-vector captures 224/318/224/318/295/300/295/300.
 // Original producer and body restored; frame, early-save and basis homes remain.
+// Round 126 (lane 8, plain): 0x11ce20 called (&target_up, &up) 218 (re-measured; under the bar); on it: speed
+// scale read at each use 230; forward stored before up 219; frame rate read once into a local for its three uses
+// 279 (1052 bytes); the angle test inverted with the copy arm first 240. Still BLOCKED-BY 0x11f0d0's double local.
 // @retail 0x1197b0
 void function_1197b0(long object_index)
 {

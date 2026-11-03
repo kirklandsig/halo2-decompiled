@@ -696,6 +696,13 @@ real function_267370(long object_index);
 // shared NONE, carrier and cross operand homes remain. NOT kept: All vector-setter forms regress and
 // move extent away; the two-pair fill also regresses, with no source-induced control loss. Original
 // executable source restored.
+// Round 46 (fast with 0x1e2a90): code-neutral unused-local probes (diagnostic) before the up pointer,
+// 1..15: 100/100/101/103/101/99/101/98 repeating (period 8, never below the 22 differing SSE lines),
+// and with 1..7 more before the left pointer, all 56 pairs 98 or worse: the cross operand orders are not
+// a numbering tie; a NONE-initialised carrier with an if/else chain, the initialiser at the block top /
+// before the class read / before the sample call / before the marker point / before the 0x229 flag 98
+// each (same code); typed vector fields for 0x29c..0x2c0 in the actor struct used directly 101, through
+// the up/left pointer locals 98 (same code). All restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1044,7 +1051,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 254 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// score 253 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
@@ -1178,6 +1185,12 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // M325: On the retained mode/field/squad-bit graph, continuation acceptance bool/byte/short/long
 // 337/337/299/302; rejection 326/326/330/329. ESI sentinel and unrotated entry recover,
 // but squad/query homes remain. NOT kept: flag-driven continuation is unmatched; whole body restored.
+// Round 46 (fast; plain confirms 253): kept: the three failure `goto done` exits (missing flags, perception,
+// unit) as plain blocks and tests (no label) 254 -> 253; the flags block alone 253, each creation failure as a
+// test alone 253/253. Tried: squad pointer ternary with the found arm first 353; unit/perception defaults
+// before the definition read 254, their declarations swapped 254 (same code); squad bit as a ternary 337; on
+// 253: ternary substitution result inside the break test 348; the squad-index gate moved into the while test 420
+// (1319 bytes, 0x1e4990 inlined).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1200,112 +1213,115 @@ long __stdcall function_1e0850(long character_index, long squad_index, s_203780 
 				definition = g_4e3b44[character_index & 0xffff].bytes;
 				flags = (byte *)function_1e4990(character_index);
 			}
-		if (!flags) goto done;
-		bool flag = false;
-		if (squad)
-			flag = (*(dword *)(squad + 0x20) >> 10) & 1;
-		byte const *data = (byte const *)placement;
-		if (*flags & 1)
+		if (flags)
 		{
-			perception_index = function_28dab0(character_index, (s_28dab2 const *)placement);
-			if (perception_index == NONE) goto done;
-			actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
-		}
-		else
-		{
-			byte creation[0xc4];
-			function_b7930(creation, *(long *)(definition + 0x10), NONE, 0);
-			function_210850((s_type_c3b527 const *)(data + 4), (point3f *)(creation + 0x1c));
-			long variant = *(long *)(data + 0x30);
-			if (!variant) variant = function_1e06b0(character_index);
-			*(long *)(creation + 0xc) = variant;
-			function_11dfb0((vector2f const *)(data + 0x14), (vector3f *)(creation + 0x28), (vector3f *)(creation + 0x34));
-			unit_index = function_b7b40(creation);
-			if (unit_index == NONE) goto done;
-			long primary = NONE, secondary = NONE, grenade = NONE;
-			short primary_index = *(short *)(data + 0x22);
-			if (primary_index == NONE && squad) primary_index = *(short *)(squad + 0x3c);
-			long count = *(long *)((byte *)g_4e0350 + 0x98);
-			if (primary_index != NONE && primary_index >= 0 && primary_index < count) primary = *(long *)(*(byte **)((byte *)g_4e0350 + 0x9c) + primary_index * 0x28 + 4);
-			short secondary_index = *(short *)(data + 0x24);
-			if (secondary_index == NONE && squad) secondary_index = *(short *)(squad + 0x3e);
-			if (secondary_index != NONE && secondary_index >= 0 && secondary_index < count) secondary = *(long *)(*(byte **)((byte *)g_4e0350 + 0x9c) + secondary_index * 0x28 + 4);
-			short grenade_index = *(short *)(data + 0x2c);
-			if ((short)(grenade_index - 1) != NONE) grenade = grenade_index - 1;
-			else if (squad && (short)(*(short *)(squad + 0x40) - 1) != NONE) grenade = (word)*(short *)(squad + 0x40) - 1;
-			function_1e04a0(primary, character_index, unit_index, secondary, (short)grenade);
-			actor_index = function_1e0160(squad_index, character_index, unit_index, flag);
-		}
-		if (actor_index != NONE)
-		{
-			byte *actor = (byte *)actor_get(actor_index);
-			if (data[0x1c] & 1) *(short *)(actor + 0x86) = 0;
-			if (*(real *)(data + 0x38) > 0.0f)
+			bool flag = false;
+			if (squad)
+				flag = (*(dword *)(squad + 0x20) >> 10) & 1;
+			byte const *data = (byte const *)placement;
+			if (*flags & 1)
 			{
-				point3f position;
-				function_210850((s_type_c3b527 const *)(data + 4), &position);
-				vector3f direction;
-				direction.i = (real)(cos(*(real *)(data + 0x14)) * cos(*(real *)(data + 0x18)));
-				direction.j = (real)(sin(*(real *)(data + 0x14)) * cos(*(real *)(data + 0x18)));
-				direction.k = (real)sin(*(real *)(data + 0x18));
-				function_1f34b0(actor_index, &position, &direction, *(real *)(data + 0x38), NONE);
+				perception_index = function_28dab0(character_index, (s_28dab2 const *)placement);
+				if (perception_index != NONE)
+					actor_index = function_1e02f0(squad_index, character_index, NONE, perception_index, flag);
 			}
-			if (*(long *)(actor + 0x18) != NONE)
+			else
 			{
-				byte request[0x20];
-				switch (*(short *)(data + 0x3e))
+				byte creation[0xc4];
+				function_b7930(creation, *(long *)(definition + 0x10), NONE, 0);
+				function_210850((s_type_c3b527 const *)(data + 4), (point3f *)(creation + 0x1c));
+				long variant = *(long *)(data + 0x30);
+				if (!variant) variant = function_1e06b0(character_index);
+				*(long *)(creation + 0xc) = variant;
+				function_11dfb0((vector2f const *)(data + 0x14), (vector3f *)(creation + 0x28), (vector3f *)(creation + 0x34));
+				unit_index = function_b7b40(creation);
+				if (unit_index != NONE)
 				{
-				case 2:
+					long primary = NONE, secondary = NONE, grenade = NONE;
+					short primary_index = *(short *)(data + 0x22);
+					if (primary_index == NONE && squad) primary_index = *(short *)(squad + 0x3c);
+					long count = *(long *)((byte *)g_4e0350 + 0x98);
+					if (primary_index != NONE && primary_index >= 0 && primary_index < count) primary = *(long *)(*(byte **)((byte *)g_4e0350 + 0x9c) + primary_index * 0x28 + 4);
+					short secondary_index = *(short *)(data + 0x24);
+					if (secondary_index == NONE && squad) secondary_index = *(short *)(squad + 0x3e);
+					if (secondary_index != NONE && secondary_index >= 0 && secondary_index < count) secondary = *(long *)(*(byte **)((byte *)g_4e0350 + 0x9c) + secondary_index * 0x28 + 4);
+					short grenade_index = *(short *)(data + 0x2c);
+					if ((short)(grenade_index - 1) != NONE) grenade = grenade_index - 1;
+					else if (squad && (short)(*(short *)(squad + 0x40) - 1) != NONE) grenade = (word)*(short *)(squad + 0x40) - 1;
+					function_1e04a0(primary, character_index, unit_index, secondary, (short)grenade);
+					actor_index = function_1e0160(squad_index, character_index, unit_index, flag);
+				}
+			}
+			if (actor_index != NONE)
+			{
+				byte *actor = (byte *)actor_get(actor_index);
+				if (data[0x1c] & 1) *(short *)(actor + 0x86) = 0;
+				if (*(real *)(data + 0x38) > 0.0f)
 				{
-					byte *movement = (byte *)function_1e4a50(*(long *)(actor + 0x54));
-					if (movement && (*movement & 0x20))
+					point3f position;
+					function_210850((s_type_c3b527 const *)(data + 4), &position);
+					vector3f direction;
+					direction.i = (real)(cos(*(real *)(data + 0x14)) * cos(*(real *)(data + 0x18)));
+					direction.j = (real)(sin(*(real *)(data + 0x14)) * cos(*(real *)(data + 0x18)));
+					direction.k = (real)sin(*(real *)(data + 0x18));
+					function_1f34b0(actor_index, &position, &direction, *(real *)(data + 0x38), NONE);
+				}
+				if (*(long *)(actor + 0x18) != NONE)
+				{
+					byte request[0x20];
+					switch (*(short *)(data + 0x3e))
 					{
-						*(long *)request = 0x2c;
-						request[4] = true;
-						function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
-					}
-					break;
-				}
-				case 1:
-				{
-					vector3f forward;
-					function_b9fc0(*(long *)(actor + 0x18), &forward, NULL);
-					forward.k = 0.0f;
-					if (function_30bf0(&forward) > 0.0f)
+					case 2:
 					{
-						*(long *)request = 0x22;
-						function_b9dd0(*(long *)(actor + 0x18), (point3f *)(request + 4));
-						*(real *)(request + 0x10) = forward.i * -1.0f;
-						*(real *)(request + 0x14) = forward.j * -1.0f;
-						request[0x18] = true;
-						function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
+						byte *movement = (byte *)function_1e4a50(*(long *)(actor + 0x54));
+						if (movement && (*movement & 0x20))
+						{
+							*(long *)request = 0x2c;
+							request[4] = true;
+							function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
+						}
+						break;
 					}
-					break;
+					case 1:
+					{
+						vector3f forward;
+						function_b9fc0(*(long *)(actor + 0x18), &forward, NULL);
+						forward.k = 0.0f;
+						if (function_30bf0(&forward) > 0.0f)
+						{
+							*(long *)request = 0x22;
+							function_b9dd0(*(long *)(actor + 0x18), (point3f *)(request + 4));
+							*(real *)(request + 0x10) = forward.i * -1.0f;
+							*(real *)(request + 0x14) = forward.j * -1.0f;
+							request[0x18] = true;
+							function_e6900(*(long *)(actor + 0x18), (s_unit_request *)request);
+						}
+						break;
+					}
+					}
 				}
-				}
-			}
-			if (*(long *)(actor + 0x18) != NONE)
-			{
-				byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
-				long weapon = function_cbd50(*(long *)(actor + 0x18), (char)object[0x212]);
-				if (weapon != NONE)
+				if (*(long *)(actor + 0x18) != NONE)
 				{
-					byte *weapon_object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
-					byte *local_67e06b_3 = g_4e3b44[*(long *)weapon_object & 0xffff].bytes;
-					if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor[0x22a] = true;
+					byte *object = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x18) & 0xffff) * 12 + 8);
+					long weapon = function_cbd50(*(long *)(actor + 0x18), (char)object[0x212]);
+					if (weapon != NONE)
+					{
+						byte *weapon_object = *(byte **)(g_4e0300->data + (weapon & 0xffff) * 12 + 8);
+						byte *local_67e06b_3 = g_4e3b44[*(long *)weapon_object & 0xffff].bytes;
+						if (*(long *)(local_67e06b_3 + 0x2f4) != NONE) actor[0x22a] = true;
+					}
 				}
+				if (*(long *)(actor + 0x18) != NONE && (data[0x1c] & 0x10))
+					function_b9c60(*(long *)(actor + 0x18), true);
+				function_a7b30(unit_index);
 			}
-			if (*(long *)(actor + 0x18) != NONE && (data[0x1c] & 0x10))
-				function_b9c60(*(long *)(actor + 0x18), true);
-			function_a7b30(unit_index);
-		}
-		else
-		{
-			if (unit_index != NONE) function_b8540(unit_index);
-			else if (perception_index != NONE) swarm_delete(perception_index);
+			else
+			{
+				if (unit_index != NONE) function_b8540(unit_index);
+				else if (perception_index != NONE) swarm_delete(perception_index);
+			}
 		}
 	}
-done:
 	return actor_index;
 }
 
@@ -1435,6 +1451,12 @@ void function_1e3b60(long actor_index);
 // actor test as a bool local 26; the clear through a pointer to +0x41c 34; the arms swapped 40.
 // Round 129: callee-side inline declaration 26; const actor/reset pointer/both 26/26/26;
 // const actor_index 26; active_index for the two mismatched calls, every call, or the first three 26/26/26.
+// Round 46 (fast, all in 0x262ba0): volatile sample/update flags (diagnostic, reverted) 26 (0x262ba0 424,
+// frame 0xa0, but `index` then takes EBX and the actor is still re-read from its stack slot: our loop keeps
+// the actor pointer in EDI where retail spills it); the loop's actor fields through fresh actor lookups 26
+// (457); plain unqualified word maximum re-measured 26 (429 at 1616 bytes); the current-target test as one named
+// bool 26 (438); the list head read through the held actor pointer 26 (442, 1616 bytes); the sample/update
+// flags declared before the prior state 26 (412, same code).
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
@@ -1878,6 +1900,10 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // F338: Common final tail reached directly on absent equipment, crossed with
 // short/long ordinal, bounded-for/fixed-do traversal and empty-weapon continuation:
 // 251/278/251/278/251/278/251/278. All restored; actor/options/pool residency remains.
+// Round 46 (fast, with 0x1e3b60): the probability test with its operands swapped 251; the increased
+// probability as `if (probability < increased) probability = increased;` 253; the probability clamp with
+// the missing-options arm first 251; the delay with the random-default arm first 251; `4.0f * probability`
+// 251 (all same code but the 253). Pool EDI / actor ESI / options EBP remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
