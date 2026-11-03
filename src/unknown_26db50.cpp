@@ -672,6 +672,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // DH282: Complete repeated scalar-input immutable declaration orders ijk/ikj/jik/jki/kij/kji, then kij/jik
 // with the native outer ring phase [90, 90, 90, 90, 90, 90, 143, 143]. Original executable body restored.
 // N323: Immutable underlying radius/ring distance/complete angle-trigonometric storage, seven subsets then immutable projection/component inputs: 90/90/90/90/90/90/90/90. Original complete helper/body restored; ring SSE conversion and rotation spill remain.
+// P284: Real sine/cosine API subsets 215/215/215; each with the outer ring phase
+// 233/233/233; unrounded angle with original/real APIs 90/90. Complete original
+// body, angle carrier and helper restored; ring SSE conversion, rotation spill
+// and radius-save scheduling remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
