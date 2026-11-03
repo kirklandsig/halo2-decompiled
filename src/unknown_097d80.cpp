@@ -279,6 +279,9 @@ struct c_aggregate : c_child
 // seven more instructions). The standing lead above is unchanged: this body built without /GL is byte-exact, and no /GL form shares the output's slot with the two loop spills (a flags decision).
 // M312: Native block-count field with shared query output/block reference/error-first gate
 // subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
+// Round 200 (m3 lane 3, fast): produced renamed added 31; the query output renamed information 31;
+// pre-increments 31 (same code, frame 0x8024); the cleanup object read from the field at the query and
+// the release 67 (376 bytes); scalars before the arrays with produced at the loop-body top 46. Restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

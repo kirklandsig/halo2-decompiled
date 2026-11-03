@@ -546,6 +546,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M325: Zero-notification completion guard with bool/byte/short/long creation-validity
 // results 63/93/68/65; entry-false success 70/68/73/71. All restored;
 // false BL, temporary EBP and independent header/object computations remain.
+// Round 200 (m3 lane 3, fast): retail shape (false result first, true after the attach, NONE in the
+// flagged else) with the header test on the stored entity field 77 (160 bytes); the header test indexed
+// with `(dword)object_index` 49 (same code: the lookup still shares); bool result 69 (178 bytes); the
+// result from the stored field 49 (same code); v29's output through `&d` (no copy) 69. All restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
