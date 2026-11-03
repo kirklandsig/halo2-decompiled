@@ -676,6 +676,9 @@ struct s_item_collision_bsp
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
 // restored; protected plane-index width, plane joins and pending spin-k homes remain.
+// DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
+// 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
+// all controls unchanged. Original body, pending-k join and protected plane contract restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1655,6 +1658,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
 // NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
 // paired point setters and body restored; return-byte, contact/event and release homes remain.
+// AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
+// entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
+// restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

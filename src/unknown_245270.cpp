@@ -566,6 +566,11 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 139 (m3 lane 6, fast): the plane table read after the edge vector, as retail schedules it, 203 (and
 // after the two point pointers 203), but the source then arrives in EDX and 0x245aa0 drops to 3, so not kept;
 // the existing cross3f_staged 209; the side flags before the plane pointers 209; the dot as i, j, k 209.
+// Round 129 (m3 lane 8, fast; 0x245aa0 MATCH each time): retail decodes the side bits with `shr` (unsigned): the
+// codes as dword 209 (gives retail's shr, the side bits still sink into the branch); with an inline plane decoder
+// writing the side through a pointer (diagnostic) 209; dword codes with the second material read first 208; dword
+// codes with the edge vector after the side flags 203 (786 bytes); that with the second material first 207 (784,
+// frame 0x28, source still ECX, matrix still EBP from entry). Original body restored.
 // Round 390: Complete material-to-facing admission outcome, bool/byte/short/long,
 // branch/conditional facing producers: 201/201/231/230/201/201/231/230.
 // NOT kept: state set in a test needs a match; every extent grows away from 783.

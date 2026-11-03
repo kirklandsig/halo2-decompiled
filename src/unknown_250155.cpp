@@ -1500,6 +1500,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // (424 bytes); that with branch two's index fill 172 (417); both maxima declared at their assignment 83 (same
 // code); both maxima as one conditional expression 83 (same code); branch two's index fill with its maximum declared
 // at the assignment 107 (437).
+// Round 66 (m3 lane 1, fast; on branch two's index fill, 107): rows loop on its own counter 107;
+// index_count/indices/item_count declared before player_count 107; teams/values `bool const` with index_count
+// first 107; player_count zeroed in branch one 142; branch one's pointer fill ending on `<` 137 (442 bytes). All
+// restored.
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2700,6 +2704,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 77 (m3 lane 16, fast): the list-fill call given shown_count 95 (same code), also as the first loop's bound
 // 95 (same code); the first loop's players[i] named once for its two uses 275 (922 bytes); the loop counter declared
 // first 95; the valid test inverted (empty-list arm first) 180 (917 bytes).
+// Round 66 (m3 lane 1, fast): second loop's colour array declared first 95; its bitmap pointer declared first
+// 95; the search result left unstored (call kept) 95; the voice state as `? 0 : 1` 95; a screen pointer local
+// for the last loop's lookup and first call 95 (all the same code).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

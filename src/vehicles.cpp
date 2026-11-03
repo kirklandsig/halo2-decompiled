@@ -603,6 +603,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M338: Test-owned angular offset/gear/signed rate outcomes, subsets 1/2/4/3/5/6/7 and final flag arms:
 // 211/195/126/224/211/195/224/234. Original body restored; velocity receivers and early 1.0/SSE/x87 homes
 // remain. NOT kept: no gain; non-retail gear-store/length forms restored.
+// F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
+// vector workspaces 225/126/225/126/225/126/225/225.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1227,6 +1230,14 @@ long function_10f5f0(long object_index);
 // B394: Boolean result/changed tail accumulation and the two conditional completions;
 // at original/entry call-result lifetime: 573/573/568/567/573/573/568/567.
 // NOT kept: no exact match; original complete executable source restored.
+// J244: Existing squared-length/dot producers with original/shared point difference
+// and original/six-real buffer: 565/565/561/561/565/565/561/561.
+// NOT kept: four-point lead is below threshold; six-real frame 0x1990 still
+// exceeds 0x1984. Original complete body and arithmetic restored; flag stores and reduction remain.
+// P295: Direct Boolean snapshot/activity/physics tests on the ordinary result graph,
+// masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
+// Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
+// Original tests, load widths, API buffer and entire body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2463,6 +2474,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // 94/33/33/94/94/33/33/94 (plain 33, first +0x1e2). NOT kept (review): left/right split
 // into base stores plus -=/+= stages, a statement order picked by score from four equivalent
 // graphs (two give 94); body restored at 42. Native first magnitude precedes the turn product.
+// F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
+// original/forced-inline existing helper 213/213/213/213/213/213/213/213.
+// NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3682,6 +3696,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M338: Entry flip truth in bool/byte/short/long, positive/complementary channels:
 // 136/159/240/237/169/169/244/241. Original body restored; projection/cross ranks and angle/trig homes
 // remain. NOT kept: no gain; unsupported truth widths/polarities restored.
+// F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
+// 173/173/159/159/173/173/159/159.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4275,6 +4292,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M333: Static-marker/cache-schedule/component-hit predicate results, seven subsets:
 // 176 each; all with default-first cached conversion 170 at 1361 bytes. NOT kept:
 // six-point gain below the gate, and one-use predicates require a match. Full body restored.
+// M340: Complete indexed predicate for/while, identity/validity first, cached/live count: 255/255/255/255/255/255/255/255. NOT kept: no exact search/world/result graph; original body restored.
 // P290: Completed final update-bit writers, set-first/clear-first returns with
 // bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
 // Original body/result restored; native split writer epilogues, found-index retest,

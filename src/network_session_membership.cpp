@@ -829,6 +829,18 @@ union s_60403
 // gives that loop retail's code 285/103 (1513 bytes), with the mask declared after the member loop
 // 368/108; the old member computed before the NONE test 352 (1513); the emission test as
 // `i != *local_0 || changed` 175 (1498); member and local_0 declarations swapped 149 (same code).
+// Round 80 (m3 lane 9, fast; positional/aligned, base 149, aligned by a line diff): the lead: `old_members =
+// previous + 0xc` before the member loop, the old member from it, the mapped member read at each use, the mask
+// zeroed after the member loop and a plain bool flag, all together, 262/48 (1513 bytes, first +0x86): retail's
+// entry, mapping, removal, retained and emission loops, only the member loop's else arm and the slot of the
+// mapping count differ (ours loads the old index into EBX and rebuilds previous + 0xc, where retail keeps previous
+// in EBX and reloads it at the latch, with the old member in ESI, the memcmp zero and flag in EBX, i kept in EAX).
+// On it: the struct flag kept 273/71 (frame 0x90); old_members also used by the mapping loop 272/50 (declared in
+// the `if (previous)` block, with or without the removal loop, 399/98). Without old_members the entry goes back to
+// current EBX: 362/65; the old member at each use 362/66; the current count named for the mapping loop 367/72; a
+// second previous read in the memcmp 362/66; `old_member = previous + 0xc; old_member += ...` 362/65; a local
+// copy of previous before the member loop 362/65. A forceinline-free inline member-address helper at every site
+// on the base 149 (same code).
 // Round 59 (m3 lane 11, fast): round 148's `old_members` (declared before the member loop, used for the old
 // member) with the retained loop reading old_to_new[old player's member] at each use 167 (1497 bytes: retail's
 // entry, previous EBX/current EBP, frame 0x90); that with a plain bool discriminator 146 (1497 bytes, first
