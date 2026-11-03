@@ -646,6 +646,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 367: Actual cache value array reused by evaluation/spawn, pointer/reference and entry/producer
 // address, then missing-bit result reused for publication: 359/359/359/359/379/379/379/379.
 // Original complete body restored; late EBP save and first-sample/blend/getter homes remain.
+// Round 377: Original-RNG packed header, combined/named initial mask and native category/shifted-bit
+// producers, eight forms 356/359/359/359/359/359/360/360. Original header publications, helper graph and
+// complete body restored; late EBP save and random/geometry/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

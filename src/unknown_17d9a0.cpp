@@ -346,6 +346,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
 // axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
 // carriers and product ranks remain.
+// Round 378: Existing four-use corner producer and shared two-component setter declaration,
+// ordinary/inline/force-inline contracts in eight nonoriginal pairs, all 46 on the retained
+// by-value-selector/component-array graph. Original declarations, helper and body restored;
+// live-plane store base, first axis/side roles and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
