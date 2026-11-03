@@ -290,6 +290,10 @@ struct s_24e9c7_bounds
 // subsets, then the complete graph with native quad point elements: eight at 125.
 // Original private record types and full body restored; early across spill,
 // eight-byte-high scalar homes and geometric SSE scheduling remain.
+// Lane 17 r36 (fast): across as a point local right after size 144 (746 bytes); side assigned the `0.0f -` across
+// products and then scaled `side.x = (real)half_width * side.x` 139 (742; retail's -8 slot is that across/side y),
+// with unary minus 144, with `*=` 139, with side declared at the top of the inner block 139 (same code). Original
+// body restored; side gets no frame home, so result stays at -8 (retail -0x10 under the side pair).
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

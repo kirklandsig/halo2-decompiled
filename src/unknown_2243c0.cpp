@@ -435,6 +435,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // DH310: Existing two-user cache constructor, member/body/chained/mixed defaults at entry/final lookup,
 // 172/172/172/172/120/120/120/120. Original record, object lifetimes and executable body restored;
 // all eight demote the matched sibling and are rejected; fallback EDX masking, stage/pass and unfused loads remain.
+// Lane 17 r36 (fast): all four cache zeros at the top 172; all four right after the pass element read 148;
+// the first zero before the first ordinal 151; the pass tag as dword 117 (same code); local_6 const 117 (same code).
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

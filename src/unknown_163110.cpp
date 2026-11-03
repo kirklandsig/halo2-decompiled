@@ -1001,6 +1001,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Y547: Complete projected-point memcpy/memmove publication, with native/library
 // intersection and initial bounds transfers: 115/419/115/363/115/419/115/475. All restored;
 // coefficient preload, zero XMM roles and projection staging remain.
+// Lane 17 r36 (fast): bounds copy after the planes 193; `use_plane1 &=` after the planes 209; memset after the
+// near clamp 172; near clamp as `near_distance = near_sum; if (1.52588e-5f > near_sum) ...` 120; `use_plane1 &=`
+// after the bounds copy 151. Original body restored; the vector_e4.i load still follows the normal copy (XMM3/XMM4 swap).
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
