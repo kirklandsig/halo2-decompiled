@@ -294,6 +294,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // with original/ordinary/staged pitch axis, result setter and shared dot:
 // 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
 // versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
+// Round 82 (m3 lane 9, fast): retail's acos result, the clamped yaw and the sqrt temporaries share +0xc (ours:
+// acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
+// the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
+// (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
