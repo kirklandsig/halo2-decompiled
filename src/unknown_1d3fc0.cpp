@@ -246,6 +246,12 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 38 (m3 lane 18, fast): dot3f over the address expressions `&local_1[0].forward/up` 110; the whole
 // orthonormalisation as a forceinline helper over a transform pointer 149; the dot written out j, i, k 110; the
 // helper's sum written `j_squared + i*i + k*k` 110; the axis pointers taken after both normalisations 110.
+// Round 139 (m3 lane 6, fast, 0x1c4a80 stays matched): the projection through the existing vector3f_add_scaled
+// with the negated dot 156 (929 B); the products scalar first 110; `up->x = up->x - ...` 110 (same code); the
+// header normalize_inline for up and left 151; a left pointer for the cross and its normalization 119 (923 B).
+// Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
+// forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
+// 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

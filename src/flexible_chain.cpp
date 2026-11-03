@@ -417,6 +417,19 @@ void __stdcall function_1160c0(real dt)
 // and segment renamed to sort first 179; `point3f predicted, previous;` 179 (all identical code); previous stored
 // before the node position 179 (repeat of round 371); the retail-order angle call with the blend complement named
 // for the three rows 177 (the two listed 177s do not add up).
+// Round 201 (fast): retail's 12-byte rest offset sits below previous (0x50 against 0x5c) and its
+// length spill below the segment spill, ours the reverse; local names do not move them: segment,
+// axis, length (two names), offset and previous renamed 179 each. Rest offset as a const reference
+// 337 (1334 bytes); previous copied from the node's stored position 179; the step reciprocal ahead of
+// the loop 189; stiffness computed in the non-initial arm 316. Original body restored.
+// Round 79 (m3 lane 16, fast): the segment as a ternary of two element addresses 297 (1379 bytes); previous copied
+// before the node's position store 179; position/direction declared at the loop-body top 179; the velocity rows as
+// `inverse_dt * (...)` 179; the last-segment index as `i - 1` 183. The first real difference is the segments base:
+// retail loads it into EDX and keeps the segment in EDX (ours EDI, then ECX), which shifts the scratch rotation of
+// the physics call's argument setup (retail forms the tag address after pushing -1 and the location).
+// Round 35 (m3 lane 17, fast): `if (record->fixed || !(dt > 0.f)) return;` guard 179 (same code); position and
+// direction declared beside previous/predicted 179; location declared before origin/forward 179; a const vertical
+// 179; the const vertical with the angle call as (&vertical, &direction) 177 (two points, not kept).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

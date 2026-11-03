@@ -220,6 +220,11 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 541: Standard component-range heading copy, paired default/normalized-input/final-output
 // families, masks 0..7, with direct input: 839/840/834/829/828/848/851/836. Two forms reach
 // retail length but regress; original input storage, transfers, includes and full body restored.
+// Round 64 (m3 lane 1, fast): normalizer test on `fabs(length)` without the double cast 750; dual double casts
+// in the squares 750; normalize3d's shape (length zeroed in an else, one return) 798 (3499 bytes: retail's float
+// epsilon and zero store, but our squares still keep i/j/k on the x87 stack where retail multiplies from the copy's
+// memory, so the length is stored and reloaded); that with the cast on the other operand 798; with the input read
+// directly 805.
 // Lane 18 round 34 (fast): the private normalizer's test as `fabs(local_0) < 0.0001f` 750; its squares as float products
 // (retail's fld/fmul memory squares) 791 at 3499 bytes; that plus the normalize3d-shaped if/else exit (retail's dword
 // epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);

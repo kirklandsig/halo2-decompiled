@@ -219,6 +219,11 @@
 // Round 545: Native indexed input scaling/copy producers, first-scale/second-pair/copy
 // subsets 1/2/4/3/5/6/7 and complete unsigned-counter graph 581/581/699/581/699/699/699/699.
 // Original scalar producers, helpers, sixth conversion and body restored; frame 0x58/0x60 remains.
+// Round 139 (m3 lane 5, fast; both ret 0x20 now): both shape pointers NULL then if/else 622 (2622 bytes), inv after
+// them 636, shape1 declared first 622; the 575 composite (plain sixth product, entry shapes, global sine arguments,
+// first wave through vector3f_add_scaled; six, under the bar) re-measured 575; on it the four trig factors as named
+// doubles 615 (forward-substituted), cos 7.75y first in the sum 575, the inner product parenthesised 575, wave_shift
+// declared before s1 575, second wave through vector3f_add_scaled too 642 (2600 bytes).
 // Round 548: Complete memmove history/point-publication/fallback-axis boundaries,
 // subsets 1/2/4/3/5/6/7, then all with both input snapshots: 709/688/677/675/725/698/659/694.
 // NOT kept: library/clobber/frame shape misses; every native copy, include and full body restored.
@@ -802,6 +807,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 545: Native color/width default producers, aggregate/library color seeds,
 // separate/both defaults and positive state arms 336/577/561/615/336/578/558/616. All original
 // output producers and body restored; frame 0xa8/0xac and spill homes remain.
+// Round 139 (m3 lane 5, fast): with the 4-byte frame shift u_step and the first.y spill already sit in retail's slots;
+// retail's v + width lies at +0xac over a dead dword. v_width read before v 266; `v_width = v + v_width` 265; u_step
+// before u 265; width scale in its own local 265; `width` declared before `color` 265; `previous` before `index` 265.
 // Round 548: Complete double length residence in vertical/planar/camera-pair subsets
 // 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
 // NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
@@ -810,6 +818,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // renamed 263, transition declared at the top 263, a named pixel stored to vertex 0 then outer 263, a named strip
 // start for the tail 615 (2600 bytes), the next state's colour as a color4f 263. Retail leaves 0xa8/0xb0/0xb8
 // (after the pushes) unused and spills point y at 0xb4: its top homes sit eight bytes apart.
+// Round 552: branch-produced V endpoint; separate signed U producer with original/separate/branch
+// V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
+// 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

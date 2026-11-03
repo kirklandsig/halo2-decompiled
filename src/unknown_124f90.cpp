@@ -1351,6 +1351,9 @@ long function_2197f0(real gain);
 // F340: Encoded/real scalar views for result/ducking field/both interpolation
 // endpoints, seven subsets then the complete aggregate view: 137 each.
 // NOT kept: unmatched scalar wrappers. Original types, helper and full body restored.
+// M337: Release-end predicate sum, twice-used remaining attack time and distinct-release
+// hold quotient at their producers, seven subsets [137, 193, 137, 193, 137, 193, 193], all with table-first
+// entry 183. All restored; table/index entry, interpolation and hold-copy homes remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -1468,6 +1471,9 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // Round 38 (m3 lane 18, fast): `gain = decibels_add(gain, class_gain);` then decibels_sum(interpolated, gain) 15;
 // an outer sum taking the converted gain as a by-value real 15; the class gain call inside the outer sum's argument
 // 15; a real accumulator seeded from the converted gain, `+=` the inner sum 15; the class gain fetched first 34.
+// Round 132: direct typed definition uses 15; scoped class/sum tail 15; reference inner sum 24
+// (112 bytes); const bound/linear values 15/15; named interpolation scalar 15; early class
+// declaration 15; commuted interpolation 15. Original body restored.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -2938,6 +2944,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
 // references with complemented playing status 127. Original pointers, saved byte result, search and full
 // body restored; frame twelve/eight and failure-tail placement remain.
+// Round 552: direct unchanged/commit/failure Boolean returns without a saved carrier, native
+// outer/early unchanged guards crossed with independent/chained defaults and original/complemented
+// status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3840,6 +3850,9 @@ struct s_128ca0
 // F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
 // additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
 // All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
+// M337: Existing whole decibel values through raw/processed/both submission gain
+// stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
+// NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

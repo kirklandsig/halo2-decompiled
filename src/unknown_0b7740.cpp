@@ -1238,6 +1238,9 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // DH306: actual matrix/orientation/node-record-displacement induction, seven subsets
 // 94/210/96/212/230/212/212; matrix-cursor-owned bound 396. NOT kept: best gains only three.
 // Original loop and no-model lookup restored; count entry and data reload remain.
+// Round 62 (m3 lane 10): node loop under `if (count > 1)` 96 (repeats the loop test, not kept); the loop as
+// `while` 97; the render node count named before the root block 212; the current object through the entry
+// header pointer 371 (1394 bytes); the model tag index read at each use 97. Original body restored.
 // Round 124 (m3 lane 8, fast): the default-orientation arm's two stores swapped 99; render index declared
 // before the model 97; `stored` declared beside the orientation test 389 (1370 bytes); the node mask declared
 // beside `stored` 97; the no-model parent indexed through `(word)parent_index` 100 (1380 bytes).

@@ -263,6 +263,9 @@ bool g_47f05b;
 // B381: complete four-word constructor element result in long/int/short/signed-char,
 // terminal/nonterminal assignment: 34/34/34/34/34/34/34/34. NOT kept: one-use element results
 // require an exact match. Original intermediate-vtable store and arm reload gap remain.
+// Round 62 (m3 lane 10): `byte *block` 34; placement through `(c_havok_fixed_memory *)block` 34;
+// `void *const block` 34; the pool address named before the first construction 43 (140 bytes);
+// `block ? new ... : NULL` 34. Original body restored.
 // Lane 18 round 36 (fast with 0x146b80/0x146e30/0x22c3e0): the abstract loop index `unsigned long` 34 (same
 // code); the three global stores first, then a `fixed` result cleared to NULL and constructed under `if (block)`
 // 39 (142 bytes); `g_479894 = block ? new (block) ... : NULL;` 34 (same code); the fixed base's size parameter as
