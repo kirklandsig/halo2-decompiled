@@ -1072,6 +1072,9 @@ bool __stdcall function_2399da(long controller_index)
 // denial 90 (merged back); `if (may_change && !have_member) copy; else if (!have_member) deny` 122 (438 bytes).
 // Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
 // removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
+// Round 390: Two-stage selected-pointer presence then full identifier validity,
+// positive/negative bool/byte/short/long outcomes: 106/106/110/109 repeated.
+// Original complete body restored; identity/rank EAX/ECX ownership and extra move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

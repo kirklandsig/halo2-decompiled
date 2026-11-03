@@ -658,6 +658,9 @@ static inline word font_character_pixel(long alpha, long color)
 // M341: Native literal word plus network-order conversion, direct/memcpy and word/long
 // values, original/numeric parity: 104/104/121/121/196/196/192/192. Original literal, helper and
 // decoder restored; alpha widening, literal assembly and two-run reuse remain.
+// N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
+// original word then full-width pixel result: 139/172/182/183/163/166/174/175.
+// NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

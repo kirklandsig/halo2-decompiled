@@ -295,6 +295,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // 410, both 410 (frame stays 0x5c: retail keeps a separate planar copy made with integer moves at 0x34/0x38 from
 // the full normal at 0x40); last_distance declared with the entry locals 412; the count and next-sector locals
 // initialised at their declarations 410 (same code). Restored.
+// M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
+// 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
+// restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

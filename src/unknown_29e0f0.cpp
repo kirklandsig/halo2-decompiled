@@ -263,6 +263,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with
 // bit_vector_set for the set only 424 (1567); the found flag declared once per group and cleared per pass 390 (same
 // code). Restored.
+// M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
+// then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
