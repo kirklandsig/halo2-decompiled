@@ -646,6 +646,9 @@ struct s_collision_result_buffer_1697c0
 // 353/357/353/353/335/357/357/357; other rotation user 58/148/58/58/152/73/150/51 versus 23.
 // NOT kept: every shared-helper user regression rejects its form. Original helpers, includes and body restored;
 // magnitude scratch, axis/result homes and initialization schedule remain.
+// M336: Returned success owns loop admission or tail termination, bool/byte/short/long,
+// with failure-owned best-fraction updates: 351/346/363/361/346/353/363/362. All regress;
+// original break, result and whole body restored. Native scratch/axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

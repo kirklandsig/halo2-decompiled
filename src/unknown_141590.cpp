@@ -325,6 +325,9 @@ static inline void quaternion_transform_vector(
 // 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
 // Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
 // NOT kept: indexed reductions regress and fail the exact-match gate.
+// M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
+// a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
+// combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
