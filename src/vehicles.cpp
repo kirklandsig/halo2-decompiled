@@ -3001,6 +3001,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // N322: Scalar control/upright-target/upright-error storage, subsets 1/2/4/3/5/6/7:
 // 1095/1076/1076/1061/1053/1069/1061; all plus scalar lateral storage 1077.
 // Control/error storage reaches retail length with frame 0x84 but regresses; original body restored.
+// DH308: Existing integer sign helper zero-result/positive-result/nested-result/flat-result/early-return/
+// nonzero-result/negative-first correction/negative-first conditional: 1057/1049/1052/1052/1052/1057/1051/1052.
+// NOT kept: best gain is three points; all retain frame 0x80 versus 0x74. Original helper and body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3558,6 +3561,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 370: Complete forward parts with cosine-up/sine-axis/outer-trig declaration
 // subsets 1/2/4/3/5/6/7, then all with native fallback copy: 145/156/131/155/145/156/155/159.
 // Five-point best rejected; original body restored. Projection/cross ranks and angle/trig homes remain.
+// DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
+// then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
+// Exact-only precision forms restored; original real angle, setters, helpers and body retained.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
