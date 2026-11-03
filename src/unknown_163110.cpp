@@ -1006,6 +1006,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
 // use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
 // `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
+// Round 56 (m3 lane 13, fast): the negated forward vector as an aggregate initializer 115 (same code); plane 1's
+// normal negated straight from the forward pointer, no negated vector 465 (1803 bytes); `margin + view->margin`
+// 115 (same code); a plane-0 pointer for the whole plane-0 block 285 (1867 bytes); the near distance as an
+// if-clamp on the sum 266 (1867 bytes); plane 0's d as `near_distance + -d` 423. All restored.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

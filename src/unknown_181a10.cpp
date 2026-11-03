@@ -666,6 +666,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
 // aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
 // M323: Native instance/mesh-surface/direct-surface layouts, seven subsets and complete readonly inputs, all 308. Original input observations, types and body restored; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Round 56 (m3 lane 13, fast): retail keeps origin as three scalars (x at +0x38, y and z in reused slots +0x14/+0x18)
+// and copies the hit point out with dword moves. Origin as three named reals through a position pointer 315 (1251
+// bytes, frame 0x48); read straight from the transform 312 (1248, frame 0x48); each with the hit copied out by
+// struct assignment 322/319 (1228/1231); the struct assignment alone 331 (1218, frame 0x4c). Every 0x14a300 call
+// here sign-extends the plane index in retail (a long parameter; needs src/unknown_17d9a0.cpp, avoided this round).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
