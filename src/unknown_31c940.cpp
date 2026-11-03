@@ -40,7 +40,7 @@ static __forceinline solver_projection_31c940 project_first_linear_velocity(solv
 	solver_velocity_31c940 *a, solver_velocity_31c940 *b, __m128 const &linear_axis)
 {
 	__m128 relative = _mm_sub_ps(_mm_load_ps((float const *)&a->linear), b->linear);
-	__m128 angular = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(b->angular, row->b));
+	__m128 angular = _mm_add_ps(_mm_mul_ps(b->angular, row->b), _mm_mul_ps(row->a, a->angular));
 	return sum_three_projection(_mm_add_ps(angular, _mm_mul_ps(relative, linear_axis)));
 }
 
@@ -754,7 +754,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1943 (was 1944): retain B field addresses through spin-friction projections and updates.
+// score 1940 (was 1943): first normal projection operand order.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -834,9 +834,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			contact_friction:
 			{
 				solver_angular_row_31e7b0 *spin = (solver_angular_row_31e7b0 *)(((solver_linear_row_31e7b0 *)terms) + 2);
-				solver_velocity_31c940 *body_b=b;
-__m128 *volatile linear_b_pointer=&body_b->linear;__m128 *angular_b_pointer=&body_b->angular;
-float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
+				solver_velocity_31c940 *body_b = b;
+				__m128 *volatile linear_b_pointer = &body_b->linear;
+				__m128 *angular_b_pointer = &body_b->angular;
+				float spin_mass = spin->a.m128_f32[3], spin_target = spin->b.m128_f32[3];
 				solver_projection_31c940 projected_a = sum_three_projection(project_first_spin_vector(
 					((solver_linear_row_31e7b0 *)terms), a, body_b));
 				solver_projection_31c940 projected_b = sum_three_projection(project_second_spin_vector(
