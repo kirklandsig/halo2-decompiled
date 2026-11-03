@@ -2752,6 +2752,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // subsets 1/2/4/3/5/6/7: 530/537/530/537/530/537/537; complete graph with
 // natural shared completion 539 (1859 bytes, incoming index differs). Original
 // guards, bit tests, exits and complete body restored; frame/result homes remain.
+// M322: Plain three-axis centroid/projection/impulse-scale loops, subsets
+// 1/2/4/3/5/6/7, then all with centroid-normalization loop:
+// 567/562/556/588/598/598/615/631; 1732-1816 versus retail 1908 bytes.
+// All regress; original complete body and arithmetic restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4928,6 +4932,11 @@ void __stdcall function_b8600(long object_index, long unknown);
 // admitted/blocked eligibility in bool/byte/word/long: fast 655 each against control
 // 655 (full 648). Compiler completion cloning and frame/homes remain; original
 // switch, repeated calls and complete body restored. Every checked peer is unchanged.
+// M322: Native velocity-difference/position-integration axis loops and complete
+// lean-result ownership, subsets 1/2/4/3/5/6/7, then consistent timestep:
+// fast 684/667/646/676/675/658/667/656 against control 655.
+// NOT kept: lean-local 646 hoists the field read and merges the native
+// step/clamp field stores to one final store. Original body restored at full 648.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
