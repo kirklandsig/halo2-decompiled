@@ -363,6 +363,11 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
 // Exact-only later selector retention regresses; original observations and body restored;
 // plane-store base, first selectors and product memory sides remain.
+// Round 57 (m3 lane 13, fast with 0x120810/0x120850): the corner helper taking x and y by value 235 (1008 bytes);
+// its axis parameter short 271 (1009); `short axis = function_120850(...); quad->axis = axis;` with the corners
+// reading the field 257 (997); a `vector3f *normal` for the copy, dot and axis call 258 (1000); the helper
+// returning the point2f, assigned to each corner 275 (1044). Retail stores the first axis from AX (the short
+// return) and re-extends AX for the first corner; ours stores CX.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

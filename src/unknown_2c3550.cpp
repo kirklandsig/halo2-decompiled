@@ -283,6 +283,11 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
 // 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
 // written y first 92. Original normalizer and body restored; early Y load remains.
+// Round 57 (m3 lane 13, fast): the direction as an aggregate initializer with the distance declared at the call 92
+// (same code); fabsf in the normalizer 156 (634 bytes); `real const` direction locals 92 (same code); the
+// normalizer on two component pointers (`&direction.x, &direction.y`) 92 (same code); the reaches flag declared
+// after the direction locals 166 (638 bytes). Retail's `direction->y * inverse` keeps y as the register operand
+// (preloaded), where ours commutes it to `inverse * [y]`.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

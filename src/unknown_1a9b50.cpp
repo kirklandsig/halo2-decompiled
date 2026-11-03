@@ -896,6 +896,12 @@ static __forceinline long real_to_long(real value);
 // bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
 // straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
 // second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Round 57 (m3 lane 13, fast; 0x1a9d80/0x1a9e00 matched each time): the prop-index test inverted (`== NONE`
+// clears field_2c first) 497; the inner admission test inverted with `local_6 = false` first 382 (same code);
+// local_6 dropped with the second test re-testing field_12/17/18 442 (1907 bytes); the second goto as
+// `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
+// local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
+// (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
