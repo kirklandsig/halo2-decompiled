@@ -441,6 +441,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// P303: Native-width lowest/candidate/compaction ordinals on the retained output-ordinal graph,
+// subsets 1/2/4/3/5/6/7: 654/262/180/642/651/259/635; unsigned native candidate 262.
+// NOT kept: every form regresses, some lose caller 0x239d50; original scans, output ordinal and body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -1497,6 +1497,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
 // 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
 // needs match-only forms.
+// P303: Existing shared completion provider on the failure-only count graph, open/query/resize
+// masks 1/2/4/3/5/6/7, then all five asynchronous boundaries: 33/33/33/33/33/33/33/33.
+// Original local completion expansion and complete body restored; query/count and write/header joins remain.
 // @retail 0x213970
 void function_213970(void)
 {

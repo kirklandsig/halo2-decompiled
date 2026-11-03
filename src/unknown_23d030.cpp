@@ -426,6 +426,9 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// P303: Existing shared normalizer live i/j/k captures before stores, subsets
+// 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
+// NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
