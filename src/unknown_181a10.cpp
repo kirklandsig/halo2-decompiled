@@ -666,6 +666,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
 // aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
 // M323: Native instance/mesh-surface/direct-surface layouts, seven subsets and complete readonly inputs, all 308. Original input observations, types and body restored; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// Round 44 (m3 lane 2, fast = plain): retail's slots: origin y/z at +0x14/+0x18 (reused by the material and
+// friction), hit +0x2c..+0x34, origin x +0x38, +0x3c/+0x40 never touched, plane +0x44..+0x50 (normal written
+// in place); the untouched pair looks like a reserved aggregate home. Origin and hit copied by components
+// 326 (1263 bytes); scalar origin read z/y/x with the hit by components 325; hit by components alone 313
+// (1250); that with the in-place normal 328 (frame 0x40), with the normal copied into the plane by components
+// 329; origin through real_point3d_set 315, with the in-place normal 344; the in-place normal on the kept form
+// 357 (1208 bytes, frame 0x40); all 18 origin/hit/normal combinations at or above 308.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

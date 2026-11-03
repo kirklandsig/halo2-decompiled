@@ -768,6 +768,11 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // M320: First product native/const/library/overlap-safe result copies 289/289/289/391;
 // each with the existing staged second producer 301/301/301/400. NOT kept: native copies require a match.
 // Original frame, product inputs and complete body restored; colors and forward.k reuse remain.
+// Round 43 (m3 lane 2, fast with 0x1f0870): the second product from the direction local 224 (1268 B);
+// previous_up copied after the normalize 94; right from the direction before the forward copy 45 (1261 B,
+// both products then read stack copies), with the else-branch forward pointer 43; forward copy first, right
+// from direction, else pointer 41 (1261 B; products read the stack copy where retail reads command->forward).
+// None kept (gains under 3, different shape).
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

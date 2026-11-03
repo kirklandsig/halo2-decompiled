@@ -998,6 +998,13 @@ bool function_2715a0(byte *buffer)
 // 579/579/591/591; paired projected-point array production 579/579/508/508.
 // Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
 // original scalar producers and complete body restored.
+// Round 44 (m3 lane 2, fast): the pop-or-NONE forceinline loop again 512 (diagnostic; retail's prologue and
+// un-rotated loop, state EBX); with the location order, `!(d > 0.09f)`, the setg flag and per-case depth
+// stores all together 526 (2056 bytes); with each alone 528 (2056)/517 (2064)/512/504. The diameter written
+// at each use, `(radius * 2.0f) * (radius * 2.0f)`, 481 (2084 bytes; retail reloads the radius and
+// re-multiplies in the second test, as this gives; five points, a computed value at each use, not kept).
+// The root stored back into the squared length (diagnostic) 486, same code: the fsqrt still sinks past the
+// 0x210be0 call.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

@@ -418,6 +418,12 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // F346: Completed lowest-coordinate, candidate-ranking and hull-geometry lifetimes in
 // seven subsets 170 each; all with overlap CRT 259. NOT kept: 762/784 bytes, caller 80.
 // Original complete executable body restored.
+// Round 43 (m3 lane 2, fast): short hull count as `while (hull_count < count)` with
+// `indices[hull_count++] = current`, bool departure and direct `return hull_count` exits 243 (753 B;
+// frame 0x14 as retail, but the count stays in ESI and the departure byte lands in the points home);
+// that with previous_angle declared before the lowest scan 273, with a long count 271; the original
+// with previous_angle declared first 207; the original's pass loop as `while (hull_count < count)`
+// with `indices[hull_count] = current; hull_count++;` 267 (756 B). Original body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -308,6 +308,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // homes remain. NOT kept: Private producer consumers tie or regress; quaternion-return chain 894
 // removes the retail q-address copy and moves quaternion/body homes, so its eight-point preview gain is
 // unsupported; other out-of-line chains fail the gain threshold. Original executable source restored.
+// Round 42 (m3 lane 2, fast control 902): mnemonic census against retail: ours ~10 rolled scale loops (dec 12/2,
+// mulss 35/58, movaps 19/32); a long scale counter re-measured 933 and still rolled (mulss 35). The bit-13 test as
+// `!(flags & 0x2000)` 939; the four record option bits as `(flags & mask) != 0` 902 (same code); the zero vector
+// copied before `if (!local_21) continue;` 909; the shared response fraction declared at function scope 902; the
+// body-slot clamp as a NONE default plus `if (local_14)` 917 (4283 bytes). Original body restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

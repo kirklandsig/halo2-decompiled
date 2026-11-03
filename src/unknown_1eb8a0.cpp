@@ -350,6 +350,11 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 382: Complete angular direction-admission predicate, bool/byte/short/long
 // outside truth then inside complement: 642/642/642/642/642/642/642/642. Original dot/test, fallback and
 // full body restored; direction/sample homes and coefficient schedule remain.
+// Round 42 (m3 lane 2, fast, caller 0x1eb6f0 checked): the output copy from q moved to the entry 732 (2884
+// bytes, caller 0 -> 31); only the position pointer declared at the entry 718 (2895 bytes, caller 0 -> 11); the
+// 0.866 test's products written d first 642 (same code); the alignment dot written a first 642 (same code); the
+// zero-counter fallback as `vector3f qr = counter == 0 ? *g_4687a4 : *q;` (q not reassigned) 686 (2857 bytes,
+// caller kept). Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

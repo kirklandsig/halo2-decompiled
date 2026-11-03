@@ -1431,6 +1431,10 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 546: Alias-safe named/returned/both identifier transfers 986/977/992;
 // mixed library boundaries 977/986; alias-safe with native returned/named words
 // 1012/988; both with late candidate 1007. All regress; original complete body restored.
+// Round 42 (m3 lane 2, fast): the iterator outputs declared class/type/mode and type/class/mode 828/828 (no slot
+// moves); the three in one declaration 828; the result set in both arms of the named test (no candidate) 977 (2825
+// bytes); matched 0x1dc790's found-flag loop (iterate before the loop and in the miss arm) 995 (2825 bytes, first
+// difference +0x1c). Original body restored.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
