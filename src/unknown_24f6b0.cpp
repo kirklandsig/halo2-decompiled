@@ -8,12 +8,16 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 	real local_0 = face->scale;
 	real x = point->i;
 	real y = point->j;
-	real z = point->k;
-	if (local_0 != 1.f)
+	real z;
+	if (local_0 == 1.f)
+	{
+		z = point->k;
+	}
+	else
 	{
 		x *= local_0;
 		y *= local_0;
-		z = local_0 * z;
+		z = local_0 * point->k;
 	}
 	out->i = face->axes[2].i * z + face->axes[1].i * y + face->axes[0].i * x + face->origin.i;
 	out->j = face->axes[2].j * z + face->axes[1].j * y + face->axes[0].j * x + face->origin.j;
@@ -21,7 +25,8 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 }
 
 /* Expands a face index and two six-bit coordinates to a unit direction. */
-// score 19 (was 19): the components are stored in retail's order (i, j then
+// score 9 (was 19): retail sets z ahead of the scale test (`movaps xmm2, xmm3` before `jnp`, no else jump) with the
+// scale in xmm4; ours assigns z in the arm, with the scale in xmm2. Earlier state at 19: the components are stored in retail's order (i, j then
 // k), so our zero is materialised after the multiplies where retail keeps it
 // in xmm3 from the top of the function; the low six bits also come from a
 // byte move here instead of retail's full copy of the index. Tried: a long
@@ -55,11 +60,23 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // vector3f_assign 68 (254 bytes), with the scale local 57 (239 bytes); real x/y locals 37; a shared
 // step constant 68; the casts named before the products 68; the index used directly 68; a face pointer
 // local first or after the coordinates 75 (256 bytes).
+// Round 156 (fast): a zero local between or before named products 57/57 (239 bytes); the grid through a forceinline set
+// helper with the zero as argument 57 (239 bytes); z assigned in both arms of the scale test, reading point->k in each:
+// short x 60 (243 bytes), long x with the scale at each use 44, long x with the scale local 10, inverted test 9 (kept;
+// the zero moves to the top, in xmm3, and every line before the scale load is retail's). On the long x: point by value
+// 106 (273 bytes); k local copied to z 57 (239 bytes); ternary z 70 (257 bytes); z = scale first, with else 10, inverted
+// 9; z product first, with else or inverted 56/56 (244 bytes); z through the products 57; z initialised with arm x, z, y
+// or z, x, y 50/50 (242 bytes: retail's copy before `jnp`, but the zero is made after the products, in the step's freed
+// xmm2, and z takes another register). On that form: z declared first 51; scale local last 66 (251 bytes); casts named 50;
+// step local 50; products swapped 50; mirrored arms 56 (244 bytes); scale at each use 38 (scale in xmm4 as retail, z and
+// zero swapped), arm z, x, y 39, x, z, y scale-left 38, z, y, x 38, y, z, x 39, x, y, z 37; z declared first 48; reads
+// y, x, z 48; z read through the out pointer 37; an else-arm read as well 10 (241 bytes).
+// Lead: the zero comes first only when no z is set in the entry block; the wanted form sets z there and still has it.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
 	int value = (int)index;
-	short x_coordinate = (short)(value & 0x3f);
+	long x_coordinate = value & 0x3f;
 	long y_coordinate = (value >> 6) & 0x3f;
 	direction->i = (2.f / 63.f) * (real)x_coordinate;
 	direction->j = (2.f / 63.f) * (real)y_coordinate;

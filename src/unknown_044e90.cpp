@@ -202,6 +202,9 @@ struct s_visibility_bound_record
 // Round 527: Uninitialized reciprocal declaration at function/query/view/frustum scope,
 // each with the original/fallback-entry center-output scope: 406 each. Every original
 // reciprocal producer, center scope and full body restored; entry/table and plane/query homes remain.
+// Round 545: Actual visibility-buffer capture before fallback tag/object/count/nodes
+// setup and function-entry uninitialized pointer with early/latest pre-loop producers:
+// 442/430/430/442/441/441/442/441. Original observation and body restored; entry/table and plane/query homes remain.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
