@@ -200,7 +200,7 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 114 (unchanged): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
+// score 114 (was 114): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
 // header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
 // because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
 // call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
@@ -215,6 +215,10 @@ struct s_flag_word_bits
 // `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
 // table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
+// F352: Native header-byte mask producer with both existing stack aliases retained,
+// bool/byte/short/long default-false arms 124/124/129/128; complete true/false
+// arms 123/123/126/125. All restored; player-base/root scheduling, ticks/effect
+// homes and the expanded tail remain. Original word-bitfield view retained.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1188,6 +1192,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
 // inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // Permuter (25 min on r654): best 12, only with a volatile read of the unit index; not kept.
+// F352: Complete rejection returns / sole-exit rejection / exhaustive outcomes / retained-false
+// dispatch outcomes, saved player receiver: 50/35/48/78; existing lookup at every player
+// field: 46/46/46/71. All restored; saved unit/table EDI/ESI still reversed.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1750,6 +1757,10 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
 // not natural source, so it is not used.
 // Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
+// F352: Existing traits-record bool/byte flag with admission-owned disabled return,
+// independent false result, disabled guard, and sole outcome exit: bool 91/91/91/91;
+// byte 17/91/17/16. NOT kept: byte normalization grows to 253/251 bytes; bool
+// loads AL rather than CL. Original record, input access and entire body restored.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {

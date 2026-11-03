@@ -4491,6 +4491,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P286: Terminal active truth: forced-first logical/eager normalized 749/749; positive/reject
 // branch returns 765/765; positive/forced complete arms 769/755; forced/positive default
 // publications 784/771. All restored; entry definition and zero/result/one residency remain.
+// F352: Contact-admission truth in bool/byte/short/long 749/749/749/749;
+// ground-admission truth in those domains 749/749/749/749. NOT kept:
+// one-use predicates do not match. Original gates/body restored; frame 0x18 agrees,
+// but entry definition and zero/result/one residency remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5021,6 +5025,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // M333: Actual up-length/inverse, bank-axis and quaternion-axis lexical identities,
 // seven subsets, then independent component/point ordinals: 1087 each. Frame 0xf8
 // remains; original full body restored, with native index and matrix/vector homes unresolved.
+// F352: Existing axis inline/called normalizers and magnitude provider 1054/1143/1087;
+// desired-up inline/called normalizers 1148/1251; paired inline/inline,
+// inline/called, called/inline 1132/1236/1213. NOT kept: 1054 grows to
+// 5120/5094 bytes and changes sum grouping; no provider form matches. Called desired-up
+// alone or with inline axis gives frame 0xf4, others 0xf8, versus 0xd8. All restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
