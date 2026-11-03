@@ -578,6 +578,12 @@ long function_243b10(long key_b, bool team_only, long *second)
 // distance 169 (aligned 83 against 54); `slots` read after the 0x19ec40 call 169, with the accumulated distance 169.
 // Lead: `test; mov ebp, [g]; jne` is the same first instruction of both select arms merged upward, so retail's else arm
 // loads the table twice; every form that reads the global outside `slots` hoists it out of the loop.
+// Round 140 (m3 lane 5, fast with 0x19ec40 and its three callees): one `point3f *bounds` picked by `k == 0 ?
+// &bounds[0][slot] : &bounds[1][slot]` as matched 0x244680 does, with the accumulated distance, 388 (499 B: retail
+// really repeats the k test at each use); the accumulated distance computed inside each k arm 197 (743 B, VC does
+// not merge the two copies upward); the table through the global at each use 200 (688 B; both select arms then load
+// it into their own scratch register and nothing stays in EBP); `short key` 173 (same code); a function-scope pointer
+// to g_4e0350 for the position and the inner loop 178.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1976,6 +1982,11 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // getter tail 65; the existing initializer and cause setter as calls 123-129 (190-196 B); local initializer storing the
 // subtype first 64, type last 63, in retail's fill order 63, the last two with the getter tail 67. Lead: flags dependencies keep the
 // IL order, so retail's `neg al` before `cmp ebx, 9` means the subtype chain really precedes the type chain.
+// Round 140 (m3 lane 5, fast; each on the getter tail `function_146650() + rounded` with the getter at the time test
+// too): the cause team stored before the cause player 60 (260 B); the type as `long type = 3; if (engine_type == 9)
+// type = 10;` 57 (first difference moves up to +0xc, and matched 0x241620 then differs by 1), the inverted
+// `type = 10; if (!= 9) type = 3;` 57 (0x241620 1), both type and subtype in that if form 64 (259 B), the type if form
+// with the team first 58.
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {

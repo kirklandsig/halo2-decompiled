@@ -1299,6 +1299,10 @@ bool function_68670(byte *source, long size, void *block);
 // re-derived view-member cursor update 145 (575 bytes); split addition/remainder updates 24; ring-member
 // reader 24; two-use long payload size 129; force-inline read helper 24; const ring receiver 24.
 // Original helper and body restored.
+// Round 140 (m3 lane 5, fast): the start update as `count + buffer->start` 24; case 2's block passed as `block.bytes`
+// 24 and the payload passed as `&payload` 24 (both re-measured on this body: round 34 listed them on its 21 form);
+// the cases in source order 1, 0, 2 24; the header read with a literal 8 24 (all identical code). Left as before: the first read keeps the start in ESI across 0x1a19a0, and 0x68670's
+// arguments are set up ESI before EAX (retail EAX first): BLOCKED-BY 0x68670 (contributor code, single caller).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
