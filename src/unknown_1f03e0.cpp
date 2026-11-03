@@ -1729,6 +1729,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // M345: Default-moving result cleared by the original zero test, bool/char/signed-char/byte/
 // short/word/int/long: 221/247/247/247/283/283/285/285.
 // NOT kept: test-produced result domains do not match; original root, motion predicate and full body restored.
+// M347: Highest-contact reduction outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 225/225/225/225/225/225/225/225.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

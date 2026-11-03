@@ -519,6 +519,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
 // divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
 // if/else inverted with the fallback arm first 32 (same code).
+// M347: Limit-admission outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 32/32/32/32/32/32/32/32.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

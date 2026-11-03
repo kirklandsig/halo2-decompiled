@@ -2337,6 +2337,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
 // before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
 // of the 9 missing bytes.
+// M347: Optional tag-count availability, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 155/155/155/155/155/155/155/155.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

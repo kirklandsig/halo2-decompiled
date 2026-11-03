@@ -994,6 +994,9 @@ real normalize2d(point2f *v);
 // M345: Trajectory result char/word/unsigned-int/dword at its call or before all
 // trajectory outputs: 186/186/159/159/153/153/153/153. Native request/facing graph retained.
 // NOT kept: scalar carrier domains miss; original Boolean result and complete body restored.
+// M347: Request-state admission outcome, direct bool/byte/short/long then
+// test-produced bool/byte/short/long: 135/135/135/135/135/135/135/135.
+// NOT kept: one-use/test-produced comparison outcomes do not match; original complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
