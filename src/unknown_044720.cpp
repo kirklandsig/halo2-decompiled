@@ -526,6 +526,11 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P289: Native complete geometry/part/bound fields on the positive-count graph,
 // seven subsets and read-only geometry: 182/182/182/182/182/182/182/182. Original body and representations
 // restored; entry/index spill and center/query/bound homes remain.
+// Round 143 (m3 lane 5, fast): center copied to a function-scope point at entry (transform into it,
+// distances from it), the aligned query declared in the large branch, aligned/plain loop position
+// 191/191 (frame 0x10a4); with the branch query unaligned 184 (frame 0x1094, point +0x3c and query
+// +0x2c against retail's +0x30/+0x20), declared after the list storage 184, its center as one
+// struct copy 205.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
