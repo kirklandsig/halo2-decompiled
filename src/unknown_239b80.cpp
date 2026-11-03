@@ -756,6 +756,13 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// Round 202 (lane 3, harness exact, confirmed --fast): retail keeps both side flags in memory (current +0xc,
+// previous +0xd, the loop end copies through CL); ours keeps the previous side in CL, so count is not loaded once into
+// ECX. `long last = count - 1` index 129; `points + count` then `previous--` 129; the result/flags/mask declared after
+// the clipped reset 137; the current side as `= false; if (...) = true` 284 (923 bytes); the previous side as an
+// if/else 129; a `long original_count` copy for the previous point and the loop 293 (865); a forceinline side helper
+// writing the flag through a bool pointer, for both sides 131, previous only 131, loop only 129 (the flags are
+// promoted after inlining). Restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
