@@ -286,6 +286,10 @@ void player_action_initialize(s_player_action *arg_0);
 // here), and the toggle flag set inside the test needs a byte match to be kept.
 // Round 278: standard signed-counter lower/upper bounds with built-in or native
 // long predicates, eight non-original combinations: 263/285/259/281/301/277/299/299. Original counter restored.
+// Round 81 (m3 lane 12, fast): the first count test through 0xcdff0 with a `__forceinline` declaration here 403
+// (both calls stay out of line under this region's inline_depth(0)); that test as `field_23e[...] == 0` 134 (same
+// code); field_20/24 as two real stores 164; the 0x40 bit named once as `bool pressed` 171; the field-first
+// selection compare with the real stores 163. Original body restored.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {

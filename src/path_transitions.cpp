@@ -645,6 +645,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // with native byte success, original/shared differences 358/366. Original helper calls,
 // result qualifier, includes and complete body restored; early root/actor ownership remains.
 // M323: Actual first-edge/second-edge/projection-field references, seven subsets and complete trace-element references, all 278. Original body restored; early root/actor ingress and vector scheduling remain.
+// Lane 17 r36 (fast): corners a, b, c, d re-measured 299 (1284 bytes; the actor load is still scheduled before
+// `push ebx`, so pathfinding arrives in EDX, and case 1's projection/origin loads are re-coloured); on that graph case 5
+// first in the switch 353, the surface as `surfaces + surface_index` 299 (same code), a const surface pointer 299 (same
+// code), the inverse length computed before the projection 299 (same code). Original c, b, a, d body restored.
 // Round 33 (m3 lane 18, fast; 0x270d90 295 throughout): the result as a plain bool (the volatile dropped)
 // 340 (1252 bytes); case 5's actor test as an outer if 278; one function-scope position pointer for cases
 // 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`
@@ -654,6 +658,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // differences and complete shared projections in eight subsets:
 // 278/278/297/297/278/359/297/351. Original body and all helpers restored;
 // early root/actor ownership remains, at the original frame and length.
+// Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
+// constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
+// if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

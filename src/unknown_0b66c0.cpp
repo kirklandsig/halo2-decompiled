@@ -328,6 +328,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 528: native int start/count and immutable destination formal, seven subsets
 // 40 each; complete native graph with exhaustive result arms 48. Original signature,
 // shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
+// Round 78 (m3 lane 9, fast with 0xb5f10/0xb61d0): the clamp as `if (count >= 0x200) count = 0x200;
+// else count++;` 40, with `> 0x1ff` 40; the guard as `!(start < 0 || count <= 0 || ... > length)` 40;
+// the length test as a second nested if 40 (all same code); start added before the increment 36
+// (0xb5f10 6, as listed).
 // DH313: Native scanner char/signed-char/unsigned-char/byte captures with original
 // postincrement or separate pre-test advance: 40 each; shared find regresses to 15/70 bytes
 // in all eight. NOT kept: no target gain and shared-user loss. Original helper/body restored.

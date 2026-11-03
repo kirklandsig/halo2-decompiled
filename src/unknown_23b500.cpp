@@ -269,6 +269,11 @@ struct s_spawn_scenario_23aea0
 // and point setter 82 each; per-record real source cursor 148; per-element byte destination 100; flat byte
 // destination 253; inner byte offset 210; batch/byte offsets 226; dual type/byte counters 91; scalar or dword
 // fields on the byte-offset loop 140 each; aggregate record copy 145. Original 61 body restored.
+// Round 140 (m3 lane 5, fast, on the setter body): the setter's sources as `((real const *)(definition + 0x148))[type
+// * 7 + n]` 61; through a named `real const *values` for the three 61; the globals pointer declared before the
+// scenario pointer 61; the scenario pointer declared at its test 99 (its load moves below the stores); the sources as
+// `((real const *)(definition + 0x148 + type * 0x1c))[n]` 61. The integer-offset copy loop still needs the weights'
+// symbol at 0x502250 (the round 55 lead above), which lives in src/unknown_157450.cpp, held by another lane this round.
 // @retail 0x23aea0
 void function_23aea0()
 {

@@ -1100,6 +1100,11 @@ done:
 // Round 343: BSP/header/object-handle last-consumer scope subsets 1..7 each 125;
 // joint object-phase scopes with the existing availability helper 149 (440 bytes).
 // Original availability, workspace, exclusions and body restored; NONE/result/exclusion homes remain.
+// Round 125 (lane 8, fast with 0xd2a50): the guards as one positive test around the body with `return false`
+// after it 125; `retry = true` before the probe advance 125; `bool retry = true; while (retry)` 125; the
+// direction copied to a local for every use (diagnostic) 125; the exclusion preset false and set by an if 125;
+// an empty excluded arm with the model query and requery as its else-if/else 125 (same code each: the flag is
+// still threaded, the result keeps EBX and the direction no register). Body unchanged.
 // Round 138 (m3 lane 5, fast): availability through the existing inline helper 149 (440 bytes), with `result = false`
 // after it 169; `result = false` after the inline availability tests 136; the requery flags assigned in the call
 // argument 125 (same code); diagnostic: the requery's lightmap call sharing the no-object call through a label 165
