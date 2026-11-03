@@ -2825,6 +2825,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // axes, side-bank/matrix pairs/all/all with independent relative output:
 // 691/692/742/734/691/755/755/763. NOT kept: best gain one; frame remains 0xd0
 // or 0x104 versus retail 0xfc. Original body, record view and all helpers restored.
+// F354: Float CRT bank sine/cosine/both 689/689/692; distinct relative output
+// 699/699/700; both with distinct inverse/current or desired result 702/699.
+// NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3117,6 +3120,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Round 555: Existing setters for acceleration, both lateral axes and boost
 // direction, seven subsets; all plus yaw update: 1052/1060/1053/1060/1053/1060/1060/1060.
 // Original complete body restored; frame/force/velocity ownership still differs.
+// F354: Live default-target receiver/repeated steering direction/fraction numerator,
+// singles and pairs/all/all forced inline: 1077/1047/1053/1089/1060/1053/1105/1105.
+// NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

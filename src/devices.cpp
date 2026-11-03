@@ -1735,6 +1735,9 @@ bool function_0b6760(s_index_pair const *pair);
 // the state test on, `cmp word [ebp+0x12a], -1` then a second movsx read, state at [esp+0x14]; left: the result
 // in DL where retail keeps a stack byte at [esp+0xf], index*12 in ESI not EBX); that without the volatile
 // definition 426 (1437); with the result declared first 384.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
