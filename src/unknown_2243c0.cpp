@@ -445,6 +445,14 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // after the search loop 147, at the top of the draw block 117; the root tag local passed to 0x1bbf0 130
 // (first difference +0x2); first cache zero after the material record lookup 117; the search count read
 // once before the loop 117. Original body restored.
+// Round 129 (m3 lane 8, fast; 0x2243c0 and 0x224d90 matched each time): round 59's chain rebuilt with a by-value
+// forceinline tag-data accessor (fallback and tables bound by reference), head/stage/pass elements bound, grouped
+// zeros, flags read before 0x173ba0, the group test re-reading the tag and the 0x1c590 material index bound from a
+// by-value accessor: 8 (same seven lines: pass definition EDX where retail overwrites EAX, material index ECX/EDX,
+// definition EDX/EDI, late zero xor). On it: pass and material lookups through the accessor 8; material lookup
+// through both accessors 8; pass/material chains through block_element_224db0 (element 0) 8; local_10/local_11
+// declared at the top 8; first zero before the material lookup 23; the material index reference used for the
+// lookup as well 76. Match-only chain; original body restored.
 // Round 390: Complete callback context after search, field/aggregate construction,
 // crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
 // Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
