@@ -642,6 +642,10 @@ struct s_collision_result_buffer_1697c0
 // frame-bottom scratch and pitch-axis/result homes remain.
 // DH304: Private normalization-success bool/byte/short/long results, direct/common exits, 340/340/340/340/340/340/340/340.
 // Original real normalization result, helper and sampler restored; frame-bottom scratch and axis/result homes remain.
+// DH310: Existing staged cross alone/dot/complement/full outputs/cosine/projection/cross-sine/all parts,
+// 353/357/353/353/335/357/357/357; other rotation user 58/148/58/58/152/73/150/51 versus 23.
+// NOT kept: every shared-helper user regression rejects its form. Original helpers, includes and body restored;
+// magnitude scratch, axis/result homes and initialization schedule remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

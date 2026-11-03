@@ -1538,6 +1538,9 @@ struct s_territory_tag
 // 43; through tag_index itself with the helper 43; a named globals index with the helper 43; a getter for the
 // tag 24, with the helper 43; a getter for the data 24, with the helper 43; nested getters with the helper 43,
 // forceinline 24. Registers rotate from the chain on: fixing the middle pointer fixes all of the second half.
+// Round 156 (fast): the tag index through an inline out parameter 24; the test in a named bool 24; a named engine
+// index 24; a named masked definition index 24; named data and item locals 24; a two-use data pointer (a second
+// read of its first field multiplied away) 24. All keep the middle pointer in ECX.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {

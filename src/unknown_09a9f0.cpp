@@ -877,6 +877,13 @@ bool c_projectile_type::v8(long a, long b)
 // read 5, with the mask 12; the index's low word read from the object 5; the power value in a local (mask)
 // 17. Re-measured: an index local (mask) 12; the 0x800 and NONE tests combined (mask) 12; a value pointer
 // into the group (mask) 15.
+// Round 32 (lane 17, fast): the masked group address written at both uses 15; with the mask, the index read
+// into a value local right after the call 49 (188 bytes), a const object pointer 12, `b` passed to the call and
+// the flags local declared after it 12, the 0x400 test and compare as nested ifs 12.
+// Round 94, all with the full-width mask: a handle pointer 12; a reference test with a direct index
+// read 12; a direct test with a reference index 12; a const object pointer 12; an un-named group
+// entry 15; const flags 12; a mutable handle reference 12; the entry predeclared in the flag scope
+// or the function scope 12/12. Original narrow-read body restored.
 // @retail 0xa3df0
 long c_device_type::v27(long a, long b, long c, long d)
 {

@@ -2086,6 +2086,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 478: complete native zone-entry/cluster/both/const-both values with
 // cached/live zone selectors: 379/375/375/375 in both sets. Every producer
 // outlines; original complete zone helper, observations and body restored.
+// AC494: Native node value after the unchanged returned-transform producer,
+// short/word/long/dword with direct/named positive argument: 128/131/133/133/135/137/139/139.
+// Named positive arguments recover frame 0x44 but grow to 564/552 bytes. On that
+// new frame, direct query and early A/B/both color combinations: 142/195/195/192/153/153/186/194.
+// NOT kept: no eligible gain; unsupported widths and one-use color snapshots need a match.
+// Original complete body, node observations, query timing and helper calls restored.
 // M328: Post-transform node rejection by OR/conditional/branch/default-result,
 // bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
 // body restored. Early color/query homes and frame 0x40/0x44 remain.
