@@ -386,6 +386,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // All restored; the high-boundary miss still bypasses the common restart-byte test.
 // Additional loop-only/all-site compound/logical restart accumulation: 184/11/186/16.
 // NOT kept: redundant-state forms do not match; original false start and byte producers restored.
+// Round 99: restart through its own address, a pointer at the loop test, and that pointer at both
+// tests 1/1/1; nested type assignment 92; split bit tests 248; inverted continuation 1; single-exit
+// goto 1; high-boundary/both-advance case orders 1/1; restart in the loop condition 212;
+// disposal-or-restart exit 1; flag store conditioned before the exit 219; high comparison reversed 2.
+// NOT kept: no exact match or eligible gain; original body restored, including all policy outcomes.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

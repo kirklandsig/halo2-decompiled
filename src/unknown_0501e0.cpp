@@ -290,10 +290,16 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
 // subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
 // NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
+// Round 65 (m3 lane 1, fast, control 221): the second offset loop before the first 223; named first/second
+// point pointers for arg_0[0]/arg_0[1] 221 (1147 bytes); the view helper scaling into a copy and pointing
+// its input at it 294 (1174 bytes); both offsets in one fused loop 226 (1146 bytes); the depth limits
+// written into the condition with no limit locals 231 (1151 bytes). Original helper and body restored.
 // Round 550: Plain weighted-output coordinate walks on separate-offset/cursor-transform
 // graph: long/dword index 222/222; long/dword output cursor 221/221; first/second/both
 // input cursors 221/223/221; all cursors 221. NOT kept: no gain, 1146/1147 bytes and
 // extra frame word remain; original three publications, helper and complete body restored.
+// Round 160 (fast): the view helper's input by value 348 (1215 bytes), as three reals 275 (1153); a copied input for the
+// first/second view 334/268 (1205/1151); the first view transformed in place then copied 279 (1104). All restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

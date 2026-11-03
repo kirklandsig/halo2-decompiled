@@ -571,12 +571,22 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 540: Common vector converter through shared scalar builder/returned output pointer/output
 // reference/native value, original center 112/112/112/214; the same producer for center
 // 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.
+// Round 56 (m3 lane 13, fast with 0xb7060): the inner search ending on `&& !found` with no break 256 (908 bytes,
+// 0xb7060 2); the center through carrier_vector_from_havok re-measured 149 (0xb7060 11; entry EBP, component EBX,
+// entry index on the stack); that with the entry after the component index and the no-break search 232; that with a
+// body local for the three body uses 192, with a body-entry pointer 230. All restored.
 // Round 158 (m3 lane 4, fast with 0xb7060): center through the converter re-measured 149 (aligned 119, against 75 unchanged); that with a named current-transform pointer for the matrix call 129 (928);
 // a named selected-body pointer for both velocity getters and the center 192, with the plain center copy 171 (905 bytes); the two closing clears swapped on the converter form 149.
 // Round 77 (m3 lane 9, fast with 0xb7060): the projection written `up->i -= forward->i * dot` without the scaled
 // locals 131; a rigid-body local for the two velocity getters with the center through carrier_vector_from_havok 192
 // (0xb7060 11); body_index declared short 197; the matrix through the existing havok_component_rigid_body_matrix_get
 // 112 (same code); the center read through the existing havok_component_rigid_body_get 112 (same code). Restored.
+// Round 48 (m3 lane 2, fast with 0xb7060): the inner search tested `j < count && !found` without the break 256
+// (908 B); the model index folded into the physics lookup 135; the component pointer computed before the NONE
+// test 270; the center copy before the velocity getters 174; diagnostic, `entry->active = true` moved ahead of
+// the matrix call (not retail's order: retail stores it after the center) 218, but the head then equals retail
+// (object index EAX, entry index ECX, first difference +0x35) and 0xb7060 matches: the register arguments follow
+// where the entry flag store sits, so look for a retail-order form that changes the same first-pass liveness.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

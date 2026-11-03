@@ -1681,11 +1681,28 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
 // Original real argument domain and narrowing preserved; all one-use captures restored.
 // Frame, unit/mode homes and independent look divisions remain.
+// Round 205 (m3 lane 3, fast control 220, full 218), re-measured listed forms: the settings rate read once into a
+// named local for all six uses 526 (2178 B); the mode lookup after the spring defaults 236; the unit fetched after
+// the mode 573 (2189 B); a short weapon index 421 (2220 B); the look values declared at their computation 220 (same
+// code). New forms: the active result passed straight to first_person_weapon_set_active (no local) 406 (2189 B);
+// the orientation offset as user and weapon terms scaled separately 220 (same code); the view entry's yaw/pitch
+// read at each use with no look pointer 444 (2205 B); the spring overrides tested as `if (field)` 220 (same code);
+// the pitch rate product with its operands swapped 221. The ESI/EDI save region stays BLOCKED-BY the build's
+// stand-in caller (the round 98 finding, not re-verified here).
 // Round 83 (m3 lane 12, fast control 220, full 218): look_yaw/look_pitch declared after mode, at function
 // scope, or at their assignments 220 each; mode declared before the unit and assigned after it 220; the
 // pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads
 // g_510c54 after each clamped look store (-0x2c/-0x28), as if those stores could alias the global; ours
 // shares one reciprocal.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
+// Round 82 (m3 lane 16, fast control 220, full 218): the look values as one point2f local 216 (frame 0x30 against
+// 0x2c: the look values then take their own -0x2c slot as retail, but 1/rate is still shared, so the pitch division is
+// not retail's; a grouping struct, not kept); mode renamed weapon_mode 220 (slots do not move); the clamps through a
+// file-local pin taking `real const &` 220 (same code), through an in-place pin on `&look_yaw`/`&look_pitch` 223 (still one
+// shared reciprocal); the yaw as `1.0f / rate * x` 220; early return for a missing unit 220 (repeat, same code).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

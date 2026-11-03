@@ -1030,6 +1030,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // setters 431/433/433; flying desired setter 428; direct two-point difference 572; general unity
 // scaled difference 463. NOT kept: gains two/five below the bar; flying setter also shortens away
 // from retail. Original raw-first body restored; damping and raw/bounded homes remain.
+// B391: Actual external normal/facing/input identities, subsets 1/2/4/3/5/6/7, then
+// all with up identity: 346/509/533/477/511/587/513/511. NOT kept: the normal-field
+// reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
+// does not show that new field-alias lifetime or its projection load pattern. Exact-only
+// identities and complete body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1718,6 +1723,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH315: Shared score/predicate/ordinal initialization masks 1/2/4/3/5/6/7,
 // then all with real movement: 227/225/225/229/229/227/221/224. Original
 // independent initializers, magnitude, observations and complete body restored.
+// N344: Coherent state-first material interface, then real movement/sentinel phase/airborne
+// bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
+// NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
+// initializers, predicates and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

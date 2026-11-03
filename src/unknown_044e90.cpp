@@ -214,6 +214,9 @@ struct s_visibility_bound_record
 // Round 548: Real four-descriptor release table, long/dword/short/word/byte/signed-char
 // counter and pointer </!= walks: 522/522/520/520/520/520/511/511. NOT kept: changed release/frame
 // shape misses; original four releases, field reads, native workspace and full body restored.
+// Round 142 (fast; aligned count in brackets, control 406 [357]): flags read in each arm 442 at 1744 [395], with a (bool) bit test
+// 444 [389]; the (bool) bit test alone 419 [357]; a view count local 453 at 1748 [351]; a frustum count local 443 at 1748 [366]; both 474
+// at 1764 [373]; the loop index before the transform 406 [357].
 // Round 550: Actual fallback visibility-membership result, bool/byte/short/long,
 // nested unseen admission then already-visible continue: 406/406/406/406/406/406/406/406.
 // NOT kept: one-use predicates do not match; original direct bit test, containment
@@ -222,6 +225,10 @@ struct s_visibility_bound_record
 // branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
 // point setter on update/branch/all producers 448/463/462. All controls survive.
 // NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// Round 82 (m3 lane 9, fast): retail tests bit 12 as `mov ecx, [ebx]; shr ecx, 0xc; test cl, 1` and keeps the table
+// in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
+// TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
+// local 447; the table local and TEST_FIELD_BIT with the flags local 442.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

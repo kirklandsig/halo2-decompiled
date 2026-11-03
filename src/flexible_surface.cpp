@@ -544,6 +544,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N343: Initial definition record/tag-handle/tag-table receiver families, seven subsets then
 // table-first, 117/117/117/117/117/117/117/117. Original acquisition and full body restored;
 // frame, seed/time and direction/cross homes remain. NOT kept: unmatched one-use receivers.
+// Round 206 (m3 lane 3, fast): sine, axis draw, then cosine 117 (same code); cross3f(&axis, &old) added 134 (881
+// bytes); cross and dot on the global with the `old` copy after them 164 (893); diagnostic: 0x2551f0's unit-axis rotate
+// body on the `old` copy, copied back 201 (918); the fraction draw before the time 193. Retail ret is plain, as ours.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
@@ -739,6 +742,9 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // call; a gain of 7, under the keep bar), with the side loop 434, with the types read per scan 432 (1470), with the rest
 // pointer first 415, all three 435; each scan's NONE default declared just before it 424, with NULL-first lighting 480,
 // plus per-scan types 496. All restored.
+// M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
+// observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
+// descriptor/searches restored; frame, application convention and outer API expansion remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {

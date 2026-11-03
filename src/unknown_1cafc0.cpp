@@ -644,6 +644,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// P293: Recovered twelve-byte request graph, native primary/alternate/both query-result ownership with
+// byte then Boolean success, both mutable with byte/Boolean: 387/402/491/508/518/548/491/548. Original
+// complete body and helpers restored; no qualifying gain.
 // DL251: Byte return with byte/bool/word/long status, char return with byte/bool/word status, then
 // native bool return with bool status on the twelve-byte expansion; NOT kept: all regress;
 // original graph/name ownership and return normalization remain: 478/478/564/556/478/478/564/478.

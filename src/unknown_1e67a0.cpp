@@ -749,6 +749,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
 // swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
 // `0.2f * x * limits.i` 132. Body restored.
+// Round 82 (m3 lane 16, fast, 0x24590 listed): one scale local for the limits, acceleration and movement 196 (1065
+// bytes); factor declared at the top 166 (first difference +0x3); `state->speed = field_148 = acceleration` 134; each
+// jitter value as one sign * on/off * scale product 162 (1057 bytes); the clamped control magnitude named 132 (same code).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1064,6 +1067,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // Lane 17 r37 (plain): `moved_away` as `alignment > 0.99f ? ... : false` 114; its dot as (rotated, goal) 114; the
 // side crosses declared with the sampled vector 114; both side crosses through the existing cross3f_staged 112 (1389
 // bytes, same cross schedule; gain 2, not kept); on that, `dot < alignment` 112. Body restored.
+// DH319: Complete final turn-test stop/continue results in bool/byte/short/long
+// storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
+// restored; native j/k products, side-dot and output scheduling remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -658,9 +658,19 @@ done:
 // Round 61 (m3 lane 10, fast; parse_variant stays matched), on the 32 form: `(word *)&g_55c6e4` at the translator
 // 32; the success copy calling function_08cc20 directly 32; `&g_55c6e4[0]` at the success copy 32, at both 32; the
 // success path's copy moved after the `if` with an `else goto done` 32 (all identical code).
+// Round 81 (m3 lane 16, fast; parse_variant stays matched), on the kept form: the selector read from the
+// variant getter in the switch (no variant local) 44; const globals 32, a dword tag 32, a dword name 32 (same
+// code each); the tag declared and read after the switch, just before the translator call 45.
+// B391: Existing provider returns the actual external object by reference, fallback/positive/
+// default-first/conditional producers with repeated then shared copy: 32/48/53/48/54/54/59/54.
+// Default-first provider loses the matched variant parser (22); provider, callers and complete
+// original body restored. Early EDI save, tag/selector and scratch cache remain.
 // Round 141 (m3 lane 5, fast; parse_variant stays matched), on the natural one-copy form 54 (173 bytes): a const pointer
 // local for the translator's buffer 54; `&g_55c6e4[0]` 54; a named copy source 54; a named selector 54; the tag read in the
 // translator call 45 (171). The EBX hoist of the buffer stays in all of them.
+// B393: Actual external UI/variant/tag identity references, subsets 1-7,
+// then all with one shared copy tail: 32/32/32/45/45/45/45/45. NOT kept: no exact match;
+// original complete body restored; early EDI save, tag/selector schedule and scratch cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

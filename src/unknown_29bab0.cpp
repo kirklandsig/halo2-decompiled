@@ -220,6 +220,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 541: Standard component-range heading copy, paired default/normalized-input/final-output
 // families, masks 0..7, with direct input: 839/840/834/829/828/848/851/836. Two forms reach
 // retail length but regress; original input storage, transfers, includes and full body restored.
+// Round 84 (m3 lane 12, fast): retail saves EBX only around the middle (push after the 0x26c test, pop
+// before the closing arg_7 test) for the +0x290 pointer, where ours holds the input in EBX from the
+// prologue; that pointer and the whole middle in their own block, with the two output vectors declared
+// ahead, 750 (identical code: scope does not shrink-wrap it); the half factor as a float product 806
+// (3505 bytes); the side offset as `0.0f - local_23` 750; the lateral default as an assignment and an
+// if 809 (3505); the last output copied from the 0x66c store 780 (3518).
 // Round 54 (m3 lane 14, fast listed with 0x1f9e70/0x110ab0): the first steering-flag arm setting true in its own
 // else (retail sets the flag per path and its false paths share one `xor al, al`) 810 (3506 B); the offset point
 // as local_24 * component 750 (same code); a named perpendicular { -j, i } of the normalized heading at its three
@@ -235,6 +241,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);
 // plus the scale as `local_1 * v` 771. The input/heading homes (input pointer in EBX from entry, local_2 at
 // [esp+0x2c] for retail's [esp+0x20]) keep the rest positional.
+// Lane 14 r57 (fast, from 750): retail tests the radial distance once (float squares from memory, fsqrt, the
+// gap loaded after it, one fcompi), each arm then taking its own exit tests. The two radial tests as one
+// conditional expression 816 (frame 0x90); with float squares 804 (3504 bytes; the squares are retail's, but
+// the gap is loaded before them); with the distance on the left of the compare 818; float squares and the
+// distance on the left in the original two tests 785; the square root written in the conditional's test 831
+// (frame 0x8c).
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

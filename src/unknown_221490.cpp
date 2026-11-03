@@ -726,9 +726,19 @@ bool sound_driver_voice_create_buffer(
 // Lane 17 r37 (fast with 0x191420): the 3D flag as `(flags & 1) == 1` 178 (626 bytes; 0x191420 then differs, 1);
 // play as `flags & 2 ? true : false` 71, as `!!(flags & 2)` 71; the 3D flag as `!!(flags & 1)` 71 (same code each);
 // both bools in one declaration, 3D flag first, 182 (599). Body restored.
+// Round 81 (m3 lane 16, fast with 0x191420): the 3D select written CTRL3D first 71 (same code); both bools
+// tested as `!= false` 71 (same code); the NULL store as its own `if (!three_d)` before the 3D block 132; a
+// complemented 2D flag 154; the count stored at the block top before the voice reference 68 (retail's early
+// `lea eax, [esi + 1]` count store; the bools stay swapped, a gain of 3, not kept).
 // B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
 // then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
 // signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.
+// B391: Split low-byte capture then spatial mask at entry/clear/count/input boundaries,
+// canonical bool then byte playback: 71/80/80/73/71/80/80/73. Original complete
+// body restored; spatial/play homes and descriptor zero/input scheduling remain.
+// B393: Both SDK creation outcomes bool/byte/word/long, success then failure polarity,
+// with original descriptor phases and modes: 71/71/71/71/71/71/71/71. NOT kept: no exact match;
+// original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

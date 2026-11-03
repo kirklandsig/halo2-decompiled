@@ -302,6 +302,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // search as a loop with `break` 1001; the override target filled by index after `target_count++` 886 (3327 bytes).
 // Retail keeps the target count in memory at +0x88 (re-read in the attenuation loop) and forms each new target and choice
 // address from the incremented count. Body restored.
+// P295: Late second-limiter bound with original/gain/fade/both/query/inactive/all macros,
+// then the bound before listener publication: 866/866/865/865/866/866/870/870. NOT kept:
+// one-point gain only; complete macro forms grow to 3333/3327. Original body/helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -751,6 +754,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // the function top 150, at the camera-block top 150; the transition definition through g_4e0348 279 (1037 bytes: bsp then
 // takes retail's +0x14 home but a cached zero takes ESI before the request loop, where retail reloads bsp); on that, the
 // position copied before the cluster 279, `count` at the camera-block top 279. Body restored.
+// AC504: Actual query-consumer cursors for indices/portals/clusters, masks 1/2/4/3/5/6/7,
+// then all with array-end termination: 276/259/262/259/253/196/230/178. All regress;
+// original indexed consumers and complete body restored. BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
