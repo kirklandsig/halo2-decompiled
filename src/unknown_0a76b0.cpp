@@ -931,6 +931,10 @@ extern vector3f *g_4687b0;
 // seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
 // Original fields, scalar producers, vector operations and full body restored;
 // frame 0xcc and tag/index/direction spill and SSE schedules remain.
+// AC496: Complete parent/seat attachment result, bool/byte/short/long:
+// predicate producers 377/377/375/370; exhaustive branches 371/371/376/373.
+// NOT kept: no exact match; original default, full body, vector inputs and calls
+// restored. Tag/index/type/direction homes and offset scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
