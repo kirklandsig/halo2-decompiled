@@ -1535,6 +1535,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P289: Twice-used animation channel long/dword/short/byte at its producer, then
 // entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
 // no exact match. Original body restored; early pool/hand and second unit load remain.
+// B393: Actual input-header/unit/tag identity references, subsets 1-7,
+// then all with the twice-read action field bound by reference: 181/95/181/95/181/95/181/181. NOT kept: no exact match;
+// original complete body restored; entry table/hand homes and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
