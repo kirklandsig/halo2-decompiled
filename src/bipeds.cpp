@@ -1396,6 +1396,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // producers 648/648/585/585; turning false-default/true-default/first-test/final-chain
 // 585/585/556/556. NOT kept: 556 uses a distinct turning-result branch graph from retail
 // and keeps frame 0xf8 versus 0xfc; original bool producers and complete body restored.
+// P292: Called walk result, walk attenuation product/complement, called boost result,
+// boost increment, spread fraction, walking-rate quotient and doubled-radius span:
+// 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
+// shortens away from retail; 584 gains one, 581 gains four and shortens away.
+// Original complete body restored; missing frame word and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2730,6 +2735,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // 1/2/4/3/5/6/7, then all with centroid-normalization loop:
 // 567/562/556/588/598/598/615/631; 1732-1816 versus retail 1908 bytes.
 // All regress; original complete body and arithmetic restored.
+// P292: Actual computed-vector aggregate initializers for hit difference/body impulse/
+// fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
+// 530 each. Original declarations, component producers and entire body restored;
+// frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3013,6 +3022,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
 // Original full-width special and complete truth graph restored; result/flight scalar homes and
 // vector scheduling remain.
+// P292: Multi-use actual up/forward/goal field pointers, subsets 1/2/4/3/5/6/7,
+// then all references: reduced 607/683/690/630/598/687/638/638 (control 600).
+// NOT kept: 598 gains only two; first +7 is entry scheduling; original entire
+// body restored. Full 561 retained; flight-result/scalar and vector homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

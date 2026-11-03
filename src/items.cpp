@@ -666,6 +666,10 @@ struct s_item_collision_bsp
 // Round 541: Separate actual contact/axial marker outputs, contact-query/axial-function/spin-after-contact
 // lifetime subsets 0..7: 217/211/217/217/217/211/217/217. Expanded frame 0x110; narrow
 // contact scope reproduces 0xa0 and the original code. Original marker, spin and body restored.
+// P292: Common contact completion, bool/byte/word/long admission, compound then nested
+// query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
+// Original one-test contact graph, observations, marker, plane/spin producers and full body
+// restored; protected plane-index width, plane joins and pending spin-k homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
