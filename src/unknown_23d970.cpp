@@ -788,6 +788,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // through 0x2922b0's staged i-first helper 45 (same code as function_1f087b). First product (with function_1f087b
 // second) through 0x1f2a80's, 0x1703f0's or 0xf4800's plain inline cross 45/45/45 (same code), through 0x441b0's
 // staged helper 49 (1264). Original calls restored.
+// Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
+// forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
+// right declared at function scope 45 (same code); the cosine computed before the distance store 49.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

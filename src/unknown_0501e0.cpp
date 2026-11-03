@@ -298,6 +298,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // graph: long/dword index 222/222; long/dword output cursor 221/221; first/second/both
 // input cursors 221/223/221; all cursors 221. NOT kept: no gain, 1146/1147 bytes and
 // extra frame word remain; original three publications, helper and complete body restored.
+// Round 160 (fast): the view helper's input by value 348 (1215 bytes), as three reals 275 (1153); a copied input for the
+// first/second view 334/268 (1205/1151); the first view transformed in place then copied 279 (1104). All restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

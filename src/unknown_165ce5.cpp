@@ -1704,6 +1704,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // cross-file real_pin (0x2a0c90's file) 220; the two rates through a same-file inline getter by value, by const
 // reference, forceinline by const reference 220/220/220; through the existing cross-file forceinline time-step
 // getter (0x1d2280's file) 220 (all same code: small inline helpers are fully CSE'd). Restored.
+// Round 82 (m3 lane 16, fast control 220, full 218): the look values as one point2f local 216 (frame 0x30 against
+// 0x2c: the look values then take their own -0x2c slot as retail, but 1/rate is still shared, so the pitch division is
+// not retail's; a grouping struct, not kept); mode renamed weapon_mode 220 (slots do not move); the clamps through a
+// file-local pin taking `real const &` 220 (same code), through an in-place pin on `&look_yaw`/`&look_pitch` 223 (still one
+// shared reciprocal); the yaw as `1.0f / rate * x` 220; early return for a missing unit 220 (repeat, same code).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

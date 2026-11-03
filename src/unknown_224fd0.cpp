@@ -223,6 +223,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // retail copies differ by operand rank, not by source. The rotation helper as plain `inline` 219, with the
 // output by reference 219, with sine/cosine read through pointers 219, the diagonal terms through a forceinline
 // helper 219 (all same code); the orientation read once into a local for both switches 495 (1716 bytes). Restored.
+// Round 82 (m3 lane 16, fast): the rotation helper as plain `inline` 219, with the axis by const reference 219, with
+// the output parameter first 219 (all three identical code: its interface does not reach the schedule); sine and cosine
+// in separate declarations 219 (same code); the cross terms as j*(1-c)*i, k*(1-c)*i, j*(k*(1-c)) (retail's operand
+// order) 403 (1788 bytes).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
