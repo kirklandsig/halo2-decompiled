@@ -779,6 +779,11 @@ bool __stdcall function_16610(long tag, long stage, long wanted_pass, long varia
 // Round 109 (all 26): ours already reloads `[esi+0xe0]` after 0x1bd50, only the g_4858c4 symbol stays cached;
 // the signature tested first; the test as `!(... == NONE || ... == 0 || ... != 'shad')`; a shader local assigned
 // again from the global after the call; an early return on a tag local; an inline predicate on the shader.
+// Round 138 (all 26 unless noted): inline tag accessor at all three reads; all three tests nested; tag validity
+// inline taking the value; g_4858c4 defined in 0x1bd50's file; fields read through const views. Diagnostic: a call
+// to an opaque symbol gives retail's reload (2, only that call's target and argument register differ). One storage
+// struct over g_4858c4 and g_485a58 with macros: no result, the compiler front end did not finish on the first two
+// including files. That lead needs another spelling and src/unknown_03f2b0.cpp's declaration.
 // @retail 0x3a550
 void function_3a550(void)
 {
@@ -3406,6 +3411,8 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // Lane 5 r137 (lead): this function matched in a full check whose only code change was 0x3a5c0's
 // quantizer (023540.cpp, a macro with one shared value; not kept), with no edit here: a link-time
 // side effect. Its own last difference (+0x6b, score 4) may need the form that change implied.
+// Round 138: view count in a local 104; guard split into separate continues 4; record index written in the
+// record address 4; handle view stored before the range 11; definitions assigned just before the loop 4.
 // @retail 0x41640
 void function_41640(void)
 {

@@ -396,6 +396,8 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
 // Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
 // copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
+// Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
+// component guards nested 8; index guards nested 8.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
