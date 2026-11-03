@@ -664,6 +664,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // memcpy/memmove and memmove/memmove 356/448/383/450; each with the complete
 // trace-direction setter 356/448/383/450. Original complete body/includes restored;
 // early EBP preservation and random/blend/geometry/getter homes remain.
+// B387: Read-only settings/immutable particle/immutable allocation identity, seven subsets,
+// then all with immutable effect identity: 356 each. Original complete body restored;
+// frame 0xb0 and late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

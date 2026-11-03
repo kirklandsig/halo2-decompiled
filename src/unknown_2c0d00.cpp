@@ -321,6 +321,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
 // then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
 // Original full body restored; frame, actor/unit and priority/query/marker homes remain.
+// B387: Direct location/raised members and library location copy on the unqualified-settings
+// graph, seven subsets, then actual count declaration before the query: 931 each
+// (reduced control 931, full 882). Original complete body restored; frame/homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1197,6 +1200,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
 // then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
 // names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
+// B387: Serial native radial/displacement phases, shared-domain/scope subsets and independent
+// serial control: 400 each. All recover frame 0x28 at 1312 bytes; NOT kept: regression
+// from 324. Original full body restored; zero/radius and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
