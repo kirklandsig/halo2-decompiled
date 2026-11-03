@@ -426,6 +426,10 @@ struct s_tail_player_identifier
 // scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
 // from the indexed form).
+// Round 45 (m3 lane 2, fast, base 31): retail loads the player first, the scenario next and g_4e6948 only after the
+// scenario test (beside `push ebx`); the entry pointer assigned after the alternate test 68 (158 bytes, the loop's
+// entry jump over the padding goes), that with the entry declared first 68; `difference` declared at function scope
+// 31 (same code); the player declared before the entry 32; `alternate` declared first 67 (158 bytes).
 // M337: Native range-end scan with early/delayed options and direct/common result
 // [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
 // NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
@@ -1264,6 +1268,9 @@ void function_150820(dword *bits, bool local_only)
 // mode tests nested (47).
 // Permuter (25 min on r654): best 16, only with a volatile read of the unit index and the held slot read as a
 // char (a behaviour change); not kept.
+// Round 45 (m3 lane 2, fast, base 43): `else if (function_cd4e0(...)) result = true;` 47; `!primary` at each use with
+// no hand local 117 (236 bytes); the player fetched at each use 89 (220 bytes); the unit fetched at each use 43
+// (same code); hand declared at function scope 43.
 // Round 552: guarded command success/direct command/short-circuit result 47/95/87; all admission
 // returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
 // result before dispatch 101. All original calls, observations and executable body restored.
