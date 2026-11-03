@@ -637,6 +637,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // as `g_4e6378 + voice_index` with the index advanced in its own statement 3; a long type counter 28;
 // the bound as a short member of the counts struct 3; `system->voice_count +=` 3, with the two final
 // stores through system too 59 (561 bytes).
+// Round 129: typed three-count array reference 3; whole count-record pointer 3; const voice pointer 3;
+// short-sentinel chain 5; stream_reset beside definition_type 11; driver identifier beside sound
+// identifier 8; pointer fields before short sentinels 8; definition_type after the zero bytes 5.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1342,6 +1345,12 @@ long function_2197f0(real gain);
 // N314: Sequential composite time as base accumulator/release accumulator/complete time accumulator/
 // staged release-time producer, each with original/table-first entry: 137/146, 137/146, 137/145, 137/145.
 // All helpers, arithmetic associations, gain representation and complete original body restored.
+// F338: Aggregate gain with completed same-ambience, hold-rejection and attack-duration
+// terminal boundaries, seven subsets then all with disabled rejection: 183/195/187/195/187/189/189/188.
+// All restored; table/index entry and interpolation/hold-copy homes remain.
+// F340: Encoded/real scalar views for result/ducking field/both interpolation
+// endpoints, seven subsets then the complete aggregate view: 137 each.
+// NOT kept: unmatched scalar wrappers. Original types, helper and full body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2914,6 +2923,13 @@ static inline short sound_voice_find_available_channel(char type)
 // same scan scores 134. On that graph, long private search input/complemented status/both 107/130/60.
 // Original helper, byte result and full body restored.
 // N319: Split bitmap rejection through continues/nested guards, free/streaming first, byte/Boolean result: 96/96/99/99/113/113/113/113. Original helper and full body restored; frame twelve/eight, result normalization and early failure tail remain.
+// N325: Complete branch-owned driver/buffer defaults, byte/Boolean results, then
+// paired chained defaults: 91/126/120/133/153/149/137/130. Driver-only defaults 91 at 432/430:
+// NOT kept: five-point gain below eight while above 30. Original defaults, byte result,
+// helper and full body restored; frame, shared sentinel and search/failure joins remain.
+// N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
+// references with complemented playing status 127. Original pointers, saved byte result, search and full
+// body restored; frame twelve/eight and failure-tail placement remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3802,6 +3818,12 @@ struct s_128ca0
 // Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
 // Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
 // Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
+// N329: Existing file-local gain sum with first-reference/second-value inputs at
+// inner/outer/both/both-plus-scale: 262/221/262/248; first-value/second-reference 263/222/263/249.
+// NOT kept: one-point gain below threshold; shared users regress. All signatures and body restored.
+// F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
+// additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
+// All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

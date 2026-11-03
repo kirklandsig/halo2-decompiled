@@ -504,9 +504,8 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 322): the frame is retail's 0xa8 now; the length temp sits at frame 0x20 where retail keeps it
-// (shared with the random and sine temps) at the frame bottom, so every lower slot is 4 off; the trig and rotation
-// schedules differ.
+// score 322 (was 322): frame 0xa8 agrees; first +0xa acquires pitch inputs before the default vector.
+// Normalization scratch at +0x2c versus +0xc displaces axis/result homes; trig and rotation schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
 // random/trig and vector schedules still differ.
@@ -627,6 +626,22 @@ struct s_collision_result_buffer_1697c0
 // Original result boundaries and all body/helper text restored; scratch and axis homes remain.
 // Round 287: Joint native vector/scalar/normalizer lexical priorities, eight complete forms,
 // 322/322/322/322/322/322/322/322. Original helper and sampler restored; scratch, pitch-axis and result-byte homes remain.
+// Round 369: normalizer short-vector return/shared success exit/CRT output subsets
+// 1/2/4/3/5/6/7: 334/363/322/385/334/363/385; all with Boolean clear 384.
+// Exit forms use frame 0xa4 and demote the matched caller to 10; original helper, output copies,
+// result flow and complete body restored. Scratch/axis/result homes remain.
+// DH297: Test-produced success/failure-owned collision/immediate per-attempt admission,
+// subsets 1-7, then fraction-first fallback: 348/322/348/322/348/322/348/360.
+// Original Boolean result, collision graph, ten draws, helper bodies and complete sampler restored.
+// P276: Existing marked normalizer at axis/candidate/fallback, seven subsets, then all
+// with long sample ordinal: 418/417/448/511/543/562/651/652. Calls remain outlined and
+// alter caller transport; original helper, declaration and complete sampler restored.
+// DH300: Complete normalizer input snapshots, native/setter/library/aggregate/immutable,
+// with float absolute, squared-norm or native output: eight 651s (outlined). Forced native/immutable/
+// squared snapshots 441/441/452; forced complete scalar inputs 329. Original normalizer and body restored;
+// frame-bottom scratch and pitch-axis/result homes remain.
+// DH304: Private normalization-success bool/byte/short/long results, direct/common exits, 340/340/340/340/340/340/340/340.
+// Original real normalization result, helper and sampler restored; frame-bottom scratch and axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -869,6 +884,15 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // done;` label after the return taking all of them 257; only the two case exits 256; only the normalize failures
 // 257; all of them with the normalize step as `if (!(normalize > 0)) goto failure; result = true;` 260;
 // reference and state declared inside case 2's and case 1's own blocks 257.
+// DH297: Eight complete direction/point/reference/object case-family orders
+// 361/332/356/392/369/364/384/375 (fast control 341; full 257). The 0,4,3,5,2,1,6
+// order is 360 plain at 1408/1444, rejected; original cases, predicates and full decoder restored.
+// F336: Positive case-2/case-1 remembered-state nesting and normalized publication
+// ownership, seven subsets, then positive result/presence with nested optional outputs:
+// 341/341/341/341/341/341/341/341 (fast control 341; full 257). Complete original body restored.
+// M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
+// 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
+// NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

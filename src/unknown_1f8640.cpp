@@ -538,6 +538,8 @@ struct s_1f8a70_actor
 // DL234: complete complementary route outcomes in bool/byte/short/long, initialized at
 // entry 411/411/418/419 or at the route phase 438/438/445/446. All exact-only forms rejected;
 // original result and body restored. Frame 0x84, early false and unit-output/route/result homes remain.
+// J239: native active/pending/route-request fields on the unsigned selector, seven subsets [228, 228, 228, 228, 228, 228, 228];
+// all with existing returned unit-mode output 257. Original external view, observations and body restored.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

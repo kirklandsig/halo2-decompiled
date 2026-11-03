@@ -552,6 +552,9 @@ void function_245400(s_source_245400 const *source, long index,
 // Round 366: Input-only material/surface/vertex table element declarations, seven
 // subsets, then all with native plane metadata: 209/209/209/209/209/209/209/209.
 // Original types and body restored; frame 0x24/0x2c, matrix and side homes remain.
+// DH306: native plane-receiver identity with bool/byte/short/long sides, original/staged
+// cross, 235 each (756 bytes); caller 0x245aa0 becomes 43. NOT kept: retail compares decoded
+// ordinals, shorter extent and caller loss. Original body restored; frame and side homes remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

@@ -598,6 +598,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH295: Signed-state graph with zero-first complete priorities 01234/01243/01324/01342/
 // 01423/01432/02134/02143: 418/424/440/448/424/444/420/426. Original cases restored;
 // actor/update register conflict, frame excess and workspace homes remain.
+// DH298: Timer-first priorities 30124/30142/30214/30412/31024/31042/31204/31240
+// on the retained signed-state graph 440/452/435/447/437/448/433/461. All recover frame
+// 0xa0 but retain the stacked actor; original complete cases and body restored.
+// F336: Maximum dword/once-read twice-used priority/later constant acquisition,
+// seven subsets on the retained signed-state graph, then plain dword with priority:
+// 416/412/414/414/418/414/416/428. Original maximum, observations, cases and complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

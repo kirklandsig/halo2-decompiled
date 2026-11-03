@@ -691,6 +691,11 @@ real function_267370(long object_index);
 // three with uniform actor view at use 103. Inline 0x267370 raises its other user 0x266640 from
 // 194 to 565, so those forms also fail the shared-user rule. Original entire body and every
 // declaration restored; frame 0x90 agrees, early NONE sharing and cross operand homes remain.
+// DL248: Existing vector setter at default/stored/up copies, subsets 1..7 [109, 183, 185, 198, 200,
+// 218, 233]; two contact/held flag-pair CRT clears 383. Frame 0x90 and original length agree; early
+// shared NONE, carrier and cross operand homes remain. NOT kept: All vector-setter forms regress and
+// move extent away; the two-pair fill also regresses, with no source-induced control loss. Original
+// executable source restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1167,6 +1172,12 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DL243: Matched creation/variant/equipment producer inline contracts, seven subsets: 254 each;
 // all three with uniform placement view at use 335. Original body, every field and all
 // declarations restored; sentinel EDI/ESI, substitution/squad homes and unrotated loop remain.
+// Round 375: Sequential primary/secondary equipment scalar, signed short/long, producer/entry
+// storage and optional grenade reuse: 254/254/254/254/262/262/262/262. Original independent selectors
+// and complete body restored; frame/length agree, sentinel EDI/ESI and substitution homes remain.
+// M325: On the retained mode/field/squad-bit graph, continuation acceptance bool/byte/short/long
+// 337/337/299/302; rejection 326/326/330/329. ESI sentinel and unrotated entry recover,
+// but squad/query homes remain. NOT kept: flag-driven continuation is unmatched; whole body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1422,6 +1433,8 @@ void function_1e3b60(long actor_index);
 // maximum 26, the update test nested 26.
 // Round 58 (fast): the global store before the actor lookup 26; the swarm field in a local 26; the
 // actor test as a bool local 26; the clear through a pointer to +0x41c 34; the arms swapped 40.
+// Round 129: callee-side inline declaration 26; const actor/reset pointer/both 26/26/26;
+// const actor_index 26; active_index for the two mismatched calls, every call, or the first three 26/26/26.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
@@ -1862,6 +1875,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // 269/268/272/269/268/272/272/272; numeric ordinal plus short/word/dword ticks 278 each, with real
 // pair initializer 277. All regress. Original two private query bodies, ordinal, tick storage and
 // complete body restored; actor/options/pool and scalar homes remain.
+// F338: Common final tail reached directly on absent equipment, crossed with
+// short/long ordinal, bounded-for/fixed-do traversal and empty-weapon continuation:
+// 251/278/251/278/251/278/251/278. All restored; actor/options/pool residency remains.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
