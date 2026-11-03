@@ -774,6 +774,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
+// endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
 // Round 202 (lane 3, harness exact, confirmed --fast): retail keeps both side flags in memory (current +0xc,
 // previous +0xd, the loop end copies through CL); ours keeps the previous side in CL, so count is not loaded once into
 // ECX. `long last = count - 1` index 129; `points + count` then `previous--` 129; the result/flags/mask declared after

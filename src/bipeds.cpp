@@ -1913,6 +1913,7 @@ void function_dfd70(long arg_159e6d)
 // vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
 // on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
 // head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
+// M340: Actual head/forward/fallback coordinate-array transfers 1/2/4/3/5/6/7, all with returned-up consumption: 240/247/245/256/253/258/268/275. NOT kept: no complete native/shared-user agreement; helpers and body restored.
 // Lane 18 round 34 (fast): `if (mode != 0)` copy first 252 (1038 bytes, 0xcb500 107); `if (mode == 3)` arm first as an
 // if/else around the crouch switch and raise 104 (1058 bytes, +0x1bd; 0xdc5c0 585 -> 589, its second ray block then
 // register for register retail's, so the rise is positional), that with crouch scoped to the else 104/589; crouch
@@ -4644,6 +4645,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
 // Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
 // the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// M340: Positive support ownership const bool/const byte/test/conditional, original/query-bound success: 68/143/68/143/146/182/146/182. NOT kept: no exact result/slot graph; original body restored.
 // Lane 18 round 34 (fast): riding renamed to sort after result 68; result renamed to sort first 68; `result = true`
 // right after 0x109e00 on the dot3f body 143 (686 bytes); result declared before riding 68; no result local, `return
 // true` 151 (672 bytes); riding declared at its assignment 68. The result/riding slot swap (result in the argument slot) remains.
@@ -5059,6 +5061,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 // fast 684/667/646/676/675/658/667/656 against control 655.
 // NOT kept: lean-local 646 hoists the field read and merges the native
 // step/clamp field stores to one final store. Original body restored at full 648.
+// M340: Native orientation coordinate copies/returned-rotation consumption/scaled integration 1/2/4/3/5/6/7, all with local-before-matrix: 1601/652/653/1502/1590/649/1497/1497. NOT kept: rotation/integration gains 3/2, both 6, below gate; coordinate copies enlarge the frame; original body restored.
 // Y551: Late resting result as false/success, call-result/push, true/failure and
 // test-owned arms, original/existing squared length: 665/649/665/652 twice
 // versus fast 655. NOT kept: flag-set forms require a match; six-point best

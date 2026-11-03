@@ -256,6 +256,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
 // own-address and one-use aliases did not match; the record alias also demotes
 // the caller. Original full body restored.
+// M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
+// then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
 // Round 202 (lane 3, fast): retail reads the group with `movsx ebx` (32-bit compares) and recomputes the set's word
 // address first, then the mask (bit_vector_set's shape). On this body: `long local_15` 461 (1560 bytes); long with
 // bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with

@@ -288,6 +288,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // ordinals: streaming 478/478/549/549; complete native point publication 537 each.
 // NOT kept: every form regresses the other matched helper user. Original shared
 // producer and complete body restored; independent normal homes and byte/tail state remain.
+// M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
+// 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
+// restored.
 // Round 202 (lane 3, fast): the full normal declared at function scope 410, the planar normal at function scope
 // 410, both 410 (frame stays 0x5c: retail keeps a separate planar copy made with integer moves at 0x34/0x38 from
 // the full normal at 0x40); last_distance declared with the entry locals 412; the count and next-sector locals
