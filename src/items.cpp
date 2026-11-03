@@ -669,6 +669,9 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// B392: Plain normal transfer on every graph with axis/final-output loops and actual matrix-reference
+// masks 0..7: 206/303/206/303/206/303/206/303. Original complete body and protected plane interface
+// restored; plane joins and pending spin-k homes remain. NOT kept: sub-eight-point lead above 30.
 // P292: Common contact completion, bool/byte/word/long admission, compound then nested
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
@@ -1222,6 +1225,9 @@ struct s_item_flags_view_10b850
 // 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
 // falls to 0x148 but scores regress; all snapshots, original field reads, helpers
 // and body restored. Entry Boolean and collision/carrier/rotation homes remain.
+// B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
+// cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
+// helper and body restored; frame and Boolean/vector homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

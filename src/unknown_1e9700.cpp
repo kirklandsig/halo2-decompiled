@@ -336,6 +336,9 @@ struct s_object_damage_view
 // Round 372: positive engine/valid-selection/eligible-assist regions, subsets 1/2/4/3/5/6/7,
 // then common conditional slot fallback: 353/353/353/353/353/353/353/353. Original complete body
 // restored; scalar homes and amount-biased history cursor remain.
+// Round 390: External amount-field identity after timestamp acceptance, original/whole
+// record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
+// Original body restored; scalar homes, amount-biased cursor and attribution remain.
 // Round 202 (lane 3): the assist stores re-reading object->history[i].player_index (both arrays) 392 (1564
 // bytes, frame 0x4c; the assist cursor becomes retail's +0xc record field); the friendly store alone 379; both
 // with the selection amount read once into a local under the time test 451 (selection cursor becomes retail's

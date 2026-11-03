@@ -4064,6 +4064,9 @@ extern byte g_5107ee;
 // sequential dot with component midpoint stores 165 (frame 0x8bc), with the whole copy 47;
 // reflection-order pointers 45, also before the vector providers 45; point setter 154
 // (frame 0x8bc); normal pointer 43; incoming pointer 45. Original executable body restored.
+// B392: Plain midpoint/copy/reflection loops: 43/41/43/41/41/41/41/41; native midpoint aggregate with CRT
+// publication/projection-part follow-ups: 41/41/149/149. Original body restored; cone setup and
+// reflection schedule remain.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

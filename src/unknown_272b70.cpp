@@ -2735,6 +2735,9 @@ struct s_scenario_scripting_view
 // B388: One guard/lookup actor-handle observation, long/dword, native/readonly actor,
 // original/traversal short counter: 80/87/80/87/80/87/80/87. Wrapper stays exact;
 // original handle observations, actor receiver, counter scope and complete search restored.
+// B392: Actual external actor-record reference with scenario/data/set reference masks 0..7:
+// 80/80/96/96/80/80/96/96. Original complete search and all observations restored; actor/counter/set
+// homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
