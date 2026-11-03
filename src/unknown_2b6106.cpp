@@ -658,7 +658,11 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 512): Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
+// score 512 (lane r83 form 489, not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+// the clock read: the flags stay in ESI); the clock in ESI (retail EDI), the small slots' order (row +0x6c,
+// active +0x6a, bit 7 +0x6b, clock +0x64; retail +0x64/+0x6f/+0x6e/+0x68), the long campaign word and the
+// campaign/state-5/7-8 arm tail merges remain.
+// Earlier at 512: Allocation 0x860 versus retail 0x85c; EBP bias, flag/clock and score-scan homes remain
 // (round 38 below: the bias, frame and every small slot are reproducible, but only with a clock mix).
 // Earlier: retail biases EBP by 0x70 (lea ebp,[esp-0x70]) and keeps the friend flags in
 // ESI and the timestamp in EDI; ours uses a plain frame, spills the flags to a slot and packs the six
@@ -843,6 +847,17 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // team-array end 497, end alone 497. NOT kept: retail counts the fixed team
 // ordinal, with no retained end producer; the new end shifts unrelated scalar homes.
 // Original cursor progression, comparisons, buffers and complete body restored.
+// Round 82 (m3 lane 9, fast): the four buffers as the existing s_text_256 506 (EBP bias as retail, frame 0x860); with
+// `in_session == true` (retail's cmp byte, 1; jne) 504 (wrapped storage is exact-only, not kept); `in_session == true`
+// alone 510; on the 504 body: short count 509, bool campaign 530, `(flags & 0x80) != 0` 504 (same code), long widget
+// counter 505 (retail's jb), message alone wrapped 504, message and format 504. The friend flags still spill (retail
+// keeps them in ESI, the widget index then reuses ESI and the clock takes EDI).
+// m3 lane 16 r83 (fast; form plain 489, NOT kept at review: retail reads the clock before the bit-7 shift
+// (0x2b662e/0x2b6636), so the reorder is against retail, and s_text_256 alone is 506, gain 6 under the bar; the file's 20 matched functions still match, 0x2b642e 51): the four
+// text buffers as the existing s_text_256 (its constructor clears the first word, as the hand-written stores did)
+// 506 (retail's `lea ebp, [esp - 0x70]`); with bit 7 taken before the clock read 489 (kept: the flags then stay in
+// ESI and the frame is 0x85c); on 489: short count 514, bool campaign 504, both 526, `s_text_256 teams, game` 489
+// (same code), `in_session == true` 487 (-2, not kept), `long row` 489 (same code).
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

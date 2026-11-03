@@ -604,6 +604,10 @@ long function_243b10(long key_b, bool team_only, long *second)
 // NOT kept (review): the 146 combines a re-read of g_51ec80 at each use where retail holds the table in EBP,
 // the init stores placed before the query where retail stores them after it, and a two-statement distance
 // sum: a combination picked by score; body restored at 173.
+// Round 67 (m3 lane 1, plain with 0x240160/0x19ec40; fast differs here: fast 203 for the plain 173): the accumulated
+// distance `d = dx * dx; d += dy * dy;` 173; the `slots` local declared at the top of the k loop 169 (717 bytes, but
+// the slot argument moves to the stack and caller 0x240160 drops to 46: not kept); `sqrt(dy * dy + dx * dx)` 173
+// (same code); `if (marker_index == NONE) continue;` 173; the init stores through the existing real_point3d_set 200.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

@@ -575,6 +575,9 @@ void function_245400(s_source_245400 const *source, long index,
 // branch/conditional facing producers: 201/201/231/230/201/201/231/230.
 // NOT kept: state set in a test needs a match; every extent grows away from 783.
 // Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
+// Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
+// facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
+// case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
