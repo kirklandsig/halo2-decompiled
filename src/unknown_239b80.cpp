@@ -808,6 +808,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // denominator/fraction/clamp decisions, bool then byte: 239/241/239/241/239/241/239/241. NOT kept:
 // every exact-only combination regresses; original state, fraction and complete body restored.
 // Count/prior-side and SIMD homes remain.
+// B401: Crossing-only prior-side updates, inside/outside polarity, entry/intersection-completion
+// and copy/Boolean-transition owners: 163/223/209/219/219/224/214/220. NOT kept: unmatched
+// conditional state forms regress; original unconditional tail, complete body and helper restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

@@ -1237,6 +1237,9 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// B401: Independent fixed predicate with unified post-query position/settle outcomes,
+// byte/word/long/dword bit results then three-state results: 859/880/880/880/882/905/902/902.
+// NOT kept: unmatched conditional results enlarge length/frame; original full body and helpers restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1673,6 +1676,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // B395: Captured-spin logical OR on paired point setters, result/spin-first with
 // bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
 // regress; original bitwise join, two-use spin value, helper and complete body restored.
+// B401: Complete unchanged-state conjunction accumulator, positive/negative spin truth,
+// bool/byte/short/long: 179/179/186/187/176/176/179/181. NOT kept: unmatched result
+// representations regress; original success accumulator, helper, paired setters and full body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

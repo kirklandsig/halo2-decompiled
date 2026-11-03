@@ -147,7 +147,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
-// score 96 (was 96): one type read shared by both kind routes and case 0 through the same header data in retail.
+// one type read shared by both kind routes and case 0 through the same header data in retail.
 // both switches 125 (284 bytes, caller 194).
 // Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
 // a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
@@ -242,6 +242,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // the case 0 object through a pointer in its own block 28.
 // Retail's `xor eax, eax; mov al; shr al, 2; and eax, 1` comes from none of 27 compile-only spellings (byte and dword
 // bitfields, byte/bool locals, byte results); only 0x9d250's `not al` form keeps `shr al` next to `and eax, 1`.
+// B401: Level-layer preclassification before handle/after selected body, byte/short/long/dword:
+// 105/107/107/107/93/128/125/125; caller 6/6/6/6/6/194/194/194. NOT kept: unmatched
+// one-use outcomes and every caller loss; three-point reduction also below gate. Full body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
