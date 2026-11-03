@@ -359,6 +359,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
 // 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
 // field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
 // AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
 // normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
 // Exact-only later selector retention regresses; original observations and body restored;
@@ -935,6 +939,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
 // 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
 // preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
+// Lane 17 r39 (plain): the definition renamed 539; the first loop's face read into a one-use local with the
+// index incremented before the call 528 (retail's `inc esi` ahead of the pushes; NOT kept: one-use local, no
+// match); the two counts declared face first 539; the definition declared ahead of the arrays 539; the quad
+// declared at the top of the group pass 539; the first loop as a do/while 562 (3631 bytes). Body restored.
 // AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
 // subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
 // 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away

@@ -38,7 +38,7 @@ real function_30bf0(vector3f *vector);
 real function_11cc90(vector2f const *a, vector2f const *b);
 long function_1e4990(long index);
 void swarm_iterator_new(s_290c50_iterator *iterator);
-long function_28dbd0(long swarm_index, long tag_index, long object_definition_index, s_28dab2 const *placement, bool flag);
+long function_28dbd0(long arg_0, long tag_index, long object_definition_index, s_28dab2 const *placement, bool flag);
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute);
 bool function_1e11b0(long actor_index, bool active);
 void __stdcall function_b77d0(long object_index, vector3f const *linear, vector3f const *angular);

@@ -4860,6 +4860,9 @@ bool function_158eb0()
 // Round 96: iterator result stored in an active bool 5; iterator pointer 5; const flag 5; byte normalized
 // mode 35; plain for 5; guarded do/while 16; count postincrement 5; named positive predicate 5.
 // Original body restored.
+// Round 124 (m3 lane 7, fast): `g_4e6948->flag1128 != 0` in the argument 38 (144 bytes); result declared
+// before the count 7; the iterator fields stored index, absolute index, data 7; `/ 2 >= 1` 11 (147 bytes);
+// a long mode cleared then set under `if (flag)` 62 (130 bytes). Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {
