@@ -2113,6 +2113,15 @@ bool function_1e11b0(long actor_index, bool active);
 // return 75 (210), on the 61 form 70 (205).
 // Also round 63: the game time read into a local before the loop 75 (211); the +0x34 store through
 // actor_datum_get(actor_index) 71 (191, 0x203d70 105); the loop test with the NONE test first 66 (199).
+// Round 78 (m3 lane 9, fast; on the 13 form: squad_get plus a second squad_get in the +0x7e test, the
+// parameter read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement
+// pair, game time before the word flag store, full-width return; 199 bytes, only index EBX/next EBP for
+// retail's EBP/EBX): the byte flag store 40 (207); the address read at the loop store, the first or the
+// second lookup 13/13/13; iterator, actor or the address local declared elsewhere 13/13/13; `(void)&` for
+// the read 63 (0x203d70 105); the store from iterator.squad_index 79 (215); one lookup 71 (191); a third
+// lookup in the flag test 75 (215); squad_get at every use 93 (225); the step written out 68 (214); the
+// header squad_actors_next 13; iterator.actor_index at each use 13; two address reads (diagnostic) 13; the
+// permuter (anneal, 600 s, 49 variants) nothing below 13.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2870,6 +2879,10 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // part 50; only the trigger part 50; first parameter short 56 (580); short task local with uncast follow-up 50.
 // Also round 63: the squad as an s_squad_datum pointer with a byte view 50; the count test first in the
 // compute arm 54.
+// Round 78 (m3 lane 9, fast; aligned 2 = the reload and the pad it shifts): `arg_0 != NONE` tested
+// after the record tests 148 (580 bytes); the trigger guard as two nested ifs 50; the pending word
+// read at each use 50; `local_3 > 0` tested before the task 54; the pending arms swapped (compute arm
+// first, `else if (+0x64 <= 0)`) 145 at 578 bytes, aligned 11 (the reload stays).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

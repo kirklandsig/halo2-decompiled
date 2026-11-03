@@ -689,6 +689,11 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Y547: Post-scan age-state permission, young-first/test-derived/true-default/false-default,
 // bitwise special 88/114/124/88; logical special 192/189/202/192.
 // All restored; NONE EBP/EBX and special BL/CL remain.
+// Round 78 (m3 lane 9, fast): every `goto done` as `return g_46fbe4;` 76; allow_exit declared inside
+// the outer block 73; the if/else flag (`special = true` / `special = false` opening the scan) 200
+// (872 bytes, as listed); that with the 0x1b8d40 test wrapping the scan (`== NONE`, `else goto done`)
+// 200 (872); the scan as a forceinline bool helper (diagnostic, one caller) 207 (887 bytes). The scan
+// itself already agrees; only NONE's register (EBP for retail's EBX) and the flag's def differ.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

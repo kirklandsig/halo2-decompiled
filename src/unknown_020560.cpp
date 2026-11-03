@@ -939,6 +939,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // complete forms 552 each at 2111/2122 bytes. NOT kept: all regress and shorten the exact-length
 // starting body. Original searches, scalar groups, copy/interpolation paths and temporary
 // declaration restored; frame 0x18/0x2c, query/selection and fraction homes remain.
+// Round 78 (m3 lane 9, fast): the count test inverted with the fallback first 591; delta declared
+// at function scope 547 (same code); scan 1 as a pointer-end loop 609 (2143 bytes); `second`
+// named before the fraction and passed to 0x22c30 599 (2133 bytes); scan 1's pointer step in the
+// for header 547 (same code). Retail's 0x2c frame: opposite +0x10, nearest +0x14, a pass counter
+// +0x18, count +0x1c, samples +0x20, a vector home at +0x24 (x stored each pass) and delta.k +0x38.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
