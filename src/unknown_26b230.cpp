@@ -530,6 +530,8 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
 // before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
 // and a dword cast 3 each (all still the 16-bit load).
+// Round 134: bool return 33; direct initial pool expression 31; one-use pool receiver 89; initial early return 132;
+// direct initial guard 121; found early return 144; both early exits 136; declared loop current 3. Opening body restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -2007,6 +2009,9 @@ void function_269250(long clump_index, long actor_index);
 // excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
 // exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
 // remain.
+// Round 127 (lane 8, fast; body 89 fast): the walk as a `for` loop with the call in init and step 343, with the
+// in-arm compare 339 (624/625 B); in-arm with the score at function scope 126; in-arm with the previous clump read
+// once into a local 144 (plain 140); in-arm with the team test's operands swapped 126.
 // Round 63 (m3 lane 1, fast; this body 89 fast): in-arm compare 126 (480, retail's fcompi); with the datum index
 // 128; in-arm with `best < score` 126, score declared per actor 126, team test as `continue` 126.
 // Also round 63 (in-arm form): best/selected declared before the activity snapshot 126; best before selected 126;
@@ -2282,6 +2287,10 @@ void function_269250(long clump_index, long actor_index)
 // original whole-group result, categories, deletion, node and tracking walks restored.
 // DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
 // Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
+// Round 127 (lane 8, fast): the cleared-prop form re-measured 3 (pool registers only); completion test as
+// `!unit && changed` 89; deletion arm ending in the full completion test 89; deletion arm as `replacement == NONE`
+// before the store 94; `changed` declared outside the clump loop 89; `if (unit) continue; break;` with a char-typed
+// tracking test 89.
 // Round 63 (m3 lane 1, fast): the 3 form re-built 3 (pool roles only); node head through prop_get(props.index)
 // 89 (same code), on the 3 form 3; head from the current prop 208 (709); nodes through prop_ref_get 180 (759).
 // Also round 63: unit initialised once from `((1 << type) & 3) != 0` 211; unit declared before the group flag

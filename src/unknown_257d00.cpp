@@ -1774,6 +1774,11 @@ void function_b7360(long object_index);
 // recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
 // NOT kept: the 290 recording high-word form uses narrower loads than retail and
 // shortens away from 1848 bytes. Original reference observations and callback restored.
+// Round 84 (m3 lane 12, fast): at the 1/19 site ours keeps the datum's point reference in ESI across the
+// 0x25ab50 call where retail reloads it after the actor test (`mov edi, [edi + 0x28]`); the point arm
+// first under `unknown018 == NONE` 300 (1840 bytes); case 4's slot as a ternary 414; case 13 with the
+// shared 0xb7360 call after the if/else 301 (same code); case 5's slot as a ternary over 0 304; case 20
+// with the unknownac store before the point copy 301.
 // P290: Existing completion produced only by its actual case/default, bool/byte/short/long,
 // 301/301/465/449; direct default failure at those widths 471/471/463/467.
 // Original startup initialization, complete callback and inherited boundary restored;
@@ -2299,6 +2304,13 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
 // then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
 // cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
+// Round 40 (lane 17, fast; control 485, full 469): plain `return 1;`/`return 0;` for every result
+// goto 500; the case 7/8 bool written in its test 515 (2372 bytes); case 1 as `!(distance > 1.f)` 622
+// (2384 bytes); the last arm's two actor stores swapped 484 (same store order emitted); case 1's
+// helper argument and the facing callback argument through the state local 485. All restored.
+// Round 64 (lane 10, fast only, under a builds-differently CAVEAT, so these are not plain scores; control 485, full 469): retail's case table order is 1, 2.., 4, 7/8, 0, 13 (the exit), 5, 9, 10, 12, 11, 6, 18, 21, 14, 20, with the tail after case 0 and the sete
+// shared by every `== 0` result. Case 14 moved before 20 491 (2400); with `!(distance > 1.f)` 615 (2396, masked aligned 101); that comparison alone or as an if 622 (2384, masked 94, retail's
+// comiss with the memory constant); an explicit case 13 before 5 485 (same code); command before actor 614; the result first 502 (frame 0x20).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

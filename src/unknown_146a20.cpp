@@ -263,6 +263,10 @@ bool g_47f05b;
 // B381: complete four-word constructor element result in long/int/short/signed-char,
 // terminal/nonterminal assignment: 34/34/34/34/34/34/34/34. NOT kept: one-use element results
 // require an exact match. Original intermediate-vtable store and arm reload gap remain.
+// m3 lane 11 r62 (fast with 0x146b80/0x146e30/0x22c3e0; header trials restored): the abstract loop with a
+// dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
+// as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
+// `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
 // Round 62 (m3 lane 10): `byte *block` 34; placement through `(c_havok_fixed_memory *)block` 34;
 // `void *const block` 34; the pool address named before the first construction 43 (140 bytes);
 // `block ? new ... : NULL` 34. Original body restored.
@@ -270,6 +274,14 @@ bool g_47f05b;
 // code); the three global stores first, then a `fixed` result cleared to NULL and constructed under `if (block)`
 // 39 (142 bytes); `g_479894 = block ? new (block) ... : NULL;` 34 (same code); the fixed base's size parameter as
 // `dword` 34 (same code); the count cleared in the derived fixed constructor's body 33 (0x146e30 120 -> 121; not kept).
+// Round 124 (m3 lane 7, fast with the file and 0x22c3e0): a `c_havok_fixed_memory *` block with the buffer as
+// `block + 1` 34; the fixed base's fields through a member-initializer list 34; the size as `long const &` in
+// both fixed constructors 34; the count cleared first in the fixed base body 32 (0x146e30 120 -> 121, not kept);
+// the abstract loop as `i < 3 ? 0 : NONE` 34. Header and body restored.
+// m3 lane 11 r62 (fast with 0x146b80/0x146e30/0x22c3e0; header trials restored): the abstract loop with a
+// dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
+// as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
+// `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
 // @retail 0x146a20
 void function_146a20(void)
 {

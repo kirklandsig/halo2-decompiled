@@ -2058,6 +2058,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
 // 201, 212 and 269).
 // score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
+// test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
+// store 155; one compare-and-store template helper (reference target and value) for the 0x2000,
+// 0x400000 and all three 0x800000 updates, inline or forced inline, 240/240 at 1081 bytes (it stays an
+// out-of-line call under both). Original body restored.
 // Earlier: this round's head-block forms (the 0x13c value truncated to a short and
 // compared against both NONE forms, in nine source shapes) all score 149, and naming the object
 // index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
@@ -2307,6 +2312,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M334: First/mapped-parent scalar identities, independent semantic lexical priorities
 // 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
 // indexed lookup, object/offset homes and low-mask ownership remain.
+// Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
+// result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
+// follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named
+// once for the loop test and the first slot test 155; the child counts declared before the child
+// handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
+// first 155.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

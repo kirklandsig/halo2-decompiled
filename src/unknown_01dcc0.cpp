@@ -213,6 +213,11 @@ bool function_01dd60(long index, long *width, long *height)
 // height 26; pre-subtracted byte pitch 20 (movzx; NOT kept: width-only score steering); pitch subtraction
 // in x 18; word height 18 (movzx, index EAX; NOT kept: retail uses the full input); pre-subtracted word
 // height 21; both pre-subtracted 23; typed SDK Size stores 24.
+// Round 85 (m3 lane 12, fast): a signed pitch keeps retail's unfolded `lea [esi*4]; shr 6; shl 0x18`: `long pitch =
+// (width * 4) / 64;` 22, `(long)` casts on x/y 22, pitch/x/y all long 22, compound x/y subtractions on it 22, a long
+// height copy 22, dword subtractions of long x/y 22 (all: the -1 still folds as `add 0xff`/`lea [edi+0xfffff]` before
+// the shifts, index in EAX); `((pitch - 1) << 24) | ((height - 1) << 12)` with long pitch 28 (Horner); 0x12c0d0's
+// Horner spelling 28; `>> 6` for `/ 64` 24 (same code); `+` for `|` 30. Not kept (2 points).
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
@@ -287,6 +292,10 @@ long g_55e6c0;
 // terms computed before the clamp and the subtractions after it 68 (484 bytes); the width term
 // unsigned 29; the pitch units truncated to a byte local 142 (495 bytes; it keeps retail's
 // `lea [w*4]; shr 6` unfolded, with a movzx and the -1 moved ahead of the shl 0x18).
+// Round 133: native typed Size with subtraction-before-shift in the select 170; computed before
+// the typed select 97; raw level-count local at the clamp/at entry 29/29; multi-use height/width/
+// both dimension locals 29/29/29; native pitch only 31; native height only 96. The typed native
+// form unfolds its shifts but factors the two 12-bit shifts; original packing and body restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

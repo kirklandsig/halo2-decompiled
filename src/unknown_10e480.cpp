@@ -347,6 +347,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 343: Object acquisition/weighted-animation/countdown-weight last-consumer scope
 // subsets 1..7 each 207; joint scopes with the confined base identifier 207. Original
 // observations, constructor points and body restored; frame, getter and ordinal homes remain.
+// m3 lane 11 r62 (fast): the weighted loop as `while (i < 12) { ...; i++; }` 207; the animation pointer declared
+// bare before the weighted test 207; the base admission as nested ifs 207; the loop body skipping with
+// `continue` on the inverted test 207; the frame and weight tests as nested ifs 207 (all the same code: the weighted getter stays inlined). Retail inlines
+// the base and weighted channel plays and the weighted arm's data get, calls the getter out of line there,
+// and compares the frame byte with the frame count in 32 bits.
 // M3 lane 4 r157 (fast; LCS-aligned base 110): the frame entry in a twice-used `long` 257 (967 bytes, aligned 99:
 // retail's 32-bit frame compare and one load; the countdown still spills because the inlined getter leaves the
 // channel's tag index in EBX across the loop for the data get), with the frame read before the weight 257, with the
@@ -357,6 +362,16 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // the animation pointer declared at the arm scope 207 (same code); the frame field read at each use 260 [149]
 // (955; retail reloads it in the else arm); the base animation id read from the field at each use 256 [210]
 // (940 bytes, the weighted getter still inlined, frame still 0x30).
+// Round 124 (m3 lane 7, fast with 0x10e480/0x10ec00/0xb75a0): the second data record declared in the sampled
+// block 215 (952 bytes); the base `animation_id` local reassigned to the weighted id for its test and play 306
+// (978 bytes, as a separate local); the `frame` local in the weight product 309 (977); the `frame` local in the
+// first arm's sample 274 (956); `animation->frame_count > vibration->frames[i]` 207 (same code). Retail calls
+// 0x1c6440 out of line (thiscall, ECX) in both played arms and compares the frame byte as a 32-bit value.
+// m3 lane 11 r62 (fast): the weighted loop as `while (i < 12) { ...; i++; }` 207; the animation pointer declared
+// bare before the weighted test 207; the base admission as nested ifs 207; the loop body skipping with
+// `continue` on the inverted test 207; the frame and weight tests as nested ifs 207 (all the same code: the weighted getter stays inlined). Retail inlines
+// the base and weighted channel plays and the weighted arm's data get, calls the getter out of line there,
+// and compares the frame byte with the frame count in 32 bits.
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)

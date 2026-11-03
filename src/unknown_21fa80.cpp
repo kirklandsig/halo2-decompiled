@@ -218,6 +218,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // before the phase or at entry, each original reference/plain gain value: eight at
 // 532 fast (control 532; full 545). Original body and lifetimes restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// Round 128 (lane 8, plain; the fast image is unfaithful here): the gain difference named before the gain test
+// (`real gain_change = gain - stored;`) 542 (retail's SSE subss stored once for the x87 fabs, but computed ahead
+// of the changed test where retail computes it after); the difference cast to real inside the test 545 (same
+// code); mode/direct first with the named difference 546; the named difference with a real gain value 542;
+// fabsf on the gain test alone 545.
 // Round 42 (m3 lane 2, plain; fast builds this function differently, CAVEAT): the gain difference named
 // (`real gain_change = gain - stored;` tested as `fabs(gain_change)`) 542: retail's SSE `subss` and store appear
 // (hoisted above the `changed` test, where retail computes it after) but the /Op float fabs still rounds; that
@@ -230,6 +235,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 79 (m3 lane 16, fast control 532, full 545): the gain difference in a named real before its fabs 537;
 // direct read before the stream lookup 579 (1921 bytes); mode read before changed 570 (1917 bytes); the voice
 // branch's status declared in each arm 532 (same code); buffer/submix property declarations swapped 532 (same code).
+// Round 49 (m3 lane 15, plain; fast has a CAVEAT here): the gain test through a `gain_changed` bool set from a
+// block-scoped named difference when not `changed` 545 (same code: still x87 fld/fsub, retail's SSE subss needs the
+// gain loaded with movss); that with a plain real gain value 545 (same code); the stream's 0x20 bit updated before
+// the send flags 576 (1863 bytes); the pitch delta compared without the `(real)` cast 545; the send flag set
+// before the two cached level stores 545.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

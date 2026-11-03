@@ -543,6 +543,14 @@ struct s_1f8a70_actor
 // B381: complete existing path-query record begun at scratch/case/route/destination/reset/unit/actor/entry
 // phases 228/228/228/228/228/228/228/228. All tie; NOT kept: grouped homes require an exact match. Original frame 0x84,
 // pool/data scheduling and unit-output/result packing remain.
+// Round 45 (m3 lane 2, fast, base 228; aligned counts from a difflib listing, base 59): retail's failure block stores
+// result = false and the `!result` exit enters after that store. `failed: result = false;` with the `!result` exit
+// as its own `function_1f8750` + `return result;` block 397 (1648 bytes, frame 0x80; that exit folds to `xor al,
+// al`); the `!result` exit to a second label after the store (diagnostic, gotos only) 250 (1652 bytes, frame 0x80,
+// aligned 36: result and unit mode then share one slot as retail, at +0x10 for retail's +0x12). On that: short
+// route_mode 425; `default: result = false;` 425 (1664); signed long route_mode 417. Left on it: retail's first
+// exit keeps false in BL across 0x1f86a0, the returned unit-mode pointer, word reads of the dword-stored
+// route_mode, the route test and switch laid out after case 5, and the zero test's `setne al`.
 // M3 lane 4 r157 (fast): the unit index passed straight to 0xe70b0 232; the three resets through `actor` (no second
 // actor_get) 431; the 0x5d2 flag stored before unknown504 230; the movement getter before the properties getter 232;
 // the zero-route node test before the radius test 228 (same code).
@@ -551,6 +559,12 @@ struct s_1f8a70_actor
 // instead of a fresh lookup 431; the unit index read inside the 0xe70b0 call 232; the route initializer as
 // `actor->unknown229 != 0` 228 (same code); as `route_mode = 0; if (...) route_mode = 1;` 265 (1660 B);
 // the route initializer before the unit index 232.
+// Round 141 (m3 lane 6, fast, control 228; aligned 82): unit_mode declared at the function's top 228 (same code);
+// the path cast at the top 228; case 2's radius stored first 228; retail's failure block (`mov byte [esp+0x12], 0`,
+// the call, `mov al, [esp+0x12]`) read as a cross-jumped tail: `if (result) { ...; return result; }
+// function_1f8750(actor_index); return result; failed: result = false; function_1f8750(actor_index); return
+// result;` with no initializer and the first exit `return false` 417 (1644 bytes, frame 0x80, prologue as retail,
+// aligned 69), with `result = false;` before the first exit's call 417 (still folded to `xor al, al`).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

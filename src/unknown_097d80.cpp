@@ -285,10 +285,20 @@ struct c_aggregate : c_child
 // B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
 // then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
 // outputs and complete body restored; escaped output and the lowest loop homes remain.
+// Lane 17 r39 (fast): the error test ahead of the child test 37; the query result declared before the item
+// object 31; error and total in one declaration 31; `total = total + produced` 31; the cleanup block as
+// `blocks + k` 31. Frame 0x8024 in each; original body restored (the flags lead above stands).
+// AC501: Native callback output/capacity/source integer domains, masks 1/2/4/3/5/6/7,
+// then all with completion output after arrays: 31/31/31/31/31/31/31/42. Original interface,
+// outputs and full body restored; escaped output and the lowest loop homes remain.
 // Lane 18 round 36 (fast; local-name order): the dispatch child renamed `child` 31, the cleanup block renamed
 // `released` 31, the collection child and count renamed `collector`/`block_count` 31, the cleanup item and
 // output renamed `item`/`information` 31 (all identical listings: the swapped slots are compiler temporaries);
 // the dispatch inner loop over an `s_block *` range 129 (389 bytes). Still BLOCKED by the build flag.
+// Round 66 (m3 lane 10, fast): the dispatch gate as `4 != request->type` 31 (same code); the callback status in a
+// local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
+// to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024
+// in each; still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

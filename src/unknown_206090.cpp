@@ -340,6 +340,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 128 (lane 8, fast control 1355 = plain): retail recomputes `imul index, 0xd8/0x4c/0x3c` at the contact
+// loop's top each iteration (no pointer induction) and leaves the duplicate search straight for its found exit.
+// Tried: a contact pointer for the loop's element 1401 (6211 bytes, still walked); the result-record pointer
+// declared at the loop's top 1355 (same code); the component index read at each use in the ray test 1474; the
+// ray length named and used twice 1382; a collected flag for the duplicate search 1402.
 // Round 201 (fast; aligned = difflib count): the five 12-byte magnitude copies are the frame excess
 // (a compile-only frame probe lists one copy per inlined magnitude). The two buffers declared at the top
 // 1355 (same code); the magnitude read through its pointer 1608 (6022 bytes, frame 0x590, aligned 968
@@ -354,6 +359,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
 // the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
 // local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
+// Round 49 (m3 lane 15, fast control 1355): the two steering magnitudes as `x >= 0.0f ? x : -x` 1375 (6238 bytes,
+// that block then exact: retail tests `jb` to the negation); the signed square grouped `(real)(l * l) * sign * f88`
+// with the casts on both factors or the square only 1427 (6211, retail's mulss order but the clamp above shortens);
+// the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
+// 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
+// forward jump when the list is non-empty); ours keeps it inline.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

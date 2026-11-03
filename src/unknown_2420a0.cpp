@@ -591,6 +591,19 @@ long function_243b10(long key_b, bool team_only, long *second)
 // continue;` 200, `k != 0` with the arms swapped 200, the array selected by k and then indexed 191 (691 bytes, caller
 // 0x240160 46). On the current body: the key as `mode_180 == 9 ? 3 : 1` 173 (same code); dy computed before dx 174;
 // the bound-update arms as `if (k != 0)` with the arms swapped 173.
+// Round 65 (m3 lane 10, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): the select as `!k ? ...` 173; on the
+// accumulated distance: the clause through ctf_options() 173, a const marker point 173, the other position as a const
+// reference 219 (666 B), the inner loop as `while` with `j++` at the body end 173.
+// Round 79 (m3 lane 9; fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160, plain confirmed): kept: no table
+// local (g_51ec80 at each use), the bounds init stores before the query and round 87's accumulated distance 146
+// (711 bytes, retail's length; the else arm's global reload is now retail's; k is spilled and the count held in EBX
+// where retail spills j and count and keeps k in EBX and the table in EBP). With the slots local, the init stores
+// before the query 185 (711 bytes). On 146: the init stores between the query and the point copy (retail's order)
+// 142 (caller 0x240160 46: not kept); the marker select as if/else 184; k declared in its for 146; results at
+// function scope 146; plain sqrt(dx * dx + dy * dy) 150; the key before the init stores 186 (caller lost).
+// NOT kept (review): the 146 combines a re-read of g_51ec80 at each use where retail holds the table in EBP,
+// the init stores placed before the query where retail stores them after it, and a two-statement distance
+// sum: a combination picked by score; body restored at 173.
 // @retail 0x243c00
 void function_243c00(long slot)
 {
@@ -1989,6 +2002,9 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // getter tail 65; the existing initializer and cause setter as calls 123-129 (190-196 B); local initializer storing the
 // subtype first 64, type last 63, in retail's fill order 63, the last two with the getter tail 67. Lead: flags dependencies keep the
 // IL order, so retail's `neg al` before `cmp ebx, 9` means the subtype chain really precedes the type chain.
+// Round 65 (m3 lane 10, fast): both ternaries inverted together 53; the time test joined into the outer test 53; the
+// index as `(word)player_index` 64; the hold product named 53. Diagnostic, reverted: the asm rounding as a C cast 63
+// (EBP still taken, so the asm block is not what keeps the engine type out of EBX).
 // Round 140 (m3 lane 5, fast; each on the getter tail `function_146650() + rounded` with the getter at the time test
 // too): the cause team stored before the cause player 60 (260 B); the type as `long type = 3; if (engine_type == 9)
 // type = 10;` 57 (first difference moves up to +0xc, and matched 0x241620 then differs by 1), the inverted

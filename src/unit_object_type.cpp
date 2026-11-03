@@ -804,10 +804,16 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // computed type mask 13; boolean predicate 10; word setter with early guard/void return 10/10;
 // masked lookup, word setter and predicate 9; minimal word setter and predicate 9 (both 92 bytes).
 // Both forms scoring 9 lose 0xc2d00 (0 -> 2) in ordinary full links; rejected and original body restored.
+// Round 38 (lane 17, plain): 0xe4bd0 declared first among the callees 13; declared just before this function
+// 13; the mask test `== 1` 13; flag 2 cleared through the file's s_unit_flags_10a_view bit (struct moved up)
+// 13; an early return before the 0xe4bd0 call 13. Still BLOCKED-BY 0xe4bd0 (its file held by other lanes).
 // Round 97 (fast): existing bitfield view for the first clear 13; literal 0xfb 13; explicit first clear 13;
 // animation flag reference 10 (NOT kept: one-use reference and gain below four); named type predicate 10
 // (NOT kept: narrow shift and gain below four); explicit return 13; early guard 13; const unit pointer 13;
 // final parameter read through its address 13. Original body restored.
+// Round 38 (lane 17, plain): 0xe4bd0 declared first among the callees 13; declared just before this function
+// 13; the mask test `== 1` 13; flag 2 cleared through the file's s_unit_flags_10a_view bit (struct moved up)
+// 13; an early return before the 0xe4bd0 call 13. Still BLOCKED-BY 0xe4bd0 (its file held by other lanes).
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -2611,6 +2617,16 @@ struct s_unit_placement
 // Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
 // before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
 // for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
+// Round 38 (lane 17, plain): 0xc98a0 fastcall with its unit read through its address 22 (fast); 0xc98a0
+// __cdecl 58 (fast); 0xc98a0 declared after 0xbd020/0xd6a70/0xd6800 34/34/34 (0xc98a0 gets retail's ECX,
+// 256 -> 250, but 0xd6800 takes ECX/EDX and 0xd6bc0 is lost); 0xcaa60 declared before 0xc98a0 32 at 291
+// bytes (0xc98a0 ECX and 0xcaa60 pushed as retail; only 0xd6800's fastcall left; 0xd6bc0 lost); order
+// 0xcaa60/0xd6800/0xc98a0 32; 0xc98a0/0xcaa60/0xd6800 10. Diagnostic: that order plus 0xd6800 __stdcall
+// (its definition in another lane's file) MATCH here, but the full check loses 18 (0xe5930, 0xb8890,
+// 0x1c3770 ...). Nothing kept.
+// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
+// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
+// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {
@@ -2872,6 +2888,9 @@ void function_c5740(long unit_index, bool start)
 // Round 350: Single-exit weapon/fallback with guarded/conditional handle production, short/char slot and
 // original/pool receivers: 121/121/124/124/123/123/123/123. Definition/material/pool ownership and
 // effect convention remain.
+// M341: Native root fields through mutable/const pointer/reference, each with expression
+// or in-place final definition index: 94/94/94/94/94/94/94/94. Original root/index body
+// restored; definition/material/pool ownership and effect-call convention remain.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
@@ -7181,6 +7200,9 @@ real function_50650(real cosine);
 // test on the old 0xc7750: `target` reuse 563 (same code); in place 580 (2450); else-arm zeros 614 (2470), with both 638
 // (2446); direction in `target` 565, with in place 582 (2453), all 640 (2449); prediction rewrite 644/669/621; preloaded
 // components 578 (2451) and 646 (2508), ret 0x18. Body restored.
+// M341: Complete current/desired/predicted double angle-result ownership, seven phase
+// subsets then all const: 565/565/565/563/563/563/565/565. Exact-only result copies restored;
+// frame 0x8c/0x80, input/vector homes and prediction/call scheduling remain.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)

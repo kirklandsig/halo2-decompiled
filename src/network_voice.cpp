@@ -1375,6 +1375,9 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // retail, but player EDI and total ESI, 0x54990 5), as a ternary 95 (354 bytes, 0x54990 5). All restored.
 // Round 198 (lane 3, fast with 0x54990): by-value size helper `count * (mask ? 13 : 11) + 2`, named entry size, multiplier
 // first, staged add, named count, named count and size 94 each (same code; `imul ecx, [mem]` and `lea` remain).
+// Round 204 (fast with 0x54990): a hoisted `long size = getter == player ? 13 : 11` 165 (294 bytes, 0x54990 13);
+// early `return 0` for the failed entry test 109; a named per-channel contribution 94 (same code); the size as
+// `11 + 2 * flag` 150 (309 bytes, 0x54990 13); the counter declared at the block top 94 (same code). Restored.
 // Round 59 (m3 lane 11, fast with 0x54990/0x56160/0x56380): the 2 added after the loop (`total += 2`) 99; `total += 2` in
 // place of `total = 2` 94 (same code); `11 + (is_unknown00 ? sizeof(word) : 0)` 130 (329 bytes, 0x54990 13); a named
 // entry size from the getter compare in place of the flag 165 (294 bytes, 0x54990 13); the product written in each ternary
@@ -1732,6 +1735,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // 0x53a20 with one more test ahead of the call (64 at 229 bytes with a size test, 67 at 224 with `player < 16`; 2/3/5 tests
 // 79/92/118); nested ifs, `!(a || b)` and a named first test stay inlined 84; a shared `a || b` inline 138 (386 bytes), 0x54890
 // 88, 0x53a20 92 (neither query inlined inside it).
+// Round 204 (fast): the active-mask test as plain availability reads 85 (same code); muted declared before the
+// local/active test 118; the existing voice_test_unknownF0 for the inner F0 test 136 (387 bytes, called); an early
+// return on !enabled 85 (same code); mask from remote, masked in the availability arm 130 (400 bytes). Restored.
 // Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
 // `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
@@ -2372,6 +2378,10 @@ long voice_players_share_team(long other, long player)
 // test 56/56/56; their addresses held in a data pointer (diagnostic) 25, with the global test 56 each. BLOCKED-BY
 // 0x59670: the 56 form needs the session lookup under 0x53de0 to end the global's availability.
 // Original body and helper declarations restored.
+// M3 lane 6 r142 (fast): voice_available() in the entry test with the mode read from the field 34; the mask from
+// voice_get_player_mask_inlined() inside the mode block 118; `else if (mode == 2)` for the mask arm 51 (373 bytes);
+// the entry test on settings alone (getter's own tests) 49 (376 bytes); the loop bit named `dword bit = 1 << i` 98;
+// the mode read from the field before the mask 25 (same code); `mode != 2` 25 (same code). BLOCKED-BY 0x59670.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -3265,6 +3275,9 @@ struct s_voice_route_choice
 // Y553: Complementary headset reduction with element receiver/two-use talker bit
 // subsets 413/434/416/436; with native radio branch 412/409/414/405. All callers and
 // callee controls survive. NOT kept: all regress; original positive reduction restored.
+// Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
+// actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
+// byte agreement; original independent decisions and complete body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3568,6 +3581,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y553: Live count-byte pointer with offset/cursor/walking-formal/difference result
 // 139/164/144/180; field-reference forms 139/164/144/180. Both formal walks lose
 // the matched parser to 13. NOT kept: no gain; original complete body restored.
+// Y556: Payload-relative consumed result, long/int/dword/short, original/independent
+// packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
+// original header-inclusive result, live counts and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

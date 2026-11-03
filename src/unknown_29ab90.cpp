@@ -293,12 +293,29 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // DH311: Existing pointer-input scale as plain coordinate-array loop, long/dword/short/byte
 // with streaming stores 345/345/435/435; complete native output before publication 464/464/515/515.
 // Original helpers/body restored; frame 0x58/0x64 and magnitude/query overlap remain.
+// m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
+// dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
+// (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
+// code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
+// magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
 // Round 122 (lane 7, fast; base 345 [aligned 276]; retail keeps the planar copy's pre-call values in ESI and
 // the query slot, then stores them into the magnitude copy's slot after 0x29b2e0): the query outputs in their
 // own block 345 (same code); the planar vector declared at the top of the settings block 345 (same code);
 // planar components captured in named reals before 0x29b2e0 (diagnostic) 380 (1906 bytes, frame 0x5c);
 // all three working vectors as whole-struct copies 442 [406] (1887 bytes, frame 0x60); the working vector
 // alone as a whole-struct copy 449 [421] (1884 bytes, frame 0x60).
+// Y556: Zero-initialized discarded query vector, aggregate/library-clear/shared setter/
+// chained fields at query/entry scope: 345/345/345/345/345/345/345/345. NOT kept: added local initialization
+// fails byte agreement; original uninitialized output and complete body restored.
+// m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
+// dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
+// (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
+// code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
+// magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
+// M3 lane 6 r142 (fast): local_5 by components and local_6 as the struct copy 493 (1913 bytes); local_6 copied from
+// local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
+// local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
+// included) into +0x5c..+0x64 before 0x29b2e0 and builds local_20 from that copy after the call. Original body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

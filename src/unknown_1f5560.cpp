@@ -974,12 +974,20 @@ real normalize2d(point2f *v);
 // assigned/terminal request results 182/120/187/141/189/113/193/156.
 // NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
 // Original request/movement graph and body restored; retained DL result and return transport remain.
+// DH317: Complete successful trajectory output merge at the existing result admission,
+// logical/reversed/bitwise/branch joins in bool/byte retry storage:
+// 195/193/170/144/195/193/185/144. Branch joins reach 935 bytes but regress;
+// original output lifetimes, result flow and full body restored; DL residence remains.
 // AC498: Retry-force logical/reversed/bitwise/conditional producers 253/217/304/135;
 // force true/nonfalse/positive/inverse conditional admission 182/135/135/135.
 // Original complete body restored; initial DL retention and movement/request returns remain.
 // B388: Independent trajectory outcome transferred to outer validity at the final join,
 // bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
 // 193/193/153/173. All regress; original two producers, calls and return graph restored.
+// AC503: First-type/speed/normalized completion guards, seven subsets 135 each; terminal
+// request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
+// gain appears only with combined forms. Original full body restored; separate facing/default
+// and invalid return paths remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

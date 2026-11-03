@@ -534,6 +534,10 @@ real function_30bf0(vector3f *vector);
 // DH309: Complete result/range, projection and addressed facing/seat-output lexical role
 // families, seven subsets and complete distance-role names: 152/152/152/152/152/152/152/152.
 // Native scalar homes and SIMD groups unchanged; original complete body restored.
+// Round 54 (m3 lane 14, fast): amount declared at the settings-block top 152; not-facing arm with secondary
+// stored first 161; facing arm copying primary first 152; seat array at function scope 152; occupant forward
+// pointer set before the player test 160. Retail's seat-loop cross product loads the up axis first in its
+// first product (ours the forward component); retail also lays the not-facing arm after the result exits.
 // M336: Pre-collection seat ordinal and facing-entry basis/query-output workspaces,
 // seven subsets: 152/152/152/152/152/152/152; all with cursor advanced after lookup 205.
 // Original scopes/cursor restored; result/range/amount homes and inverse SIMD groups remain.
@@ -1351,6 +1355,10 @@ long function_146650(void);
 // order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
 // bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
 // the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
+// Round 65 (m3 lane 10, fast): target_direction copied field by field from the view 77 (1961 B, SSE copy); ahead as an
+// aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
+// pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
+// its reduced image scores 248 against the full 14, nothing better in 49 tries.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
@@ -1992,6 +2000,11 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
 // boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
 // established/visible homes and normalized direction residence remain.
+// Round 54 (m3 lane 14, fast listed with 0x25d810 = plain 194): `if (established || (visible && !(far &&
+// slow))) { if (established) {...} positive = score > 0; }` (retail's one shared score test) 249 (2880 B;
+// ours tests established before visible, retail threads the visible test into both arms); the positive arm
+// with the NONE-slot case first 200; strongest declared before best_level 194; one positive expression after
+// the established block 262; facing dot as forward*direction 194. Original body restored.
 // N340: Whole actor/vehicle admission regions, original/failure-first/success-first
 // trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
 // lookup operands, established/visible homes and direction residence remain.

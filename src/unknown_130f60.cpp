@@ -329,9 +329,17 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // N337: Direction/null-sample/invalid-range early-continue subsets 1..7 and complete
 // combined sample guard: all eight 336 (fast control 336; full baseline 324).
 // Original admission tests and complete body restored; full-image ESI/unit/scale homes remain.
+// DH317: Existing planar magnitude/normalizer producers with native/shared opposite
+// construction and mutable/readonly source: 336/468/336/467/336/468/336/467
+// (fast control 336, full 324). Magnitude forms tie; normalizer forms grow 45-46
+// bytes. Original helper, three-component scaling, includes and full body restored.
 // B388: Complete opposite/direction squared-norm nodes and rounded magnitude in double,
 // subsets 1/2/4/3/5/6/7, then both sums in double: 337/338/400/338/399/388/388/459
 // (fast control 336; full 324). All regress; original norm expressions and storage restored.
+// m3 lane 14 r56 (plain, 324): the third remaining read at both uses (no local) 379 (1874 bytes); `real yaw`
+// 503 (1917 bytes); the magnitude test as `fabs(magnitude) >= 0.0001f` 422 (1901 bytes); the third tail as
+// `count <= 0` weight first 355 (1892 bytes, retail keeps accumulate first); `opposite` declared before
+// `direction` 324 (same code). Retail's j loop head has a `lea esp, [esp]` pad that ours lacks.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

@@ -1045,6 +1045,9 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// N342: Fixed-path reset flag as bool/byte/short/long enabled truth 93/93/93/93,
+// disabled complement 94/94/94/94. NOT kept: one-use predicates do not match;
+// original constructor, two-use slot, fresh post-reset lookup and full body restored.
 // Round 550: Sole-return done exit with constructor/assignment/set/memcpy/memmove
 // copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
 // NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,
@@ -1054,6 +1057,9 @@ void function_1d1540(s_havok_component *component);
 // copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
 // retail shifts the flags, and the length moves away. Original body restored;
 // aligned frame, constructor copy and component/index transport remain.
+// N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
+// constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
+// NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2406,6 +2412,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
 // length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
 // and shared-helper body is restored. Original executable source restored.
+// P293: Existing property completion: absent-early/present-two-arm/absent-two-arm, then each with
+// native word before lookup, present-early and present-early word: 100/99/100/155/155/155/99/155.
+// Original complete body and helpers restored; no qualifying gain.
 // DL251: Existing normalize/scale declaration boundaries and private-property inline; ordinary
 // annotations tie, automatic annotations lose matched users and are NOT kept:
 // 91/91/91/91/247/247/366/430.

@@ -1601,6 +1601,10 @@ struct s_rating_summary
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 554: Native team/counter cursor as primary induction, derived real-array ordinal,
+// indexed/walking secondary record, iteration/pass-owned bound result:
+// 274/362/387/407/274/362/387/407. Original integer induction and full body restored;
+// formatter/count scheduling and team/counter homes remain.
 // Round 44 (m3 lane 2, fast): retail's team-loop head is the tail-merge target of preheader and latch (both
 // cursors arrive in ECX/EDX and are stored there); ours keeps the counters cursor in memory and steps it in ESI
 // at the latch, so the store does not merge (the 4 bytes). A walking team pointer declared before the team loop
@@ -1608,6 +1612,13 @@ struct s_rating_summary
 // walking counters pointer 38 (base at the struct, not +6; homes unchanged), named zcounters 38 (names do not
 // move these homes); the switch without its `default: __assume(0)` 105 (1197 bytes); the formatter's result
 // in a local 25 again (match-only; only the team latch left).
+// Round 141 (m3 lane 6, fast): a strncpy-and-terminate helper (as font_loading.cpp has) declared __forceinline
+// or inline ahead of the region 214 (1200 bytes: the inline_depth(0) region keeps even a __forceinline helper out
+// of line); the team counters read directly at the call 32; the team identity named (`const XUID *`) for the
+// memcmp and the call 47 at 1212 bytes (the team-loop latch then stores both cursors from ECX/EDX at the head with
+// retail's homes, teams +0x14, counters +0x18, but the team cursor is based at the identity, +0xdd0, where
+// retail's is +0xdc8); a team element pointer 47, with the identity pointer 46; the identity named only for the
+// call 47. Retail's prologue/epilogue is `ret 8` too (the queue's `ret 0` was jump-table data).
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1970,6 +1981,14 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M332: Native due-timestamp captures at read/write/both submission boundaries, before/inside
 // admission, then both complete due predicates: 710/715/716/710/715/716/716/716. Original global reads,
 // clocks, predicates and body restored; initial cursor/slot and later homes remain.
+// Round 141 (m3 lane 6, fast; aligned diff 515): the `valid` flag dropped for a clear loop in each failing arm 751
+// (2910 bytes, aligned 521); an early `continue` after clearing for an invalid user 783 (aligned 524); the type-5
+// record scan by index 768 (2926, aligned 577); the request identity copied into a local XUID 733 (2910, aligned
+// 489); both 812 (2942, aligned 584). The slot helper's cmovne still needs /arch:SSE, so the positional count
+// cannot reach a match under the file's flags.
+// M339: Complete duplicate-search condition under for/while, ordered/equality endpoint and identity/type
+// filter order: 709/709/698/698/746/746/721/721. NOT kept: type-first 698 grows frame 0xc0 to 0xc8;
+// original body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

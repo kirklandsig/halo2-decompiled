@@ -4618,6 +4618,11 @@ long g_485a60;
 // binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
 // the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
 // Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
+// Round 65 (m3 lane 1, on the 353 body before round 126 merged): the existing 0x16ae0 with per-use binding reads
+// and a counted loop 210; that with the original slot/destination/source locals 365 (0x16b90 back to 47); the
+// location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
+// address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
+// in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
@@ -5040,6 +5045,10 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
+// Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
+// place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
+// EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
+// in EBX and reloads it after the 0x137bd0 call). Restored.
 // @retail 0x4b2d0
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
 {
