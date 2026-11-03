@@ -462,6 +462,10 @@ struct s_ai_scene_assignment
 // direct form 59 (removed); a `word` copy 59 (propagated); a 32-bit maximum parameter read through
 // `(short)` views 59 (still narrowed 16-bit loads); that parameter with a long copy 59 (propagated); the
 // role index read once through its address for the four stores 12 (folds, same code).
+// Round 95: a const int limit 12; the limit initialized after iterator construction 12; a const
+// maximum parameter 12; a const role parameter 12; a const last-role flag 12; a const selected-role
+// pointer 12; the actor field read through its direct address 12; an actor-field pointer used by the
+// scorer and store 12; the limit renamed by its assignment role 12 (all 348 bytes, original restored).
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignments, short *assignment_count, short maximum_count,
 	short role_index, short role_count, long ai_index, long ai_index2, long ai_index3)

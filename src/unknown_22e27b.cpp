@@ -381,6 +381,11 @@ static inline real interpolate_linear(real a, real b, real t)
 // conditional producers 310/330/318/318; test-produced results 265/288/267/267.
 // NOT kept: no exact match; original independent outcomes and whole body restored.
 // Single disposal-to-postprocessing exit 1; original guarded interpolation restored.
+// P285: Complete normalized Boolean policy producers, eager outer restart/inner restart/disposal
+// subsets 1..7, then complementary rejection predicates: 213/223/256/252/260/238/247/1.
+// All restored; the high-boundary miss still bypasses the common restart-byte test.
+// Additional loop-only/all-site compound/logical restart accumulation: 184/11/186/16.
+// NOT kept: redundant-state forms do not match; original false start and byte producers restored.
 // @retail 0x22e3cd
 void c_class_1a2c81::update(dword time)
 {

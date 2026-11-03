@@ -199,6 +199,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // seven subsets then all declared at first output: 217/217/217/491/491/491/220/220.
 // NOT kept: two-point gains and unproven field-receiver shape. Original helper/body restored;
 // axis-specific product/cosine spills, basis homes and four-byte table placement remain.
+// B381: native square/sine/both workspace input copies, square-first/sine-first, then CRT
+// square/sine/both copies: 273/444/466/466/273/408/466/466. NOT kept: value-copy/input-ownership forms require
+// exact matching. Original frame, axis-specific product/cosine spills and basis homes remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

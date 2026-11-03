@@ -516,6 +516,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // arm priority and native/live structure observations: 240/242/240/245/240/240/240/243.
 // NOT kept: target regresses and some shared-user scores rise; original selector,
 // complete body and all declarations restored. Entry/index and point homes remain.
+// P285: Actual query at eight-byte alignment, original/separate center and large-branch
+// producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
+// NOT kept: no exact match; original alignments, native objects and whole body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
