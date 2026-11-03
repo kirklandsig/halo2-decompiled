@@ -380,6 +380,9 @@ struct s_block_candidate
 // N348: Ring insertion admission in bool/byte/short/long, has-room/full truth,
 // 347 each. NOT kept: one-use decisions do not match or recover the missing frame
 // dword. Original ring insertion, page/tail allocation and complete body restored.
+// N350: Final-link successor handle captured for all consumers, long/const long/
+// dword/const dword, pointer/reference predecessor element: 347 each. NOT kept:
+// unchanged frame/page-ring homes; original pooled observations and body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

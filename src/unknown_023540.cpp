@@ -3463,6 +3463,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
 // Original parameter symbols restored; selector scheduling, post-bias reload
 // order and six quantizer inputs in shift rather than clip home remain.
+// N350: Immutable shift/clip/center parameter subsets and all with immutable
+// state flag, eight forms 31 each at 4828 bytes. Original declarations and body restored;
+// selector, reload-pair and six quantizer input-home differences remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)

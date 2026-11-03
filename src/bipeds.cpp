@@ -4694,6 +4694,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
 // NOT kept: the six-point best is below eight and an embedded assignment
 // requires byte equality. Original result/support lifetimes and full body restored.
+// N350: Separate positive actor authorization in bool/const bool/byte/const byte,
+// original and support-bound success: 155 each at 668/683 bytes. NOT kept: result
+// lifetime loses native extent and byte homes; both exact callers survive; body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

@@ -1668,6 +1668,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
 // entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
 // restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
+// N350: Complete update counts in byte/short/long/dword 143/173/176/176;
+// category-bit aggregation 182/181/181/181 on the paired-setter graph. NOT kept:
+// numeric return representations regress; original Boolean accumulator and full body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
