@@ -244,6 +244,12 @@ void function_151ea0(long player_index, long object_index)
 	}
 }
 
+// score 1 (was 1): only the jne of the equal-priority test differs: retail jumps to the epilogue after the copy
+// block (al still holds the initial false) and keeps a separate `xor al, al` + epilogue for the not-closer
+// arm; ours jumps to the epilogue after that `xor`. Tried (fast, base 1): `return false;` in the else arm
+// (67, the register assignment changes from the prologue on), `return result;` there (67), `!(a < b)` test first
+// (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
+// copy label (67), copy label in the same arm with `return result` (69).
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -736,6 +742,12 @@ struct s_player_census_counts
 	short controller_count;
 	long users[4];
 	long controllers[4];
+	dword machine_valid_mask;
+	byte machine_addresses[16][6];
+	bool local_machine_valid;
+	byte local_machine_address[6];
+	byte unknown97;
+	long local_machine_index;
 };
 
 extern byte g_4cf77b;
@@ -929,6 +941,12 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// score 153 (was 153): logic walked against retail, no behaviour difference found (loops, offsets, order of the three
+// weapon slots, grenade copy and the memset path agree). Only allocation differs: retail keeps the player in ebx, the
+// unit index in ebp and NONE in edi, and re-reads g_4e0300->data and the unit pointer in the no-seat branch (0x1528af,
+// 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
+// read (159), the three weapons as a long[3] (152), a held[2] array with the no-seat branch as a hand loop over
+// held_slots[] (151, frame grows by 8), held[2] replacing primary/secondary (156), a store through a pointer to other (153).
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1040,50 +1058,44 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 	return ((s_player_weapon_definition *)g_4e3b44[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
+// score 284 (was 322):
+// The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
+// register allocation differs. Retail keeps g_4e0300 in edi for the whole function and loads g_4e3b44 lazily
+// into ecx, with the player in ebp; this build reloads g_4e0300 every iteration of the first loop and hoists
+// g_4e3b44 into ebp, so the player and temporaries land in other registers. Retail's first loop is not
+// aligned (no pad before it), ours is.
+// Tried (scores): taking the parameters' addresses (322, the old form, 962 bytes), `if/else` instead of `?:`
+// for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
+// lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
+// bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
-	long const *weapon_reference = &weapon_index;
-	bool *const *modes_reference = &modes;
 	s_tail_player *player = tail_player_get(player_index);
 	s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(player->unit_index);
 	long held[2];
 	long pending[2];
 	long count = 0;
+	for (long hand = 0; hand < 2; hand++)
 	{
-		long hand = 0;
-		if (hand < 2)
+		s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(player->unit_index);
+		short slot = current->held_slots[hand];
+		held[hand] = slot == NONE ? NONE : current->weapons[slot];
+		s_player_pickup_unit *next = (s_player_pickup_unit *)tail_object_get(player->unit_index);
+		short next_slot = next->pending_slots[hand];
+		pending[hand] = next_slot == NONE ? NONE : next->weapons[next_slot];
+		if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 3) & 1))
 		{
-			do
-			{
-				s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(player->unit_index);
-				short slot = current->held_slots[hand];
-				held[hand] = slot == NONE ? NONE : current->weapons[slot];
-				s_player_pickup_unit *next = (s_player_pickup_unit *)tail_object_get(player->unit_index);
-				short next_slot = next->pending_slots[hand];
-				pending[hand] = next_slot == NONE ? NONE : next->weapons[next_slot];
-				if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 3) & 1))
-				{
-					(*modes_reference)[hand] = false;
-					(*modes_reference)[hand + 2] = false;
-				}
-				hand++;
-			} while (hand < 2);
+			modes[hand] = false;
+			modes[hand + 2] = false;
 		}
 	}
 	if (unit->parent_index != NONE)
 	{
+		for (long hand = 0; hand < 2; hand++)
 		{
-			long hand = 0;
-			if (hand < 2)
-			{
-				do
-				{
-					(*modes_reference)[hand] = false;
-					(*modes_reference)[hand + 2] = false;
-					hand++;
-				} while (hand < 2);
-			}
+			modes[hand] = false;
+			modes[hand + 2] = false;
 		}
 	}
 	for (long slot = 0; slot < 4; slot++)
@@ -1091,7 +1103,7 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 		long held_weapon = unit->weapons[slot];
 		if (held_weapon != NONE && !(bool)((player_weapon_flags(held_weapon) >> 4) & 1))
 		{
-			dword flags = player_weapon_flags(*weapon_reference);
+			dword flags = player_weapon_flags(weapon_index);
 			if (!((bool)((flags >> 22) & 1) || (bool)((flags >> 23) & 1)) || held_weapon != held[1] || held_weapon != pending[1])
 				count++;
 		}
@@ -1103,13 +1115,13 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 			if (hand == 1)
 			{
 				if (held[1] != NONE && !(bool)((player_weapon_flags(held[1]) >> 4) & 1))
-					(*modes_reference)[1] = false;
+					modes[1] = false;
 			}
-			else if (!(bool)((player_weapon_flags(*weapon_reference) >> 4) & 1))
+			else if (!(bool)((player_weapon_flags(weapon_index) >> 4) & 1))
 			{
-				(*modes_reference)[hand] = false;
+				modes[hand] = false;
 				if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 4) & 1))
-					(*modes_reference)[hand + 2] = false;
+					modes[hand + 2] = false;
 			}
 		}
 	}
@@ -1145,6 +1157,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// score 17 (was 17):
+// Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
+// edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
+// (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
+// inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1363,34 +1380,53 @@ struct s_player_rebind_option
 struct s_16658d_group;
 extern s_16658d_group *g_4e9bc8;
 void __stdcall function_167e86(long user_index, long hand);
+
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
+// score 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
+// NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
+// iterator sits in a struct after a pointer (retail's frame 0xe4: a free slot at +0x24), and the arrays are filled
+// by loops (the preamble matches retail instruction for instruction). Retail also expands 0x1682bf(NONE, user,
+// NONE) here (0x1535b8-0x1535f2); ours calls it, as unknown_1682bf.cpp builds with /Ob1. Measured trial, not kept
+// (a written-out copy stays only with a byte match): 0x1682bf's NONE arm written out here as a forceinline
+// helper gives 497, so that inlined shape is the right one. Still differs: retail keeps iterator.index in memory
+// in the second (controller/user choice) loop, ours keeps it in a register (retail +0x177: 8 more
+// instructions there, so everything after is shifted); retail compares with immediate -1, ours sometimes keeps
+// -1 in a register; the rebind arm passes `user` (short) from a register.
+// Tried: iterator beside the free slot as separate locals (545), explicit `= {NONE...}` controllers (556),
+// the three masks in all six declaration orders (543-559), `index` at function scope (545), the loop
+// over two weapons as `for` with an index (555 unrolled) or as a helper (510, unrolled).
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
     byte const *machine_address = (byte const *)address;
     s_player_rebind_option const *options = (s_player_rebind_option const *)option_data;
-    long controllers[16] = { NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE, NONE };
+    long controllers[16];
     long users[16];
     long assigned[16];
     dword options_used = 0;
     dword users_used = 0;
     dword controllers_used = 0;
     for (long i = 0; i < 16; i++)
+        controllers[i] = NONE;
+    for (long i = 0; i < 16; i++)
     {
-        users[i] = NONE;
         assigned[i] = NONE;
+        users[i] = NONE;
     }
-    s_record_pool_iterator iterator;
-    s_tail_player *player;
-    iterator.data = g_4e8c24;
+    struct
+    {
+        s_tail_player *player;
+        s_record_pool_iterator iterator;
+    } state;
+    state.iterator.data = g_4e8c24;
     for (long pass = 0; pass < 4; pass++)
     {
-        iterator.index = NONE;
-        while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
+        state.iterator.index = NONE;
+        while ((state.player = (s_tail_player *)data_iterator_next_inlined(&state.iterator)) != 0)
         {
-            long index = (short)iterator.datum_index;
+            long index = (short)state.iterator.datum_index;
             if (assigned[index] != NONE) continue;
             for (long option = 0; option < 16; option++)
             {
@@ -1400,13 +1436,13 @@ void __stdcall function_152f80(void *address, void *option_data)
                 switch (pass)
                 {
                 case 0:
-                    match = player->local_index != NONE && !memcmp(entry->identifier, player->unknown04, 12);
+                    match = state.player->local_index != NONE && !memcmp(entry->identifier, state.player->unknown04, 12);
                     break;
                 case 1:
-                    match = player->local_index != NONE && entry->controller_index == player->controller_index;
+                    match = state.player->local_index != NONE && entry->controller_index == state.player->controller_index;
                     break;
                 case 2:
-                    match = player->local_index != NONE;
+                    match = state.player->local_index != NONE;
                     break;
                 default:
                     match = true;
@@ -1423,11 +1459,11 @@ void __stdcall function_152f80(void *address, void *option_data)
             }
         }
     }
-    iterator.index = NONE;
-    while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
+    state.iterator.index = NONE;
+    while ((state.player = (s_tail_player *)data_iterator_next_inlined(&state.iterator)) != 0)
     {
-        long index = (short)iterator.datum_index;
-        if (assigned[index] != NONE || player->local_index == NONE) continue;
+        long index = (short)state.iterator.datum_index;
+        if (assigned[index] != NONE || state.player->local_index == NONE) continue;
         long controller = NONE;
         long user = NONE;
         for (long pass = 0; pass < 3; pass++)
@@ -1436,7 +1472,7 @@ void __stdcall function_152f80(void *address, void *option_data)
             for (long candidate = 0; candidate != NONE; candidate = candidate >= 0 && candidate < 3 ? candidate + 1 : NONE)
             {
                 if (!(controllers_used & (1 << candidate)) &&
-                    (pass > 0 || candidate == player->controller_index) &&
+                    (pass > 0 || candidate == state.player->controller_index) &&
                     (pass > 1 || g_4e61cc[(short)candidate]))
                 {
                     controller = candidate;
@@ -1449,7 +1485,7 @@ void __stdcall function_152f80(void *address, void *option_data)
             if (user != NONE) break;
             for (long candidate = 0; candidate < 4; candidate++)
             {
-                if (!(users_used & (1 << candidate)) && (pass > 0 || candidate == player->local_index))
+                if (!(users_used & (1 << candidate)) && (pass > 0 || candidate == state.player->local_index))
                 {
                     user = candidate;
                     break;
@@ -1461,53 +1497,67 @@ void __stdcall function_152f80(void *address, void *option_data)
         users_used |= 1 << user;
         controllers_used |= 1 << controller;
     }
-    byte *globals = (byte *)g_4e8c20;
-    if (*(long *)(globals + 0x98) != NONE)
+    s_player_census_counts *globals = (s_player_census_counts *)g_4e8c20;
+    if (globals->local_machine_index != NONE)
     {
-        iterator.index = NONE;
-        while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
-            if (player->local_index != NONE) memcpy(player->machine_address, machine_address, 6);
-        memcpy(globals + 0x91, machine_address, 6);
-        memcpy(globals + 0x30 + *(long *)(globals + 0x98) * 6, machine_address, 6);
+        state.iterator.index = NONE;
+        while ((state.player = (s_tail_player *)data_iterator_next_inlined(&state.iterator)) != 0)
+            if (state.player->local_index != NONE) memcpy(state.player->machine_address, machine_address, 6);
+        memcpy(globals->local_machine_address, machine_address, 6);
+        memcpy(globals->machine_addresses[globals->local_machine_index], machine_address, 6);
     }
     else
     {
-        globals[0x90] = 1;
-        memcpy(globals + 0x91, machine_address, 6);
-        *(long *)(globals + 0x98) = 0;
-        *(dword *)(globals + 0x2c) |= 1;
-        memcpy(globals + 0x30, machine_address, 6);
+        globals->local_machine_valid = true;
+        memcpy(globals->local_machine_address, machine_address, 6);
+        globals->local_machine_index = 0;
+        globals->machine_valid_mask |= 1;
+        memcpy(globals->machine_addresses[0], machine_address, 6);
     }
-    iterator.data = g_4e8c24;
-    iterator.index = NONE;
-    while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
+    state.iterator.data = g_4e8c24;
+    state.iterator.index = NONE;
+    while ((state.player = (s_tail_player *)data_iterator_next_inlined(&state.iterator)) != 0)
     {
-        long index = (short)iterator.datum_index;
-        if (player->local_index != NONE && (player->local_index != users[index] || player->controller_index != controllers[index]))
+        long index = (short)state.iterator.datum_index;
+        if (state.player->local_index != NONE && (state.player->local_index != users[index] || state.player->controller_index != controllers[index]))
         {
-            player_set_local_user(iterator.datum_index, NONE);
-            function_14f270(iterator.datum_index, NONE);
-            player->machine_user = NONE;
-            player->machine_controller = NONE;
+            s_tail_player *unbound = tail_player_get(state.iterator.datum_index);
+            if (unbound->local_index != NONE)
+            {
+                player_control_set_unit(unbound->local_index, NONE);
+                function_1682bf(NONE, unbound->local_index, NONE);
+                ((s_player_census_counts *)g_4e8c20)->users[unbound->local_index] = NONE;
+                ((s_player_census_counts *)g_4e8c20)->user_count--;
+                unbound->local_index = NONE;
+            }
+            unbound = tail_player_get(state.iterator.datum_index);
+            if (unbound->controller_index != NONE)
+            {
+                ((s_player_census_counts *)g_4e8c20)->controllers[unbound->controller_index] = NONE;
+                ((s_player_census_counts *)g_4e8c20)->controller_count--;
+                unbound->controller_index = NONE;
+            }
+            state.player->machine_user = NONE;
+            state.player->machine_controller = NONE;
         }
     }
-    iterator.data = g_4e8c24;
-    iterator.index = NONE;
-    while ((player = (s_tail_player *)data_iterator_next_inlined(&iterator)) != 0)
+    state.iterator.data = g_4e8c24;
+    state.iterator.index = NONE;
+    while ((state.player = (s_tail_player *)data_iterator_next_inlined(&state.iterator)) != 0)
     {
-        long index = (short)iterator.datum_index;
+        long index = (short)state.iterator.datum_index;
         if (users[index] == NONE) continue;
-        memcpy(player->machine_address, machine_address, 6);
-        player->machine_index = (short)*(long *)((byte *)g_4e8c20 + 0x98);
-        if (player->local_index == NONE)
+        memcpy(state.player->machine_address, machine_address, 6);
+        state.player->machine_index = (short)((s_player_census_counts *)g_4e8c20)->local_machine_index;
+        if (state.player->local_index == NONE)
         {
-            player->machine_user = (short)users[index];
-            player->machine_controller = controllers[index];
-            player_set_local_user(iterator.datum_index, player->machine_user);
-            function_14f270(iterator.datum_index, player->machine_controller);
+            short user = (short)users[index];
+            state.player->machine_user = user;
+            state.player->machine_controller = controllers[index];
+            player_set_local_user(state.iterator.datum_index, user);
+            function_14f270(state.iterator.datum_index, state.player->machine_controller);
         }
-        s_player_slot *slot = &g_54e8e0[player->controller_index];
-        if (TEST_FIELD_BIT(slot->flag4)) *(long *)slot->unknown004 = player->local_index;
+        if (TEST_FIELD_BIT(g_54e8e0[state.player->controller_index].flag4)) *(long *)g_54e8e0[state.player->controller_index].unknown004 = state.player->local_index;
     }
 }
 
@@ -1795,7 +1845,11 @@ void __stdcall function_191e51(long definition_index, long player_index);
 
 // score 202 (was 202): the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
-// argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this.
+// argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this. Logic walked against retail: no
+// behaviour difference found. Retail re-reads [ebx+0x2c] at 0x150ec0 and g_4e0300->data at 0x150e90 (edx still holds
+// g_4e0300) where ours reuses edx/ecx, which costs ours the ebp register. Tried: a local unit_index (202), the 0x14c compare
+// through a second tail_player_get (238), g_4e0300 in a local (242), an explicit object offset kept in a local (202),
+// the parent test without the bool (227).
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
