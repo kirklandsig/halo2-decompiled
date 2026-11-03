@@ -707,6 +707,9 @@ real function_267370(long object_index);
 // canonicalised; 0x11c120/0x25ccd0 still match); the marker point at function scope 98 (same code); diagnostic,
 // both NONE resets through one long local 101; the unit index read once into a named local for the else block
 // 410 (1726 bytes); the object pointer `byte const *` 98 (same code). All restored.
+// Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
+// as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
+// The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {

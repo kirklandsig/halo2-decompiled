@@ -335,6 +335,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
 // ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
 // ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
+// M342: Explicit refreshed virtual child count at the native latch, provider carry and
+// count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
+// handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -692,6 +695,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // 'PRTM'/'prt3' compare) 383 (1691 bytes), plus the `(short)` child index and if/else reciprocal 383; blend as
 // its own point3f 403 (frame 0xa4, blend in XMM2-4 as retail); and the first sample a plain real 432 (frame
 // 0xa0). A named double in callee 0x249170 (diagnostic) leaves the frame at 0xa0. All restored.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

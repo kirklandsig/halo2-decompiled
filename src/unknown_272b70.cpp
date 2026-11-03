@@ -1491,6 +1491,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
+// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
+// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
+// and complete body restored; iterator/leave-selector/request homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

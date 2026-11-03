@@ -301,6 +301,8 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // B394: Existing complete weighted-point setter with segment-difference helper, immediate clamp;
 // consumer and entry-owned reciprocal subsets: 272/272/272/272/272/272/272/272.
 // NOT kept: no exact match; original complete executable source restored.
+// Round 160 (fast): the view helper's input by value 348 (1215 bytes), as three reals 275 (1153); a copied input for the
+// first/second view 334/268 (1205/1151); the first view transformed in place then copied 279 (1104). All restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
