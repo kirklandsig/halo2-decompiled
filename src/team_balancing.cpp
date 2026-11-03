@@ -848,6 +848,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // parties) 35; extra-first sum 35; copy before the maximum update 82; parties read back for
 // the maximum 75; fill as `while (i < total) parties[i++] = next;` 34; clamp as
 // `excess >= 0 ? excess : 0` 34; array and index declared first 34.
+// Round 130 (m3 lane 8, fast): the player-count parameter itself as the fill index 34; the maximum
+// update as a ternary 34; no total local (sums at each use) 74; open_slots computed after the call
+// 87 (170 bytes); 1-7 unused probe locals 34 each
+// (diagnostic: the player-count register does not follow the symbol count).
 // Round 116: open slots from the sum before the total 71; `party_indices[i] + 1 >= next_party` 35;
 // open slots written at their use 87 (170 bytes); next_party declared first 34; capacity as
 // `maximum_team_size * team_count` 34. In the all-stack first pass extra count is always loaded

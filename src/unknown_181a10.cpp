@@ -675,6 +675,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (1250); that with the in-place normal 328 (frame 0x40), with the normal copied into the plane by components
 // 329; origin through real_point3d_set 315, with the in-place normal 344; the in-place normal on the kept form
 // 357 (1208 bytes, frame 0x40); all 18 origin/hit/normal combinations at or above 308.
+// Round 130 (m3 lane 8, fast): retail keeps first->next->shape in ECX for its test and the call (`mov ecx,
+// [eax]; test ecx, ecx; mov eax, ecx`), ours compares memory and reloads. A next pointer and next-shape local
+// assigned in the test 309 (gives the register load, EAX not ECX); a next pointer local alone 312; the clamp
+// helper comparing with its own `value` 332 (1232 B); the second shape in a local for the exclusion test 346;
+// the key range test as `key < 0 || key > count - 1` 308 (different code, aligned worse).
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

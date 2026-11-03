@@ -1525,6 +1525,11 @@ void function_1f86a0(long actor_index);
 // Round 47 (lane 15, fast, base 134): no mask local, flags temp at F+3 as retail but the flags byte in BL, 244 (868 bytes); with the
 // found index read after the loop 244; 0x40 through a second selection cast 234 (865); 0x40 as a shift 244; both bits as `& 0x60` 245
 // (871); `same` as false default plus if 239 (865). 0xbaf40 is pure, so the flags load stays common across its calls.
+// Round 130 (m3 lane 8, fast): retail duplicates the loop's next-entry call into the decline path and tests the
+// 0x40 bit with a fall-through decline. The decline test as `(u && !bit40) || (!same && (u || specified))` 234
+// (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
+// read before the slot-bool test for both arms' 0x20 tests 141; the entry declared in the while condition 134
+// (same code).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

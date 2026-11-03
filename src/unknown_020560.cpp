@@ -957,6 +957,20 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // named before the fraction and passed to 0x22c30 599 (2133 bytes); scan 1's pointer step in the
 // for header 547 (same code). Retail's 0x2c frame: opposite +0x10, nearest +0x14, a pass counter
 // +0x18, count +0x1c, samples +0x20, a vector home at +0x24 (x stored each pass) and delta.k +0x38.
+// Round 130 (m3 lane 8, fast; LCS-aligned counts in brackets, this body [506]): retail-shaped index scans with
+// `source->entries[i]` at each use 639 [406]; with a samples local read after scan 1 705 [351]; scan 1 through
+// distance_sq3f (0x24550) on `source->entries[i]` and scan 2's offset through vector3d_from_points3d + dot3f and
+// its distance through distance_sq3f, with the samples local after scan 1 for first, scan 2 and second, `second`
+// as a ternary then `fraction = 0; if (second)`: 457 [225] (2070 B, scan 1 byte-identical to retail, position
+// in EDX as retail's caller sets it; not kept: the entries field read directly in scan 1 and through the local
+// after it is a reload mix), plain check agreed, caller 0x23690 481 -> 490. Consistent forms of it: entries
+// read directly everywhere 577 [207] (2094 B, retail's scan-2 pass counter and ESI/ECX pointers, but a shared
+// zero register and nearest in memory), the local before scan 1 651 [265], before the count == 1 test 656.
+// On the 457 form: scan 2's distance as length_sq3f(&offset) 549; delta assigned k, i, j 479, j, k, i 478;
+// dot3f either order or its sum written k, j, i 457 (same code); offset/delta declared at function scope,
+// jointly, after first or before samples 457 each (same code); one shared index 457; nearest declared before
+// closest_distance 459; `if (i == nearest) continue;` 457. Retail's 0x2c frame keeps delta.i/j in XMM5/6
+// with delta.k at +0x38 and stores offset.i to its own home at +0x24; the 457 form spills delta.j/k instead.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
