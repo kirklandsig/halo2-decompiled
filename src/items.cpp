@@ -1620,6 +1620,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // bool/byte/short/long with conditional/branch parent producer: 193/193/195/194 in each graph.
 // Original parent join and full body restored; return-byte/release/event homes remain.
 // NOT kept: extra predicate/width-selected graphs remained unmatched and regressed.
+// N335: Exhaustive active/inactive result construction, bool/byte/short/long: 140/141/160/162;
+// exhaustive inner-state construction: 140/141/160/162. No gain; complete original body
+// restored. Return-byte, release tail and event/location homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

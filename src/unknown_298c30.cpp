@@ -224,6 +224,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N328: Object receiver after sum/normalization/endpoints/at projection, original then native velocity
 // fields on the retained emitter graph: 395/407/434/436/397/407/434/448. Original receiver timing and
 // body restored; entry sum and normalized XY/magnitude homes remain.
+// DH310: Complete normalized scalar outputs/native point/library copy/component point, original/early-reject guard,
+// 395/467/467/385/395/467/467/385. NOT kept: the unmatched 385 groups outputs in another point record;
+// only SSE ranks improve, native XY/magnitude homes remain. Original helper and entire body restored.
 // AC492: Emitter direction after facing/exhaustive facing/direct output formal
 // 412/398/395; their three pairs 408/412/398, all 408; native signed evaluation point 402.
 // Original emitter and whole body restored; entry sum and normalized XY/magnitude homes remain.
