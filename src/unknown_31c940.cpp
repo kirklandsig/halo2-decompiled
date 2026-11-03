@@ -668,7 +668,8 @@ static __forceinline void solve_unilateral_linear(float target,
 		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
 		__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
 		__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
-		a->linear = _mm_add_ps(a->linear, delta_a);
+		// Reload A for the update instead of retaining its projection load.
+		a->linear = _mm_add_ps(_mm_load_ps((float const *)&a->linear), delta_a);
 		linear_b = _mm_sub_ps(linear_b, delta_b);
 		__m128 angular_a = _mm_mul_ps(change_a, row->a);
 		__m128 angular_second = _mm_mul_ps(change_b, row->b);
@@ -782,7 +783,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1868: normal fallbacks, writeback lifetimes, and captured bounded-row mass.
+// score 1867: normal fallbacks, writeback lifetimes, captured mass, and row reloads.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
