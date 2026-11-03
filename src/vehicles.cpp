@@ -1224,6 +1224,10 @@ long function_10f5f0(long object_index);
 // P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
 // seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
 // NOT kept: embedded predicate assignments require a match; original entire body restored.
+// P295: Direct Boolean snapshot/activity/physics tests on the ordinary result graph,
+// masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
+// Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
+// Original tests, load widths, API buffer and entire body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
