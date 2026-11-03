@@ -426,6 +426,9 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// B397: Twice-consumed matrix-scale predicate in bool/byte/short/long, then
+// unit-scale complement 324/324/319/321/324/324/319/321. Original separate scale tests restored;
+// zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

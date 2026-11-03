@@ -230,6 +230,9 @@ struct s_flag_word_bits
 // products 114/114/114/114; the same with a short return 135/135/135/135.
 // Original helper restored; player/root scheduling, duration XMM ownership,
 // effect dispatch and expanded tail remain.
+// B397: Duration-field pointer/reference inputs to the existing rounding producer,
+// direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
+// scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1028,6 +1031,9 @@ struct s_tail_transfer_traits
 // DH319: Last-match array ordinal long/dword/short/byte, range admission
 // 189/189/196/197; unequal-sentinel admission 189/189/196/197. Original
 // pointer selection restored; selected-traits/unit/NONE homes and pool reloads remain.
+// B397: Native traits-element/player-identifier domains and complete inner choice
+// eligibility subsets, then complete rejection complement 153/153/153/153/153/153/153/153.
+// Original layouts/tests restored; traits/unit/NONE homes and pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -2006,6 +2012,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
 // Original do-loop, counter position and weapon lifetime restored. Frame 0x28
 // agrees; player-data ownership and the EBP header-offset spill remain.
+// B397: Complete four-slot transfer admission in bool/byte/short/long, then
+// rejection complement 202/202/202/202/202/202/202/202. Original call/rounds/loop graph restored;
+// player-data ownership and the scaled header-offset spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
