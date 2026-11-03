@@ -418,6 +418,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // F346: Completed lowest-coordinate, candidate-ranking and hull-geometry lifetimes in
 // seven subsets 170 each; all with overlap CRT 259. NOT kept: 762/784 bytes, caller 80.
 // Original complete executable body restored.
+// B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
+// angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
+// native vector grouping, shared header and complete original executable source restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

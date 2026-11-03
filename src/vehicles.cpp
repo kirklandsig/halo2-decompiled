@@ -2762,6 +2762,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M331: Existing projected-speed dot3f boundaries, subsets 1/2/4/3/5/6/7 then all with independent relative
 // output: 717/692/715/717/704/715/720/728. NOT kept: no qualifying gain or byte match. Original complete
 // body restored; retail frame 0xfc and scalar/transform scheduling remain.
+// B385: Plain vector-array normalization/force/torque loops, subsets 1/2/4/3/5/6/7,
+// 690/739/692/692/691/739/687; all with final mass-scaling loops 687.
+// NOT kept: best gain five is below eight; original complete body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4992,6 +4995,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
 // expanding as retail does; all regress and shorten below retail. Original full body,
 // matrices, axis/angle production and math providers restored; frame/index homes remain.
+// B385: Existing current/state transpose and staged-cross boundaries, subsets 1/2/4/3/5/6/7,
+// 1112/1112/1087/1112/1112/1112/1112; both transpose returns consumed 1112.
+// Original complete body restored; frame, handle/offset and vector/matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
