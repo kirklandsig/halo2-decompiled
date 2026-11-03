@@ -272,6 +272,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC488: first-query positive index/tag/duplicate admission subsets 1/2/4/3/5/6/7,
 // then capacity break in the bounded query: 866/866/866/924/866/866/924/924. Original graph and body restored;
 // entry zero, target/primary/query-array homes and choice carriers remain.
+// AC493: Dispatch-owned primary/target-count defaults and provider-filled query output,
+// subsets 1/2/4/3/5/6/7 then conditional primary result: 963/937/915/924/923/951/915/915.
+// All original defaults, counts, helpers and body restored; entry zero and query/count homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
