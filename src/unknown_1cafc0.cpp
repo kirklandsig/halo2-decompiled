@@ -644,6 +644,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// DL251: Byte return with byte/bool/word/long status, char return with byte/bool/word status, then
+// native bool return with bool status on the twelve-byte expansion; NOT kept: all regress;
+// original graph/name ownership and return normalization remain: 478/478/564/556/478/478/564/478.
+// Original complete source restored; no eligible gain.
 // B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
 // success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
 // destructive graph-base/reload ownership and low-byte return remain.

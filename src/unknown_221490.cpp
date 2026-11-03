@@ -718,6 +718,14 @@ bool sound_driver_voice_create_buffer(
 // AC485: existing SDK member calls at submix/spatial creation and buffer operations,
 // subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
 // caller stays matched. One-point form rejected; original API calls/body restored.
+// Round 80 (m3 lane 12, fast with 0x191420): retail keeps the 3D flag in BL and play in its byte home (BL
+// reloaded from it after the 3D test); ours the reverse. Play as `(flags >> 1) & 1` 71; the 3D flag as
+// `(flags & 1) != 0` 71; no 3D local, `if (flags & 1)` 182 (602 bytes, flags folded to the caller's 0,
+// 0x191420 1); the 3D test inverted with the buffer clear first 132; the result declared after the voice
+// index 71; the 3D flag declared before play 182 (599 bytes).
+// Lane 17 r37 (fast with 0x191420): the 3D flag as `(flags & 1) == 1` 178 (626 bytes; 0x191420 then differs, 1);
+// play as `flags & 2 ? true : false` 71, as `!!(flags & 2)` 71; the 3D flag as `!!(flags & 1)` 71 (same code each);
+// both bools in one declaration, 3D flag first, 182 (599). Body restored.
 // B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
 // then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
 // signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.

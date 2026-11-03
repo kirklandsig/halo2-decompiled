@@ -37,7 +37,7 @@ s_entry_b *function_19c1f0(long key);
 /* a color of the scenario's color table, or the default color when the
    index is out of range or no scenario is loaded */
 // @retail 0x1a06a0
-color3f *function_1a06a0(long index, color3f *color)
+color3f function_1a06a0(long index)
 {
 	color3f result = *(color3f *)g_468710;
 
@@ -48,8 +48,7 @@ color3f *function_1a06a0(long index, color3f *color)
 		if (index >= 0 && index < table->color_count)
 			result = table->colors[index];
 	}
-	*color = result;
-	return color;
+	return result;
 }
 
 /* the profile's highest key that function_19c1f0 finds, and its index

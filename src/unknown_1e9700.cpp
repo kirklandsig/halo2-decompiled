@@ -86,7 +86,7 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // MiniMax R (11-01): no new form, no lower score; retail's maximum lives in ECX with the counter
 // in AX and the enable byte in AL, ours keeps the maximum in EAX, the enable byte in DL and
 // materialises the -1 default twice; still BLOCKED-BY 0x196960/0x1968b0 in another lane's file.
-// score 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
+// Earlier 107 (was 107): this round: the previous maximum read through a 16-bit local (112 at 419
 // bytes, the value loaded with the sign-extending idiom), through an unsigned 16-bit local (112),
 // and through a short cast, a word read of the counter and a word cast (107 each). Still the
 // maximum's register home: retail keeps the old maximum in ECX and the counter in AX and reads
@@ -127,6 +127,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // improved/index/enabled/writable 107; improved/writable/enabled/index 107.
 // Best admission with short maximum / separate increment / conditional clamp / per-use counter
 // 103/103/105/103. Four-point gain excluded; original body restored.
+// Round 202 (lane 3): the team test through the existing function_x340af0() 106 (425 bytes; it gives retail's
+// store of the flag into the code parameter's slot); on it the team read at each use 108, the counter re-read
+// after the increment 106, a short old maximum 106, the row pointer before the old maximum 106. Restored.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -336,6 +339,12 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// Round 202 (lane 3): the assist stores re-reading object->history[i].player_index (both arrays) 392 (1564
+// bytes, frame 0x4c; the assist cursor becomes retail's +0xc record field); the friendly store alone 379; both
+// with the selection amount read once into a local under the time test 451 (selection cursor becomes retail's
+// object+0x2f0, but the assist loop keeps its own base: retail spills one object+0x2f0 for both loops); both
+// with a walked record pointer in the selection loop 390, started from a history local used by both loops 392;
+// killer/victim_team/damage_code renamed in all six name orders in the harness, one order in --fast, 353 (the slots never move). Restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
@@ -515,6 +524,10 @@ void __stdcall function_1e9fa0(void *engine_globals, long object_index, long rep
 // uses 85/85; a short volatile delta declaration 13; an unsigned field parameter 13; an unsigned
 // plain snapshot reused for the team update 85; the field copied with memcpy 85; a first-engine-peer
 // local 13. Original body and declarations restored.
+// Round 202 (lane 3): the entry as `values[index] + field` 13, as a byte offset 13; `(short)delta + *entry` 13,
+// `value = *entry; value += delta` 25, delta through a short local 84; a table pointer local 13; the index
+// before the field read 83; a `(word)` index 13; the clamp as one ternary in the store 13; statistics through
+// a volatile reference with a plain field 85; a short field local 81 (263 bytes).
 // @retail 0x1e9ce0
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics,
 	long field, long volatile delta, bool by_team)
@@ -918,6 +931,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
 // bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
 // inset pass reproduced 298 (1135 bytes).
+// Round 43 (m3 lane 2, fast): `inner` declared at function scope 2; insets in field order (top,
+// left, bottom, right) 133 (1163 bytes); top offset before bottom 2 (re-measured); bottom inset after
+// the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
+// 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
+// bottom 20 (top/right registers swap as well).
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {
