@@ -414,6 +414,10 @@ void __stdcall function_1160c0(real dt)
 // Y547: Native double length-ratio/axis-reciprocal/paired-trig residence, seven subsets
 // then all with double returned angle: 328/236/348/317/430/372/440/494. Exact-only precision
 // forms restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 38 (m3 lane 18, fast): axis renamed to sort last 179; length declared at the loop body top 179; length
+// and segment renamed to sort first 179; `point3f predicted, previous;` 179 (all identical code); previous stored
+// before the node position 179 (repeat of round 371); the retail-order angle call with the blend complement named
+// for the three rows 177 (the two listed 177s do not add up).
 // Round 201 (fast): retail's 12-byte rest offset sits below previous (0x50 against 0x5c) and its
 // length spill below the segment spill, ours the reverse; local names do not move them: segment,
 // axis, length (two names), offset and previous renamed 179 each. Rest offset as a const reference

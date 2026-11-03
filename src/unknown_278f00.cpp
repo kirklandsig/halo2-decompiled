@@ -264,6 +264,11 @@ bool function_a7670(long object_index);
 // scratch rotation (selector EDX, retail EAX), the island index stored at each definition (retail
 // spills it only after the flagged path's `dec`), the header address folded after the `local_9 > 0`
 // branch, and one reload order before the 0xb4 store.
+// Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
+// on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
+// renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
+// continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
+// index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
 // Lane 14 r53 (fast, baseline 153 aligned 65): final membership test with the index first, `==` or `>=`, 259/238
 // (954 B, aligned 61/64), found first with `>=` 153 (65); island for-loop with the step back inside, original test
 // 240 (958 B, aligned 77), index first `==`/`>=` 232/232 (71/72), found first `>=` 240 (77). On index first `==`:
