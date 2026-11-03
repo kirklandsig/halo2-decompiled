@@ -32,6 +32,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
+// Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
+// a const forward pointer 110; named i and j squares (real; retail's forward sum j, i, k but k still
+// preloaded) 111; all three squares named 154; the i and j squares summed j, i, k 111. Restored.
 // Round 150 lead (best 2, not kept: needs a match): forward's k preload follows how later code reads
 // forward.k. One read of the matrix field `local_1[0].forward.k` in the projection's k row (or the dot's k
 // term), with the i/j rows through `forward`, gives retail's whole forward block (j, i preloaded, `mulss

@@ -171,7 +171,8 @@ static __forceinline bool structure_bsp_collision_available()
         *(long const *)((byte const *)g_4e0344->bsp + 4) == *(long const *)((byte const *)g_4e0348 + 8);
 }
 
-// score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent.
+// score 53 (was 53): frame 0x60/prefix agree; exclusion BL and source-slot rewrite/reload remain absent; the byte result
+// is still normalized with setne at both exits.
 // Earlier at 53 (was 61): the 0xbf9a0 probe is inverted, so the 0x14a8e0 return is laid out after the requery as
 // in retail. MiniMax E (10-31): with the type-6 test also setting a named exclusion flag 51 (a test-set flag,
 // not kept without a match); VC still threads the flag on every edge (retail keeps it in BL) and the byte
@@ -400,6 +401,12 @@ static __forceinline bool structure_bsp_collision_available()
 // Minimal model-result assignment + a new goto to a new label before the shared return 45 plain: NOT kept
 // (goto, match only); assignment followed by its own return 46 NOT kept (gain seven, under the bar).
 // Body restored at 53; exclusion/source-slot join remains.
+// Round 138 (m3 lane 5): the model result stored in `result` with one `goto done` to the final return 45 plain: NOT kept
+// (coordinator: the function keeps two other early returns, so the goto only moves this return, as round 343's; body
+// restored at 53);
+// on it, a bool result 56, the excluded arm also `goto done` 67 (272 bytes), the && flag guarding 0xbf9a0 with
+// `if (excluded) return result;` 57 (287 bytes), a byte `found` 45 (same code), the 0xbf9a0 test positive with the
+// requery after its block 56; before it, a byte flag `excluded |= 1` with the model query as its else-if 62 (threaded).
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -598,6 +605,9 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // three compares, the 0x16e1b0 unknown/part-index homes and BLOCKED-BY 0x11e800 (its v0/v1/v2/point
 // registers). Any defined initial value adds a store retail lacks, and the flag is set in a test, so none of
 // these is kept.
+// Round 138 (m3 lane 5, fast; retail zeroes a byte at esp+0x13 and the definition in EDI at entry): `definition = NULL`
+// at its declaration with the byte result declared among the locals 209 (727 bytes); with the result declared first
+// 185 (726 bytes); with the BSP declared before the point 217; section before definition 209; a bool result 217.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -1090,6 +1100,10 @@ done:
 // Round 343: BSP/header/object-handle last-consumer scope subsets 1..7 each 125;
 // joint object-phase scopes with the existing availability helper 149 (440 bytes).
 // Original availability, workspace, exclusions and body restored; NONE/result/exclusion homes remain.
+// Round 138 (m3 lane 5, fast): availability through the existing inline helper 149 (440 bytes), with `result = false`
+// after it 169; `result = false` after the inline availability tests 136; the requery flags assigned in the call
+// argument 125 (same code); diagnostic: the requery's lightmap call sharing the no-object call through a label 165
+// (0xd2a50 lost).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

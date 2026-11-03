@@ -85,6 +85,10 @@ long function_189340(long object_index, long tag_index, long audible, s_sound_ma
 // file, the callees' files, the ballast) gives the reduced image's 118, not the full build's 21. Retail reads the
 // object index once after the 0x18d5b0 call into EBX (a memory-resident parameter with its load reused across
 // the call); the address-taken reference forces a second read after the call, plain reads enregister it in EBP.
+// Round 75 (plain): the call passing the early `object` local 100; the started test on `object` 105; the
+// dispatch on `object` 105; `sound_index = NONE` at its declaration 21; the description at the slot block
+// scope 21; the spatialization flag if/else swapped 24. Retail's callees 0x18d4f0, 0x189fe0 and 0x189340 all
+// keep ESI, so the EBX copy is an allocation choice, not a callee summary.
 // @retail 0x189cd0 standard
 void __stdcall function_189cd0(long tag_index, long object_index, real scale, long a, long b, long label, long duration_address)
 {

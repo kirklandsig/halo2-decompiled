@@ -83,6 +83,8 @@ PRIVATE __forceinline long texture_floor(real value)
 // Round 85: scan index initialized 53; masked shift index 18; const entry pointer 4; count declared outside
 // its arm 4; adjusted value declared outside its arm 8; implicit floor conversion 4; split level initialization 4;
 // named truncated level 4; ordinary inline floor helper 166. Opening body and helper declaration restored.
+// Round 138: the bit-scan asm through EAX or EDX 6/6 (clear still EDX); index declared before the loop 4;
+// `while (remaining != 0)` 4; remaining declared, then assigned 4.
 // @retail 0x1b0a0
 void __stdcall function_1b0a0(byte *state)
 {
@@ -860,7 +862,8 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
     *direction = sample->direction;
 }
 
-// score 547 (was 547): Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
+// score 547 (was 547): Frame 0x18/0x2c; query input, native vector/ordinal and fraction homes remain.
+// Earlier: Frame 0x18/0x2c, input/selection homes and scan registers differ (override layout and
 // fraction retention now as retail).
 // Native point-difference producer subsets nearest/anchor/both/opposite/nearest+opposite/
 // anchor+opposite/all: 626/627/626/685/668/685/668; all plus shared dot 668 (exact-only).
@@ -932,6 +935,10 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // and length_sq3f 547 (both same score at 2122 B).
 // DH294: Joint count/selected-ordinal/blend-fraction lexical priorities, seven subsets and all
 // with native vector-owner names, 547 each. Original names and complete body restored.
+// J242: Existing nearest-distance producer with native anchor/opposite/dot/length consumers, eight
+// complete forms 552 each at 2111/2122 bytes. NOT kept: all regress and shorten the exact-length
+// starting body. Original searches, scalar groups, copy/interpolation paths and temporary
+// declaration restored; frame 0x18/0x2c, query/selection and fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

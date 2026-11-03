@@ -715,6 +715,9 @@ long function_1895f0(s_sound_position const *position, real scale, long tag_inde
 // `goto local_2` dropped 2 (kept). One, two or three unused initialised probe locals (diagnostic) 2 each,
 // so the symbol count does not decide it. Retail puts `mov al, 1` just before the last pop after this
 // kind of call elsewhere (0x11b50b, 0x1bc56b, 0x98750); ours puts it before the first of the two.
+// Round 75 (plain; --fast matches with a CAVEAT): the 0x1895f0 call cast to void 2; the perpendicular
+// distance computed before the along test 140 (660 bytes); the distance before the forward copy 2; the
+// position sums camera-first 2; the velocity before the forward normalize 41.
 // @retail 0x1897c0
 bool function_1897c0(long local_player_index, long unit_index, long tag_index, s_location const *location, point3f const *origin, vector3f const *direction)
 {

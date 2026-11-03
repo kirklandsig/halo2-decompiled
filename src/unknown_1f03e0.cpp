@@ -1694,6 +1694,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
 // Original motion sample precedes every reset in all forms; root/predicate lifetimes
 // and complete body restored. Zero width, reset homes and material expansion remain.
+// N336: Selected ordinal at signed-short/word width, with entry/before-reset/after-reset/
+// before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
+// Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
+// projected-storage form; original long selection, movement and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
