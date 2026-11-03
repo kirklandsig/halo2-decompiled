@@ -525,6 +525,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P302: Natural allocation-result for producer, original/byte output and entry/post-clock
 // zero lifetime, with long/short bounded pump ordinal: 269/269/283/283/286/286/289/289. Original while producer,
 // pointer, clock, ordinal and body restored; status/clock/output homes remain.
+// P304: Surround/stereo volume arrays at their own consumer, delayed or consumer-scoped
+// in eight lifetime pairs: 264/264/263/263/263/263/263/263; all 1115/1098 bytes. NOT kept: regressions and
+// nonnative delayed initialization. Original arrays/body restored; frame and clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

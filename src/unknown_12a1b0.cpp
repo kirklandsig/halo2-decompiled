@@ -2176,6 +2176,9 @@ void function_21fa80(long channel_index, s_looping_channel_properties const *pro
 // track-gain and scale locals 465 at 1937 [237]; both 502 at 1958 [240]; `primary` after the clear 345 at 1932 [213], with the early
 // locals 485 at 1942 [276], with the gain sum ahead of the clear 345 at 1932 [217]; `pitch` after the clear 466 at 1935 [244]; the total
 // gain in its own local 349 at 1936 [263]. Retail tests `primary` before the clear, so the 213 is not its shape.
+// P304: Native gain/flag-byte/effect views, subsets 1/2/4/3/5/6/7 then readonly modifier:
+// 339/411/339/411/339/411/411/411. Flag-byte forms reach 1929/1929 but retain frame 0x4b4/0x4bc and regress.
+// Original types/views, receivers and full body restored; early scalar/clear/query homes remain.
 // @retail 0x21c400
 void function_21c400(short voice_index, real gain, s_looping_channel_spatialization const *spatialization)
 {

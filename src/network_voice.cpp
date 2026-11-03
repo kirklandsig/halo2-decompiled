@@ -3608,6 +3608,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // P302: Actual mutable channel-object reference with cursor/word-kind/dword-member
 // interference graphs 0-7: 139/164/166/164/139/164/166/164. NOT kept: receiver/domain nonmatches;
 // original pointer contract, caller and whole body restored; channel/cursor/member homes remain.
+// P304: Native forwarding-route memset with independent cursor/short member/word kind,
+// interference masks 0-7: 152/172/172/170/150/149/163/156. Original route stores, observations and full body restored;
+// channel/packet/member ownership and route homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

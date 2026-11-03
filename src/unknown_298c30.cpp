@@ -599,6 +599,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // P302: Existing sweep-rotation actual offset/pivot references, subsets 1/2/3/5/6/7 then
 // ordinary-inline input-pair/full graph: 719/719/719/719/719/719/719/719. Original contracts and whole body restored;
 // frame/radius/trace and pivot homes remain.
+// P304: Native settings/actor backing members and shared normalizer, masks 1/2/4/3/5/6/7,
+// then all with direct actor-position uses: 719/719/756/719/756/756/756/790. Original types, helper and body restored;
+// frame 0x124/0x114, radius and trace/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
