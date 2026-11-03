@@ -750,22 +750,6 @@ struct s_player_census_counts
 	long local_machine_index;
 };
 
-/* a first person user: the head and its two weapons (0x20cc bytes) */
-struct s_tail_first_person_weapon
-{
-	dword flags;
-	byte unknown04[0x1010 - 4];
-};
-
-struct s_tail_first_person_user
-{
-	dword flags;
-	long unit_index;
-	long character_index;
-	s_tail_first_person_weapon weapons[2];
-	byte unknown202c[0x20cc - 0x202c];
-};
-
 extern byte g_4cf77b;
 
 class c_class_6a600;
@@ -1395,42 +1379,21 @@ struct s_player_rebind_option
 };
 struct s_16658d_group;
 extern s_16658d_group *g_4e9bc8;
-#define tail_first_person_users ((s_tail_first_person_user *)g_4e9bc8)
 void __stdcall function_167e86(long user_index, long hand);
 
-/* function_1682bf(NONE, user_index, NONE), as retail expands it here */
-static __forceinline void first_person_user_detach_unit(long user_index)
-{
-    s_tail_first_person_user *first_person = &tail_first_person_users[user_index];
-    if (first_person->unit_index != NONE)
-    {
-        s_tail_first_person_weapon *weapon = first_person->weapons;
-        long count = 2;
-        do
-        {
-            if (weapon->flags & 1)
-                weapon->flags &= ~1;
-            weapon++;
-        } while (--count);
-        first_person->flags &= ~1;
-        first_person->unit_index = NONE;
-        first_person->character_index = NONE;
-        for (long hand = 0; hand < 2; hand++)
-            function_167e86(user_index, hand);
-    }
-}
 void __stdcall player_set_local_user(long player_index, long user_index);
 void __stdcall function_14f270(long player_index, long controller_index);
 
-// score 497 (was 628): the unbind in the second-to-last loop is written out as retail expands it
-// (0x14f190/0x14f270's NONE arms through freshly fetched player pointers, 0x1682bf's body as
-// first_person_user_detach_unit), the machine fields come from s_player_census_counts, the iterator sits in a struct
-// after a pointer (retail's frame 0xe4: a free slot at +0x24), and the arrays are filled by loops (the
-// preamble now matches retail instruction for instruction). Still differs: retail keeps iterator.index in memory
+// score 587 (was 628): the unbind in the second-to-last loop follows retail's expansion of 0x14f190/0x14f270's
+// NONE arms (through freshly fetched player pointers), the machine fields come from s_player_census_counts, the
+// iterator sits in a struct after a pointer (retail's frame 0xe4: a free slot at +0x24), and the arrays are filled
+// by loops (the preamble matches retail instruction for instruction). Retail also expands 0x1682bf(NONE, user,
+// NONE) here (0x1535b8-0x1535f2); ours calls it, as unknown_1682bf.cpp builds with /Ob1. Measured trial, not kept
+// (a written-out copy stays only with a byte match): 0x1682bf's NONE arm written out here as a forceinline
+// helper gives 497, so that inlined shape is the right one. Still differs: retail keeps iterator.index in memory
 // in the second (controller/user choice) loop, ours keeps it in a register (retail +0x177: 8 more
 // instructions there, so everything after is shifted); retail compares with immediate -1, ours sometimes keeps
-// -1 in a register; the 0x1682bf expansion reads g_4e9bc8+index*0x20cc after adding the base (retail) vs
-// loading the unit field through an index register; the rebind arm passes `user` (short) from a register.
+// -1 in a register; the rebind arm passes `user` (short) from a register.
 // Tried: iterator beside the free slot as separate locals (545), explicit `= {NONE...}` controllers (556),
 // the three masks in all six declaration orders (543-559), `index` at function scope (545), the loop
 // over two weapons as `for` with an index (555 unrolled) or as a helper (510, unrolled).
@@ -1562,7 +1525,7 @@ void __stdcall function_152f80(void *address, void *option_data)
             if (unbound->local_index != NONE)
             {
                 player_control_set_unit(unbound->local_index, NONE);
-                first_person_user_detach_unit(unbound->local_index);
+                function_1682bf(NONE, unbound->local_index, NONE);
                 ((s_player_census_counts *)g_4e8c20)->users[unbound->local_index] = NONE;
                 ((s_player_census_counts *)g_4e8c20)->user_count--;
                 unbound->local_index = NONE;
