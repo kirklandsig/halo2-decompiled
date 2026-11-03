@@ -4965,6 +4965,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // fast 684/667/646/676/675/658/667/656 against control 655.
 // NOT kept: lean-local 646 hoists the field read and merges the native
 // step/clamp field stores to one final store. Original body restored at full 648.
+// P291: Actual early skip/apply movement decision separated from the still result,
+// bool/byte/short/long in both truth domains: fast 655 each against control 655,
+// 2285/2190 bytes. Original body restored at full 648; frame 0xd0, tag/state/animation
+// homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
