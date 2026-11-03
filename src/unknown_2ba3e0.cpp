@@ -499,6 +499,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // use 10; the distance estimate named 10; the attraction scale and add as two statements 10; the separation
 // radius/scale named before the call 303 (1523 bytes); the 0x2b9a00 property named before its call 236
 // (1521 bytes); re-measured: a separate speed-squared value 10.
+// Round 120 (lane 7, fast): the two branches' normalizers swapped 35 (1520 bytes); the header's
+// normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
+// 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
+// i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
