@@ -515,6 +515,10 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // 51/52/52/55/55/55/55; complete entry storage 55. Exact-only field pointers restored.
 // Original frame/result home and native clear-address sequence already agree; table/result producer,
 // marker setup and tail homes remain.
+// Round 378: Combined available/success admission result at its actual tail producer,
+// bool/byte/short/long complete and pending truth, 49 in all eight. Exact-only one-use
+// admissions restored with the complete body; actor-table/result production, marker setup
+// and actor/reference/slot tail homes remain. Indexed slot-data form is already applied.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

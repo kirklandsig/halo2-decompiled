@@ -341,6 +341,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // false-default 190/190/194/193; complementary true-default 189/189/193/192.
 // Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
 // carriers and product ranks remain.
+// Round 378: Existing four-use corner producer and shared two-component setter declaration,
+// ordinary/inline/force-inline contracts in eight nonoriginal pairs, all 46 on the retained
+// by-value-selector/component-array graph. Original declarations, helper and body restored;
+// live-plane store base, first axis/side roles and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

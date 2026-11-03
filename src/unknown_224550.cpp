@@ -322,6 +322,10 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 376: Optional-bitmap admission truth in bool/byte/short/long,
 // valid-first and invalid-first, 232/232/232/232/232/232/232/232.
 // Exact-only one-use admission forms restored; tint/secondary-UV homes and blend residence remain.
+// Round 378: Shared pivot complement on the retained next-product graph, inner/outer storage,
+// recomputed aspect result and before/after first next-product producer: 232/232/306/306/232/232/306/306.
+// Original separate complement producers, all arithmetic, native buffers and body restored;
+// tint/secondary-UV homes and blend residence remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
