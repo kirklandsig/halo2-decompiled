@@ -290,6 +290,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // (retail's +0x38 home) 413 (same code); with the entry struct copies all/first/constants 430/460/423 (the struct copy of
 // +0x290 always moves the pointer out of EBX into ebp+0x290 addressing and passes arg_2 in EAX, ret 0x1c), with the
 // pointer declared at entry 442 or in the settings block 460, through a two-pointer copy helper 460. Restored.
+// DH311: Existing pointer-input scale as plain coordinate-array loop, long/dword/short/byte
+// with streaming stores 345/345/435/435; complete native output before publication 464/464/515/515.
+// Original helpers/body restored; frame 0x58/0x64 and magnitude/query overlap remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
