@@ -497,6 +497,11 @@ static inline bool teams_enabled_19e1c0()
 // returns 390 (same code); the engine's token text in a `written` local returned when nonzero, volatile/plain
 // result 397/693. Retail: event EBX, token_length EDI, remaining EBP, result ESI from the top; the opponent loop
 // runs on `cmp edi, 8` (no free register for a down counter), where ours counts EBX down from 8.
+// Round 67 (m3 lane 10, fast): each case its own `if` ending in `return result;` with the plain result 630 (lane 9's
+// form re-measured, 1232 bytes: every return gets its own epilogue where retail jumps to the shared copy tail), with
+// every format failure returning `remaining` 623, with a long opponent team and `best_score <=` 625; on the volatile
+// result: the time-mode test as `mode == 3 || mode == 4 || mode == 8` 397, the token fallback clamp as one ternary 395
+// (1432 bytes), the mode field read at each use with no local 390 (same code).
 // Round 143 (m3 lane 5, fast): every clamp as `if (remaining <= result)` 390 (same code); text
 // declared before the result 390 (same code); `best_score <= function_1587f0(team)` with the short
 // team 388; local-team value long 393 (1436 bytes); engine text returned early 390 (same code).
