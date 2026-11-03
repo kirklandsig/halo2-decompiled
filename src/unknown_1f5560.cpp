@@ -984,6 +984,10 @@ real normalize2d(point2f *v);
 // B388: Independent trajectory outcome transferred to outer validity at the final join,
 // bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
 // 193/193/153/173. All regress; original two producers, calls and return graph restored.
+// AC503: First-type/speed/normalized completion guards, seven subsets 135 each; terminal
+// request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
+// gain appears only with combined forms. Original full body restored; separate facing/default
+// and invalid return paths remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

@@ -2316,6 +2316,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // or default-false test result: 155/155/155/155/155/155/155/155. Original full body restored;
 // object/offset and low-mask homes remain.
 // NOT kept: unmatched comparison-result lifetimes.
+// Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
+// result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
+// follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named
+// once for the loop test and the first slot test 155; the child counts declared before the child
+// handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
+// first 155.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

@@ -97,6 +97,9 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // without the defaulted distance 16, with an early defaulted projection 16; output base declared
 // after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
 // the three setup stores and first intersection's x product remain.
+// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
+// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
+// the classification loop 9. Original body restored.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)
@@ -427,6 +430,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
 // angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
 // native vector grouping, shared header and complete original executable source restored.
+// B391: Actual lowest/current/candidate external point references, subsets 1-7, then
+// complete external coordinate references: 170/170/170/170/170/170/170/170. Original
+// complete body restored; extra frame word, count/departure and compaction homes remain.
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.

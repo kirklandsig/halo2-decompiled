@@ -603,6 +603,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M338: Test-owned angular offset/gear/signed rate outcomes, subsets 1/2/4/3/5/6/7 and final flag arms:
 // 211/195/126/224/211/195/224/234. Original body restored; velocity receivers and early 1.0/SSE/x87 homes
 // remain. NOT kept: no gain; non-retail gear-store/length forms restored.
+// F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
+// vector workspaces 225/126/225/126/225/126/225/225.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1224,6 +1227,14 @@ long function_10f5f0(long object_index);
 // P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
 // seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
 // NOT kept: embedded predicate assignments require a match; original entire body restored.
+// J244: Existing squared-length/dot producers with original/shared point difference
+// and original/six-real buffer: 565/565/561/561/565/565/561/561.
+// NOT kept: four-point lead is below threshold; six-real frame 0x1990 still
+// exceeds 0x1984. Original complete body and arithmetic restored; flag stores and reduction remain.
+// P295: Direct Boolean snapshot/activity/physics tests on the ordinary result graph,
+// masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
+// Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
+// Original tests, load widths, API buffer and entire body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2464,6 +2475,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
 // native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
 // Original two-use helper and complete body restored; turn/spin schedules remain.
+// F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
+// original/forced-inline existing helper 213/213/213/213/213/213/213/213.
+// NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3683,6 +3697,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // M338: Entry flip truth in bool/byte/short/long, positive/complementary channels:
 // 136/159/240/237/169/169/244/241. Original body restored; projection/cross ranks and angle/trig homes
 // remain. NOT kept: no gain; unsupported truth widths/polarities restored.
+// F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
+// 173/173/159/159/173/173/159/159.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4055,6 +4072,9 @@ extern byte g_5107ee;
 // sequential dot with component midpoint stores 165 (frame 0x8bc), with the whole copy 47;
 // reflection-order pointers 45, also before the vector providers 45; point setter 154
 // (frame 0x8bc); normal pointer 43; incoming pointer 45. Original executable body restored.
+// B392: Plain midpoint/copy/reflection loops: 43/41/43/41/41/41/41/41; native midpoint aggregate with CRT
+// publication/projection-part follow-ups: 41/41/149/149. Original body restored; cone setup and
+// reflection schedule remain.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {
