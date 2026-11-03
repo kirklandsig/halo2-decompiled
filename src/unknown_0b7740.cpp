@@ -1253,6 +1253,10 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // sample-mask test as nested ifs 97 (same code); the no-model parent matrix through the existing function_b8bd0
 // 100 (1378 bytes, stays a call); the default-orientation test as `== 0` with `++node` and `&nodes[node * 0x60]`
 // 97 (same code); the render-node pointer declared inside the mask test 97 (same code).
+// Round 206 (m3 lane 3, fast, on the 97 base): the node loop as `long node = 0; while (++node < count)` 97 (same
+// code, no count > 0 guard); the node index declared at the top of the render branch (re-measured) 97; the parent
+// index declared once for both branches (re-measured) 341 (1386 bytes); parent and parent_mirrored declared once
+// for both branches 350 (1382); the no-model mirrored flag before the matrix (re-measured) 97 (same code).
 // Round 141 (m3 lane 6, fast): no-model mirrored flag read before the parent matrix 97 (same code); the no-model
 // matrices argument re-read from object +0x116 90 (1388 bytes, positional only: retail passes the spilled
 // matrices pointer from +0x1c); the node loop's parent node index as a short local 244 (1381 bytes); a node matrix

@@ -1612,6 +1612,13 @@ struct s_rating_summary
 // walking counters pointer 38 (base at the struct, not +6; homes unchanged), named zcounters 38 (names do not
 // move these homes); the switch without its `default: __assume(0)` 105 (1197 bytes); the formatter's result
 // in a local 25 again (match-only; only the team latch left).
+// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
+// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
+// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
+// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
+// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
+// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
+// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
 // Round 141 (m3 lane 6, fast): a strncpy-and-terminate helper (as font_loading.cpp has) declared __forceinline
 // or inline ahead of the region 214 (1200 bytes: the inline_depth(0) region keeps even a __forceinline helper out
 // of line); the team counters read directly at the call 32; the team identity named (`const XUID *`) for the

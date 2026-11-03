@@ -475,6 +475,10 @@ PRIVATE inline long polygon_round_19f(real value)
 // Round 496: Native data factor with early-real, explicit-real, upper-first and zero-first fade
 // results 415/390/391/397; expanded-bound pairs 377/388/391/402 (exact-only).
 // Original factor literal, bound, inherited parameter home, cursor and complete body restored.
+// Round 207 (lane 3, fast with both callers): the texture scale's second rounding read from the first
+// result 370; the top point as its own initializer with `center->z + height` 359; the alpha clamp as one
+// ternary 316 (same code); the wrapped index as `step < count ? step : 0` 316 (same code); the repetition
+// divisor as `1.2f * height` 316 (same code). BLOCKED-BY 0x4b2d0 and 0x1ccb0 as noted.
 // @retail 0x19f680
 void function_19f680(long tag, long group, long pass, long variant, void *context,
     point2f const *vertices, long count, point3f const *center, real radius,
