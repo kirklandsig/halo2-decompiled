@@ -7203,6 +7203,14 @@ real function_50650(real cosine);
 // M341: Complete current/desired/predicted double angle-result ownership, seven phase
 // subsets then all const: 565/565/565/563/563/563/565/565. Exact-only result copies restored;
 // frame 0x8c/0x80, input/vector homes and prediction/call scheduling remain.
+// Round 84 (m3 lane 9, fast control 563): the calls now line up with retail's (same ten segments, near-equal
+// instruction counts); at the 0xc7750 calls ours pushes position and velocity where retail passes them in XMM5/XMM4
+// with time in XMM3, and so keeps yaw_done in a stack byte where retail copies it to BL. 0xc7750's accumulator form
+// (28, retail's convention) is still inlined into both calls against today's body: 1103 (2870 bytes, 0x1faf80 0 ->
+// 16); with both frame-to-world rotations through the existing matrix_transform_vector 1067 (2846), plus the
+// to-frame rows through dot3f 1067 (2846): extra inline levels in this body do not use up the inliner's budget. On
+// the current 0xc7750: both rotations through matrix_transform_vector 566 (2450 bytes); the target's in-place
+// rotation alone 566 (2450). All restored; still BLOCKED-BY 0xc7750's inlining.
 // @retail 0xc7840
 void function_c7840(transform4x3f const *frame, vector3f *current, vector3f const *desired, real rate, vector3f *velocity,
 	real const *limits, real max_speed, real acceleration)
