@@ -334,6 +334,9 @@ struct s_block_candidate
 // candidate copy: 391/391/397/398/391/392/397/398. Frame 0x1054 recovered, but
 // page/ring roles and policy placement regress; exact-only selection state restored.
 // N319: Shared default-policy clock long/dword, paired/sequential age producers and original/conditional candidate time, all eight 347. Frame 0x1050/0x1054 and page/ring roles remain; original observations and full body restored.
+// N325: Actual candidate cursor/physical-block cursor/ring successor reused across
+// disjoint phases, seven subsets and all with bare entry declarations: 347 each.
+// Original independent workspaces and full body restored; frame and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

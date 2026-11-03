@@ -408,6 +408,8 @@ void __stdcall function_1160c0(real dt)
 // N316: Working attachment position/direction defaults, with scaled target and paired differences:
 // 265/200/273/268/194/273/303/303. Original conditional producers, helpers and body restored;
 // segment/axis/previous/rest-offset homes remain.
+// M321: Existing returned current/target/recurrent-prediction point-setter receivers, masks 1/2/4/3/5/6/7 then immutable target
+// 342/179/300/342/312/299/309/309. NOT kept: local output receivers require a match. Original body restored; segment/axis/previous homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

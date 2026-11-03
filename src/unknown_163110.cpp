@@ -995,6 +995,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // P261: symmetric near/far coefficient captures, all six native component declaration
 // orders 269 each; joint row lifetime and immutable inputs 269/269 (1867 bytes).
 // All exact-only snapshots restored; coefficient preload, zero roles and projection homes remain.
+// P277: Actual margin/clamp/negated-vector/plane-array/denominator/distance/classification
+// scratch identities individually and together: 115 each, 1851/1851 bytes. Original names
+// and body restored; early coefficient preload, zero XMM and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
