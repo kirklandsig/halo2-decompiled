@@ -1054,6 +1054,8 @@ void function_143250(
 // 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
 // NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
 // original polynomial, conversion producers and complete body restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
 // N343: Real storage for both second-band roots, each third-band root, all third-band roots
 // and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
 // NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.

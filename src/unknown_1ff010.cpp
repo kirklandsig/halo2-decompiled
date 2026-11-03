@@ -637,6 +637,9 @@ void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real co
 // Round 86 (KIMI2): dot inputs reversed 77; opposite-side cross 79; both reversed 79;
 // reversed cross with the original left predicate 79; shared three-component facing pointer 148;
 // two-use magnitude scale 85; named determinant 77; read-only magnitude 77. Original body restored.
+// Round 46 (m3 lane 2, fast with 0x1ecf50 and 0x2b400): `magnitude != 0.0f` 128 and the second normalize
+// `!= 0.0f` 108 (both 850 bytes but `ucomiss`/`lahf` where retail has `comiss`/`jbe`), both together 134 (854);
+// speed read right after the direction copy 175 (864); the k copy before the second normalize 174 (788).
 // Round 35 (m3 lane 18, fast with 0x1ecf50 and 0x2b400), zero-first comparisons re-measured on the
 // two-pointer helper form: `0.0f < magnitude` 77; `0.0f > dot` 77; `0.0f < cross` 77; the turned pair's
 // normalize as `0.0f < ...` 77 (all same code); the k copy before the turned pair's normalize 174 (788
