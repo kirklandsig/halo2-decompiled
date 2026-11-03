@@ -348,6 +348,8 @@ struct s_block_candidate
 // 350/350/366/360; true-default with the existing guarded policy: 347/347/355/354. All tie or
 // regress; complete original policy/result graph restored. Missing frame dword and page/ring
 // homes remain.
+// N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
+// all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -110,6 +110,12 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // return enabled 117; a separate `return enabled` per exit 126, 126, as else 95, through enabled 126, 126;
 // early `index = 0` or `enabled = true` 117, 117 (gone before the merge); enabled set ahead of the
 // 1.0 store 117; `return *value != 0` 117; a switch on the name, eight case orders, 104 each (368 or 363 bytes).
+// Round 33 (lane 17): the early lookup nested under the flag test with the 1.0 `return true` 117 (358
+// bytes); the 0x040005a7 case first, the lookup under `name != 0 && name != 0x030005a6` and the 1.0 case
+// as the last else setting enabled 37; the early lookup as `enabled = true` in the name chain 124 (353
+// bytes); the lookup result in a named bool returned when set, 1.0 `return true` 115; the body under
+// `if (!(override && lookup))` with `return true` after it 117. Every constant 1.0 return still jumps into
+// the early return's tail (or the reverse).
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

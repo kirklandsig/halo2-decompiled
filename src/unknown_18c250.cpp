@@ -170,11 +170,14 @@ bool __stdcall function_18c250(long object_index, long tag_index, s_sound_marker
 // Round 54 (m3 lane 11, fast): the machine index declared beside the object type and assigned in the arm 23; the
 // bsp pointer read before the camera call 34; the location copied field by field 57 (647 bytes); a named header
 // for the machine read 23; the cluster table indexed from `sound_clusters + row` 23.
-// score 23 (was 23): the machine object, cluster-map/base and final copy registers still differ.
+// Still: the machine object, cluster-map/base and final copy registers differ.
 // Round 123: machine index initialized beside the type 169 (624 bytes), or before the type branch
 // 68; high fields first 56 (647); unsigned machine index with a signed call conversion 74 (637);
 // existing object/header getters 23/23; object getter with an early requested-audible read 17
 // (one-use local, exact only); that with high fields first 58 (647).
+// Round 75 (fast): the 0x18d4b0 call before the location copy 29; a long machine index with `& 0xffff`
+// 85 (622 bytes); a short cluster-row local 23; the matrix before the object type 89 (637); the
+// compressed forward before the point 144 (638).
 // @retail 0x18c3b0
 bool __stdcall function_18c3b0(long object_index, long tag_index, s_sound_marker const *marker, s_type_99c531 *location)
 {

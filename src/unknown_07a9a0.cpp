@@ -1176,6 +1176,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Diagnostic, not kept: 0x192e60 pinned out of line gives retail's head, session in EAX and 0x73530 byte for byte,
 // but this function 942 (2700 B) since the capacity switch then stays a call where retail has it inline. So retail's
 // inline choices here are call out of line, capacity inline; ours are the reverse pair.
+// M334: Current Boolean-balance/word-workspace graph with existing team/minimum/maximum/spread/
+// limited/imbalance selectors forced inline, then all party bounds and all except capacity:
+// 766/766/766/766/766/766/766/766. Original inline contracts restored; frame/session/lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
