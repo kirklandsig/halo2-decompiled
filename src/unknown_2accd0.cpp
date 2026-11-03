@@ -830,6 +830,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 259: Header/body/signature ReadFile results at their actual producers, seven subsets,
 // then all with native signature-finalization status: 34/34/34/34/34/34/34/34. All one-use
 // result forms restored; entry total and size/seek coalescing remain.
+// Round 333: Shared successful header/body progress producer, dword/real numerator,
+// named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
+// Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1115,10 +1118,24 @@ struct s_signed_file_write_parameters
 // position+data/count+data/all, then buffer-before-count: 102/109/300/305/220/224/215/119.
 // Live seek position 102 retained; count-only 109 is below threshold. Other forms
 // restored; capacity staging and extension offset/buffer/count homes remain.
+// Round 534: sequential clear/transfer byte amount in header/extension, scratch output
+// declarations beside getter outputs, seven subsets then complete amount roles:
+// 102/241/241/102/102/241/241/241. Original complete body restored; capacity EAX/EBX and
+// extension buffer/offset homes remain.
 // N321: Repeated phase header extents across API consumers on the retained header-return/live-seek
 // graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
 // homes remain. Scores 138/229/291/255/309/303/320/323.
 // Original executable source restored.
+// B374: separate getter output and multiuse header transfer stride, after getter/before-getter
+// declaration/after clear/loop-owned, original or separate extension capacity: 102 each (eight trials).
+// Native stride ownership does not recover the capacity copy or extension homes; original body restored.
+// N324: One real signed API seek-position workspace for header/scratch/signature, seven subsets then
+// declaration after publication 102/102/102/102/102/102/102/102. Original positions/body restored; capacity
+// staging and extension offset/buffer homes remain.
+// DH305: Header completion on the direct-return/live-seek graph, sequential API refinements,
+// nested success, seek conditional and failure-only update, bool/native BOOL:
+// 313/199/102/245/314/211/261/302. Original capacity stride and complete body restored;
+// capacity EAX/EBX and extension buffer/offset homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

@@ -505,9 +505,19 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // DH round 290: sampled axis ordinal short/word/long/dword reused for all three native
 // component reads, aggregate producers 161/161/161/161; shared setter 173/173/173/173.
 // Original draws, native axis/direction captures, cross/dot, all rows and tail restored.
+// Round 533: Sequential real cosine or wave reuse from the initial envelope,
+// original/immutable time/immutable angle/both input ownership: 117 each. Original
+// scalar lifetimes and complete body restored; frame 0x28 versus 0x20, seed/time
+// schedule and direction/axis/cross homes remain.
 // AC480: Existing in-place double output scale / complete initialization result / named amplitude
 // envelope, subsets 1/2/4/3/5/6/7, then double scale with weighted oscillation: 158/178/118/204/159/178/204/158.
 // Original transfers, producers and complete body restored; frame and direction/cross homes remain.
+// P275: Complete final wind value via native aggregate/existing setter, with uniform
+// direction capture and final scale/result-only scope, subsets 0-7:
+// 156/192/156/192/156/192/156/192. Original body restored; frame and seed/rotation homes remain.
+// P277: Actual time/fraction/envelope/angle/projection/wave/strength scalar home names,
+// individually then all seven: 117 each, 880/880 bytes. Original names/body restored;
+// seed/time and direction/cross residence remain, frame 0x28 versus 0x20.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

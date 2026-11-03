@@ -1291,6 +1291,10 @@ bool function_68670(byte *source, long size, void *block);
 // Round 350: Positive payload delta word/int with native header/payload/both cursor
 // addition-then-remainder stores: eight forms 72 each. Header/sequence homes, DX size and forwarded
 // cursor remain.
+// Round 89: ring-parameter helper with local-first/view-second or view-first/local-second 24 each;
+// re-derived view-member cursor update 145 (575 bytes); split addition/remainder updates 24; ring-member
+// reader 24; two-use long payload size 129; force-inline read helper 24; const ring receiver 24.
+// Original helper and body restored.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {
