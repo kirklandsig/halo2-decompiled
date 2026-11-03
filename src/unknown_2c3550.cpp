@@ -805,6 +805,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // AC475: Native outgoing mask byte/signed-byte/word/dword with long success
 // 774/774/675/675; with Boolean success 775/775/754/754. Original mask, result and full body restored.
+// B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
+// bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
+// without an exact match. Original actor observations, bit consumer and full body restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

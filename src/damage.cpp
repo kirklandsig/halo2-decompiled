@@ -2452,6 +2452,9 @@ struct s_unit_event
 // M328: Independent child/seat iterator and event role names, seven subsets then
 // all with the primary receiver renamed: eight 472s. Complete original body
 // restored; frame agrees but permutation ingress and call-cycle homes remain.
+// B383: Direct seat-ejection/current-state/child-bit consumers, seven subsets, then
+// the effect flag at its argument: 504/519/512/531/530/519/531/551. Original native bit values and
+// whole body restored; permutation ingress and call-cycle register homes remain.
 // M330: Independent object/region/permutation declaration ranks, six orders, then
 // both edge orders with uninitialized datum at entry: eight 472s. All producer
 // assignments stayed fixed; original declarations and body restored.

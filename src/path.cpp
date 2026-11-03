@@ -540,6 +540,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH303: Real eight-byte node metadata record with memcpy/aggregate transport
 // and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
 // layout and body restored; extra output cursor, initial zero and flag homes remain.
+// B383: Predecessor retained only as its short/long index, direct array fields or
+// a branch-local multi-use receiver, crossed with long/short link count:
+// 294/391/378/399/295/373/382/386. NOT kept: the 294 form gains one point; retail retains
+// both predecessor histories; wide forms lose the matched caller. Original body restored; frame/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -983,6 +987,9 @@ bool function_2715a0(byte *buffer)
 // DH303: Fresh projection numerator/denominator and native entry receiver,
 // producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
 // One-point reductions rejected; original body restored; state/scalar/root homes remain.
+// B383: Native branch-updated radius/pruning maxima and attraction minimum,
+// seven subsets, then the complete conditional projection clamp:
+// 488/502/486/504/488/502/504/504. All tie or regress; original scalar producers and body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
