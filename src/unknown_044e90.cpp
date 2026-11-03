@@ -211,6 +211,9 @@ struct s_visibility_bound_record
 // (no header change) 407; the plane transformed in place into its copy with `planes[j] = p` 440 (1742 bytes, the copy
 // stays in memory); the same with field-by-field stores 457 (1716 bytes, retail's transform block, views kept in ESI
 // with the source folded into one lea); the six-plane do/while as a plain for 2754 (fully unrolled, 3604 bytes).
+// Round 548: Real four-descriptor release table, long/dword/short/word/byte/signed-char
+// counter and pointer </!= walks: 522/522/520/520/520/520/511/511. NOT kept: changed release/frame
+// shape misses; original four releases, field reads, native workspace and full body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

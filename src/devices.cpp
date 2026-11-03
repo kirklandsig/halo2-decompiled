@@ -825,6 +825,9 @@ struct s_device_machine_view
 // AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
 // before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
 // masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
+// N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
+// 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
+// native group-word sharing and velocity-zero join remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1178,6 +1181,12 @@ bool function_108530(long device_index, long name)
 // the zero-denominator velocity as `(target - position) / duration` 149 (533 bytes); the position pinned at the top
 // before the time clamps 139 (525 bytes, the fast image changes both callers' conventions); the ramp-down zero clamp
 // after `remaining`, right before its minimum 123.
+// Round 34 (lane 17, fast, with both callers): the initial velocity moved to the second parameter
+// (definition and both calls; diagnostic, no retail order evidence) 123 (callers 25/23, still six
+// stack floats); the ramp-down minimum written `ramp_down_time < remaining ? ...` 121; the target
+// pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
+// stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
+// denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

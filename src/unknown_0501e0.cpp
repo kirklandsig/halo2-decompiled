@@ -287,6 +287,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // with only the perspective arm assigning it 260 (1151 bytes); the blended position as a component loop 222 (1146
 // bytes); the `k < 0` tests in an outer if with the named limits inside it, an early return and the clear at the end
 // 224. All restored.
+// Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
+// subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
+// NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
