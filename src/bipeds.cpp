@@ -3061,6 +3061,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // Round 543: Existing complete vector setter at axial/clamp/pitch producers, seven
 // subsets then all projections: fast 605/601/639/611/673/676/642/677 (control 600; full 561).
 // All regress and grow; original producers, helpers and complete body restored.
+// Round 379: Ordinary-state/planar/right-turn complementary truth subsets 1/2/4/3/5/6/7, then
+// complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
+// Original full-width special and complete truth graph restored; result/flight scalar homes and
+// vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

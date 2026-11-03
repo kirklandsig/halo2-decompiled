@@ -264,6 +264,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // projection term first in the i and k rows (six forms) 176 (same code); sine, cosine, yaw, pitch and root renamed to sort
 // first or last, all 32 combinations 176: names do not move these homes. Body restored. Retail's rows: i projection first,
 // j cosine first, k projection first, cross_i computed after cross_j and cross_k and spilled into the cosine's home.
+// Round 380: Complete direction-validation truth, bool/byte/short/long positive then
+// complementary: 279/279/279/279/279/279/279/279. All retain the wrong root/unity homes and lengthen the body;
+// original short-circuit guard and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

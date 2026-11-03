@@ -1458,6 +1458,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
 // 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
 // second entry unit load, table/hand homes and downstream scheduling remain.
+// Round 379: Twice-used animation result byte/char/short/long, at its producer then entry storage:
+// 95/95/142/146/95/95/142/146. Original Boolean result and complete body restored; entry pool/hand
+// and second unit load remain.
 // P280: Native object-type predicate byte/char/short/word/long/dword storage
 // 95/95/109/109/108/108; Boolean declarations at observation/before companion test
 // 95/185. Original complete body restored; entry lookup and hand homes remain.

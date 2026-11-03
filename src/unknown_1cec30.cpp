@@ -1033,6 +1033,9 @@ void function_1d1540(s_havok_component *component);
 // N328: Actual twice-used rigid-body reference, direct/getter acquisition and fixed-first/ordinary-return
 // admission, original then aligned input copy: 85/85/85/85/88/88/88/88. Original slot graph restored;
 // frame and incoming component/index remain.
+// Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
+// then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
+// original flag observation, native slot, fresh refetch and complete body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
