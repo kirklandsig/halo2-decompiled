@@ -280,6 +280,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // M334: Existing normalizer absolute-length predicate as bool/byte/short/long results,
 // then their exact tiny-path complements, 156 in all eight forms at 634/630 bytes.
 // Original test, helper and body restored; early Y transport and XMM roles remain.
+// Round 79 (m3 lane 9, fast): the reaches flag declared after the other locals 92; distance declared before
+// direction 92; sqrtf in the normalizer 156 (634 bytes); the normalizer plain `static inline` 92; the ancestor
+// walk as `while` with the step at its end 92 (all 92 forms same code). Early Y load still missing.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
