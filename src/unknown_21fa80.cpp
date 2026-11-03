@@ -218,6 +218,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // before the phase or at entry, each original reference/plain gain value: eight at
 // 532 fast (control 532; full 545). Original body and lifetimes restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// Round 42 (m3 lane 2, plain; fast builds this function differently, CAVEAT): the gain difference named
+// (`real gain_change = gain - stored;` tested as `fabs(gain_change)`) 542: retail's SSE `subss` and store appear
+// (hoisted above the `changed` test, where retail computes it after) but the /Op float fabs still rounds; that
+// with mode/direct read before the gain 546, with a value (not reference) gain 542, with `0.1f > fabs(...)` 542, with
+// the two-case mode switch for the voice sends 541 (1902 bytes). Original body restored.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)
