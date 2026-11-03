@@ -1810,6 +1810,11 @@ real game_time_get_seconds();
 // Y538: Existing member depth-state API at both/enable/disable sites 507/507/507;
 // with member vertex command 512/512/512; full member graph with opacity arms 511,
 // paired trigonometric admission 529. All restored; frame 0x90 versus 0x94 and output homes remain.
+// Round 376: Twice-used converted angle at intrinsic/shader/point/angle phases,
+// paired real/double trigonometric results 508/552, 510/579, 510/579, 511/579.
+// Earlier real phases reach retail length but frame 0x9c; extended results add 0x9c or aligned
+// 0xac frames. Original float-angle observations, all output scopes, APIs and body restored;
+// frame 0x90 versus 0x94 and definition/NONE/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

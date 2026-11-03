@@ -1359,6 +1359,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 0xfc. Original getter use, value graph and complete body restored. Scores
 // 608/608/608/608/628/628/628/628.
 // Original executable source restored.
+// Round 373: Complete walking-speed selection in positive/nested/excluded/split admissions,
+// original material default 668/657/668/540; material default at its selection
+// 699/694/699/589. NOT kept: 540 moves the frame farther from retail (0xf4 versus
+// 0xfc); 589 gains only seven and moves length away. Original complete body restored.
 // AC483: Discarded point output reused as eye/center/body/eye+body/center+body,
 // then eye+nearest-center/center+nearest-eye/eye+body+nearest-center:
 // 612/605/614/622/609/604/609/605. Several reach 2828 bytes; frame/material/animation
@@ -3326,10 +3330,16 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 371: Native travel-limit decision before original target copy,
 // byte/short/word/long 372/376/376/375; complementary truth representation
 // 372/376/376/375. Original predicate and body restored; matrix/pivot homes remain.
+// Round 373: Complete up/left/forward product lifetimes in every transform row,
+// seven subsets then complete row projections: 370/370/370/370/369/370/895/895. NOT kept: product
+// temporaries do not reproduce retail; original helper/body restored.
 // M317: Sequential parent/rotation, origin/placed and pivot/target workspace reuse subsets 1/2/4/3/5/6/7, all
 // with consumed-direction reuse; root relocation offset with aggregate copy/point setter:
 // 369/401/395/401/395/428/428/428/396/379.
 // Matrix/origin and paired point/property homes remain. Original executable body restored.
+// Round 375: Collision fraction from candidate update/owned candidate/full branches/named distance,
+// storage at producer/parent-block entry: 368/368/368/369/368/368/368/369. Original conditional and whole
+// body restored; frame 0x12c, matrix/pivot/property homes and first +0x71 remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4048,6 +4058,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // Round 371: Rounded sine/cosine wider storage and named cosine-complement,
 // subsets 1/2/4/3/5/6/7: 182/231/175/276/192/240/286; all with angle
 // producer declaration 286. Original real coefficients, helper and body restored.
+// Round 373: Native int/unsigned-int/dword/short/word/char/byte publication ordinals
+// and plain output cursor: 145/145/145/145/145/145/145/175. Original loop/helper/body restored; normalized
+// axis SIMD ranks and coefficient/rotation homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

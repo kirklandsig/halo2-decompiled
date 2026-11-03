@@ -1126,6 +1126,9 @@ struct s_signed_file_write_parameters
 // graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
 // homes remain. Scores 138/229/291/255/309/303/320/323.
 // Original executable source restored.
+// B374: separate getter output and multiuse header transfer stride, after getter/before-getter
+// declaration/after clear/loop-owned, original or separate extension capacity: 102 each (eight trials).
+// Native stride ownership does not recover the capacity copy or extension homes; original body restored.
 // N324: One real signed API seek-position workspace for header/scratch/signature, seven subsets then
 // declaration after publication 102/102/102/102/102/102/102/102. Original positions/body restored; capacity
 // staging and extension offset/buffer homes remain.

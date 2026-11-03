@@ -1442,6 +1442,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
 // each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
 // long result and complete body restored; second entry lookup and hand spill remain.
+// Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
+// 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
+// second entry unit load, table/hand homes and downstream scheduling remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1921,6 +1924,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
 // slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
 // Original shared accessor, request workspace, result graph and complete body restored.
+// Round 373: Post-transfer notification owner captured once, bool/byte/short/long
+// give results with original/compound take result: 97/122/129/130/114/135/141/142. Original observations,
+// result ownership and whole body restored; frame/result and pooled roots remain.
 // Round 535: independent received-index result and native mutable received index, each
 // with bool/byte/short/long give-result storage: 132/123/115/117/128/115/105/105. Original body
 // restored; frame, give-result byte and pool/weapon homes remain.
@@ -4508,6 +4514,12 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 371: Actual result byte/short/word/long at original declaration,
 // 308/317/317/317; the same with entry false initialization 308/317/317/317.
 // All restored; native frame, basis and point/quaternion homes remain.
+// Round 373: Actual quaternion/position record receiver as pointer/reference, direct/late
+// position and native/library quaternion publication: 175/173/201/199/175/173/201/199. NOT kept: two-point
+// leads are below threshold; original byte receiver and whole body restored.
+// Round 375: Native/library away-input snapshot before/after up capture, real/double in-place scale:
+// 284/276/284/276/282/276/282/276. NOT kept: input record copies do not match and retain frame 0x110;
+// lengths 1406/1375 versus 1388. Original direct producer and complete body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

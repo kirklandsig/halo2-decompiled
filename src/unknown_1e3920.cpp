@@ -1167,6 +1167,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DL243: Matched creation/variant/equipment producer inline contracts, seven subsets: 254 each;
 // all three with uniform placement view at use 335. Original body, every field and all
 // declarations restored; sentinel EDI/ESI, substitution/squad homes and unrotated loop remain.
+// Round 375: Sequential primary/secondary equipment scalar, signed short/long, producer/entry
+// storage and optional grenade reuse: 254/254/254/254/262/262/262/262. Original independent selectors
+// and complete body restored; frame/length agree, sentinel EDI/ESI and substitution homes remain.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {

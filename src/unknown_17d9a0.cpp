@@ -337,6 +337,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
 // 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
 // helper and body restored. Plane-store base, first-selector roles and product ranks remain.
+// Round 376: First-corner side truth produced by native tests in bool/byte/short/long,
+// false-default 190/190/194/193; complementary true-default 189/189/193/192.
+// Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
+// carriers and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

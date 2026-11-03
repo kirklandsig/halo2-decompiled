@@ -1576,6 +1576,10 @@ struct s_rating_summary
 // DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
 // receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
 // Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
+// Round 376: On adjusted-value team graph, shared player/team first/second/third statistic
+// carriers in seven long-valued subsets 31/31/31/31/31/31/31; complete native word carriers 275.
+// Original statistic scopes, producers and body restored; formatter/count scheduling and team/counter
+// homes remain. Existing reduced unresolved-global caveat persists.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

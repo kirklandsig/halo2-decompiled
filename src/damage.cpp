@@ -968,6 +968,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
 // F335: last-default, full-branch, existing-result fallback and early-return completion, each
 // with positive-unit admission or absent-unit skip: 206 each (783 bytes). Aligned frame and first verifier remain.
+// B374: twice-consumed inner radius maximum via macro/branches/lower/upper fallback,
+// outer expression or test-produced result: 230/230/235/234 twice; 767/782 bytes, frame still 0x1a4.
+// No match; original repeated selector and complete body restored.
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
@@ -1084,6 +1087,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // That asymmetric producer recovers point/normal homes and 1535 bytes, but the fallback center is
 // at +0x4c instead of +0x40. On it, retained origin/direction/node/all field addresses: 295/357/355/354.
 // All forms regress; original body restored. Shared-add include clashes with the existing cross helper.
+// Round 375: Scale default at entry/before point call/before node phase/before cone, original jump
+// versus outside-owned falloff: 434/426/434/426/422/422/343/343. NOT kept: extra result lifetime enlarges
+// the frame/body and regresses. Original complete body restored; geometry/cone/node homes remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -1531,6 +1537,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // Round 532: result-owned iterator termination with bool/byte/short/long carriers, guarded success
 // or comparison-produced success: fast 71/67/95/104/58/57/93/98 against unchanged fast 71.
 // Byte predicate measures 246 bytes but none matches; result-tested flags restored. First-call receiver and latch remain.
+// B374: complete type-owned false before iterator initialization, OR/conditional/negative/positive
+// recursive joins 82/89/108/89; after initialization 102/108/125/110.
+// No exact match; original entry default, verifier boundary, loop and recursive tails restored.
 // Round 534: rejection-guard for initializer 70; direct successful search
 // returns 84/84; canonical byte/short/long/word/dword results
 // 66/95/104/95/104. Byte result gains four only; original body restored.
@@ -4560,6 +4569,9 @@ struct s_damage_object_creation
 // Round 532: entry detached bitmap, shared marking/node ordinal on the recovered frame, complete
 // scalar role names, seven subsets 211/188/211/188/211/188/211; full workspace names 211.
 // Entry bitmap is 797/808 bytes, first +0xa; all others retain displaced homes. Opening body restored.
+// B374: actual metadata cursor crossed with flag-byte cursor, ordinal-first initialization and
+// pre-capture cursor declaration: eight trials 209 at 799/808 bytes, first +0xa.
+// Original body restored; offset/definition and detached-mask homes remain despite the closer length.
 // Round 534: connectivity-mask workspace shared by root and piece scans, dword/long,
 // entry/producer declaration and sequential section/node count: 188/188/188/188/188/188/188/188.
 // Original complete body restored; offset, definition and detached/node homes remain.
