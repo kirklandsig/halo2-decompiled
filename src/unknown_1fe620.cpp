@@ -13,6 +13,10 @@ void function_1fe410(point3f *arg_0, real arg_1);
 static __forceinline long real_to_long(real value);
 
 // score 373 (was 373): frame 0x4c versus 0x48; early third-input/random-state carriers and scalar homes differ.
+// Lane 18 r37 (fast): the +0x84 scale named for its test and product 430; unary negation for the side
+// flip 373 (same code); the +0x7c0 initial value as a ternary 430 (1844 B); the target-state pointer
+// declared before the prop test 373; the two limits read before +0xc 373. Ours caches the random-state
+// pointer in ESI from the first draw, where retail keeps the third input there and the state in ECX.
 // Round 28 lead (not kept: needs one-use locals): retail reads the third draw's bounds (+0x14/+0x18) before the
 // first draw and keeps them on the x87 stack; with them read into locals ahead of the draws, all three draws through
 // local_10 (the random-state local: one seed store after the third draw, as retail) and the lower bounds written as
