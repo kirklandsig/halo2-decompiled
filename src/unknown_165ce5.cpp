@@ -1671,6 +1671,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
 // at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
 // Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
