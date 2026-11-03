@@ -847,6 +847,11 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // team-array end 497, end alone 497. NOT kept: retail counts the fixed team
 // ordinal, with no retained end producer; the new end shifts unrelated scalar homes.
 // Original cursor progression, comparisons, buffers and complete body restored.
+// Round 82 (m3 lane 9, fast): the four buffers as the existing s_text_256 506 (EBP bias as retail, frame 0x860); with
+// `in_session == true` (retail's cmp byte, 1; jne) 504 (wrapped storage is exact-only, not kept); `in_session == true`
+// alone 510; on the 504 body: short count 509, bool campaign 530, `(flags & 0x80) != 0` 504 (same code), long widget
+// counter 505 (retail's jb), message alone wrapped 504, message and format 504. The friend flags still spill (retail
+// keeps them in ESI, the widget index then reuses ESI and the clock takes EDI).
 // m3 lane 16 r83 (fast; form plain 489, NOT kept at review: retail reads the clock before the bit-7 shift
 // (0x2b662e/0x2b6636), so the reorder is against retail, and s_text_256 alone is 506, gain 6 under the bar; the file's 20 matched functions still match, 0x2b642e 51): the four
 // text buffers as the existing s_text_256 (its constructor clears the first word, as the hand-written stores did)

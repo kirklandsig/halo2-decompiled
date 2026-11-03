@@ -337,6 +337,9 @@ static inline void quaternion_transform_vector(
 // N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
 // with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
 // NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
+// N346: Immutable transform dot/doubled-scalar/quadratic coefficient masks 1..7, then complete
+// immutable coefficients/cross: 200/200/200/200/200/200/200/200. Original helper and all three users restored;
+// NOT kept: unmatched lifetime/combination forms. Native frame/quaternion/cross spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1069,6 +1072,9 @@ void function_143250(
 // N343: Real storage for both second-band roots, each third-band root, all third-band roots
 // and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
 // NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.
+// N346: Isolated matrix/workspace/rotation/result/coefficients/term_9/term_8/term_11 names:
+// 1766/1766/1766/1766/1766/1766/1766/1766. Original identifiers and complete scalar graph restored;
+// NOT kept: unmatched lexical allocation. Frame, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

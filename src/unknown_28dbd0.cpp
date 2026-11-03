@@ -265,6 +265,20 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
 // subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
 // frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// Round 68 (m3 lane 10, fast; aligned difflib counts in brackets, base 173 [183]): the rotation helper in the
+// matched 0x177d10's shape (sine, cosine, projection with the dot written out, vector x axis cross j, k, i, rows
+// `v*cos + axis*projection - cross*sin`) 231 [176] (1192 bytes, frame 0x114: sine +0x24, cosine +0x10 and heading
+// as retail, but one cross spill where retail spills X.j and X.k); rows axis term first 231; X.i written in row i
+// 231; dot3f for the dot 228 (1194); the cross through cross3f(vector, axis) into a vector 213 [159] (1209 bytes,
+// frame 0x11c), with axis-first rows or either dot3f order 213/213/213. Original helper restored.
+// Round 206 (m3 lane 3, fast): retail's rotation is the one 0x117dd0 inlines (sine first, X = vector x axis,
+// X.j/X.k spilled with the sine's home between them, X.i formed in row i). Sine, named dot, cosine, scalar X.j/X.k
+// with X.i inline 237 (1221 bytes); sine, dot, cosine, cross3f(vector, axis) subtracted 226 (frame 0x120), with
+// vector-first rows 226; that body as a (vector, axis, sine, cosine) helper 226; sine, cross3f, dot, cosine 233 (1196).
+// Original helper restored.
+// AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
+// subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
+// frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
