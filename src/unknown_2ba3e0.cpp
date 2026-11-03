@@ -883,6 +883,9 @@ real g_55e618;
 // AC475: Canonical repeated mode-two truth bool/byte/short/word, original sentinel
 // 273/273/269/269; sentinel before start stores 271/271/269/269.
 // Original raw mode mask, sentinel order, reflection inputs and complete body restored.
+// P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
+// staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
+// restored; sweep/collision homes and cross-placement projection spills remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
