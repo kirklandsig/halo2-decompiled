@@ -215,6 +215,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N324: Raw/bounded projection split with ternary/branch/ceiling-default/independent-bound producers,
 // original then test-produced wrapped-angle sum 395/395/404/421/400/400/407/411. Original complete body
 // restored; entry and normalized XY/magnitude homes remain.
+// AC486: Double magnitude sum/product/pair/full-product intermediates 395/453/395/453;
+// matching endpoint-distance intermediates 402/442/402/442. NOT kept: precision/grouping
+// forms do not match; original normalizer, distance, helper and whole body restored.
+// N328: Object receiver after sum/normalization/endpoints/at projection, original then native velocity
+// fields on the retained emitter graph: 395/407/434/436/397/407/434/448. Original receiver timing and
+// body restored; entry sum and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

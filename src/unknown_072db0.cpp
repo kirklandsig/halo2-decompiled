@@ -1573,6 +1573,9 @@ struct s_rating_summary
 // complete body restored; formatter/count schedule and team/counter homes remain.
 // M316: On adjusted-value graph: native word team-count snapshots in all six declaration orders, dword counts, and loop-entry word storage; each also with copy-return termination 32/32/32/32/32/32/32/32/35/35/35/35/35/35/35/35.
 // One-use field forms are exact-match-only; formatter/count scheduling and team/counter homes remain. Original executable body restored.
+// P276: Shared value/change/level/lower, summary and identity lexical roles, then
+// joint result roles and all six roles on adjusted-value graph: 31 each. Complete body
+// restored; formatter/count schedule and team/counter homes remain.
 // DH300: Equality-only team/group comparator operand ownership and multiply-used identity output
 // receiver subsets 1/2/4/3/5/6/7, all with early receiver: 33/34/31/36/33/34/36/36.
 // Original comparisons, copy destination and full body restored; formatter/count scheduling and cursor homes remain.
@@ -1584,6 +1587,9 @@ struct s_rating_summary
 // within and past truth, 31 in all eight. Exact-only one-use admission results restored;
 // original per-iteration switch, loops and complete body retained. Formatter/count schedule
 // and team/counter homes remain; existing reduced unresolved-global caveat persists.
+// P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
+// roles independently, then all: 31 each. Original body restored; formatter/count setup and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1941,6 +1947,8 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // property copy, admission helper kept after it: after identity 709/709/709/761;
 // before identity 709/709/709/767. One-use producers require a match; all
 // restored. User cursor base/home, slot conversion and later homes remain.
+// M321: Returned identity/property copy destinations, mutable/immutable receivers, then either overlap-safe transfer
+// 709/709/709/709/709/709/768/756. NOT kept: local output aliases require a match. Original body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

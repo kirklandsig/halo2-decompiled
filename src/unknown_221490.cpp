@@ -715,6 +715,9 @@ bool sound_driver_voice_create_buffer(
 // seven subsets 71/71/71/71/71/71/71; all with spatial-first predicates 182.
 // Original arrays, zero/ID stores, descriptor scopes and complete body restored;
 // spatial/play and zero/input/voice allocation remain.
+// AC485: existing SDK member calls at submix/spatial creation and buffer operations,
+// subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
+// caller stays matched. One-point form rejected; original API calls/body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

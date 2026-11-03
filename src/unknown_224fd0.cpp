@@ -195,6 +195,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // diagonal stages with paired results 204. Original helper/body restored.
 // NOT kept: 204 has only two fewer executable rows (198 -> 196); thirteen raw points are table data.
 // NOT kept: 190 combines a tying paired-output form with diagonal stages; allocation steering.
+// F338: Actual forward/left/up output-row receivers in the existing rotation producer,
+// seven subsets then all declared at first output: 217/217/217/491/491/491/220/220.
+// NOT kept: two-point gains and unproven field-receiver shape. Original helper/body restored;
+// axis-specific product/cosine spills, basis homes and four-byte table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

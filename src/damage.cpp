@@ -703,9 +703,18 @@ void function_d6a70(long object_index)
 // original lookups 203 (633); fresh test only 190 (590); second pointer 162.
 // P272: Uniform direct primary-object fields, post-guard accumulator declaration and independent entry child iterator subsets, then complete workspace names: 219/159/159/219/219/159/219/219.
 // Original executable source restored; frame 0x4c versus 0x50, retained-pool/object/index and owner homes remain.
+// F335: completed-path exit, region skip and separate parent admission, seven subsets, then
+// separate child admission too: 159 each (606 bytes); frame 0x4c/0x50 and pool/object/owner homes persist.
 // P274: Repeated header ordinal/shared parent index/accumulated last-child result,
 // subsets 1/2/4/3/5/6/7: 159/168/169/168/169/185/185; all with long result 174.
 // Original body restored; frame 0x4c versus 0x50 and pool/object/index/owner homes remain.
+// M322: Direct flag producer/region cursor/once-read region bound, subsets
+// 1/2/4/3/5/6/7, then branch-produced flags: 197/148/161/197/194/156/174/174.
+// NOT kept: cursor 148 caches the array base retail reloads each iteration;
+// cursor+bound 156 gains only three and grows to 617/610 bytes. Original body restored.
+// N328: Early pool/header ownership ending after notification, fresh/cached initial store and twice-used
+// post-clear receiver: 159/192/183/194/165/190/184/185. Original body restored; frame stays 0x4c versus
+// 0x50 and pool/object/index/owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -964,12 +973,17 @@ PRIVATE inline long damage_object_root(long object_index)
 // Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
 // with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
 // Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
+// F335: last-default, full-branch, existing-result fallback and early-return completion, each
+// with positive-unit admission or absent-unit skip: 206 each (783 bytes). Aligned frame and first verifier remain.
 // B374: twice-consumed inner radius maximum via macro/branches/lower/upper fallback,
 // outer expression or test-produced result: 230/230/235/234 twice; 767/782 bytes, frame still 0x1a4.
 // No match; original repeated selector and complete body restored.
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
+// DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
+// admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
+// byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1077,6 +1091,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
 // Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
+// DH302: On direct geometry fields, interleaved normal updates / complete far vector setter /
+// late unit-direction setter subsets 1/2/4/3/5/6/7 all 286; all with node-backed-only
+// point setter 300. Original body restored; point homes and cone/node allocation remain.
 // AC483: Native selected displacement, two workspace names, producer/entry storage and record/setter
 // publication: 357/364/357/364/357/364/357/364. Node-backed-only point setter with short/long team
 // and producer/entry center: 297/300/297/300; complete direction setters repeat 297/300/297/300.
@@ -1543,6 +1560,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // N324: Separate null/player rejection, scan-scoped iterator and result-admitted recursive calls, seven
 // subsets then result-first initialization 71/71/71/118/118/118/118/120. Original complete body restored;
 // initializer receiver and loop latch remain.
+// DH305: Per-visit result refinement on the retained recursive-OR graph, nested admission,
+// short rejection, short-predicate refinement and null/player refinement, bool/byte:
+// 58/58/78/75/56/56/78/75. NOT kept: result-tested predicates require an exact match; initializer receiver and latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -2082,6 +2102,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
 // tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
 // The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
+// Round 337: result, normalized-damage and paired vitality workspaces at enclosing scope,
+// seven subsets 5 each; all with the maximum-body workspace 5. Computations stayed at their
+// original sites. Original body restored; region-load and final owner-address schedules remain.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2385,9 +2408,18 @@ struct s_unit_event
 // permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
 // call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
 // Original executable source restored.
+// F335: uniform direct permutation/object/datum receivers, subsets 1/2/4/3/5/6/7, then
+// entry event declaration: 980/662/541/1165/1022/794/1204/1204. Original cached receivers and
+// body restored; incoming permutation transport and excess length remain.
 // P274: Native zero-then-type/type-in-value event initialization, crossed with actual
 // read-only info and existing inline declaration contracts: eight forms 477 at 1880 bytes.
 // Original body and both declarations restored; permutation stack/EAX ingress and call-cycle homes remain.
+// M322: Direct section/seat/child handle observations, seven subsets 472 each;
+// all with direct seat bound 503 at 1896 bytes. Original body restored;
+// permutation stack/EAX transport, register homes and sixteen-byte excess remain.
+// N328: Native section/seat/child last-consumer scopes, seven subsets, then one reset name carrier across
+// all phases: 472 each. Original body restored; permutation stack/EAX transport, call-cycle register
+// homes and sixteen excess bytes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4568,6 +4600,9 @@ struct s_damage_object_creation
 // N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
 // library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
 // and detached/node homes remain.
+// DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
+// scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
+// offset/definition and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

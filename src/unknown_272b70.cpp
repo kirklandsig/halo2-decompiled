@@ -2707,6 +2707,8 @@ struct s_scenario_scripting_view
 // DH293: Joint actor/data/set pointer lexical priorities, all six 80; two
 // opposite priorities with promoted signed-short-decoded selector 96/96. Original
 // body restored; actor/set/counter homes and guarded data observation remain.
+// DH304: Uninitialized displacement/resolved-point/metric workspace at entry/admission/pre-actor/search, two lexical priorities, 80/80/80/80/80/80/80/80.
+// Original output scopes and complete search restored; actor/counter/set homes and guarded data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
