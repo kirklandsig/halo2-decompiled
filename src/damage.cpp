@@ -719,6 +719,9 @@ void function_d6a70(long object_index)
 // initial byte, parent word, both, parent byte, initial word, word/word, word/byte,
 // byte/byte: 174/183/171/183/190/170/170/171. Frame stays 0x4c versus 0x50;
 // original stores, field observations, include set and complete body restored.
+// P282: Original-object/ownership-input identities and accumulator declared before acquisition,
+// subsets 1/2/4/3/5/6/7: 159 each; all with region-receiver identity 159. Original names/declarations
+// restored; frame 0x4c/0x50 and pool/object/index/owner homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -991,6 +994,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
 // admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
 // byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
+// P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
+// 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
+// grow to 874/782, frame still 0x1a4; originals and all observations restored.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
