@@ -426,6 +426,9 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// F363: Shared direction producer owned by camera state, instance/static,
+// pointer/reference output and forced/ordinary inline: eight forms 89 each.
+// Original state type, helper, both calls and body restored; zero/side/up homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

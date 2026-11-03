@@ -1497,6 +1497,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
 // 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
 // needs match-only forms.
+// F363: Existing initializer owned by its native header, instance/static and
+// void/returned-receiver with inline/forceinline: eight forms 33 each. Original
+// helper, header and complete body restored; count homes and write/checksum joins remain.
 // @retail 0x213970
 void function_213970(void)
 {
