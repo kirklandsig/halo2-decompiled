@@ -2328,6 +2328,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M338: Complete validated-query result in bool/byte/short/long, positive/complementary channels:
 // 63/63/63/63/63/63/63/63. Original body restored; extra EBP, body transport and flag schedules remain.
 // Nonmatching single-consumer query results restored.
+// N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
+// validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
+// NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2762,6 +2765,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // plus add: 530/530/530/546; each with a named three-use reciprocal: 530/530/530/546.
 // The weighted vector shortens to 1818/1908 and regresses; frame/result homes persist.
 // Original aggregate, complete body and every helper restored.
+// N344: Entry-only uninitialized total/mass/farthest/push/scale/strength+lift/dot/query-value
+// declarations, original producers fixed: 530/530/530/530/530/530/530/528.
+// NOT kept: query-output entry scope gains only two; no exact scalar/frame repair. Original body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3052,6 +3058,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // bool/byte/char/signed-char/short/word/long/dword carriers:
 // 656/656/656/656/645/645/651/651 (reduced control 600; full 561).
 // Exact-match-only flag forms regress; original producer, guard and complete body restored.
+// N344: Existing result/special/wall/left lexical homes: result/handled, special_turn/turn_override,
+// wall_turn/use_up_axis, turn_left/negative_turn: eight fast 600 (control 600; full 561).
+// NOT kept: no exact home/copy repair. Original truth symbols, widths, helpers and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
