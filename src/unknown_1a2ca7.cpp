@@ -1621,6 +1621,10 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // Round 61 (m3 lane 11, fast; aligned in brackets, base [47]): retail's xuid argument roles without the flags lead: (clan, friend) in the merge loop 219 (841 bytes) [69]; (friend, presence)
 // in the friend walk 122 [51]; (player, presence) in the clan walk 183 (838) [39]; the last two 188 (838) [43]; all three 159 (844) [65], with the friend count first 160 (844) [67].
 // 0x63d00 is not address-taken in retail's tables (only unaligned byte hits), so nothing but its build flags pins the convention. BLOCKED-BY 0x63d00 stands.
+// Round 207 (lane 3, fast): `i` and both counts (friend first) declared ahead of the presence/user
+// buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
+// buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
+// the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

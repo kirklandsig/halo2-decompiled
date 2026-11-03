@@ -2308,6 +2308,11 @@ void function_269250(long clump_index, long actor_index)
 // continue; break;` 89 (same code); the deletion arm first as `match && replacement == NONE` with the rest in its else
 // (a repeated test) 196 (741 bytes, registers rotate); the 3 form re-measured 3 (ours: node pool EDI, prop pool EBP);
 // on it the node iterator declared beside/before the prop iterator 3/3.
+// M3 lane 4 r161 (fast): the prop loop split into a matched-object arm (deletion, or replace + node scan) and an
+// else arm (state clear + node scan) so only the bottom test reads the unit flag 295 (837 B: the two node scans
+// are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
+// assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
+// (`single`, cleared for units) 89 (same code, slots unchanged).
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

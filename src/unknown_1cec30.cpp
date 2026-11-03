@@ -1057,6 +1057,9 @@ void function_1d1540(s_havok_component *component);
 // copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
 // retail shifts the flags, and the length moves away. Original body restored;
 // aligned frame, constructor copy and component/index transport remain.
+// AC505: Native body-pointer member receiver, pointer/reference and fresh reset receiver,
+// constructor copy 60/60/60/60; aligned set copy 93/93/93/93 (234/220 bytes).
+// NOT kept: gain 5 below the gate; member receivers and all copy forms restored.
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
