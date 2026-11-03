@@ -80,6 +80,9 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // x, y, z: `z = scale * point->k` 57 (239 bytes), `z *= scale` 57; that form with the scale read at each use 37
 // (242 bytes, zero after the products), with k stored first 30 (zero first but in xmm2, the step in xmm3);
 // k stored first on the kept inverted-test body 12 (241 bytes).
+// Round 67 (m3 lane 1, fast): on the kept inverted-test body, the test written `1.f == scale` 61 (245 bytes);
+// z declared first 9; `x = scale * x` arm products 9; variable-first transform products (`z * axes[2].i`) 9; all three
+// components read in both arms (`x = point->i` / `x = scale * point->i`) 9; the permuter (72 tries) found nothing below 9.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

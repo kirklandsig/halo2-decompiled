@@ -1075,6 +1075,10 @@ bool __stdcall function_2399da(long controller_index)
 // Round 390: Two-stage selected-pointer presence then full identifier validity,
 // positive/negative bool/byte/short/long outcomes: 106/106/110/109 repeated.
 // Original complete body restored; identity/rank EAX/ECX ownership and extra move remain.
+// Round 67 (m3 lane 1, fast): own rank read right after the membership call, ahead of the identity test 90
+// (same code); a `controller_mask` local for the six dialog masks 176 (418 bytes); the identity test as
+// `xuid != NULL && xuid->qwUserID != 0` 90; `own_rank >= rank` 90; `rank != NONE` arm first with the
+// over-rank denial as its first test and the removal in the else 95 (437 bytes).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

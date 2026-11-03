@@ -564,6 +564,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
 // after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
 // (176 bytes).
+// Round 67 (m3 lane 1, fast): the header test through a forceinline bool getter 49 (same code), on the retail shape
+// (false first, true after the attach) 77; retail shape with the flag test positive and the NONE arm first 75 (160
+// bytes); the positive test with the NONE arm first on the long result 52; a header pointer named for the test with
+// the object read through the macro 49. Lead: retail's reloaded table data and recomputed index look like an
+// out-of-line getter that LTCG inlines; no existing one was found in src/.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

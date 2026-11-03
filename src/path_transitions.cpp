@@ -661,6 +661,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
 // constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
 // if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
+// Round 67 (m3 lane 1, fast; 0x270d90 295 unless noted): case 5's negation as unary minus 367 (1264 bytes); case 2's
+// trace through the `data` local 319; case 5's call result in a `found` flag set under the actor test 278 (same
+// code); the negation as `-1.f * direction.i` 278; the corner tests as `vertices[i] != 0xffff` 357 (1292 bytes,
+// 0x270d90 368).
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
