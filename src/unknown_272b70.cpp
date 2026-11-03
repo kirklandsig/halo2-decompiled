@@ -1478,6 +1478,16 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH311: Single own-parameter first-consumer reads, direct ai/vehicle/range/load 32/32/32/32;
 // entry pointer counterparts 170/237/32/32. All exact-only own-address/alias forms restored;
 // iterator scaling, leave-request registers and request/slot publication homes remain.
+// F350: Repeated sorted actor identity/unit/parent observations, seven
+// subsets then all immutable: 103/88/32/124/103/88/124/124, all 846 bytes.
+// Original per-use fields and complete body restored; iterator scaling,
+// leave-selector and request/slot publication homes remain.
+// DH313: Native/read-only iterator actor-index field pointer before/after initialization,
+// at loop entry or candidate admission: 32 each. NOT kept: exact-only field aliases fail
+// agreement. Original body restored; iterator/leave-request and request/slot homes remain.
+// DH316: Genuine collection/selection pointer-receiver lexical identities, seven subsets
+// then the complete iterator identity: eight 32s, 846/846 bytes. Original entire body
+// restored; iterator scaling, leave-selector and request/slot publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2719,6 +2729,9 @@ struct s_scenario_scripting_view
 // M334: Native outer-data-count/admitted-set-count/admitted-set-table observations,
 // seven subsets 80 each; all with loop-owned original short counter 87.
 // Exact-only one-use captures restored; actor/counter/set homes and early data read remain.
+// B388: One guard/lookup actor-handle observation, long/dword, native/readonly actor,
+// original/traversal short counter: 80/87/80/87/80/87/80/87. Wrapper stays exact;
+// original handle observations, actor receiver, counter scope and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -1375,6 +1375,10 @@ bool voice_channels_have_player(s_voice_channels *channels, long player)
 // retail, but player EDI and total ESI, 0x54990 5), as a ternary 95 (354 bytes, 0x54990 5). All restored.
 // Round 198 (lane 3, fast with 0x54990): by-value size helper `count * (mask ? 13 : 11) + 2`, named entry size, multiplier
 // first, staged add, named count, named count and size 94 each (same code; `imul ecx, [mem]` and `lea` remain).
+// Round 59 (m3 lane 11, fast with 0x54990/0x56160/0x56380): the 2 added after the loop (`total += 2`) 99; `total += 2` in
+// place of `total = 2` 94 (same code); `11 + (is_unknown00 ? sizeof(word) : 0)` 130 (329 bytes, 0x54990 13); a named
+// entry size from the getter compare in place of the flag 165 (294 bytes, 0x54990 13); the product written in each ternary
+// arm 133 (325 bytes, 0x54990 13).
 // @retail 0x56220
 long voice_channels_get_bandwidth(s_voice_channels *channels, long player)
 {
@@ -1518,6 +1522,12 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // there 127, no compact call 197 (retail's literal zero tests and EAX's zero kept to the capacity exit appear only here), no
 // kept update 127, no count decrement 178, no entry clear 142, no header stores 183. In kept-first forms the stable registers
 // are queue, cursor, size, entry pointer against retail's queue, player, cursor, entry pointer: player against size.
+// Round 59 (m3 lane 11, fast with 0x56380): the queue typed as the voice channel with typed packet entries (header word,
+// flag, mask, data; 0x56380's call without the cast) 134 (identical code); result left unset and assigned 0 in the
+// inactive and capacity-fail arms 177 (472 bytes, 0x56380 73); round 98's retained mask declared inside the capacity test,
+// re-measured on the typed body, 127 again (449 bytes; the bit goes to memory, EBX takes it); the named bit at the header
+// and clear uses 153 (433 bytes, 0x56380 13); `11 + (include_mask ? sizeof(word) : 0)` 137; the loop's player test as an
+// early `continue` 134 (same code). Original body restored.
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -1722,6 +1732,9 @@ static inline dword voice_get_player_mask_inlined(void);
 // 0x53a20 with one more test ahead of the call (64 at 229 bytes with a size test, 67 at 224 with `player < 16`; 2/3/5 tests
 // 79/92/118); nested ifs, `!(a || b)` and a named first test stay inlined 84; a shared `a || b` inline 138 (386 bytes), 0x54890
 // 88, 0x53a20 92 (neither query inlined inside it).
+// Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
+// `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
+// bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3242,6 +3255,9 @@ struct s_voice_route_choice
 // (!radio && ...)` 411 at 1270 bytes [336], retail's branch shape; with a named talker bit before the loop 422 at 1254 [312],
 // retail's frame 0x54 and bit in EBP; counter declared apart 411 [336]; counter set first 411 [340]; tail arms inverted 432
 // at 1246 [341]; mode local 409 at 1276 [448]; casts in the headset update 411 [336]. Both callers keep matching in all.
+// Round 126 (lane 8, fast): `radio = radio || mode == 2` 1087 (594 bytes, not unrolled); `if (!radio) radio =
+// mode == 2` 474 (callers 22/18); listener-mask arms swapped 363 and a listener array pointer 363 (same code);
+// SET_FLAG for the headset and listener bits with the radio/nearest tests after 430 (callers 22/18).
 // Round 549: Conditional/nested/rejection/test-produced nearest-index publication
 // with bitwise radio 363/1132/363/1095, with branch radio 1103/1139/411/1096.
 // Nested/test-produced bitwise forms and nested branch form lose both callers.
@@ -3543,6 +3559,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // arms 139 (same code): the relay arm stays a call and the plain arm inlines, so retail's two forms need no separate copy;
 // with the cursor forms 162/164. One-file LTCG harness: cursor forms with the session getters left out, or every other
 // source left out, keep the member in EBP (aligned 79-85); 11 entry and tail orders of the cursor form the same (79-82).
+// Round 126 (lane 8, fast with 0x564c0): cursor with an unsigned stride 164; cursor with a short consumed count
+// 163 (479 bytes); consumed advanced right after the size test 163 (475 bytes); cursor with a const reference to
+// the channel index for every talker read 164; cursor with a count local from data[1] 159 (0x564c0 13).
 // Round 549: Loop failures assign NONE to consumed and break; long/int/short/dword result
 // with original traversal 138/138/159/138, with independent packet cursor
 // 153/153/154/153. NOT kept: best gain is one; original body restored.
