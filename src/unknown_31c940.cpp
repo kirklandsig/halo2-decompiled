@@ -754,7 +754,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1938 (was 1940): writeback cursor initialization order.
+// score 1909: callback restoration and captured writeback-header fields.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1129,8 +1129,8 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				break;
 			case 14:
 				(*(void (__cdecl **)(__m128 *, void *))(op + 4))(terms, op + 8);
-				a = state.solving.a_home;
 				op += op[1];
+			a = state.solving.a_home;
 				break;
 			}
 		}
@@ -1270,8 +1270,11 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		read_results_header:
 		{
 			solver_header_31c940 *header = (solver_header_31c940 *)op;
-			state.writing.stride = header->result_stride;
-			terms = header->terms; destination = header->results;
+			// Capture all header fields before updating the phase state.
+			long captured_stride = header->result_stride;
+			terms = header->terms;
+			destination = header->results;
+			state.writing.stride = captured_stride;
 			op += 24; break;
 		}
 		case 3:
