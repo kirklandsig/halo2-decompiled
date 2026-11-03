@@ -218,6 +218,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // M332: Existing iterator on the local successor, pointer/declaration while, plain for,
 // or native index admission, each with result/break or direct completion: 57/55/57/55/91/73/52/53.
 // All regress; original walk, helper, publication and complete body restored.
+// Round 141 (m3 lane 5, fast, with 0x1a303b/0x2b393c): a self-call in the failure arm 72 (108 bytes, callers lose), with
+// a single result 77 (103); the existing iterate helper in `while ((entry = iterate()) != NULL)` 79 (102 bytes, callers
+// lose; mask hoisted ahead of the loop, iterator reloaded each pass), early return 79, `!result &&` test 79, a do-while on
+// the entry 79, a for loop 56 (139), the per-pass result 86 (95), both 86, `*iterator != NONE` test 79; per-pass result
+// stepping `index = *iterator` 59 (135, callers keep; hoist as retail, index and successor share ECX, entry copied to ESI,
+// padded head), a guarded do-while 59; an index or iterator guard around the helper loop 73/73 (108, callers lose).
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -756,6 +762,14 @@ void function_1537f0(s_profile_record *record);
 // 55 (259 bytes: frame 0xa0 and retail's `cmp edx, end; jl` exit, but the identity at +0x14 with a 4-byte pad under
 // it, the record at +0x20 and the pointer in EBP); that with the 4-aligned s_player_properties record 55; the source
 // declared before the identity 55; a function-scope identity 55; the identity named to sort after the source 55.
+// Round 141 (m3 lane 5, fast): the identity and a 36-dword record in one local object (not an accepted form without a
+// match) on an index loop 45 (259), with flags and time as two plain stores 49 (258 bytes, aligned 33: left NONE hoisted
+// into EBP and the record's two zeros sharing EBX); the real record type in that object 52; pointer walk 86 (272); on the
+// 49 form: four link statements, `(short)NONE`, `-1`, `0xffff`, globals as `0xffffffff` or chained, the object outside the
+// loop or first in the function, the entry after the initializer, a do-while, memset of the object's start 49 each; the
+// entry read through the table 46; an entry cursor beside the count 84 (270). Probes: globals not NONE 38 (EBP takes the
+// record zero as retail, so the hoist comes from the global stores sharing NONE with the links); links not NONE 58; a
+// memset of the globals 74 (260).
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1264,6 +1278,19 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // count path share retail's flag store, but upper coalesces with the count in EAX (retail copies it to ECX) and the
 // removed index loads into ESI before EDX; on it upper declared first 56, `g_4cf978 > position` 58, `lower = removed
 // <= position ? removed : position` 58, the bounds declared before `removed` 378.
+// Round 141 (m3 lane 5, fast with 0x80490; al = aligned count): retail's count reload sits only in the full arm. Plain entry
+// `removed = NONE`, `removed > position ? position : removed` lower, the flag set first in the `<` arm, the count path lower
+// first, a forward cursor `from = &g[lower + 1]` stepped in the loop (`from[-1] = *from`) and explicit `downward = false`
+// stores in the `>` arm and the count path 8 (1171 bytes, al 8); that with `function_7fd10(g_4cf980)` 6 (al 6: left only
+// `from` set before the loop guard from lower, retail after it from the index). Not kept: the two flag stores are redundant
+// and the read is mixed, so match-only. Permuter on the 6 form: best 6 (69 tries). Without the stores 369/367 (1162), `>`
+// store only 335, count store only 367; current head with the cursor 368, with the lower spelling 366; flag not
+// initialized 390/389 (1178), declared first 380. On the 6 base: plain copy loop or `from[-1]`, `*(from - 1)`, `to[1]`,
+// memcpy in the body 53 (al 21: upper EAX, index EBP), shared copy index 53, also with the repair loop 53, at the top 53;
+// a named reloaded count 58 (al 27), lower first 59; lower+flag spellings 54/56/55; upper by if 362, no zero init 53, `lower <
+// upper` 52; cursor from a named index 54 (1174, tail registers flip), after a repeated guard 5/54, a guarded do-while
+// 385-386 (1190), pointer bound 370 (1181), to-cursor 56, `to = from - 1` 361 (1174), copy with a separate count 350 (1162),
+// memmove/memcpy 362/368 (1181); bound copies for the repair 70/70/69/72.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
