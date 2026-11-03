@@ -529,6 +529,11 @@ struct s_physics_component_walk : s_havok_component
 // F351: Split-open terminal/neighbor/both query results 200/152/220;
 // split-closed results 177/153/303; exhaustive open/closed results 192/177.
 // NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
+// Round 66 (m3 lane 10, fast): a shared open-section scan helper (both scans, `return true` from the loop)
+// inline 500 (723 bytes, kept out of line), __forceinline 168 (the neighbor scan then branches straight to the
+// recursion and the latch as retail, but the latch moves after the cold blocks); that helper with the neighbor
+// branch first 179; the empty-section test's two body bytes as char locals 146 (same code); one entry-scope
+// section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

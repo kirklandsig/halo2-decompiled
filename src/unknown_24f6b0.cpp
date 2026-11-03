@@ -80,6 +80,16 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // x, y, z: `z = scale * point->k` 57 (239 bytes), `z *= scale` 57; that form with the scale read at each use 37
 // (242 bytes, zero after the products), with k stored first 30 (zero first but in xmm2, the step in xmm3);
 // k stored first on the kept inverted-test body 12 (241 bytes).
+// P294: complete branch inputs 9;
+// nonunity-first inputs 10;
+// branch inputs with direct scale 58;
+// scale-default z 9;
+// returned transform output 9;
+// unused transform return 9;
+// returned output with branch inputs 9;
+// returned output with scale-default z 9.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

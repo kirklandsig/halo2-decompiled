@@ -523,9 +523,24 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P285: Actual query at eight-byte alignment, original/separate center and large-branch
 // producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
 // NOT kept: no exact match; original alignments, native objects and whole body restored.
+// Round 159 (fast): round 50's shape without its grouping struct: one-result geometry helper, center copy at function scope, query in the
+// list branch, masks at each use, one `intersects` flag, list headers in constructor order, the tree read at the call: 27 (872 bytes);
+// with the center read through a field-filled local point (retail's three xmm loads), an array or a local sphere 12 (872 bytes). Only the
+// list block then differs: retail loads the tree pointer into EAX right after the center, ours sinks it to EDX, and two scratch registers
+// rotate. Tried from 12: the tree read before/after the center and across each header line (about 30 orders) 12/21/22/23; header store
+// orders with an early read 22; tree field pointer 12; pointer+count block copied 191/190, filled by field 12, through a pointer 12;
+// local sphere with the tree named first 12; inline-constructed list storage (second, first) 12, (first, second) 18, reads before the
+// declaration 22; by-value center helper 147; whole-sphere copy 221; whole-point copy 212; scalars 27. Keepable subsets: named bit,
+// no flag 165 (882 bytes, needs an always-true byte test on the node, which only steers), without that test 235 (879 bytes); flag kept,
+// tree at the call, named bit 93; without the byte test 106. Not kept: the 12 form rests on the flag and one-use copies, which need a match.
 // P289: Native complete geometry/part/bound fields on the positive-count graph,
 // seven subsets and read-only geometry: 182/182/182/182/182/182/182/182. Original body and representations
 // restored; entry/index spill and center/query/bound homes remain.
+// Round 143 (m3 lane 5, fast): center copied to a function-scope point at entry (transform into it,
+// distances from it), the aligned query declared in the large branch, aligned/plain loop position
+// 191/191 (frame 0x10a4); with the branch query unaligned 184 (frame 0x1094, point +0x3c and query
+// +0x2c against retail's +0x30/+0x20), declared after the list storage 184, its center as one
+// struct copy 205.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

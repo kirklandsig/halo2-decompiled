@@ -1474,6 +1474,11 @@ struct s_133f70;
 // Round 234: Complete twice-used encoded stamp, packed/expression or successive operations 359/359;
 // split/expression or successive parts 342/342; those four with native previous byte 283/283/286/286.
 // Original repeated stamp observations and body restored.
+// Round 56 (m3 lane 13, all plain): the cache lookup on *source_object with no drawn-object local 180; a short
+// previous level 194 (1312 bytes); `success` declared at the loop's top 173 (two-count gain, not kept); the type
+// as one ternary store 175 (same code); a short entry count 365; the top success with the ternary type 173;
+// `if (level_changed) reuse = false;` 371 (1295 bytes); `if (fallback) reuse = false;` 380 (1289 bytes).
+// The tail stays BLOCKED-BY 0x23690 (src/unknown_023540.cpp, avoided this round).
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)
