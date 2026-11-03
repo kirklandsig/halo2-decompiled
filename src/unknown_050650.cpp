@@ -504,7 +504,10 @@ struct s_collision_result_buffer_1697c0
 	s_collision_result_1697c0 result;
 	byte unknown4c[0x5c - 0x4c];
 };
-// score 322 (was 322): frame 0xa8 agrees; first +0xa acquires pitch inputs before the default vector.
+// score 303 (was 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
+// integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
+// homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
+// Earlier at 322: first +0xa acquires pitch inputs before the default vector.
 // Normalization scratch at +0x2c versus +0xc displaces axis/result homes; trig and rotation schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
 // An earlier round: no new form; the frame is still 0x98 against retail's 0xa8 and the axis,
@@ -646,14 +649,22 @@ struct s_collision_result_buffer_1697c0
 // 353/357/353/353/335/357/357/357; other rotation user 58/148/58/58/152/73/150/51 versus 23.
 // NOT kept: every shared-helper user regression rejects its form. Original helpers, includes and body restored;
 // magnitude scratch, axis/result homes and initialization schedule remain.
+// Round 139 (m3 lane 6, fast, plain for the kept form; 0x297660 stays matched): the default best vector declared
+// after result and best_fraction 316 (retail's entry order through +0x19); with that a bool clear 303 (kept,
+// 1435 B; retail's `mov al, 1`); on 316 best_fraction first 316, clear first 316, the axis before the best
+// vector 319; on 303 clear first 303, clear after result 303, the axis before the best vector 313,
+// best_fraction first 303; the normalizer's length named length/z_/a_ 303 each; its products all vector * scale,
+// all scale * vector, compound `*=`, the sum k, j, i 303 each (same code). Also on 322: the best vector after the
+// axis normalization 343 (0x297660 4), the axis declared first 331, the candidate at function scope 322,
+// `best_fraction < fraction` 322.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
 {
-	vector3f best_direction = *g_4687a8;
 	bool result = false;
 	real best_fraction = 0.f;
-	long clear;
+	vector3f best_direction = *g_4687a8;
+	bool clear;
 	vector3f pitch_axis = { -forward->j, forward->i, 0.f };
 	if (actor_looking_normalize3d(&pitch_axis) == 0.f)
 		pitch_axis = *g_4687ac;
@@ -897,6 +908,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
 // 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
 // NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
+// Round 139 (m3 lane 6, plain): retail keeps case 2's 0xcafc0 block apart from case 1's (ours cross-jumps
+// them) and case 1's remembered call jumps into case 2's after its third push. Case 1's object arm ending in
+// `goto aim_at_point` like case 6 257 (identical code); point declared first 257; origin declared first 257;
+// case 2's object index read from the reference at each use 257; the remembered `if (!aiming) { call; goto
+// direction_from_actor; } goto local_254539;` in both cases 257.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
