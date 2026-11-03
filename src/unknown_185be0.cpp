@@ -386,6 +386,10 @@ union s_185be7
 // pow call as retail, so retail's reload is an address-exposure kill, but NONE then leaves EBX entirely; the pow
 // exponent read from the field at both uses 809 (its loads become retail's `fld [esi+0x5c]`); the range fraction
 // declared before the minimum / above the second lookup 694/694; the fraction as a ternary or an if/else 948/948.
+// m3 lane 11 r63 (fast): retail places the range-fraction clamp's upper arm after the hot path (blocks at
+// 0x185f23); clamp helper forms: `lo > x ? lo : (x > hi ? hi : x)` (the sibling pitch-pin form) 748, early
+// returns with an if/else chain 748, const& value with early returns 854 (3798 bytes), const& value nested
+// ternary 855 (3798 bytes), `x >= lo ? (x <= hi ? x : hi) : lo` 951 (3801 bytes). Original helper restored.
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.

@@ -206,6 +206,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 516: Packed entry/chain results in short/word/long pairs on recovered field-reference
 // graph. Restore table/index order and protected sampler state convention remain.
 // Scores 48/47/49/47/50/48/49/47; original executable body restored.
+// Round 65 (m3 lane 1, fast, control 5): entry stored directly to its field (no reference) 5 (first
+// difference +0x1a7: `second` then loads above the store); the existing `entry` local stored then read 181
+// (975 bytes); the entry base from the `tables` local 178; the pass table base read before the next index
+// 5 (same code); permuter (600 s, 51 tries) best 5.
 // Round 126 (lane 8, on the fixed tail, fast): direct entry store 5 (`second` hoists instead); fresh restore-block
 // packed/next/pass locals 5; entry from the tables local 178; tables re-read into a const local after its store 279;
 // entry reference bound before the parameters lookup 5; permuter 54 tries, best 5.
@@ -213,6 +217,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // entry's word load): tables published without the local reassignment 5; `third + (next & 0x1ff)` 5; the
 // tables local for the 0xc/0x14/0x1c bases 209 (974 bytes); fresh restore-block parameters/definition/tables
 // locals 5; the pass field bound through a reference 5. Original body restored.
+// P294: owning cached pointer fields 5;
+// complete owning cache prefix 5;
+// actual table header 5;
+// actual entry/pass prefixes 5;
+// cached fields and entry/pass prefixes 5;
+// cached fields and table header 5;
+// complete cache and table header 5;
+// complete cache/table/entry prefixes 5.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

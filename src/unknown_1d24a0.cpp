@@ -331,6 +331,10 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // through the existing vector3f_add 902 (same code); the scale helper replaced by the existing vector3f_scale 1181
 // (retail's frame 0x1d4, 4026 bytes: the vectors stay in registers); the helper's loop as `scale * component` 902.
 // Original body and helpers restored.
+// Round 49 (m3 lane 15, fast control 902): swap-remove as `data[i] = data[--size]` 902 (same code); the removed
+// element overwritten through the element pointer 902 (same code); the linked-object test without the repeated
+// `!= NONE` (the pointer is already NULL then) 961 (4251 bytes); owner activity as `local_1 || (...)` 989 (4248);
+// other activity as `local_20 || ...` 970 (4254).
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
