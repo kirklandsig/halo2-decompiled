@@ -974,6 +974,9 @@ real normalize2d(point2f *v);
 // assigned/terminal request results 182/120/187/141/189/113/193/156.
 // NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
 // Original request/movement graph and body restored; retained DL result and return transport remain.
+// B388: Independent trajectory outcome transferred to outer validity at the final join,
+// bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
+// 193/193/153/173. All regress; original two producers, calls and return graph restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

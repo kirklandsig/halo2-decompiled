@@ -219,6 +219,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
 // one-use getter pointer and early object-pointer read; several forms also lose
 // the matched caller. Original body, both observations and caller convention restored.
+// B388: Case-zero decoded-bit bool/byte/short/long producers, low/high result defaults,
+// 106/106/106/106/106/106/106/106 (276 bytes), caller 13. Original bit expression,
+// repeated dispatch, body acquisition and caller-compatible convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
