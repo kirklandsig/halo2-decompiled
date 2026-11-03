@@ -3145,6 +3145,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // complete expressions, helper contracts and body restored.
 // P297: Existing ground/yaw/boost dot3f producers, seven subsets, then all with the
 // angle producer forced inline: 1051/1071/1068/1071/1068/1071/1071/1071. NOT kept: changed float trees require equality; original body/helpers restored.
+// DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
+// 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
+// frame 0x80 versus 0x74 and original force/velocity homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

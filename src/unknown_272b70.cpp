@@ -1501,6 +1501,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // M344: Winning-seat presence/absence produced by all original score improvements,
 // bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
 // flags grow the frame and body; original short winner, requests and complete body restored.
+// DH325: Entry/no-seat completion and no-winner continuation, seven subsets,
+// then split entry exits: 32/32/32/32/32/32/32/32. Original complete body restored;
+// iterator acquisition, leave-selector and request/publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2755,6 +2758,9 @@ struct s_scenario_scripting_view
 // B394: Complete packed winner in long/dword storage, winner-produced/retained set bits;
 // and admitted/entry result lifetime; original low-word NONE test retained: 96/94/91/101/96/94/91/101.
 // NOT kept: no exact match; original complete executable source restored.
+// DH325: Native output-present/absolute resolver-branch predicates in bool/byte/short/long
+// storage: 80/80/80/80/80/80/80/80. Exact-only predicate forms restored;
+// actor/counter/set homes and the early scripting-data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
