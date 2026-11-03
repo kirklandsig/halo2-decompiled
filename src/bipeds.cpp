@@ -4170,6 +4170,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // on the indexed-dot graph 145/224/211/145; with a separate magnitude result
 // 137/224/228/137. NOT kept: 137 uses a one-use call-result local without a
 // match. Original body/helper restored; normalization SIMD and coefficient homes remain.
+// Y559: Full unrounded CRT cosine/sine/both double results, original then
+// producer declarations; float trig pair with original/producer declarations:
+// 223/182/276/223/182/276/191/191. NOT kept: no byte match; normalization SIMD,
+// native cosine/sine and rotation/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

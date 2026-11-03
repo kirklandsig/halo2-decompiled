@@ -4294,6 +4294,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
 // Original body/result restored; native split writer epilogues, found-index retest,
 // world/zero/fallback allocation and scalar homes remain. No qualifying gain.
+// Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
+// 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
+// producers, found-index retest and world/fallback/final-writer homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

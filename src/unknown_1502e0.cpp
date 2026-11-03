@@ -455,6 +455,9 @@ struct s_tail_player_identifier
 // F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
 // 32/68/56/56/32/67/67/56.
 // NOT kept: no gain; original full body/helpers restored.
+// Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
+// test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
+// delayed saves and identifier/options/comparison allocation remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1148,6 +1151,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // P295: Original ternary results with delayed held/both publication, completed held-slot scope,
 // immutable results and readonly slot receivers: 284/281/284/281/284/281/284/281.
 // NOT kept: three-point gain and one-use pending receiver; pool/player/tag carriers remain.
+// Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
+// declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
+// the keep gate; retained pool/player and lazy tag-table ownership remain.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1314,6 +1320,9 @@ void function_150820(dword *bits, bool local_only)
 // F353: Native hand arm/default producers, original then actual mode/result storage names
 // 43/45/45/43/43/45/45/43.
 // NOT kept: no gain; original full body/helpers restored.
+// Y559: Complementary final failure bool/byte/short/long, conditional then
+// guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
+// native ESI player/EDI hand and temporary entry registers remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
