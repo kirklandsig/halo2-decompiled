@@ -1027,6 +1027,9 @@ void function_1d1540(s_havok_component *component);
 // 65/65/133; assignment 90/90/157; aligned setter nested/early 90/90.
 // Assignment recovers SIMD/ECX index but frame 0x84 and stacked component
 // remain, at 231/220 bytes. All regress or tie; original complete body restored.
+// N328: Actual twice-used rigid-body reference, direct/getter acquisition and fixed-first/ordinary-return
+// admission, original then aligned input copy: 85/85/85/85/88/88/88/88. Original slot graph restored;
+// frame and incoming component/index remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

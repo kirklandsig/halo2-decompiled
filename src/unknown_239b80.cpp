@@ -400,6 +400,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // Round 470: Distinct lowest/candidate/compaction ordinal identities, subsets
 // 1/2/4/3/5/6/7, then all with output ordinal named: 170/170/170/170/170/170/170/170. Original body
 // restored; extra frame word and count/departure/bound/compaction homes remain.
+// F338: Produced length derived from the output ordinal only at terminal/exhausted exits,
+// long/short ordinal, long/bool departure and memcpy/memmove: 259/266/283/268/270/277/231/274.
+// All restored; the extra frame word and count/departure/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

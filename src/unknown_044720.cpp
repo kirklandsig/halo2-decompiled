@@ -498,6 +498,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P275: Actual packed list-header extent/borrowed-storage bitfields at initialization,
 // release test and release extent, seven subsets and reversed packed-field initialization:
 // 182 each. Original header, release helper and body restored; entry/index and point homes remain.
+// P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
+// then coherent complete scratch names: 182 each. Initializers and observations never moved;
+// original body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
