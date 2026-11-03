@@ -438,6 +438,11 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // caller. Original pass, state, copy, helpers and entire executable body restored.
 // F356: Existing equality predicate with shared/native/scalar/absolute coordinate producers, original long then Boolean departure:
 // 208/208/170/170/254/254/248/248. NOT kept: no qualifying match or gain; original complete body restored.
+// Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
+// `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
+// compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
+// the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
+// separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -791,6 +796,12 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // prior-side byte and SIMD homes remain.
 // M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
 // endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
+// Lane 13 r58 (fast): a `short total = count` copy (as matched 0x23a160) for the previous point and the loop 133;
+// for the loop only 129 (same code); the previous side re-derived from `distance >= 0.f` at the loop end 258; the
+// previous distance folded into the side's initializer 133; `!(distance < 0.f)` for the side 130.
+// B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
+// capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
+// NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

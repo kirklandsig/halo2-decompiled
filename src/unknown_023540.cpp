@@ -1945,6 +1945,10 @@ struct s_filter_rows
 // Round 97 (fast): direct index bits 17; bottom-tested stage loop 403; loop-local definition 233;
 // direct first-color row 121; own context address 17; const definition 17; function-scope stage 17;
 // result-first 17; reversed shader branch 64. Original 17-difference body restored.
+// Round 67 (lane 10, fast): the existing 0x1cbe0 called with mode 0 and slot 12 26 (stays out of line); the
+// 0x1c590 call's selection from the existing 0x1cb20 with mode 0 27 (out of line); the existing 0x1cbb0 with
+// mode 0 on the slot's tag 16 (1039 bytes, out of line, the tag read still folds); the slot table read at the
+// function's top (diagnostic) 224; the cache pointer in a local used by both calls 17.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2539,6 +2543,9 @@ dword __cdecl function_131fc0(real alpha);
 // F357: Complete shader-admission truth in bool/byte/word/dword, logical
 // producers 140/140/140/140; eager Boolean producers 243/243/243/243.
 // NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
+// AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
+// and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
+// one-use output form regresses; original branch stores and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2985,6 +2992,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
 // pairs and complete producer scopes 250/250.
 // NOT kept: all regress; original real results, helper, normalized parameters and body restored.
+// AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
+// rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
+// NOT kept: precision/transport forms regress and move the extent away; original float
+// carriers, helper inputs, rounding and complete body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

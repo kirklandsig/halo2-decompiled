@@ -831,6 +831,12 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
 // 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
 // NOT kept: no score gain or byte match.
+// m3 lane 16 r83 (fast): case 4's side and normal lengths spelled i, j, k give retail's x87 order there (fst k,
+// fmul k, then j, i) but 374 (2588 bytes; as DH278's camera squares): ours is already one instruction short in
+// case 1/2, where retail keeps the x product live and loads point x into its own register (movss xmm6, [ecx];
+// addss xmm6, xmm5), so everything after case 4 shifts. Side only 374, both 374; with case 1/2's first.x before
+// second.x 374 (VC copies the product instead); with normalize2d_fast on a case 1/2 side vector and normalize3d
+// on case 0's normal 368; that with the x pair before the y pair 372. All restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

@@ -172,7 +172,7 @@ bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_ty
 		{
 			s_pathfinding_node *node = &pathfinding->nodes[node_index];
 
-			if ((node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, pathfinding)))
+			if ((node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(pathfinding, node)))
 			{
 				long ticks = real_to_long(g_510c54->field_2_3);
 				long ticks_extra = real_to_long(g_510c54->field_2_3 * 1.5f);
