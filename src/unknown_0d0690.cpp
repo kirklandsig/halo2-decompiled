@@ -2242,6 +2242,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P308: Existing five-value decoder as a native decoded/encoded member, void/reference
 // results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
 // NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
+// P310: Shared combined-fallback/single-valid color-normal publication and final packed-color
+// result, subsets 1..7: 714/720/1012/601/749/758/1051; complete conditional receivers 1029.
+// NOT kept: all regress; original publication paths, independent samples and body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

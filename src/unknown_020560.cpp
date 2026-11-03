@@ -992,6 +992,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // P308: Direct failing-candidate skips at nearest/projection/opposite-distance reductions,
 // all seven subsets 547 each; all with count/override guard exits 570 at 2109 bytes.
 // NOT kept: ties/regression; original searches, guards, helpers and complete body restored.
+// P310: Existing coefficient copier returns native direction pointer/reference or sample
+// pointer/reference: forced 547/547/547/547; ordinary 621/621/620/620. NOT kept: ties or
+// outlining regressions; original full copier, direction consumer and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
