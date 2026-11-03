@@ -208,6 +208,13 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
 // loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
 // not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
+// Round 45 (m3 lane 15, fast, with 0x1a303b/0x2b393c; al = aligned count against this body's 23; each with a separate
+// successor local stepped at the loop's end): while or guarded do-while, `result = true; break;` 51 (al 31; no hoist);
+// `result = tests; if (result) {copy; break;}` 59 (135 bytes, al 31; hoist as retail, ECX index and successor); early returns
+// 49 (al 24; flags and identity registers retail's, EAX index and successor where retail has a hoisted mask and EBX); each
+// with the entry declared outside the loop, or read through an inline index getter, the same code. Retail's register plan
+// needs the mask hoisted first, which only the forms with a live result give.
+// M310: Eager pure-Boolean cache/identity/player pairs, seven subsets, then complete eager eligibility [56, 86, 97, 51, 75, 104, 115, 123]. Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -731,6 +738,13 @@ void function_1537f0(s_profile_record *record);
 // record 53 (261), with the source declared first 53 (261); the index loop with s_profile_record and a plain memset 78
 // (238); the identity as a const reference bound to a value-initialized temporary 53 (same code). Harness only: an
 // identity zeroed by a constructor, a `&T()` temporary argument and a `T *const &` bound to `&identity` all fold it.
+// P265: Pointer/no-tail zero-fill return, four identity/source lifetimes and native/four-aligned
+// source, 83 each; early returned-pointer identity with pointer/index traversal and native/four-aligned
+// source 81/81/55/55. Original type/body restored; identity homes and end-bound remain.
+// M312: Signed source sentinel with aggregate/late identity and native metadata-zero subsets 0-7:
+// 53/53/53/53/62/62/62/62. Original body restored.
+// M314: Signed source sentinel with full-byte header bitfields 44/45/46/47/44-45/46-47/all/44-46:
+// eight 53s. Original real type and complete body restored; identity homes still fold.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1226,6 +1240,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // flag, function-scope copy index 55; with `removed < position` upper, upper first, `g_4cf978 > position` 55; mixed
 // read, upper declared first, position decremented first 58; plain read, explicit arms, count flag 62; plain read,
 // `removed <= position` lower, count path lower first 62.
+// M310: Exact native copy endpoints: source-forward/reverse/both, destination-forward/reverse/both, mixed source/destination and destination/source [368, 377, 368, 371, 373, 370, 373, 371]. Original body restored.
+// M312: Paired absolute source/destination ordinals forward/reverse/both, each with native repair
+// cursor, then both signed-int with/without cursor: 384/107/391/789/803/789/391/789. Original
+// body restored.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

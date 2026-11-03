@@ -99,6 +99,7 @@ PRIVATE inline void matrix_cross(vector3f const *a, vector3f const *b, vector3f 
 // b.k*a.i for the k and j terms, ours b.i*a.j and a.i*b.k) plus the placement of one store before function_163db0.
 // Swapping the operands in matrix_cross (k and j terms, four spellings) gives identical bytes: the compiler
 // canonicalizes them; 0x3c9a0 shares the helper and stays MATCH.
+// Permuter (25 min on r643): best 6, only with volatile stores to the state's count and valid flag; not kept.
 // @retail 0x441b0
 void function_441b0(s_planar_camera_source const *source, s_planar_camera *state, byte const *view)
 {
@@ -359,6 +360,8 @@ complete:
 // for the tag instance, and lea eax,[eax+edx*2] before xor edx,edx/mov dx,[eax] (group), the movzx (first) and the dead lea
 // (shader entry) in the record_material chain; +12 bytes. Tried: named pointers (pair, group, first, shader entry) as
 // plain pointers, as a local struct pair and as bitfield structs, hoisted before `block` (105); dropping the (void)& lines (no change).
+// Permuter (25 min on r643): best 82, only with volatile stores and reads and record_material's arguments
+// reordered (a behaviour change); not kept.
 // @retail 0x4e0d0
 bool __stdcall function_4e0d0(long tag, long context, long pass, long stage, long entry, long handle, s_sort_record *out)
 {
@@ -792,6 +795,8 @@ struct s_41490_record
 // (ret 0x1c) where retail has it on the stack (ret 0x20, loaded into ebp at entry, its slot reused for `pass`). Tried with the
 // call kept: volatile read of position at its first use (119; ret 0x20 but distance moves to ebx), that plus a volatile read of
 // distance at the 0x40e30 call (83; group then travels in ecx), that plus a volatile read of group (113), (void)&position (no change).
+// Permuter (25 min on r643): 8 below its own baseline, only with a float product truncated through a word and
+// 0x40e10's two flags swapped (a behaviour change); not kept.
 // @retail 0x41490
 void function_41490(short group, long tag, short kind, real distance, t_record_fill fill,
     dword value, t_41490_callback callback, void *context, point3f const *position)
@@ -993,6 +998,8 @@ PRIVATE __forceinline void set_bump_component(long stage, D3DTEXTURESTAGESTATETY
 // scheduling and register choice only (retail loads the axis as j,i,k,j,k, takes 1.0f after fcos, and keeps ys/zs on one xmm copy of
 // sine; ours computes ys through x87). Tried: sine/cosine as plain locals instead of the struct (115-130), ys/zs before the squares
 // (116-189), inverse first (117), ys,zs computed right after sin and before cos (195), xs as (double) cast / plain / swapped operands (all 84).
+// Permuter (25 min on r643): 24 below its own baseline, only with a volatile xs and a float term truncated through
+// a long; not kept.
 // @retail 0x3c650
 void function_3c650(byte const *state)
 {
@@ -1140,6 +1147,8 @@ long function_40de0(long index, bool first, bool second);
 // allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
 // and orders the 40de0 call after the 40e30 pushes. Tried: no volatiles (291, breaks 0x44ac0), second via if-flag (296),
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
+// Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
+// 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,
@@ -1619,6 +1628,7 @@ bool __stdcall function_3bd00(real height, dword color);
 // the prologue matches). Tried: nested ifs instead of early returns (same bytes), separate `fog`/`reference_tag` locals,
 // record_format_groups(tag) for the table walk, tag re-read from state at each use (183, no spill), tag initialised
 // before the 3c270 call (150, but moves the load before the call: not retail's order).
+// Permuter (25 min on r643): best 139, only with the tag read as a short (a behaviour change); not kept.
 // @retail 0x3c3c0
 bool __stdcall function_3c3c0(bool render, bool clear)
 {

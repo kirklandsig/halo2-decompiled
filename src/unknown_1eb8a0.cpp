@@ -339,6 +339,14 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // CL, so a leaves ECX); diagnostics (reverted forms): every use of d through a `vector3f *const &` 673, d's pointee
 // through a const reference 686 (d keeps EBX in both). Retail reloads q into EBX after the first normalize call (EBX
 // is a copy scratch in the activation block) and reads d from its slot at each use.
+// DL242: Actual input-reference contracts d/q/d+q/a/b/position/d+a+b+position/all
+// 642/686/686/642/642/642/642/686; q initializes the real zero-counter sample value. Canonical
+// update == true 643, paired with first coefficient before its time product 719 and matched caller
+// loss. Original formals, sole call, fields, coefficients and complete body restored;
+// direction/sample residence remains.
+// M320: Existing vector setter at activation/refresh/angular fallback subsets
+// 1/2/4/3/5/6/7: 659/667/645/651/643/651/652; all plus initial output setter 667.
+// All restored; original direction/sample homes and 0x24 frame remain; exact caller preserved.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

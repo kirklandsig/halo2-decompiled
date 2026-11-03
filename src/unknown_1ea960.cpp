@@ -337,6 +337,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // the pair on c_model_shape 14 (0x1eb4c0 MATCH -> 51, reverted). One-use locals, not kept without
 // a match: the tree's key copied to a local 79, the listener's value and the shape lookup result
 // held in locals before the pair 123, both 17; the lookup result named at the pair alone 138.
+// F341: Array/list/tree/pair/listener constructors with body-owned member stores
+// and both base-owner assignments in constructor bodies: 138 each. Native element
+// ownership in the special/list shapes: 140/140. All restored; frame 0x20
+// agrees, first +0x198 remains the restore constructor's flags/element order.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

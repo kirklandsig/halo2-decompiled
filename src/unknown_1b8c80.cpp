@@ -252,6 +252,8 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // continue;` with the occupant code unnested 3; the definition-flags pointer declared after the object block 84;
 // the loop index at function scope 3; last_object_index declared after the seat array 3 (a repeat); a `long`
 // count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
+// Round 124: actor declared after the last-object local/seat array/count 3/3/116; object and team
+// rejections inverted 3/3; object and team tests nested 3/3; the else-if split into an else 3. Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -639,6 +641,9 @@ extern "C" void _ReadWriteBarrier(void);
 // top 44, an early return for a busy actor 46 (212 bytes), the NONE test in a named bool 44; the state after the
 // actor with the barrier after both 6. Matched retail callbacks load a parameter in the entry block only when two
 // sibling paths use it (0x1b22e0, 0x29f370, 0xa9120).
+// Round 125: pointer names reversed 6; split state initialization 6; split actor initialization 6;
+// actor declared first 6; outer comparison reversed 6; threshold written > 6 gives 8; memcpy point 6;
+// const slot parameter 6; final store before the outer test 52 (189 bytes).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1024,6 +1029,11 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 // actor is fetched and keeps the element record in ECX, ours loads the data
 // later into ESI and the record in EAX. Both read the actor pool global
 // first, so the difference is the order of the two data loads.
+// score 17 (was 17): the pool-data load and record/seat registers still differ before the seat query.
+// Round 123: object-index rename 17; buffers before lookups 17; shared target view 17;
+// returned-count helper 21, with an initialized count 21, a direct object field 21, or the
+// object local after the counters 21; split count initialization 17; early twice-read clump index
+// with the helper 122 (405 bytes).
 // @retail 0x1bb3a0
 short __stdcall function_1bb3a0(long actor_index, long joint_index, long a, long b)
 {
@@ -1518,9 +1528,19 @@ void function_1f86a0(long actor_index);
 // Round 465: admission field captured before the root calls, bool/byte/short/long,
 // each with native/original payload: 225/225/225/225/214/214/225/225.
 // Original field observation restored; frame, mask spill and entry/root homes remain.
+// Round 237: Complete compatibility/incompatibility bool, native/original payload, 247/247/236/236;
+// compatible per-use mask bool/long, native/original payload, 260/260/265/265. Per-use forms
+// recover frame 0x14 and mask +0x13, but the whole flags byte occupies BL and entry stays stacked.
+// Native member payload paired with each graph; original payload, masks, tests and full body restored.
 // AC468: Complemented specified/root predicate in bool/byte/short/long, each with native/original
 // slot-member payload first: 136/136/136/136/139/139/138/138. Original predicate and payload restored;
 // frame 0x10 versus 0x14, raw-mask spill and entry/root carriers remain.
+// Y538: Saved-mask complement alone in bool/byte/short/long, each with native/original
+// member payload, 245/245/245/245/265/265/254/254. All restored; frame, raw-mask spill
+// and entry/root carriers remain. The actual 0x34-byte member payload is neutral in every pair.
+// AC489: Separate distance/seat validation guards and negative special admission, seven
+// subsets, plus native slot-member payload on the complete graph: eight at 134. Original
+// body restored; frame, mask spill and entry/root carriers remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

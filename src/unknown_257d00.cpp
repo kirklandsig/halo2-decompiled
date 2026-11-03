@@ -1742,8 +1742,28 @@ void function_b7360(long object_index);
 // 332/332/334; repeated selector short/long 334/334; direct guard with short/long selector 466/500;
 // enclosed short selector 466. Original admission, selector observations and complete body restored;
 // entry carriers and the 24-byte deficit remain.
+// Round 324: native record memmove boundaries, subsets 1-7 and all with direct output uses,
+// 472/309/487/309/486/323/499/499. All regress; complete callback and transfers restored.
 // Round 471: Completion before acquisitions/admitted, bool/byte/short/long,
 // 301/301/465/449 and 301/301/465/449. Original completion lifetime and type restored.
+// Round 75 (m3 lane 9, fast): 301 -> 246 at retail's 1848 bytes and 487 instructions (masked aligned 37). Retail's table sends cases 6/12/14/18/21 to the return-0 block right after the success
+// test, and the failure return is one block at the very end: actor local first 487 (1836), first exit through `goto done` with actor first 298, word flags at +0x10a (retail's `or byte ptr`,
+// alone 309, 1816), empty cases as `success = true; break;` 301 alone, `if (!success) return 2; return 0;` 311 (1820), if/else returns 317 (1820), inverted 322 (1808), `short result` if/else 269
+// (1848; retail's join layout), `short result = 2` 475, long result with a cast 267, then every other failure as `break` 246, long result 244 (cast). Without actor first 278;
+// without the empty cases 269; without word flags 282. No gain: `inline` on 0x25ab50 301 (same code), a byte bitfield 301 (same code), 0x25ab50 defined after this function 246, dot arguments
+// swapped 248, by-value forceinline point getter 244, by-pointer 246, plain inline getters 561-582 (stay calls), a one-read named reference 298-301, point arm first 301 (1860), re-derived
+// datum for the point read 483-506 (1864-1876). Diagnostics (volatile, reverted at once): a volatile point read at the 1/19 site alone 241 with retail's object index EBP and output ESI and the
+// whole prologue exact (masked aligned 25); at case 5 alone 253 with no role change. So our CSE of the point reference across 0x25ab50 at the 1/19 site takes ESI from the object index; retail
+// reloads there and at case 5, though 0x25a380 and 0x259430 keep such reads across the same call. Also left: `xor eax, eax` for retail's `xor ax, ax` in the join, the case 7 dot's i term sides, case 10's
+// store before the selector load.
+// NOT kept (coordinator, round 75 review): the 246 form needs its first exit as `goto done` (a goto is kept only with a match); the same form with that exit as `return 2` gives 485 with
+// the actor local first and 493 with the datum local first, so the body is restored at 301 and +0x10a stays a byte cast. Lead: the goto form with the point reload at the 1/19 site above.
+// Round 525: Shared case-seven/eight admission, either payload first, native bool/byte/short/long
+// moving result: 473/473/473/473/476/476/476/476. Original separate admissions, result widths, cases and
+// complete callback restored; pool/input/output ownership and the 24-byte deficit remain.
+// F327: Complete single-exit zero/two storage before/after acquisitions,
+// short/long/byte/dword 457/457/543/457 in either position. Original callback
+// restored; actor/output entry carriers and the 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2248,6 +2268,15 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 359: Complete spatial/countdown arm priorities 4/0/7/5, 7/4/0/5, 0/4/7/5,
 // 5/4/7/0, 0/5/4/7, 7/0/5/4, 5/7/0/4, 0/7/4/5: 469/473/469/478/478/492/476/473.
 // Original arms and full body restored; actor/state ownership and first-point home remain.
+// Round 361: Complete case-one/fallthrough group after arms 4/7/0/5/9/10/12/11:
+// 625/618/618/624/620/628/618/613 (fast control 485; full 469). Original full
+// case graph and body restored; actor/state ownership and first-point home remain.
+// Round 363: Complete native CRT vector publications turning/state/current, subsets 1/2/4/3/5/6/7
+// 485/485/485/485/485/485/485; all with facing input copy 485 (fast control 485; full baseline 469). Original
+// transfers and body restored; actor/state registers and first-point home remain.
+// Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
+// existing actor perception view: 485 each (fast control 485; full 469). Original complete
+// record layout, observations and executable body restored; actor/state and point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
