@@ -3333,6 +3333,9 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // range/record, all native views and const callback arrays each 4. Original body restored.
 // Round 307: positive enabled scope 4; handle per view 4; table root at every use 217;
 // decoded/position/both point storage at entry 4/4/4; node/range and record/geometry storage at entry 4/4.
+// Lane 5 r137 (lead): this function matched in a full check whose only code change was 0x3a5c0's
+// quantizer (023540.cpp, a macro with one shared value; not kept), with no edit here: a link-time
+// side effect. Its own last difference (+0x6b, score 4) may need the form that change implied.
 // @retail 0x41640
 void function_41640(void)
 {
