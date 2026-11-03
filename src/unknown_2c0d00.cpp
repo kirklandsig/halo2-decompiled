@@ -321,6 +321,13 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
 // then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
 // Original full body restored; frame, actor/unit and priority/query/marker homes remain.
+// F349: Physical motion/sphere/device flag fields, subsets 1..7, then immutable
+// motion/physics receivers: 924/933/923/882/925/900/925/925 fast (control 931).
+// Device fields alone plain 896 versus 882; NOT kept: byte/shift instead of retail
+// word/masks and no full gain. Original types and body restored; excess frame word homes remain.
+// B387: Direct location/raised members and library location copy on the unqualified-settings
+// graph, seven subsets, then actual count declaration before the query: 931 each
+// (reduced control 931, full 882). Original complete body restored; frame/homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1197,6 +1204,13 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
 // then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
 // names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
+// F349: Native node flag0/flag1/flag3 word fields, subsets 1..7, then node receiver
+// at traversal scope: 449/397/416/338/437/394/417/417. Flag1 forms recover frame 0x28 but regress;
+// flag0 forms also raise sibling 0x2c2060 to 461 from 420. Original header, helpers
+// and body restored; frame 0x30/0x28 and zero/radius and endpoint/history homes remain.
+// B387: Serial native radial/displacement phases, shared-domain/scope subsets and independent
+// serial control: 400 each. All recover frame 0x28 at 1312 bytes; NOT kept: regression
+// from 324. Original full body restored; zero/radius and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1649,6 +1663,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 380: Complete positive-distance/avoidance admission, bool/byte/short/long
 // acceptance then rejection complement: 420/420/420/420/420/420/420/420. All canonicalize; radius staging,
 // persistent zero and metadata homes remain. Original separate guards/body restored.
+// P288: Whole-function completion publication, preservation/clear-required results in
+// bool/byte/word/long: 420/420/405/429/428/428/458/435. Word preservation 405 at 1755/1746,
+// frame 0x114 versus 0x10c. NOT kept: unsupported flag width/frame growth; no byte match.
+// Original full body restored; radius staging, persistent zero and metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

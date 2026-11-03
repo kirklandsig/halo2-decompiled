@@ -358,6 +358,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // sum (118 each, before the order change), and early-return, if/else, ternary, written in the caller, nested ifs, force
 // inline (111 each); a named parent object, a named definition index, both (110 each). Rotations left: entry EAX/table ECX
 // at the getter, and each later case block's scratch. All restored.
+// Round 132: table passed as the getter's second parameter 166 (2312 bytes: entry table ECX/result
+// EAX recovered, later cases and the switch table shift); parent-first on that graph 165; entries-base
+// local 118; read-only table parameter 166; branch-completed nullable result 612; independently
+// recomputed raw state view 491; parent object local 118; table parameter with direct returns 612.
+// NOT kept: the corrected table transport leaves four extra bytes and the one-use locals do not match.
+// Original helper, case graph and complete body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

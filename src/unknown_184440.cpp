@@ -309,6 +309,9 @@ __forceinline bool function_184448(long arg_0)
 // planar arrays declared inside the loop 965; short queue count/cursor 969 (4595 bytes); the world bounds
 // declared after the definition lookup 965; the four arrays declared in reverse 965. Frame stays 0x11d4 in all;
 // original declarations restored.
+// AC497: Eligible effect, created resource and accepted sample regions, subsets
+// 1/2/4/3/5/6/7, then origin-owned zero-spacing fallback: 965/965/965/991/965/965/991/991.
+// Original admission, copies, random order and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

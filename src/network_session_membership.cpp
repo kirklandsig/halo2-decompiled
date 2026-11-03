@@ -823,6 +823,12 @@ union s_60403
 // Round 344: complete unchanged predicate in bool/byte/word/long storage, original and late
 // retained-mask lifetimes: 289/289/283/283/363/363/338/338. Original discriminator, mask,
 // mappings and body restored; previous/current residency and discriminator homes remain.
+// Round 78 (m3 lane 9, fast; positional/aligned, base 149/103): retail's retained loop reads
+// `old_to_new[old_player[0xc]]` at each use (no mapped_member value: the index is re-read in the
+// else-if) and keeps the mask in memory (`or [esp+0x18], eax`). The mapped member read at each use
+// gives that loop retail's code 285/103 (1513 bytes), with the mask declared after the member loop
+// 368/108; the old member computed before the NONE test 352 (1513); the emission test as
+// `i != *local_0 || changed` 175 (1498); member and local_0 declarations swapped 149 (same code).
 // Round 59 (m3 lane 11, fast): round 148's `old_members` (declared before the member loop, used for the old
 // member) with the retained loop reading old_to_new[old player's member] at each use 167 (1497 bytes: retail's
 // entry, previous EBX/current EBP, frame 0x90); that with a plain bool discriminator 146 (1497 bytes, first

@@ -387,6 +387,9 @@ union s_185be7
 // 0x185f23); clamp helper forms: `lo > x ? lo : (x > hi ? hi : x)` (the sibling pitch-pin form) 748, early
 // returns with an if/else chain 748, const& value with early returns 854 (3798 bytes), const& value nested
 // ternary 855 (3798 bytes), `x >= lo ? (x <= hi ? x : hi) : lo` 951 (3801 bytes). Original helper restored.
+// AC497: Entry index presence/absence retained across the output clear,
+// bool/byte/short/long, eight forms 690 each. Original admission, reset,
+// root observations and complete body restored; root/NONE and scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

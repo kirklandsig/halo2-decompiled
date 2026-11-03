@@ -359,6 +359,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
 // 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
 // field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
+// AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
+// normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
+// Exact-only later selector retention regresses; original observations and body restored;
+// plane-store base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -922,6 +926,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
 // 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
 // preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
+// AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
+// subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
+// 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away
+// from retail; original copies, complete input-before-output helper and body restored.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

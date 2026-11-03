@@ -152,6 +152,10 @@ extern long g_55c154;
 // type read once into a local 160 (586: `this` EDI, the type in the item's stack home). Retail and our one-load body
 // colour saved EDI, entry ESI, `this` EBX; every two-arm body flips to `this` EDI, entry ESI, saved EBX, and EBX then
 // also takes the hoisted constant 1; the spill or home reuse goes with the unbiased frame. Original body restored.
+// Round 140 (m3 lane 5, fast; all on two load arms written `if (selected == NONE) { if (load(saved)) {...} } else if
+// (load(selected)) {...}` with the game type read once into a local for its three uses): with the controller index
+// read once into a local 161 (587 B); with the named destination for the copy 185 (571 B); selected arm first 160
+// (586 B); under a named `create_default` bool 160 (586 B); controller local and named destination 184 (572 B).
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {

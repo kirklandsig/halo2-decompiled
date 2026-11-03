@@ -643,6 +643,14 @@ struct s_1af5c6
 // Round 50 (lane 13, plain; --fast misbuilds this function, 71 at 598 bytes): hit product operands swapped 20 (same code);
 // distance renamed a_distance, z_distance 20; distance declared apart from its assignment 20; the mask selection below the ray
 // vector 37; the result field store below the ray vector 40; the flag test named before the or 20.
+// Round 121 (plain): retail shares two stack homes: the point copy with the ray vector (+0x28) and the 2640c0 buffer with the
+// hit result (+0x34). A private inline point-pair collision helper with its own vector (as 0xd6f90's) fixes the object argument's
+// load order, 28 (frame 0x8c); the point copy and both buffers in scoped blocks on it, source pair struct trimmed to 16 bytes 44
+// (frame 0x80, but the 12-byte shared home sorts below the 16-byte pair; retail has the pair lower), the same renamed either way
+// 44, the pair declared first 44, the distance vector scoped 44, distance3d 50; 16 extra pair reads leave that order
+// (compile-only with the magnitude inlined reproduces it); the helper taking the vector as an out pointer on the original frame
+// 24, with the fraction local 24, with the distance vector scoped 24. A separate NONE long plus 12-byte point sorts as retail
+// compile-only, but the long folds away, also through a pointer local 159 (565 bytes); retail keeps it in memory.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
