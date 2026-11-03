@@ -333,6 +333,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // then all with the three coefficient lifetimes ended: 1355/1355/1355/1355/1355/1355/1355/1355. NOT
 // kept: no byte match; original complete body and every helper restored. Excess frame and
 // component/velocity/query homes remain.
+// F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
+// all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
+// original floating trees, all captured inputs, private kernels and complete body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
