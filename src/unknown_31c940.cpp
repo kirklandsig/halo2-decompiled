@@ -251,25 +251,28 @@ static __forceinline void solve_contact_pair(solver_step_31c940 *const &step, un
 	float const volatile &mass_b_source = axis[0].m128_f32[3];
 	float mass_b = mass_b_source;
 	volatile float impulse_b = mass_b * error_b + error_a * operation_float(op, 4);
-	// Unordered first impulses also enter the second-row fallback.
-	if (!(impulse_a > 0.0f))
+	// A rejected second-row candidate joins the same first-row fallback as a failed
+	// positive pair. Keep the positive pair before the second-row fallback.
+	do
 	{
-		float candidate = error_b * axis[-1].m128_f32[3];
-		// The second-row fallback accepts unordered results in retail.
-		if (!(candidate <= 0.0f))
+		if (impulse_a > 0.0f)
 		{
-			apply_first_normal_fallback(candidate, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
-			return;
+			if (impulse_b > 0.0f)
+			{
+				apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
+				apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
+				return;
+			}
+			break;
 		}
-	}
-	else if (impulse_b > 0.0f)
-	{
-		apply_linear_spilled(impulse_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
-		apply_linear_spilled(impulse_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
+		float candidate_b = error_b * axis[-1].m128_f32[3];
+		// Unordered candidates enter the second-row update, as in retail.
+		if (candidate_b <= 0.0f) break;
+		apply_first_normal_fallback(candidate_b, ((solver_linear_row_31e7b0 *)(axis - 2)), a, b, result + 1);
 		return;
-	}
-	float candidate = error_a * axis[-4].m128_f32[3];
-	if (candidate > 0.0f) apply_first_normal_fallback(candidate, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
+	} while (false);
+	float candidate_a = error_a * axis[-4].m128_f32[3];
+	if (candidate_a > 0.0f) apply_first_normal_fallback(candidate_a, ((solver_linear_row_31e7b0 *)first_axis), a, b, result);
 }
 
 // The second unrolled pair keeps B field addresses and its first linear axis.
@@ -767,7 +770,7 @@ union solver_phase_state_31c940
 	} writing;
 };
 
-// score 1909: callback/header lifetimes and the second normal fallback layout.
+// score 1910: callback/header lifetimes and both normal fallback layouts.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
