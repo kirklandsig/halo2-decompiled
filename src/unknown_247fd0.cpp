@@ -306,6 +306,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH303: Native cached-record field with common pointer/flags/both/tested-result
 // completions 131/127/128/124/131/127/128/124. All regress; original
 // body and field declaration restored; folded compare and child scratch homes remain.
+// DH307: Cache-request full-default/hit refinement, branch result, pending-default override,
+// and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
+// All 878/870 bytes; original complete body restored. Split post-sample cache comparison
+// and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
