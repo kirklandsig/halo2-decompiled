@@ -328,6 +328,9 @@ static inline void quaternion_transform_vector(
 // M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
 // a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
 // combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
+// N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
+// independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
+// paired halves and complete body restored; frame/quaternion/cross homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1039,6 +1042,10 @@ void function_143250(
 // band sharing recovers ret 4 but frame 0x324 and length grow; double-only frame 0x30c regresses
 // by one. NOT kept: unmatched shared-storage forms; all 84 typed outputs agree, original body
 // restored.
+// N337: Last-use same-type second/third-band subtraction and zero-minus accumulators,
+// family subsets 1..7: 1766/1788/1788/1766/1766/1788/1788; all with right-first ownership 1774.
+// All 84 typed outputs agree. NOT kept: unmatched storage reuse ties or regresses and changes
+// length away from retail; original scalar graph and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

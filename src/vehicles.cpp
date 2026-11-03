@@ -597,6 +597,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M336: Existing 2D normalizer success states, bool/byte/short/long, admission-owned
 // or initial-failure-owned: 126/126/126/126/126/126/126/126. Original helper restored;
 // velocity-copy receivers, early 1.0 residence and later SIMD/x87 homes remain.
+// P287: Complete input-product/angular-projection boundaries, subsets 1/2/4/3/5/6/7,
+// then all with steering-time definition observation: 225/126/126/225/225/126/225/297.
+// Original body restored; velocity receivers, early 1.0 and x87/SSE ranks remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1208,6 +1211,9 @@ long function_10f5f0(long object_index);
 // name array: 565/565/571/572; completed logical idle value with the same variants:
 // 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
 // Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
+// P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
+// seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
+// NOT kept: embedded predicate assignments require a match; original entire body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2429,6 +2435,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
 // NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
 // placement form, kept only with a match). Body restored at 42.
+// P286: Complete conditional spin dividend as fmod argument/positive arms/conditional assignment/
+// joined result, per-use period 84/181/42/145; native gate/correction capture with denominator
+// observed at fmod 116/200/112/186. All restored; turn-product and spin-store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3617,6 +3626,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
 // then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
 // Exact-only precision forms restored; original real angle, setters, helpers and body retained.
+// P287: Final branch-owned return truth, five producer graphs 222/222/222/214/214;
+// first three with a native normalization-result receiver 231/231/231. All restored;
+// projection input ranks and angle/trig homes remain.
 // Round 546: Existing sequential cross producers at facing/axis/final-left sites,
 // subsets 1/2/4/3/5/6/7: 138/136/165/166/167/165/167; all with X87 angle 171.
 // NOT kept: no gain; precision form requires a match. Original complete body restored.
@@ -4477,6 +4489,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
 // tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
 // all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
+// P286: Terminal active truth: forced-first logical/eager normalized 749/749; positive/reject
+// branch returns 765/765; positive/forced complete arms 769/755; forced/positive default
+// publications 784/771. All restored; entry definition and zero/result/one residency remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

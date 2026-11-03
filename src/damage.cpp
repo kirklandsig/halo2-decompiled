@@ -2455,6 +2455,9 @@ struct s_unit_event
 // M328: Independent child/seat iterator and event role names, seven subsets then
 // all with the primary receiver renamed: eight 472s. Complete original body
 // restored; frame agrees but permutation ingress and call-cycle homes remain.
+// B383: Direct seat-ejection/current-state/child-bit consumers, seven subsets, then
+// the effect flag at its argument: 504/519/512/531/530/519/531/551. Original native bit values and
+// whole body restored; permutation ingress and call-cycle register homes remain.
 // M330: Independent object/region/permutation declaration ranks, six orders, then
 // both edge orders with uninitialized datum at entry: eight 472s. All producer
 // assignments stayed fixed; original declarations and body restored.
@@ -4654,6 +4657,9 @@ struct s_damage_object_creation
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.
 // Native handle/offset and detached-mask homes remain unresolved.
+// N336: Combined/separate admission returns, section/tag cleanup joins and detach continues
+// 174 each; bounded-search result and direct selected-node scan 217/217 (811/808 bytes);
+// piece-failure continues 174. Original complete body restored; handle/offset and later homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
