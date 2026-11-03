@@ -1583,6 +1583,14 @@ long function_79560(s_network_observer *observer, long index);
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 
+// score 41: the logic is retail's (every compare, constant and field offset walked). Still differs: retail's last
+// return reads a register (mov esi,1 before the test of `acceptable`, mov eax,esi after the 0x7a160 call) and keeps
+// the early `return 1` as its own block; ours folds the 1 and merges both returns (214 vs 196 bytes). The slot is
+// retail's lea esi,[eax+ebx]; ours is mov/imul/add in esi. Tried (all 41 unless noted): `bool result`, `result`
+// declared first and returned early, if/else with result = 1 in each arm, `if (acceptable) return 1;` then the
+// call, a do/while with break, the whole body inside `if (elapsed >= limit)` (41; with result = 2/0 assigned: 69),
+// result = 2/0/1 assigned in an else-if chain (62), per-field observer->channels[index].x (91), the slot as
+// &channels[index] minus offsetof(channels) (41), the slot after the 0x79560 call (88).
 // @retail 0x7a1c0
 long function_7a1c0(s_network_observer *observer, long index)
 {
