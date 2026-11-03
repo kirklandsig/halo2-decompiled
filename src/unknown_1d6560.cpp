@@ -489,6 +489,9 @@ struct s_physics_component_walk : s_havok_component
 // DH303: Promoted/branch/table neighbor producers, default first-body outcomes
 // and producer-scoped group receiver 181/163/289/318/316/318/292/303. Original method
 // restored; neighbor/key carriers and cold exits remain (one historical control excluded).
+// DH307: Object formal first/middle/last in both section-query interfaces, all eight
+// nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
+// tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

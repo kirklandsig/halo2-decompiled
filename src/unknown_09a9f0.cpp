@@ -543,6 +543,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M320: Twice-used notification output at creation/publication/object-store/attachment,
 // native validity 61/61/62/49; early Boolean success 75/75/53/77. All restored.
 // Pre-attachment Boolean form recovers the prologue, but header CSE and EBP lifetime remain.
+// M325: Zero-notification completion guard with bool/byte/short/long creation-validity
+// results 63/93/68/65; entry-false success 70/68/73/71. All restored;
+// false BL, temporary EBP and independent header/object computations remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

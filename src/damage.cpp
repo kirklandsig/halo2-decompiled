@@ -1110,6 +1110,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // Round 375: Scale default at entry/before point call/before node phase/before cone, original jump
 // versus outside-owned falloff: 434/426/434/426/422/422/343/343. NOT kept: extra result lifetime enlarges
 // the frame/body and regresses. Original complete body restored; geometry/cone/node homes remain.
+// P280: Existing cone squared-length helper, complete unit-length error and
+// clamped-dot expression boundaries, seven subsets 286 each; all with consistent
+// direct cone addresses 286. Original body restored; geometry homes and cone ranks remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -2421,6 +2424,9 @@ struct s_unit_event
 // P274: Native zero-then-type/type-in-value event initialization, crossed with actual
 // read-only info and existing inline declaration contracts: eight forms 477 at 1880 bytes.
 // Original body and both declarations restored; permutation stack/EAX ingress and call-cycle homes remain.
+// P281: Existing native-width writers for complete object, vehicle and accumulator flag groups:
+// seven subsets all 472; all with a plain vehicle-byte bit ordinal 604 at 1940/1868 bytes.
+// Original header, stores and full body restored; incoming permutation and first-word narrowing remain.
 // M322: Direct section/seat/child handle observations, seven subsets 472 each;
 // all with direct seat bound 503 at 1896 bytes. Original body restored;
 // permutation stack/EAX transport, register homes and sixteen-byte excess remain.
@@ -4580,7 +4586,9 @@ struct s_damage_object_creation
 /* marks damage sections destroyed, and splits off the model nodes no
    longer joined to the object's root as new objects */
 // MiniMax C (11-01): the shared loop counter and the permuter's variant reach 217, four points and under the keep bar, so nothing is kept.
-// score 188 (was 188): frame 0x13e0, handle ESI and first-mask EDI agree; first +0x37 is the offset home.
+// score 174 (was 188): frame 0x13e0 and 808-byte length agree; first +0xb acquires the handle/offset
+// in different registers. Datum/definition and detached/node homes, creation copies and scheduling remain.
+// Earlier 188: frame 0x13e0, handle ESI and first-mask EDI agree; first +0x37 is the offset home.
 // Definition/detached-mask/node and copy homes remain; 776 bytes against retail 808.
 // Earlier 221: caching `info->unknowne0` as the loop bound (retail does not reload it; 235 -> 221) and
 // making detached_nodes signed (`test / jle` as retail; same score). Left is register allocation: retail keeps
@@ -4607,6 +4615,9 @@ struct s_damage_object_creation
 // N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
 // library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
 // and detached/node homes remain.
+// P281: Creation-tag admission outside the signed detached-mask loop, with conditional info scope,
+// complemented result and first-writer creation scope: eight forms 174 at 808/808 bytes. Only the
+// invariant admission retained, ordinary confirmed; every added scope/result form restored.
 // DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
 // scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
 // offset/definition and detached/node homes remain.
@@ -4660,44 +4671,48 @@ void function_dbc80(long object_index, short section_mask_a, short section_mask_
 					*(long *)(node + 4) = NONE;
 				}
 			}
-			while (detached_nodes > 0 && *(long *)(object_definition + 0x40) != NONE)
+			if (*(long *)(object_definition + 0x40) != NONE)
 			{
-				long first_node = NONE;
-				s_damage_object_creation creation;
-
-				for (i = 0; i < node_count; i++)
+				while (detached_nodes > 0)
 				{
-					if (detached_nodes & (1 << i))
+					long first_node = NONE;
+					s_damage_object_creation creation;
+
+					for (i = 0; i < node_count; i++)
 					{
-						first_node = i;
-						break;
+						if (detached_nodes & (1 << i))
+						{
+							first_node = i;
+							break;
+						}
+					}
+
+					dword piece_nodes = function_db810(object_index, first_node);
+
+					detached_nodes &= ~piece_nodes;
+					function_b7930(&creation, *(long *)(object_definition + 0x40), object_index, 0);
+					creation.unknownc0 = *(long *)((byte *)object + 0x2c);
+					creation.unknownbc = *(long *)((byte *)object + 0x28);
+					creation.unknownb8 = true;
+					function_b9dd0(object_index, &creation.position);
+					creation.up = *(vector3f *)((byte *)object + 0x7c);
+					creation.forward = *(vector3f *)((byte *)object + 0x70);
+					function_ba1d0(object_index, &creation.linear_velocity, &creation.angular_velocity);
+					creation.node_mask = ~piece_nodes;
+					creation.section_mask_a = object->unknowne0;
+					creation.section_mask_b = object->unknowne2;
+
+					long piece_index = function_b7b40(&creation);
+
+					if (piece_index != NONE && DAMAGE_OBJECT(piece_index)->node_index != NONE)
+					{
+						havok_component_node_states_set(
+							(s_havok_component *)(g_51e9b8->data + (DAMAGE_OBJECT(piece_index)->node_index & 0xffff) * 0xa0),
+							&states);
 					}
 				}
-
-				dword piece_nodes = function_db810(object_index, first_node);
-
-				detached_nodes &= ~piece_nodes;
-				function_b7930(&creation, *(long *)(object_definition + 0x40), object_index, 0);
-				creation.unknownc0 = *(long *)((byte *)object + 0x2c);
-				creation.unknownbc = *(long *)((byte *)object + 0x28);
-				creation.unknownb8 = true;
-				function_b9dd0(object_index, &creation.position);
-				creation.up = *(vector3f *)((byte *)object + 0x7c);
-				creation.forward = *(vector3f *)((byte *)object + 0x70);
-				function_ba1d0(object_index, &creation.linear_velocity, &creation.angular_velocity);
-				creation.node_mask = ~piece_nodes;
-				creation.section_mask_a = object->unknowne0;
-				creation.section_mask_b = object->unknowne2;
-
-				long piece_index = function_b7b40(&creation);
-
-				if (piece_index != NONE && DAMAGE_OBJECT(piece_index)->node_index != NONE)
-				{
-					havok_component_node_states_set(
-						(s_havok_component *)(g_51e9b8->data + (DAMAGE_OBJECT(piece_index)->node_index & 0xffff) * 0xa0),
-						&states);
-				}
 			}
+
 		}
 		function_1c3770(object_index, 0);
 		havok_component_node_states_set(component, &states);

@@ -406,6 +406,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // N331: Completion on the native output-ordinal graph, bool/byte/short/long with memcpy
 // 226/226/244/246, overlap CRT 279/279/281/283. NOT kept: conditional completion requires
 // an exact match; every form regresses and loses the reduced caller (80). Original body restored.
+// DH306: complete candidate-ranking decision as bool/byte/short/long 170 each;
+// both complete lowest and candidate decisions 170 each. Original body restored;
+// extra frame word, count/departure homes and compaction boundary remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
