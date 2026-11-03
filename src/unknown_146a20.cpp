@@ -263,6 +263,9 @@ bool g_47f05b;
 // B381: complete four-word constructor element result in long/int/short/signed-char,
 // terminal/nonterminal assignment: 34/34/34/34/34/34/34/34. NOT kept: one-use element results
 // require an exact match. Original intermediate-vtable store and arm reload gap remain.
+// Round 62 (m3 lane 10): `byte *block` 34; placement through `(c_havok_fixed_memory *)block` 34;
+// `void *const block` 34; the pool address named before the first construction 43 (140 bytes);
+// `block ? new ... : NULL` 34. Original body restored.
 // @retail 0x146a20
 void function_146a20(void)
 {
