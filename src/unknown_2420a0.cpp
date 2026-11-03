@@ -171,7 +171,7 @@ void function_15e130(long object_index);
 void __stdcall function_b8540(long a);
 void function_157670();
 void function_15e4d0();
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 bool function_bacc0(long object_index, long index, point3f const *point);
 bool function_138860();
 bool function_138880();
@@ -2098,9 +2098,8 @@ void function_243a20(long object_index)
 
 	if (object->slot != NONE)
 	{
-		color3f buffer;
 		long team = object->slot;
-		color3f color = *function_7f720(&buffer, (short)team);
+		color3f color = function_7f720((short)team);
 
 		function_bacc0(object_index, 0, (point3f const *)&color);
 	}
@@ -3059,8 +3058,8 @@ void c_game_engine_markers::v14(long arg_0)
 				bool local_24 = !local_22 && !local_23;
 				bool local_25 = false;
 				bool local_26 = false;
-				color3f local_27;
-				s_color_bits local_28 = *(s_color_bits *)function_7f720(&local_27, (short)local_15);
+				color3f local_27 = function_7f720((short)local_15);
+				s_color_bits local_28 = *(s_color_bits *)&local_27;
 				if (local_23 && ctf_player_get(local_16->lc)->team == local_1->team)
 					local_25 = true;
 				if (ctf_options()->engine_type == 9 && g_51ec80->flag_bits[local_15].bit3)
@@ -3126,12 +3125,14 @@ void c_game_engine_markers::v14(long arg_0)
 								long local_36 = slot_object_get(local_35)->slot;
 								if (local_36 != NONE)
 								{
-									color3f local_37;
 									s_color_bits local_38;
 									if (local_36 == 8)
 										local_38 = *(s_color_bits *)g_468714;
 									else
-										local_38 = *(s_color_bits *)function_7f720(&local_37, (short)local_36);
+									{
+										color3f local_37 = function_7f720((short)local_36);
+										local_38 = *(s_color_bits *)&local_37;
+									}
 									function_2440a0(&local_14, local_35, (point3f *)&local_38);
 								}
 							}
