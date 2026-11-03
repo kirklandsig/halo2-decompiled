@@ -354,6 +354,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the scaled alignment 641 (one point); the 12/8 factor after t, before the 0.001 test 666 (2871 bytes, caller
 // 0x1eb6f0 22); v as `PIN(s->alignment * 1.5f, 0.f, 2.5f) * 0.4f` after the delta 681; the step clamp as one
 // ternary 645. Original body restored.
+// Round 83 (m3 lane 12, fast, caller 0x1eb6f0 MATCH in each): the step clamp as one ternary again 645 (a repeat);
+// the cap as `k * globals->rate` 642; the duration test as `t >= 0.001f` 642; `fail` declared before `globals`
+// 642; the first count as one ternary 683 (2877 bytes); both 12/8 factors as `k = 12.f; if (!s->fast) k = 8.f;`
+// 642. Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

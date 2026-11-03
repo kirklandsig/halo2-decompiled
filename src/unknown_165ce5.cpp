@@ -1671,6 +1671,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
 // at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
 // Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
+// Round 83 (m3 lane 12, fast control 220, full 218): look_yaw/look_pitch declared after mode, at function
+// scope, or at their assignments 220 each; mode declared before the unit and assigned after it 220; the
+// pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads
+// g_510c54 after each clamped look store (-0x2c/-0x28), as if those stores could alias the global; ours
+// shares one reciprocal.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
