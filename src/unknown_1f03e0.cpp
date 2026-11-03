@@ -1031,6 +1031,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// B409: Declared word-bit consumers for damping/direct/gravity/the three/enabled/
+// all four/all with history/the three with history: 427/438/427/425/441/457/575/444.
+// NOT kept: six-point leads below gate; combined 425 shortens away from retail to
+// 3034/3047. Original word layout, flag producers and complete body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

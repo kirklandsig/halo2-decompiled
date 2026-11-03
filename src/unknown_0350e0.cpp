@@ -120,6 +120,9 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 465; scalar in-place helper (i, j, k read once; k re-read as retail) as one expression, running sum or staged 377/377/377 (aligned 276,
 // frame 0x64). On that: squares before trig 376; named sine products 411; hoisted angles 394; squares+products 420; squares+angles 396;
 // products+angles 434; all three 440; with rows in retail's pair order 481. Retail's matrix slots: first at 0x60, second at 0x2c.
+// B409: Paired cross-coefficient construction, original/late diagonal squares and reused sine
+// parts, interleaved/grouped diagonal phases: 364/409/362/385/411/441/355/391.
+// NOT kept: one-point lead at native length below gate; original builder and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1841,6 +1844,10 @@ real game_time_get_seconds();
 // retail's j, i, k order (507; product operands still global-first where retail loads delta.i/delta.k
 // first); with the j product's cast on the global 507 (same code). Also tried: `color` renamed 507
 // (no slot moves); camera sums through dot3f 507; their terms respelled k, i, j 507 (same code).
+// B409: Full sampled-color field/library/overlap-safe transfers, then saved-position
+// transfers and paired field/library forms: 543/507/555/497/507/515/534/507.
+// NOT kept: saved position fields at 497 emit SSE transfers instead of native integer-word capture;
+// frame 0x90 versus 0x94 and output homes remain. Original complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -4589,6 +4596,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
 // then gate versus complete admission: 218/218/228/231/210/210/242/247.
 // Every shared user regresses; original helper and complete caller restored.
+// B409: Extra-gate-first pass state, initial-gate rejection and admitted-gate conditional
+// selection in byte/bool/short/long: 248/248/219/213/205/237/231/238. Both peer users regress;
+// original shared producer and complete caller restored; native late bytes/mode loads remain.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
