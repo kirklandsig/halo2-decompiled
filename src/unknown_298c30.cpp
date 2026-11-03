@@ -545,6 +545,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
 // NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
 // frame, radius and trace/trig/pivot homes remain.
+// DH312: Existing direction producer as native coordinate-array loops, long/dword/short/byte
+// ordinals, streaming 760/760/746/746; complete difference publication 785/785/828/828.
+// Original scalar producer and whole body restored; frame/radius/trace homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
