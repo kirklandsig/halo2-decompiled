@@ -1593,6 +1593,10 @@ struct s_rating_summary
 // Round 345: completed name-conversion/summary-publication/adjusted-rating phases, seven subsets; all
 // phases with immutable query table: 31/52/52/31/31/52/52/52. Original body and contracts restored.
 // Formatter/count schedule and team/counter homes remain.
+// M3 lane 13 r54 (fast, on the one-use identity-string local, control 25; match-only, not kept): team index
+// short 143 (1228 bytes); counters as a const reference 25 (same code); the bound test as `!(i < count)` 25;
+// team skill read at each use 237 (1200 bytes); counters pointer declared at function scope 25. Retail's team
+// loop keeps both cursors stored at the head (teams +0x14, counters +0x18, counters in ECX at the latch).
 // F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and

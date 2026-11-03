@@ -230,6 +230,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // AC492: Emitter direction after facing/exhaustive facing/direct output formal
 // 412/398/395; their three pairs 408/412/398, all 408; native signed evaluation point 402.
 // Original emitter and whole body restored; entry sum and normalized XY/magnitude homes remain.
+// M3 lane 13 r54 (fast): the normalizer helper's locals named magnitude/inverse 395 (same code); the loop distance
+// through the existing vector2d_from_points2d + magnitude2d 450 (1751 bytes); the distance declared at function
+// scope 395; the negated radius written inline in the first endpoint 436 (1711 bytes); the centre assigned by
+// component 395. Retail keeps the loop distance in a stack home (fst, then fdiv from memory) and 16-bit counters.
 // F348: Existing shared 2D dot at input-facing, velocity, endpoint and signed-facing
 // consumers, then input pairs and all consumers: 410/395/395/395/410/410/410/410.
 // NOT kept: shared real-result/operand-order forms do not match; original expressions,
@@ -556,6 +560,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
 // NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
 // frame, radius and trace/trig/pivot homes remain.
+// M3 lane 13 r54 (fast): one function-scope sine shared by the sweep and the obstacle rotation 730; the third
+// trace result scoped to the sweep loop 719; the side endpoints assigned by component 719; the two trace flags
+// declared at the top 749; the reversed direction formed after the NONE return 719. Frame 0x124 versus 0x114 remains.
 // DH312: Existing direction producer as native coordinate-array loops, long/dword/short/byte
 // ordinals, streaming 760/760/746/746; complete difference publication 785/785/828/828.
 // Original scalar producer and whole body restored; frame/radius/trace homes remain.
