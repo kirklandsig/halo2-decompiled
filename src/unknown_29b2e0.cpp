@@ -267,6 +267,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 380: Complete direction-validation truth, bool/byte/short/long positive then
 // complementary: 279/279/279/279/279/279/279/279. All retain the wrong root/unity homes and lengthen the body;
 // original short-circuit guard and complete body restored.
+// Round 382: Both signed rate-policy predicates, bool/byte/short/long sustained
+// truth then opposed complement: 284/284/284/284/285/285/285/285. No exact-only predicate qualifies; original
+// comparisons, parallel clamps and full body restored. Unity/root/yaw and rotation homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

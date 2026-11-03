@@ -1036,6 +1036,9 @@ void function_1d1540(s_havok_component *component);
 // Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
 // then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
 // original flag observation, native slot, fresh refetch and complete body restored.
+// Round 382: Native fixed-body predicate alone on constructor/two-use-slot graph,
+// bool/byte/short/long fixed truth then movable complement: 65/65/65/65/65/65/65/65. Original
+// byte test, fresh refetch and full body restored; frame and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

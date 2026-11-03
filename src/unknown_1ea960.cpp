@@ -344,6 +344,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // and both base-owner assignments in constructor bodies: 138 each. Native element
 // ownership in the special/list shapes: 140/140. All restored; frame 0x20
 // agrees, first +0x198 remains the restore constructor's flags/element order.
+// Round 382: Native element ownership directly in special/array/list classes, seven
+// subsets then all six classes: 140/141/140/143/142/143/145/153. All regress at 1356 bytes; restore the
+// common base and complete body. Restore-header, packed key and listener homes remain.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

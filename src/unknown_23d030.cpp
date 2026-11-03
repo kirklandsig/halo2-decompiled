@@ -386,6 +386,9 @@ extern byte g_51ec11;
 // Round 380: Final timer-policy truth, bool/byte/short/long suppressed then enabled
 // complement: 232/232/232/232/232/232/232/232. Zero/side/up allocation does not recover; original final
 // guard, publications, decrement and complete body restored.
+// Round 382: Complete entry control admission, bool/byte/short/long active then inactive
+// complement: 236/236/236/236/236/236/236/236. All lengthen and regress; original entry byte test and
+// complete body restored. Zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
