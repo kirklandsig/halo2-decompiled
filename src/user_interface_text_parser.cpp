@@ -652,6 +652,9 @@ done:
 // availability and absence, 68/68/68/68/68/68/68/68. Exact-only post-test flags
 // restored with the complete original switch/body; early EDI save, tag/selector
 // schedule and scratch-address caching remain.
+// Round 61 (m3 lane 10, fast; parse_variant stays matched), on the 32 form: `(word *)&g_55c6e4` at the translator
+// 32; the success copy calling function_08cc20 directly 32; `&g_55c6e4[0]` at the success copy 32, at both 32; the
+// success path's copy moved after the `if` with an `else goto done` 32 (all identical code).
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
