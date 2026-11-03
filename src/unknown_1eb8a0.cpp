@@ -350,6 +350,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // Round 382: Complete angular direction-admission predicate, bool/byte/short/long
 // outside truth then inside complement: 642/642/642/642/642/642/642/642. Original dot/test, fallback and
 // full body restored; direction/sample homes and coefficient schedule remain.
+// Round 81 (m3 lane 12, fast, caller checked): the first length sum written i, j, k 642; the delta computed before
+// the scaled alignment 641 (one point); the 12/8 factor after t, before the 0.001 test 666 (2871 bytes, caller
+// 0x1eb6f0 22); v as `PIN(s->alignment * 1.5f, 0.f, 2.5f) * 0.4f` after the delta 681; the step clamp as one
+// ternary 645. Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

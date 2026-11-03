@@ -308,6 +308,9 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // homes remain. NOT kept: Private producer consumers tie or regress; quaternion-return chain 894
 // removes the retail q-address copy and moves quaternion/body homes, so its eight-point preview gain is
 // unsupported; other out-of-line chains fail the gain threshold. Original executable source restored.
+// Round 81 (m3 lane 12, fast): the record's object index named once (three uses) 926 (4283 bytes); the clamp,
+// its test and the simulating query on the record's byte field directly 955 (4244); the second entry flag
+// renamed 902 (same code); the record flag word read at each bit test 964 (4248); the entry flag as `>=` 1009.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
