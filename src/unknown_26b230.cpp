@@ -2003,6 +2003,10 @@ void function_269250(long clump_index, long actor_index);
 // DH296: Joint function-owned group iterator/selected/best storage subsets
 // 1-7 and all with persistent score storage, eight forms 87 each. Every original
 // per-actor initialization and per-candidate assignment retained; full body restored.
+// Round 379: Native team-admission truth at its comparison, bool/byte/short/long eligible then
+// excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
+// exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
+// remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

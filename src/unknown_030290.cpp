@@ -407,6 +407,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 527: Eager admission/eager returned comparisons/library zero-output subsets
 // 1/2/4/3/5/6/7 give 238/243/194/269/237/239/265; all with a Boolean result accumulator 285.
 // One-point clearing lead rejected; original comparisons, output stores, includes, helper and full body restored; frame and inverse/displaced-transform homes remain.
+// F342: Displaced-input/inverse-workspace last-use scopes and complete translated point setter, masks
+// 1/2/4/3/5/6/7; all with reversed inverse constants: 195/195/195/195/195/195/195/195. NOT kept: no
+// byte match; original complete body and every helper restored. Inverse homes and displaced-transform
+// spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
