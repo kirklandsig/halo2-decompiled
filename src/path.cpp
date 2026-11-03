@@ -998,6 +998,8 @@ bool function_2715a0(byte *buffer)
 // 579/579/591/591; paired projected-point array production 579/579/508/508.
 // Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
 // original scalar producers and complete body restored.
+// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
+// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

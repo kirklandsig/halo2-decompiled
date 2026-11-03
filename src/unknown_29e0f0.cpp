@@ -253,6 +253,8 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
 // own-address and one-use aliases did not match; the record alias also demotes
 // the caller. Original full body restored.
+// M339: Actual output-array extent owns traversal and produces short/word/long/dword count, posttested
+// then pretested: 412/412/411/411/430/430/429/429. Original output ordinal and complete body restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

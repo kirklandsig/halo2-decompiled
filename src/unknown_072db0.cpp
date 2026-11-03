@@ -1959,6 +1959,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M332: Native due-timestamp captures at read/write/both submission boundaries, before/inside
 // admission, then both complete due predicates: 710/715/716/710/715/716/716/716. Original global reads,
 // clocks, predicates and body restored; initial cursor/slot and later homes remain.
+// M339: Complete duplicate-search condition under for/while, ordered/equality endpoint and identity/type
+// filter order: 709/709/698/698/746/746/721/721. NOT kept: type-first 698 grows frame 0xc0 to 0xc8;
+// original body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {
