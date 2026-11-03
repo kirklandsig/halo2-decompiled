@@ -984,6 +984,9 @@ real normalize2d(point2f *v);
 // B388: Independent trajectory outcome transferred to outer validity at the final join,
 // bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
 // 193/193/153/173. All regress; original two producers, calls and return graph restored.
+// DH321: Immediate successful retry-output publication with bool/byte/word/long two-use
+// retry outcomes and logical/bitwise success joins on the retained facing graph:
+// 219/198/219/203/225/201/223/212. Original output guards, result transport and complete body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

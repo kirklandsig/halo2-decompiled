@@ -673,6 +673,9 @@ struct s_item_collision_bsp
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
 // restored; protected plane-index width, plane joins and pending spin-k homes remain.
+// DH321: Real/double raw pending-k carriers after i/j scaling, optional random vector,
+// final seed update or scale production: 211/219/219/211/293/286/286/295. NOT kept: one-use/precision
+// forms lack equality; original spin, random draws, protected plane contract and body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1222,6 +1225,9 @@ struct s_item_flags_view_10b850
 // 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
 // falls to 0x148 but scores regress; all snapshots, original field reads, helpers
 // and body restored. Entry Boolean and collision/carrier/rotation homes remain.
+// DH321: Existing shared rotation dot/staged-cross/cosine-scale families, masks 1..7,
+// then all with ordinary helper inline: 858/884/876/876/914/927/884/1926. NOT kept: mixed-read/native-
+// vector storage forms lack equality; original helper, inputs, includes and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
