@@ -330,6 +330,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 	return function_991d0(arg_0, local_1, local_0, arg_2);
 }
 // score 80 (was 80): frame 0x1c agrees; native byte validation ordinal reduces the diff; items/data carriers and loop entry remain.
+// Round 40 (lane 17, fast): a long validation counter (retail's dword at esp+0x18) 115: every stack
+// slot is then retail's (flag in the argument slot, counter at 0x18, cursors at 0x14/0x10) and only the
+// loop entry (retail jumps past the items reload) and the 0x991d0 argument registers differ; with the
+// volatile reads dropped 207 (524 bytes); a plain for loop with the long counter 195; the long counter
+// with the two volatile reads swapped 115; with the data cursor's volatile read only 207. Restored.
 // Earlier at 115 (was 115): the case 1/3 loop still differs in registers: retail keeps the items
 // this round: no new form; the case 1/3 loop still keeps its cursors in
 // registers where retail keeps them in memory, and the 0x991d0 argument order still differs.

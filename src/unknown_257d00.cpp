@@ -2299,6 +2299,10 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
 // then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
 // cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
+// Round 40 (lane 17, fast; control 485, full 469): plain `return 1;`/`return 0;` for every result
+// goto 500; the case 7/8 bool written in its test 515 (2372 bytes); case 1 as `!(distance > 1.f)` 622
+// (2384 bytes); the last arm's two actor stores swapped 484 (same store order emitted); case 1's
+// helper argument and the facing callback argument through the state local 485. All restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

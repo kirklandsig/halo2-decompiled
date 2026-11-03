@@ -259,6 +259,9 @@ short __stdcall function_2551c0(long actor_index)
 // Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
 // projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
 // cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
+// Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
+// second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
+// axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
