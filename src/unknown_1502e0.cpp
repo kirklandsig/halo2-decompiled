@@ -394,19 +394,27 @@ struct s_tail_player_identifier
 	byte identifier[12];
 };
 
+// score 31 (was 66): logic walk against retail found no behaviour difference (same player identifier
+// at +4, scenario entry 0 value 0x2c == 1 selects the second traits set, 16 options players of 0xe4
+// bytes at +0x2dc, 12-byte identifier compare at +0xe, traits at +0xac + 0x1c * set). Still differs:
+// retail keeps the options pointer in ebx, the identifier in eax and the compare result in edx; ours
+// puts the identifier in ebx, the options pointer in edx and the result in eax, and loads
+// g_4e0350/g_4e6948 at different points. Tried: identifier hoisted/late (67), index form
+// players[i] (66-67), do-while (31), memcmp() == 0 without the result variable (80), != 0 (80),
+// scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
-	byte const *identifier = ((s_tail_player_identifier *)tail_player_get(player_index))->identifier;
+	s_tail_options_player *entry = ((s_tail_options *)g_4e6948)->players;
+	s_tail_player_identifier *player = (s_tail_player_identifier *)tail_player_get(player_index);
 	s_tail_scenario *scenario = (s_tail_scenario *)g_4e0350;
 	bool alternate = false;
 
 	if (scenario->entry_count > 0 && scenario->entries[0].value2c == 1)
 		alternate = true;
-	for (long i = 0; i < 16; i++)
+	for (long i = 0; i < 16; i++, entry++)
 	{
-		s_tail_options_player *entry = &((s_tail_options *)g_4e6948)->players[i];
-		long difference = memcmp(entry->identifier, identifier, sizeof(entry->identifier));
+		long difference = memcmp(entry->identifier, player->identifier, sizeof(entry->identifier));
 
 		if (difference == 0)
 			return &entry->traits[alternate ? 1 : 0];
@@ -1707,6 +1715,13 @@ void function_150400(long player_index, vector3f const *forward, vector3f const 
 void __stdcall function_ccff0(long unit_index);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 
+// score 91 (was 91): logic walk against retail found no behaviour difference. The whole score comes from the
+// first test: retail loads the flag with "mov cl,[edi]; xor al,al; test cl,cl" (return value preset to
+// false), ours emits "cmp byte ptr [edi],0" and the shift makes the rest of the function count as
+// different (align.py shows only that one hunk). Tried: byte/char/long local copy of the flag (91),
+// result preset before the test (72, result lands in ebx), single success variable (109),
+// early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
+// not natural source, so it is not used.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {
