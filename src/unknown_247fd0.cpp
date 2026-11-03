@@ -344,6 +344,8 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // M355: Native cache validity ranges, clear/publish/request masks 1/2/4/3/5/6/7,
 // then complete high-to-low publications: 55/55/135/55/135/135/135/135.
 // NOT kept: unmatched field representation; original validity and full body restored.
+// M357: Child admission produced after interface refresh, positive then complementary bool/byte/short/long:
+// 55/55/55/55/55/55/55/55. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

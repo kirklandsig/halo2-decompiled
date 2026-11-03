@@ -1500,6 +1500,8 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // M355: Appended row pointer/reference, count release after actor/geometry/distance
 // or at acquisition on the retained slot graph: 153/153/153/153/153/153/153/153.
 // NOT kept: no exact append lifetime; retail increments after the busy query. Full body restored.
+// M357: Complete actor/capacity admission at collection, positive then complementary bool/byte/short/long:
+// 32/32/32/32/32/32/32/32. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2753,6 +2755,8 @@ struct s_scenario_scripting_view
 // M355: Winner presence/absence published at each strict improvement with exact
 // short-NONE handling, bool/byte/short/long: 92/92/104/105/92/92/99/100.
 // NOT kept: no exact selected-state graph; original short winner and full search restored.
+// M357: Entry actor-presence admission, positive then complementary bool/byte/short/long:
+// 80/80/80/80/80/80/80/80. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -1257,6 +1257,8 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M355: Typed member-call late boundaries on the native/complete classifiers, 18/11/both,
 // 211/196/211/223/223/223; shared late/all-compatible selection 206/213.
 // NOT kept: unmatched callable ownership; original dispatcher and all call tuples restored.
+// M357: Coherent five native-input formal orders and three unsigned-selector orders:
+// 196/196/197/197/197/196/197/196. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

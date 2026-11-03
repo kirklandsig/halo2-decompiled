@@ -1737,6 +1737,8 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // M355: Test-produced current support, support-first/approach-first, each in bool/byte/short/long:
 // 264/267/270/283/304/298/302/300. NOT kept: test-produced states remain unmatched;
 // original support predicate, movement, selections and both material call sites restored.
+// M357: Fallback-call admission produced at the query, positive then complementary bool/byte/short/long:
+// 225/225/225/225/225/225/225/225. NOT kept: no exact producer/contract form; original complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
