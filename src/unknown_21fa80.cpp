@@ -218,6 +218,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // before the phase or at entry, each original reference/plain gain value: eight at
 // 532 fast (control 532; full 545). Original body and lifetimes restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// Round 128 (lane 8, plain; the fast image is unfaithful here): the gain difference named before the gain test
+// (`real gain_change = gain - stored;`) 542 (retail's SSE subss stored once for the x87 fabs, but computed ahead
+// of the changed test where retail computes it after); the difference cast to real inside the test 545 (same
+// code); mode/direct first with the named difference 546; the named difference with a real gain value 542;
+// fabsf on the gain test alone 545.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

@@ -336,6 +336,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 128 (lane 8, fast control 1355 = plain): retail recomputes `imul index, 0xd8/0x4c/0x3c` at the contact
+// loop's top each iteration (no pointer induction) and leaves the duplicate search straight for its found exit.
+// Tried: a contact pointer for the loop's element 1401 (6211 bytes, still walked); the result-record pointer
+// declared at the loop's top 1355 (same code); the component index read at each use in the ray test 1474; the
+// ray length named and used twice 1382; a collected flag for the duplicate search 1402.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
