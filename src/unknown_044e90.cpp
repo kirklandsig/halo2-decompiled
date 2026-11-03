@@ -222,6 +222,10 @@ struct s_visibility_bound_record
 // branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
 // point setter on update/branch/all producers 448/463/462. All controls survive.
 // NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// Round 82 (m3 lane 9, fast): retail tests bit 12 as `mov ecx, [ebx]; shr ecx, 0xc; test cl, 1` and keeps the table
+// in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
+// TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a
+// local 447; the table local and TEST_FIELD_BIT with the flags local 442.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
