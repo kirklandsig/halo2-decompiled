@@ -695,6 +695,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 487: Whole-listener eligibility/cue continuations, separately/together 150/150/150;
 // each with pre-primary camera formation 200/200/200; separate active/index admissions
 // with either continuation 150/150. Original complete control graph and body restored.
+// F342: Angle zeros through library-before/aggregate-before/library-fallback/chained-fallback, then
+// each with transition last-use scope: 281/159/159/147/281/159/159/147. NOT kept: no byte match;
+// original complete body and every helper restored. BSP/count homes and camera/publication scheduling
+// remain.
 // Round 490: Pre-query native defaults for indices/portals/clusters, subsets 1..7,
 // then complete library defaults: 293/292/309/293/309/309/322/319. NOT kept:
 // retail repairs after the query; all regress. Original complete body/helpers restored.

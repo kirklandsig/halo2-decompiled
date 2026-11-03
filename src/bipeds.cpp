@@ -1378,6 +1378,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // N330: Existing three-dimensional/planar difference and planar magnitude producers,
 // then each with named nonnegative length selection: 585/585/589/589/599/599/600/600.
 // Frame stays 0xf8 versus 0xfc; original scalar deltas, helpers and complete body restored.
+// F342: Initialization-phase last-use scopes for speed/material/boost/turning,
+// speed+material/speed+boost/material+boost/all: 584/585/585/585/585/584/585/585. NOT kept: no byte
+// match; original complete body and every helper restored. Frame and material/airborne/animation homes
+// remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
