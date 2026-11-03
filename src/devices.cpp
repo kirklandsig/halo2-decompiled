@@ -1216,6 +1216,9 @@ bool function_108530(long device_index, long name)
 // N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
 // 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
 // gain. Both callers stay 31/13; original predicates and complete body restored.
+// P306: Mutable acceleration/deceleration/cruise-speed producers, seven subsets,
+// then separately initialized derivatives: 121 each. NOT kept: no gain or match.
+// Original phase producers restored; XMM6 initial-speed/ramp-down stack residency remains.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

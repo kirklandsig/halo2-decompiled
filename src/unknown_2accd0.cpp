@@ -1184,6 +1184,9 @@ struct s_signed_file_write_parameters
 // compare), declared first / between / last 115/119/115 [34] (declared first that arm's saved homes become retail's,
 // header EDI, body EBX, size EBP, but every scratch register after it rotates one step); the `void *` parameters
 // view as 0x2ad7c0 takes it 102 (same code), with the position local 115.
+// P306: Native seek-return carriers at scratch/direct/signature consumers, seven subsets,
+// then all with the header seek result: 102/102/102/102/102/102/102/102. NOT kept:
+// one-use API-result storage has no exact match. Capacity staging and extension homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

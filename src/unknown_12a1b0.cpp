@@ -2473,6 +2473,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 668/668/799/793; default-true state-test counterparts 755/755/800/794.
 // All regress; original completion polarity, sole exit and complete body restored.
 // NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
+// P306: Actual track/track-tag/pitch-entry references, seven subsets, then read-only
+// selected tag/pitch receivers: 694 each, tying reduced control (full 597). NOT kept:
+// no gain or match; original body restored. Entry true/flags and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

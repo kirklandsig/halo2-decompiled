@@ -665,6 +665,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
 // `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
 // `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// P306: Complete current/best solution receivers, pointer/reference singles and pairs:
+// 67/67/84/84/84/84/84/84. NOT kept: best bindings reach 512 bytes but regress;
+// original record observations, selection, publication and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
