@@ -934,6 +934,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
 // 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away
 // from retail; original copies, complete input-before-output helper and body restored.
+// Round 67 (m3 lane 10, plain; `--fast` builds this body differently, 795 on unchanged source): the outer do-while
+// as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
+// branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
+// `angle <= maximum` 539 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

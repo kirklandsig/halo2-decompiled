@@ -1470,6 +1470,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 823 (2807) [983]. Left on the guard form: 32 bytes of extra jumps and padding around the shared loops, no zero carrier in EBP, `this` in EBP (retail EBX), result in found_mode's home.
 // On the 823 form (same code each, 823): the key declared before the iterator; the iterator's entries cleared first; the key set last to first; the entry pointer declared in the loop;
 // the candidate initialised at its declaration.
+// Round 67 (m3 lane 10, fast): diagnostic, the second resource request removed: the result takes found_mode's dead
+// home and the three outputs go contiguous (retail's output layout), so the outputs' later reads decide that home.
+// The lookup in an inline helper on this do-while 828; the candidate at block scope with the loop testing it 926
+// (2825 bytes); the outputs declared bare and set by one chained `= NONE` 828; the iterator as an aggregate
+// initializer 828; no candidate, `if (named) result = named->animation_id;` 1020 (2791 bytes).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
