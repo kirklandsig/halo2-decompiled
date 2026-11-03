@@ -913,6 +913,9 @@ static __forceinline long real_to_long(real value);
 // `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
 // local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
 // (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
+// P299: Input-only actor/metadata/paired prop receivers on the current velocity graph,
+// seven subsets and immutable bindings: 382 each. Original complete body restored;
+// early rejection island and magnitude/object/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

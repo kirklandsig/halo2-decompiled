@@ -2839,6 +2839,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // F354: Float CRT bank sine/cosine/both 689/689/692; distinct relative output
 // 699/699/700; both with distinct inverse/current or desired result 702/699.
 // NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
+// P299: Planar facing/velocity/paired copies and paired existing 2D product, original
+// then independent relative output: 737/737/764/764/745/745/769/769. NOT kept: native
+// planar copy staging does not recover frame 0xfc; every form regresses. Original full body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4316,6 +4319,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
 // for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
 // no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
+// P299: Selected-record for/while scans, indexed/body-stepped cursor, once-read/live
+// count on the shared translation graph: 161/161/167/167/161/161/169/169. NOT kept:
+// selected pointer requires a byte match, and 1354/1361 bytes moves away from retail. Full body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
