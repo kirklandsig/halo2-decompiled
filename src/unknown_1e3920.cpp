@@ -1433,6 +1433,8 @@ void function_1e3b60(long actor_index);
 // maximum 26, the update test nested 26.
 // Round 58 (fast): the global store before the actor lookup 26; the swarm field in a local 26; the
 // actor test as a bool local 26; the clear through a pointer to +0x41c 34; the arms swapped 40.
+// Round 129: callee-side inline declaration 26; const actor/reset pointer/both 26/26/26;
+// const actor_index 26; active_index for the two mismatched calls, every call, or the first three 26/26/26.
 // BLOCKED-BY 0x262ba0 (stacked actor) and 0x1f38c0 (stub until #581 is solved).
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)

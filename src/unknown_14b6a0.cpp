@@ -427,6 +427,9 @@ void function_14bac0()
 // N318: Actual pending-state count/request/selected-player field views, seven nonempty
 // subsets 222 each; complete native state view with result-tested native recipients 228.
 // Original byte observations, record declarations and body restored; frame/readiness/recipient sharing remains.
+// N331: Parent-record ancestry with cached/per-use headers, original/native result-tested
+// recipients and bounds-only scratch scope: 256/256/265/265/256/256/265/265. Original
+// handle walk, header observations, bounds lifetime and complete body restored; frame/point overlap remains.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

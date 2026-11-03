@@ -924,6 +924,13 @@ extern vector3f *g_4687b0;
 // subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
 // All shorten away from retail; original body restored. Frame 0xcc agrees;
 // definition/index/direction homes and offset/SSE scheduling remain.
+// AC493: Player-only second direction copy, native/CRT, with original/first/second/both
+// shared crosses: 328/327/327/328/328/327/327/328. Every form grows frame to 0xd8
+// versus 0xcc; original copies, crosses, nested offset expression and complete body restored.
+// N332: Complete scalar offsets / shared spread complement / existing speed scale,
+// seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
+// Original fields, scalar producers, vector operations and full body restored;
+// frame 0xcc and tag/index/direction spill and SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1459,12 +1466,18 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
 // 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
 // second entry unit load, table/hand homes and downstream scheduling remain.
+// Round 379: Twice-used animation result byte/char/short/long, at its producer then entry storage:
+// 95/95/142/146/95/95/142/146. Original Boolean result and complete body restored; entry pool/hand
+// and second unit load remain.
 // P280: Native object-type predicate byte/char/short/word/long/dword storage
 // 95/95/109/109/108/108; Boolean declarations at observation/before companion test
 // 95/185. Original complete body restored; entry lookup and hand homes remain.
 // P284: Shared low-word entry ordinal long/dword/word/short 196/196/194/194;
 // with the existing later slot getter 234/234/230/230. Complete original body
 // restored; early pool acquisition, second unit load and full hand home remain.
+// Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
+// positive/complementary polarity: 95 each. NOT kept: staged search flags require
+// exact equality. Original indexed scan, direct exit and complete body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1863,6 +1876,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // P282: Complementary mode admission bool/byte/short/long in its original block, then entry
 // uninitialized storage: 99/99/104/105 twice. Original positive mode result, cases and body restored;
 // request/weapon homes and player-getter expansion remain.
+// M329: Independent request/weapon/result/modes declarations separated from their
+// original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
+// 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2782,6 +2798,9 @@ long function_c8f60(long unit_index, short seat_index);
 // entered/animation_cleared and seat_entered/motion_reset, each in both declaration orders:
 // eight at 293. Original output names, declarations and complete body restored;
 // entry vehicle promotion, unit/ordinal residence and output-byte homes remain.
+// Round 543: Entry-to-publication reset carrier byte/char/short/long, original then
+// complementary polarity: 300/300/312/313/284/284/300/301. NOT kept: 284 grows
+// to 1224/1209 bytes and changes result representation without a match. Original body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

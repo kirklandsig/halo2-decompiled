@@ -1116,9 +1116,16 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // Round 375: Scale default at entry/before point call/before node phase/before cone, original jump
 // versus outside-owned falloff: 434/426/434/426/422/422/343/343. NOT kept: extra result lifetime enlarges
 // the frame/body and regresses. Original complete body restored; geometry/cone/node homes remain.
+// Round 379: Late owner sentinel chain/owner-first declaration/owner lexical home, subsets
+// 1/2/4/3/5/6/7, then complete sentinel chain: 286/286/286/286/286/286/286/287. Original clear,
+// local homes and body restored; geometry/cone/node allocation remains.
 // P280: Existing cone squared-length helper, complete unit-length error and
 // clamped-dot expression boundaries, seven subsets 286 each; all with consistent
 // direct cone addresses 286. Original body restored; geometry homes and cone ranks remain.
+// N332: Common selected node-center source, branch/conditional selection with
+// native copy/memcpy/memmove/shared setter: 344/344/358/390, repeated for each
+// selection. NOT kept: source-pointer admission fails exact agreement and all
+// extents move away from retail. Original center producers and full body restored.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
@@ -2439,6 +2446,9 @@ struct s_unit_event
 // N328: Native section/seat/child last-consumer scopes, seven subsets, then one reset name carrier across
 // all phases: 472 each. Original body restored; permutation stack/EAX transport, call-cycle register
 // homes and sixteen excess bytes remain.
+// M328: Independent child/seat iterator and event role names, seven subsets then
+// all with the primary receiver renamed: eight 472s. Complete original body
+// restored; frame agrees but permutation ingress and call-cycle homes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

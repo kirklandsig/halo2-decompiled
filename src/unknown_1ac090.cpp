@@ -952,6 +952,11 @@ struct s_1ac612
 // Round 80: entry actor reused for cleanup 79 (955 bytes); direct actor lookups 248 (968); squared-length
 // helper 137; marker-matrix pointer 29; direct marker indexing 100 (969); distance declaration before
 // the query 29; candidate/marker postincrement 29/29. Restored.
+// Round 30 (lane 18, fast): separate cleanup actor local re-measured 29; long candidate counter 243
+// (951 bytes); actor_get's index as an unsigned mask (shared header, diagnostic) 29, the entry offset still
+// takes EDI; best value declared before best index 29; marker record pointer declared before the handle 31;
+// the forward product's i term with its operands swapped (diagnostic) 29, the load order is canonicalised.
+// Restored. 0x15adb0 shows the same index-scaled-after-base order in an inlined lookup.
 // @retail 0x1ac610
 bool __stdcall function_1ac610(long arg_0, point3f const *arg_1,
 	s_object_marker *arg_2, short *arg_3)
