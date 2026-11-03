@@ -1956,6 +1956,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // restored. User cursor base/home, slot conversion and later homes remain.
 // M321: Returned identity/property copy destinations, mutable/immutable receivers, then either overlap-safe transfer
 // 709/709/709/709/709/709/768/756. NOT kept: local output aliases require a match. Original body restored; initial cursor/slot and later homes remain.
+// M332: Native due-timestamp captures at read/write/both submission boundaries, before/inside
+// admission, then both complete due predicates: 710/715/716/710/715/716/716/716. Original global reads,
+// clocks, predicates and body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

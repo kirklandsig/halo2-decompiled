@@ -318,6 +318,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // F336: Native rejection continues in first/second/third marker scans, seven subsets:
 // 931/931/931/931/931/931/931; all scans with direct first/second array consumers 981.
 // Fast control 931, full 882. Original guards, receivers, buffers and complete body restored.
+// M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
+// then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
+// Original full body restored; frame, actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

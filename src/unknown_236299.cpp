@@ -674,6 +674,9 @@ void __stdcall function_52040(void const *request, void const *vertices);
 // orders with corner 1's y after the bottom sum, 1000 random statement orders with named sums and read-back
 // corners, inline extent getters and a corners helper writing through a pointer.
 // The point setter's shape for each corner (x then y, y then x, returning the point, forceinline): same colours as the plain form.
+// Round 79 (fast): no extent locals, the differences written at each corner 86 (280 bytes), with reversed sums 86 (280 bytes);
+// x0 and y0 locals 97 (271 bytes); a corner pointer at the array base 8; a walking corner pointer 85 (288 bytes);
+// extents first with corners 1/2 and 2/3 chained 86 (282 bytes).
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

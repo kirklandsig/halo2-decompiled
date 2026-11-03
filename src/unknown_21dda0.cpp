@@ -188,6 +188,9 @@ long sound_classes_match(long class_a, long class_b)
 // test 3; the call's result named before its test 3. One-file LTCG harness (exact: 2): the source pointer
 // reassigned to its callback 3; both marker addresses named before or after the index test 3. With the load
 // after the index test the callback always takes EAX, though the source in EBP dies at that load.
+// Round 94: an initialized callback across a separate object guard 2; bool/byte return types 7/7;
+// non-const voice, sound or source pointees 2/2/2; a positive nested object/callback test 2; an inline
+// definition 2; an explicitly dereferenced initialized callback 2. Original body restored.
 // @retail 0x21e0b0
 long sound_voice_matches(s_voice_playing_sound const *sound, s_sound_voice const *voice)
 {
