@@ -380,6 +380,9 @@ extern byte g_51ec11;
 // branch/conditional/default/additive updates with producer/entry result declarations:
 // 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and
 // complete body restored. Zero/side/up allocation remains.
+// Round 380: Final timer-policy truth, bool/byte/short/long suppressed then enabled
+// complement: 232/232/232/232/232/232/232/232. Zero/side/up allocation does not recover; original final
+// guard, publications, decrement and complete body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

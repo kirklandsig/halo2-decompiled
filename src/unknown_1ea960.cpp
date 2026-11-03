@@ -337,6 +337,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // the pair on c_model_shape 14 (0x1eb4c0 MATCH -> 51, reverted). One-use locals, not kept without
 // a match: the tree's key copied to a local 79, the listener's value and the shape lookup result
 // held in locals before the pair 123, both 17; the lookup result named at the pair alone 138.
+// Round 380: Completed vertex/plane, child and code stream phases, seven scope
+// subsets then complete offset role names: 138/138/138/138/138/138/138/138. Constructor stores, packed tree
+// key and listener homes stay unchanged; original complete body restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

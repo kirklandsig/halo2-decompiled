@@ -1634,6 +1634,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
 // step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
 // scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
+// Round 380: Complete positive-distance/avoidance admission, bool/byte/short/long
+// acceptance then rejection complement: 420/420/420/420/420/420/420/420. All canonicalize; radius staging,
+// persistent zero and metadata homes remain. Original separate guards/body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
