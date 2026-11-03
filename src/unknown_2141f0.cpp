@@ -275,6 +275,11 @@ void __stdcall cache_copy_record_use(char const *map_name);
 // Round 284: complete total/completed/capacity producers with six scalar lexical priorities 36 each;
 // in-place and branch clamp results 38/36. One-point, exact-only forms rejected; original body restored.
 // Request/path order, outgoing file/transfer registers and terminal store scheduling remain.
+// m3 lane 11 r60 (fast 37): the priority read from the table at each use instead of the entry local 564
+// (1792 bytes); state 7 slot published before the file pointer 144; state 12 test as `g_55bcf0 == g_55bcf4` 38;
+// state 10 completed size stored before the transfer count 39; state 2 handle tested against NONE 37 (same code).
+// Retail's 0x214db0 body touches neither EDI nor EBX (its only library call is strrchr), yet the state 0 caller
+// re-forms 0x55bf28 after it: the path call takes g_55be24[1] before the request copy.
 // @retail 0x2141f0
 bool function_2141f0(void)
 {

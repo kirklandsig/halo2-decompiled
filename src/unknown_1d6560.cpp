@@ -219,6 +219,16 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
 // one-use getter pointer and early object-pointer read; several forms also lose
 // the matched caller. Original body, both observations and caller convention restored.
+// B388: Case-zero decoded-bit bool/byte/short/long producers, low/high result defaults,
+// 106/106/106/106/106/106/106/106 (276 bytes), caller 13. Original bit expression,
+// repeated dispatch, body acquisition and caller-compatible convention restored.
+// DH314: Cached model/body-array producer roots, native/readonly, repeated type:
+// 117/117/113/113; shared byte type: 104/104/98/98. All lose the matched caller
+// (215 or 14); original entry acquisition, selected body, type observations and body restored.
+// DH317: Borrowed native type-byte/header-record dispatch bindings, const/mutable,
+// after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
+// matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
+// both type observations and incoming convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -500,10 +510,20 @@ struct s_physics_component_walk : s_havok_component
 // DH307: Object formal first/middle/last in both section-query interfaces, all eight
 // nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
 // tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
+// J243: Per-use current-group count/element/both/first-body/count+first/element+first/all index
+// selection: 295/285/310/175/316/199/319; complete per-use receiver 291. NOT kept: all regress, extents
+// 898-932 versus retail 922, and entry saves rotate. Original value selections and complete method
+// restored; body-latch reload order, neighbor/key homes and cold exits remain.
 // DL250: Complete native entry admission, first-body rejection and neighbor-body availability
 // predicates, subsets 1..7 then method-scope predicate declarations:
 // 146/146/146/146/146/146/146/146.
 // Original complete source restored; no eligible gain.
+// Round 555: Neighbor scan-success bool/byte/short/long, then both scan-success
+// outcomes: 151/151/151/151/151/151/151/151. NOT kept: branch-set search outcomes need
+// an exact match. Original indexed scans, count tests and complete method restored.
+// F351: Split-open terminal/neighbor/both query results 200/152/220;
+// split-closed results 177/153/303; exhaustive open/closed results 192/177.
+// NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

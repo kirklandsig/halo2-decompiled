@@ -320,9 +320,17 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
 // All 878/870 bytes; original complete body restored. Split post-sample cache comparison
 // and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
+// J243: Fifth sample shared helper/return, distinct helper/return and actual-field output, first-four
+// direct returns with shared/field fifth outputs, and entry-owned shared output: 55 each. NOT kept: no
+// gain. Original output contracts restored; split post-sample comparison and evaluator/child scratch
+// homes remain.
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
+// Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
+// `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
+// ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
+// ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -660,6 +668,16 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 377: Original-RNG packed header, combined/named initial mask and native category/shifted-bit
 // producers, eight forms 356/359/359/359/359/359/360/360. Original header publications, helper graph and
 // complete body restored; late EBP save and random/geometry/getter homes remain.
+// AC501: Read-only descriptor count/entry/terminal query declarations, masks 1/2/4/3/5/6/7,
+// then all with read-only descriptor receiver: 356/356/356/356/356/356/356/356. Original interface and
+// full body restored; late EBP save and random/blend/getter homes remain.
+// B385: Record link/time scalar copies through memcpy/memcpy, memmove/memcpy,
+// memcpy/memmove and memmove/memmove 356/448/383/450; each with the complete
+// trace-direction setter 356/448/383/450. Original complete body/includes restored;
+// early EBP preservation and random/blend/geometry/getter homes remain.
+// B387: Read-only settings/immutable particle/immutable allocation identity, seven subsets,
+// then all with immutable effect identity: 356 each. Original complete body restored;
+// frame 0xb0 and late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -498,10 +498,20 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 541: Existing scaler pointer/reference result contracts, discarded/scalar/shared-add/native-local
 // consumers, with direct update argument: 99/99/99/148/99/99/99/148. Original helper and
 // body restored. Two alias-sensitive output-first forms 150/150 excluded; no retained change.
+// Round 62 (m3 lane 10): correction adds `correction.c + state->velocity.c` 32; limit before the deltas
+// 46; the limit test inverted with its arms swapped 32; tick scale straight from the short field 32;
+// correction products inline in the output sums 101 (348 bytes). Original body restored.
 // Round 124 (m3 lane 8, fast): a game-time globals pointer local for the rate, ticks, limit and root 32
 // (same code); a pointer local for the state velocity at the copies and deltas 32; delta declared before
 // velocity 32; limit declared at its assignment 32; the correction written `s.c + d.c * scale` per row 101
 // (348 bytes), with retail's i row product-first 101.
+// Lane 18 round 36 (fast): tick products `velocity.c *= ticks` with the long count converted implicitly
+// (no tick_scale local) 73 (369 bytes); the three state-velocity copies before the rate and tick reads 94 (370
+// bytes); tick_scale declared bare and assigned after the count read 32 (same code); the call through `tracked`
+// without the parameter reference 99 (+0x2); the rate stage as `v.c = rate * v.c + p38.c; v.c -= p2c.c` 32 (same code).
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

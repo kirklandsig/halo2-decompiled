@@ -648,6 +648,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // native bool return with bool status on the twelve-byte expansion; NOT kept: all regress;
 // original graph/name ownership and return normalization remain: 478/478/564/556/478/478/564/478.
 // Original complete source restored; no eligible gain.
+// B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
+// success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
+// destructive graph-base/reload ownership and low-byte return remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
