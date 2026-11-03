@@ -1625,6 +1625,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Typed-selection, trace-admission and found-result branch orientations and their pairs/all
 // 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
 // and metadata homes remain; original body restored.
+// M326: Native data-availability bool/byte/short/long predicates, conditional/default-null
+// pointer production, 420/420/420/420/420/420/420/420. All canonicalize to the original
+// radius stage and zero/metadata homes; complete original body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

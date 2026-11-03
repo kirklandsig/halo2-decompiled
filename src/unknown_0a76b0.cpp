@@ -1681,6 +1681,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M317: Native bounded mode char/byte/short/word, each with long/Boolean hand on the original branch-only
 // graph: 146/154/146/154/137/145/137/145.
 // Same-block pool reload and selected-weapon/mode homes remain. Original executable body restored.
+// M326: Native char/byte/short/word primary-request classification 133/133/158/158;
+// complementary hand-first production 140/140/156/156. NOT kept: the five-point
+// gains above 30 and unmatched width-only forms. Original body restored at 138;
+// same-block pool reload and selected-weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1902,6 +1906,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // M317: Actual admission/weapon predicates owning the returned transfer result, bool/byte/short/long with
 // early/nested admission: 121/118/142/112/156/138/153/131.
 // Frame/result, pool reloads and unit/weapon homes remain. Original executable body restored.
+// M326: Actual player-unit/drop producer phase ends after the first give call, bool/byte/short/long
+// give results, request ending there or at its own call: 97/122/129/130/97/122/129/130.
+// Boolean forms tie; wider carriers lengthen. Original body restored; frame/result and pool homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
