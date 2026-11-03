@@ -567,6 +567,10 @@ void function_245400(s_source_245400 const *source, long index,
 // writing the side through a pointer (diagnostic) 209; dword codes with the second material read first 208; dword
 // codes with the edge vector after the side flags 203 (786 bytes); that with the second material first 207 (784,
 // frame 0x28, source still ECX, matrix still EBP from entry). Original body restored.
+// Round 390: Complete material-to-facing admission outcome, bool/byte/short/long,
+// branch/conditional facing producers: 201/201/231/230/201/201/231/230.
+// NOT kept: state set in a test needs a match; every extent grows away from 783.
+// Original body restored; frame 0x24/0x2c, material/side homes and late matrix remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

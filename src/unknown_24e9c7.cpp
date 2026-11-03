@@ -306,6 +306,9 @@ struct s_24e9c7_bounds
 // corner; origin y read once into a local, x per corner 194 (699 bytes); scalar x/y corner copies 191 (695);
 // corners 0/1 as `back.x + (up.x + corner.x)` single sums 137 (749); early upper with y-first corner 0 126;
 // early upper with `0.0f -` across 134 (739). Original body restored.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

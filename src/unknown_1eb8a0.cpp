@@ -364,6 +364,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // The first clamp as `if (0.001f > t) e = 0.001f; else ...` 704 (2880 bytes); the first step as one ternary
 // 645; the output position copy moved to function entry 732 (caller 31); a separate source pointer for the
 // counter-0 fallback 662 (2871); the alignment dot written i, j, k 642 (same code). Original body restored.
+// Round 83 (m3 lane 12, fast, caller 0x1eb6f0 MATCH in each): the step clamp as one ternary again 645 (a repeat);
+// the cap as `k * globals->rate` 642; the duration test as `t >= 0.001f` 642; `fail` declared before `globals`
+// 642; the first count as one ternary 683 (2877 bytes); both 12/8 factors as `k = 12.f; if (!s->fast) k = 8.f;`
+// 642. Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

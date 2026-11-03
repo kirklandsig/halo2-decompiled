@@ -453,6 +453,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // through both accessors 8; pass/material chains through block_element_224db0 (element 0) 8; local_10/local_11
 // declared at the top 8; first zero before the material lookup 23; the material index reference used for the
 // lookup as well 76. Match-only chain; original body restored.
+// Round 390: Complete callback context after search, field/aggregate construction,
+// crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
+// Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
