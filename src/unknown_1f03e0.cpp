@@ -1694,6 +1694,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
 // Original motion sample precedes every reset in all forms; root/predicate lifetimes
 // and complete body restored. Zero width, reset homes and material expansion remain.
+// AC498: Native sqrtf with direct/shared-square/squared-value/all-product inputs,
+// double/real root carriers: 225/228/225/228/225/228/221/226. Original arithmetic
+// and full body restored; zero width, reset/selection homes and second material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

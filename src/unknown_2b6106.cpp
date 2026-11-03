@@ -828,6 +828,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // selection/admitted-score-pointer graph 540/540/509/509; native short count 556/556/528/528.
 // Three-point 509 forms rejected; original truth/count domains and complete body restored.
 // Signed-byte campaign with long/short count 540/556; original body retained.
+// AC498: Activity-owned player query and four canonical joinability producers,
+// bool/byte: 599/605/584/602/599/605/584/602. Original complete body restored;
+// unbiased EBP, allocation 0x860/0x85c and flag/clock homes remain.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

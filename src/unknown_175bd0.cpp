@@ -2095,6 +2095,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // M328: Post-transform node rejection by OR/conditional/branch/default-result,
 // bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
 // body restored. Early color/query homes and frame 0x40/0x44 remain.
+// AC498: Isolated query-receiver/tint/multiply/placement/transform-result and
+// effect/system/settings formal names: 128 each. Original complete body restored;
+// frame 0x40/0x44, early color/query/cursor and zone-base homes remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3220,6 +3223,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // M328: Post-transform inverse node admission, complement/OR in
 // bool/byte/short/long: 111/111/107/108/111/111/107/108. All regress; complete original
 // body restored. Frame, system/successor/color homes and cached mode remain.
+// AC498: Isolated system/effect/successor/first-color/second-color/type/mode/tint
+// local names, original scopes and observations: 93 each. Original full body restored;
+// frame 0x4c/0x54 and system/successor/color/definition homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
