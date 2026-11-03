@@ -608,6 +608,19 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 // Round 138 (m3 lane 5, fast; retail zeroes a byte at esp+0x13 and the definition in EDI at entry): `definition = NULL`
 // at its declaration with the byte result declared among the locals 209 (727 bytes); with the result declared first
 // 185 (726 bytes); with the BSP declared before the point 217; section before definition 209; a bool result 217.
+// Round 123 (m3 lane 7, fast; plain agrees): retail's vertex byte at esp+0x12 is one slot written on each
+// hit, tested only after the first miss and never initialised: the vertex getter's own result left unset on
+// a miss (`bool result; if (ok) { *point = ...; result = true; } return result;`), inlined once in the
+// `valid = valid && ...` loop and unrolled. With it the 66-instruction vertex block is exactly retail's:
+// alone 226 (751 bytes, aligned 40 against 75); with a bool result 212; with `definition = NULL` at its
+// declaration 219, bool 205; result, definition, section declared in that order after the instance index
+// 208 at 726 bytes (aligned 20; rsd/drs 208, dsr/sdr 137, srd 220); then unknown18 stored before
+// part_index 208 (aligned 16: the 0x16e1b0 output slots then as retail; the 22 other store orders worse).
+// On that: `unknown` renamed (7 names) 208; output declaration orders 208; `section != NULL` 208; range
+// declared first 208; declarations at the function top/after the BSP 220/220; result at the other entry
+// positions 220-221; field locals moved after the group 216-224; `!count` 208; section NULL as a statement
+// 208; permuter 198 (a volatile only). Left: VC keeps constant 0 in EBP (retail gives EBP to the range at the
+// join and tests with `test`), which shifts the positional score, and BLOCKED-BY 0x11e800's registers.
 // @retail 0x14ac60
 bool structure_get_lightmap_triangle(s_structure_collision_result const *collision, s_structure_lightmap_triangle *triangle)
 {
@@ -836,12 +849,13 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // 0x11e800's registers), before the section pointer 223, before the region-list declarations (ahead of
 // 0xba690) 230, before the object lookup 78; the listed placement before the 0x12de70 test still gives 9.
 // Each moves a read ahead of calls (kept only with a match); BLOCKED-BY 0x11e800.
-// score 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
+// Earlier at 4 (was 70): the vertex-bounds read moved before the geometry-block call (retail reads it there
 // and spills it) and the lookup's address held in a named pointer (retail keeps it in ESI for the
 // second call); left: only 0x11e800's four argument registers (BLOCKED-BY 0x11e800, whose body decides
 // them: ours v0/v1/v2/point in eax/esi/edx/ecx, retail in eax/edx/ecx/esi).
 // R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
 // arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
+// Round 123 (m3 lane 7): listing re-read, still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -1104,6 +1118,11 @@ done:
 // after it 169; `result = false` after the inline availability tests 136; the requery flags assigned in the call
 // argument 125 (same code); diagnostic: the requery's lightmap call sharing the no-object call through a label 165
 // (0xd2a50 lost).
+// Round 123 (m3 lane 7, fast with 0xd2a50): both availability guards through the existing inline
+// structure_bsp_collision_available() 149 (440 bytes, a repeat re-measured); the flag declared beside `retry` and
+// assigned in the object arm 125; both flag tests as `excluded == false` 125; the direction read once into a
+// loop-top pointer for both queries and the step 125; the flag set in if/else arms 125; preset false and set
+// true under a nested policy test 125 (all the same code: VC still threads the flag).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
