@@ -274,6 +274,10 @@ bool g_47f05b;
 // `block + 1` 34; the fixed base's fields through a member-initializer list 34; the size as `long const &` in
 // both fixed constructors 34; the count cleared first in the fixed base body 32 (0x146e30 120 -> 121, not kept);
 // the abstract loop as `i < 3 ? 0 : NONE` 34. Header and body restored.
+// m3 lane 11 r62 (fast with 0x146b80/0x146e30/0x22c3e0; header trials restored): the abstract loop with a
+// dword index 34 (same code); its test as `i != 4` 54 (loop kept; 0x146b80 49, 0x146e30 169, 0x22c3e0 231);
+// as `while (i < 4) { ...; i++; }` 34 (same code); the fixed constructors taking `byte *` 34 (same code);
+// `++g_4798b4` 34 (same code). The base vtable store stays dropped in all.
 // @retail 0x146a20
 void function_146a20(void)
 {
