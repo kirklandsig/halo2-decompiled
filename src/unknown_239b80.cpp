@@ -403,6 +403,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH306: complete candidate-ranking decision as bool/byte/short/long 170 each;
 // both complete lowest and candidate decisions 170 each. Original body restored;
 // extra frame word, count/departure homes and compaction boundary remain.
+// F338: Produced length derived from the output ordinal only at terminal/exhausted exits,
+// long/short ordinal, long/bool departure and memcpy/memmove: 259/266/283/268/270/277/231/274.
+// All restored; the extra frame word and count/departure/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
@@ -738,6 +741,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // 247/247/300/299; with prior state advanced at that producer 232/232/311/310.
 // Advanced bool/byte state recovers count ECX and both side-byte homes, but adds
 // crossing-result work and leaves SIMD homes different. Original complete body restored.
+// Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
+// entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
+// indexed output body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

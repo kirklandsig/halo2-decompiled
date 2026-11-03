@@ -291,6 +291,9 @@ __forceinline bool function_184448(long arg_0)
 // statements 969 (4595 bytes, aligned 718). Re-measured: record/surface declarations before the instance pointer 965, surface
 // before record 965, rectangle plus that order 1007.
 // Retail keeps the record pointer (+0x98) and surface pointer (+0xe4) in memory from the start; ours holds them in EDI/EBX.
+// AC485: complete plane-transform input including distance, normal-plus-distance/native/scalar/memcpy,
+// direct/native output: 965/1011/999/1011/1046/1041/981/1041; original in-place helper restored.
+// Frame and geometry homes remain; no other helper user exists.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

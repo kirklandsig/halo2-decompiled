@@ -190,6 +190,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // complete squares/before complete squares 440/444/436/351/444; with staged crosses/
 // complete cosine complement/native in-place sine input 440/223/404. Original helper,
 // sine observations and complete body restored; axis-specific spills remain.
+// F338: Actual forward/left/up output-row receivers in the existing rotation producer,
+// seven subsets then all declared at first output: 217/217/217/491/491/491/220/220.
+// NOT kept: two-point gains and unproven field-receiver shape. Original helper/body restored;
+// axis-specific product/cosine spills, basis homes and four-byte table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
