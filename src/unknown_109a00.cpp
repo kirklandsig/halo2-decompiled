@@ -252,6 +252,10 @@ static __forceinline bool carried_object_motion_apply(long object_index, vector3
 // reverses retail's choice at each. The x add written change-first with `+=` for y and z 37 (1024 bytes); a second
 // read of the clock field for the change 163; the previous velocity through a local before the output copy 163;
 // products written scale-first 10; the delta's -1 first 10.
+// Round 41 (lane 2, fast): point-velocity adds written result-first 10; as `+=` 10; its stores k, j, i 130 (0x109e00 lost);
+// i, j, k declared before the cross 10; a two-use moved-position pointer 163; `result = true` before the rotate test 120;
+// definition read at its test 73; offset, velocity, then moved declared 10; displacement before the moved point 10;
+// change declared with displacement and built by statements 10.
 // @retail 0x109a00
 bool function_109a00(long object_index, vector3f *delta, bool rotate, vector3f *velocity)
 {

@@ -172,6 +172,9 @@ __forceinline void function_29c9ee(vector3f const *arg_0, vector3f const *arg_1,
 // gain as `x = x * field` 2. Split cross in 0x11cc90 (harness): both products named 116, named in the
 // other order 116, accumulated `cross -= ...` 116, only one product named 60/60, negated accumulate 133;
 // none splits the pair.
+// Round 32 (lane 17, fast): `local_3 = arg_4; local_3 += angle` 40 (692 bytes); arg_3 typed as a 2-D vector at the
+// definition and both calls 2; the source vector built right after the angle call 111; the actor lookup after the
+// 0x1e5450 call 177 (689 bytes); one-expression angle sum with the first limit as default-then-override 115 (690).
 // @retail 0x29c860
 void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	point2f const *arg_3, real arg_4, vector3f *arg_5)

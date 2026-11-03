@@ -661,6 +661,9 @@ struct s_player_axes_153d10
 // Round 128 (plain): both/up-only/forward-only array components through axes 2/2/2; both pointer arrays 18;
 // pointer up array with axes forward 18; axes up array with pointer forward array 2; pointer up field with
 // pointer forward array 18; pointer up array with pointer forward field 18. Original body restored.
+// Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
+// helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
+// axes 2; slot vector through a real pointer 18.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

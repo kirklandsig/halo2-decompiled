@@ -213,9 +213,10 @@ real function_1f8050(long actor_index, bool *fast)
 	return result;
 }
 
-/* takes the pending facing (+0x622) unless the actor rides a vehicle */
+/* takes the pending facing (+0x622) unless the actor rides a vehicle; the last
+   argument goes unused (the link drops it, its caller still computes it) */
 // @retail 0x1f5560
-bool function_1f5560(long actor_index, vector3f *facing)
+bool function_1f5560(long actor_index, vector3f *facing, bool unused)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
 
@@ -969,6 +970,10 @@ real normalize2d(point2f *v);
 // AC484: Multi-use origin pointer at entry/valid scope, with late/early result declaration,
 // 135 each; each with direct request return 182. Original field addresses, result scope
 // and complete body restored; retained DL success and distinct return transport remain.
+// Round 545: Negative trajectory outcome producers, original/complementary unit-state arms,
+// assigned/terminal request results 182/120/187/141/189/113/193/156.
+// NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
+// Original request/movement graph and body restored; retained DL result and return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
