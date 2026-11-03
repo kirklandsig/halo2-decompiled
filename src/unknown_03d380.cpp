@@ -436,6 +436,9 @@ void function_125a90(long value);
 // declaration order here); `a` declared in the flag78 block 57, at its use in the b arm 133; the flags as mask
 // tests (`(flags & 0x20) != 0`) 36 and the kind test as `(0x1e >> kind) & 1` 36 (same code each). Still
 // BLOCKED-BY 0x221810 (src/unknown_221490.cpp held this round) and the ESI multiply. Body unchanged.
+// M341: Actual kind-bitset producer byte/word/long/dword, negative/positive decision:
+// 48/48/36/36/48/48/36/36. Original expression and full policy loop restored;
+// element multiply/LEA, early policy load and decision-block order remain.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

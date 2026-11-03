@@ -655,6 +655,9 @@ static inline word font_character_pixel(long alpha, long color)
 // 179/222/169/227/136/230/216/236. Original helper and full decoder restored;
 // alpha extension, literal assembly and run-two reuse remain.
 // NOT kept: every accumulator form regresses and remains unmatched.
+// M341: Native literal word plus network-order conversion, direct/memcpy and word/long
+// values, original/numeric parity: 104/104/121/121/196/196/192/192. Original literal, helper and
+// decoder restored; alpha widening, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
