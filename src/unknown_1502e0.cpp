@@ -1893,6 +1893,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // g_4e0300) where ours reuses edx/ecx, which costs ours the ebp register. Tried: a local unit_index (202), the 0x14c compare
 // through a second tail_player_get (238), g_4e0300 in a local (242), an explicit object offset kept in a local (202),
 // the parent test without the bool (227).
+// AC500: Native unit/object field views and existing complete difference producer, masks 1-7,
+// 202/202/202/203/203/203/203; complete graph with byte header kind 203. Original real layouts,
+// fields, helper use and complete body restored; frame agrees, early lookup ownership and offset spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
