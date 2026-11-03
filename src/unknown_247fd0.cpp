@@ -692,6 +692,10 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // 'PRTM'/'prt3' compare) 383 (1691 bytes), plus the `(short)` child index and if/else reciprocal 383; blend as
 // its own point3f 403 (frame 0xa4, blend in XMM2-4 as retail); and the first sample a plain real 432 (frame
 // 0xa0). A named double in callee 0x249170 (diagnostic) leaves the frame at 0xa0. All restored.
+// M344: Allocated-record pointer results at producer/entry, conditional/default-owned,
+// positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
+// NOT kept: unmatched nullable admission adds a pointer test; original handle admission,
+// record observations, inherited qualifier, helpers and entire body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

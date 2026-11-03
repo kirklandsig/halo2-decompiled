@@ -1491,6 +1491,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
+// M344: Winning-seat presence/absence produced by all original score improvements,
+// bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
+// flags grow the frame and body; original short winner, requests and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

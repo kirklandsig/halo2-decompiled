@@ -3584,6 +3584,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y556: Payload-relative consumed result, long/int/dword/short, original/independent
 // packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
 // original header-inclusive result, live counts and complete body restored.
+// M344: Relay formal char/signed-char/byte/short/word/int/long/dword
+// 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
+// wider forms regress and lose the parser. Original bool contract/body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
