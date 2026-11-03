@@ -738,6 +738,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // B381: complete normalization predicate, moving/stationary bool/byte/short/long,
 // 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
 // Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
+// DL252: Reciprocal ordinary/automatic inline boundaries on scalar/shared squared-length/shared
+// scale/shared dot graphs: 185/163/193/166/185/163/185/161. All relaxed contracts outline the
+// reciprocal; NOT kept: retail expands it. Original annotation, both roots, arithmetic and complete body
+// restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

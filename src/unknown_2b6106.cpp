@@ -831,6 +831,10 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // N336: Ordinary main-buffer scopes at status/data alternatives, message/format/both,
 // 583 each; auxiliary arrays at data entry 512; all four there 583. Frame stays 0x860
 // without native EBP bias; original capacities, clear phases and complete body restored.
+// DL252: One caption table at clock/widget/task/data-admission phases, mutable then immutable on current
+// score-pointer/short-selection graph: 542/534/526/515/542/534/526/515. NOT kept: unsupported table
+// lifetimes require a byte match. Original table, buffers, clock observations, scans and complete body
+// restored.
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {
