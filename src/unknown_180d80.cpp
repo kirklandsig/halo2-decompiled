@@ -161,6 +161,9 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ordinary each-use inputs 687/690/697/687; with emission count-pointer traversal
 // 659/678/664/659. Original helper and body restored; early mesh/count homes, creation
 // call and transform ranks remain. Earlier four-corner loop plan excluded before any trial.
+// Round 65 (m3 lane 10, fast; 0x17cfa0 still 70): the entry test as three guard returns 650 (2665 B); the luminance
+// counter declared in its for 145; the count loop index renamed apart from the later local_5 94; the scale declared
+// before the maximum distance 97; the colour scale stored before the counter declaration 145.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

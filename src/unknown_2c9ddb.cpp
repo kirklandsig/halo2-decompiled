@@ -152,6 +152,9 @@ extern long g_55c154;
 // type read once into a local 160 (586: `this` EDI, the type in the item's stack home). Retail and our one-load body
 // colour saved EDI, entry ESI, `this` EBX; every two-arm body flips to `this` EDI, entry ESI, saved EBX, and EBX then
 // also takes the hoisted constant 1; the spill or home reuse goes with the unbiased frame. Original body restored.
+// Round 65 (m3 lane 10, fast): two load arms with a controller-index local 172 (589 B), with g_54e4a0 copied before the
+// g_54e49c store 181, plain 174 (595 B), with game-type and controller-index locals 162 (580 B); the one-load body with
+// a controller-index local 89 (569 B). Every two-arm form flips the frame to unbiased at +0x1.
 // @retail 0x2ca284
 void c_class_2c9e69::handle_item(s_controller_reference **controller, long *item)
 {
