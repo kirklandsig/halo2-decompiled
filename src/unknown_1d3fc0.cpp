@@ -240,6 +240,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // producer orders: 110/110/110/110/110/110; each product named at its own row producer
 // 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
 // four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
+// Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
+// forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
+// 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
