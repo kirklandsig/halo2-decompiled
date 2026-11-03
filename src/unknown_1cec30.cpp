@@ -1036,6 +1036,9 @@ void function_1d1540(s_havok_component *component);
 // Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
 // then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
 // original flag observation, native slot, fresh refetch and complete body restored.
+// Round 382: Native fixed-body predicate alone on constructor/two-use-slot graph,
+// bool/byte/short/long fixed truth then movable complement: 65/65/65/65/65/65/65/65. Original
+// byte test, fresh refetch and full body restored; frame and component/index transport remain.
 // DH309: Actual whole-array data receiver as pointer/field reference, original/aligned copy,
 // with inverse at use/entry: 86/86/85/85/87/87/88/88. Original element receiver restored;
 // frame, input copy and component/index transport remain.

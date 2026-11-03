@@ -873,6 +873,9 @@ static __forceinline long real_to_long(real value);
 // 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
 // readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
 // remain.
+// N334: Paired query success across fallback, nested/flat/exhaustive/complete fallback arms
+// in bool then byte storage: 461/461/382/461/461/461/382/461. Exhaustive forms tie; other frames move
+// to 0x54 and 1908 bytes. Original query aliases, call roles, result and complete body restored.
 // AC492: Complementary internal eligibility, test-produced bool/byte/short/long
 // 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
 // eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.

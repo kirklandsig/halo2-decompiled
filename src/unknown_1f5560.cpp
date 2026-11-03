@@ -213,9 +213,10 @@ real function_1f8050(long actor_index, bool *fast)
 	return result;
 }
 
-/* takes the pending facing (+0x622) unless the actor rides a vehicle */
+/* takes the pending facing (+0x622) unless the actor rides a vehicle; the last
+   argument goes unused (the link drops it, its caller still computes it) */
 // @retail 0x1f5560
-bool function_1f5560(long actor_index, vector3f *facing)
+bool function_1f5560(long actor_index, vector3f *facing, bool unused)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
 

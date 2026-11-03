@@ -1631,6 +1631,9 @@ bool function_17afd0(long effect_index, long value);
 // expression with the shift 123 [51]; false-then-set with every local at function scope, eight orders, 138 [61];
 // effect pointer kept x availability false-then-set, expression, two-step x mask, shift x view reread: 73..160
 // [55..88]. Same view keeps BL over availability in every false-then-set form. Body unchanged.
+// M330: Positive valid-view outcome cleared on query failure, bool/byte/short/long,
+// original/shifted-word eligibility: 134/134/142/139/126/126/132/129. Frame grows
+// to 0x18; original availability gate, snapshot and complete body restored.
 // Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
 // original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
 // and complete executable body restored; flag width and availability/view carriers remain.
@@ -1639,6 +1642,9 @@ bool function_17afd0(long effect_index, long value);
 // two-use effect graph: 72/73/72/132/132; shifted-word flag with the first/fourth/fifth
 // orders 114/106/106. Last two recover retail length and entry through +0xb2.
 // NOT kept: one-point best or regression; original body restored.
+// F346: On the retained two-use effect graph, last-consumer scopes for owner, availability,
+// both and complete effect/classification, each original/shifted-word eligibility:
+// 73/113/73/113/73/113/73/113. Original complete executable body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
