@@ -1193,6 +1193,11 @@ void __stdcall function_43720(s_43740_input *input)
 // N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
 // nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
 // complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
+// Round 33 (m3 lane 18, fast; 0x42b20 checked each time): a long slot index declared at entry for
+// both arrays 79 (223 bytes, 0x42b20 60); the record as one aggregate initializer 87 (229 bytes,
+// padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
+// filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
+// (203 bytes). All restored; the early EAX/EBP tag split remains.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
