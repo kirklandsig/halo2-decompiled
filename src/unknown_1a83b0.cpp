@@ -503,6 +503,10 @@ s_1a8a10 g_4453c0[] =
 // first sum (written i*y first) 17 (retail's folded j re-read, but i*y goes through the copy and the j load stays
 // after the point store), with the stores in retail's [3], [1], [2], [0] order 19, with the second/first sum's i
 // read from the actor 94/27.
+// Round 33 (lane 17): any store into the four-value array between the copy and the first sum gives retail's
+// j re-read, but the stores then stay where written: the second sum and its stores first 30, the second sum
+// first with the stores in [3], [1], [2], [0] order around the first sum 31; the point and the four values in
+// one array 99; the second sum written j * y + i * x 17 (same code); the copy ahead of the switch 54.
 // @retail 0x1a8a10
 bool function_1a8a10(long arg_0, point2f const *arg_1, short arg_2, real arg_3, real arg_4)
 {

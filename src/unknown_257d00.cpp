@@ -1770,6 +1770,10 @@ void function_b7360(long object_index);
 // for `xor ax, ax` and the cs index keeps ESI through the reference CSE across 0x25ab50); ending
 // `return success ? 0 : 2;` 639 (1696); actor first 466; empty cases grouped 466; `short result = 2`
 // then `if (success) result = 0;` 640 (1692). All restored.
+// B384: Native packed-reference low/high/both indices at the initial point only,
+// recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
+// NOT kept: the 290 recording high-word form uses narrower loads than retail and
+// shortens away from 1848 bytes. Original reference observations and callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2288,6 +2292,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // ternary as if/else 499 fast (loses the movsx store); case 7/8 arm last (retail lays it before the
 // shared sete tail) 492; that with the case-1 test 613; dot terms `x*i + j*y` 484, `i*x + j*y` 484
 // (fast control 485). All restored.
+// B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
+// then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
+// cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

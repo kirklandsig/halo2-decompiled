@@ -1001,6 +1001,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Y547: Complete projected-point memcpy/memmove publication, with native/library
 // intersection and initial bounds transfers: 115/419/115/363/115/419/115/475. All restored;
 // coefficient preload, zero XMM roles and projection staging remain.
+// Round 33 (m3 lane 18, fast; 0x1648d0 and 0x320b0 matched each time): the clip parameter through
+// the file's existing ray_plane_distance_1648d0 232; no forward pointer, the view's vector read at
+// each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
+// use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
+// `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

@@ -380,6 +380,11 @@ public:
 // M327: Separate allocation receivers with failure return / success-owned rejection / two-use allocation
 // admission / one exit: 54/54/102/54 with original for, 54/54/102/54 with plain while.
 // Original full body restored; child preheader, pool/NONE ranks, second allocation test and salted link remain.
+// Round 61 (m3 lane 10, fast with 0x175270): the head/offset set-up inside an `if (child_count > 0)` guard 51
+// (diagnostic only, it repeats the loop's own test: head and offset then load after the zero-trip test as retail,
+// but the counter's zero store moves after it too); the guard with the child table indexed by the counter 60
+// (frame changes); the guard with a pretested while and the increment first in the tail 100; the allocation's
+// break first and the initialization unconditional 54 (same code); `child_count > local_14` 55.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

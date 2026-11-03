@@ -1006,6 +1006,12 @@ struct s_string_buffer
 // 65 (aligned 10); the 1/3/4/7/8 chain with the `== 9` test nested in its else 65 (aligned 9: only
 // the 9 test is in line); the chain and a separate `if (== 9)` 76, with `>= 7 && <= 8` 77 (500 bytes,
 // not threaded).
+// Round 52 (lane 14, fast; unchanged source 34 at 475 bytes): retail's other after-the-return test (0x25762a in 0x257320) is the
+// last test of an else-if chain; here the arm has to stay unmerged until after layout. The chain with a backward goto to the loads,
+// a goto past them, the negated chain, `!chain && != 9`, chain `|| == 9` and six arms 65 each (480 bytes, 9 in line); the `== 9` arm's
+// loads reversed 65; a row pointer in the `== 9` arm or in the chain's arm 90/90 (504 bytes: unmerged, but the test stays in line and
+// its arm precedes the loads); with that arm, the negated nested test 90, De Morgan 90, six arms 88, an empty `!= 9` arm 90, the
+// chain inverted with `== 9` tested again 102 (511 bytes). Lead: a form that lays the loads directly after the 8 test.
 // @retail 0x2342e9
 void c_postgame_statistics_list_459680::fill_row(c_class_1a2c81 *item, long row)
 {

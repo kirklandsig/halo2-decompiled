@@ -282,6 +282,9 @@ struct c_aggregate : c_child
 // Round 200 (m3 lane 3, fast): produced renamed added 31; the query output renamed information 31;
 // pre-increments 31 (same code, frame 0x8024); the cleanup object read from the field at the query and
 // the release 67 (376 bytes); scalars before the arrays with produced at the loop-body top 46. Restored.
+// B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
+// then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
+// outputs and complete body restored; escaped output and the lowest loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
