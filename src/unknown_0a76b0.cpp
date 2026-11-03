@@ -896,6 +896,9 @@ extern vector3f *g_4687b0;
 // 309/309/309/309/309/309/309/308. Original executable source restored.
 // P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
 // Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
+// P281: Existing seat accessor with admission-time attach/marker defaults and complete forward setter,
+// eight forms 309/329/340/345/302/326/332/341. NOT kept: 302 gains seven above 30 and grows to
+// 1715/1699 bytes. Original accessor expansion, defaults, copies and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2699,6 +2702,9 @@ long function_c8f60(long unit_index, short seat_index);
 // P275: Whole header produces the initial unit and refreshes at the later original header
 // observation; guarded full-width state, quaternion-only scope and sequential request
 // subsets 0-7: 293/296/293/296/305/308/305/308. Original body restored; entry vehicle/unit homes remain.
+// P281: Existing request argument fields for drop/exit and a plain three-action interrupt table,
+// seven subsets then all with the unsigned vehicle mask: 293/293/627/293/627/627/627/627.
+// Payload fields tie; table forms grow to 1460/1209 bytes. Original complete body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

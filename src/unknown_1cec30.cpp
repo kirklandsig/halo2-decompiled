@@ -1023,6 +1023,9 @@ void function_1d1540(s_havok_component *component);
 // N324: Native slot retained through common setter with fresh post-reset slot lookup; bool/byte/word/dword
 // reset results, aggregate then aligned set copy 81/81/85/87/56/56/55/54. NOT kept: aligned forms lose
 // matched 0x1d1b60 at 59; reset-result form remains unmatched. Frame and incoming argument transport remain.
+// P281: Whole rotation/translation or SIMD-member aggregate initialization, inverse entry scope and
+// actual slot before inversion: 106/90/106/90/101/85/101/85. All regress; early rotation/translation
+// forms also lose the matched caller at 1. Original constructor, slot timing and complete body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
