@@ -899,6 +899,10 @@ static __forceinline long real_to_long(real value);
 // bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
 // straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
 // second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Y558: Shared add-scaled/difference prediction into a point or consumed direction,
+// squared-length boundary independently, 478/478/478/478; complete relative-velocity
+// input on each graph 474/474/474/474. NOT kept: all regress and change the frame or
+// length. Original prediction, helper set, query aliases and complete body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
