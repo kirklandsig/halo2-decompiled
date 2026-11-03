@@ -880,6 +880,10 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // Round 49: memset and kind 1 in each arm 74 (424 bytes; a /FAs compile hoists the arms' stores into retail's
 // zero/kind/zero head with `test eax, eax`, but LTCG keeps them in the arms); a named header type 14; header
 // declared at function scope 14; with the named data pointer: the header at function scope 2, the named type 2.
+// Round 31 (lane 18, fast): the header as a union with a 64-bit member cleared by assignment 25 (408 bytes;
+// the zero becomes a shared register and the kind still follows both zero stores), with the named data
+// pointer 20; a copy from a static const zero header 120 (419 bytes); the data address as `destination +
+// header.offset` 106 (410 bytes), as `header.offset + destination` 106. Original body restored.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
