@@ -328,6 +328,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // B387: Direct location/raised members and library location copy on the unqualified-settings
 // graph, seven subsets, then actual count declaration before the query: 931 each
 // (reduced control 931, full 882). Original complete body restored; frame/homes remain.
+// Round 125 (m3 lane 7, fast; positional/aligned/masked, fast base 931/460/184): no unit volatile 918/462/185; no actor
+// volatile 991/419/171; both 1014/438/171; both with plain location/raised locals 1005/419/167; plus predicates first
+// 1005/419/170; plus one-expression direction dot 1020/421/166; plus self_unit first 1005; plus inflation last 1005;
+// plus one object-scope center 1030/425/167; plus one object-scope offset 1005; both 1029/428/172.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -952,8 +956,7 @@ PRIVATE __forceinline bool path_node_open_2c(s_pathfinding_data const *data, lon
 {
     if (index == NONE || index == 0xffff)
         return false;
-    s_pathfinding_node const *node = &data->nodes[index];
-    return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, data));
+    return (data->nodes[index].flags & 1) && (!(data->nodes[index].flags & 2) || !function_1fa6b0(data, &data->nodes[index]));
 }
 
 /* the same test of the node on one side of an edge, read as the edge's word */
@@ -964,259 +967,14 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
     if (index == NONE || index == (word)NONE)
         return false;
     s_pathfinding_node const *node = &data->nodes[index];
-    return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(node, data));
+    return (node->flags & 1) && (!(node->flags & 2) || !function_1fa6b0(data, node));
 }
-// MiniMax R (11-01, fourth round): no new form, no lower score. The frame stays 0x30 against
-// retail's 0x28, and the edge pointer keeps the 0x1c home where retail keeps 0x18 (the magnitude
-// takes retail's 0x1c home here). This round: writing the two offsets directly (origin->x +
-// normal.x * radius, and origin->x + normal.x * (0.0f - radius) for the other side, the way
-// 0x2c2910 and 0x2c2740 write theirs) drops the frame to retail's 0x28 and removes the
-// direction.x spill, but the edge pointer's home then moves to 0x1c where retail keeps it at
-// 0x18, so the whole body shifts (358, the same with the product first); flipping the operand
-// order of the two origin adds and writing them with += leave the code unchanged (322);
-// declaring the edge pointer at function scope leaves the code unchanged (322) and with the
-// direct offsets gives the same 358; writing the normalisation out in the body, with the
-// magnitude in a local of the body and with the scaling written out as well, compiles to the
-// same code as the helper (322), so the homes are not decided by the helper's shape. A permuter
-// run over the function was started but its full-image baseline build did not finish inside two
-// hours on this shared machine, so it produced no result to apply.
-// MiniMax R (11-01, third round): no new form, no lower score. The crossing test written as three
-// ifs over one flag reproduces retail's accumulator exactly (that block now matches retail's
-// shape), but the function scores 369 with the helper-built offsets and 345 with the per-coordinate
-// ones; the per-coordinate offsets give retail's frame (0x28) and, together with the crossing
-// block, retail's length (1312 bytes), yet the xmm allocation and the place of the surface loop's
-// `if (side)` block still differ. This round: the side branch swapped gives 322 and as a ternary
-// 336; the offsets written straight into the first and second vectors give 419 and the negated
-// form 429. Also this round: retail consumes the zero in `0.0f - radius` (subss xmm0, xmm4) right
-// after the normalisation while ours copies it and keeps it to the comparison, so the negated
-// radius in a local (399), the two offset adds in the other order (415), the other offset first
-// (348) and the normal written as two statements (322, the same code) all leave the zero in xmm7.
-// MiniMax R (11-01, second round): no new form, no lower score. The permuter on this function ran
-// thirty tries from the 322 baseline without a new best. The frame stays 0x30 against retail's
-// 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail xmm4), the
-// direction still in xmm0/xmm5 (retail xmm7/xmm6) and ours still re-reads vertex1 at the select
-// where retail keeps it in EBX.
-// MiniMax R (11-01): tried, not kept: 322 (was 324), under the 8-point keep bar, so the code keeps
-// the two initialised declarations (324). Declaring the two marker variables without an
-// initialiser and assigning them in the other order puts the two entry stores in retail's order
-// (the marker at [esp+0xc] first); the later rounds' 322 figures above were measured with that
-// form in place. The frame stays 0x30
-// against retail's 0x28, the zero is still in xmm7 (retail xmm0), the radius still in xmm6 (retail
-// xmm4) and ours still re-reads vertex1 at the select where retail keeps it in EBX.
-// MiniMax R (11-01): no new form, no lower score. The vertex pair's declaration order swapped and
-// the from/to choice made where the addresses are built score 325/346/325/342; the frame stays
-// 0x30 against retail's 0x28 and ours still re-reads vertex1 at the select where retail keeps it
-// in EBX.
-// score 324 (was 324): frame 0x30 versus 0x28. This 324 (round 27) comes from the file's dot_product2d
-// and the shared cross_product2d of vector2f_products.h, not from the reverted two-scalar copy: the
-// zero is now made again before the compares as retail does (ours xmm7, retail xmm0), but ours still
-// copies it for 0 - radius after the first offset where retail subtracts in place before both
-// offsets, so ours keeps radius in xmm6 (retail xmm4) and spills direction.x and the first offset's y
-// (the 8 extra frame bytes). Earlier: ours kept 0.0 in xmm6 for the whole loop. The edge pointer sits
-// in ebx (retail esi) and the vertex in memory (retail ebx). Retail's crossing test is one byte set
-// three times (`xor dl, dl` before the normalisation, `mov dl, 1` per test): the flag form
-// `crossing = false; if (..) crossing = true` x3 reached 318 in earlier rounds (kept out: flag rule);
-// on the 347 and 324 bodies of round 27 it is 371 (1331 bytes).
-// Round 29 (lane A): the direction as two scalars (no address-taken struct) leaves it in registers
-// as retail does: 347 -> 324, 1312 bytes. The frame is still 0x30 against retail's 0x28: ours keeps
-// the normal's x at esp+0x18 and its y at esp+0x34 where retail has the y at 0x2c and the x at
-// 0x34, and ours still spends a slot on the spilled direction.x.
-// Review (coordinator): the two-scalar direction (324) is a hand copy of vector2d_from_points2d's body
-// with no match, so the code stays at main's helper call (347); body copies are kept only with a match.
-// Round 79 kept: the edge's node pair as a real array, the fixed-side tests on the edge's word
-// (edge_node_open_2c: retail's `mov cx, word; movzx eax, cx; cmp cx, 0xffff`), the long test on
-// the indexed ones, start/end vertices by if/else, complete geometry before the tests, the ring
-// direction as `bool forward`, the portal loop stepping through the portal pointer with the source
-// edge formed first, the previous vertex by if/else, no volatile on first_vertex and the walking
-// edge in its own local (retail stores the edge index back to its own slot at entry) 347.
-// Round 79 tried on 347/318: flag 318; offsets summed product-first/direct products/second difference
-// first/both scales first 318/338/343/354; `|` of the crossing parts 371; the `||` crossing in one
-// expression 350; vertex-select polarity flip no change; on 347: offset and difference interleaved
-// 403, one offset reused 403, direction from the vertex indices before the start pointer 394.
-// Data must stay in EBP: forms that move it let LTCG pass it in a register (ret 0x14).
-// Earlier: frame 0x28 agrees; zero/radius schedule, history homes and indexed node loads remain.
-// Earlier: Frame 0x28 and length agree; zero/radius schedule, history homes and indexed node loads differ.
-// frame 0x28 agrees; zero/radius schedule, history homes and indexed node loads remain.
-// Earlier: frame 0x30 versus 0x28; zero register, history homes and adjacent-node access differ.
-// Ordinary edge with shared scaling 401; short surface 405; portal source at use 405; depth one 405; unsigned count 405.
-// Earlier: ordinary previous/first/both history 399/401/400;
-// word node index 408; alternate normalizer 401; indexed node pair 428;
-// indexed pair with ordinary previous history 438. Frame and edge/history homes remain.
-// Earlier: frame 0x30 versus 0x28; zero register, edge/history homes and indexed node loads differ.
-// Frame 0x28 agrees; radius/zero schedule, edge/history homes and indexed node selection remain.
-// Radius/zero schedule, edge/history homes and node selection remain.
-// frame 0x30 versus 0x28; zero register, history homes and adjacent-node access differ.
-// frame 0x28 and length agree; zero register, edge/history homes and indexed node loads differ.
-// Earlier context: frame 0x30 versus 0x28; zero register, history homes and adjacent-node access differ.
-// ordinary previous/first/both history 399/401/400;
-// frame 0x30 versus 0x28; zero register, edge/history homes and indexed node loads differ.
-// Earlier context: frame 0x30 versus 0x28; zero register, edge/history homes and indexed node loads differ.
-// Reduced trials: direct dot predicate 401; shared dot product 401; immutable predicates 401; geometry
-// names 401; output memcpy 401; earlier offset workspaces 401; native first-open 416; word selected vertex
-// 404.
-// j91: frame 0x30 versus 0x28; edge/history homes and indexed node selection differ; origin snapshots gain only one and grow frame to 0x38.
-// first offset in place 401; second offset in place 401; both offsets in place 401; first offset origin
-// snapshot 400; second offset origin snapshot 400
-// Earlier: frame 0x38 versus 0x28; zero register, history homes and indexed node loads differ.
-// frame 0x38 versus 0x28; zero register, history homes and indexed node loads differ.
-// Earlier context: frame 0x38 versus 0x28; zero register, history homes and indexed node loads differ.
-// Node fields at use 420; vertex words at use 414; endpoint values 432; normal assignments 401;
-// split crossing phases 399; late second workspace 399; split phases/ordinary previous history 397;
-// Boolean ring direction 399; vertex words/ordinary previous, first, both history 414,415,415;
-// vertex words/Boolean ring direction 408. Retained code 1307/1312, checker extent 1312/1312.
-// Earlier: frame 0x28 and length agree; zero register,
-// edge/history homes and indexed node loads differ. Later first/second/both
-// differences in place 397/397/397; one displacement 397; one radial offset
-// 385; offset with shared displacement 385; phase scopes 397; offset/scopes 385.
-// Complete geometry before predicates 397; with shared dot 397, symmetric cross parts 402,
-// named projection 397, both named products 402, equivalent orientation 421, postincrement count 396,
-// separate ring guards 397. Original single radial workspace and predicate phases restored.
-// Native/promoted cached flags 385/401; explicit flag guards 414/409;
-// node fields at use 384; native/promoted flags with receiver at use 384/383; flag-word single result 406.
-// frame 0x28 and length agree; zero register,
-// DL131: Radius/zero schedule, edge/history homes and node selection remain; result-first query
-// 441; nested query result 448; overall single result 394; overall/query result 414; indexed nodes
-// 430; indexed/result query 396; indexed/nested query 427; overall/indexed/query result 450.
-// Original body, both private helpers and complete shared header restored.
-// Predicate inline declarations 433; ordinary ring history 404; ring/incoming/both history names 385/385/385; declaration order 385; ordinary names/order 404/404; names plus order 385.
-// Native helper side/promoted node/both 385/385/385; word/unsigned node input 409/385; byte/long openness result 417/410; native side and word node 409.
-// Round 187: indexed node array plus Boolean side, native/promoted return and direct/cached flags
-// all 462 with force-inline openness or 429 with ordinary-inline openness. All eight forms and shared type restored.
-// Round 234: native current edge/node/portal-surface records and combinations
-// 395/437/429/392/478/411/486; native portal query edges 392. Original receivers restored.
-// Round 197: Cached selected/portal/both node words 442/385/442; selected/portal/both with Boolean ring direction 414/399/414; both words with word first-openness 410, plus Boolean ring 396. All restored; frame 0x28 remains.
-// Round 255: complete geometric truth carriers byte/short/word/long 385/398/397/401;
-// the same four with native byte side 385/398/397/401. Original Boolean results
-// and side parameter restored; frame 0x28 and zero/radius schedule remain.
-// Round 379: End/start/both endpoint addresses at use 385/462/451; traversal-lifetime edge alone/with end/start/both 385/385/462/451; complete receiver graph with node fields 421. Original body and helpers restored.
-// Round 385: Uniform edge/surface/vertex table roots, singly and in pairs/all,
-// 418/410/432/407/403/412/409; all roots per iteration 463. Original observations restored.
-// Round 388: Shared scale/normalizer ordinary inline singly/both 385/385/385;
-// scale noinline 425; normalizer noinline 451; noinline scale/ordinary normalizer 425;
-// ordinary scale/noinline normalizer 451; both noinline 415. Original declarations restored.
-// Round 172 DL: Complete first-node rejection ownership with bool/byte/signed-byte/
-// short storage 427/427/427/413; the same four with native complete geometric
-// vector storage 427/427/427/413. Boolean and byte forms reserve 0x24 versus
-// retail 0x28; short restores extent but regresses. Original acceptance,
-// types, helper calls, history qualifier and complete traversal restored.
-// Round 175: Full-width unsigned incoming/ring/complete selected-vertex domains and all
-// subsets 385 each; all with unsigned equality-only ring-edge anchor 385. Native word values
-// and distinct NONE bit patterns preserved. All original domains, histories and body restored.
-// Round 91: node pair indexed through the edge's real word pair 434 (data to eax, frame 0x2c);
-// word index in the open test 409; portal loop stepping through the portal pointer, source edge
-// before the side test, vertex selected by value 432 (data to ebx); first_vertex without volatile
-// 404 (aligned diff 500 -> 461, convention kept); that with the indexed pair 433.
-// Round 420: Incoming edge used as mutable working index, with iteration/traversal receiver and short/word bounded
-// ring counts: 415 each; the same four with early ring anchor 361 each (1295 bytes). Original input copy,
-// receiver/count and anchor lifetimes restored; frame remains 0x30 versus 0x28.
-// Round 194: Shared point-setter normal/positive/negative producers and subsets 422/470/447/479/468/508/535; all plus successful output setters 513. All grow away from retail and restore the original helpers, geometry and complete traversal.
-// Round 317: Complete negative crossing result with factored rejection, second-test order
-// and sentinel priority, 369/369/413/413/411/411/411/411. Frames 0x30/0x38/0x28;
-// sentinel-first recovers retail frame but regresses. Original body restored.
-// Round 27 (m3 lane 15, fast): on 347, the two cross tests through cross_product2d alone 347 (same
-// code), the dot test through dot_product2d alone 347, both together 324 (kept, plain 324), the dot
-// through the vector2f dot_product2d as well 324; the flag form on 347/324 371/371 (1331 bytes);
-// on 324: first_vertex declared before previous_vertex 322 (retail's entry store order); with it the
-// normal by two assignments, normalize_local2d_2c, normalize2d_fast, the ring exits as two statements
-// 322 each; a negative_radius local before the first offset 398, before the normal 424 (1281 bytes);
-// the offsets written per coordinate with that local, origin first/product first 360/360 (1268
-// bytes). Compile-only: unary minus in place of `0.0f -` gives identical code.
-// Round 252: Common successful output across all three success paths: long/dword/word/native point at entry
-// and after working-edge declaration 459/459/456/401/459/459/456/401. Original complete executable source
-// restored; Frame 0x30 versus 0x28, zero/radius ownership, history homes and crossing allocation remain.
-// Round 47 (m3 lane 1, fast; positional count, aligned diff tracked too: baseline 283): the -radius scale
-// before the +radius one, each with its origin add, 353 (1281 bytes, aligned 234: frame 0x28, radius in XMM4
-// and retail's in-place `0 - radius`); both scales first then the adds 351 (aligned 233), with the other
-// offset's y add first 410; the adds as `offset.x += origin->x` 324 (same code); the offsets per coordinate
-// as `normal.x * radius + origin->x` (and `* (0.0f - radius)`) 360 (1268 bytes, aligned 172: the whole
-// normalisation/offset/difference block then matches retail), origin first 360, -radius pair first 368;
-// on that per-coordinate form the crossing as three `crossing = true` sets 347 (1312 bytes, aligned 161) or
-// as `first | second | (first_vertex == NONE)` 347 (1312 bytes, aligned 137). Retail evaluates all three
-// crossing tests into one flag (DL), so the || form keeps it 44 bytes short.
-// Round 121 (m3 lane 5, fast): the offsets per coordinate as the matched 0x2c2910/0x2c2740 write them
-// (`origin->x + normal.x * radius`, `* (0.0f - radius)` for the other side, no negative-radius local)
-// 360 (1268 bytes), but the whole float block is then retail's (frame 0x28, the zero in xmm0 consumed by
-// `0 - radius`, radius xmm4, direction xmm7/xmm6, no spills); with the crossing as one flag set by three
-// ifs 347 (1312), plus first_vertex declared first 345 (1312); per-coordinate offsets plus first_vertex
-// first 358, plus the flag declared before the normal (retail's `xor dl, dl` inside the x87 length) 361
-// (edge slot 0x18 as retail); that flag at the loop top 341, before the vertex loads 304 (frame 0x2c),
-// before the start pointer 347; vertex by if/else 361; edge, vertex0/1 or vertex declared at the loop
-// top or function scope 361 (same code). Left on the matched float block: ours re-reads vertex1 from
-// the edge at the select where retail keeps it in EBX, so ours holds the widened side in ESI (retail
-// spills it to the magnitude slot) and the edge pointer takes EBX (retail ESI). Also: direction renamed
-// segment 324 (same code); edge declared at function scope 324; the portal search as a while with
-// nested ifs and the step at the bottom 379 (1288).
-// Round 123 (lane 6, fast): the offsets as direct products (`origin->x + normal.x * radius`, `* (0.0f - radius)`),
-// as 0x2c2910/0x2c2740 write theirs, 360 (1268 bytes); the dot test's operands swapped 324 and both cross tests as
-// `cross_product2d(direction, x) > 0.0f` 324 (same code); `first_vertex == NONE` first in the crossing `||` 348;
-// the second offset's vector from the start computed first 349.
-// Round 40 (m3 lane 15, fast; positional/aligned, base 324/248): offsets per coordinate plus the three-if flag and
-// first_vertex first 345/149 (frame 0x28, prologue retail's); with the flag declared before the normal 361/119 (the
-// whole float block retail's, 1288 bytes), at the loop top 341/161, before the vertex loads 304/148 (1315); on 361/119:
-// select as vertex1 then an if 365/121, side-first compares 361/119, first_edge/count/vertex declared at function
-// scope 361/119 (same code); the ring walk as a forceinline helper with a local edge copy 323/106 (1276: the selected
-// vertex shares EBX with vertex1 as in retail), a ring-local walking edge pointer without a helper 323/106 (same code),
-// through the pointers 361/119; the parameter as the walking edge alone 416/248, with the flag block 430/142, with the
-// 361 block 426/125, plus the ring-local edge 430/111; flag before the vertex loads with the ring-local edge 296/133
-// (flag in the side slot, frame 0x2c). Retail stores the outer edge to 0x18 at each ring step, so the ring copy is not
-// retail's; left: edge EBX against ESI, side kept in EDI (retail spills it to 0x1c), edge/magnitude homes swapped.
-// Round 443: repeated native byte/word/long/dword side-index values at entry
-// 324/411/386/386; at iteration entry 324/411/386/386. Original Boolean input,
-// radius, traversal, predicates and complete body restored.
-// Round 352: Complete projection/orientation results phased/together, each with
-// first/sentinel/second/pair-first Boolean accumulation: 404/404/404/423/403/403/403/422. Frame
-// 0x30, zero/radius and vertex allocation remain; original geometry, helpers and traversal
-// restored.
-// Round 234: Planar start/end/both/origin/start-origin/end-origin/all input records 424/338/426/346/419/362/444; all via library copies 444. Frames 0x38/0x40/0x48 regress from 0x30 versus retail 0x28. Original full body restored; zero/radius schedule and vertex homes remain.
-// N303: Final vertex from the already selected endpoints: conditional/if-else/default-to/default-from
-// 361/361/369/369; default before geometry to/from 369/375; native word endpoints/all indices
-// 397/358. Original body restored; frame 0x30 versus 0x28 and geometry/vertex homes remain.
-// Round 317: Actual endpoint-word/point/node lvalue subsets 1..7, all plus first portal lvalue
-// 333/324/333/324/333/324/333/333 fast; all original receivers and body restored.
-// Frame 0x30 versus 0x28, zero/radius lifetime and endpoint/history homes remain.
-// Round 73 (m3 lane 16, fast; positional/aligned; 324 stands, every gain below needs the flag, so nothing is kept without
-// a match). Base F = direct offsets (`origin->x + normal.x * radius`, `* (0.0f - radius)`), the three-if crossing flag
-// declared before the normal: 363/134 (1288), float block identical to retail apart from the shift. On F: first_vertex
-// first 361/132; end pointer before start 347/143 (1312); vertex1 read first 366/138; select by if/else 363/134; vertex =
-// vertex1 then if 367/134; widened side named 321/135; first_vertex + side 319/133; end + side 307/144; all three 305/142.
-// G = F + first_vertex first + end first (345/141): one variable for vertex1 and vertex 334/162; count first 345; ring
-// through a pointer local initialised from edge 212/98 (1292: vertex shares EBX with vertex1 as retail); in the ring's
-// body or after the forward test 345; with `edge = &edges[i]` kept and `walk = edge` at the bottom 204/97 (1312); any ring
-// read through edge instead of walk (seven masks) 345; edge address-taken in the ring (three placements) 345; first
-// comparison on bool 204; second on bool 316/178; helper re-reading the node word 204 (same code). H = 204 + surface index
-// read inside the test 204/96 (retail's load after the first jump); on H: the selected vertex read from the edge 166/79
-// (edge ESI, table EDI as retail, but word temps); vertices at every use 276/143; from/to at use 225/136; from/to as two
-// ternaries 320/77 (edge ESI), to first 222/79, vertex1 first 341/64 (vertex1/vertex EBX, edge ESI, vertex0 lost to the
-// widened side); a 30-form grid of from/to spellings best 183/87; walk from the table 385; chained tail 212; two-ifs and
-// for-increment tails 204; long count 205; count before first_edge 202/95. Single-variable ring on H (345/140): only this
-// form gives retail's edge store and reload at the ring's bottom, so the pointer local is not retail's; named long index
-// for `!forward` 277/112 (vertex1 EBX, vertex0 EDI, edge memory, but the test folds to setne); on one read only 345; byte
-// or bool index 353; first_edge at the loop top 320/158; first_edge or count declared elsewhere 345; first-edge pointer
-// compare 369; named next edge 345/355; named open result or ring node 345; both 380. Retail keeps edge ESI, vertex EBX,
-// vertex0 and node index and ring index EDI, and spills first_edge, count and the widened side: ours always spills vertex
-// or edge instead of first_edge. Plain subsets on the kept body: first_vertex first 322; surface in test 321; end first
-// 341; ring pointer 353; first_vertex + surface 319; first_vertex + end 339; end + surface 338; those three 336; pointer
-// + first_vertex 351; pointer + surface 352; pointer + end 342; all four 339.
-// Round 482: Actual typed edge-surface/flag and portal-edge-pair fields, masks
-// 1..7, tie 324; complete fields with first-history declaration first 322.
-// Two-point gain rejected; original headers and complete traversal restored.
-// Frame 0x30/0x28, zero/radius residency and endpoint/history homes remain.
-// M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
-// then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
-// names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
-// F349: Native node flag0/flag1/flag3 word fields, subsets 1..7, then node receiver
-// at traversal scope: 449/397/416/338/437/394/417/417. Flag1 forms recover frame 0x28 but regress;
-// flag0 forms also raise sibling 0x2c2060 to 461 from 420. Original header, helpers
-// and body restored; frame 0x30/0x28 and zero/radius and endpoint/history homes remain.
-// B387: Serial native radial/displacement phases, shared-domain/scope subsets and independent
-// serial control: 400 each. All recover frame 0x28 at 1312 bytes; NOT kept: regression
-// from 324. Original full body restored; zero/radius and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
 {
-    long previous_vertex = NONE;
     long first_vertex = NONE;
+    long previous_vertex = NONE;
     long current_edge = edge_index;
     for (;;)
     {
@@ -1226,51 +984,58 @@ bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real
         if (!path_node_open_2c(data, node_index))
             return false;
         s_pathfinding_node const *node = &data->nodes[node_index];
-        short surface_index = *(short const *)(edge->unknown04 + 2);
-        if (previous_vertex != NONE && surface_index != NONE && data->surface_count > 0)
+        if (previous_vertex != NONE)
         {
-            s_pathfinding_edge const *portal = &data->edges[data->surfaces[surface_index].index];
-            long opposite = portal->nodes[portal->surface != node_index];
-            if (path_node_open_2c(data, opposite))
+            short surface_index = *(short const *)(edge->unknown04 + 2);
+            if (surface_index != NONE && data->surface_count > 0)
             {
-                *result = *(point2f const *)&data->vertices[previous_vertex];
-                return true;
+                s_pathfinding_edge const *portal = &data->edges[data->surfaces[surface_index].index];
+                long opposite = portal->nodes[portal->surface != node_index];
+                if (path_node_open_2c(data, opposite))
+                {
+                    *result = *(point2f const *)&data->vertices[previous_vertex];
+                    return true;
+                }
             }
         }
-        long vertex0 = edge->vertices[0];
-        long vertex1 = edge->vertices[1];
         long from_vertex, to_vertex;
         if (first_open)
         {
-            from_vertex = vertex1;
-            to_vertex = vertex0;
+            from_vertex = edge->vertices[1];
+            to_vertex = edge->vertices[0];
         }
         else
         {
-            from_vertex = vertex0;
-            to_vertex = vertex1;
+            from_vertex = edge->vertices[0];
+            to_vertex = edge->vertices[1];
         }
         point2f const *start = (point2f const *)&data->vertices[from_vertex];
         point2f const *end = (point2f const *)&data->vertices[to_vertex];
+        bool crossing = false;
         point2f direction;
         vector2d_from_points2d(start, end, &direction);
         point2f normal = { direction.y, 0.0f - direction.x };
         normalize_offset_direction_2c(&normal);
         point2f offset, other_offset;
-        scale_offset_direction_2c(radius, &normal, &offset);
-        offset.x = origin->x + offset.x;
-        offset.y = origin->y + offset.y;
-        scale_offset_direction_2c(0.0f - radius, &normal, &other_offset);
-        other_offset.x = origin->x + other_offset.x;
-        other_offset.y = origin->y + other_offset.y;
+        offset.x = origin->x + normal.x * radius;
+        offset.y = origin->y + normal.y * radius;
+        other_offset.x = origin->x + normal.x * (0.0f - radius);
+        other_offset.y = origin->y + normal.y * (0.0f - radius);
         point2f first, second;
         vector2d_from_points2d(&offset, start, &first);
         vector2d_from_points2d(&other_offset, start, &second);
-        bool first_crossing = (dot_product2d(&first, &direction) < 0.0f ? 1 : 0) == side &&
-            cross_product2d((vector2f const *)&first, (vector2f const *)&direction) < 0.0f;
-        bool second_crossing = cross_product2d((vector2f const *)&second, (vector2f const *)&direction) < 0.0f;
-        bool crossing = first_crossing || second_crossing || first_vertex == NONE;
-        long vertex = ((crossing != first_open) == side) ? vertex1 : vertex0;
+        if ((dot_product2d(&first, &direction) < 0.0f ? 1 : 0) == side &&
+            cross_product2d((vector2f const *)&first, (vector2f const *)&direction) < 0.0f)
+            crossing = true;
+        if (cross_product2d((vector2f const *)&second, (vector2f const *)&direction) < 0.0f)
+            crossing = true;
+        if (first_vertex == NONE)
+            crossing = true;
+        long vertex;
+        if ((crossing != first_open) == side)
+            vertex = edge->vertices[1];
+        else
+            vertex = edge->vertices[0];
         if (vertex == previous_vertex)
         {
             *result = *(point2f const *)&data->vertices[vertex];
@@ -1314,8 +1079,8 @@ bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real
             }
         }
         {
-            long first_edge = current_edge;
             short count = 0;
+            long first_edge = current_edge;
             for (;;)
             {
                 bool forward = vertex == edge->vertices[1];
@@ -1677,6 +1442,13 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // both long 476; count through its address, const reference or local copy 440 (same code); edge outside the loop, dword edge, order of the top
 // assignments, candidate while/decl forms, scan compare against type/next/step 440 (same code). Root left: our count CSE holds EBX through the
 // scan where retail's edge lives in EBX and count is read from memory; retail's dead `query+4` store shares the location's slot.
+// Round 125 (m3 lane 7, fast; positional/aligned/masked, base 418/275): `edge = 0xffff` again at the scan hit 380/276/62
+// (dead store, not kept); side flipped in place 419/222/58; both 419/224/58; long candidate 463/240/75; radius read
+// from the query at each use 491/259/72; location at each use 419; edge declared after type 418/224/58; target.z per
+// attempt 412/226/61; out-point pointer 439/226/49; plus named z 435/224/47; plus word NONE test 431/244/55; plus word
+// output index 431; 0x210a30 called 680 (1512 bytes), inline or forceinline declaration 680; with the others 694-699;
+// on the flip: edge first 419, type/link first 419, step last 418/222/57, source first 430, sector/origin last 419,
+// origin per field 418/224/60, both 418, start per field 419; all together 460.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
