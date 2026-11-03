@@ -664,6 +664,10 @@ struct s_collision_result_buffer_1697c0
 // M336: Returned success owns loop admission or tail termination, bool/byte/short/long,
 // with failure-owned best-fraction updates: 351/346/363/361/346/353/363/362. All regress;
 // original break, result and whole body restored. Native scratch/axis/result homes remain.
+// N346: Complete squared-length node real/const-real/double/const-double, then allowed/short
+// admission bool/const-bool: 303/303/350/350/303/303/307/307. Original private normalizer and sampler restored;
+// NOT kept: unmatched intermediate/predicate ownership. The rejection Boolean recovers root/axis homes,
+// but grows to 1460/1423; later random/sine scratch and rotation lifetime remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

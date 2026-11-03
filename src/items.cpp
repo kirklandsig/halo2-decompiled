@@ -1649,6 +1649,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
 // NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
 // paired point setters and body restored; return-byte, contact/event and release homes remain.
+// N346: Immutable positive twice-used spin bool/byte/short/long, direct/conditional:
+// 140/140/173/173/177/177/176/176. Original mutable spin, paired setters and full body restored;
+// NOT kept: unmatched predicate/representation forms. Return-byte and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

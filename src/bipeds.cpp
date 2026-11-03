@@ -4641,6 +4641,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
 // actual admission result 83. NOT kept: six-point criterion gain is below eight; all
 // executable forms restored. Native support/result byte homes and early success store remain.
+// N346: Independent state-criterion argument in bool/byte/short/long, mutable/const,
+// 144/144/144/144/146/146/146/146. NOT kept: one-use argument producers remain unmatched;
+// original support/result lifetimes and complete body restored. Native byte homes remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
