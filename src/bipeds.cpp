@@ -2744,6 +2744,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // hit producer 499. Both distance-scan values (494 plain, 1874/1908, frame 0x50
 // versus retail 0x4c) NOT kept: struct copies in two of the three scans, the subset
 // picked by score (mass scan keeps its pointer). Body restored at 530.
+// F341: Last-use scopes for admission inputs, the hit position and the
+// projection scalar, seven subsets then all with complete role names: 530 each.
+// All restored; frame 0x44 versus 0x4c, signed state/result byte and point homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4896,6 +4899,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 1/2/4/3/5/6/7, then all with read-only tag receiver: 729/770/741/773/744/780/775/775
 // (fast control 655). All regress; complete original body restored. Frame 0xd0 agrees;
 // animation/state/tag homes and completion expansion remain.
+// F341: Existing complete setters for every velocity copy, relative velocity
+// and integrated point, seven subsets then all with complete workspace roles:
+// 653/655/655/653/653/655/653/653 versus fast control 655. Velocity-copy forms
+// lengthen to 2297; two-point gains rejected. All restored; full score stays 648.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
