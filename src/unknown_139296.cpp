@@ -1250,6 +1250,11 @@ void __stdcall function_22aa16(long arg_1, byte const *arg_2, byte const *arg_3,
 // Round 113: field versus initial offset with guarded do 1; exact sibling first with third
 // while/count-first/reversed condition 3/3/3; split third offset 118; all sibling loops with
 // early fourth mask 123; split mask defaults and Boolean fourth-mask zero on score-3 form 3/3.
+// Round 60: sibling loops with forceinline forwarders around the draw calls (loops 1+2, 2+3) 118/118; a dead
+// `+= 0` on a first or later offset 118/118; masks as short or long with cast out-pointers 118/118; the item
+// output in the parameter's own home 118; one element pointer or colour buffer at function scope 118/118;
+// offset-compared do without naming the count in the guard 1; an index counted in a rotated `for` over the
+// count, in later loops or all three, with explicit or `i < count` first loops (SSI SIS SII JSI JIS JII III) 118 each.
 // @retail 0x13a3c6
 bool function_13a3c6(long arg_1, long arg_2, byte const *arg_3, long arg_4)
 {

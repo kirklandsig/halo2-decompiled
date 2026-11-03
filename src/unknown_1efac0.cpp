@@ -407,6 +407,11 @@ struct s_surface_object_header
 // `(byte)(surface_index >> 5)` 62 (the key moves to EAX); named region and choice indices beside a
 // `choices` pointer 8 (same code); the object read through the file's header view while the header
 // local serves the flags 8 (same code). A permuter run (codex AC88) found nothing either.
+// Round 60: about 1,600 forms in a compile-only screen (which reproduces this block) leave it unchanged; on --fast the
+// header from the data pointer then `header += index & 0xffff` 8; `index &= 0xffff` first 8; region named before the
+// object 8; no object local 8; list and owner locals in the other cases 8; the value read as one sum 8. Diagnostic: a
+// region defined before the object read with a second use gives retail's `lea edx` for the record, because it then
+// overlaps the record's range; a one-use region is substituted back to its use however it is spelled.
 /* the first argument is the caller's shape owner (or its object reference); the body
    never reads it, but every retail caller still computes it before the call */
 // @retail 0x1ef3e0
