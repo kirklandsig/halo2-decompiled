@@ -1170,6 +1170,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Original word workspace and both populations restored; frame/session/lookup remain.
 // M312: Actual capacity/team selector interior case priorities, five capacity/two team/one joint:
 // 766/766/766/766/766/766/766/766. Original body restored.
+// M334: Current Boolean-balance/word-workspace graph with existing team/minimum/maximum/spread/
+// limited/imbalance selectors forced inline, then all party bounds and all except capacity:
+// 766/766/766/766/766/766/766/766. Original inline contracts restored; frame/session/lookup remain.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

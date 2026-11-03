@@ -324,6 +324,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH308: Native accumulation clamp ordered/successive/complete-result/copied-result/zero-owned/
 // upper-first/original-input/nested-result graphs: 336/336/421/421/433/349/421/342 (fast control 336; full 324).
 // Original helper and body restored; ESI/unit-constant/reciprocal and accumulation schedules remain.
+// N337: Direction/null-sample/invalid-range early-continue subsets 1..7 and complete
+// combined sample guard: all eight 336 (fast control 336; full baseline 324).
+// Original admission tests and complete body restored; full-image ESI/unit/scale homes remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

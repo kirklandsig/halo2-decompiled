@@ -1067,6 +1067,9 @@ bool __stdcall function_2399da(long controller_index)
 // denial as the first else-if arm, then rank 3, then the set-rank arm 90; task_index declared at function scope
 // 90; the identity test inverted (`!xuid || !xuid->qwUserID` refusal first) 90; the set-rank arm tested first
 // (`rank != NONE && rank <= own_rank`) with the removal as the next arm 92. Identity ECX/rank EAX remain.
+// Round 199 (fast): the task index as DWORD 90; the removal test as a named `bool remove` 90; the over-rank test as
+// `!(rank > own_rank)` 90; the identity test split into a NULL test and a 64-bit test, each with its own 0x5c
+// denial 90 (merged back); `if (may_change && !have_member) copy; else if (!have_member) deny` 122 (438 bytes).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

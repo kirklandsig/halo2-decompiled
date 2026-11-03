@@ -225,6 +225,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // the size as a long passed through a `(dword *)` cast 128; diagnostic, the clamp and terminator moved ahead of the
 // success test 129 (not semantics-preserving). Retail reads the size from its slot three times around the clamp,
 // which only a volatile size reproduces (not allowed); EBP's late save remains.
+// Round 199 (fast): retail reads the size three separate times around the clamp (compare, select, index) with
+// one store, a pattern only a volatile-qualified size gives (two reads would CSE on a plain memory variable). The
+// token table as `char const *` 128; the delimiters as a named static array 128; diagnostic, the clamp, terminator
+// and first token merged into the success test with a do-while walk 127 (EBP still saved at the walk); the
+// table-full case as `if (count >= 11) { next token; continue; }` 251 (802 bytes); the clamp right after the wait,
+// ahead of the success test 129.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

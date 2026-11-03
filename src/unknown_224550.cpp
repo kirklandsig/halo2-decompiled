@@ -332,6 +332,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // P278: Geometry/primary/secondary UV declarations at entry, seven subsets, then all with seed-
 // colour scratch at entry: 232 each. All initializers and observations fixed; original
 // declarations/body restored. Tint/secondary UV and blend homes remain.
+// P287: Four-channel input captured once for both tests, lower/upper conditional stores,
+// scalar result and conditional result: forward 232/252/428/433, reverse 250/253/440/445.
+// Original loop, body and all alias-safe UV captures restored; tint/UV homes and blend remain.
 // B381: complete geometry-source decision, explicit/bitmap bounds in bool/byte/short/long,
 // 293/293/293/232/419/419/419/419. NOT kept: one-use decisions require exact matching. Original tint/secondary-UV
 // homes and blend/reciprocal residence remain.
