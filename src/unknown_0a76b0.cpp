@@ -312,6 +312,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 351/293/168/336/350/307/331/343. NOT kept: the shared hand callback selector 168 (plain),
 // first +0xb0 and frame 8, raises caller 0x111650 from 666 to 713.
 // Original body restored; incoming unit/name/actions ranks and shared-call threading remain.
+// P282: Active word captured only after nonzero count, dword/long with consumer/case storage: 271
+// each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
+// raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
+// incoming ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1862,6 +1866,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // N330: Native weapon reference, complete header-array capture and request-view reference,
 // seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
 // Header capture changes entry shape; original pointers, observations and complete body restored.
+// P282: Complementary mode admission bool/byte/short/long in its original block, then entry
+// uninitialized storage: 99/99/104/105 twice. Original positive mode result, cases and body restored;
+// request/weapon homes and player-getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
