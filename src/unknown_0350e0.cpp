@@ -2098,6 +2098,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // All tie; complete original drawing objects, helper calls and body restored. Frame
 // 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
 // M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
+// M326: Complete left-cross/rotation/draw-position accumulations, subsets 1/2/4/3/5/6/7,
+// 178/174/177/174/178/174/174; all with earlier bare output declarations 174. NOT kept:
+// three-point gains above 30; frame/copy homes remain. Complete original body restored at 177.
 // @retail 0x3eec0
 void function_3eec0()
 {
