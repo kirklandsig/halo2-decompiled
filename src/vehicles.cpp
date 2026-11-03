@@ -1224,6 +1224,10 @@ long function_10f5f0(long object_index);
 // P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
 // seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
 // NOT kept: embedded predicate assignments require a match; original entire body restored.
+// J244: Existing squared-length/dot producers with original/shared point difference
+// and original/six-real buffer: 565/565/561/561/565/565/561/561.
+// NOT kept: four-point lead is below threshold; six-real frame 0x1990 still
+// exceeds 0x1984. Original complete body and arithmetic restored; flag stores and reduction remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

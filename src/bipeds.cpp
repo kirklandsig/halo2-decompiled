@@ -4130,6 +4130,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // 177/162; three named projections k, i, j 170, k, j, i 170, i, j, k 168; one named projection and cross k ahead 184.
 // Lead: retail's first rotation evaluates v.k * axis.k and v.j * axis.i ahead of the cosine; none of these gives it.
 // All raise the positional score, so this body stays.
+// J244: Existing staged rotation/side/up crosses on retained indexed publication,
+// seven subsets then all with shared dot: 175/145/143/174/175/143/175/143.
+// NOT kept: two-point lead below threshold; rotation-stage extents 879/887.
+// Original helper/body and arithmetic restored; normalization SIMD and trig/basis homes remain.
 // Y551: Actual axis assignment/component initializer/shared setter/library copy
 // on the indexed-dot graph 145/224/211/145; with a separate magnitude result
 // 137/224/228/137. NOT kept: 137 uses a one-use call-result local without a
