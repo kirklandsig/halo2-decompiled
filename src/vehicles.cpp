@@ -2736,6 +2736,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M327: Named squared magnitude / accumulated magnitude / completed short-vector fallback / existing normalization scale:
 // 692/740/708/692 on original output, 699/748/710/699 with independent relative output.
 // Original full body restored; frames remain 0xd0/0x104 versus retail 0xfc.
+// M331: Existing projected-speed dot3f boundaries, subsets 1/2/4/3/5/6/7 then all with independent relative
+// output: 717/692/715/717/704/715/720/728. NOT kept: no qualifying gain or byte match. Original complete
+// body restored; retail frame 0xfc and scalar/transform scheduling remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4144,6 +4147,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
 // 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
 // 176/176/176. Original full body restored; found-index retest and collision/result homes remain.
+// M331: Independent offset/length/rest/value declaration ranks vorl/orlv/lorv/lrov/rolv/rlov/volr/vrlo,
+// original producers fixed: 176/176/176/176/176/176/176/176. NOT kept: no qualifying gain or byte match.
+// Original complete body restored; frame 0xec agrees; found-index retest and scalar/world/fallback homes
+// remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

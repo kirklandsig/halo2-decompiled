@@ -1856,6 +1856,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M329: Independent request/weapon/result/modes declarations separated from their
 // original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
 // 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
+// M331: Isolated mode-0/1 query-result producers, admitted overwrite/positive gate/negative gate/rejection
+// disjunction/conditional/full test/sequential rejection/query leaves: 70/70/70/60/70/60/60/60. NOT kept:
+// no qualifying gain or byte match. Original complete body restored; request/weapon EBX/EBP homes and
+// player-getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

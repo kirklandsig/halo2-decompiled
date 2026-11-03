@@ -4627,6 +4627,10 @@ struct s_damage_object_creation
 // DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
 // scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
 // offset/definition and detached/node homes remain.
+// M331: Detached bitmap zero at six capture/receiver/count boundaries, then two separate
+// declaration/assignment forms on invariant creation admission: 174/194/194/194/215/215/194/215. NOT kept:
+// no qualifying gain or byte match. Original complete body restored; entry handle/offset and detached/node
+// homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
