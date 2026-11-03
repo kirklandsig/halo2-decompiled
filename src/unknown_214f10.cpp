@@ -310,6 +310,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // P269: wide-result lexical success/completion, file/outcome and path/ordinal home subsets
 // 1/2/3/4/5/6/7, then all with reversed byte declarations: 42/42/42/42/42/42/42/42.
 // Original homes and body restored; handle ECX and stored-success memory retest remain.
+// DH308: Direct-file graph completion/success, outcome/ordinal and path lexical-home
+// subsets 1/2/4/3/5/6/7, then all with reversed byte declarations: 44 each. Original file value,
+// wide outcome, waits and body restored; ECX handle and stored-success memory test remain.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

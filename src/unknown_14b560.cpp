@@ -857,6 +857,10 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // dword unit 171 (405, the test returns but the unit takes EAX and the iterator index leaves the frame), named
 // object 171, short test as well 172. Parent copied ahead of the unit object: while 108, for 108, guarded do-while
 // 108, dword 171; copied right after the unit read 106; parent and unit as two field reads 171 (405).
+// Round 92 (fast control 44; plain baseline 43): shared header table 44; existing typed object getter 44; typed
+// header getter 44; unit-first with the table 44; exact unit-start/NONE-root walk on that form 109; unit-object
+// declaration before the guard 44; const player/unit-object pointers 44; forced private object getter inline 44
+// (0x14deb0 stays matched). Original body/helper restored; player/unit carriers and root-walk entry remain.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1096,6 +1100,10 @@ bool function_14ed80(void)
 // or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
 // 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
 // index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
+// Round 126: the existing shared remap helper 8, with inline or force-inline declarations 8;
+// primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
+// pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
+// lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1381,6 +1389,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
 // A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
 // then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
+// Round 93: separate output library fills 46; fills/existing positive/negated mode predicates/NONE|result outputs,
+// each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
+// predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
+// 3-point timer-only gain and the grouped output workspace. Original body restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -3096,6 +3108,10 @@ struct s_unit_flags_14d8b0
 // statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
 // One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
 // scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
+// Round 91: second slot block with both engine globals direct, slots direct alone, engine test
+// direct alone, root walk through object_header_get, late options pointer, second engine result
+// pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
+// All leave +0x304 and the same scratch choices; original helpers and body restored.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
