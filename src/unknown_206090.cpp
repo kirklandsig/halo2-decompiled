@@ -359,6 +359,12 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
 // the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
 // local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
+// Round 49 (m3 lane 15, fast control 1355): the two steering magnitudes as `x >= 0.0f ? x : -x` 1375 (6238 bytes,
+// that block then exact: retail tests `jb` to the negation); the signed square grouped `(real)(l * l) * sign * f88`
+// with the casts on both factors or the square only 1427 (6211, retail's mulss order but the clamp above shortens);
+// the final loop's member count read through the element pointer local 1359 (6238); that with the magnitude form
+// 1390 (6211). Retail places the duplicate-contact search out of line after the impact loop (rotated, entered by a
+// forward jump when the list is non-empty); ours keeps it inline.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

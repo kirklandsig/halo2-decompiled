@@ -249,6 +249,11 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // (1694; caller 698), with the `(double)` differences 513 (1646), plus a short outer counter 504 (1651); short
 // inner-angle counter 395 (same code), with the short candidate count 464; all three short with double dx/dy
 // 488 (1669; caller 698).
+// M3 lane 6 r142 (fast; both now `ret 0x1c`): local_2 renamed `direction` 395 (same code); the loop distance's
+// squared sum built in two statements before the root 395 (same code); a pointer to the emission entry in the
+// first arm 431 (1695 bytes); each emission's y written before x 421 (1743 bytes); diagnostic: the arg_0 address
+// read removed 401 (1728 bytes, cleanup 0x18, caller 0x29a190 697). Retail spills the first arm's cosine to
+// [esp+0x28] and takes the y product in SSE before the sine; ours keeps both on x87. Original body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

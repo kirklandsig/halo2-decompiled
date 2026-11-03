@@ -1359,6 +1359,10 @@ long function_146650(void);
 // order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
 // bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
 // the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
+// Round 65 (m3 lane 10, fast): target_direction copied field by field from the view 77 (1961 B, SSE copy); ahead as an
+// aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
+// pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
+// its reduced image scores 248 against the full 14, nothing better in 49 tries.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {
