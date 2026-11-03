@@ -1379,6 +1379,9 @@ struct s_looping_detail_request
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
 // first-player expansion remain; frame 0xc agrees on the original body.
+// Round 345: existing bounded-draw/next-player/camera forceinline declarations, seven subsets; all with
+// nested generator: 110/110/110/110/110/110/110/110. Original body and contracts restored. Detail/offset
+// transport and first-player expansion remain.
 // J241: Shared offset generation with native aggregate/vector-setter/CRT publication and
 // early/late completion 188/190, 197/199, 188/190; native short-count pair 188/190. Frame
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four
@@ -1742,6 +1745,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
 // with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
 // NOT kept: one-use captures without a match; original body restored, frame/homes remain.
+// B383: Native real views of the existing input/output gain fields, each/both,
+// each with complete request storage, then both with per-pass counts and either
+// request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
+// NOT kept: no exact representation match; original fields and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2379,6 +2386,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
 // 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
 // the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
+// M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
+// then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
+// Distance/maximum homes and entry true/flags remain; original complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

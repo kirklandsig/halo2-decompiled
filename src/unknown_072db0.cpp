@@ -1590,6 +1590,13 @@ struct s_rating_summary
 // P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
 // roles independently, then all: 31 each. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 345: completed name-conversion/summary-publication/adjusted-rating phases, seven subsets; all
+// phases with immutable query table: 31/52/52/31/31/52/52/52. Original body and contracts restored.
+// Formatter/count schedule and team/counter homes remain.
+// F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
+// and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
+// library clears recover extent but regress. Original body restored; formatter/count setup and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
@@ -1949,6 +1956,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // restored. User cursor base/home, slot conversion and later homes remain.
 // M321: Returned identity/property copy destinations, mutable/immutable receivers, then either overlap-safe transfer
 // 709/709/709/709/709/709/768/756. NOT kept: local output aliases require a match. Original body restored; initial cursor/slot and later homes remain.
+// M332: Native due-timestamp captures at read/write/both submission boundaries, before/inside
+// admission, then both complete due predicates: 710/715/716/710/715/716/716/716. Original global reads,
+// clocks, predicates and body restored; initial cursor/slot and later homes remain.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

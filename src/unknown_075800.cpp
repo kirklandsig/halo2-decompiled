@@ -1235,6 +1235,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M314: Native-input first-family priorities QDCSP/QDCPS/QDSCP/QDPCS/SDQCP/SDPCQ/SDCQP/SDCPQ:
 // 205/203/195/201/194/194/204/202 against reduced 196. Original classifiers restored;
 // delayed ESI save, late-case layout and full-only handler expansion remain.
+// M332: Repeated typed session/peer/late-message input boundaries, seven subsets, then
+// all with query-message input: 196/196/196/196/196/196/196/196 reduced, tying control 196 (full 153). NOT kept:
+// parameter aliases require a match. Complete classifiers and all handler tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

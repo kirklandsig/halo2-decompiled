@@ -1011,6 +1011,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // graph, seven subsets then opposite complete-word declaration order: 526/610/562/495/573/609/559/560.
 // NOT kept: retail reads both words again at history admission; unsupported observation/predicate
 // steering needs a match. Original body restored; damping and raw/bounded homes remain.
+// N334: Plain vector component loops at flying/paired ground projections/low-normal output,
+// subsets 1-7 514/467/514/418/526/533/616; complete unsigned ordinals 616. NOT kept: the
+// low-normal output loop alone 418 plain (frame 0x30, 3037 bytes) is one of seven subsets picked by
+// score, the like rows beside it stay written out. Body restored at 433; damping and vector homes remain.
 // AC492: Twice-used general normalization return, real/double at producer/entry
 // 488/496/488/496; complemented clipping result 433; direct producer with general return 485;
 // direct branch-owned result alone/with complemented general result 345/345 (3050/3047 bytes).
@@ -1693,6 +1697,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
 // Original motion sample precedes every reset in all forms; root/predicate lifetimes
 // and complete body restored. Zero width, reset homes and material expansion remain.
+// N336: Selected ordinal at signed-short/word width, with entry/before-reset/after-reset/
+// before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
+// Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
+// projected-storage form; original long selection, movement and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

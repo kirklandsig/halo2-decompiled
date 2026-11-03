@@ -320,6 +320,9 @@ struct s_z_state_world
 // view 11 each; a state pointer with the direct database read 11; bitwise accepted-state test 60
 // (145 bytes); reversed formals with one world local 18 (all six matched callers regress). Original
 // body, signature and call sites restored.
+// Round 156 (fast): the active byte in a char local 11; the entity pointer declared before the identifier test 11;
+// the result assigned straight from the call 55 (122 bytes); a state local 11; a named masked entity index with
+// pointer addition 11.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {

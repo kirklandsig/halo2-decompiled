@@ -249,6 +249,12 @@ bool function_a7670(long object_index);
 // P277: Actual selector/list/island-index/island/first-count/second-count/admission
 // home identities separately and together on consumed-index/live-bound/indexed-cleanup
 // graph: 153 each. Original body restored; entry scratch phase and native homes remain.
+// M334: On consumed-index/live-bound/indexed-cleanup graph, standard first/deferred membership
+// find/original, original/find, find/find, count/original, original/count, count/count, find/count, count/find:
+// 276/275/265/280/260/256/276/264. Exact-only completed results restored; native homes remain.
+// DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
+// 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
+// complete shared header and body restored. Selector/list/count homes and admission BL remain.
 // @retail 0x278f00
 void function_278f00()
 {
