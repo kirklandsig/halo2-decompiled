@@ -405,6 +405,9 @@ union s_185be7
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.
+// M351: Immutable existing range minimum/span/exponent, all seven subsets, then all with
+// a read-only range-record binding: 622 each. Original observations and complete body restored;
+// control-root/NONE, settings/zero homes and clamp/flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

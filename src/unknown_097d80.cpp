@@ -302,6 +302,9 @@ struct c_aggregate : c_child
 // local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
 // to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024
 // in each; still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// M351: Immutable collection-child/cleanup-block/cleanup-object bindings, all seven subsets,
+// then all with the immutable dispatch end: 31 each. Independent escaped outputs and the
+// complete body restored; frame 0x8024 versus 0x8020 and exchanged low loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
