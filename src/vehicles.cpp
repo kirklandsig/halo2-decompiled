@@ -2460,6 +2460,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // 94/33/33/94/94/33/33/94 (plain 33, first +0x1e2). NOT kept (review): left/right split
 // into base stores plus -=/+= stages, a statement order picked by score from four equivalent
 // graphs (two give 94); body restored at 42. Native first magnitude precedes the turn product.
+// M342: Native double fmod result, scoped/const/branch/default outputs and direct/branch/default/
+// guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
+// native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
+// Original two-use helper and complete body restored; turn/spin schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4274,6 +4278,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
 // Original body/result restored; native split writer epilogues, found-index retest,
 // world/zero/fallback allocation and scalar homes remain. No qualifying gain.
+// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
+// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
+// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
