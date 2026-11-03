@@ -1193,6 +1193,8 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // status declared at function scope 2 (same code); the point defined before the flag tests 66 (464
 // bytes); permuter 46 tries, best 2. Compile-only, every spelling of the retry value (xor, subtract,
 // hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
+// Round 128: sequenced AND/XOR/subtract before the call 2/2/18; standalone XOR/subtract 2/18;
+// extracted-bit XOR/subtract sequences 2/133. NOT kept: one-use const retry mask 2; original body restored.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {

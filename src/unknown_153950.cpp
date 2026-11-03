@@ -658,6 +658,9 @@ struct s_player_axes_153d10
 // extra paren or cast shifts them; unused locals only move the dots); every shift flips products 1 and 5
 // together (up.k against forward.j and forward.i), and none of 64 dot spellings, 64 paren sets, 32 j-row
 // pointer spellings, the cross helpers or row orders separates them.
+// Round 128 (plain): both/up-only/forward-only array components through axes 2/2/2; both pointer arrays 18;
+// pointer up array with axes forward 18; axes up array with pointer forward array 2; pointer up field with
+// pointer forward array 18; pointer up array with pointer forward field 18. Original body restored.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
