@@ -2771,6 +2771,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M331: Existing projected-speed dot3f boundaries, subsets 1/2/4/3/5/6/7 then all with independent relative
 // output: 717/692/715/717/704/715/720/728. NOT kept: no qualifying gain or byte match. Original complete
 // body restored; retail frame 0xfc and scalar/transform scheduling remain.
+// M333: Actual bound/reciprocal, directional-mass and projected-speed/force lexical
+// homes, seven subsets: 692 each; all with independent relative output 699. Frames
+// remain 0xd0/0x104 versus 0xfc; original full body and all producers restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4209,6 +4212,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // original producers fixed: 176/176/176/176/176/176/176/176. NOT kept: no qualifying gain or byte match.
 // Original complete body restored; frame 0xec agrees; found-index retest and scalar/world/fallback homes
 // remain.
+// M333: Static-marker/cache-schedule/component-hit predicate results, seven subsets:
+// 176 each; all with default-first cached conversion 170 at 1361 bytes. NOT kept:
+// six-point gain below the gate, and one-use predicates require a match. Full body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -5007,6 +5013,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
 // expanding as retail does; all regress and shorten below retail. Original full body,
 // matrices, axis/angle production and math providers restored; frame/index homes remain.
+// M333: Actual up-length/inverse, bank-axis and quaternion-axis lexical identities,
+// seven subsets, then independent component/point ordinals: 1087 each. Frame 0xf8
+// remains; original full body restored, with native index and matrix/vector homes unresolved.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
