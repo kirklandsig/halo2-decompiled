@@ -608,6 +608,10 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // NOT kept: no gain; original full body/helpers restored.
 // F355: Complete perpendicular and heading-blend point initializers, seven subsets, then the complete fallback copy:
 // 126/126/126/126/126/126/126/277. NOT kept: no gain; original body restored.
+// P301: Existing 2D normalizer output/fallback/both reference contracts, original
+// and forced inline, then both with bulk fallback copy or float root: 126 each.
+// Original helper, callers and complete body restored; velocity-copy receivers,
+// early unity SIMD residence and later angular x87/SSE homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2493,6 +2497,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
 // original/forced-inline existing helper 213/213/213/213/213/213/213/213.
 // NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
+// P301: Actual spin/period field references, each/both on original and forced-inline
+// contracts: 42/42/42/42/42/42; immutable advanced input with conditional/exhaustive
+// dividends on the reference output: 84/84. Original helper and complete body restored;
+// turn-product, corrected-dividend spill and joined float output schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3730,6 +3738,10 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // NOT kept: no gain; original full body/helpers restored.
 // F355: Wide fraction with real/wide angle, original/entry trig declarations and original/late flip predicate:
 // 199/202/199/202/227/235/227/235. NOT kept: no gain; original body restored.
+// P301: Projection workspace consumes complete up/forward input, aggregate/library
+// transfers and original/shared subtraction: 271/271/271/271/257/252/257/252.
+// NOT kept: all regress, grow the native one-word frame to 0x10/0x14 and lengthen
+// code. Original workspace, shared helpers, precision and complete body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

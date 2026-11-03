@@ -2816,6 +2816,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
 // give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
 // Original whole body restored; result/state bytes and point/scalar homes remain.
+// P301: Existing typed rigid-body getter/declared motion field at hit/mass/farthest/
+// push sites, then hit+mass/both distance scans/all sites: 530 each; all with the
+// position acquired after the pure mass query 548 (1816 bytes). Original raw access
+// chain and complete body restored; native 0x4c frame and result/position homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

@@ -923,6 +923,10 @@ static __forceinline long real_to_long(real value);
 // P299: Input-only actor/metadata/paired prop receivers on the current velocity graph,
 // seven subsets and immutable bindings: 382 each. Original complete body restored;
 // early rejection island and magnitude/object/query homes remain.
+// P301: Threaded admitted result plus native complete object-base receiver, acquired
+// after magnitude/weight, each with retained/direct facing reads, bool then byte:
+// 534/571/522/554/551/588/543/585. NOT kept: all regress and enlarge code; original
+// result, velocity/facing receivers, query aliases and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
