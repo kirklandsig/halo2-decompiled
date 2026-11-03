@@ -2797,6 +2797,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
 // give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
 // Original whole body restored; result/state bytes and point/scalar homes remain.
+// M346: Returned-result ownership across every existing exit, with actual case-one success
+// at admission, bool/byte/char/signed-char/short/word/int/long: 530 each. No common-exit
+// rewrite; all retain frame 0x44 and 1834/1908 bytes. Original body restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {

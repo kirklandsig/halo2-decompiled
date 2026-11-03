@@ -654,6 +654,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
 // success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
 // destructive graph-base/reload ownership and low-byte return remain.
+// M346: Ordered fallback availability owned immediately before each test, original success
+// stores retained, bool/byte/char/signed-char/short/word/int/long: 348 each. All retain
+// frame twelve and 1782/1761 bytes; graph/base homes and return normalization remain. Restored.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

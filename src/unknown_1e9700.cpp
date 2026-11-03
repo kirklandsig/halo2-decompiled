@@ -355,6 +355,9 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// M346: Existing consideration/hostility/friendly results as byte, masks 1/2/4/3/5/6/7:
+// 353/369/351/369/351/362/362; all char 362. NOT kept: friendly alone or with
+// consideration gains only two through extent, with scalar homes unchanged. Original body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
