@@ -1142,6 +1142,13 @@ public:
 // M299: Actual forward/up/left output-axis pointer subsets
 // [296, 184, 277, 184, 296, 184, 277], all before particle lookup 275.
 // Original axis addresses, workspace lifetime and complete body restored.
+// Round 137 (aligned count in brackets, baseline 184 [78]): magnitudes xyz (the order retail and 0x11d000 use)
+// 248 [76] at retail's 1355 bytes, xzy 189 [83], yxz 248 [81], yzx 240 [82], zyx 237 [86], with staged cross
+// 248/248/184; retail keeps forward.j in XMM2 from before the normalization branch, which no form reproduced.
+// Parent colour local after the position copy 255 [86] (retail's [esp+0x28] home); plus a named child
+// definition for the tag read 252 [79] at 1364 bytes (tag in ECX as retail, match-only); twelve orders of the
+// scale/position/colour/spawn stores on that 252 [79..82]; tag switch written in place 255 [86]; multiplied
+// and tinted read into locals 273 [130]. Body unchanged.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1615,6 +1622,12 @@ bool function_17afd0(long effect_index, long value);
 // M299: Attachment effect-first/nullable-conditional/complete/nested results,
 // original and shifted-word flags [72, 132, 134, 134, 113, 116, 87, 86].
 // One-point form rejected; original attachment result and eligibility restored.
+// Round 137 (aligned count in brackets, baseline 73 [58]; retail: availability BL from before the query, view ESI,
+// effect index EDI, owner EBP, same view on the stack): plain owner x availability false-then-set, nested, one
+// expression, two-step x view local, at each use, reread x bit 9 mask, shift: 102..148 [51..74], best aligned one
+// expression with the shift 123 [51]; false-then-set with every local at function scope, eight orders, 138 [61];
+// effect pointer kept x availability false-then-set, expression, two-step x mask, shift x view reread: 73..160
+// [55..88]. Same view keeps BL over availability in every false-then-set form. Body unchanged.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

@@ -246,6 +246,9 @@ bool function_a7670(long object_index);
 // admission 259 at 954 bytes; native island for-loop induction 240 at 958 bytes. Original
 // complete body restored; frame 0x424 and length 954 agree, but selector/island/count homes,
 // admission register and membership layout remain.
+// P277: Actual selector/list/island-index/island/first-count/second-count/admission
+// home identities separately and together on consumed-index/live-bound/indexed-cleanup
+// graph: 153 each. Original body restored; entry scratch phase and native homes remain.
 // @retail 0x278f00
 void function_278f00()
 {

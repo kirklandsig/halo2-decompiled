@@ -1535,6 +1535,12 @@ void function_1f86a0(long actor_index);
 // AC468: Complemented specified/root predicate in bool/byte/short/long, each with native/original
 // slot-member payload first: 136/136/136/136/139/139/138/138. Original predicate and payload restored;
 // frame 0x10 versus 0x14, raw-mask spill and entry/root carriers remain.
+// Y538: Saved-mask complement alone in bool/byte/short/long, each with native/original
+// member payload, 245/245/245/245/265/265/254/254. All restored; frame, raw-mask spill
+// and entry/root carriers remain. The actual 0x34-byte member payload is neutral in every pair.
+// AC489: Separate distance/seat validation guards and negative special admission, seven
+// subsets, plus native slot-member payload on the complete graph: eight at 134. Original
+// body restored; frame, mask spill and entry/root carriers remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

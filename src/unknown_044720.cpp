@@ -503,6 +503,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // cleanup remains out of line and grows the frame to 0x10a4; every construction form loses
 // 0x44720. Original whole body, list types, initializers and release helper restored;
 // entry/index spill and point homes remain.
+// P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
+// then coherent complete scratch names: 182 each. Initializers and observations never moved;
+// original body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

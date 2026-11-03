@@ -519,6 +519,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // boundaries 117 each; real sine argument and result 164 at 888 bytes. NOT kept: unmatched
 // precision and one-use argument/result storage. Original entire body and math APIs restored;
 // frame 0x28 versus 0x20 and seed/time/direction/cross homes remain.
+// P277: Actual time/fraction/envelope/angle/projection/wave/strength scalar home names,
+// individually then all seven: 117 each, 880/880 bytes. Original names/body restored;
+// seed/time and direction/cross residence remain, frame 0x28 versus 0x20.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {
