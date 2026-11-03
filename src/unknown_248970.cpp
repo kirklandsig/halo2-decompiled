@@ -391,6 +391,10 @@ public:
 // but the counter's zero store moves after it too); the guard with the child table indexed by the counter 60
 // (frame changes); the guard with a pretested while and the increment first in the tail 100; the allocation's
 // break first and the initialization unconditional 54 (same code); `child_count > local_14` 55.
+// Round 81 (m3 lane 16, fast with 0x175270): the head step before the offset step 54; the child count read
+// just before the loop 243 (725 bytes); no position pointer (the field at the viewer call) 54; the link element
+// looked up by the allocation index 54 (same code each); the new element's fields set through the lookup at
+// each use 105 (754 bytes: the allocation retest comes back, retail's 743 is lost).
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
