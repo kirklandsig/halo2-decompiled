@@ -1181,6 +1181,9 @@ void __stdcall function_43720(s_43740_input *input)
 // readonly aggregate/sparse library copy, count from published request 79/105/105/79;
 // count from producer header 81/105/105/81. Extra producer forms require exact
 // equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
+// N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
+// nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
+// complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

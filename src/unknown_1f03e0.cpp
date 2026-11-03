@@ -1007,6 +1007,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // graph, seven subsets then opposite complete-word declaration order: 526/610/562/495/573/609/559/560.
 // NOT kept: retail reads both words again at history admission; unsupported observation/predicate
 // steering needs a match. Original body restored; damping and raw/bounded homes remain.
+// N334: Plain vector component loops at flying/paired ground projections/low-normal output,
+// subsets 1-7 514/467/514/418/526/533/616; complete unsigned ordinals 616. NOT kept: the
+// low-normal output loop alone 418 plain (frame 0x30, 3037 bytes) is one of seven subsets picked by
+// score, the like rows beside it stay written out. Body restored at 433; damping and vector homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
