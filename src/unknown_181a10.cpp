@@ -396,6 +396,8 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // loop moves the slots to retail's j, first, i (it adds code and reverses second and the two scaled indices).
 // Round 118: four existing add-scaled/point reconstruction helpers 25 each; an explicit normal
 // copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
+// Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
+// component guards nested 8; index guards nested 8.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -671,6 +673,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // bytes, frame 0x48); read straight from the transform 312 (1248, frame 0x48); each with the hit copied out by
 // struct assignment 322/319 (1228/1231); the struct assignment alone 331 (1218, frame 0x4c). Every 0x14a300 call
 // here sign-extends the plane index in retail (a long parameter; needs src/unknown_17d9a0.cpp, avoided this round).
+// Round 44 (m3 lane 2, fast = plain): retail's slots: origin y/z at +0x14/+0x18 (reused by the material and
+// friction), hit +0x2c..+0x34, origin x +0x38, +0x3c/+0x40 never touched, plane +0x44..+0x50 (normal written
+// in place); the untouched pair looks like a reserved aggregate home. Origin and hit copied by components
+// 326 (1263 bytes); scalar origin read z/y/x with the hit by components 325; hit by components alone 313
+// (1250); that with the in-place normal 328 (frame 0x40), with the normal copied into the plane by components
+// 329; origin through real_point3d_set 315, with the in-place normal 344; the in-place normal on the kept form
+// 357 (1208 bytes, frame 0x40); all 18 origin/hit/normal combinations at or above 308.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -238,6 +238,13 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // consumers, then input pairs and all consumers: 410/395/395/395/410/410/410/410.
 // NOT kept: shared real-result/operand-order forms do not match; original expressions,
 // helpers and full body restored; entry sum and normalized XY/magnitude homes remain.
+// Round 44 (m3 lane 2, fast with caller 0x29a190 at 389): both now return with `ret 0x1c`. Retail stores the
+// centre's x at once (`movss [esp+0x50]`), takes dx/dy on x87 from it, and keeps 16-bit counters (outer in
+// EBX, compared through bx; candidate count in BP, stored as a word). The loop differences as `(double)c - p`
+// in the root 418 (1698 bytes); short candidate count 464 (1689; caller 699), with double dx/dy locals 445
+// (1694; caller 698), with the `(double)` differences 513 (1646), plus a short outer counter 504 (1651); short
+// inner-angle counter 395 (same code), with the short candidate count 464; all three short with double dx/dy
+// 488 (1669; caller 698).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

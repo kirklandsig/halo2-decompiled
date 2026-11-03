@@ -95,6 +95,8 @@ void function_17e670(s_effect_source *source, point3f const *point, long tag_ind
 // shared entry with the tag after the angles 28 and after the direction 52.
 // Round 195 (lane 3): no new form; ours still passes the point in ECX and the source in EDX (0x17e670's
 // body, contributor code at 429, decides its LTCG convention), which accounts for all 16 differences.
+// Round 120 (lane 7, fast): direction declared at function scope 16; pitch computed before yaw 23; the
+// spawn counter short 75 (355 bytes) and word 41; the two mask bits as named bools 40.
 // @retail 0x23aad0
 void __stdcall function_23aad0(long previous_address, long current_address, long count)
 {

@@ -256,6 +256,11 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // entry-owned point/reference/record pointers: eight forms 390 each. NOT kept:
 // own-address and one-use aliases did not match; the record alias also demotes
 // the caller. Original full body restored.
+// Round 202 (lane 3, fast): retail reads the group with `movsx ebx` (32-bit compares) and recomputes the set's word
+// address first, then the mask (bit_vector_set's shape). On this body: `long local_15` 461 (1560 bytes); long with
+// bit_vector_test for the test only 461; long with bit_vector_set for the set only 470 (1551); short with
+// bit_vector_set for the set only 424 (1567); the found flag declared once per group and cleared per pass 390 (same
+// code). Restored.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
