@@ -717,7 +717,7 @@ struct s_player_iterator_2be
 
 bool player_iterator_next_with_unit(long *iterator);
 extern color3f *g_468714;
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 
 static inline s_player_2be *player_get_2be(long index)
 {
@@ -808,7 +808,8 @@ void hill_color(long player_index, s_color_bits *color)
 			color3f team_color;
 			long team = player_get_2be(occupant)->team;
 
-			*color = *(s_color_bits *)function_7f720(&team_color, team);
+			team_color = function_7f720(team);
+			*color = *(s_color_bits *)&team_color;
 		}
 		else
 		{

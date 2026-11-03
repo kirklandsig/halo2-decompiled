@@ -167,6 +167,9 @@ struct s_placement_2bc1
 // test `!= NULL` 5; NULL owner argument 5; event declared before the team call, unscoped 32 (223 bytes).
 // The stub callee is not the cause: matched 0x152a50 and 0x1e04a0 copy the placement with EAX before the
 // same stub call, and 0x1e04a0's second site uses ECX.
+// Round 138: marker test with the not-found arm first 5; first-element address at creation 5, at both calls 5;
+// object local declared before the placement 5; marker test `!= false` 5. Probe (not kept): a load and a global store
+// before the creation call give retail's registers in the copy and the whole tail, so one rotation step is the cause.
 // @retail 0x2bc1f0
 void function_2bc1f0(long team)
 {

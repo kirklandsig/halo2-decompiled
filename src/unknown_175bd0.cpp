@@ -2095,6 +2095,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // M328: Post-transform node rejection by OR/conditional/branch/default-result,
 // bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
 // body restored. Early color/query homes and frame 0x40/0x44 remain.
+// AC498: Isolated query-receiver/tint/multiply/placement/transform-result and
+// effect/system/settings formal names: 128 each. Original complete body restored;
+// frame 0x40/0x44, early color/query/cursor and zone-base homes remain.
 // Round 58 (m3 lane 11, fast): spawn stores as location/scale/unknown 128, as unknown/scale/location 124 (gain
 // 4, not kept); spawn declared first 128; location pointer declared in the while condition 128. On the
 // unknown-first form: cursor and colour locals read before the spawn stores 180 (572 bytes); multiplied() as
@@ -2103,6 +2106,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 123 (m3 lane 7, fast with callers/callees): spawn as an aggregate `= { scale, unknown, location }` after
 // set_location 128 (same code); with colour locals after/before it 184/184 (572 bytes); the type-query block's
 // braces removed 128 (same code); the mode cached in a word local before the loop 179 (564 bytes).
+// DH315: Live mode/placement field references, readonly/mutable single/both,
+// entry and iteration scopes: 128 in all eight forms, 556/552 bytes. Both
+// matched callers and transform producer stay exact; original descriptor reads,
+// query/color timing, cases, spawn fields and complete body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3237,6 +3244,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // M328: Post-transform inverse node admission, complement/OR in
 // bool/byte/short/long: 111/111/107/108/111/111/107/108. All regress; complete original
 // body restored. Frame, system/successor/color homes and cached mode remain.
+// AC498: Isolated system/effect/successor/first-color/second-color/type/mode/tint
+// local names, original scopes and observations: 93 each. Original full body restored;
+// frame 0x4c/0x54 and system/successor/color/definition homes remain.
 // Round 58 (m3 lane 11, fast with 0x176f60): the type query fed from `definition` instead of a second
 // function_1751d0() call 85 (331 bytes; not kept, retail makes that call); node predicate before the transform
 // call 115 (0x176f60 25); colours declared before the particle-location cursor 93; location pointer at function
@@ -3245,6 +3255,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // declared inside the definition test 93; spawn + per-call mode 109 (0x176f60 25: the definition takes EBX, the
 // effect is computed in EAX and its index becomes a register argument), with the location index inside the test
 // 109, the node flag written in the call's argument 112 (327 bytes), the matrix declared beside the spawn 109.
+// DH315: Live mode-field reference, readonly/mutable, original/outer cursor
+// declaration and direct/named multiplication: 108/108/108/108/122/122/122/122.
+// All lose matched caller 0x176f60 (25); original cached mode, cursor, query,
+// successor, input contract and complete body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
