@@ -2483,6 +2483,8 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
 // native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
 // Original two-use helper and complete body restored; turn/spin schedules remain.
+// P297: Default-first turn/gear-throttle/engine-throttle clamp results, seven subsets,
+// then all with entry declarations: 43/50/50/51/51/50/51/51. Original body restored; turn-product/spin transport remains.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2837,6 +2839,8 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // F354: Float CRT bank sine/cosine/both 689/689/692; distinct relative output
 // 699/699/700; both with distinct inverse/current or desired result 702/699.
 // NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
+// P297: Complete forward/left/up clamp-result arms, seven subsets, then all with
+// independent relative output: 692/692/692/692/692/692/730/722. Original macro bounds/body restored; frame and homes remain.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3132,6 +3136,8 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // F354: Live default-target receiver/repeated steering direction/fraction numerator,
 // singles and pairs/all/all forced inline: 1077/1047/1053/1089/1060/1053/1105/1105.
 // NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
+// P297: Existing ground/yaw/boost dot3f producers, seven subsets, then all with the
+// angle producer forced inline: 1051/1071/1068/1071/1068/1071/1071/1071. NOT kept: changed float trees require equality; original body/helpers restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
