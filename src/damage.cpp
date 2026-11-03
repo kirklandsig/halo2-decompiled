@@ -2449,6 +2449,9 @@ struct s_unit_event
 // M328: Independent child/seat iterator and event role names, seven subsets then
 // all with the primary receiver renamed: eight 472s. Complete original body
 // restored; frame agrees but permutation ingress and call-cycle homes remain.
+// B383: Direct seat-ejection/current-state/child-bit consumers, seven subsets, then
+// the effect flag at its argument: 504/519/512/531/530/519/531/551. Original native bit values and
+// whole body restored; permutation ingress and call-cycle register homes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
