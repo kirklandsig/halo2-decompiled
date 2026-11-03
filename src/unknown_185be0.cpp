@@ -367,6 +367,13 @@ union s_185be7
 // Round 372: complete allowed/blocked turn-admission results in bool/byte/word/long
 // storage: 692/692/692/692/692/692/692/692. Original direct gate and body restored;
 // control-root/NONE, settings/zero homes and flag joins remain.
+// AC486: Diagonal multiplier exhaustive/negative-first/predicate/two-stage producers
+// 894/894/894/894; complete paired square parts 894/894/894/894. Original
+// multiplier, predicates, float trees and body restored; control-root/NONE and scalar homes remain.
+// Y539: Existing time-state/component/matrix producers, subsets 1/2/4/3/5/6/7:
+// 692/690/690/692/692/690/692; complete graph with declared forward member 692.
+// All retain 3782 bytes and first +0x22. Original producers, declarations and body
+// restored; control-root/NONE, settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

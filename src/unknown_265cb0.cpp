@@ -531,6 +531,9 @@ real function_30bf0(vector3f *vector);
 // DH299: Native four-state result enum crossed with range-after-delta, entry
 // distance scratch and entry projection scratch, all eight subsets: 152 each.
 // Original result type and scratch lifetimes restored; result/range/amount homes and inverse SIMD groups remain.
+// DH309: Complete result/range, projection and addressed facing/seat-output lexical role
+// families, seven subsets and complete distance-role names: 152/152/152/152/152/152/152/152.
+// Native scalar homes and SIMD groups unchanged; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1980,6 +1983,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 535: independent first/second/both real-table pointer walks, then native long
 // first/second/both ordinal combinations: 387/369/433/389/372/433/456/456. Original scans and body
 // restored; entry operand order, established/visible bytes and direction residence remain.
+// Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
+// boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
+// established/visible homes and normalized direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

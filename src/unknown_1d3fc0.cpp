@@ -236,6 +236,10 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 318: Complete normalizer scalar input capture in ijk/ikj/jik/jki/kij/kji order, native
 // vector input and native input with squared magnitude; 110/110/110/110/110/110/342/342. Original
 // whole body and helpers restored. Extra input/output helper contracts 110/110/110, excluded.
+// M329: Complete projection products before original stores, ijk/ikj/jik/jki/kij/kji
+// producer orders: 110/110/110/110/110/110; each product named at its own row producer
+// 110; existing setter publication 188 (937 bytes). Original product expressions, stores,
+// four-use normalizer and complete body restored; forward late-k/reciprocal issue remains.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

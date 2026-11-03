@@ -138,6 +138,9 @@ void function_22a664(s_widget_quad_2b11 const *arg_0, s_float_rect const *arg_1,
 // pulse * half width 14; width/height conversions first in the half extents 14; the default bounds
 // set field by field 14. Retail keeps the advance in XMM3 and the half height in XMM4 (ours the reverse)
 // after the 0.5 constant in XMM3 and the converted height in XMM4 both die.
+// Round 60, on the bounds-record pointer (12): named left/right/top/bottom 37; named top/bottom after the x step 30,
+// before it 23; advance named between the half extents 26; named advance 53; scalar center copies 12; a corners
+// rectangle 37. Named values flip the running position's XMM6/XMM7 before they reach XMM3/XMM4.
 // @retail 0x200462
 void function_200462(long arg_0)
 {

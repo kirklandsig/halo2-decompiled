@@ -176,6 +176,12 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 // on a re-read local_1 session 136 (229), the first copy's re-read 136; the timeout copy setting the result
 // before the mode call 74 (227; `mov bl, 1` then `mov al, bl`); the result taken from the timeout test and the
 // copy without its own store 112 (250); an empty `<=` arm with the copy in its else 37 (merged, 176 bytes).
+// Round 127: a positive players-match arm with a final false assignment 12 (183 bytes;
+// NOT kept: only three points gained and the length moves away), with a final goto done 37;
+// a false assignment with goto done 12 (the same 183-byte form); the actual timeout result 16 (186);
+// a `<=` false arm 45 (183); a final return of local_0 or
+// false 43/43 (187); an outer-type false return 65 (200); an invalid-state direct return 74 (186).
+// Original body restored.
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

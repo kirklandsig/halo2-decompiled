@@ -1452,6 +1452,15 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // a redundant `if (written)` around a second assignment 107. No zero store, current graph, re-measured 157 (masked
 // stack offsets 20). Next: a form that takes one scratch step after the write and one before the checksum, no code.
 // Round 87: reversed size/write-count/close/open comparisons 33 each; header-read else-if 103 (932 bytes); plus write-result assignment 111; success under its own test 7 (exact-only); an explicit by-value write-handle temporary on that graph 114 (917 bytes). Original body restored.
+// DL246: coherent ordinary inline query/resize/write boundary subsets 1-7, then all with close,
+// 33 in all eight. Both global and reduced unchanged previews agree; every provider user preserved.
+// Original API/header declarations and body restored; output homes, write/checksum and validation joins remain.
+// DL248 (reduced): Existing checker inline and immediate stored/read checksum scalar carriers, masks
+// 4/1/2/3/5/6/7 [33, 33, 33, 33, 33, 33, 33]; checksum field-address pair 33. Frame 0x1144 and extent
+// agree; query/count homes, write setup and checksum/validation joins remain. NOT kept: Every form ties
+// 33 and all controls are unchanged; checksum locals and field-address copies fail their exact-match
+// requirement, and the existing checker inline contract gains nothing. Original executable source
+// restored.
 // @retail 0x213970
 void function_213970(void)
 {
