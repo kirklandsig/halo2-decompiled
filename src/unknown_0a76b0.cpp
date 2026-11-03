@@ -1481,6 +1481,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
 // positive/complementary polarity: 95 each. NOT kept: staged search flags require
 // exact equality. Original indexed scan, direct exit and complete body restored.
+// F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
+// then all with completed state selection:
+// 95/95/95/95/95/95/95/95. Original complete executable body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1882,6 +1885,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M329: Independent request/weapon/result/modes declarations separated from their
 // original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
 // 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
+// M331: Isolated mode-0/1 query-result producers, admitted overwrite/positive gate/negative gate/rejection
+// disjunction/conditional/full test/sequential rejection/query leaves: 70/70/70/60/70/60/60/60. NOT kept:
+// no qualifying gain or byte match. Original complete body restored; request/weapon EBX/EBP homes and
+// player-getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2807,6 +2814,9 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 543: Entry-to-publication reset carrier byte/char/short/long, original then
 // complementary polarity: 300/300/312/313/284/284/300/301. NOT kept: 284 grows
 // to 1224/1209 bytes and changes result representation without a match. Original body restored.
+// F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
+// complementary nonvehicle polarity:
+// 293/293/299/299/300/300/319/321. Original complete executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -4608,6 +4618,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // P287: Actual object/inverse/output quaternion declarations at their producers,
 // seven subsets, then all three at function entry: 175 each. No initializer or
 // observation moved; original declarations/body restored. Frame and basis/point homes remain.
+// Round 546: Early point input/output workspace; native/library input, position/world
+// inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
+// NOT kept: 45 extra bytes and no match. Original complete body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

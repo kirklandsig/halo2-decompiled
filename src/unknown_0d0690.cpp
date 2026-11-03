@@ -1195,6 +1195,10 @@ PRIVATE __forceinline bool surface_status_failed(long status)
 // hex mask, a local in or before the block, a force-inline call wrapper) is computed right at its push.
 // Round 128: sequenced AND/XOR/subtract before the call 2/2/18; standalone XOR/subtract 2/18;
 // extracted-bit XOR/subtract sequences 2/133. NOT kept: one-use const retry mask 2; original body restored.
+// Round 31 (lane 18, fast): flags initialised from the object bit with a ternary 140 (454 bytes); flags
+// declared at function scope 2; a force-inline helper returning the flags without bit 0 at the retry 2; a
+// force-inline query wrapper (flags, object, value, query, point) with a status local for both calls 2;
+// permuter 600 s (46 tries) 2. Original body restored.
 // @retail 0xd1850
 long function_d1850(long object_index, bool value, s_effect_color_query *query)
 {
