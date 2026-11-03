@@ -269,6 +269,11 @@ struct s_spawn_scenario_23aea0
 // and point setter 82 each; per-record real source cursor 148; per-element byte destination 100; flat byte
 // destination 253; inner byte offset 210; batch/byte offsets 226; dual type/byte counters 91; scalar or dword
 // fields on the byte-offset loop 140 each; aggregate record copy 145. Original 61 body restored.
+// Round 48 (fast with 0x157450/0x23ba10/0x23b060/0x23b500/0x2bf740): retail copies each record as three dword
+// moves through ESI in order; ours keeps the setter's SSE loads. A named `real const *source` record 66; the table
+// pointer after the scalar defaults 68; the definition as `byte const *` without the tag local 61 (same code);
+// source reals indexed `[type * 7 + k]` 61 (same code); zero-based records from +0x180 61 (same code); globals
+// declared before the scenario 61 (same code). BLOCKED-BY 0x157450 (round 55's g_502250 symbol lead).
 // @retail 0x23aea0
 void function_23aea0()
 {

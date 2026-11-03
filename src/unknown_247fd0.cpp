@@ -323,6 +323,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
+// Round 48 (fast with 0x248cc0): a compiled-out `do {} while (false);` between the field_38 sample and the
+// compare 55 (same code, still split); 0x173ba0's record argument read back from field_50 (as 0x247950 does)
+// 133 (876 bytes); the seed bits by an explicit 0x1fff mask and shift 232 (876 bytes); `s_248000 *const` record
+// pointer 55 (same code); child result declared before the loop, on the 55 graph, 55 (same code).
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
