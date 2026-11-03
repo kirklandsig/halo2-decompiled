@@ -367,9 +367,31 @@ extern byte g_51ec11;
 // the target and the matched second user. Original helper restored; zero, normalization and up/roll
 // allocation remain. Scores 291/128/280/304/101/307/295/345.
 // Original executable source restored.
+// DH302: Roll cosine at the unscaled projection / projection-and-cross boundary, then both
+// coefficients at those boundaries: 92/102/89/151; bare entry declarations repeat 92/102/89/151.
+// The 92/102 forms reach 1326 bytes; all tie or regress. Original coefficient phases and body restored.
 // AC483: Existing planar side normalizer with planar/spatial fallback and original/setter/staged/direct
 // up publication: 268/285/282/282/229/261/127/259. The planar length tree is exact-match-only;
 // no match, so original side/normalization/rotation and complete body restored. Zero and up/roll allocation remain.
+// Actual side/roll-coefficient/movement phase endings and their pairs/all 89/89/89/89/89/89/89; all
+// with transformed-displacement phase ending 89. Zero/normalization/up homes remain; original body
+// restored.
+// M326: Native normalization fallback bool/byte/short/long results, then success polarity,
+// 234/234/234/234/234/234/234/234. All lengthen to 1328/1326; one-use admission storage
+// does not match. Original complete body restored; zero/normalization/up homes remain.
+// N327: Complete control-produced roll retained through both trig uses,
+// branch/conditional/default/additive updates with producer/entry result declarations:
+// 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and
+// complete body restored. Zero/side/up allocation remains.
+// Round 380: Final timer-policy truth, bool/byte/short/long suppressed then enabled
+// complement: 232/232/232/232/232/232/232/232. Zero/side/up allocation does not recover; original final
+// guard, publications, decrement and complete body restored.
+// Round 382: Complete entry control admission, bool/byte/short/long active then inactive
+// complement: 236/236/236/236/236/236/236/236. All lengthen and regress; original entry byte test and
+// complete body restored. Zero/side normalization and up/roll allocation remain.
+// DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
+// failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
+// Original shared body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

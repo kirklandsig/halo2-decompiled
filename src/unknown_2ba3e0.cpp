@@ -869,6 +869,17 @@ real g_55e618;
 // complete position setter and paired projection/tangent combinations
 // 102/209/245/224/194/195/188/179. Original union, shared result extent and full body restored;
 // sweep/collision homes and projection spills remain.
+// Round 75 (m3 lane 9, fast): MAIN LEAD, not kept because a value written out at each use needs a match: retail has no `dot` local. Writing the dot expression out in each of the three
+// perpendicular products (it becomes a compiler temp, numbered after the normal's) copies dot and multiplies perp.k in place as retail, so perp.k spills, frame 0x124 and every home agree:
+// with normal locals, the velocity pointer, velocity reads through it and the set: 64 (1537, aligned 12); with the particle's flags word and the reals at +8 and +0x34 as fields 47 (aligned 11);
+// with the collision word stored before the start stores 44 (aligned 10); with named position sums, nested in the call 44 (aligned 7), plain stores 44 (aligned 8). Left at 44: retail loads v.i
+// before n.k/n.i, loads the placement's last argument at the block's top and stores the position just before the call, and computes the x sum first. On that form: normal locals in six orders
+// 44 (aligned 8-15), sums in six orders 44 (8-9), keep after velocity/perpendicular/tangent/sums/impact 44/61/44/200/222; last argument named `long` 118-131 (movsx), `short` at eight positions or
+// widths 59-61 (the load and the position stores land as retail, but in EAX where retail has EDX, and eax/edx rotate in later blocks); normal through its pointer 57 (1538); normal as a direct
+// field 39-44 (aligned 16-20, twelve written term orders); a one-use velocity.i local 162-170; last sum read in the store 44; plain position expressions 237 (1554), typed 238; by-value dot
+// through vector3f_scale 187-198 (frame 0x118); dot3f written three times through the pointer 172 (1540); tangent after the sums 230; tangent reads through the particle 81.
+// With a `dot` local: helper grid (dot text/dot3f, perpendicular text/vector3f_scale, tangent text/point difference, position text/set/add-scaled) 188-194; normal locals 179, typed 188; staged
+// dot 186/185/179; `perp = dot; perp *= n` 187; `dot *= n.k` last 179; all perps set to dot then scaled 179; normal copied by fields 181; normal k,i,j 180; dot declared first 179; interleaved 182.
 // AC475: Canonical repeated mode-two truth bool/byte/short/word, original sentinel
 // 273/273/269/269; sentinel before start stores 271/271/269/269.
 // Original raw mode mask, sentinel order, reflection inputs and complete body restored.

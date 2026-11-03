@@ -891,6 +891,9 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // then backward normal with all: 446/475/474/337/464/465/437/437. Coherent output-first
 // matrix-builder formal/declaration/call order 236, matched callee preserved. All transfers,
 // include, interfaces and complete executable source restored; direction and zero homes remain.
+// DH308: Point-mode planar cosine/sine product pairs and distance-clamp subsets
+// 1/2/3/4/5/6/7, then all with enclosing product declarations: 245/245/236/236/245/245/236/236.
+// All retain frame 0x48 and 1696 bytes; executable rows tie or regress. Original body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

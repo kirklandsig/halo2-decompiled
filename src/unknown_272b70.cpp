@@ -1471,6 +1471,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH296: Complete live sorted-candidate/actor/object receiver subsets 1-7
 // 32/198/198/32/32/198/198; all with byte request outcome 198. Actor re-fetches
 // grow to 898 bytes; original receivers and complete body restored at 846 bytes.
+// Round 378: Native slot flag byte/bit view, combined/split clear-set, mask-result and
+// byte-capture producers, then seat/object-interleaved publication: 32/32/52/51/32/32/51/41.
+// Original actual slot type, bit-field stores and complete body restored; iterator/candidate,
+// leave-selector and request/slot publication schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2703,6 +2707,8 @@ struct s_scenario_scripting_view
 // DH293: Joint actor/data/set pointer lexical priorities, all six 80; two
 // opposite priorities with promoted signed-short-decoded selector 96/96. Original
 // body restored; actor/set/counter homes and guarded data observation remain.
+// DH304: Uninitialized displacement/resolved-point/metric workspace at entry/admission/pre-actor/search, two lexical priorities, 80/80/80/80/80/80/80/80.
+// Original output scopes and complete search restored; actor/counter/set homes and guarded data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

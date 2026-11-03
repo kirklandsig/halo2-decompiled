@@ -498,6 +498,23 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P275: Actual packed list-header extent/borrowed-storage bitfields at initialization,
 // release test and release extent, seven subsets and reversed packed-field initialization:
 // 182 each. Original header, release helper and body restored; entry/index and point homes remain.
+// J241: Native storage/header cleanup with original initialization 274/182, native
+// construction 320/248; separate center/query 275/191 and with construction 320/248. Storage
+// cleanup remains out of line and grows the frame to 0x10a4; every construction form loses
+// 0x44720. Original whole body, list types, initializers and release helper restored;
+// entry/index spill and point homes remain.
+// P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
+// then coherent complete scratch names: 182 each. Initializers and observations never moved;
+// original body restored. Entry/index spill and center/query/bound homes remain.
+// AC493: Existing bitmap admission/absent-bound/sphere helpers, subsets 1/2/4/3/5/6/7,
+// then complete helper graph with failed-geometry exit: 215 each at 885/872 bytes. Original
+// masks, guards, include set and whole body restored; entry spill and point homes remain.
+// N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
+// graphs with chained or independent count/capacity producers: 182 each. Original
+// types and body restored; entry/index spill and center/query/bound homes remain.
+// P285: Actual query at eight-byte alignment, original/separate center and large-branch
+// producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
+// NOT kept: no exact match; original alignments, native objects and whole body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

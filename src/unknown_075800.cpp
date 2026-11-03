@@ -1223,11 +1223,21 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // Round 287: Original family positions, query priorities 8-10-9/9-8-10/9-10-8/10-8-9/10-9-8,
 // peer priorities 23-24-22/24-22-23, then reversed query/session/peer interiors: 192/196/194/192/194/196/196/194 fast.
 // Original classifiers restored; delayed ESI save and full-only late-handler expansion remain.
+// Round 45 (m3 lane 15; fast unless marked, control 196, full 153): the one retail-order switch 218 (420 bytes) keeps the
+// address in EAX and the type in ECX because the address never crosses a call; retail homes it in EDI, on the stack.
+// (type, message, address) with the caller, plain 217 (same code). Behind `if (type == 18)` the inlined 0x94420 body makes
+// the address cross a call and gives retail's convention, 196 (444 bytes, 0x94420 inlined where retail calls it); 0x94270
+// behind an `if` 216 (424 bytes, ECX); one `if` on an unused type 216, two 212 (460 bytes, EAX); an empty out-of-line call
+// taking the address after a connection handler 218 (removed before the convention is chosen); a byte pointer local for
+// the message 218 (same code). So retail's first pass saw the address live across a call that its final code does not have.
 // M312: Native-input session interior priorities and remaining peer orders:
 // 196/196/196/196/196/196/196/196. Original body restored.
 // M314: Native-input first-family priorities QDCSP/QDCPS/QDSCP/QDPCS/SDQCP/SDPCQ/SDCQP/SDCPQ:
 // 205/203/195/201/194/194/204/202 against reduced 196. Original classifiers restored;
 // delayed ESI save, late-case layout and full-only handler expansion remain.
+// M332: Repeated typed session/peer/late-message input boundaries, seven subsets, then
+// all with query-message input: 196/196/196/196/196/196/196/196 reduced, tying control 196 (full 153). NOT kept:
+// parameter aliases require a match. Complete classifiers and all handler tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

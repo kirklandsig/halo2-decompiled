@@ -537,6 +537,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH296: Complete projection/displacement/shared-setter producer subsets
 // 313/295/313/297/313/297/313; all with bounded short link count 354.
 // Original parallel products, point stores and entire body restored; frame and flag homes remain.
+// DH303: Real eight-byte node metadata record with memcpy/aggregate transport
+// and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
+// layout and body restored; extra output cursor, initial zero and flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -977,6 +980,9 @@ bool function_2715a0(byte *buffer)
 // P270: complete point memcpy at goal/child/both/closest/goal+closest/child+closest/all,
 // then memmove at all three: 486/486/486/486/486/486/486/520. Original aggregate
 // transfers and complete body restored; state/node/link and scalar homes remain.
+// DH303: Fresh projection numerator/denominator and native entry receiver,
+// producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
+// One-point reductions rejected; original body restored; state/scalar/root homes remain.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

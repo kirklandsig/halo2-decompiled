@@ -514,6 +514,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // it. Scale as double 171 (1103 bytes); rotation as double 27; the draw's bounds from the
 // parameter 161 (1104 bytes); scale declared at the top of the block 13; const scale 13;
 // sine and cosine in one declaration 13.
+// Round 127: the second draw after the cross and normalize 132; the scale draw before the
+// forward stores 62 and before the duration update 70; the existing unit-random helper for
+// rotation 29; force-inline declarations for the range and rotation helpers 13/13;
+// slot_random_range for the scale and both draws 189 (1053 bytes) and 232 (1009 bytes).
+// Original body restored.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -653,6 +658,12 @@ struct s_player_axes_153d10
 // extra paren or cast shifts them; unused locals only move the dots); every shift flips products 1 and 5
 // together (up.k against forward.j and forward.i), and none of 64 dot spellings, 64 paren sets, 32 j-row
 // pointer spellings, the cross helpers or row orders separates them.
+// Round 128 (plain): both/up-only/forward-only array components through axes 2/2/2; both pointer arrays 18;
+// pointer up array with axes forward 18; axes up array with pointer forward array 2; pointer up field with
+// pointer forward array 18; pointer up array with pointer forward field 18. Original body restored.
+// Round 41 (lane 2, plain; --fast builds this function differently, 345 at 1335 bytes): delta through the point difference
+// helper 119 (1303 bytes); dots through the dot helper 2; both 119; relative declared before delta 2; cross declared before the
+// axes 2; slot vector through a real pointer 18.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {

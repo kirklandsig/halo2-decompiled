@@ -735,6 +735,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
 // declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
 // remain.
+// B381: complete normalization predicate, moving/stationary bool/byte/short/long,
+// 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
+// Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -836,16 +839,13 @@ struct s_physics_initial_state
  long material;
 };
 
+void rotate_direction(vector3f *vector, vector3f const *axis, real sine, real cosine); /* src/unknown_1eb8a0.cpp */
+
 PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f *result)
 {
  result->i = a->j * b->k - a->k * b->j;
  result->j = a->k * b->i - a->i * b->k;
  result->k = a->i * b->j - a->j * b->i;
-}
-
-PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
-{
- return a->k * b->k + a->j * b->j + a->i * b->i;
 }
 
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
@@ -1007,6 +1007,20 @@ PRIVATE inline real initial_dot(const vector3f *a, const vector3f *b)
 // original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
 // complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
 // rotation/output homes remain.
+// score 114 (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
+// slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
+// from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
+// last dot's order). Tried on this body (fast with a local copy of the helper, the plain build inlines the existing one
+// the same): `moved_away` preset false and set in the test 92 at 1387 bytes (retail's `xor dl, dl`/`mov dl, 1`; a flag set in a
+// test, match only); the side dots as (up, new) * (up, old) 106 (aligned 51; NOT kept: an operand order picked by score, retail
+// forms the old-cross dot first at 0x1e607d; body restored at 114), (new, up) * (up, old) 107 (aligned 44), (old, up) * (new, up) 111,
+// named side values 150 (1382 bytes, the rotation products all load first), moved_away computed before the crosses 190, the
+// crosses declared apart or swapped 106 (same). Compile-only: parameter orders of the helper, cross or dot orders and
+// operand sides, component locals, named sine/cosine (worse), a named rotation or rate, `angle *= rate`, a named axis,
+// helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
+// retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
+// as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
@@ -1057,32 +1071,21 @@ void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animat
   state->velocity.i = movement.i * scale;
   state->velocity.j = movement.j * scale;
   state->velocity.k = movement.k * scale;
-  if (fabs(angle) >= 0.0001f)
+  if (!(fabs(angle) < 0.0001f))
   {
-   vector3f original = state->forward;
-   vector3f const *axis = &state->up;
+   vector3f rotated = state->forward;
    real rotation = angle * g_510c54->rate;
-   real sine = (real)sin(rotation);
-   real cosine = (real)cos(rotation);
-   real projection = (original.j * axis->j + original.k * axis->k + original.i * axis->i) * (1.0f - cosine);
-   vector3f cross;
-   cross.i = original.j * axis->k - original.k * axis->j;
-   cross.j = original.k * axis->i - original.i * axis->k;
-   cross.k = original.i * axis->j - original.j * axis->i;
-   vector3f rotated;
-   rotated.i = original.i * cosine + projection * axis->i - cross.i * sine;
-   rotated.j = projection * axis->j + original.j * cosine - cross.j * sine;
-   rotated.k = projection * axis->k + original.k * cosine - cross.k * sine;
+   rotate_direction(&rotated, &state->up, (real)sin(rotation), (real)cos(rotation));
    if (c && turning)
    {
-    real alignment = initial_dot(&state->forward, facing_goal);
+    real alignment = dot3f(facing_goal, &state->forward);
     if (alignment > 0.5f)
     {
      vector3f old_cross, new_cross;
      initial_cross(facing_goal, &state->forward, &old_cross);
      initial_cross(facing_goal, &rotated, &new_cross);
-     bool moved_away = alignment > 0.99f && alignment > initial_dot(&rotated, facing_goal);
-     if (initial_dot(&state->up, &old_cross) * initial_dot(&state->up, &new_cross) <= 0.0f || moved_away)
+     bool moved_away = alignment > 0.99f && alignment > dot3f(facing_goal, &rotated);
+     if (dot3f(&state->up, &old_cross) * dot3f(&state->up, &new_cross) <= 0.0f || moved_away)
      {
       state->forward = *facing_goal;
       state->flags |= 32;

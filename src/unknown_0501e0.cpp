@@ -261,6 +261,14 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 521: real endpoint-pair array traversal, separate/fused phases, long/short
 // endpoint indices and cursor/indexed view rows 389/373/380/376/380/377/376/374.
 // Grouped workspace forms do not match; original helper and body restored.
+// Round 45 (m3 lane 15; compile-only aligned count against retail, control 189, structure-only 116): both retail views are
+// 0x142640's form. A copy of it reading the camera through a pointer parameter or the global 203 (structure 127); 1100
+// random forms of that copy (scale local, global or parameter; x/y/z as reals or a vector; branch reading the input or the
+// copy; row and term orders; offsets as rows, a helper, loops or a named origin; both view orders) stay at 185 or above.
+// The best of them through fast: pointer-parameter copy 235 (1113 bytes), the same reading the input in the branch 235,
+// vector copy with rows k, j, i 230 (1113 bytes, aligned 162 against 171), the same with the input read 230, with reals
+// 271, rows i, k, j 266. Retail's first view loads the coefficient and multiplies by the scaled value, its second copies
+// the scaled value and multiplies from memory; no form gave that split.
 // Round 524: real forward-coefficient cursor with complete raw/scaled inputs,
 // explicit arms ijk/kji and separate/shared scale 295/297/295/297;
 // default-first counterparts 241/242/241/242. The latter recover frame
@@ -269,6 +277,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // input ownership, cursor/indexed output and both product orientations:
 // 254/254/250/250/254/254/250/250 at 1136 bytes. Original helper/body restored;
 // extra frame word and coefficient/input/result homes remain.
+// Round 545: Existing shared axis rotation with complete scalar/native/shared-scale
+// input producers, direct/in-place output: 309/309/283/283/414/456/560/560. All nonmatching
+// association/storage forms restored; original helper/body and extra frame word remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

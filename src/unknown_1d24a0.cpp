@@ -301,6 +301,13 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // storage, seven subsets: 902/989/989/985/985/1030/1030; all four in word storage 1058. Original
 // names, Boolean domains and complete body restored. Frame 0x1f0 versus 0x1d4, entry
 // receiver/flags, activity byte and lower scalar/vector homes remain.
+// DL248 (reduced): Existing scale returned outputs at immediate radial/planar/angular consumers,
+// subsets 1..7 [902, 902, 902, 906, 902, 902, 906]; all with axial accumulation 906. Existing
+// out-of-line quaternion/inverse/both returned-pointer chains, then all private/output chains [894,
+// 899, 900, 904]. Frame 0x1f0 versus 0x1d4; entry receiver/flags, activity byte and lower scalar/vector
+// homes remain. NOT kept: Private producer consumers tie or regress; quaternion-return chain 894
+// removes the retail q-address copy and moves quaternion/body homes, so its eight-point preview gain is
+// unsupported; other out-of-line chains fail the gain threshold. Original executable source restored.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

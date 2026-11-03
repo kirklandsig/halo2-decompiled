@@ -240,6 +240,18 @@ bool function_a7670(long object_index);
 // P269: native body-array snapshot at pending-island/retry boundaries, each with
 // bool/byte/short/long admission on consumed-index/live-bound/indexed-cleanup graph:
 // 275/275/280/280/275/275/280/280. Exact-only field-pointer forms restored; native homes remain.
+// J241: Bounded first/second membership ordinals short-long/word-long/byte-long/long-
+// short/long-word/long-byte on the retained graph 273/273/295/275/275/273, all longer than
+// retail; exact-only width forms restored. Duplicate rejection before first-membership
+// admission 259 at 954 bytes; native island for-loop induction 240 at 958 bytes. Original
+// complete body restored; frame 0x424 and length 954 agree, but selector/island/count homes,
+// admission register and membership layout remain.
+// P277: Actual selector/list/island-index/island/first-count/second-count/admission
+// home identities separately and together on consumed-index/live-bound/indexed-cleanup
+// graph: 153 each. Original body restored; entry scratch phase and native homes remain.
+// DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
+// 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
+// complete shared header and body restored. Selector/list/count homes and admission BL remain.
 // @retail 0x278f00
 void function_278f00()
 {

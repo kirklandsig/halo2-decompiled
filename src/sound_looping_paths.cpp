@@ -112,12 +112,14 @@ __forceinline real loop_path_linear(long value)
 __forceinline long loop_path_logarithmic(real value)
 {
 	real pinned = loop_path_pin(value, 0.0f, 1.0f);
-	real decibels = g_44a0b4;
+	real decibels;
 	if (value > 0.0f)
 	{
 		decibels = (real)(log10(pinned) * 20.0f);
 		decibels = loop_path_pin(decibels, g_44a0b4, 0.0f);
 	}
+	else
+		decibels = g_44a0b4;
 	return loop_path_decibels(decibels);
 }
 
@@ -154,7 +156,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 886 (was 886): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
+// score 866 (was 886): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -264,6 +266,26 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // DH round 290: sequential record-count, sound-index-list and outer-ordinal identities,
 // seven nonempty subsets, then all with one inner-search ordinal: 887/886/887/886/887/886/887/887.
 // Original separate workspaces, phase initializers, loop domains and complete body restored.
+// AC485: intrinsic raw-decibel/linear bit transfers and exhaustive logarithmic producer,
+// subsets 1..7, then common pin result: 884/916/916/866/864/903/903/936; exhaustive log result 866 kept.
+// Bit captures/pin restored; entry zero and target/query/count homes remain.
+// AC488: first-query positive index/tag/duplicate admission subsets 1/2/4/3/5/6/7,
+// then capacity break in the bounded query: 866/866/866/924/866/866/924/924. Original graph and body restored;
+// entry zero, target/primary/query-array homes and choice carriers remain.
+// AC493: Dispatch-owned primary/target-count defaults and provider-filled query output,
+// subsets 1/2/4/3/5/6/7 then conditional primary result: 963/937/915/924/923/951/915/915.
+// All original defaults, counts, helpers and body restored; entry zero and query/count homes remain.
+// Round 379: Actual audible admission/choice-muted default/exhaustive detail result, subsets
+// 1/2/4/3/5/6/7, then complete audible index arms: 913/869/866/916/913/869/916/905. NOT kept: no
+// exact match for added test-owned outputs. Original body and logarithmic producer retained; entry
+// zero/query/count homes remain.
+// N332: Actual integer/floating decibel views at choice transfer/attenuation/datum
+// publication, subsets 1..7 then readonly completed target: 866/866/866/875/875/875/875/875.
+// Native datum constants reach 3327 bytes
+// but regress. All record types, helper stores and complete body restored.
+// P285: Existing shared used-mask/runtime-word/fixed-word flag helpers, subsets 1..7,
+// then complete helpers with CRT bit-vector initialization: 917/876/927/926/931/928/928/928.
+// All original helpers, direct flag operations, counts and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -673,11 +695,31 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 479: Coordinated portal-angle register-parameter orders RLBP/BRLP/LRBP/RBLP/LBRP/BLRP/RLPB/LRPB
 // (R reverse, L listener, B BSP, P portal), fixed point/radius/output tail: 156/150/156/150/156/150/156/156.
 // Original provider signature, declaration, call and complete caller restored; BSP/count homes remain.
+// N326: Query-fill/processing ordinal shared, independent/shared sentinel ordinal,
+// long/int/short/signed-char storage: 150/150/279/277/150/150/279/277.
+// Original induction, query scope and body restored; BSP/count homes remain.
 // Round 536: Escaped query count at entry before tags/after tags/each listener/eligible listener, original then role-named output: 150/150/150/150/150/150/150/150 fast.
 // Original query output lifetime and complete body restored; BSP/count homes remain.
 // Round 318: Complete native request-row publication with temporary/direct angle output,
 // fade/tag order and iteration/query row lifetime: 368/304/368/304/368/304/368/304.
 // All grouped-storage forms are exact-only; original whole body and helpers restored.
+// Round 487: Whole-listener eligibility/cue continuations, separately/together 150/150/150;
+// each with pre-primary camera formation 200/200/200; separate active/index admissions
+// with either continuation 150/150. Original complete control graph and body restored.
+// F342: Angle zeros through library-before/aggregate-before/library-fallback/chained-fallback, then
+// each with transition last-use scope: 281/159/159/147/281/159/159/147. NOT kept: no byte match;
+// original complete body and every helper restored. BSP/count homes and camera/publication scheduling
+// remain.
+// Round 490: Pre-query native defaults for indices/portals/clusters, subsets 1..7,
+// then complete library defaults: 293/292/309/293/309/309/322/319. NOT kept:
+// retail repairs after the query; all regress. Original complete body/helpers restored.
+// Round 544: Query-tail output cursor, indices/portals/clusters lead, then
+// parallel cursors with those leads, then one/parallel while forms:
+// 304/303/304/271/259/246/304/271. Original indexed fill and whole body restored.
+// M331: Actual query-array declaration ranks ipc/icp/pic/pci/cip/cpi with count after, then pre-
+// position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
+// qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
+// publication scheduling remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
