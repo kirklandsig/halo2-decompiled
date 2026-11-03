@@ -913,6 +913,9 @@ static __forceinline long real_to_long(real value);
 // `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
 // local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
 // (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
+// DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
+// seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
+// storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
