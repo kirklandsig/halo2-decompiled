@@ -2318,6 +2318,12 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // once for the loop test and the first slot test 155; the child counts declared before the child
 // handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
 // first 155.
+// Lane 14 r57 (fast, from 155): the 0x400000 tail as a plain mask with the unit field on the left 168 (1070 bytes);
+// a function-scope `long *` to the 0x214 field for the compare and the copy 155 (folded, no dead add); the parent
+// short as `local_5 != NONE ? (short)local_5 : NONE` 201; NONE declared after both parent reads 155; the unit
+// lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
+// before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
+// of the 9 missing bytes.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

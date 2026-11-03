@@ -459,6 +459,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 390: Complete callback context after search, field/aggregate construction,
 // crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
 // Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
+// Round 50 (m3 lane 15, fast; 0x224d90 and 0x2243c0 matched each time): the first two cache zeros together
+// ahead of the material lookups 150; the group constants tested 'prt3' first 119; the search loop as
+// `!= 14` continue 117 (same code); the cache pointers compared field first 119; the context's definition
+// stored before 0x1bbf0 117 (same code). (A chained zero of the three pointers does not compile: field_50 is const.)
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

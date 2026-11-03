@@ -2797,6 +2797,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
 // 530 each. Original declarations, component producers and entire body restored;
 // frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
+// AC504: Push-setting receiver at random/centroid/average/push boundaries,
+// mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
+// give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
+// Original whole body restored; result/state bytes and point/scalar homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3102,6 +3106,9 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // 599/613/597/612/612/604/636/605. NOT kept: no qualifying match or gain; original complete body restored.
 // F356 ordinary confirmation of the initial pair: 604, 2720/2712 bytes versus baseline 561;
 // NOT kept: full-image count regresses despite eight-byte shortening. Original body restored.
+// M342: Both native double trig results at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
+// then all const: fast 623/605/601/602/623/623/602/602 (control 600, full 561). NOT kept:
+// no exact native-result lifetime graph. Original complete body restored; flight/result/vector homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -3438,6 +3445,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
 // pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
 // matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.
+// AC504: Both pivots through existing alias-safe/scalar-input/axis rotations, with
+// component/shared/in-place translation: 895 each (1412 bytes, helper outlined).
+// Native inline expansion on four producer forms: 389/389/389/391; all regress.
+// Original helper/body restored; matrix/origin, pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -4178,6 +4189,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // on the indexed-dot graph 145/224/211/145; with a separate magnitude result
 // 137/224/228/137. NOT kept: 137 uses a one-use call-result local without a
 // match. Original body/helper restored; normalization SIMD and coefficient homes remain.
+// M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
+// consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
+// output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5094,6 +5108,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // homes and completion expansion remain.
 // F356: Actual persistent low-byte/high-byte/word-bitfield views, seven subsets, then all with read-only tag receiver:
 // 663/655/655/663/663/655/663/663. NOT kept: no qualifying match or gain; original complete body restored.
+// AC504: Constant-default animation-result construction at entry/pre-motion/post-motion/
+// pre-timer scopes, original then animation-flags-first acquisitions: 655 each
+// against reduced control 655 (full 648). Original complete body restored; tag/state/
+// animation homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
