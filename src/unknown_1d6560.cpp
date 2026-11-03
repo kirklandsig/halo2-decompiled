@@ -489,6 +489,10 @@ struct s_physics_component_walk : s_havok_component
 // DH303: Promoted/branch/table neighbor producers, default first-body outcomes
 // and producer-scoped group receiver 181/163/289/318/316/318/292/303. Original method
 // restored; neighbor/key carriers and cold exits remain (one historical control excluded).
+// Round 542: Native two-fact replacement status, separate/guarded/common/branch publications,
+// unsigned/signed full-width 289/329/315/314/289/329/315/314. No exact form; original separate facts,
+// output, clamp and complete method restored; latch reload and neighbor/key carriers remain.
+// NOT kept: the status-mask producers and publications do not reproduce retail.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

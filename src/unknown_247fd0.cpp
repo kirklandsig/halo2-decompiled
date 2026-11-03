@@ -312,6 +312,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH303: Native cached-record field with common pointer/flags/both/tested-result
 // completions 131/127/128/124/131/127/128/124. All regress; original
 // body and field declaration restored; folded compare and child scratch homes remain.
+// Round 542: Empty-request evaluator admission, direct/computed mask and unconditional/admitted
+// validity publication 137/124/132/129/137/124/132/129; paired two-consumer value-array receivers repeat those counts.
+// All regress; original body restored. Post-sample compare and evaluator/child homes remain.
+// NOT kept: extra evaluator admission and field receiver remain unmatched; all regress.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
