@@ -848,12 +848,13 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
+// score 114 (was 155): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
-// score 155 (was 155): Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
+// Earlier: Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
 // MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // movement/rotation homes and cross/result lifetimes still differ.
 // Frame 0x18 agrees; sampled movement/rotation homes and SSE/output scheduling still differ.
@@ -1007,7 +1008,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // original/multiply-used uniform forward ownership: 266/268/268/268/255/256/256/256. Original
 // complete body, observations, arithmetic and ordered angle guard restored; sampled-vector and
 // rotation/output homes remain.
-// score 114 (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// Earlier: 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
 // separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
 // slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
 // from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
@@ -1021,6 +1022,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
 // retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
 // as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
+// B384: Current rotation-helper input with shared sample/rotation workspace, native/CRT/forward/backward
+// copies; independent CRT/forward/backward/setter copies: 176/176/193/189/114/188/188/205. Original helper input,
+// separate sample and rotated values and complete body restored; rotation product allocation remains.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

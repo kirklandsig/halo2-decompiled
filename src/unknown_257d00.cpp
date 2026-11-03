@@ -1764,6 +1764,10 @@ void function_b7360(long object_index);
 // F327: Complete single-exit zero/two storage before/after acquisitions,
 // short/long/byte/dword 457/457/543/457 in either position. Original callback
 // restored; actor/output entry carriers and the 24-byte deficit remain.
+// B384: Native packed-reference low/high/both indices at the initial point only,
+// recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
+// NOT kept: the 290 recording high-word form uses narrower loads than retail and
+// shortens away from 1848 bytes. Original reference observations and callback restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2277,6 +2281,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
 // existing actor perception view: 485 each (fast control 485; full 469). Original complete
 // record layout, observations and executable body restored; actor/state and point homes remain.
+// B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
+// then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
+// cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
