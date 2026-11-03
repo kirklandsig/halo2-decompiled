@@ -1488,6 +1488,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH316: Genuine collection/selection pointer-receiver lexical identities, seven subsets
 // then the complete iterator identity: eight 32s, 846/846 bytes. Original entire body
 // restored; iterator scaling, leave-selector and request/slot publication homes remain.
+// AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
+// receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
+// and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
