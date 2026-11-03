@@ -2345,6 +2345,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M319: Full native component-index ownership at admission/getter, long/dword,
 // crossed with original/promoted-shared/native-shared/native-explicit body:
 // 63/73/75/73/63/73/75/73. All restored; extra EBP, body transport and flag stores remain.
+// M325: Complete body-validity bool/byte/short/long before index selection 63/63/63/63;
+// false-default bound results bool/long 85/75, true-default 63/63. All restored;
+// extra EBP, native body transport and flag-store schedule remain.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3363,6 +3366,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // Round 375: Collision fraction from candidate update/owned candidate/full branches/named distance,
 // storage at producer/parent-block entry: 368/368/368/369/368/368/368/369. Original conditional and whole
 // body restored; frame 0x12c, matrix/pivot/property homes and first +0x71 remain.
+// M325: Nested normalization admissions, real/bool/long results, shared short-circuit/progressive/false-default
+// outcome and early real-result declarations 368/369/369/369/369/369/369/369. All restored;
+// matrix/origin and paired pivot/property homes remain; result carriers do not recover them.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
