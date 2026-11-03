@@ -215,6 +215,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N324: Raw/bounded projection split with ternary/branch/ceiling-default/independent-bound producers,
 // original then test-produced wrapped-angle sum 395/395/404/421/400/400/407/411. Original complete body
 // restored; entry and normalized XY/magnitude homes remain.
+// DL249: Center-before-object, copy-before-object, both, split-center around object,
+// split-center plus input copy, normalization-before-object, normalization before center,
+// and split center around both: 395/397/407/395/397/407/415/413. All original producers restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
