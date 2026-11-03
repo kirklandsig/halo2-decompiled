@@ -1485,6 +1485,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
 // positive/complementary polarity: 95 each. NOT kept: staged search flags require
 // exact equality. Original indexed scan, direct exit and complete body restored.
+// Round 549: Conditional/zero-default/one-default/complete-arms hand results at the
+// original boundary 95/185/184/95; before unit acquisition 189/188/188/189.
+// NOT kept: no match or gain; original hand, lookups and complete body restored.
 // F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
 // then all with completed state selection:
 // 95/95/95/95/95/95/95/95. Original complete executable body restored.

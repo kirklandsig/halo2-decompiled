@@ -1640,6 +1640,11 @@ bool function_17afd0(long effect_index, long value);
 // Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
 // original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
 // and complete executable body restored; flag width and availability/view carriers remain.
+// Round 549: Same-view tests owner/available/equal, equal/owner/available,
+// equal/available/owner, available/owner/equal, available/equal/owner on the
+// two-use effect graph: 72/73/72/132/132; shifted-word flag with the first/fourth/fifth
+// orders 114/106/106. Last two recover retail length and entry through +0xb2.
+// NOT kept: one-point best or regression; original body restored.
 // F346: On the retained two-use effect graph, last-consumer scopes for owner, availability,
 // both and complete effect/classification, each original/shifted-word eligibility:
 // 73/113/73/113/73/113/73/113. Original complete executable body restored.
