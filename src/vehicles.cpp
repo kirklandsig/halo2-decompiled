@@ -608,6 +608,8 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // NOT kept: no gain; original full body/helpers restored.
 // F355: Complete perpendicular and heading-blend point initializers, seven subsets, then the complete fallback copy:
 // 126/126/126/126/126/126/126/277. NOT kept: no gain; original body restored.
+// F358: Existing native then inline 2D normalizers at forward/heading/blend, each seven subsets plus explicit blend length:
+// 340/325/344/393/403/388/456/456/126/126/126/126/126/126/126/126. NOT kept: no exact native expansion; original provider calls, fallback graph and full body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3722,6 +3724,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // NOT kept: no gain; original full body/helpers restored.
 // F355: Wide fraction with real/wide angle, original/entry trig declarations and original/late flip predicate:
 // 199/202/199/202/227/235/227/235. NOT kept: no gain; original body restored.
+// F358: Existing dot/scale/staged-cross forced expansion declarations, seven subsets, then existing setter expansion:
+// 136/136/136/136/136/136/136/136. NOT kept: no exact projection/cross/trig repair; all original declarations and helper contracts restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

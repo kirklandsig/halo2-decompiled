@@ -2352,6 +2352,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
 // validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
+// F358: Complete sole-exit success/failure carriers in byte/short/long/dword:
+// 63/63/63/63/63/63/63/63. NOT kept: no exact outcome-carrier repair; original count, both return paths and all stores restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
