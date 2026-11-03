@@ -1709,6 +1709,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // not retail's; a grouping struct, not kept); mode renamed weapon_mode 220 (slots do not move); the clamps through a
 // file-local pin taking `real const &` 220 (same code), through an in-place pin on `&look_yaw`/`&look_pitch` 223 (still one
 // shared reciprocal); the yaw as `1.0f / rate * x` 220; early return for a missing unit 220 (repeat, same code).
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
