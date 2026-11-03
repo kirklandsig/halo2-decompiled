@@ -1049,6 +1049,11 @@ void function_1d1540(s_havok_component *component);
 // copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
 // NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,
 // two-use slot and fresh post-reset lookup restored. Frame and component/index transport remain.
+// F350: Native transform/reset word masks 89/90/94; shifted Boolean word
+// forms 65/65/65; direct bitfields 94; both masks with the existing aligned
+// copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
+// retail shifts the flags, and the length moves away. Original body restored;
+// aligned frame, constructor copy and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

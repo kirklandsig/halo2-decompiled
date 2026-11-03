@@ -2777,6 +2777,11 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M333: Actual bound/reciprocal, directional-mass and projected-speed/force lexical
 // homes, seven subsets: 692 each; all with independent relative output 699. Frames
 // remain 0xd0/0x104 versus 0xfc; original full body and all producers restored.
+// F350: Native definition control/linear/angular field domains, seven subsets and complete
+// immutable receiver, 692 each. Existing staged cross products for side/bank/current/desired
+// axes, side-bank/matrix pairs/all/all with independent relative output:
+// 691/692/742/734/691/755/755/763. NOT kept: best gain one; frame remains 0xd0
+// or 0x104 versus retail 0xfc. Original body, record view and all helpers restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {

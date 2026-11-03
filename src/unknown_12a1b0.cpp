@@ -1745,6 +1745,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
 // with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
 // NOT kept: one-use captures without a match; original body restored, frame/homes remain.
+// F349: Detail-only definition/time/alternate rejection continuations, subsets 1..7,
+// then preparation rejection: 479/479/479/380/380/380/380/380 fast (control 479).
+// Alternate rejection alone plain 305, tying baseline; original full body restored.
+// Frame 0x11c/0x128 and request/playback/NONE/range homes remain.
 // B383: Native real views of the existing input/output gain fields, each/both,
 // each with complete request storage, then both with per-pass counts and either
 // request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
@@ -2389,6 +2393,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
 // then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
 // Distance/maximum homes and entry true/flags remain; original complete body restored.
+// F349: Existing source-record flag fields at copy/attenuation/release consumers,
+// subsets 1..7, then immutable attenuation tail: 694 each (fast control 694, full 597).
+// Original aliases, tail and full body restored; entry true/flags and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

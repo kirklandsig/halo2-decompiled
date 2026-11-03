@@ -2011,6 +2011,11 @@ void function_269250(long clump_index, long actor_index);
 // 128; in-arm with `best < score` 126, score declared per actor 126, team test as `continue` 126.
 // Also round 63 (in-arm form): best/selected declared before the activity snapshot 126; best before selected 126;
 // the actor walk as a for loop 126.
+// F350: Native created-center memcpy/memmove, actual output pointer/reference,
+// original then shared selected/created result: 87/125/87/125/87/125/87/125.
+// memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
+// Original assignment, receiver and full body restored; pool/selection and
+// x87 score homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2281,6 +2286,10 @@ void function_269250(long clump_index, long actor_index)
 // 89 (same code), on the 3 form 3; head from the current prop 208 (709); nodes through prop_ref_get 180 (759).
 // Also round 63: unit initialised once from `((1 << type) & 3) != 0` 211; unit declared before the group flag
 // 87 (only the two clears swap; slots stay), on the 3 form 5.
+// F350: Native final tracking/state receiver with same/other-object cleanup
+// predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
+// One-use predicates are exact-only and restored; original categories, mutation
+// result, deletion continuation, all shared pools and complete body retained.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

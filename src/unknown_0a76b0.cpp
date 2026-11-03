@@ -950,6 +950,9 @@ extern vector3f *g_4687b0;
 // the parameter then copied out 299 (1717 bytes), the helper calling function_b75a0 on it 332 (1684 bytes);
 // the helper returning the point by value 295 (1717 bytes: retail writes the point into the copy's slot
 // with no copy, and loads the offsets pointer first). Not kept: one-caller helper, no match.
+// F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
+// then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
+// record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
