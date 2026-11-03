@@ -2555,6 +2555,10 @@ static inline real distance_squared3d_20c440(point3f const *a, point3f const *b)
 // block agrees with the real one) of about 480 forms, every helper difference order, outer local order
 // and selector position, with staged, parenthesized and named sums: y first only comes with y in XMM1
 // (helper) or sum XMM1 (no helper).
+// Round 130: selector after the helper 3; shared y helper input 26; split declarations with y-first evaluation 26;
+// source-z snapshot 418 (1944 bytes); y-first helper with reversed case declarations 22; staged source z and x 413
+// (1952 bytes); union array view 3; y product operands swapped 3; caller y before the unchanged helper 422.
+// Original 3 form restored.
 // @retail 0x20c440
 void function_20c440(s_audio_priority_table *table, byte const *request, long target_index,
     long source_index, long previous_index, long ai_index, short category, short first_state,
