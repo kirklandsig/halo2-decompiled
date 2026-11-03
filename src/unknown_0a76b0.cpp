@@ -934,6 +934,9 @@ extern vector3f *g_4687b0;
 // P285: Existing complete scalar-output setters at left/normal/position producers,
 // subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
 // Original scalar trees, stores, helpers, scopes and complete body restored.
+// F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
+// then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
+// record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
