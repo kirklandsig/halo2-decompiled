@@ -238,6 +238,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // the save late; a NULL token compared after the block saves EBP at the top but adds `xor ebp, ebp` and a setcc.
 // Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
 // token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

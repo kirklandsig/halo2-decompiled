@@ -581,6 +581,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // locals 131; a rigid-body local for the two velocity getters with the center through carrier_vector_from_havok 192
 // (0xb7060 11); body_index declared short 197; the matrix through the existing havok_component_rigid_body_matrix_get
 // 112 (same code); the center read through the existing havok_component_rigid_body_get 112 (same code). Restored.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
