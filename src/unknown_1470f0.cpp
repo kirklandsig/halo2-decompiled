@@ -92,6 +92,11 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 121: direct second dispatch 9; concrete direct second dispatch 9; concrete fallback return
 // declarations 9; concrete first assignment 9; direct chain with concrete first 27, concrete first/second
 // 27; first receiver local in the direct chain 27; distinct second receiver local on the shared graph 9.
+// Round 32 (lane 18, fast): the third range nested in an else with the allocator assigned before its test and
+// the fallback inside 39 (132 bytes); the barrier after the second's direct call instead of the receiver copy 31
+// (131 bytes); the third range nested in an else with its start named for the test and the end 9; the second
+// range address-first (`address >= start && (address <= end || ==)`) 10; a second barrier in the third arm 51
+// (107 bytes).
 // @retail 0x147160
 void c_game_havok_memory::deallocate(void *address)
 {

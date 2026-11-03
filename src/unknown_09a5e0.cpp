@@ -2301,6 +2301,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
 // then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
 // Original defaults and body restored; object/offset and low-mask homes remain.
+// M334: First/mapped-parent scalar identities, independent semantic lexical priorities
+// 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
+// indexed lookup, object/offset homes and low-mask ownership remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

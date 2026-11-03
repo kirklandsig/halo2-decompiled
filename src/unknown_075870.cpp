@@ -127,11 +127,17 @@ long network_observer_find_channel(s_network_observer *observer, long owner, lon
 
 // score 1 (was 1): retail rereads the owner from the stack as a dword in the
 // loop (mov ecx, dword ptr [esp + 0x18]); ours reads only its low byte
-// (mov cl, byte ptr [esp + 0x18]). Reading it into a local or through an
-// inline function gets a dword read, but into esi and then copied to ecx
-// (score 37 or worse); a plain parameter stays in a register (10). Casts and a
-// volatile read at the use stay at 1; the 600 s permutation run found no
-// improvement.
+// (mov cl, byte ptr [esp + 0x18]). Retail's registers are observer = edx,
+// address = ebx (all three callers load ebx = address and push the owner, 3);
+// without volatile the compiler instead gives the owner ebx and the address
+// the stack (10), and the loop then copies the address stack slot into esi.
+// Reading it into a local or through an inline function gets a dword read,
+// but into esi and then copied to ecx (37 or worse). Casts and a volatile read
+// at the use stay at 1; the 600 s permutation run found no improvement.
+// Also tried (f1A, 2026-11-03), all without volatile: early `return i` (46),
+// `unsigned long owner` (10), channel pointer first (33), one && chain with the
+// machine copy before it (17), do-while with early return (46). The volatile
+// stays only because it lowers 10 to 1; it does not match.
 // @retail 0x75d30
 long network_observer_find_channel_by_machine(s_network_observer *observer, const s_session_machine_address *address, long volatile owner)
 {
@@ -732,6 +738,13 @@ void network_samples_reset(s_network_samples *samples);
 
 static inline void observer_statistics_reset(s_network_statistics *statistics);
 
+// score 170 (was 170): the logic walk found no difference (state/close-reason dispatch, flag handling, the reset stores and
+// the -1.0f at 0x45dbcc all agree). What differs is the calling convention: retail takes channel_index in ebx and observer
+// on the stack, loaded once into edi (0x76ffc); without the volatile ours takes observer in ebx and channel_index on the
+// stack (score 177, and the callers 0x78880 0x76a40 0x75da0 stop matching), with it observer is reloaded from the stack at
+// each use (+12 bytes). Tried: dropping volatile (177), swapping the parameters (177), reading the volatile argument once
+// into a local (198), the same through *(T volatile *)&argument (198), channel->x spelt observer->channels[channel_index].x
+// (208), owner pointers walked in both loops (177 / 208). The volatile stays only because the callers need the convention.
 // @retail 0x76ff0
 void network_observer_update_connection(s_network_observer *volatile observer, long channel_index)
 {
@@ -1322,6 +1335,12 @@ static __forceinline long observer_round(real value)
 	return real_to_long(value);
 }
 
+// score 7 (was 7): the only real difference (the call targets and trailing
+// int3 are artifacts of the reduced image) is the last clamp: retail forms
+// lea ecx, [ebp + 1]; imul ecx, eax and loads the minimum burst afterwards;
+// ours loads the minimum into ecx first, then inc ebp; imul eax, ebp. Swapping
+// the multiply operands, folding intervals + 1 into the product, or reading
+// the minimum inline all give 7; reversing the max direction gives 9.
 // @retail 0x79850
 void function_79850(s_network_observer *observer, long index)
 {
@@ -1880,6 +1899,13 @@ void function_79480(s_network_observer *observer)
 	observer->value4f38 = now;
 }
 
+// score 6 (was 6): retail loads received_bytes into ebp first (before the
+// channel pointer is formed), adds bytes and stores it, then reloads ebp with
+// sample_time; ours hoists the sample_time load into ebp first and loads
+// received_bytes into eax. The volatile read only lowers the score from 93
+// (plain `received_bytes += bytes` and the load-add-store local both fuse into
+// add dword ptr [esi + 0x4a8], ecx, 8 bytes short): it does not match. The
+// fast check's call/global address differences are not real differences.
 // @retail 0x79660
 void function_79660(s_network_observer *observer, long index, long bytes, long delay, long stream_delay)
 {
@@ -1908,11 +1934,17 @@ void function_79660(s_network_observer *observer, long index, long bytes, long d
 		channel->loss_penalty--;
 }
 
+// score 5 (was 8): the remaining differences are the stack slots of count and
+// total: retail keeps count at [esp + 0x14] and total at [esp + 0x18]; ours
+// has them the other way round (qualifying is [esp + 0x10] in both) and the
+// call to function_77f90 then loads them from the swapped slots. The order of
+// the three zero stores follows the declaration order (total, qualifying,
+// count gives retail's store order); all 24 orders of the four locals were
+// tried (5 to 8), and so were count/total declared at the top, moving
+// total += received before or after count++ (105+), and count += 1 (7).
 // @retail 0x79260
 void function_79260(s_network_observer *observer)
 {
-	long count;
-	long total;
 	long started = observer->value4f38;
 	long elapsed = observer_time_get() - started;
 	if (observer->flag4f3c || elapsed >= *(long *)((byte *)observer->configuration + 0x19c))
@@ -1929,9 +1961,9 @@ void function_79260(s_network_observer *observer)
 		else if (elapsed >= *(long *)((byte *)observer->configuration + 0x1a4))
 		{
 			long penalized = 0;
-			count = 0;
-			total = 0;
+			long total = 0;
 			long qualifying = 0;
+			long count = 0;
 			for (long index = 0; index < MAXIMUM_OBSERVER_CHANNELS; index++)
 			{
 				s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
@@ -2049,6 +2081,22 @@ bool __stdcall function_78a90(long first, long second, const void *context)
 	return values[first] < values[second];
 }
 
+// score 257: the logic walk found no other difference, and this matches (fast check, 923 bytes) with all of the
+// following together. It is held because the last item moves the sort_4byte call, which the lanes' pending
+// sort_4byte parameter-order change touches; apply it once that has landed.
+// - Retail inlines the session getters 0x59670 and 0x596a0 here (0x78bf2-0x78c33): file-local inline copies of
+//   them, as unknown_058ee0.cpp has (with unknown_058ee0.h for g_527330).
+// - The callback flag compares as `(bool)(connection->callback != NULL) != (bool)channel->has_callback` and
+//   `(bool)(connection->callback && connection->callback->active ? 1 : 0) != (bool)channel->callback_active`
+//   (retail's cmp reg8, [channel+2] / [channel+3]; without them movzx + dword compares).
+// - The tolerance as an if/else on !has_callback (retail's branch; the ?: makes a lea), and `i = 0` set before the
+//   second loop's pointer (0x78c77).
+// - The rounded value in `limit`, clamped in place, and the sort's third argument a separate uninitialized
+//   `long maximum` in its own block, which shares the rounded value's stack slot. Retail passes the slot of the
+//   rounded, unclamped value (0x78dbe); the sort (0x13de30) ignores it. The plain form (`maximum` the rounded value,
+//   `limit` the clamped one, the sort call unchanged) gives 99.
+// Behaviour note: the source passes the clamped value as the sort's third argument, where retail passes the rounded
+// one; the sort ignores the argument.
 // @retail 0x78ac0
 void function_78ac0(s_network_observer *observer)
 {
@@ -2232,6 +2280,17 @@ static __forceinline long function_779f4(s_network_statistics *arg_0)
 
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 205 (was 220): no behaviour difference found. Still differs: (1) the stack
+// slots of rate/j and count/float temp are swapped (retail rate+j at esp+0xc,
+// count at esp+0x10; moving rate's or count's declaration did not change it);
+// (2) retail rereads the refresh word g_485ac0 (movsx) in each of the three
+// inlined frame-rate reads (0x77ccc, 0x77d59, 0x77de5) but keeps the configuration
+// pointer in ecx across them; ours keeps the word in a register (bx) and reloads
+// [edi+0x10] after each _ReadWriteBarrier, which shifts the registers of the whole
+// budget block; (3) flag4f18 test uses bl (ours) vs al (retail). Tried: dropping
+// both barriers (343), network_frame_rate under optimize("g", off) (225, x87 code),
+// min/max written as if/ternary forms (206), ternary vs sum order for
+// value4e28/rate (205-224).
 // @retail 0x779f0
 void network_observer_update_channel_budgets(s_network_observer *observer)
 {
@@ -2240,8 +2299,8 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 		bool congested = false;
 		if (*(volatile byte *)&observer->flag4e00)
 		{
-			long losses = 0;
 			long count = 0;
+			long losses = 0;
 			byte *local_0 = (byte *)&observer->channels[0] + 0x46c;
 			for (long local_1 = MAXIMUM_OBSERVER_CHANNELS; local_1 > 0; local_1--, local_0 += sizeof(s_network_observer_channel))
 			{
@@ -2278,9 +2337,10 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 			{
 				if (observer_time_since(observer->time4f0c) >= *(long *)((byte *)observer->configuration + 0x128))
 				{
+					long budget = observer->value4e20;
 					long reduced = rate - *(long *)((byte *)observer->configuration + 0x124);
-					long budget = observer->value4e20 > reduced ? reduced : observer->value4e20;
 					long minimum = observer->configuration->value138;
+					if (budget > reduced) budget = reduced;
 					budget = budget > minimum ? budget : minimum;
 					observer->value4e20 = budget;
 					observer->value4e28 = budget;
@@ -2291,8 +2351,8 @@ void network_observer_update_channel_budgets(s_network_observer *observer)
 			else if (observer->value4f10 >= *(long *)((byte *)observer->configuration + 0x12c))
 			{
 				if (rate > observer->value4e20) observer->value4e20 = rate;
-				long base = observer->flag4f18 ? observer->value4e28 : rate;
-				long budget = base + *(long *)((byte *)observer->configuration + 0x140);
+				long budget = *(long *)((byte *)observer->configuration + 0x140);
+				budget += observer->flag4f18 ? observer->value4e28 : rate;
 				if (budget > observer->value4e28 && budget + *(long *)((byte *)observer->configuration + 0x13c) < observer->value4e24)
 				{
 					observer->value4e28 = budget;
@@ -2377,6 +2437,17 @@ void __stdcall function_78880(void *p)
 void link_connection_connect(s_type_99af70 const *address, s_link_connection *connection, bool initiator);
 long function_75890(long time);
 
+// score 160 (was 180): no behaviour difference found. The prologue and the
+// state-2/5/9 setup now match (retail reads observer->configuration separately in
+// each branch). Still differs: retail has three separate copies of the
+// forget_address(false, 0) + set_channel_state(1) tails (0x77840, 0x778ca, 0x778ec)
+// laid out after the state-3 return, and the cooldown test as cmp/setge/test/je
+// (0x77896); ours merges the three tails into one at the end, and the loop at
+// 0x777e1 gets a 3-byte pad here. Tried: bool local for the cooldown test, a g-off
+// forceinline helper for it (both 180, no setge), a goto to one shared tail (175,
+// more merging), connect state as ternary (180, lea eax+eax+6 instead of retail's
+// mov eax,6 / mov eax,8) vs two calls (152 before the configuration change),
+// reordering the state-2/connect/out-of-range blocks (152, same layout).
 // @retail 0x776a0
 void s_network_observer::function_776a0(long channel_index)
 {
@@ -2410,21 +2481,20 @@ void s_network_observer::function_776a0(long channel_index)
 		bool wanted = false;
 		long count;
 		long *delays;
-		byte *config = (byte *)observer->configuration;
 		if (channel->state == 2)
 		{
-			count = *(long *)config;
-			delays = (long *)(config + 4);
+			count = *(long *)observer->configuration;
+			delays = (long *)((byte *)observer->configuration + 4);
 		}
 		else if (!(channel->flags & 4))
 		{
-			count = *(long *)(config + 0x24);
-			delays = (long *)(config + 0x28);
+			count = *(long *)((byte *)observer->configuration + 0x24);
+			delays = (long *)((byte *)observer->configuration + 0x28);
 		}
 		else
 		{
-			count = *(long *)(config + 0x48);
-			delays = (long *)(config + 0x4c);
+			count = *(long *)((byte *)observer->configuration + 0x48);
+			delays = (long *)((byte *)observer->configuration + 0x4c);
 		}
 		if (channel->attempts || (channel->flags & 4))
 		{
@@ -2458,7 +2528,10 @@ void s_network_observer::function_776a0(long channel_index)
 				else
 				{
 					link_connection_connect(&channel->address, connection, true);
-					network_observer_set_channel_state(observer, channel->state == 5 ? 6 : 8, channel_index);
+					if (channel->state == 5)
+						network_observer_set_channel_state(observer, 6, channel_index);
+					else
+						network_observer_set_channel_state(observer, 8, channel_index);
 				}
 			}
 		}
@@ -2483,6 +2556,15 @@ static __forceinline bool function_785f7(const s_type_99af70 *arg_0)
 }
 #pragma optimize("", on)
 
+// score 3 (was 3): retail loads the flags dword (mov eax, dword ptr [eax + 4])
+// and reads the low bit group with movzx ecx, al; ours sign-extends a word
+// (movsx eax, word ptr [eax + 4]) and copies it (mov ecx, eax). A dword flags
+// local fixes those instructions, but then the message pointer goes to ecx
+// instead of eax and the four lea/push argument registers of the
+// function_07ab60 call rotate by one (10): `long`, `dword`, `int`, `const long`
+// and a cast read of message+4 all give 10; `byte` or `char` flags also 10
+// (mov al, byte ptr [ecx + 4]); `unsigned short` stays at 3; declaring the
+// view or flags first, or reading the bit from flags directly, 22 or worse.
 // @retail 0x785d0
 void __stdcall function_0785d0(void *unknown10, s_type_99af70 const *address, void const *message)
 {
@@ -2616,6 +2698,11 @@ void network_observer_update(s_network_observer *observer)
 	function_7a4a0(observer);
 }
 
+// score 2 (was 2): the byte swap of the address is the same IR, but retail
+// masks the original register (and ecx, 0xff00) and shifts the copy
+// (shl edx, 0x10); ours does the opposite. Operand order of the | and +,
+// the usual htonl macro spellings, splitting into lo/hi locals in either order
+// and a separate mid = ip & 0xff00 all compile to the same 2.
 // @retail 0x78900
 void network_observer_recreate_connections(s_network_observer *observer)
 {
