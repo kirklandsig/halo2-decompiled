@@ -648,6 +648,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // first); the reference pointer `const *const` 67; the first test as `reference spread - candidate spread > 0` 72
 // (516 bytes); the candidate direct-initialised `candidate(current)` 67; `best = candidate;` before
 // `improved = true;` 71 (517 bytes); the loop counters declared before the loops 67 (same code).
+// Round 81 (m3 lane 12, fast): the reference selected before the candidate copy 128 (512 bytes); the
+// improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
+// spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
+// declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1013,6 +1017,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // Round 38 (lane 17, fast with 0x91e30): local names as a tie-break for the roles (same-size slots are
 // ordered by name): extra_count renamed `requested_count` (sorting after player_count) 34; next_party
 // `unused_party` 34; parties `party_list` 34; total `combined_count` 34; i `index` 34 (same code each).
+// Round 200 (m3 lane 3, fast): clamp `(excess > 0 ? excess : 0)` 43, `(excess >= 0 ? excess : 0)` 34,
+// `maximum_imbalance >= (...)` 35; `extra_count + player_count` alone 34; per-loop index declarations
+// (`long i` / `long j`) 34. All restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

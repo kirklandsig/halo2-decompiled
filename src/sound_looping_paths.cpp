@@ -733,6 +733,11 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
 // qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
 // publication scheduling remain.
+// Round 80 (m3 lane 12, fast): bsp renamed to sort after count, or count renamed to sort before bsp, 150/150 (the
+// homes do not move: bsp's +0x14 is a spill home, not a named slot); the camera formed before the first-listener
+// scan 200 (camera takes a saved register); the scan result in a one-use local before the camera 145 (camera
+// block then retail's, exact-only); on that the request stores as transition, index, fade with `tag == NONE ?
+// 0.0f : 1.0f` 144; that store order alone on the current body 149.
 // Lane 17 r37 (fast): bsp renamed to sort after count (diagnostic) leaves the +0x10/+0x14 homes; `count` declared at
 // the function top 150, at the camera-block top 150; the transition definition through g_4e0348 279 (1037 bytes: bsp then
 // takes retail's +0x14 home but a cached zero takes ESI before the request loop, where retail reloads bsp); on that, the

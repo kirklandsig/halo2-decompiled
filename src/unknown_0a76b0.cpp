@@ -316,6 +316,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
 // raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
 // incoming ranks and shared-call threading remain.
+// P288: Complete name-case priorities grouped by actual output outcomes, eight forms
+// 271 each; original full dispatch and body restored. Frame 8 and incoming
+// unit/name/actions ranks, shared-call threading remain.
 // M333: Actual hand-result/count/output lexical identities on original receivers,
 // seven subsets, then complete observed-state/unit/actions identities: 271 each.
 // Original full body restored; incoming unit/name/actions ranks and shared calls remain.
@@ -941,6 +944,18 @@ extern vector3f *g_4687b0;
 // P285: Existing complete scalar-output setters at left/normal/position producers,
 // subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
 // Original scalar trees, stores, helpers, scopes and complete body restored.
+// Round 78 (m3 lane 16, fast): direction, origin or left renamed 309 (same code: names do not order these
+// slots). LEAD: the throw-offset block as a forceinline helper taking the direction by value gives retail's
+// second direction copy at retail's slots with up kept in EBX: with the original sum 316 (frame 0xd8), with
+// the sum as three in-place vector3f_add_scaled phases 307 (frame 0xcc, 1693 bytes); on that the offsets
+// pointer passed as an argument 307 (same code), direction declared beside origin, before or after, 307
+// each, the spread blend as vector3f_scale + vector3f_add_scaled 310 (1699 bytes); the phases in place in
+// the parameter then copied out 299 (1717 bytes), the helper calling function_b75a0 on it 332 (1684 bytes);
+// the helper returning the point by value 295 (1717 bytes: retail writes the point into the copy's slot
+// with no copy, and loads the offsets pointer first). Not kept: one-caller helper, no match.
+// F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
+// then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
+// record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1494,6 +1509,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
 // then all with completed state selection:
 // 95/95/95/95/95/95/95/95. Original complete executable body restored.
+// P289: Twice-used animation channel long/dword/short/byte at its producer, then
+// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
+// no exact match. Original body restored; early pool/hand and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1762,6 +1780,13 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // complete array graph with short slot / Boolean hand / both / forced accessor / all:
 // 136/146/143/138/143. NOT kept: best 136, gain 2 below the gate. Original body and helper
 // restored; frame 0xc, same-block pool reload and weapon/mode homes remain. All shared users unchanged.
+// Round 78 (m3 lane 16, fast): hand as `primary ? 0 : 1` 138, as `primary == false` 138, each arm's flag
+// stored before its mode 138, the secondary arm's flag as the constant false 138 (same code each); the
+// other hand's getter given `!hand` re-measured 141. Retail's first lookup addresses [index + data + 8] (ours
+// [data + index + 8]) and re-reads the pool data for the hand getter.
+// M335: Primary/selected-hand/paired-weapon scalar identities, subsets 1/2/4/3/5/6/7,
+// then all with the animation-flag identity: 138/138/138/138/138/138/138/138. Original complete body restored;
+// same-block pool reload and selected-weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1907,6 +1932,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // inlining was not changed); the two admission tests nested 60; the weapon through the header's unit field 60;
 // the mode-0/1 admission as `allowed = false; if (...) allowed = true;` 60; the request alias const 60.
 // Original body restored.
+// M335: Positive mode-switch result char/byte/short/word, with failure default in
+// its switch arm or initialization: 60/60/89/89/60/60/89/89. NOT kept: ties or regressions;
+// original body restored, request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2021,6 +2049,13 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // native drop-request call scope, subsets 1/2/4/3/5/6/7: 97/97/97/97/97/97/97; native byte
 // argument store 97. All sixteen shared-accessor users and notification control stay at
 // calibrated scores. Original helper and body restored; frame/result and pool/weapon homes remain.
+// Round 78 (m3 lane 16, fast): the unit read through a header local 97 (same code); nested admission re-measured
+// 122, with the header local 122; own-unit fields at each use 129 (345 bytes); the player unit read at the top
+// 109; the own weapon getter before the player unit read 102. Retail keeps unit_index in EBP and spills the
+// unit into the dead unit_index home; every form keeps the unit in ESI and reuses it for the first getter.
+// M335: Native receiver/offered/returned scalar identities, subsets 1/2/4/3/5/6/7,
+// then all with the give-result identity: 97/97/97/97/97/97/97/97. Original complete body restored;
+// frame/result-byte and pooled unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2437,6 +2472,9 @@ __forceinline char unit_action_round(real value)
 // F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
 // ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
 // Original complete body restored; pool/type/name and completion-byte homes remain.
+// B386: Paired zero-byte/absent-tick chained stores and existing full-width rounding, subsets 1/2/4/3/5/6/7,
+// then late constant success: 237/237/235/239/237/237/239/239. Original stores, conversion consumers and body
+// restored; pool/type/name and completion-byte homes remain.
 // P287: Animation admission owns return truth and gates common publication; four
 // producers, special success before/after work: 290/307/303/305/290/306/257/239.
 // All restored; pool/index/type/name and completion-byte homes remain; callers stay exact.
@@ -2838,6 +2876,9 @@ long function_c8f60(long unit_index, short seat_index);
 // F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
 // complementary nonvehicle polarity:
 // 293/293/299/299/300/300/319/321. Original complete executable body restored.
+// P289: Real unit seat/node offsets, paired seat velocities and activity byte,
+// seven field subsets and guarded full-width activity result: 293/293/293/293/293/293/293/296. Original
+// complete record/body restored; entry vehicle/unit/ordinal residence remains.
 // F348: Native typed seat receiver mutable/readonly with original, complete, conditional
 // and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
 // All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.
@@ -4650,6 +4691,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 546: Early point input/output workspace; native/library input, position/world
 // inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
 // NOT kept: 45 extra bytes and no match. Original complete body restored.
+// B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
+// 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
+// output lifetime and full body restored; frame and basis/point homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

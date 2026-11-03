@@ -441,6 +441,10 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // as `size * index` 117 (same code); the stage and pass ordinals as short 117 (same code); the tables
 // lookup as one ternary 117 (same code); the group tag in a named dword for both tests 165; the
 // search result stored straight into the record 136. All restored.
+// Round 82 (m3 lane 12, fast; 0x224d90 and 0x2243c0 matched each time): the context's definition stored
+// after the search loop 147, at the top of the draw block 117; the root tag local passed to 0x1bbf0 130
+// (first difference +0x2); first cache zero after the material record lookup 117; the search count read
+// once before the loop 117. Original body restored.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

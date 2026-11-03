@@ -604,6 +604,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // F336: Maximum dword/once-read twice-used priority/later constant acquisition,
 // seven subsets on the retained signed-state graph, then plain dword with priority:
 // 416/412/414/414/418/414/416/428. Original maximum, observations, cases and complete body restored.
+// Round 46 (m3 lane 15, fast): volatile sample/update flags (diagnostic, reverted) 424 (frame 0xa0; `index`
+// then takes EBX and the actor is still re-read from its stack slot; our loop holds the actor pointer in EDI
+// where retail spills it); loop actor fields through fresh actor lookups 457; plain word maximum 429 (1616
+// bytes); the current-target test as one named bool 438 (1616 bytes); the list head through the held actor
+// pointer 442 (1616 bytes); sample/update declared before the prior state 412 (same code).
 // DH310: Complete case orders 04123/04132/02413/02431/02314/03124/03142/03214 on the signed-state graph,
 // 422/448/426/433/416/444/451/431. All original case-body hashes agree; every new priority regresses.
 // Original cases, observations, qualifier and whole body restored; frame excess and stacked actor remain.
@@ -1064,6 +1069,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // getter and null-first unit combinations 380/397/380/397/380/397/380/397 (fast control 372; full
 // baseline 257). Ordinary late-squad and late-squad/null-first forms 359/364; both regress.
 // Original source and include restored; squad/object, flag and root/hit homes remain.
+// Round 126 (lane 8, plain): unit NULL-first (`byte *unit = NULL;` before the suppression test, set when the
+// object type is 0) 267 at 1278 bytes: head as retail (squad spilled, NULL home, cmovne) but the current-record
+// argument of the first 0x1c8df0 call spills; on it: current renamed to sort after suppressed 267 (byte homes
+// unchanged); a named current-record pointer for both calls before/after the root lookup 272/270; a named
+// sight mode for both calls 326.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

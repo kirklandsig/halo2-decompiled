@@ -72,6 +72,10 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // zero swapped), arm z, x, y 39, x, z, y scale-left 38, z, y, x 38, y, z, x 39, x, y, z 37; z declared first 48; reads
 // y, x, z 48; z read through the out pointer 37; an else-arm read as well 10 (241 bytes).
 // Lead: the zero comes first only when no z is set in the entry block; the wanted form sets z there and still has it.
+// Round 201 (fast): z read in the entry block with the arm re-reading the point, `z = scale * point->k`
+// 57 (239 bytes; z and the zero share a register, the zero made after the products), `point->k * scale`
+// 57, `z = scale * z` 57, an empty `== 1` arm with the else scaling 57; in the else-form, `z = scale;`
+// then `z *= point->k` 9 and `z = point->k * scale` 9 (same code).
 // Round 35 (m3 lane 17, fast): on the scale local and short x, z set from point->k ahead of a `!=` test with arm
 // x, y, z: `z = scale * point->k` 57 (239 bytes), `z *= scale` 57; that form with the scale read at each use 37
 // (242 bytes, zero after the products), with k stored first 30 (zero first but in xmm2, the step in xmm3);

@@ -881,6 +881,9 @@ byte g_55e708;
 // 115; short count 131; short index 51; both short 77 (610 bytes); per-pass amount local 118 (613); const
 // light/definition 38. Original body restored; fallback/count scratch, loop load schedule, single-marker arm and
 // opacity reload remain.
+// Round 64 (m3 lane 1, fast with the same list): dword absolute index 38 (same code); count zeroed in an else of the
+// first-person test 38; unsigned loop index 39; unsigned count 39; count = 1 before the flag test 107. Permuter
+// (600 s, annealing): reduced image scores this body 141 (frame 0xec), nothing better in 47 tries.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {

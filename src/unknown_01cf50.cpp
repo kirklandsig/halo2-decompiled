@@ -4613,82 +4613,81 @@ again:
 
 long g_485a60;
 
+// score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
+// calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
+// binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
+// the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
+// Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
-    (void)&descriptor;
     byte *binding = *(byte **)(*(byte **)(state + 0x20) + 0xc) + (*descriptor & 0x1ff) * 4;
-    long i = 0;
-    if ((*descriptor >> 9) > 0)
+    for (long i = 0; i < (*descriptor >> 9); i++)
     {
-        do
+        if (binding[0] != 0xff)
         {
-            long slot = binding[2];
-            byte *destination = state + 0x1320 + slot * 0x40;
-            if (binding[0] != 0xff)
+            memcpy(state + 0x1320 + binding[2] * 0x40, state + 0x320 + (signed char)binding[0] * 0x40, 0x40);
+            if (binding[3] & 2)
             {
                 byte *source = state + 0x320 + (signed char)binding[0] * 0x40;
-                memcpy(destination, source, 0x40);
-                if ((binding[3] & 2) && *(long *)source != NONE)
+                if (*(long *)source != NONE)
                 {
                     byte *definition = g_4e3b44[*(long *)source & 0xffff].bytes;
-                    real index = *(real *)(source + 0x18);
-                    if ((real)*(long *)(definition + 0x44) > index)
+                    if ((real)*(long *)(definition + 0x44) > *(real *)(source + 0x18))
                     {
-                        byte *bitmap = *(byte **)(definition + 0x48) + (long)floor(index) * 0x74;
+                        byte *bitmap = *(byte **)(definition + 0x48) + (long)floor(*(real *)(source + 0x18)) * 0x74;
                         if (bitmap[0xe] & 0x10)
                         {
-                            *(long *)(source + 8) = *(short *)(bitmap + 4);
-                            *(long *)(source + 0xc) = *(short *)(bitmap + 6);
+                            *(long *)(state + 0x328 + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 4);
+                            *(long *)(state + 0x32c + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 6);
                         }
                     }
                 }
-                *(dword *)(state + 0x1420) |= 1 << slot;
             }
-            else if (binding[1])
+            *(dword *)(state + 0x1420) |= 1 << binding[2];
+        }
+        else if (binding[1])
+        {
+            if (binding[1] != 11)
             {
-                if (binding[1] != 11)
-                {
-                    *(long *)destination = NONE;
-                    function_19530((signed char)binding[1], state, (short)slot,
-                        (long *)(destination + 8), (long *)(destination + 0xc));
-                }
-                else
-                {
-                    byte *location = NULL;
-                    if (g_4e0344 && *(long *)((byte *)g_4e0344 + 0x80) > 0 && g_4e0348)
-                    {
-                        byte *first = *(byte **)((byte *)g_4e0344 + 0x84);
-                        if (*(long *)(first + 0x1c) != NONE &&
-                            *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8) && g_485a60 != NONE)
-                            location = first;
-                    }
-                    if (location)
-                    {
-                        long tag = *(long *)(location + 0x1c);
-                        if (*(long *)destination != tag || *(real *)(destination + 0x18) != (real)g_485a60)
-                        {
-                            byte *definition = g_4e3b44[tag & 0xffff].bytes;
-                            byte *bitmap = *(byte **)(definition + 0x48) + g_485a60 * 0x74;
-                            *(real *)(destination + 0x10) = 3.0f;
-                            *(long *)destination = tag;
-                            *(real *)(destination + 0x18) = (real)g_485a60;
-                            short width = *(short *)(bitmap + 4);
-                            short height = *(short *)(bitmap + 6);
-                            long maximum = width > height ? width : height;
-                            *(real *)(destination + 0x14) = (real)(log((double)maximum) * 0.6931471824645996f);
-                        }
-                        *(dword *)(state + 0x1420) |= 1 << slot;
-                    }
-                    else
-                        *(long *)destination = *(long *)(g_485a80 + 0x64);
-                }
+                *(long *)(state + 0x1320 + binding[2] * 0x40) = NONE;
+                function_19530((signed char)binding[1], state, (short)binding[2],
+                    (long *)(state + 0x1328 + binding[2] * 0x40), (long *)(state + 0x132c + binding[2] * 0x40));
             }
             else
-                *(long *)destination = NONE;
-            binding += 4;
-            ++i;
-        } while (i < (*descriptor >> 9));
+            {
+                byte *location = NULL;
+                if (g_4e0344 && *(long *)((byte *)g_4e0344 + 0x80) > 0 && g_4e0348)
+                {
+                    byte *first = *(byte **)((byte *)g_4e0344 + 0x84);
+                    if (*(long *)(first + 0x1c) != NONE &&
+                        *(long *)(first + 4) == *(long *)((byte *)g_4e0348 + 8) && g_485a60 != NONE)
+                        location = first;
+                }
+                if (location)
+                {
+                    byte *destination = state + 0x1320 + binding[2] * 0x40;
+                    if (*(long *)destination != *(long *)(location + 0x1c) || *(real *)(destination + 0x18) != (real)g_485a60)
+                    {
+                        byte *definition = g_4e3b44[*(long *)(location + 0x1c) & 0xffff].bytes;
+                        byte *bitmap = *(byte **)(definition + 0x48) + g_485a60 * 0x74;
+                        *(real *)(state + 0x1330 + binding[2] * 0x40) = 3.0f;
+                        *(long *)(state + 0x1320 + binding[2] * 0x40) = *(long *)(location + 0x1c);
+                        *(real *)(state + 0x1338 + binding[2] * 0x40) = (real)g_485a60;
+                        short width = *(short *)(bitmap + 4);
+                        short height = *(short *)(bitmap + 6);
+                        long maximum = width > height ? width : height;
+                        *(real *)(state + 0x1334 + binding[2] * 0x40) = (real)(log((double)maximum) * 0.6931471824645996f);
+                    }
+                    *(dword *)(state + 0x1420) |= 1 << binding[2];
+                }
+                else
+                    *(long *)(state + 0x1320 + binding[2] * 0x40) = *(long *)(g_485a80 + 0x64);
+            }
+        }
+        else
+            *(long *)(state + 0x1320 + binding[2] * 0x40) = NONE;
+        binding += 4;
     }
 }
 

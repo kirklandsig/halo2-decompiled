@@ -284,6 +284,19 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH311: Joint actual equal-size retained-input/center, basis and final-projection lexical
 // identities, seven family subsets then complete alternate vocabulary: eight at 618. No native home
 // moves; original names/body restored. Success/input/minimum/hit and rotation homes remain.
+// Round 201 (fast; aligned = difflib count, 346 here): retail rereads the half-width and negates it again
+// for each offset point and stores each point's components as it makes them (the escaped point array
+// treated as aliasing the definition), and loads the output's three components once for the basis
+// product and stores the three final components last. Tried: the output's components read into three
+// named amounts for the basis product 635 (2808 bytes, aligned 342); the final stores in k, j, i order
+// 615 (under the keep bar); amounts plus the three final components staged in locals and stored last 620
+// (retail's i, j, k stores at the end, aligned 345); the point helper as plain inline 618 (same code); the
+// point array declared ahead of the position copy 618 (same code). Original body restored.
+// Round 79 (m3 lane 16): the offsets read once into an `offsets` vector local before the basis sums 604 (plain).
+// NOT kept (review): a struct value copy where retail reads the three components through the pointer at the
+// basis sums (0x292ca9; our copy goes through integer registers); body restored at 618. That local declared before local_17 604; read before the arg_6 test 601; as three real
+// locals 635 (2808 bytes, aligned 461); the private cross with retail's product operand order 604 (identical code);
+// the hit flags as an aggregate initializer 605.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -738,6 +738,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // B381: complete normalization predicate, moving/stationary bool/byte/short/long,
 // 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
 // Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
+// Round 80 (m3 lane 12, fast, 0x24590 listed): the second speed store read back from `state->speed` 132; the
+// jitter offsets as `0.2f * x * limits.i` 132; the definition's 0x90 factor named once and used three times 227
+// (1053 bytes); the definition read before the enable store 132; the direction declared beside the movement
+// output and assigned later 132 (all four 132s identical code).
 // Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
 // swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
 // `0.2f * x * limits.i` 132. Body restored.

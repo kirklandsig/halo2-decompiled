@@ -679,6 +679,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 233/233/233; unrounded angle with original/real APIs 90/90. Complete original
 // body, angle carrier and helper restored; ring SSE conversion, rotation spill
 // and radius-save scheduling remain.
+// Round 121 (fast; aligned count, control 93): named ring value 90 (92); with a named ring phase above the spoke loop 143 (144);
+// direct sin/cos arguments 215 (81), with the named ring 218 (95), with the phase as well 231 (133).
+// Also: origin declared with the sector index 90 (93); trace distance read at each row 101 (98); origin first in the point rows 90 (93).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

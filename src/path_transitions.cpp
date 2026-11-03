@@ -654,6 +654,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`
 // 278 (each the same code). Retail's case 5 tests the actor in EAX loaded at entry while case 2 reloads it
 // from the stack. All restored.
+// Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
+// constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
+// if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -279,12 +279,19 @@ struct c_aggregate : c_child
 // seven more instructions). The standing lead above is unchanged: this body built without /GL is byte-exact, and no /GL form shares the output's slot with the two loop spills (a flags decision).
 // M312: Native block-count field with shared query output/block reference/error-first gate
 // subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
+// Round 200 (m3 lane 3, fast): produced renamed added 31; the query output renamed information 31;
+// pre-increments 31 (same code, frame 0x8024); the cleanup object read from the field at the query and
+// the release 67 (376 bytes); scalars before the arrays with produced at the loop-body top 46. Restored.
 // B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
 // then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
 // outputs and complete body restored; escaped output and the lowest loop homes remain.
 // Lane 17 r39 (fast): the error test ahead of the child test 37; the query result declared before the item
 // object 31; error and total in one declaration 31; `total = total + produced` 31; the cleanup block as
 // `blocks + k` 31. Frame 0x8024 in each; original body restored (the flags lead above stands).
+// Lane 18 round 36 (fast; local-name order): the dispatch child renamed `child` 31, the cleanup block renamed
+// `released` 31, the collection child and count renamed `collector`/`block_count` 31, the cleanup item and
+// output renamed `item`/`information` 31 (all identical listings: the swapped slots are compiler temporaries);
+// the dispatch inner loop over an `s_block *` range 129 (389 bytes). Still BLOCKED by the build flag.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
