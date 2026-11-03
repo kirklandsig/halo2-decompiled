@@ -1796,6 +1796,9 @@ dword function_015cd0(long index, dword entry);
 // before the result 4; conversion failure jumping to the zero stores 4; conversion test inverted 4. The two leas
 // shift one scratch register together (ours ECX/EDX, retail EAX/ECX); unmatched callee 0x12ce00 writes the same
 // general registers as retail, so no register-summary gap there.
+// Round 129: callee-side inline sampling declaration 4; inline lock wrapper 4; tag/bitmap-scoped
+// temporary 4/4; tag-scoped UV 84 (303 B); partial aggregate UV 30 (316 B); unsigned result 4;
+// nested sampling guards 4; named palette predicate 4; split bitmap declaration 4.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {

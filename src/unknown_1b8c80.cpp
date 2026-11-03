@@ -1004,53 +1004,25 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 
 /* invites the clump members to the joint, the nearest first, when the
    object has more than one seat to take */
-// score 17 (was 17): retail still loads the element pool's data right after the table
-// pointer into EDX and keeps the element record in ECX, ours loads the data later into
-// ESI and the record into EAX; this round's declaration-order trials (the element
-// pointer before or after the actor) move the whole prologue instead, and the body
-// after the call matches
-// MiniMax R (11-01): no new form, no lower score; the record read directly in the call 31 and the
-// element access first 22/30 all move the record's register further from retail's ECX.
-// score 17 (was 17): the element pointer is still formed after the call's argument
-// pushes, so the element pool's data has to survive them and lands in ESI with the
-// record in EAX; retail forms it before the pushes, so the data stays in the
-// volatile EDX with the record in ECX. This round's trials in this file could not
-// move the two data loads
-// score 17 (was 17): the call to the joint invitation now hands its arguments over
-// in retail's registers (the joint index in EAX and the priority in EDI), so the
-// whole gap is the prologue: retail loads the element pool's data into EDX right
-// after the table pointer and keeps the element record in ECX, ours loads the data
-// late into ESI and keeps the record in EAX
-// score 17 (was 17): the prologue still loads the element pool data late into ESI
-// and the element record into EAX where retail loads the data into EDX right after
-// the table pointer and the record into ECX; the two inline lookups have the same
-// shape, so this round's trials could not change the order of the data loads
-// score 17 (was 17): retail loads the element pool data into EDX before the
-// actor is fetched and keeps the element record in ECX, ours loads the data
-// later into ESI and the record in EAX. Both read the actor pool global
-// first, so the difference is the order of the two data loads.
-// score 17 (was 17): the pool-data load and record/seat registers still differ before the seat query.
-// Round 123: object-index rename 17; buffers before lookups 17; shared target view 17;
-// returned-count helper 21, with an initialized count 21, a direct object field 21, or the
-// object local after the counters 21; split count initialization 17; early twice-read clump index
-// with the helper 122 (405 bytes).
 // @retail 0x1bb3a0
 short __stdcall function_1bb3a0(long actor_index, long joint_index, long a, long b)
 {
+	long count = 0;
+	short free_count = 0;
 	s_actor_view *actor = actor_get(actor_index);
 	s_4c_element *element = (s_4c_element *)element_502424_get(joint_index);
-	long local_0 = element->object_index;
-	long count = 0;
-	short seat_count = 0;
-	short free_count = 0;
 	point3f position;
-	s_object_seat seats[0x40];
 
-	function_c8a40(local_0, seats, &seat_count, 0x40);
-	for (short i = 0; i < seat_count; i++)
 	{
-		if (!TEST_FIELD_BIT(seats[i].definition->flags.bit11))
-			free_count++;
+		short seat_count = 0;
+		s_object_seat seats[0x40];
+
+		function_c8a40(element->object_index, seats, &seat_count, 0x40);
+		for (short i = 0; i < seat_count; i++)
+		{
+			if (!TEST_FIELD_BIT(seats[i].definition->flags.bit11))
+				free_count++;
+		}
 	}
 	function_b9dd0(element->object_index, &position);
 	if (free_count > 1 && actor->unknown07c != NONE)
