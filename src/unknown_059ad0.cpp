@@ -1056,6 +1056,11 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 // external reference with assigned success arms 36. Reason still folds.
 // Round 15: boot arm first 23; the result taken from the host test 35; early false return 36;
 // result set before the arms 35; `result` with the member index first in the comparison 24.
+// Round 35 (m3 lane 18, fast with 0x162d00): the two calls as one ternary statement 23; the boot arm
+// first with the reason as the member comparison 24; the disconnect's declaration `__forceinline` 23
+// (0x5e1a0 stays 10); a long result returned as `!= 0` 58 (122 bytes, 0x162d00 15); diagnostic only,
+// not kept (it writes the disconnect out by hand): the reason in a local passed by address to the
+// file's state-entry helper with state 10 matches, so the cause is 0x616b0's own body (held file).
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {
@@ -3689,6 +3694,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // original/negated-disjunction exclusion and both reply orders. Held timeout owner spill and
 // message/reply allocation remain.
 // Scores 104/104/104/104/97/97/97/97; original executable body restored.
+// Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
+// address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
+// announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
@@ -3810,6 +3818,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // Round 482: Five nonoriginal complete payload-copy orders 136/138/137/138/137;
 // three with metadata before payload 138/138/137. Original request construction
 // restored; host/session staging, clock expansion and cleanup placement remain.
+// Round 139 (m3 lane 5, fast): loopback flag/forceinline clock/channel failure first composite re-measured 138; on it
+// `channel` at function scope 138, a two-use XNADDR host local 138, `address` before the key release 138, the
+// forceinline as a separate declaration above this function 138 (same code each); clock and channel failure first
+// without the flag 142.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4548,6 +4560,9 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // acknowledgement falling into `done:` 311 (1270 bytes: retail's store-and-reload exit, block still mid-function);
 // state-8 `return result` 345; acknowledgement written at the host site 305 and at the state-8 site 305 (identical
 // code: VC lays the block out after the host branch's reason-5 exit wherever it sits in source).
+// Round 139 (m3 lane 5, fast): identity flag declared at entry 305 (same code); `result` after the state-0/10 exit
+// 307; payload address named before the identity compare 305; `result` before the sender lookup 310; `state <= 2`
+// arm first in the range chain 373 (1246 bytes).
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)

@@ -325,6 +325,9 @@ static inline void quaternion_transform_vector(
 // 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
 // Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
 // NOT kept: indexed reductions regress and fail the exact-match gate.
+// M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
+// a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
+// combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
 // N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
 // independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
 // paired halves and complete body restored; frame/quaternion/cross homes remain.
@@ -1045,6 +1048,11 @@ void function_143250(
 // length away from retail; original scalar graph and complete body restored.
 // Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
 // frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
+// N339: Explicit real narrowing owned by consumers, second-band product/third-band
+// roots/third-band product family masks 1..7, then all with immutable reused double root:
+// 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
+// NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
+// original polynomial, conversion producers and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -274,6 +274,11 @@ struct s_spawn_scenario_23aea0
 // pointer after the scalar defaults 68; the definition as `byte const *` without the tag local 61 (same code);
 // source reals indexed `[type * 7 + k]` 61 (same code); zero-based records from +0x180 61 (same code); globals
 // declared before the scenario 61 (same code). BLOCKED-BY 0x157450 (round 55's g_502250 symbol lead).
+// Round 140 (m3 lane 5, fast, on the setter body): the setter's sources as `((real const *)(definition + 0x148))[type
+// * 7 + n]` 61; through a named `real const *values` for the three 61; the globals pointer declared before the
+// scenario pointer 61; the scenario pointer declared at its test 99 (its load moves below the stores); the sources as
+// `((real const *)(definition + 0x148 + type * 0x1c))[n]` 61. The integer-offset copy loop still needs the weights'
+// symbol at 0x502250 (the round 55 lead above), which lives in src/unknown_157450.cpp, held by another lane this round.
 // @retail 0x23aea0
 void function_23aea0()
 {

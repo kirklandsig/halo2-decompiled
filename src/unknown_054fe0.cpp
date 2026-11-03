@@ -1769,6 +1769,9 @@ struct s_summary_player_sort_entry
 // Round 284: all three map-query output identities, six lexical priorities 360 each;
 // two complete output declaration scopes 360 each, with the sorted cursor stepping in its body.
 // Original body restored; frame and saved metadata homes remain.
+// Round 77 (m3 lane 16, fast): the variant as an if/else 339 (same code); the four nested state guards as one
+// `&&` test 339 (same code); the variant pointer as one conditional expression 375; `statistics` declared at its
+// test 372; `return true` from the block with `return false` at the end 396 (1320 bytes). Still needs the cmovne.
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {
