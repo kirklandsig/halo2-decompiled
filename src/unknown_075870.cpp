@@ -1400,6 +1400,14 @@ void function_797b0(s_network_observer *observer, long index, bool received)
 	}
 }
 
+// score 19 (was 19): the only differences are in the last block (everything before it, the loops, the division, the
+// scaling loop and the memset tail, is instruction for instruction retail). Retail reads the refresh rate
+// (movsx [0x485ac0]) into edx BEFORE `inc ecx` / `imul ecx, eax` and keeps burst in ecx with the minimum in eax; ours
+// reads it after the clamp and keeps burst in eax, so the flag byte registers (al/dl) and the burst register swap.
+// Tried: frame rate before the burst (31), between the minimum load and the clamp (23), before the clamp's compare
+// (25), as the call's argument (19), `limited` first (71), burst factors swapped (19), `samples` local (19),
+// `quotient` local (19), min-clamp spelled with ?: (19/25), reversed clamp `if (burst > m) m = burst` (18, cmov flips),
+// refresh read into a short local (25).
 // @retail 0x78e60
 void function_78e60(s_network_observer *observer, long index)
 {
