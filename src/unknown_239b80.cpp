@@ -789,6 +789,9 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // prior-side byte and SIMD homes remain.
 // M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
 // endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
+// B395: Actual NONE result terminates the input walk, short/long ordinal, failure/success
+// capacity arms and tail/post-crossing prior-state publication: 282/282/284/284/250/309/257/311.
+// NOT kept: all regress; original capacity breaks, indexed walk and complete body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

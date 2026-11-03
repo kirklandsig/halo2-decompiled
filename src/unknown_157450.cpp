@@ -5635,6 +5635,9 @@ void __stdcall function_d6bc0(long object_index);
 // declared before the rate 180 (884 B: frame 0x18, but the timer slot lands between object and preset where retail's
 // sits between rate and scenario); the timer renamed 180 (no move); `if (*timer > 0) { if (--*timer == 0)` 144 (same
 // code); the modifier as a nested ternary 159 (874 B); the object lookup indexed by `(word)index` 182 (movzx).
+// B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
+// producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
+// NOT kept: all regress; original memory counter, timer observations and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
