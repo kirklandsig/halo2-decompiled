@@ -1167,6 +1167,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // DL243: Matched creation/variant/equipment producer inline contracts, seven subsets: 254 each;
 // all three with uniform placement view at use 335. Original body, every field and all
 // declarations restored; sentinel EDI/ESI, substitution/squad homes and unrotated loop remain.
+// M325: On the retained mode/field/squad-bit graph, continuation acceptance bool/byte/short/long
+// 337/337/299/302; rejection 326/326/330/329. ESI sentinel and unrotated entry recover,
+// but squad/query homes remain. NOT kept: flag-driven continuation is unmatched; whole body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
