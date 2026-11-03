@@ -232,6 +232,10 @@
 // sine arguments and first wave without the entry shapes 670; the 575 composite re-measured 575, on it amp written
 // into the call 629 (2606), k written into the call 583, both 642 (2595), the cross product between s1 and s0 575;
 // the plain sixth product alone 648. The composite stays out: its sines read the global while the waves use a copy.
+// Round 203 (fast): ret 0x20 agrees (frame 0x58/0x60 and the entry shape homes remain); both shape
+// pointers as entry ternaries with the default case reading shape0 708 (2650 bytes); the wave scales
+// written inside the two scale calls 670; the first cross product at function scope 581 (same code);
+// the inverse declared after shape1 583; the special flag computed first 715 (2657 bytes).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -1222,6 +1226,10 @@ void __stdcall function_43720(s_43740_input *input)
 // padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
 // filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
 // (203 bytes). All restored; the early EAX/EBP tag split remains.
+// Round 203 (fast; 0x42b20 checked each time): the tag field read at the test, the call and the lookup
+// (no local) 62 (same code); a short vertex-count local computed first, used by the record and the call
+// 64 (0x42b20 4); the position through a typed ribbon point pointer 62; the record declared at function
+// scope 62; the group lookup folded into the image address 62.
 // Round 35 (m3 lane 18, fast; 0x42b20 checked each time): the vertex count stored first 65; the slot
 // stored after the shader and normal 62; an early `return` when the tag is NONE 62; the record declared
 // at function scope 62; a block-local long point index for both arrays 62; the vertex count

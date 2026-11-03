@@ -861,6 +861,9 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // header getter 44; unit-first with the table 44; exact unit-start/NONE-root walk on that form 109; unit-object
 // declaration before the guard 44; const player/unit-object pointers 44; forced private object getter inline 44
 // (0x14deb0 stays matched). Original body/helper restored; player/unit carriers and root-walk entry remain.
+// Round 46 (m3 lane 2, fast; control 44, plain 43): the walk as a for loop from the unit with the root preset
+// to the unit 109; the unit object fetched from a re-read unit field 44; no player local (datum read at each use)
+// 44; `root_index == unit` for the parent test 82; NONE-root walk with the e4050 argument re-read 109.
 // Round 53: test on the field, unit local after it, walk from the field with a NONE root 109; `dword current = unit`
 // with a NONE root 171 (405 bytes: entry test returns, root EDX and table ESI as retail, but unit EAX and iterator index
 // EBX, so the frame goes); that with a dword root 171; `long current = player->unit_index`, unit local for the rest 171;
@@ -1404,6 +1407,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
 // predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
 // 3-point timer-only gain and the grouped output workspace. Original body restored.
+// Round 46 (m3 lane 2, fast; control 46): reused flag declared before the outputs 59; `!(result || mode == 4)` 46;
+// result declared after unit_index 46; one options pointer local for the state/mode/state tests 228 (1046 bytes);
+// the two word clears before the flag clears 46 (the flag `and` still leads). The constant stays `mov eax, -1`.
 // Round 53: forward goto and label ahead of the NONE outputs 46 (mov stays, so a block label is not the cause);
 // the spawn block as do/while(false) 382 (1146 bytes, mov stays); `unit_index = NONE` after 0xb8540 46; that with the
 // unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
@@ -2894,6 +2900,15 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
 // 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
 // iterator, so our build promotes g_4e8c20 into EDI through both loops.
+// Round 46 (m3 lane 2, fast with the callees above; plain confirmed): the split failure test in loop 2, as
+// `if (!a) failed = true; else if (!b) failed = true;` or as a failure store with `continue` before the 0x14e970
+// test, 91 each (608 bytes, the same code: the prologue keeps the globals in ESI and the final store reloads the
+// global, as retail), not kept: two identical failure arms. A lead: what retail has there is a second failure
+// path. The busy store after loop 1 behind a flag 158; last_unit declared before the pool local 103; root
+// initialised NONE 103; `succeeded` polarity 103; one `spawned` result through both calls 103. On the 91 body:
+// loop 1 without the datum_index init 91; busy arm first 106; position copied before last_unit is set 89; unit
+// declared before the player 91; no player local 91. Left at 91: loop 1's datum/unit in ESI/EDI (retail EDI/ESI),
+// immediate NONEs where retail keeps -1 in EDX, the iterator.data store before loop 1, last_unit in EBP.
 // Round 53 (fast image widened as in round 34, control 103): `succeeded` flag with the store under `if (succeeded)`
 // 103; status block as an inline helper taking the globals 234 (557 bytes); second pass as an inline helper 260 (478
 // bytes, stays out of line); named pointer assigned at the final store 103; status test through the global 103;
@@ -3147,6 +3162,8 @@ struct s_unit_flags_14d8b0
 // direct alone, root walk through object_header_get, late options pointer, second engine result
 // pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
 // All leave +0x304 and the same scratch choices; original helpers and body restored.
+// Round 127 (lane 8, fast): ticks-arm unit assigned inside the arm 9; root walk on its own local 9; root walk as
+// do/while with no pre-loop init 9; low-time limit compared directly 9; own local in the limit block 9.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
