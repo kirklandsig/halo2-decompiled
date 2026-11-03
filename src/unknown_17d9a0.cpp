@@ -939,6 +939,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
 // 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
 // preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
+// Lane 17 r39 (plain): the definition renamed 539; the first loop's face read into a one-use local with the
+// index incremented before the call 528 (retail's `inc esi` ahead of the pushes; NOT kept: one-use local, no
+// match); the two counts declared face first 539; the definition declared ahead of the arrays 539; the quad
+// declared at the top of the group pass 539; the first loop as a do/while 562 (3631 bytes). Body restored.
 // AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
 // subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
 // 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away

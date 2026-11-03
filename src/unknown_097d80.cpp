@@ -285,6 +285,9 @@ struct c_aggregate : c_child
 // B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
 // then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
 // outputs and complete body restored; escaped output and the lowest loop homes remain.
+// Lane 17 r39 (fast): the error test ahead of the child test 37; the query result declared before the item
+// object 31; error and total in one declaration 31; `total = total + produced` 31; the cleanup block as
+// `blocks + k` 31. Frame 0x8024 in each; original body restored (the flags lead above stands).
 // AC501: Native callback output/capacity/source integer domains, masks 1/2/4/3/5/6/7,
 // then all with completion output after arrays: 31/31/31/31/31/31/31/42. Original interface,
 // outputs and full body restored; escaped output and the lowest loop homes remain.

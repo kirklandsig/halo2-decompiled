@@ -264,6 +264,9 @@ short __stdcall function_2551c0(long actor_index)
 // 66; forward j, direction j, forward k, direction k 72. Pointer views of the dot's arguments: forward 72 (818),
 // direction 70 (818), both 25 (814, dot still not j,k,i, one rotation step moves), both swapped 25; swapped
 // with the forward view 72, with the direction view 70. The body stays at 43 without those names.
+// Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
+// second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
+// axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
