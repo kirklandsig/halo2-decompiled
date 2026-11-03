@@ -596,6 +596,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
 // loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
 // through the existing magnitude2d 719 (same code). Frame 0x124/0x114 and the cached radius (XMM5) remain.
+// J248: Completed three-dimensional direction/reverse/pivot workspaces for
+// late obstacle deltas, rotated direction or both: 753/734/761/719/763/739/773/747.
+// NOT kept: these native-workspace lifetime forms do not match; original
+// independent workspaces, scalar observations, helpers and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
