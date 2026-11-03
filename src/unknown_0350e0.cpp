@@ -1695,6 +1695,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
 // result home remains.
 // Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
+// DL249: Complete scalar basis/direction/first-cross ownership, seven subsets, then
+// all with native result library initialization: 192/229/421/193/192/230/421/360.
+// One-point basis gains rejected; direction captures worsen the caller and move length
+// away. Original entire helper, result, switch, arithmetic and input observations restored.
 // F339: Whole local declaration orders ryxvp/rpxyv/rvpyx/yxrpv/pvyxr/xyrvp/
 // vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
 // 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
@@ -3232,6 +3236,12 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
 // fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
 // 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
+// DL249: Existing final property getter with real+byte/real/byte/no receiver defaults
+// 176/176/176/176; guarded-first 204; both property boundaries with both/real/byte defaults
+// 206/206/206. Final getter plus alpha-tested final result 168 plain, 773/773 bytes: NOT kept
+// (re-tests result after the fade, as J240's 168; retail clears dl after one comiss at 0x3dace).
+// Both getters on that result graph 197; ordinary kind 143, 764 bytes: NOT kept because
+// length moves away from the verified retail-length body. Inherited kind qualification restored.
 // J240: Pure ordinal long/dword/word 177/177/203; with final logical result 168/168/192; shared point
 // 168/192. Minimal original lookups plus only the logical result 168 (retail length 773) NOT kept:
 // `result = result && !(alpha <= 0.0f)` re-tests result, which retail does not (0x3dace: one comiss,
