@@ -531,6 +531,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // P282: Actual named readiness field, twice-used prop handle and both 49; positive comparison-result
 // work graph, alone/with each and both, 267/267/267/267; compound positive admission 267. Original
 // observations/result graph restored; table/AL, marker setup and tail roles remain.
+// Round 546: Complete geometry/reference snapshot/reference output library-copy
+// subsets 1/2/4/3/5/6/7: 49/49/49/49/49/49/49; all alias-safe 251.
+// Original record transfers and complete body restored; entry/result and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

@@ -4592,6 +4592,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // P280: Consumed scale-result cross input, direct existing double-factor scale and
 // its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
 // entry declarations 175/294. Original complete body restored; frame and basis homes remain.
+// Round 546: Early point input/output workspace; native/library input, position/world
+// inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
+// NOT kept: 45 extra bytes and no match. Original complete body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
