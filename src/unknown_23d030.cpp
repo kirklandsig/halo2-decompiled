@@ -376,6 +376,9 @@ extern byte g_51ec11;
 // Actual side/roll-coefficient/movement phase endings and their pairs/all 89/89/89/89/89/89/89; all
 // with transformed-displacement phase ending 89. Zero/normalization/up homes remain; original body
 // restored.
+// M326: Native normalization fallback bool/byte/short/long results, then success polarity,
+// 234/234/234/234/234/234/234/234. All lengthen to 1328/1326; one-use admission storage
+// does not match. Original complete body restored; zero/normalization/up homes remain.
 // N327: Complete control-produced roll retained through both trig uses,
 // branch/conditional/default/additive updates with producer/entry result declarations:
 // 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and

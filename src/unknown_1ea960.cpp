@@ -340,6 +340,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // Round 380: Completed vertex/plane, child and code stream phases, seven scope
 // subsets then complete offset role names: 138/138/138/138/138/138/138/138. Constructor stores, packed tree
 // key and listener homes stay unchanged; original complete body restored.
+// F341: Array/list/tree/pair/listener constructors with body-owned member stores
+// and both base-owner assignments in constructor bodies: 138 each. Native element
+// ownership in the special/list shapes: 140/140. All restored; frame 0x20
+// agrees, first +0x198 remains the restore constructor's flags/element order.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {
