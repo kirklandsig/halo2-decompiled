@@ -364,6 +364,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // getter in 0x1e8d50's shape 118 (same code); on the 0x1e8d50 form, seat read before parent 171, case 4 flags
 // through seats[seat] without the seat pointer 434 (retail adds the pointer before loading), the player index
 // as 0x1e83c0's ternary 618. Retry the 0x1e8d50 call once 0xd0590's order is settled.
+// Round 132: table passed as the getter's second parameter 166 (2312 bytes: entry table ECX/result
+// EAX recovered, later cases and the switch table shift); parent-first on that graph 165; entries-base
+// local 118; read-only table parameter 166; branch-completed nullable result 612; independently
+// recomputed raw state view 491; parent object local 118; table parameter with direct returns 612.
+// NOT kept: the corrected table transport leaves four extra bytes and the one-use locals do not match.
+// Original helper, case graph and complete body restored.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

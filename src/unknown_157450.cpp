@@ -4845,6 +4845,9 @@ bool function_158eb0()
 // `xor ecx, ecx`) shows the first free register goes to the mode when nothing is read before it, so
 // retail's mode is evaluated before the index: the parameters declared with the mode last would give
 // that, in a held file.
+// Round 96: iterator result stored in an active bool 5; iterator pointer 5; const flag 5; byte normalized
+// mode 35; plain for 5; guarded do/while 16; count postincrement 5; named positive predicate 5.
+// Original body restored.
 // @retail 0x158f50
 bool function_158f50()
 {

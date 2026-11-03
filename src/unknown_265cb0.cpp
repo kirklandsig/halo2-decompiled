@@ -538,6 +538,9 @@ real function_30bf0(vector3f *vector);
 // stored first 161; facing arm copying primary first 152; seat array at function scope 152; occupant forward
 // pointer set before the player test 160. Retail's seat-loop cross product loads the up axis first in its
 // first product (ours the forward component); retail also lays the not-facing arm after the result exits.
+// M336: Pre-collection seat ordinal and facing-entry basis/query-output workspaces,
+// seven subsets: 152/152/152/152/152/152/152; all with cursor advanced after lookup 205.
+// Original scopes/cursor restored; result/range/amount homes and inverse SIMD groups remain.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
@@ -1227,6 +1230,9 @@ struct s_equipped_object_view
 // 4, and for the held lookup too 4; a header pointer for both entry reads 33; a data local for them 28; a named
 // threshold table pointer 8 (18 on the NONE-after form, 31 on the plain form, 18 with the pool local); the count
 // test nested 15 on the NONE-after form.
+// Round 139 (lane 6): the comparison written definition >= threshold 12; a tag-instance pointer for
+// the held definition 6; the definition read inside the compare 6; thresholds read after the
+// definition 6; a real pointer to the definition field 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {
@@ -1995,6 +2001,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // ours tests established before visible, retail threads the visible test into both arms); the positive arm
 // with the NONE-slot case first 200; strongest declared before best_level 194; one positive expression after
 // the established block 262; facing dot as forward*direction 194. Original body restored.
+// N340: Whole actor/vehicle admission regions, original/failure-first/success-first
+// trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
+// lookup operands, established/visible homes and direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

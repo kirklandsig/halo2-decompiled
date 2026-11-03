@@ -274,6 +274,11 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // 160 (446 B; both 0x221810 calls then stay out of line as in retail, but in the wrong test order); one sound_class
 // local for both lookups 110 (same code); the flags built in state.flags 150 (484 B); the flags as one OR of three
 // conditional terms 160 (490 B).
+// Round 35 (m3 lane 18, fast with the matched callers): the variant pointer read from the request at
+// each use 110 (same code); the flag word kept in its local through the variant test and stored just
+// before the playback call 130 (470 bytes); that with the priority from the request's audible field 130
+// (470 bytes); the object/source/platform stores before the flag word 134 (0x1895f0 4, 0x189a50 3);
+// an early `return NONE` for a NONE tag 152 (483 bytes). All restored.
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {

@@ -1343,6 +1343,10 @@ PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, ve
 // Round 86 (KIMI2): entry/scoped multi-use object handle 2/2; body declaration before support 2;
 // clamp declaration first 2; returned point dereference/re-address 2; support/component role names 2;
 // header/unit role names 2; all four role names 2. Original body restored.
+// M3 lane 4 r157 (fast): the clamped value as the call's body argument 99 (491 bytes); the body index read
+// before the component lookup 14; the last valid index in a local 94 (464 bytes); the clamp as if/else-if 2;
+// the clamp testing the upper bound first 124 (461 bytes); permuter 600 s, 66 tries, none below 2. Still BLOCKED-BY
+// 0x1d0a20 (its file is held).
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
 {
