@@ -2521,6 +2521,11 @@ dword __cdecl function_131fc0(real alpha);
 // 181/181, both raise 0x3a5c0 from 31 to 248; complete native fallbacks 156, with inline 204. Keep
 // only the plain-confirmed upper-default pair, 154 to 140 at retail length. NOT kept: all later
 // forms regress or worsen a helper user. Caller flag residency and fallback selection remain.
+// Round 38 (lane 17, plain, base 140): both defaults built unconditionally, source first, then source
+// and destination selected 156 (1717 bytes); with half extents named once 150 (1723: retail's selection
+// except its write of each selected default into the parameter's home); with the vertex reads through
+// the parameters' addresses (diagnostic) 150; the arms swapped (`simple || preserve_alpha` first) 140;
+// preserve_alpha read through its address in the short arm 140 (retail reloads it after the call).
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2952,6 +2957,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // result contracts without a match. Both parameters 247/247, first form plain-confirmed 247 and
 // kept; branch-owned results 251/251. Frame 0x58 and packed-alpha prefix agree; five excess bytes
 // and maximum/reciprocal/bounds/trigonometric scheduling remain.
+// Round 38 (lane 17, plain, base 247, aligned 107): the last bound written `scaled_height * 0.5f + 240.0f`
+// (retail adds 240 from memory) 247; the two zero-scale tests before the bounds 253 (2023 bytes); bounds[1]
+// before bounds[0] (retail's store order) 247; the maximum as `scale = second_scale; if (first > second)`
+// 258; the scaled products as `width * scale`/`height * scale` 247.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3426,6 +3435,10 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // all neutral and equivalent input-type selection requires byte equality. Original complete body,
 // four bool inputs, every helper and call tuple restored; selector register production, post-bias
 // reciprocal/constant load order and six shift-versus-clip quantizer homes remain.
+// Round 38 (lane 17): retail keeps the quantizer's temporary at [esp+0x58] apart from the clamped gain
+// product's at 0x54; ours shares 0x54. Renames for the slot order: the quantizer's input `amount` 31
+// (plain), the quantized locals `upper_byte`/`lower_byte` 31, `raw_offset` 31, `span_gain` 31 (fast,
+// slots unchanged); the input selector `4 + small` 961 (fast); permuter (41 variants) best 31.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
