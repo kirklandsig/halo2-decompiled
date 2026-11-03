@@ -389,6 +389,13 @@ extern byte g_51ec11;
 // DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
 // failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
 // Original shared body restored; zero/side normalization and up/roll allocation remain.
+// Round 199 (fast, with 0x23d790): side assignment orders k/j/i, j/i/k, j/k/i, i/j/k on the current body 89 each;
+// diagnostic, a scratch normalizer with the length as `i*i + (j*j + k*k)` or `(j*j + k*k) + i*i` gives retail's
+// j-first squares and 1326 bytes but 266 (aligned 52, unchanged), `k*k + j*j + i*i` / `j*j + i*i + k*k` 271
+// (aligned 59): the square order is not what moves the zero/side registers. Fallback stores: separate i/j/k
+// 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
+// not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
+// 86 form with the scratch normalizer 264 (aligned 47).
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
