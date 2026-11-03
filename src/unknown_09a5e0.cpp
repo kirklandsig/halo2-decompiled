@@ -2301,6 +2301,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
 // then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
 // Original defaults and body restored; object/offset and low-mask homes remain.
+// Lane 14 r53 (fast, baseline 155 aligned 95): the volatile `this` copy removed 285 (aligned 98); both slot masks
+// named at the loop top 268 (1043 bytes, aligned 170); the first masked test in a named local 155; 0x214 through a
+// scoped field pointer 155; 0x214 as a scoped named value 155; a named `local_5 - 4` shift 155 (all aligned 95).
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {

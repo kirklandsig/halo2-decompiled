@@ -1170,6 +1170,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Original word workspace and both populations restored; frame/session/lookup remain.
 // M312: Actual capacity/team selector interior case priorities, five capacity/two team/one joint:
 // 766/766/766/766/766/766/766/766. Original body restored.
+// Lane 14 r53 (fast): the variant lookup after the summary read 803; after the capacity 942 (2732 B, aligned 695 from
+// 750: session then arrives in ECX and 0x73530 reads 1); the variant named on its own line or tested at once 766.
+// The memset and result ahead of the opening lookups 926 (2736 B, aligned 779).
+// Diagnostic, not kept: 0x192e60 pinned out of line gives retail's head, session in EAX and 0x73530 byte for byte,
+// but this function 942 (2700 B) since the capacity switch then stays a call where retail has it inline. So retail's
+// inline choices here are call out of line, capacity inline; ours are the reverse pair.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

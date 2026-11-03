@@ -252,6 +252,13 @@ bool function_a7670(long object_index);
 // DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
 // 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
 // complete shared header and body restored. Selector/list/count homes and admission BL remain.
+// Lane 14 r53 (fast, baseline 153 aligned 65): final membership test with the index first, `==` or `>=`, 259/238
+// (954 B, aligned 61/64), found first with `>=` 153 (65); island for-loop with the step back inside, original test
+// 240 (958 B, aligned 77), index first `==`/`>=` 232/232 (71/72), found first `>=` 240 (77). On index first `==`:
+// a separate second index 259 (61), found declared first 296 (983 B), admission defaulted true then cleared 261
+// (60), admission as if/else 259 (61), the island flag named 259 (61); with the for-loop 232 (71) and 230 (70).
+// Left: admission in BL and found in CL where ours keeps a stack byte and the bound in ECX; retail reloads
+// the bound into ESI inside the second scan.
 // @retail 0x278f00
 void function_278f00()
 {
