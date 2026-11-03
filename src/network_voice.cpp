@@ -3275,6 +3275,9 @@ struct s_voice_route_choice
 // Y553: Complementary headset reduction with element receiver/two-use talker bit
 // subsets 413/434/416/436; with native radio branch 412/409/414/405. All callers and
 // callee controls survive. NOT kept: all regress; original positive reduction restored.
+// Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
+// actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
+// byte agreement; original independent decisions and complete body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3578,6 +3581,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y553: Live count-byte pointer with offset/cursor/walking-formal/difference result
 // 139/164/144/180; field-reference forms 139/164/144/180. Both formal walks lose
 // the matched parser to 13. NOT kept: no gain; original complete body restored.
+// Y556: Payload-relative consumed result, long/int/dword/short, original/independent
+// packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
+// original header-inclusive result, live counts and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

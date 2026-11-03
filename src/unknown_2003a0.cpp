@@ -3334,6 +3334,14 @@ void function_2011f0(long arg_0);
 // `and eax, 0xffff` entry, arg_2 in a register); on that the optional record by if/else 361, plus seat NONE
 // once 357; diagnostic fresh `squads[(word)arg_1].count` memset size on those 353/346.
 // Also round 63: difficulty cases 0 and 1 sharing one body 318 (same code), with the raw/typed/squad forms 351.
+// Round 205 (m3 lane 3, fast): typed definition from `arg_1 & 0xffff`, squad_get(arg_1) pointer, arg_1
+// unmasked to every call and the +0x3a0 store, squad_get(arg_1) in each splice pass, memset from the typed
+// count 351 (1328 bytes, retail's `and eax, 0xffff` entry); that with the squad pointer declared before the
+// definition 350 (entry is retail's for 25 instructions, but frame 0x130: the seat stays in EDI where retail
+// keeps it in its slot); on that the seat NONE once at its declaration 344 (frame 0x134 again); the options
+// pointer as a ternary 351; long difficulty by if/else switched as short 344. Left on 344: the options
+// if/else (retail stores NULL in its own arm), the memset's fresh `(word)arg_1` row read, arg_0's threaded
+// `xor esi, esi` after a failed 0x201400.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

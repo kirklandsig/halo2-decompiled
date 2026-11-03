@@ -972,6 +972,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // The 554 form is off by one from the top: VC shares one zero register for the count test, `nearest` and the index
 // (`xor eax, eax; cmp ebx, eax`, retail `test ebx, ebx` and later `xor edi, edi`/`xor eax, eax`), keeps `nearest` in
 // memory (retail EDI with a home), and the frame is 0x20 against 0x2c (retail's offset and delta vector homes).
+// Y556: One point-difference workspace reused across both searches, entry/positive/enabled/
+// multiple-record scope, shared setter/point-difference producers: 552/552/552/552/552/552/552/552.
+// NOT kept: no byte match or qualifying retail frame/shape recovery; original body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
