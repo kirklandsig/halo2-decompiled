@@ -987,6 +987,9 @@ struct s_tail_transfer_traits
 // 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
 // read (159), the three weapons as a long[3] (152), a held[2] array with the no-seat branch as a hand loop over
 // held_slots[] (151, frame grows by 8), held[2] replacing primary/secondary (156), a store through a pointer to other (153).
+// AC502: Failed-traits continuation/missing-unit completion/both 153/171/171; real
+// identifier cursor/copy cursors/search plus continuation/both cursors/all admissions
+// 217/258/217/270/283. Original traversals and body restored; selected-traits/unit/NONE homes remain.
 // Round 552: existing shared current-weapon producer, all shared object getters, native selection
 // do-while, admitted age, once/per-use clock, weapon-result home names and per-use second lookup:
 // 154/154/154/180/165/165/154/154. All complete original source and existing helper bodies restored.
@@ -1112,6 +1115,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
 // lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
 // bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
+// AC502: Shared object getter at initial/held/pending/flag lookups, complete main/all
+// receivers, immutable receivers and direct tag-field access: 284 each. Original getters,
+// include set and body restored; pool/player/tag-table allocation remains.
 // Round 552: original ternary producers with direct first-loop do/while, then native slot/final/both
 // loops on each entry graph 284/636/284/636/284/636/284/636. All loops, observations, helper and complete body restored.
 // NOT kept: no score gain or byte match.
@@ -1936,6 +1942,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // AC500: Native unit/object field views and existing complete difference producer, masks 1-7,
 // 202/202/202/203/203/203/203; complete graph with byte header kind 203. Original real layouts,
 // fields, helper use and complete body restored; frame agrees, early lookup ownership and offset spill remain.
+// AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
+// 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
+// Original body restored; entry player/header-offset ownership and spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

@@ -289,6 +289,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P285: Existing shared used-mask/runtime-word/fixed-word flag helpers, subsets 1..7,
 // then complete helpers with CRT bit-vector initialization: 917/876/927/926/931/928/928/928.
 // All original helpers, direct flag operations, counts and complete body restored.
+// AC502: Shared pin macro at range/blend/active fade/active gain/inactive fade/inactive gain,
+// then all body/all logarithmic clamps: 866/866/865/865/862/866/853/853. NOT kept:
+// compound-only gain misses the native active-bound reload/lifetime. Original body/helpers restored.
 // Lane 17 r37 (fast): the four query-array names prefixed to force an alphabetical order, and the target count renamed,
 // leave every slot unchanged (diagnostic; names do not place these homes); query count read directly with a long choice
 // count 942 (3297 bytes: the choice address becomes an induction pointer in ESI, retail recomputes it from the count in
