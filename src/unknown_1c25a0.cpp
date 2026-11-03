@@ -836,6 +836,10 @@ void function_1c54b0(char const *variants, long object_index)
 // index with the flag after the call 18; a byte flag with the flag after the call 18. Compile-only, 26 forms
 // of the index update, flag type and world read (`island_index = !removed + island_index`, a bool kept flag,
 // a world local read per iteration with the discard through the global): the reload pair never swaps.
+// Round 31 (lane 18, fast): a force-inline flagged-entity count helper compared with the island's count 6;
+// a force-inline helper for the whole per-island body returning the flag 4 (flag after the call 18, its
+// result added straight into the index 4); a world local read just before the count test 4; a world local
+// at the iteration top for the island and the discard 4. Original body restored.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {

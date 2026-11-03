@@ -160,6 +160,11 @@ void c_widget::v15(c_widget *widget)
 // base class pointer 2; a guarded do-while ending `while ((widget = widget->next_wrapped()) != NULL)` 2, with
 // the entry assigned in its `if` 2. Compile-only: the copy-then-test tail appears only with one helper call
 // in the loop condition (`widget = this` first), which keeps one walk (the listed 64).
+// Round 31 (lane 17, fast): entry helper into a `next` local, `while ((widget = next) != NULL)` with the step
+// as an if/else into `next` 2; the same with the entry also an if/else 39 (92 bytes); the step as a
+// `following` local (the link, then the first sibling when NULL) 2; a guarded do-while with the if/else step
+// 35 (92 bytes); the base class's next_wrapped made an out-of-line function (plain check: LTCG keeps the
+// call, 74 at 53 bytes; 0x2c8f56 76).
 // @retail 0x22ebc3
 void c_widget::v16()
 {
