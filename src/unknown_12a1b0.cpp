@@ -1809,6 +1809,11 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // and native complete request: 482/482/465/465/480/480/465/465 fast (control 479, full 305).
 // Native request/producer handle restores frame 0x128 and first +0x39, plain 439 at 1923 bytes.
 // NOT kept: no exact match or full gain; original observations, arrays, request and body restored.
+// B408: Independent first/second range ordinals word/long, long/word, word/word,
+// byte/long, long/byte, byte/byte, signed-byte/long, long/signed-byte:
+// 508/525/503/510/524/520/380/482f (control 479f, full 305). First signed byte
+// plain 426 at 1907/1923 bytes, frame 0x11c; NOT kept: no full gain or native frame.
+// Original long ordinals, count reads, request and complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2474,6 +2479,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // B406: Completed acquisition supplies admission and return, bool/byte/short/long
 // success 749/734/778/782; complementary pending outcomes 732/732/775/780. All regress;
 // original branch-owned result, persistent input truth and complete body restored.
+// B408: Actual primary definition/sound/input record reference subsets 1..7: 694f each;
+// complete bindings with overlap-safe source transfer 780f (control 694f, full 597).
+// NOT kept: entry true/flags and record/track homes do not recover; transfer grows frame
+// to 0x40. Original roots, copy, qualifiers and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

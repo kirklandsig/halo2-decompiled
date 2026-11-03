@@ -345,6 +345,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // 928/893/897/897f; per-object mask producers 946/892/888/888f (control 931f, full 882).
 // NOT kept: retail has separate Boolean/byte gates; frame remains 0x2cb8 or grows to
 // 0x2cbc versus 0x2cac. Original filters, qualifiers, buffers and complete body restored.
+// B408: Raised query point reused by other-actor/vehicle/sphere center lifetime subsets
+// 1..7: 915/917/926/923/932/897/938f; original query record with shared sphere center 905f
+// (control 931f, full 882). NOT kept: frames 0x2cb4/0x2ca8/0x2cb8 miss retail 0x2cac
+// and lengths 3680..3708 move away. Original query, point lifetimes and full body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

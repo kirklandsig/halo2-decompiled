@@ -991,6 +991,10 @@ real normalize2d(point2f *v);
 // request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
 // gain appears only with combined forms. Original full body restored; separate facing/default
 // and invalid return paths remain.
+// B408: Existing final planar setter first/facing/both, ordinary then forced expansion:
+// 165/186/222/165/186/222; both with existing complete facing construction 223/223
+// (provider-rooted control 135; exact provider survives). Initial omitted-provider previews
+// excluded. NOT kept: DL/return graph remains; original copies, declarations and body restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
