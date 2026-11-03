@@ -421,6 +421,9 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // but regress. NOT kept: nonexact precision changes; original body restored.
 // Round 158 (m3 lane 4, fast): retail's sum operands (direction, origin, direction first by component) 195; with the inverses declared b, a 195; fa/fb initialised to 1 with no else arm 261 (906 bytes);
 // both inverse tests before the fa/fb copies 197; the inverses declared just above the perspective test 261 (926 bytes).
+// Round 141 (m3 lane 6, fast): transform_point as __forceinline 195 (same code); the displaced point as an
+// aggregate initializer 195; the displaced point in its own block around the second transform 270 (994 bytes),
+// with the initializer 270; the success test returned directly with the zero stores after the block (no else) 195.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

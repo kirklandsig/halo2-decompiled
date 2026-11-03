@@ -899,6 +899,11 @@ real g_55e618;
 // P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
 // staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
 // restored; sweep/collision homes and cross-placement projection spills remain.
+// Round 141 (m3 lane 6, fast): final rows from tangent and perpendicular each scaled in place through
+// vector3f_scale 101 (not kept, one point); tangent alone scaled in place 102; tangent scaled in place
+// right after it is formed 202 (1555 bytes); displacement/sweep/start and the collision call in their own
+// block with a bool result 102 (homes unmoved); `vector3f velocity = particle->velocity;` 223 (1556
+// bytes), with both in-place scales 223. Original body restored.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

@@ -551,6 +551,12 @@ struct s_1f8a70_actor
 // instead of a fresh lookup 431; the unit index read inside the 0xe70b0 call 232; the route initializer as
 // `actor->unknown229 != 0` 228 (same code); as `route_mode = 0; if (...) route_mode = 1;` 265 (1660 B);
 // the route initializer before the unit index 232.
+// Round 141 (m3 lane 6, fast, control 228; aligned 82): unit_mode declared at the function's top 228 (same code);
+// the path cast at the top 228; case 2's radius stored first 228; retail's failure block (`mov byte [esp+0x12], 0`,
+// the call, `mov al, [esp+0x12]`) read as a cross-jumped tail: `if (result) { ...; return result; }
+// function_1f8750(actor_index); return result; failed: result = false; function_1f8750(actor_index); return
+// result;` with no initializer and the first exit `return false` 417 (1644 bytes, frame 0x80, prologue as retail,
+// aligned 69), with `result = false;` before the first exit's call 417 (still folded to `xor al, al`).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
