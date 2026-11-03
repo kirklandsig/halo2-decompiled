@@ -316,6 +316,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
 // raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
 // incoming ranks and shared-call threading remain.
+// M333: Actual hand-result/count/output lexical identities on original receivers,
+// seven subsets, then complete observed-state/unit/actions identities: 271 each.
+// Original full body restored; incoming unit/name/actions ranks and shared calls remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
