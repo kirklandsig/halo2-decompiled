@@ -354,6 +354,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // linked/special construction: 138/181/376/403; branch-produced array/list storage
 // without/with result receivers: 138/138/138/181. NOT kept: result/order forms miss;
 // original constructors, pointer selections and complete body restored.
+// DH311: Existing base element retained, default zero initialization deferred to all six derived
+// constructors; scalar/special/composite header-before-element masks 0-7:
+// 204/206/205/207/206/208/207/209. Exact-only constructor ownership/order forms restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {
