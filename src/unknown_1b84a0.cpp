@@ -190,6 +190,12 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 // 61 (276; same); dword readiness with a byte store 8; bool readiness with embedded store 22; inline/forceinline
 // readiness helper 7/7, on the flag 7, with a result local 22; dead char/long/getter locals in the block 7/7/7;
 // a repeated type/flag/done test around the call 7/7/7. Next: a form whose extra temporary coalesces away.
+// Round 125 (m3 lane 7, fast; positional/aligned/masked, base 7/6/1): mode assigned in the test 7; read before the guards
+// 11; three separate guards 7; short mode after the guards 7; nested first two tests 7; long ready with a bool store
+// 65/4/2 (registers retail's, setne added; that setne's temporary is the rotation step); ready through a byte view 7,
+// tested as (byte) 7; (byte)ready != 0 stored 64/3/2; byte ready 22; field typed byte with long ready 7, without 22;
+// readiness as !!, == true, (bool), !(!a || !b), a ? f() : false, ? 1 : 0, != 0 pair, != false, (long), (byte):
+// 7/66/22/7/64/7/7/7/7/22.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {

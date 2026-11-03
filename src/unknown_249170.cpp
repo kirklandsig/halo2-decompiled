@@ -168,6 +168,9 @@ PRIVATE __forceinline point2f const *particle_spawn_extents(s_particle_system_da
 // (2352 bytes); integer zero literals 2 (same code); `velocity.i = position.x = 0.f` chained 4; a named cosine beside
 // the sine 24 (2352 bytes); position.x stored first and read back into velocity.i 4; no sine local 286 (aligned 13: the
 // swap stays and cases 6 and 7 move). Only the first fld after the radius call stays unfilled in retail's cases 1 and 4.
+// Round 125 (m3 lane 7, fast; positional/aligned, base 2/1): case 1 velocity through a case pointer 511/25; named cosine
+// with sine/cosine products 504/16 (2352 bytes); position.x read back from velocity.i 2/1; position.x stored first 4/2;
+// position through a case pointer 531/18 (2316 bytes); explicit double arguments 22/7; zero stores ahead of the sine 2/1.
 // @retail 0x249170
 void function_249170(real const *values, s_particle_spawn_state *particle, s_particle_spawn_definition const *definition, s_particle_system_datum const *system)
 {
