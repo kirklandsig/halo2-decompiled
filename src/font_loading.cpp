@@ -661,6 +661,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
 // original word then full-width pixel result: 139/172/182/183/163/166/174/175.
 // NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// F361: Complete command-class dispatch, shared 0/1 arm, PSR/SPR/RPS/RSP groups:
+// word pixel result 204/221/235/249; long result 196/214/220/225.
+// NOT kept: larger extents and unresolved alpha/literal/run-two schedule; original decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

@@ -1597,6 +1597,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // with an entry pointer and flags local 138 [22], with 0x21cc30 inline 122 [19] and 150 [21], the set path written out as well 53 [20],
 // 138 [22] and 150 [21], with the result moved 51 [18]. Diagnostics, 0x2194c0's parameters swapped everywhere (0x21cb90 0): 49 [30], with
 // the result moved 47 [28], with the twice-indexed take 144 [28], with 0x21cc30 inline 65 [25]. BLOCKED-BY 0x2194c0 for that arm's registers.
+// F361: Entry-declared result, false initialization after playing/tag/offset/track/
+// handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
+// NOT kept: two-point gain below threshold; original initializer and complete body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {

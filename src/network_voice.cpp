@@ -3289,6 +3289,9 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// F361: Actual sixteen-choice array input, reference/pointer and long/int count:
+// bitwise radio 363/363/363/363; conditional radio 411/411/411/411.
+// NOT kept: native entry/cursor allocation unresolved; original table contract and calls restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

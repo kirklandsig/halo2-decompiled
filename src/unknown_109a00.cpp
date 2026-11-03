@@ -591,6 +591,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
 // Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
 // restored; native input registers, early physics spill and center/projection remain.
+// F361: Existing default-body producer as component member, mutable/read-only receiver
+// and ordinary/forced inline: short result 112/112/112/112; long 267/267/267/267.
+// NOT kept: no native entry-register/spill repair; original helper, search and body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
