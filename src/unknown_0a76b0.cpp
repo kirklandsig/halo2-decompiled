@@ -1425,6 +1425,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
 // each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
 // long result and complete body restored; second entry lookup and hand spill remain.
+// P280: Native object-type predicate byte/char/short/word/long/dword storage
+// 95/95/109/109/108/108; Boolean declarations at observation/before companion test
+// 95/185. Original complete body restored; entry lookup and hand homes remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -4485,6 +4488,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 371: Actual result byte/short/word/long at original declaration,
 // 308/317/317/317; the same with entry false initialization 308/317/317/317.
 // All restored; native frame, basis and point/quaternion homes remain.
+// P280: Consumed scale-result cross input, direct existing double-factor scale and
+// its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
+// entry declarations 175/294. Original complete body restored; frame and basis homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

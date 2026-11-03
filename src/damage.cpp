@@ -1080,6 +1080,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // That asymmetric producer recovers point/normal homes and 1535 bytes, but the fallback center is
 // at +0x4c instead of +0x40. On it, retained origin/direction/node/all field addresses: 295/357/355/354.
 // All forms regress; original body restored. Shared-add include clashes with the existing cross helper.
+// P280: Existing cone squared-length helper, complete unit-length error and
+// clamped-dot expression boundaries, seven subsets 286 each; all with consistent
+// direct cone addresses 286. Original body restored; geometry homes and cone ranks remain.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
