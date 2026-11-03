@@ -551,6 +551,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // 295/295/335/335; with both complete distance-delta array producers 296/296/451/451.
 // The two narrow complete-delta forms also demote the parent. Original scalar producers,
 // indexed link memcpy and full body restored; frame/flags remain.
+// Round 554: Pointer-only predecessor on retained fill/difference/edge graph, all eight
+// bounded link/path/initialization carrier combinations 372/409/389/379/408/409/398/395.
+// NOT kept: nonexact single-history forms; each loses matched parent to 251. Original
+// two histories, counters, indexed memcpy and full body restored; frame/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

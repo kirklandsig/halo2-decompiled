@@ -1601,6 +1601,10 @@ struct s_rating_summary
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 554: Native team/counter cursor as primary induction, derived real-array ordinal,
+// indexed/walking secondary record, iteration/pass-owned bound result:
+// 274/362/387/407/274/362/387/407. Original integer induction and full body restored;
+// formatter/count scheduling and team/counter homes remain.
 // Round 44 (m3 lane 2, fast): retail's team-loop head is the tail-merge target of preheader and latch (both
 // cursors arrive in ECX/EDX and are stored there); ours keeps the counters cursor in memory and steps it in ESI
 // at the latch, so the store does not merge (the 4 bytes). A walking team pointer declared before the team loop

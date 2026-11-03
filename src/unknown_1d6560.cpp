@@ -514,6 +514,9 @@ struct s_physics_component_walk : s_havok_component
 // predicates, subsets 1..7 then method-scope predicate declarations:
 // 146/146/146/146/146/146/146/146.
 // Original complete source restored; no eligible gain.
+// Round 555: Neighbor scan-success bool/byte/short/long, then both scan-success
+// outcomes: 151/151/151/151/151/151/151/151. NOT kept: branch-set search outcomes need
+// an exact match. Original indexed scans, count tests and complete method restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
