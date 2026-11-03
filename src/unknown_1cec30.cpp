@@ -2375,6 +2375,13 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // normal/fallback/velocity copy subsets 1..7 all 91. Original copy, normalizer, helper and body
 // restored; early velocity j/k and property-zero residence remain.
 // DL245: Aligned frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. Native velocity scalar sums with original/direct defaults and setter/aggregate publication 258/233/342/249; with property value constructed first 259/247/351/249. All regress and disturb the previously matching prefix. Original accumulators, normalizer, property helper and complete body restored.
+// DL248 (reduced): Shared completed normalization result, complete scale products and private complete
+// root result, masks 1/2/3/4/5/6/7 [91, 91, 91, 91, 91, 91, 91]; all with shared squared magnitude 91.
+// Shared native input captures, mutable/const and completed/staged graphs [223, 223, 223, 223]. Aligned
+// frame 0x34 agrees; early velocity j/k loads, speed products and property-zero residence remain. NOT
+// kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
+// length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
+// and shared-helper body is restored. Original executable source restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
