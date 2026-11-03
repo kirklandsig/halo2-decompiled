@@ -739,6 +739,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
 // qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
 // publication scheduling remain.
+// DL252: Three direct library-fill orders, then once-observed repair ordinal inside/before guard with
+// direct/shared byte extents or shared element count: 271/271/271/270/270/268/270/270. Original indexed
+// fill, scopes, outputs and complete body restored; BSP/count homes and publication scheduling remain.
 // Round 80 (m3 lane 12, fast): bsp renamed to sort after count, or count renamed to sort before bsp, 150/150 (the
 // homes do not move: bsp's +0x14 is a spill home, not a named slot); the camera formed before the first-listener
 // scan 200 (camera takes a saved register); the scan result in a one-use local before the camera 145 (camera
