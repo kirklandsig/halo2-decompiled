@@ -350,6 +350,11 @@ struct s_block_candidate
 // homes remain.
 // N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
 // all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
+// m3 lane 11 r62 (fast): offset after the result with previous's NONE in the block 380; offset first with
+// previous's NONE in the block 357 (retail stores that NONE in the block, at +0x48); the page shift in a twice-used
+// local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the
+// block 379. Retail keeps offset's zero in EBX from before the type clamp (it is the clamp's zero) and stores
+// oldest's NONE from the result's register in the block.
 // Round 122 (lane 7, fast; base 347 [aligned 260]; retail keeps offset in EBX, current in EDI spilled
 // around the scan, previous on the stack and no entry stores for offset/previous): offset and previous
 // declared at the top of the admitted block 376 [243] (entry stores gone, prologue then pushes three);

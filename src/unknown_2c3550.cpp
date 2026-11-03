@@ -821,6 +821,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
 // bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
 // without an exact match. Original actor observations, bit consumer and full body restored.
+// m3 lane 11 r63 (fast): actor pointer declared first 757 (2995 B); `*complete` read after the actor/height
+// block 673, after the output clears 676, just before the step loop 704; that 673 form with bool result 755;
+// `ignored` set after the out-count test 675; `radius < source.radius` 675. All restored.
 // B388: Plain two-list transform table, long/short list ordinal, indexed/advancing
 // obstacle receiver and long/Boolean success: 827/861/827/861/794/806/794/806.
 // All regress and shorten away from retail; original distinct transform loops restored.

@@ -347,6 +347,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 343: Object acquisition/weighted-animation/countdown-weight last-consumer scope
 // subsets 1..7 each 207; joint scopes with the confined base identifier 207. Original
 // observations, constructor points and body restored; frame, getter and ordinal homes remain.
+// m3 lane 11 r62 (fast): the weighted loop as `while (i < 12) { ...; i++; }` 207; the animation pointer declared
+// bare before the weighted test 207; the base admission as nested ifs 207; the loop body skipping with
+// `continue` on the inverted test 207; the frame and weight tests as nested ifs 207 (all the same code: the weighted getter stays inlined). Retail inlines
+// the base and weighted channel plays and the weighted arm's data get, calls the getter out of line there,
+// and compares the frame byte with the frame count in 32 bits.
 // M3 lane 4 r157 (fast; LCS-aligned base 110): the frame entry in a twice-used `long` 257 (967 bytes, aligned 99:
 // retail's 32-bit frame compare and one load; the countdown still spills because the inlined getter leaves the
 // channel's tag index in EBX across the loop for the data get), with the frame read before the weight 257, with the
