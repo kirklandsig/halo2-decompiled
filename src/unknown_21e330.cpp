@@ -756,6 +756,11 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 // each (392 bytes; the copy is propagated away); one function-scope variable for all four sums 55 (399
 // bytes); the double cast on the copy's side 25. Compile-only: the sum on a 4-byte struct or union by value
 // (new result, in place on the copy, or returning real) is SSE with no x87.
+// Round 52 (lane 14, fast): retail's later sums read as an in-place `copy += gain` on a value copied through a GPR (the result lands in the copy's
+// slot), but as x87. Double sum in place on s_decibels by value, field first or gain first, gain by reference 144/144 (360 bytes: the copy is gone), gain
+// by value 125; the header's operator+ field left or gain left 103/122 (SSE); plain real with a const reference gain 144; a memcpy copy of the field
+// field first, gain first, in place either way 144 each (copy gone); a memcpy from a field pointer 106; a double local summed with `+=` 105. The header
+// operator in another file without /arch:SSE did not inline on the reduced image (132, inconclusive; a move for flags is not keepable anyway).
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {

@@ -3245,6 +3245,10 @@ struct s_voice_route_choice
 // Round 126 (lane 8, fast): `radio = radio || mode == 2` 1087 (594 bytes, not unrolled); `if (!radio) radio =
 // mode == 2` 474 (callers 22/18); listener-mask arms swapped 363 and a listener array pointer 363 (same code);
 // SET_FLAG for the headset and listener bits with the radio/nearest tests after 430 (callers 22/18).
+// Round 549: Conditional/nested/rejection/test-produced nearest-index publication
+// with bitwise radio 363/1132/363/1095, with branch radio 1103/1139/411/1096.
+// Nested/test-produced bitwise forms and nested branch form lose both callers.
+// NOT kept: no match or gain; original reduction and full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3542,6 +3546,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 126 (lane 8, fast with 0x564c0): cursor with an unsigned stride 164; cursor with a short consumed count
 // 163 (479 bytes); consumed advanced right after the size test 163 (475 bytes); cursor with a const reference to
 // the channel index for every talker read 164; cursor with a count local from data[1] 159 (0x564c0 13).
+// Round 549: Loop failures assign NONE to consumed and break; long/int/short/dword result
+// with original traversal 138/138/159/138, with independent packet cursor
+// 153/153/154/153. NOT kept: best gain is one; original body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
