@@ -647,6 +647,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N318: Literal command completes all three input bytes and continues; fixed one-byte common
 // tail, numeric parity/word fill/unsigned count masks 0..7: 128/188/119/192/128/188/119/192.
 // Original consumed span, helper and decoder restored; alpha width, literal fusion and two-run reuse remain.
+// P280: Existing scalar pixel helper static force-inline/ordinary static/external
+// inline/external force-inline: original parity 85/85/85/85, numeric parity
+// 204/204/204/204. Original helper and decoder restored; parity/literal/two-run gaps remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
