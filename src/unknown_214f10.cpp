@@ -324,6 +324,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // Lane 18 round 34 (fast): success straight from the handle test, `if (success != false)` 55 (351 bytes); a bool
 // opened copied to success 55 (351); `if (!opened) continue;` 42; the file declared at the loop top and assigned
 // after the wait 42; `success = opened ? true : false` 42.
+// Round 82 (m3 lane 9, fast): `success = handle test; if (success == true)` 54 (352 bytes); the long kept with
+// `if (success == true)` 54; `if (success != 0)` 55 (351); `if (opened != FALSE && success)` 41 (an implied
+// re-test: success then tested from DL, still no memory re-read; not kept); the handle compared as `(long) != NONE` 42.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
