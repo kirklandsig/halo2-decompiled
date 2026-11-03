@@ -650,6 +650,14 @@ static inline word font_character_pixel(long alpha, long color)
 // P280: Existing scalar pixel helper static force-inline/ordinary static/external
 // inline/external force-inline: original parity 85/85/85/85, numeric parity
 // 204/204/204/204. Original helper and decoder restored; parity/literal/two-run gaps remain.
+// N339: Existing alpha formal as complete expansion accumulator, byte/long parity before shift,
+// shifted-source parity and conditional low-bit publication, word then long result:
+// 179/222/169/227/136/230/216/236. Original helper and full decoder restored;
+// alpha extension, literal assembly and run-two reuse remain.
+// NOT kept: every accumulator form regresses and remains unmatched.
+// N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
+// original word then full-width pixel result: 139/172/182/183/163/166/174/175.
+// NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

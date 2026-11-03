@@ -44,6 +44,11 @@ void function_3e4e0(dword *current, dword const *target, real step);
 // reload in the force arm remain). All 24 entry orders with either arm on that lead: 21 is the lowest count, aligned 7.
 // Round 65 (m3 lane 10, fast): with 0xd4080 reordered to (type, query, flag, record) the call setup is retail's, 23;
 // `special` declared before `type` 21 (NOT kept (review): a declaration order picked by score). Left: object/force homes and the early update store.
+// Round 121 (fast; 0xd4080's definition is still in another lane's file): on `update = false` before force, sample and update
+// timestamps named 218, only sample named 218, only update named 218, the update test's two sides flipped 218 (aligned 34, control 18;
+// the swapped esi/edi follow 0xd1850's EDI and 0xd4080's ESI arguments, so the lead above comes first).
+// Also round 121 (fast): the stationary test as one `!valid || !(dot < limit)` with the difference above it 120 (831 bytes); the
+// lighting record through a named pointer 27, with special declared before type 26.
 // @retail 0x3dfe0
 void function_3dfe0(long cache_index, long object_index, real priority)
 {

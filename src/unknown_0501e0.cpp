@@ -290,6 +290,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
 // subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
 // NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
+// Round 550: Plain weighted-output coordinate walks on separate-offset/cursor-transform
+// graph: long/dword index 222/222; long/dword output cursor 221/221; first/second/both
+// input cursors 221/223/221; all cursors 221. NOT kept: no gain, 1146/1147 bytes and
+// extra frame word remain; original three publications, helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

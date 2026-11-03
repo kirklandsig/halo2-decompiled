@@ -861,6 +861,16 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // header getter 44; unit-first with the table 44; exact unit-start/NONE-root walk on that form 109; unit-object
 // declaration before the guard 44; const player/unit-object pointers 44; forced private object getter inline 44
 // (0x14deb0 stays matched). Original body/helper restored; player/unit carriers and root-walk entry remain.
+// Round 46 (m3 lane 2, fast; control 44, plain 43): the walk as a for loop from the unit with the root preset
+// to the unit 109; the unit object fetched from a re-read unit field 44; no player local (datum read at each use)
+// 44; `root_index == unit` for the parent test 82; NONE-root walk with the e4050 argument re-read 109.
+// Round 53: test on the field, unit local after it, walk from the field with a NONE root 109; `dword current = unit`
+// with a NONE root 171 (405 bytes: entry test returns, root EDX and table ESI as retail, but unit EAX and iterator index
+// EBX, so the frame goes); that with a dword root 171; `long current = player->unit_index`, unit local for the rest 171;
+// current ahead of the lookup in a for loop 108; dword current under `if` with do/while 171; lookup, walk and 0xe4050 all
+// from the field with the unit only tested 109 (431, no entry test); one of lookup/0xe4050 from the field 171/171; that
+// all-field form with a named parent 109; named parent with dword current 171/171/171. What is left in the 405 family:
+// the unit must leave EAX (0xe4050's argument) for EBX, which pushes the iterator index back to the frame.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
@@ -1104,6 +1114,10 @@ bool function_14ed80(void)
 // primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
 // pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
 // lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
+// Round 53: no globals local, player first 10 (the load sinks to the block end); globals first 50; `long first =
+// third = NONE` 9; `long third = first = NONE` 8; chained outputs declared after the globals 9; pointer to the two
+// representation fields 17 (170 bytes); third output assigned first in the block 9. Retail's colour order reads
+// first, globals, third; a named local ranks above both outputs and a read at each use below both.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1393,6 +1407,14 @@ static inline s_players_globals *players_globals_14f2e0()
 // each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
 // predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
 // 3-point timer-only gain and the grouped output workspace. Original body restored.
+// Round 46 (m3 lane 2, fast; control 46): reused flag declared before the outputs 59; `!(result || mode == 4)` 46;
+// result declared after unit_index 46; one options pointer local for the state/mode/state tests 228 (1046 bytes);
+// the two word clears before the flag clears 46 (the flag `and` still leads). The constant stays `mov eax, -1`.
+// Round 53: forward goto and label ahead of the NONE outputs 46 (mov stays, so a block label is not the cause);
+// the spawn block as do/while(false) 382 (1146 bytes, mov stays); `unit_index = NONE` after 0xb8540 46; that with the
+// unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
+// {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
+// byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
@@ -1694,6 +1716,9 @@ struct s_unit_player_assignment
 // Round 125: direct player subscript 17; typed getter at the second lookups 17 and at all four 17;
 // const unit_index 17; const player_index 17; unit renamed assignment 17; chained latch reset 19;
 // engine-globals getter 17; unsigned old-unit target 17; const player pointer 17.
+// Round 53: the remap as a direct ternary argument with the representation local 17, with the field at each
+// use 148 (466 bytes, parameters move); old unit local for 0xcbf60 17; one function-scope target local 17; named
+// lookup pointers for both +0xd4 reads 17; early return on the same unit 17; named engine index 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -2363,6 +2388,18 @@ static __forceinline long player_round_ticks(real value)
 // bit 12 704 (707), bit 3 707 (684), all three 720 (686), activity bools with `|` 719 (596), all 739
 // (575). Positional scoring rejects them while the early expansion shifts the listing; retail's
 // branch-free `ticks < 0 ? 0 : ticks` (sets/dec/and) and `cmovne` are further leads.
+// Round 53 (not kept, a positional rise; aligned counts from a difflib alignment, base 708): applied together, a typed
+// input struct, the candidate address at each call, block-scoped player pointers with bitfield flags, 0x1502e0's view
+// entry form and two function-scope requests give retail's frame 0x74 and prologue, first difference +0x81. With retail's
+// branch-free activity bytes, seat test on the fields, NONE-initialised target: aligned 374 (648 at 2713 bytes). The split
+// lookup in the weapon helper (`unit = get; slot = *(get + 0x212 + hand)`) gives retail's pool-data reloads: aligned 102.
+// 0x10f690(unit, NULL) for the animation time inlines; two lunge flags and per-arm staged `allowed`: aligned 90, 705 at
+// 2764 bytes (24 over retail, so the listing stays shifted). Blockers: the first 0x151b80 expands (retail calls it; a constant local
+// at the call keeps it out, about 110 bytes, a reverted form; without it 844 at 2874 bytes): BLOCKED-BY 0x151b80 (unmatched,
+// another lane's file). 0xccd20 expands, +32 bytes: pragma 737, a real 0xb8540 (diagnostic) 686, local argument 686, nested
+// test 686. Mask 0xfffd needs ESI where the candidate address takes it: named mask 705, const mask 705, nested test 705,
+// array or byte-array candidate 705, reference, pointer and plain word forms 705. Weapon helper through 0xcbd50 705 (aligned
+// 185, loads merge); 0xcd660 718 (stays out of line); named data read at the top 705; forty-eight dead reads 705.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {
@@ -2863,6 +2900,19 @@ static inline bool player_datum_iterator_next(s_data_datum_iterator *iterator)
 // confirm nor rule out a clobber: 0x268510 reloads a global right after it but has no free callee-saved register,
 // 0x26ba60 keeps a global-derived pointer in EDI across it. Likely BLOCKED-BY 0x6b380: LTCG sees it write only the
 // iterator, so our build promotes g_4e8c20 into EDI through both loops.
+// Round 46 (m3 lane 2, fast with the callees above; plain confirmed): the split failure test in loop 2, as
+// `if (!a) failed = true; else if (!b) failed = true;` or as a failure store with `continue` before the 0x14e970
+// test, 91 each (608 bytes, the same code: the prologue keeps the globals in ESI and the final store reloads the
+// global, as retail), not kept: two identical failure arms. A lead: what retail has there is a second failure
+// path. The busy store after loop 1 behind a flag 158; last_unit declared before the pool local 103; root
+// initialised NONE 103; `succeeded` polarity 103; one `spawned` result through both calls 103. On the 91 body:
+// loop 1 without the datum_index init 91; busy arm first 106; position copied before last_unit is set 89; unit
+// declared before the player 91; no player local 91. Left at 91: loop 1's datum/unit in ESI/EDI (retail EDI/ESI),
+// immediate NONEs where retail keeps -1 in EDX, the iterator.data store before loop 1, last_unit in EBP.
+// Round 53 (fast image widened as in round 34, control 103): `succeeded` flag with the store under `if (succeeded)`
+// 103; status block as an inline helper taking the globals 234 (557 bytes); second pass as an inline helper 260 (478
+// bytes, stays out of line); named pointer assigned at the final store 103; status test through the global 103;
+// early return when no last unit 103.
 // @retail 0x14cdd0
 void function_14cdd0(void)
 {
@@ -3112,6 +3162,8 @@ struct s_unit_flags_14d8b0
 // direct alone, root walk through object_header_get, late options pointer, second engine result
 // pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
 // All leave +0x304 and the same scratch choices; original helpers and body restored.
+// Round 127 (lane 8, fast): ticks-arm unit assigned inside the arm 9; root walk on its own local 9; root walk as
+// do/while with no pre-loop init 9; low-time limit compared directly 9; own local in the limit block 9.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {

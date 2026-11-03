@@ -276,9 +276,32 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // product parts, eight non-original pairs: 616/622/614/628/624/627/624/627.
 // NOT kept: shared dots gain at most four and change the sum trees without a match.
 // Original body, helpers and all in-place copies restored; success/input/minimum/hit homes remain.
+// Round 35 (m3 lane 17, fast): the input copy after the hit clears 629; the hit clears before the minimum and
+// output zero 618 (same code); success declared after the object/settings lookups 631; the root clamp as
+// `1 - a/b < 0 ? 0 : ...` 618; the output scale stored before the origin copy 618. Retail's homes: success +0x17,
+// minimum +0x18, hit bytes +0x1c, input copy +0x40 (ours +0x1b, +0x10, +0x24, +0x4c); retail also reloads the
+// half-width for the fourth offset point, where ours reuses the third point's negation.
 // DH311: Joint actual equal-size retained-input/center, basis and final-projection lexical
 // identities, seven family subsets then complete alternate vocabulary: eight at 618. No native home
 // moves; original names/body restored. Success/input/minimum/hit and rotation homes remain.
+// Round 128 (lane 8, fast control 618): retail forms 1/range once but multiplies it by the minimum twice
+// (ours shares the product). Tried: the clamp's product written `minimum * (1/range)` 618 (same code); success,
+// minimum and hit flags renamed (other alphabetical order) 618 (same code); the rotation dot as i, j, k 618
+// (same code); the FLT_MAX minimum declared right after success 636; the hit flags from a brace initializer 630
+// (2813 bytes).
+// Round 201 (fast; aligned = difflib count, 346 here): retail rereads the half-width and negates it again
+// for each offset point and stores each point's components as it makes them (the escaped point array
+// treated as aliasing the definition), and loads the output's three components once for the basis
+// product and stores the three final components last. Tried: the output's components read into three
+// named amounts for the basis product 635 (2808 bytes, aligned 342); the final stores in k, j, i order
+// 615 (under the keep bar); amounts plus the three final components staged in locals and stored last 620
+// (retail's i, j, k stores at the end, aligned 345); the point helper as plain inline 618 (same code); the
+// point array declared ahead of the position copy 618 (same code). Original body restored.
+// Round 79 (m3 lane 16): the offsets read once into an `offsets` vector local before the basis sums 604 (plain).
+// NOT kept (review): a struct value copy where retail reads the three components through the pointer at the
+// basis sums (0x292ca9; our copy goes through integer registers); body restored at 618. That local declared before local_17 604; read before the arg_6 test 601; as three real
+// locals 635 (2808 bytes, aligned 461); the private cross with retail's product operand order 604 (identical code);
+// the hit flags as an aggregate initializer 605.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

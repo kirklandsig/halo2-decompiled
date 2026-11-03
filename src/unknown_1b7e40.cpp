@@ -233,6 +233,18 @@ bool function_25d9b0(long prop_index);
 // Round 86 (KIMI2): evaluation result with busy goto/single exit 91; the same without goto 91;
 // scoped zero result 51; priority-initialized result 49; reversed branch-complete result 49;
 // that with velocity declared first 49; selected_priority/outcome result names 49/49. Original body restored.
+// Round 125 (lane 8, fast with the file): the existing length_sq3f for the speed 49; the existing magnitude3d 49;
+// `short priority = 0` at the declaration in place of the fallback's store 49; the busy test as `== false`
+// returning priority inside 65; the busy test as an if/else of the two returns 49 (still the select).
+// Round 128 (lane 8, fast with the file and its callees, faithful 49; plain confirmed): kept 49 -> 30: the busy test
+// (0x25d9b0) joined into the evaluation's && chain with `return priority` and the fallback's node test written as
+// `prop_index != NONE` (the && chain alone 65 swaps actor/node to EBP/EBX; the fallback test through the prop
+// index gives retail's actor EBX/node EBP and no select; `actor->prop_index != NONE` 30, same code). Tried: the busy
+// call through the prop_index local 143; `priority = 0; return priority;` at the end 30 (same code); the whole test
+// inverted returning 0 first 30 (same code); `return 0` for the loop's exit 123 (575 bytes); the old busy `if` with
+// the prop-index fallback 50; a short result zeroed at the label 92.
+// NOT kept (review): the 30 needs the fallback to test the prop index (`cmp esi, -1`) where retail tests the node
+// (`test ebp, ebp`), a form picked by score against retail's test; the && chain alone is 65. Body restored at 49.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {
@@ -447,6 +459,12 @@ evaluate:
 // Round 28 (m3 lane 18, fast; the call still inlined in every form): the node's distance field in a local for
 // both tests 78; the speed named before the final test 73; the near result in an if/else with the far tests in
 // its else 78; the prop compare as a guard return 73; the payload count as a guard return 79 (265 bytes).
+// Round 125 (lane 8, fast with the file; the call still inlined in every form): the far distance test as
+// `15.0f >= d`, `!(d > 15.0f)` and `!(15.0f < d)` 73 each; the speed cast to real 73; `view != NULL` 73.
+// Round 128 (lane 8, fast with the file and its callees; 0x25d740 still inlined in every form): both outer tests as
+// guard returns (`unknown20 <= 0`, `prop_index != unknown1c`) 74; with `if (!view) return result;` 74; with the
+// existing magnitude3d 74; with the far result assigned (`result = g_46fbe8;`) 72; the near/far arms as an if/else
+// assigning result with one return 88 (278 bytes).
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

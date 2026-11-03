@@ -1461,9 +1461,24 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 33 and all controls are unchanged; checksum locals and field-address copies fail their exact-match
 // requirement, and the existing checker inline contract gains nothing. Original executable source
 // restored.
+// Round 80 (m3 lane 12, fast): the swapped size/count homes come from the count's zero store: in retail a
+// failed resize jumps straight to the close's handle test. `!resized ||` in the close test 157 (frame 0x1140:
+// a third read of `resized` packs it with the byte flags); the write block ending in `if (bytes_written ==
+// 0x800) goto header_written;` past the close 83 (frame, every slot and the close copy retail's; first
+// difference +0x1e1, the header-read joins); that goto with round 53's header-read `else if` and `valid =
+// true` 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX); on that 7: a
+// write-handle local 114 (917 bytes, close copy dropped), the count declared inside the write block 7, the
+// header declared before the resize call 7, `bytes_written >= 0x800` 8. Restored: goto and else-if are both
+// exact-only. Permuter (anneal, 600 s, 54 tries) on the goto/else-if 7 form: best 7.
 // F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
 // all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
 // initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
+// Round 127 (lane 8, fast): `if (read) { valid = true; ...` 103 (932 B; the header-read tail then matches retail,
+// ESI = 1 and threaded); read result and range test in one condition 33; range test as nested ifs 33; `valid` at
+// function scope 33; write count declared before `resized` 33; validity array by initializer 263.
+// Lane 17 r37 (fast): bytes_written renamed write_count 33; prefixed names in both orders (diagnostic) leave the
+// size/count slots unchanged; the header-read validity test merged with the slot-range test 33; bytes_written declared
+// beside size, after or before it, 33/33 (slots do not move); `valid` declared at the loop top 33. Body restored.
 // @retail 0x213970
 void function_213970(void)
 {

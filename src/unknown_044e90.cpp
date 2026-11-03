@@ -214,6 +214,14 @@ struct s_visibility_bound_record
 // Round 548: Real four-descriptor release table, long/dword/short/word/byte/signed-char
 // counter and pointer </!= walks: 522/522/520/520/520/520/511/511. NOT kept: changed release/frame
 // shape misses; original four releases, field reads, native workspace and full body restored.
+// Round 550: Actual fallback visibility-membership result, bool/byte/short/long,
+// nested unseen admission then already-visible continue: 406/406/406/406/406/406/406/406.
+// NOT kept: one-use predicates do not match; original direct bit test, containment
+// initialization and complete body restored. Entry/table and plane/query homes remain.
+// Y553: Independent fallback-center input scalars 448; part-entry storage 448;
+// branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
+// point setter on update/branch/all producers 448/463/462. All controls survive.
+// NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

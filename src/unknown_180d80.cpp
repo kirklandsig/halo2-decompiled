@@ -164,6 +164,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // Round 65 (m3 lane 10, fast; 0x17cfa0 still 70): the entry test as three guard returns 650 (2665 B); the luminance
 // counter declared in its for 145; the count loop index renamed apart from the later local_5 94; the scale declared
 // before the maximum distance 97; the colour scale stored before the counter declaration 145.
+// Round 77 (m3 lane 16, fast): the entry guard as a positive `if` around the body 122 (2664 bytes); the vertex
+// array declared inside the block after the guard 94 (same code); the maximum as one `first || greater` test 115;
+// the clamp helper without its volatile pointers (one named value) 687 (2551 bytes: the volatile reads are
+// load-bearing); the strip-count loop counter renamed 94 (same code). Still BLOCKED-BY 0x17cfa0 (contributor).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

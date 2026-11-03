@@ -220,6 +220,21 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // Round 541: Standard component-range heading copy, paired default/normalized-input/final-output
 // families, masks 0..7, with direct input: 839/840/834/829/828/848/851/836. Two forms reach
 // retail length but regress; original input storage, transfers, includes and full body restored.
+// Round 54 (m3 lane 14, fast listed with 0x1f9e70/0x110ab0): the first steering-flag arm setting true in its own
+// else (retail sets the flag per path and its false paths share one `xor al, al`) 810 (3506 B); the offset point
+// as local_24 * component 750 (same code); a named perpendicular { -j, i } of the normalized heading at its three
+// uses (retail computes the negated j once, right after that normalize) 832 (3514 B), declared after the
+// normalize 832; direct input 804 (3499 B). Original body restored.
+// Round 64 (m3 lane 1, fast): normalizer test on `fabs(length)` without the double cast 750; dual double casts
+// in the squares 750; normalize3d's shape (length zeroed in an else, one return) 798 (3499 bytes: retail's float
+// epsilon and zero store, but our squares still keep i/j/k on the x87 stack where retail multiplies from the copy's
+// memory, so the length is stored and reloaded); that with the cast on the other operand 798; with the input read
+// directly 805.
+// Lane 18 round 34 (fast): the private normalizer's test as `fabs(local_0) < 0.0001f` 750; its squares as float products
+// (retail's fld/fmul memory squares) 791 at 3499 bytes; that plus the normalize3d-shaped if/else exit (retail's dword
+// epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);
+// plus the scale as `local_1 * v` 771. The input/heading homes (input pointer in EBX from entry, local_2 at
+// [esp+0x2c] for retail's [esp+0x20]) keep the rest positional.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

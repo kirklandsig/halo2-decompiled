@@ -505,6 +505,13 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (same code); a pointer local for the state velocity at the copies and deltas 32; delta declared before
 // velocity 32; limit declared at its assignment 32; the correction written `s.c + d.c * scale` per row 101
 // (348 bytes), with retail's i row product-first 101.
+// Lane 18 round 36 (fast): tick products `velocity.c *= ticks` with the long count converted implicitly
+// (no tick_scale local) 73 (369 bytes); the three state-velocity copies before the rate and tick reads 94 (370
+// bytes); tick_scale declared bare and assigned after the count read 32 (same code); the call through `tracked`
+// without the parameter reference 99 (+0x2); the rate stage as `v.c = rate * v.c + p38.c; v.c -= p2c.c` 32 (same code).
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

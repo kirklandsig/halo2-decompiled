@@ -200,7 +200,7 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 114 (unchanged): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
+// score 114 (was 114): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
 // header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
 // because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
 // call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
@@ -215,6 +215,14 @@ struct s_flag_word_bits
 // `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
 // table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
+// F352: Native header-byte mask producer with both existing stack aliases retained,
+// bool/byte/short/long default-false arms 124/124/129/128; complete true/false
+// arms 123/123/126/125. All restored; player-base/root scheduling, ticks/effect
+// homes and the expanded tail remain. Original word-bitfield view retained.
+// N341: direct unavailable producer 122; call-result admission flat/nontrivial-kind scopes 98/87;
+// short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
+// NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
+// Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -265,6 +273,9 @@ void function_151ea0(long player_index, long object_index)
 // (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
 // copy label (67), copy label in the same arm with `return result` (69).
 // Permuter (25 min on r654, about 1030 variants): nothing below 1.
+// M337: Initial winner predicate with guarded/direct equality, equality-first result, and
+// priority-range result, bool/byte carriers: 74/104, 112/102, 81/79, 82/91.
+// All restored; the equal-priority jne still chooses the other existing epilogue.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -419,6 +430,14 @@ struct s_tail_player_identifier
 // scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
 // from the indexed form).
+// Round 45 (m3 lane 2, fast, base 31): retail loads the player first, the scenario next and g_4e6948 only after the
+// scenario test (beside `push ebx`); the entry pointer assigned after the alternate test 68 (158 bytes, the loop's
+// entry jump over the padding goes), that with the entry declared first 68; `difference` declared at function scope
+// 31 (same code); the player declared before the entry 32; `alternate` declared first 67 (158 bytes).
+// M337: Native range-end scan with early/delayed options and direct/common result
+// [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
+// NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
+// Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -972,6 +991,13 @@ struct s_tail_transfer_traits
 // 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
 // read (159), the three weapons as a long[3] (152), a held[2] array with the no-seat branch as a hand loop over
 // held_slots[] (151, frame grows by 8), held[2] replacing primary/secondary (156), a store through a pointer to other (153).
+// AC502: Failed-traits continuation/missing-unit completion/both 153/171/171; real
+// identifier cursor/copy cursors/search plus continuation/both cursors/all admissions
+// 217/258/217/270/283. Original traversals and body restored; selected-traits/unit/NONE homes remain.
+// Round 552: existing shared current-weapon producer, all shared object getters, native selection
+// do-while, admitted age, once/per-use clock, weapon-result home names and per-use second lookup:
+// 154/154/154/180/165/165/154/154. All complete original source and existing helper bodies restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1093,6 +1119,12 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
 // lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
 // bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
+// AC502: Shared object getter at initial/held/pending/flag lookups, complete main/all
+// receivers, immutable receivers and direct tag-field access: 284 each. Original getters,
+// include set and body restored; pool/player/tag-table allocation remains.
+// Round 552: original ternary producers with direct first-loop do/while, then native slot/final/both
+// loops on each entry graph 284/636/284/636/284/636/284/636. All loops, observations, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1188,6 +1220,12 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
 // inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // Permuter (25 min on r654): best 12, only with a volatile read of the unit index; not kept.
+// F352: Complete rejection returns / sole-exit rejection / exhaustive outcomes / retained-false
+// dispatch outcomes, saved player receiver: 50/35/48/78; existing lookup at every player
+// field: 46/46/46/71. All restored; saved unit/table EDI/ESI still reversed.
+// M337: Returned availability owns unit and held-slot admission; bool/byte/short/long
+// states with the original short slot [48, 68, 85, 80]; native signed-byte slot [46, 66, 81, 76].
+// All restored; the saved unit-index and table/slot registers remain exchanged.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1243,6 +1281,13 @@ void function_150820(dword *bits, bool local_only)
 // mode tests nested (47).
 // Permuter (25 min on r654): best 16, only with a volatile read of the unit index and the held slot read as a
 // char (a behaviour change); not kept.
+// Round 45 (m3 lane 2, fast, base 43): `else if (function_cd4e0(...)) result = true;` 47; `!primary` at each use with
+// no hand local 117 (236 bytes); the player fetched at each use 89 (220 bytes); the unit fetched at each use 43
+// (same code); hand declared at function scope 43.
+// Round 552: guarded command success/direct command/short-circuit result 47/95/87; all admission
+// returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
+// result before dispatch 101. All original calls, observations and executable body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1432,6 +1477,12 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // Tried: iterator beside the free slot as separate locals (545), explicit `= {NONE...}` controllers (556),
 // the three masks in all six declaration orders (543-559), `index` at function scope (545), the loop
 // over two weapons as `for` with an index (555 unrolled) or as a helper (510, unrolled).
+// N341: retained local-index short, controller/user loop admission and failure guards 587 each;
+// real datum-iterator API 934; absolute cursor subscripts 586; subscript name 587.
+// NOT kept: one-point cursor reduction; native mask/index homes and missing inline expansion remain.
+// N343: Six semantic mask-home naming forms and independent traversal/pass home names 587 each.
+// Original names and complete body restored; native mask/index homes, memory cursor and
+// missing inline expansion remain. NOT kept: unmatched storage-only renaming.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1750,6 +1801,15 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
 // not natural source, so it is not used.
 // Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
+// F352: Existing traits-record bool/byte flag with admission-owned disabled return,
+// independent false result, disabled guard, and sole outcome exit: bool 91/91/91/91;
+// byte 17/91/17/16. NOT kept: byte normalization grows to 253/251 bytes; bool
+// loads AL rather than CL. Original record, input access and entire body restored.
+// N341: enabled Boolean/byte retained for the inactive return 17/91; failure flag through ordinary/all
+// admissions 92/88, complete failure single exit 92; pointer end/countdown copies 106/92;
+// special-success return arm 91. NOT kept: 17 adds setne and grows to 253/251 bytes;
+// 88 is only a three-point gain. Native flag-load/false-result prefix remains.
+// Focused byte-input plus complete default-result lifetime 91; native prefix still differs.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {
@@ -1893,6 +1953,12 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // g_4e0300) where ours reuses edx/ecx, which costs ours the ebp register. Tried: a local unit_index (202), the 0x14c compare
 // through a second tail_player_get (238), g_4e0300 in a local (242), an explicit object offset kept in a local (202),
 // the parent test without the bool (227).
+// AC500: Native unit/object field views and existing complete difference producer, masks 1-7,
+// 202/202/202/203/203/203/203; complete graph with byte header kind 203. Original real layouts,
+// fields, helper use and complete body restored; frame agrees, early lookup ownership and offset spill remain.
+// AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
+// 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
+// Original body restored; entry player/header-offset ownership and spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

@@ -252,6 +252,10 @@ short __stdcall function_2551c0(long actor_index)
 // Round 343: Angle/trace-output last-consumer scopes 43/43/43; completed score/forward
 // search scope alone and with those scopes 45 each; joint scopes with library best-vector copy 45.
 // Original helper and complete body restored; early cross products and score-dot schedule remain.
+// Round 77 (lane 16, fast): found declared after the two vectors 43; the helper taking the input vector by value
+// with an output pointer (no direction copy) 143 (834 bytes); the loop counter declared at block scope 43; reach
+// then alignment named (no vector_k) 42 (814 bytes, first +0xf5: early cross products become retail's, but the
+// forward copy's loads and the projection dot reorder); that as `reach * alignment` 42.
 // Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
 // projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
 // cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
@@ -815,9 +819,17 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // reach 25/197/19/197/197; side maximum named, reversed, inline, lateral named or if/else 17 each. Guard shapes
 // without the unit local (early return, nested, all in one) 92 at 964 bytes: the argument stays in ECX (one
 // scratch rotation step behind retail). Body unchanged at 89.
+// Round 125 (lane 8, fast, on the rebuilt 17 form): length, projection, index and timing locals renamed so they
+// sort first or last 17/17 (names do not move the slots); the side vector as an initializer 17; the existing
+// dot helper for the 0.95 test 17 (same code), for the lateral dot 29; the two length guards joined (no
+// heading_length) 17; the type radius named 17; the object size read before the dot 194 (975 bytes); the size
+// local in the adjusted subtraction too 185 (970 bytes: it takes its own slot). Body unchanged at 89.
 // P286: Native Boolean result owners at first probe/second probe/timing, seven subsets
 // and all with entry-only declarations, 89 each. NOT kept: one-use call-result and embedded
 // assignment forms need a match. Original body restored; unit scratch and scalar homes remain.
+// Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
+// swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
+// length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {
