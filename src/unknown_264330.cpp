@@ -607,6 +607,12 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH310: Complete case orders 04123/04132/02413/02431/02314/03124/03142/03214 on the signed-state graph,
 // 422/448/426/433/416/444/451/431. All original case-body hashes agree; every new priority regresses.
 // Original cases, observations, qualifier and whole body restored; frame excess and stacked actor remain.
+// Round 203 (fast with 0x1e34e0): `update = sample = true` 413; motion/context at function scope 412;
+// the prior state read after the flag declaration 412; a for loop over the node index with `next` 453
+// (1600 bytes); the sampler failure clearing the sample flag with the 0x264b50 test in its else 452.
+// BLOCKED-BY 0x2641c0 (retail inlines it here; its noinline declaration sits in src/unknown_265cb0.cpp,
+// another lane's file this round). Dropping that declaration inlines it into 0x264210 too (round 114), so
+// the lead is a form that inlines it here but not in 0x264210.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {
