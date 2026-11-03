@@ -976,6 +976,11 @@ extern long *g_51e9cc;
 // Nonmatching single-consumer truth carriers restored.
 // F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
 // 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
+// J246: Coordinated table-getter inline contract with native word flags,
+// actual crouch field receiver and entry lookup storage: 42/35/39/35/42/35/39/35;
+// coordinated initializer inline contract alone 42. All helper users unchanged.
+// NOT kept: seven-point flag gain is below the gate; field receiver misses.
+// Original body/contracts restored; lookup address and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {

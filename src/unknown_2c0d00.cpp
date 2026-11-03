@@ -341,6 +341,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
 // enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
 // flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
+// J246: Complete paired vertical bounds, whole velocity projection and expanded-radius
+// producer subsets 1/2/4/3/5/6/7, then all with radius square:
+// 882/882/924/882/924/924/924/924. NOT kept: shared radius grows frame to 0x2cbc
+// versus 0x2cac; other complete expression values tie. Original whole body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,

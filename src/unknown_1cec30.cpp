@@ -1063,6 +1063,10 @@ void function_1d1540(s_havok_component *component);
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
+// J246: Native rotation/translation memcpy boundaries 74/116/106;
+// memmove boundaries 86/108/98; paired library copies with inverse at entry 106/98.
+// NOT kept: every copy boundary regresses, and the aligned frame stays 0x84/0x88.
+// Original constructor, slot, fresh post-reset lookup and complete body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

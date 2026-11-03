@@ -1420,6 +1420,10 @@ struct s_looping_detail_request
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.
 // NOT kept: unmatched admission outcomes; every form regresses.
+// J246: Actual mode value reused for admission/publication, char/byte/short/long:
+// request output 131/131/132/132; native temporary/copy 158/158/160/160.
+// NOT kept: sign extension replaces the native mask, lengths grow to 518/540,
+// and the first-player query still expands. Original whole body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2464,6 +2468,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 668/668/799/793; default-true state-test counterparts 755/755/800/794.
 // All regress; original completion polarity, sole exit and complete body restored.
 // NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
+// J246: Actual lookup-missing/existing outcomes own dispatch and track creation,
+// bool/byte/short/long channels: 740/740/736/748 and 740/740/736/748.
+// NOT kept: all regress at 2518 bytes/frame 0x3c; entry flags/true and record/track
+// homes remain. Original branch-owned creation flag and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
