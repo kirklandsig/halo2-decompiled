@@ -1690,6 +1690,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC499: Both count-zero producers after query, word/short/long/dword, declarations
 // at producer or uninitialized before query: 552/552/572/585/552/552/572/585. Query zero stays EBX;
 // original counters, producer boundary, geometry, helper and complete body restored.
+// Round 129 (m3 lane 8, fast): retail's plane distance follows the text order (x*i, y*j, then z*k) and loads plane.j
+// early for the projected y; ours reassociates to x*i, k*z, j*y. The count clamp as an if statement 605 (2902 bytes);
+// the distance's third product written point-first 552 (same code); the nearest distance declared in the prism loop
+// 552; the existing plane_distance_to_point for the distance 620 (2895); count/radius declarations interleaved
+// (edge count, edge radius, face count, face radius) 552. Original body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

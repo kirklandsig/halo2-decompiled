@@ -302,6 +302,10 @@ struct s_24e9c7_bounds
 // read before the across products 125 (same code); first_bitmap and bounds declared before the group 125;
 // back as `half_width * -across` products 154 (753 B); upper vector before the half width 123 (gain
 // under four, not kept). Original body restored.
+// Round 129 (m3 lane 8, fast): retail reads placement->y once (EDX, copied to each corner) and x at each
+// corner; origin y read once into a local, x per corner 194 (699 bytes); scalar x/y corner copies 191 (695);
+// corners 0/1 as `back.x + (up.x + corner.x)` single sums 137 (749); early upper with y-first corner 0 126;
+// early upper with `0.0f -` across 134 (739). Original body restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
