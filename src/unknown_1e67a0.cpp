@@ -745,6 +745,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
 // swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
 // `0.2f * x * limits.i` 132. Body restored.
+// Round 82 (m3 lane 16, fast, 0x24590 listed): one scale local for the limits, acceleration and movement 196 (1065
+// bytes); factor declared at the top 166 (first difference +0x3); `state->speed = field_148 = acceleration` 134; each
+// jitter value as one sign * on/off * scale product 162 (1057 bytes); the clamped control magnitude named 132 (same code).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
