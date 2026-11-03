@@ -1989,9 +1989,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 	return result;
 }
 
+// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // MiniMax R (10-31): no kept form, no lower score: colour locals reach the frame 0x44 but spill both colours
 // (195/188); the permuter's 124 promotes the unknown to xmm0 and breaks retail's argument layout.
-// score 128 (was 128): Frame 0x40 versus 0x44, early color spill, cursor/query homes and zone-base scheduling remain.
 // Earlier forms: frame 0x44 agrees; settings/color/query registers, cursor home and zone-base scheduling remain.
 // tried native slot scalar 159 (a one-use copy of the field; not kept without a match); cursor/request/transform names and late settings receiver 166 (fast control 166);
 // shared zone predicate 286; zone cases first 166; float consistency 166; immutable loop selectors 169 (fast).
@@ -2110,6 +2110,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // entry and iteration scopes: 128 in all eight forms, 556/552 bytes. Both
 // matched callers and transform producer stay exact; original descriptor reads,
 // query/color timing, cases, spawn fields and complete body restored.
+// Round 67 (m3 lane 1, fast): spawn as an aggregate initialiser `{ scale, unknown, location }` 128; the type-query
+// pointer at function scope 128; multiplied declared before tinted 128; the matrix producer as the spawn call's
+// argument 162 (552 bytes); the location mode in a short/word local before the loop 143/143 (552 bytes).
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
