@@ -2425,6 +2425,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
+// DH328: Bounded material ordinal short/word/byte/signed-byte 180/180/242/242;
+// with persistent sample output 180/180/242/242. NOT kept: all regress and grow beyond
+// retail; agreeing prefix disturbed. Original ordinal, sample lifetime and full body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

@@ -297,6 +297,9 @@ bool function_a7670(long object_index);
 // first ordinal, bool/byte/short/long admission: 274/274/267/267/273/273/229/229.
 // NOT kept: regressions; native membership remains eager. Original body restored;
 // selector/island/count homes, scratch phase and admission register remain.
+// DH328: Last-completed island ordinal with original/first/second/both standard membership
+// searches 295/316/294/313; category acquired after both searches 321/315/314/347.
+// NOT kept: all regress, grow the frame and lengthen beyond retail; complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

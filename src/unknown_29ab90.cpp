@@ -324,6 +324,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // full pre-update native/coordinate/setter/library direction and separate later XY 362/356/356/362;
 // native/coordinate saves with shared planar normalization 385/380. Full saves recover frame 0x64
 // and first +0x42, but grow to 1895/1897 versus 1863 bytes. Original full body/helpers restored.
+// DH328: Existing by-value magnitude over its native component table in K/J/I order,
+// long/short ordinals and direct/named squares 442/442/513/513; input-updated root
+// 434/434/502/502. NOT kept: regressions and longer code; full helpers/body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

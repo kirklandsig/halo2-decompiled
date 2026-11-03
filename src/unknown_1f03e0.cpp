@@ -1031,6 +1031,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// DH328: Existing staged force-inline cross at disabled/flying/ground subsets
+// 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
+// NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
