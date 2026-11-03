@@ -751,21 +751,25 @@ void function_144f0(short stage, long fallback, long tag, short fallback_index, 
 short g_55ece0, g_55ece2;
 
 // @retail 0x14560
-bool function_14560(long tag, short stage, long fallback, short fallback_index, short index)
+bool function_14560(short stage, long tag, long fallback, short fallback_index, short index)
 {
     bool result = false;
     s_type_7ba8e9 *bitmap;
     if (tag != NONE)
     {
         byte *group = g_4e3b44[tag & 0xffff].bytes;
-        long count = *(long *)(group + 0x44);
-        if (count > 0)
+        if (*(long *)(group + 0x44) > 0)
         {
-            bitmap = function_137550(tag, (short)(index % count));
+            bitmap = function_137550(tag, (short)(index % *(long *)(group + 0x44)));
             if (function_12360((s_bitmap_view *)bitmap, 0.0f))
             {
                 if (*(short *)((byte *)bitmap + 0xa) == fallback)
-                    goto selected;
+                {
+                    function_14390(stage, bitmap, 0.0f);
+                    g_55ece0 = *(short *)((byte *)bitmap + 4);
+                    g_55ece2 = *(short *)((byte *)bitmap + 6);
+                    goto done;
+                }
             }
             else
             {
@@ -775,15 +779,16 @@ bool function_14560(long tag, short stage, long fallback, short fallback_index, 
         }
     }
     tag = *(long *)(g_485a80 + fallback * 8 + 0x64);
-    if (tag == NONE)
-        goto done;
-    bitmap = function_137550(tag, fallback_index);
-    if (!bitmap)
-        goto done;
-selected:
-    function_14390(stage, bitmap, 0.0f);
-    g_55ece0 = *(short *)((byte *)bitmap + 4);
-    g_55ece2 = *(short *)((byte *)bitmap + 6);
+    if (tag != NONE)
+    {
+        bitmap = function_137550(tag, fallback_index);
+        if (bitmap)
+        {
+            function_14390(stage, bitmap, 0.0f);
+            g_55ece0 = *(short *)((byte *)bitmap + 4);
+            g_55ece2 = *(short *)((byte *)bitmap + 6);
+        }
+    }
 done:
     return result;
 }
@@ -6207,7 +6212,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
     else
         function_4fe20();
     short stage = filtered ? 1 : 0;
-    bool skip = tag != NONE ? function_14560(tag, stage, 0, 1, bitmap_index) :
+    bool skip = tag != NONE ? function_14560(stage, tag, 0, 1, bitmap_index) :
         function_14480(*(long *)(g_485a80 + 0x34), stage, bitmap_index);
     if (!skip)
     {

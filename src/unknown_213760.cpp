@@ -1455,6 +1455,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // DL246: coherent ordinary inline query/resize/write boundary subsets 1-7, then all with close,
 // 33 in all eight. Both global and reduced unchanged previews agree; every provider user preserved.
 // Original API/header declarations and body restored; output homes, write/checksum and validation joins remain.
+// DL248 (reduced): Existing checker inline and immediate stored/read checksum scalar carriers, masks
+// 4/1/2/3/5/6/7 [33, 33, 33, 33, 33, 33, 33]; checksum field-address pair 33. Frame 0x1144 and extent
+// agree; query/count homes, write setup and checksum/validation joins remain. NOT kept: Every form ties
+// 33 and all controls are unchanged; checksum locals and field-address copies fail their exact-match
+// requirement, and the existing checker inline contract gains nothing. Original executable source
+// restored.
 // @retail 0x213970
 void function_213970(void)
 {

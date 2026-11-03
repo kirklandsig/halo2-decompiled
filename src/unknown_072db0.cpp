@@ -1583,6 +1583,10 @@ struct s_rating_summary
 // carriers in seven long-valued subsets 31/31/31/31/31/31/31; complete native word carriers 275.
 // Original statistic scopes, producers and body restored; formatter/count scheduling and team/counter
 // homes remain. Existing reduced unresolved-global caveat persists.
+// Round 378: Actual dynamic team-bound admission at the loop head, bool/byte/short/long,
+// within and past truth, 31 in all eight. Exact-only one-use admission results restored;
+// original per-iteration switch, loops and complete body retained. Formatter/count schedule
+// and team/counter homes remain; existing reduced unresolved-global caveat persists.
 // P278: Native name-source/output/capacity/code-unit, query-key table, player and group lexical
 // roles independently, then all: 31 each. Original body restored; formatter/count setup and
 // team/counter homes remain.
