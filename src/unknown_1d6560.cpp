@@ -147,6 +147,7 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `neg; sbb; and; add` where retail has the switch's `dec eax; je`. object_index, type, then rigid body with the
 // kind-7 ternary 96 at 256 bytes with the caller still matching (retail's three pushes); with case 0 through
 // object_index 141 (212 bytes, caller 213); one-read switch form 96 (256, caller 13); one header pointer read by
+// score 96 (was 96): one type read shared by both kind routes and case 0 through the same header data in retail.
 // both switches 125 (284 bytes, caller 194).
 // Round 63 (lane 12, fast): one type read with case 0 through component (retail's unshared index arithmetic, which
 // a case 0 through the object_index local loses to CSE) 94 (caller 13); the type read indexed by `(word)object_index`
@@ -225,6 +226,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // DH314: Cached model/body-array producer roots, native/readonly, repeated type:
 // 117/117/113/113; shared byte type: 104/104/98/98. All lose the matched caller
 // (215 or 14); original entry acquisition, selected body, type observations and body restored.
+// m3 lane 14 r56 (fast, caller in brackets), on round 118's 28 form (re-measured 28 [0]): a long type 89 [0];
+// headers declared first 83 [2]; the type read before the rigid body 111 (268 B) [9]; case 0 through
+// `headers[object_index & 0xffff]` 101 [0]; `long result` declared first 28 (same code); the kind-7 path as
+// `if (type == 1) return 0xc;` 94 [0]; the rigid body read at each use 97 (260 B) [122].
 // DH317: Borrowed native type-byte/header-record dispatch bindings, const/mutable,
 // after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
 // matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
@@ -524,6 +529,11 @@ struct s_physics_component_walk : s_havok_component
 // F351: Split-open terminal/neighbor/both query results 200/152/220;
 // split-closed results 177/153/303; exhaustive open/closed results 192/177.
 // NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
+// Round 66 (m3 lane 10, fast): a shared open-section scan helper (both scans, `return true` from the loop)
+// inline 500 (723 bytes, kept out of line), __forceinline 168 (the neighbor scan then branches straight to the
+// recursion and the latch as retail, but the latch moves after the cold blocks); that helper with the neighbor
+// branch first 179; the empty-section test's two body bytes as char locals 146 (same code); one entry-scope
+// section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
