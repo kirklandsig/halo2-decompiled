@@ -766,11 +766,15 @@ union solver_phase_state_31c940
 	struct
 	{
 		long stride;
-		int kind;
+		volatile int kind;
 	} writing;
 };
 
-// score 1910: callback/header lifetimes and both normal fallback layouts.
+static __forceinline float const &capture_writeback_time(solver_step_31c940 *const volatile &step)
+{
+	return step->inverse_time;
+}
+// score 1900: both normal fallback layouts and captured writeback lifetimes.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1279,8 +1283,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 	goto read_results_header;
 	for (;;)
 	{
-		state.writing.kind = *(signed char *)op;
-		switch (state.writing.kind)
+		// Retain the dispatch value while publishing its home for repeated rows.
+		int current_kind = *(signed char *)op;
+		state.writing.kind = current_kind;
+		switch (current_kind)
 		{
 		case 1:
 		read_results_header:
@@ -1297,14 +1303,23 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 		{
 			solver_linear_row_31e7b0 *row = (solver_linear_row_31e7b0 *)terms;
 
-			*(float *)destination = result[0];
-			*(float *)(destination + 4) = row[0].linear.m128_f32[3] * step->inverse_time;
-			destination += state.writing.stride;
-			*(float *)destination = result[1];
-			*(float *)(destination + 4) = row[1].linear.m128_f32[3] * step->inverse_time;
-			destination += state.writing.stride;
+			// Keep each stride read in retail order and retain the coefficient
+			// address through both outputs, which may overlap the input buffers.
+			float first_impulse = result[0];
+			long const volatile &stride_source = state.writing.stride;
+			long first_stride = stride_source;
+			*(float *)destination = first_impulse;
+			float const &inverse_time = capture_writeback_time(step);
+			*(float *)(destination + 4) = row[0].linear.m128_f32[3] * inverse_time;
+			destination += first_stride;
+			float *next_result = result + 1;
+			*(float *)destination = *next_result;
+			long const volatile &stride_again = state.writing.stride;
+			long second_stride = stride_again;
+			*(float *)(destination + 4) = row[1].linear.m128_f32[3] * inverse_time;
+			destination += second_stride;
 			terms = (__m128 *)((s_linear_term_31c530 *)terms)->offset(2);
-			result += 2; op += 8; break;
+			result = next_result + 1; op += 8; break;
 		}
 		case 2: case 5: case 6: case 11: case 13:
 		{
