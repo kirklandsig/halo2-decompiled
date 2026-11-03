@@ -246,6 +246,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // with complete rotation-role names: 173 each. Only uninitialized declarations
 // move; cosine/dot/cross/sine and scale order stay fixed. All restored; frame
 // 0x11c versus 0x118 and cross/trig homes remain. Three exact controls survive.
+// Round 80 (m3 lane 12, fast, 0x259d0 listed): retail's rotation multiplies the zero k by the 0.0 constant from
+// memory (`mulss xmm3, [0.0]`) where ours keeps it in a register, and runs fsin, the dot, then fcos. In the
+// rotation helper: sine then cosine first, the dot after them 182 (frame 0x120); sine, a named dot, then cosine
+// 225 (frame 0x120); the cross scaled by the sine first 227; the final sums written cross + projection +
+// vector 173 (same code). The direction's zero k stored before i and j 173 (same code).
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

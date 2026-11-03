@@ -738,6 +738,10 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // B381: complete normalization predicate, moving/stationary bool/byte/short/long,
 // 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
 // Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
+// Round 80 (m3 lane 12, fast, 0x24590 listed): the second speed store read back from `state->speed` 132; the
+// jitter offsets as `0.2f * x * limits.i` 132; the definition's 0x90 factor named once and used three times 227
+// (1053 bytes); the definition read before the enable store 132; the direction declared beside the movement
+// output and assigned later 132 (all four 132s identical code).
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
