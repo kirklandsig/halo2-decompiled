@@ -2846,6 +2846,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
 // P297: Complete forward/left/up clamp-result arms, seven subsets, then all with
 // independent relative output: 692/692/692/692/692/692/730/722. Original macro bounds/body restored; frame and homes remain.
+// F359: Full CRT cosine/sine/both returns with real conversion at bank products,
+// original/separate relative output, then immutable pairs: 692/697/698/710/717/717/698/717.
+// NOT kept: one ties and the others regress/lengthen; no exact storage repair. Original full body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4330,6 +4333,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
 // 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
 // producers, found-index retest and world/fallback/final-writer homes remain.
+// F359: Plain ray-scale vector-array loops, seven ordinal domains and body-stepped component cursor:
+// 349/349/349/349/349/349/349/235. NOT kept: no exact induction/publication repair.
+// Original complete body and helpers restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

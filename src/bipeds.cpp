@@ -4202,6 +4202,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // producer declarations; float trig pair with original/producer declarations:
 // 223/182/276/223/182/276/191/191. NOT kept: no byte match; normalization SIMD,
 // native cosine/sine and rotation/basis homes remain.
+// F359: Complete projection reductions in four source phases, original/early cross capture:
+// 181/175/188/169/190/179/192/177. NOT kept: no exact projection-phase repair.
+// Original complete body and helpers restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
