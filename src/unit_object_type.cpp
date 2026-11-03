@@ -3355,6 +3355,10 @@ long __stdcall function_c9770(long unit_index, bool flag, bool a, bool b, bool h
 // the root loop over the root itself 22; the loop variable outside the `for` 12; the root index
 // in a nested block 12; the rigid-body index declared before the root index 12.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 94: the existing root helper inlined by dropping its noinline declaration 12, with an inline
+// definition 12; a typed header view 18; root and body-index role renames 12/12; root and component
+// predeclarations 12/12; a guarded do/while root traversal 12; a short body result copied to a
+// widened body index 12. Original body and helper declaration restored.
 // @retail 0xcc460
 bool __stdcall function_cc460(long object_index)
 {

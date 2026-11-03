@@ -281,6 +281,12 @@ long g_55e6c0;
 // Round 72 (lane 9, fast): packing after the linear-flag store 44; pitch as `width * sizeof(dword) / 64` 29;
 // the height part in its own local ahead of the pitch 29; the whole packing inside the linear select 175
 // (451 bytes, 0x1dc40 10); pitch as `(width * 4 >> 6) * 0x1000000` 28 (484 bytes). The fold stays in all.
+// Round 31 (lane 17, fast unless noted): the packing through a forceinline helper taking the bytes per
+// pixel (4 passed) 29; the same helper as a plain function in the format helper's file, inlined by
+// LTCG (plain) 29, and without global optimisation there (diagnostic: not inlined) 164; the shift
+// terms computed before the clamp and the subtractions after it 68 (484 bytes); the width term
+// unsigned 29; the pitch units truncated to a byte local 142 (495 bytes; it keeps retail's
+// `lea [w*4]; shr 6` unfolded, with a movzx and the -1 moved ahead of the shl 0x18).
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

@@ -2298,6 +2298,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // index/parent forms 155/154/289/288; memmove 247/247/298/298. One-point lead rejected; every
 // original observation, root lifetime, helper, store and loop restored. Header/object/offset and
 // low-mask homes remain.
+// M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
+// then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
+// Original defaults and body restored; object/offset and low-mask homes remain.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
