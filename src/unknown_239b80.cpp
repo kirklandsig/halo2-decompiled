@@ -403,6 +403,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // F338: Produced length derived from the output ordinal only at terminal/exhausted exits,
 // long/short ordinal, long/bool departure and memcpy/memmove: 259/266/283/268/270/277/231/274.
 // All restored; the extra frame word and count/departure/compaction homes remain.
+// N331: Completion on the native output-ordinal graph, bool/byte/short/long with memcpy
+// 226/226/244/246, overlap CRT 279/279/281/283. NOT kept: conditional completion requires
+// an exact match; every form regresses and loses the reduced caller (80). Original body restored.
 // DH306: complete candidate-ranking decision as bool/byte/short/long 170 each;
 // both complete lowest and candidate decisions 170 each. Original body restored;
 // extra frame word, count/departure homes and compaction boundary remain.

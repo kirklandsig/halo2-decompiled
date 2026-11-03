@@ -657,6 +657,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
 // subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
 // reload remains.
+// N331: Actual notification eligibility bool/byte/short/long on the saved-word graph,
+// original site 77/77/77/77; before bitmap stores 106/106/106/106. NOT kept: one-use
+// admission needs an exact match. Original body restored; shared old-mask reload remains.
 // @retail 0x158140
 void function_158140(void)
 {

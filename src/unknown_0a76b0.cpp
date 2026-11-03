@@ -927,6 +927,10 @@ extern vector3f *g_4687b0;
 // AC493: Player-only second direction copy, native/CRT, with original/first/second/both
 // shared crosses: 328/327/327/328/328/327/327/328. Every form grows frame to 0xd8
 // versus 0xcc; original copies, crosses, nested offset expression and complete body restored.
+// N332: Complete scalar offsets / shared spread complement / existing speed scale,
+// seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
+// Original fields, scalar producers, vector operations and full body restored;
+// frame 0xcc and tag/index/direction spill and SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
