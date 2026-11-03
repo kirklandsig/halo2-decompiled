@@ -229,6 +229,14 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
 // matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
 // both type observations and incoming convention restored.
+// Round 65 (m3 lane 11, fast; caller 0x1d5bf0 in brackets): round 118's 28 form rebuilt 28 [0]; 57 random declaration
+// orders, byte/long/dword/char/word type and three case-0 lookups on it: headers, object_index, rigid body, byte type
+// with the index masked at the type read 25 [13] (left: rigid body ECX for ESI, object index EDX for ECX, data ESI for
+// EDX; the index still arrives in EAX), `char` type 28 [0], others 64-137. On the 28 form: case 0 byte-typed shift 28,
+// the body array named first 96, a header element pointer 123 at 272 [194], the kind-7 switch with a default return 28,
+// the case 0 object through a pointer in its own block 28.
+// Retail's `xor eax, eax; mov al; shr al, 2; and eax, 1` comes from none of 27 compile-only spellings (byte and dword
+// bitfields, byte/bool locals, byte results); only 0x9d250's `not al` form keeps `shr al` next to `and eax, 1`.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

@@ -840,6 +840,10 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // N340: Complete header/body extent snapshots, mutable/const individually and
 // together, then const total/denominator: 218/219/193/218/219/193/193/193.
 // NOT kept: unmatched extent observation/storage changes; original full body restored.
+// Round 65 (m3 lane 11, fast; 0x2adb10 102 throughout): total converted in place with a two-site forceinline seek helper
+// 155 at 689 (aligned 30: both sums load the header size first and the body-size hoist is lost); total written body first
+// 155, signature position written body first 155, both 155 (same code); a test of the total ahead of its conversion
+// 244 at 701.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

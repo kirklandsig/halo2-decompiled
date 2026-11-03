@@ -1485,6 +1485,11 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // Lane 17 r37 (fast): bytes_written renamed write_count 33; prefixed names in both orders (diagnostic) leave the
 // size/count slots unchanged; the header-read validity test merged with the slot-range test 33; bytes_written declared
 // beside size, after or before it, 33/33 (slots do not move); `valid` declared at the loop top 33. Body restored.
+// Round 65 (m3 lane 11, fast; on the 7 form): flags local 7; handle through a const cast 7; header init inside the argument
+// 7; a forceinline by-value handle getter at the write, the write and close, all four calls 7/7/7; bytes_written
+// zero-initialised 153 (frame 0x1140); functional-cast handle copy 114 at 917, the same code as the write local: its two
+// real differences (close copy, checksum EAX) are one rotation step, the copy itself taking the next. Matched 0x7fb50 loads
+// its global handle before the flags zero, so a plain read loads first; `*handle` through the view does not.
 // @retail 0x213970
 void function_213970(void)
 {

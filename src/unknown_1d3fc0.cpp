@@ -249,6 +249,13 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
 // forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
 // 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
+// Round 65 (m3 lane 11; fast, on the 2 form): `up_i` local 2; dot's i term through the matrix field 126 at 929 (aligned 5: the
+// term flips but up.i loses its preload, `movaps xmm3, xmm0; mulss xmm3, [i]`, a jmp and a reload); cross3f_staged 181
+// at 936. Compile-only, i term or registers unchanged or worse (96-130 aligned, base 96): address of up.i as the helper's argument,
+// `*(real *)up` or `*(real *)forward` in the dot, a pointer or reference to up.i declared before forward, pointer reads
+// of up.i before the normalizations, partial sums named, a rotation sub-record pointer for forward, up or a term (102-118; real, for both vectors, 76 at 922).
+// A dead direct read of up.i anywhere flips the term and drops the preload the same way. No matched function has this
+// dot encoding (scan of retail for `movaps xmm7, xmm5; mulss xmm7, xmm3; addss xmm0, xmm7`).
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {
