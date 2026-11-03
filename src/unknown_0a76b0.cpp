@@ -1523,6 +1523,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // load, VC still shares one unit load. `long has_other = function_cbd50(...) != NONE` 95 (same code);
 // the slot index as `primary` 193; `long i` declared at the slot 95; 0xee8a0's argument as `primary`
 // 201 (589 bytes); a short loop index 188 (604 bytes). Retail's ret 0x10 with primary in EAX already agrees (the ret 0x14 premise is stale).
+// P289: Twice-used animation channel long/dword/short/byte at its producer, then
+// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
+// no exact match. Original body restored; early pool/hand and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -4699,6 +4702,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // in place) and the final copies schedule pos.z before q.i. On that graph: local declared at the top/before
 // frame/after the quaternions 201 each; the quaternion copy first 246; `x *= matrix->scale` in the helper
 // 201 (0xee090 still MATCH); untransform in place into world 201.
+// B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
+// 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
+// output lifetime and full body restored; frame and basis/point homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

@@ -255,6 +255,15 @@ bool function_a7670(long object_index);
 // DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
 // 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
 // complete shared header and body restored. Selector/list/count homes and admission BL remain.
+// Round 84 (m3 lane 12, fast): plain `for` island loop 240 (958 bytes); the second scan setting the
+// first scan's found flag 96 at 954 bytes (match-only: a flag set in a test), and on it: the island
+// index renamed to sort before the selector 96 (same homes: ours index 0x28/selector 0x2c, retail
+// 0x2c/0x28), the plain `for` island loop 233 (957), that with the decrement at the end of the
+// flagged block 261 (958), the list as `(s_278f01 *)(g_51e9a4 + 8) + selector` 282 (936), the
+// record through the existing object_header_get 96 (same code). On 96 what is left: the entry
+// scratch rotation (selector EDX, retail EAX), the island index stored at each definition (retail
+// spills it only after the flagged path's `dec`), the header address folded after the `local_9 > 0`
+// branch, and one reload order before the 0xb4 store.
 // Lane 14 r53 (fast, baseline 153 aligned 65): final membership test with the index first, `==` or `>=`, 259/238
 // (954 B, aligned 61/64), found first with `>=` 153 (65); island for-loop with the step back inside, original test
 // 240 (958 B, aligned 77), index first `==`/`>=` 232/232 (71/72), found first `>=` 240 (77). On index first `==`:

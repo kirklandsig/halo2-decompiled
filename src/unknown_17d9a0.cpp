@@ -359,6 +359,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
 // 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
 // field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
 // AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
 // normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
 // Exact-only later selector retention regresses; original observations and body restored;

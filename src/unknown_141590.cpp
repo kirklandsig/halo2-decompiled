@@ -331,6 +331,9 @@ static inline void quaternion_transform_vector(
 // N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
 // independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
 // paired halves and complete body restored; frame/quaternion/cross homes remain.
+// Round 85 (m3 lane 12, fast): the initial dot as the existing dot3f(a, b)/dot3f(b, a) 205/205 (1326 B); the transform
+// helper's dot as dot3f(q, v) * 2/dot3f(v, q) * 2 246/246 (1308 B); the clamp as one nested ternary 297 (1317 B, first
+// +0x0); the halves through sqrtf 249 (1309 B). Original body and helper restored.
 // N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
 // with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
 // NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
@@ -1054,6 +1057,11 @@ void function_143250(
 // 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
 // NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
 // original polynomial, conversion producers and complete body restored.
+// Round 85 (m3 lane 12, plain): retail passes rotation in EAX, coefficients in ECX and result in ESI with order on the
+// stack (ret 4); ours pushes rotation (ret 8) although the /Gd first pass loads it once into EAX at entry. Parameters as
+// (result, rotation, coefficients, order), retail's call-setup order, 1766 (same code); rotation reads in index order
+// 1784 (10754 B); `result[0] = coefficients[0];` first 1766; term_9 read before the matrix pointer 1766; the workspace
+// struct as plain locals and a 49-real array 2228 (10304 B, frame 0x300). Body and parameter order restored.
 // Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
 // frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
 // N343: Real storage for both second-band roots, each third-band root, all third-band roots
