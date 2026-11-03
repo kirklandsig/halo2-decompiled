@@ -305,6 +305,9 @@ __forceinline bool function_184448(long arg_0)
 // AC495: Existing shared plane decoder with native polygon-count/edge-pair/selector carrier
 // masks 0/1/2/4/3/5/6/7: 969/1021/985/988/1044/1022/981/1031. Original decoder,
 // declarations, carriers and complete body restored; excess frame and initial geometry homes remain.
+// AC497: Eligible effect, created resource and accepted sample regions, subsets
+// 1/2/4/3/5/6/7, then origin-owned zero-spacing fallback: 965/965/965/991/965/965/991/991.
+// Original admission, copies, random order and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

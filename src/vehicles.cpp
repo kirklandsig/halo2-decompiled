@@ -2432,6 +2432,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
 // NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
 // placement form, kept only with a match). Body restored at 42.
+// AC499: Float remainder with direct/joined/advanced/returned output, original then
+// paired magnitude producers: 42/127/127/127/34/127/127/127. NOT kept: 34 uses two one-use
+// magnitude locals without a match. Original two-use spin helper and full body restored.
 // P286: Complete conditional spin dividend as fmod argument/positive arms/conditional assignment/
 // joined result, per-use period 84/181/42/145; native gate/correction capture with denominator
 // observed at fmod 116/200/112/186. All restored; turn-product and spin-store schedules remain.
@@ -4483,6 +4486,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
 // tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
 // all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
+// AC499: Float magnitude boundaries for fields/computed scalars/projections, seven subsets
+// then the existing magnitude selector too: 772/760/739/769/751/738/768/768. NOT kept: 738 grows
+// to 3010/2974 bytes and changes rounding boundaries without a match. Original full body/helper restored.
 // P286: Terminal active truth: forced-first logical/eager normalized 749/749; positive/reject
 // branch returns 765/765; positive/forced complete arms 769/755; forced/positive default
 // publications 784/771. All restored; entry definition and zero/result/one residency remain.
@@ -5013,6 +5019,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
 // expanding as retail does; all regress and shorten below retail. Original full body,
 // matrices, axis/angle production and math providers restored; frame/index homes remain.
+// AC499: Existing current-axis/desired-input/paired-target setters, seven subsets then
+// complete force setter: 1211/1154/1109/1225/1157/1094/1220/1225. No native frame recovery; all
+// original producers, matrix/vector ownership, observations and full body restored.
 // M333: Actual up-length/inverse, bank-axis and quaternion-axis lexical identities,
 // seven subsets, then independent component/point ordinals: 1087 each. Frame 0xf8
 // remains; original full body restored, with native index and matrix/vector homes unresolved.

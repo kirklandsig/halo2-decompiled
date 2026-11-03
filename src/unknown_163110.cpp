@@ -1009,6 +1009,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
 // use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
 // `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
+// AC500: Construction-only scalar scope, per-plane classification array and point-array declaration
+// at input-copy boundary, masks 1-7, then complete projected aggregate initialization: 115 each.
+// All original lifetimes and complete body restored; coefficient preload, zero XMM and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
