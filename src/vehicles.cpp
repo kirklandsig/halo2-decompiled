@@ -2481,6 +2481,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
 // native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
 // Original two-use helper and complete body restored; turn/spin schedules remain.
+// B396: Twice-used turn-sign truth, bool/byte/short/long positive and complementary outcomes:
+// 215/215/214/215/215/215/214/215 (711 bytes, frame 0x10). Original complete body and spin helper
+// restored; turn-product and spin spill/publication schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

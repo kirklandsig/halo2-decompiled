@@ -405,6 +405,9 @@ union s_185be7
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.
+// B396: Final auxiliary-input eligibility bool/byte/short/long at consumption 622/622/622/622;
+// admitted-branch source/result 623/623/627/626. NOT kept: no exact one-use/branch-result form;
+// original complete body restored. Control-root/NONE, settings/zero and flag schedules remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

@@ -338,6 +338,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // M342: Explicit refreshed virtual child count at the native latch, provider carry and
 // count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
 // handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
+// B396: Post-sample equality hit/miss results in bool/byte/short/long domains, 55 each.
+// NOT kept: no exact one-use result form or gain; original complete body restored.
+// Split memory comparison and evaluator/spawn/child scratch registers remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
