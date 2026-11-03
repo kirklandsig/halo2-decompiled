@@ -2297,6 +2297,11 @@ void function_269250(long clump_index, long actor_index)
 // predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
 // One-use predicates are exact-only and restored; original categories, mutation
 // result, deletion continuation, all shared pools and complete body retained.
+// M3 lane 4 r161 (fast): the prop loop split into a matched-object arm (deletion, or replace + node scan) and an
+// else arm (state clear + node scan) so only the bottom test reads the unit flag 295 (837 B: the two node scans
+// are not merged and the pools are no longer hoisted); `changed` set only in the replace arm 92; the group flag
+// assigned from the data test and tested in place of `data` 206; the type as a long 135; the unit flag inverted
+// (`single`, cleared for units) 89 (same code, slots unchanged).
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

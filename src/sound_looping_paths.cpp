@@ -302,6 +302,11 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // search as a loop with `break` 1001; the override target filled by index after `target_count++` 886 (3327 bytes).
 // Retail keeps the target count in memory at +0x88 (re-read in the attenuation loop) and forms each new target and choice
 // address from the incremented count. Body restored.
+// M3 lane 4 r161 (fast): query count read directly with a long choice count and `&choices[choice_count++]`
+// as a choice pointer 960 (3308 B; the pointer becomes an induction variable); with the count incremented
+// first and the pointer from `choice_count - 1` 953; one function-scope fade-definition pointer for both
+// loops 959 (retail reads the global again); the override's suppression gain hoisted out of its loop 962
+// (retail calls it per target); the duplicate scan tested `!duplicate` first 917 (3327 B).
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -1977,6 +1977,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // M339: Complete duplicate-search condition under for/while, ordered/equality endpoint and identity/type
 // filter order: 709/709/698/698/746/746/721/721. NOT kept: type-first 698 grows frame 0xc0 to 0xc8;
 // original body restored.
+// M3 lane 4 r161 (fast): the existing xuid getter 0x647a0 as the users-loop test 757 (2862 B; called, not
+// inlined); a const user reference for the users loop 754; that with online_logon_connected() 775 (2846 B);
+// the identity flag tests before the slot test 711; team declared before valid 709 (same code).
 // @retail 0x74aa0
 void function_074aa0(void)
 {

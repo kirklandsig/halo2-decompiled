@@ -321,6 +321,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // Lane 18 round 34 (fast): success straight from the handle test, `if (success != false)` 55 (351 bytes); a bool
 // opened copied to success 55 (351); `if (!opened) continue;` 42; the file declared at the loop top and assigned
 // after the wait 42; `success = opened ? true : false` 42.
+// M3 lane 4 r161 (fast): success straight from the handle test with `if (!success) continue;` 55, with
+// `if (success == false) continue;` 55 (351 B each); `long opened = success;` after the store 55; `if (success
+// & 1)` 54 (352 B); the resize wait moved after the open branch (shared with the failed path) 54.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {
