@@ -395,6 +395,11 @@ static __forceinline bool structure_bsp_collision_available()
 // 156/156/154; after triangle resets 156/156/154; early assignment/memcpy with byte
 // acceptance 156/156. Assignment/copy forms lose the matched caller; all restored.
 // Exclusion BL and source-slot publication/reload remain.
+// Round 343: Object-handle/header-producer/completed-classification last-use scope subsets
+// 1..7 each 53; joint scopes with the model result at the shared exit 45 (286 bytes).
+// Minimal model-result assignment + a new goto to a new label before the shared return 45 plain: NOT kept
+// (goto, match only); assignment followed by its own return 46 NOT kept (gain seven, under the bar).
+// Body restored at 53; exclusion/source-slot join remains.
 // @retail 0x14b120
 bool function_14b120(s_surface_query_source source, void *surface)
 {
@@ -1082,6 +1087,9 @@ done:
 // admitted/per-pass samples with original eligibility 177/165; positive eligibility
 // 177/165; existing availability producer 142/147; both changes 142/147.
 // All lose the matched caller; original direction observations and complete body restored.
+// Round 343: BSP/header/object-handle last-consumer scope subsets 1..7 each 125;
+// joint object-phase scopes with the existing availability helper 149 (440 bytes).
+// Original availability, workspace, exclusions and body restored; NONE/result/exclusion homes remain.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

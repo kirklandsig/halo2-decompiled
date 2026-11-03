@@ -1155,6 +1155,9 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round 278: final frozen/flag/parent conjunction orders 021/102/120/201/210
 // 101/101/100/96/96; reversed timestamp predicate with 012/201/210 94/96/96. Restored.
 // M305: Complete physics-input owner/object-flags/input-flags/settings declaration orders 0132/0312/1023/1203/1230/2013/2103/3120 132/121/94/94/94/143/143/121.
+// Round 93: bool/dword force union 44; with component stores 51; existing vector/point setters 56/56;
+// memcpy/direct receiver 44/44; staged squares 42; preloaded-i component stores 49; complete updated vector 135.
+// NOT kept: the exact-only union wrapper, one-use velocity local and value snapshot. Original body restored.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
