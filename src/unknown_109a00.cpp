@@ -564,6 +564,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // stores swapped 201, the axis pointers together 200 (aligned 45), inline scaled terms 201 (aligned 47). What stays with
 // the head flipped: the definition's load register and early store, the default body's movsx/count order, the search
 // body's offset temporary, the dot and scale products' memory operands, the failure pops.
+// Round 540: Common vector converter through shared scalar builder/returned output pointer/output
+// reference/native value, original center 112/112/112/214; the same producer for center
+// 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

@@ -3201,6 +3201,10 @@ struct s_voice_route_choice
 // AC484: Word player-bit producer with actual receiver/full-width talker-mask/conditional-radio
 // subsets 417/395/418/399/415/395/416/375. Conditional radio also raises both
 // matched callers to 18/22. Original body restored; entry saves, cursor bias and remainder remain.
+// Round 540: Shared identity producer as zero/full/const-full/forced-full aggregate
+// 380/379/379/379; with ordinary inline spatial-call declaration 380/379/379/379.
+// NOT kept: nine shared users lose their matches, and target frame shrinks to 0x48.
+// Original producer, declaration and complete routing body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3486,6 +3490,10 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // with independent cursor 159/166/150/159. Every form raises the matched parser
 // score; NOT kept: shared-user regressions, and the best target gain is only one.
 // Original clamp, live count observations, cursor and full body restored.
+// Round 540: One in-function local-delivery phase, conditional/test-produced query result
+// and repeated/shared payload receiver: 193/191/193/191; independent packet cursor
+// 194/192/194/192. All shorten to 455/456 bytes and regress; complete original dispatch,
+// live count reads, removal timing, helpers and body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
