@@ -1057,6 +1057,9 @@ void function_1d1540(s_havok_component *component);
 // copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
 // retail shifts the flags, and the length moves away. Original body restored;
 // aligned frame, constructor copy and component/index transport remain.
+// AC505: Native body-pointer member receiver, pointer/reference and fresh reset receiver,
+// constructor copy 60/60/60/60; aligned set copy 93/93/93/93 (234/220 bytes).
+// NOT kept: gain 5 below the gate; member receivers and all copy forms restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

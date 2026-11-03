@@ -557,6 +557,9 @@ extern point2f *g_468778;
 // Round 47 (lane 15, fast): actor first with `return` of the expression 393, constant returns 413 (1523 bytes); settings rejected
 // early 410; all rejections early 393; prop declared at entry 395; slot read inside the settings arm 393. Retail keeps arg_0 in EDI,
 // actor EBP, slot ESI, prop EBX with settings only at +0x10; every actor-first form keeps arg_0 in EBX.
+// AC505: Branch-owned near/predicted request-kind and active-state stores, masks
+// 1/2/4/3/5/6/7, 378/374/375/375/378/374/375; all with bounded request admission 375.
+// NOT kept: best gain 1; original stores and complete body restored. Early carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
