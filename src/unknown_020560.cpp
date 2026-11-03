@@ -957,6 +957,21 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // named before the fraction and passed to 0x22c30 599 (2133 bytes); scan 1's pointer step in the
 // for header 547 (same code). Retail's 0x2c frame: opposite +0x10, nearest +0x14, a pass counter
 // +0x18, count +0x1c, samples +0x20, a vector home at +0x24 (x stored each pass) and delta.k +0x38.
+// Round 144 (m3 lane 6, fast with 0x24550's source in the reduced image, which reproduces the plain check;
+// [LCS-aligned] this body [961]): `inline` on 0x22750's definition 560 [943] (2137 bytes): both retail callers
+// spill the blend fraction and reload XMM0 before every 0x22750 call (0x22850: `movss xmm0, [esp+0x14]`) and with
+// `inline` ours does too (the direction blend then takes retail's XMM1/XMM0 roles), but it is not keepable alone:
+// 0x22850 went 237 -> 244 (fast, CAVEAT). With `inline`: scan 2 indexed (`samples + i != first`, `opposite = i`)
+// 736 (1958 bytes); both scans indexed 739; the retail-shaped index body (`source->entries[i]` at each use, scan 1
+// through distance_sq3f, a `nearest` index, delta/offset through vector3d_from_points3d, dot3f/length_sq3f,
+// `i != nearest`) plain 642 [406] (2048 bytes; 1036 without `inline` and distance_sq3f unresolved); distance_sq3f
+// given (sample, position) 636 [283]; scan 2's distance through distance_sq3f 561 [217] (2109 bytes); then `second`
+// as `opposite != NONE ? &entries[opposite] : NULL`, `fraction = 0; if (second) fraction = ...` 554 [216] (2112
+// bytes); on that `nearest` after the closest distance 555, the index declared first 554, `nearest` before the count
+// == 1 test 553, `offset` outside scan 2 554, `delta` at function scope 554; per-loop indices on the 636 form 636.
+// The 554 form is off by one from the top: VC shares one zero register for the count test, `nearest` and the index
+// (`xor eax, eax; cmp ebx, eax`, retail `test ebx, ebx` and later `xor edi, edi`/`xor eax, eax`), keeps `nearest` in
+// memory (retail EDI with a home), and the frame is 0x20 against 0x2c (retail's offset and delta vector homes).
 // Y556: One point-difference workspace reused across both searches, entry/positive/enabled/
 // multiple-record scope, shared setter/point-difference producers: 552/552/552/552/552/552/552/552.
 // NOT kept: no byte match or qualifying retail frame/shape recovery; original body restored.

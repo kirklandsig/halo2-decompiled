@@ -595,6 +595,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // downstream inputs 247/268/237/277; with existing center conversion 222/256/249/286.
 // Original complete body restored; input roles, early physics spill and center/projection scheduling remain.
 // NOT kept: selected-row result forms did not match.
+// N347: Existing point/vector setters for current center, previous center and previous velocity pair,
+// seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
+// Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
+// restored; native input registers, early physics spill and center/projection remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

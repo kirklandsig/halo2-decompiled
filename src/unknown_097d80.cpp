@@ -295,6 +295,9 @@ struct c_aggregate : c_child
 // `released` 31, the collection child and count renamed `collector`/`block_count` 31, the cleanup item and
 // output renamed `item`/`information` 31 (all identical listings: the swapped slots are compiler temporaries);
 // the dispatch inner loop over an `s_block *` range 129 (389 bytes). Still BLOCKED by the build flag.
+// Round 65 (m3 lane 11, fast): produced at the collection loop's for-init 42; the cleanup block at function scope 31;
+// `register` produced 31; the cleanup output before the object 31; `blocks + total` with `produced + total` 31 (frame
+// 0x8024 in all). Still BLOCKED by the build flag.
 // Round 66 (m3 lane 10, fast): the dispatch gate as `4 != request->type` 31 (same code); the callback status in a
 // local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
 // to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024

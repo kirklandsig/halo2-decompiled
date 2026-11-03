@@ -249,6 +249,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // original ordinal search 128/128/232/232; predecessor-pointer search 205/205/203/203. Shared-storage forms
 // did not match; original complete body restored. Outer EBP preservation and read-size/count/cursor homes remain.
 // NOT kept: shared ordinal storage/domain forms did not match.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
