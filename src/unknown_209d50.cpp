@@ -91,6 +91,10 @@ static inline void *function_xc5914d(long thread_index, short size)
 // in the evaluated arm with `return result` at the end 12 (identical); the element taken from `result` 32
 // (277 bytes); the frame reference declared after the result copy 25 (281 bytes); the type test nested in
 // the count test 12 (identical).
+// Round 130: result declared first and assigned after the second allocation 90 (293 bytes); direct allocation result
+// 71 (277 bytes, allocation/result still coalesce in EAX); one-pointer array 95 (266); allocator parameter order 71;
+// result before the frame 71; frame field reference 71; wide allocator size formal 71; one-pointer storage record 95
+// (266). Both wrappers are promoted and lose the spill; byte-return direct allocation 71. Original 12 form restored.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

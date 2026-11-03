@@ -239,6 +239,9 @@ __declspec(noinline) void __stdcall function_b9b90(long object_index, bool disab
 // inside the activation arm 4; a data local then a masked index local 4; the masked index local then
 // the data local 4; a scaled offset local 4; a typed elements local plus the masked index 4 (all the
 // same code). Nothing visible here keeps EAX busy across the data load.
+// Round 32 (lane 17, fast): the component index in a local under a nested NONE test 70 (221 bytes); a named
+// `1 << type` mask 11; the physics bit without TEST_FIELD_BIT 48; a byte type 49. Kept: the two `goto update`
+// jumps replaced by a final `if (!disable)` block 4 (same code).
 // @retail 0xb9b90
 void __stdcall function_b9b90(long object_index, bool disable)
 {
@@ -250,21 +253,15 @@ void __stdcall function_b9b90(long object_index, bool disable)
 		object->havok_component_index != NONE)
 	{
 		if (!disable)
-		{
 			havok_component_rigid_bodies_activate(havok_component_get(object->havok_component_index));
-		}
-		else
-			goto update;
 	}
 	else if (disable)
-	{
 		object->physics_disabled = true;
-		goto update;
+	if (!disable)
+	{
+		object->physics_disabled = false;
+		function_b7360(object_index);
 	}
-	object->physics_disabled = false;
-	function_b7360(object_index);
-
-update:
 	if ((1 << type) & 0x1c)
 	{
 		s_object_view *item = OBJECT_GET(object_index);

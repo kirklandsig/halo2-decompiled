@@ -432,6 +432,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // final grouped cache zeros 196/196/196/203. Original whole body, directory observations, helper,
 // cache/mask lifetime, includes and all calls restored; fallback EDX masking, stage/pass and
 // unfused-load homes remain.
+// DH310: Existing two-user cache constructor, member/body/chained/mixed defaults at entry/final lookup,
+// 172/172/172/172/120/120/120/120. Original record, object lifetimes and executable body restored;
+// all eight demote the matched sibling and are rejected; fallback EDX masking, stage/pass and unfused loads remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)
