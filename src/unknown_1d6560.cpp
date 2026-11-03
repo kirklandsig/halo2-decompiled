@@ -222,6 +222,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // DH314: Cached model/body-array producer roots, native/readonly, repeated type:
 // 117/117/113/113; shared byte type: 104/104/98/98. All lose the matched caller
 // (215 or 14); original entry acquisition, selected body, type observations and body restored.
+// DH317: Borrowed native type-byte/header-record dispatch bindings, const/mutable,
+// after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
+// matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
+// both type observations and incoming convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

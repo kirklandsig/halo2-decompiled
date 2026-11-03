@@ -246,6 +246,12 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // with complete rotation-role names: 173 each. Only uninitialized declarations
 // move; cosine/dot/cross/sine and scale order stay fixed. All restored; frame
 // 0x11c versus 0x118 and cross/trig homes remain. Three exact controls survive.
+// DH317: Immutable native cosine/projection/sine values, seven subsets and all
+// with immutable angle input, eight at 173. Original helper and complete body
+// restored; frame 0x11c/0x118 and cross/trig homes remain.
+// Shared angle-to-direction heading with staged outer/rotation crosses and late
+// sine, eight at 277/273/277/273/277/273/277/273. NOT kept: extra zero-pitch
+// trig/products and longer body; original heading, includes and helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

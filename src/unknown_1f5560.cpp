@@ -974,6 +974,10 @@ real normalize2d(point2f *v);
 // assigned/terminal request results 182/120/187/141/189/113/193/156.
 // NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
 // Original request/movement graph and body restored; retained DL result and return transport remain.
+// DH317: Complete successful trajectory output merge at the existing result admission,
+// logical/reversed/bitwise/branch joins in bool/byte retry storage:
+// 195/193/170/144/195/193/185/144. Branch joins reach 935 bytes but regress;
+// original output lifetimes, result flow and full body restored; DL residence remains.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
