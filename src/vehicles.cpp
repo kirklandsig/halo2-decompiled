@@ -1205,6 +1205,9 @@ long function_10f5f0(long object_index);
 // name array: 565/565/571/572; completed logical idle value with the same variants:
 // 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
 // Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
+// N338: Complete axial/radial response products, squared-radius and radial-scale
+// accumulator subsets, then running response accumulators: 566/565/565/565/565/566/565/565.
+// Original complete body restored; frame 0x19ac/0x1984, flag-result and reduction homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2426,6 +2429,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
 // NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
 // placement form, kept only with a match). Body restored at 42.
+// N338: Advancing contact cursor with conditional/right-default/left-default/branch
+// torque results, loop/function declaration scopes, 46/46/49/46/46/46/49/46.
+// NOT kept: no exact cursor/one-use result form. Original body and spin helper restored;
+// turn-product and spin scratch/store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4465,6 +4472,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
 // tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
 // all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
+// N338: Complete blend accumulation, native blend clamp and averaged-ratio
+// accumulator subsets, then both blend contributions named, 749 each at 2974/2974.
+// Original complete body restored; entry definition, zero/result SIMD and unit-constant homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
