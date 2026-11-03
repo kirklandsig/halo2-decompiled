@@ -218,6 +218,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DL249: Center-before-object, copy-before-object, both, split-center around object,
 // split-center plus input copy, normalization-before-object, normalization before center,
 // and split center around both: 395/397/407/395/397/407/415/413. All original producers restored.
+// AC486: Double magnitude sum/product/pair/full-product intermediates 395/453/395/453;
+// matching endpoint-distance intermediates 402/442/402/442. NOT kept: precision/grouping
+// forms do not match; original normalizer, distance, helper and whole body restored.
+// N328: Object receiver after sum/normalization/endpoints/at projection, original then native velocity
+// fields on the retained emitter graph: 395/407/434/436/397/407/434/448. Original receiver timing and
+// body restored; entry sum and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
@@ -529,6 +535,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // M315: current ordinary-result graph with consistent index/transform/both inline contracts,
 // without/with complete sweep scope 759 each; both with separate phase cosines, without/with
 // full sweep scope 753/753. All body and declaration trials restored; frame/radius/trace homes remain.
+// Round 490: Native two-edge trace/state/sector collections, seven subsets
+// 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
+// NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
+// frame, radius and trace/trig/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

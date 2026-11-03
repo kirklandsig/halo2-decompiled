@@ -1001,6 +1001,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets 1-7, then all with history difference: 473/473/431/463/413/411/465/463.
 // NOT kept: joint projection gains two; pairs with raw setter gain only in combination
 // while their parts regress. Exact-match-only steering; original body and helpers restored.
+// F335: native direct clip predicate/direct fallback first/general fallback first, subsets 1/2/4/3/5/6/7
+// 360/432/498/359/482/497/481; all with named normalization return 470. NOT kept: one-use
+// predicate steers allocation; fallback alone gains one. Frame 0x30 agrees, raw/bounded homes still differ.
+// B374: planar bounded producer with native/library raw backup before/after step, alone or
+// with general producer: 393/385/388/398 twice; 3034-3035/3047 bytes, frame 0x30.
+// NOT kept: reversed producer and length farther from retail; original raw-first body restored at 433.
+// DH305: Complete state/settings words and mask predicates on the planar/eight-normalization
+// graph, seven subsets then opposite complete-word declaration order: 526/610/562/495/573/609/559/560.
+// NOT kept: retail reads both words again at history admission; unsupported observation/predicate
+// steering needs a match. Original body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

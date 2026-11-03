@@ -1729,6 +1729,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
 // playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
 // plain 9-step loop 335; `long selected` 427 (1908 bytes).
+// AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
+// with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
+// NOT kept: one-use captures without a match; original body restored, frame/homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2362,6 +2365,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // paired with signed-word class payload 617/617/601/601 (fast control equals full 597).
 // All three declarations and original body restored; entry true/flags, record/track homes and loop padding remain.
 // DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
+// F336: Paired initial/replacement state publication from their actual selected values,
+// char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
+// 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
+// the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

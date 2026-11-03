@@ -1126,9 +1126,20 @@ struct s_signed_file_write_parameters
 // graph all regress; adding scratch body extent also regresses. Capacity scheduling and extension
 // homes remain. Scores 138/229/291/255/309/303/320/323.
 // Original executable source restored.
+// B374: separate getter output and multiuse header transfer stride, after getter/before-getter
+// declaration/after clear/loop-owned, original or separate extension capacity: 102 each (eight trials).
+// Native stride ownership does not recover the capacity copy or extension homes; original body restored.
 // N324: One real signed API seek-position workspace for header/scratch/signature, seven subsets then
 // declaration after publication 102/102/102/102/102/102/102/102. Original positions/body restored; capacity
 // staging and extension offset/buffer homes remain.
+// DH305: Header completion on the direct-return/live-seek graph, sequential API refinements,
+// nested success, seek conditional and failure-only update, bool/native BOOL:
+// 313/199/102/245/314/211/261/302. Original capacity stride and complete body restored;
+// capacity EAX/EBX and extension buffer/offset homes remain.
+// DH307: Header/scratch-extension clear outputs as original receiver, receiver assignment,
+// or clear-produced transfer pointer, eight nonoriginal pairs: 101/101/102/101/101/102/101/101.
+// NOT kept: one-point reductions and one-use call-result carriers without an exact match.
+// Original complete body restored; capacity EAX/EBX and extension buffer/offset homes remain.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
