@@ -1244,6 +1244,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // (type, message, address) declared at the definition, both declarations and the call 217 (same code); with `break` in
 // every case 217; the late pair as a switch nested in the first switch's default 153 (same code); as `if (type == 18)
 // ... else if (type == 11)` 155. Our convention only matches when the address stays live across a call.
+// M335: Rejection-owned connection exits on the native-input graph, subsets
+// 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
+// Original complete body restored; delayed ESI save and late expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

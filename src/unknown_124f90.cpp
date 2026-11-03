@@ -1351,6 +1351,9 @@ long function_2197f0(real gain);
 // F340: Encoded/real scalar views for result/ducking field/both interpolation
 // endpoints, seven subsets then the complete aggregate view: 137 each.
 // NOT kept: unmatched scalar wrappers. Original types, helper and full body restored.
+// M337: Release-end predicate sum, twice-used remaining attack time and distinct-release
+// hold quotient at their producers, seven subsets [137, 193, 137, 193, 137, 193, 193], all with table-first
+// entry 183. All restored; table/index entry, interpolation and hold-copy homes remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3840,6 +3843,9 @@ struct s_128ca0
 // F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
 // additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
 // All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
+// M337: Existing whole decibel values through raw/processed/both submission gain
+// stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
+// NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

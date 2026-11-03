@@ -2192,6 +2192,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // Every initializer stayed at its producer. Original complete body restored; status/mesh homes remain.
 // M321: Dynamic-status-owned validity, phase/absent-block failure and ternary/branch status; direct/post-phase validity
 // 640/584/640/584/609/608/609/608. Original flag/result graph and full body restored; status/mesh/sample homes and helper expansion remain.
+// M335: First-sample-owned base validity, admitted overwrite/failure clearing,
+// bool/byte/short/long: 667/667/660/661/604/604/608/603. NOT kept: unmatched state/carrier forms;
+// original complete body restored; status/mesh/sample homes and helper expansion remain.
 // N336: Independent first-path mesh/part declaration scopes before the input view or after
 // status, individually and both pointer orders: eight forms 555. Every acquisition stayed at
 // its producer; original complete body restored. Status/part/mesh homes and helper expansion remain.

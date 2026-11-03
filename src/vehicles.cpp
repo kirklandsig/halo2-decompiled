@@ -594,9 +594,15 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M329: Complete positive angular-admission channel, bool/byte/short/long, direct
 // producer 189/189/188/190; complete if/else 189/189/188/190. Every consumer was
 // complemented consistently. All regress; original reversing channel, helpers and body restored.
+// M336: Existing 2D normalizer success states, bool/byte/short/long, admission-owned
+// or initial-failure-owned: 126/126/126/126/126/126/126/126. Original helper restored;
+// velocity-copy receivers, early 1.0 residence and later SIMD/x87 homes remain.
 // P287: Complete input-product/angular-projection boundaries, subsets 1/2/4/3/5/6/7,
 // then all with steering-time definition observation: 225/126/126/225/225/126/225/297.
 // Original body restored; velocity receivers, early 1.0 and x87/SSE ranks remain.
+// M338: Test-owned angular offset/gear/signed rate outcomes, subsets 1/2/4/3/5/6/7 and final flag arms:
+// 211/195/126/224/211/195/224/234. Original body restored; velocity receivers and early 1.0/SSE/x87 homes
+// remain. NOT kept: no gain; non-retail gear-store/length forms restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3649,6 +3655,12 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 546: Existing sequential cross producers at facing/axis/final-left sites,
 // subsets 1/2/4/3/5/6/7: 138/136/165/166/167/165/167; all with X87 angle 171.
 // NOT kept: no gain; precision form requires a match. Original complete body restored.
+// M336: Staged-cross first/second scalar input captures and complete product parts,
+// seven subsets then immutable complete inputs: 178/177/165/225/200/193/234/234.
+// All regress and grow; shared helper restored. Projection ranks and trig homes remain.
+// M338: Entry flip truth in bool/byte/short/long, positive/complementary channels:
+// 136/159/240/237/169/169/244/241. Original body restored; projection/cross ranks and angle/trig homes
+// remain. NOT kept: no gain; unsupported truth widths/polarities restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

@@ -968,6 +968,9 @@ extern long *g_51e9cc;
 // Y551: Sole final flag-clear/return ownership at complete component/activity/ground
 // admissions, seven subsets then all with entry lookup storage: 42 each. Original
 // nested callback body restored; lookup rematerialization and crouch/contact schedules remain.
+// M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
+// 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
+// Nonmatching single-consumer truth carriers restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2319,6 +2322,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // extra EBP, native body transport and flag-store schedule remain.
 // Lane 18 round 34 (fast): the call nested in its own if under the body test 63; char steps local 82 (253 bytes);
 // steps read before the definition lookup 63; rate as `0.15f * rate` 63; body selection as an if/else 63.
+// M338: Complete validated-query result in bool/byte/short/long, positive/complementary channels:
+// 63/63/63/63/63/63/63/63. Original body restored; extra EBP, body transport and flag schedules remain.
+// Nonmatching single-consumer query results restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3365,6 +3371,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // vector3d_from_points3d) 378/33. With the if/else select instead of the ternaries 329/42, with its defaults assigned
 // first 326/42, with only the child default 372/42. Lead 326: retail's shape, but the bool is one-use (not kept
 // without a match). Without it: arms 363/69, no arms 391/91, default select with arms 364, without 394.
+// M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
+// pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
+// matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

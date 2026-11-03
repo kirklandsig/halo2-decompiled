@@ -1784,6 +1784,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // stored before its mode 138, the secondary arm's flag as the constant false 138 (same code each); the
 // other hand's getter given `!hand` re-measured 141. Retail's first lookup addresses [index + data + 8] (ours
 // [data + index + 8]) and re-reads the pool data for the hand getter.
+// M335: Primary/selected-hand/paired-weapon scalar identities, subsets 1/2/4/3/5/6/7,
+// then all with the animation-flag identity: 138/138/138/138/138/138/138/138. Original complete body restored;
+// same-block pool reload and selected-weapon/mode homes remain.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1924,6 +1927,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // disjunction/conditional/full test/sequential rejection/query leaves: 70/70/70/60/70/60/60/60. NOT kept:
 // no qualifying gain or byte match. Original complete body restored; request/weapon EBX/EBP homes and
 // player-getter expansion remain.
+// M335: Positive mode-switch result char/byte/short/word, with failure default in
+// its switch arm or initialization: 60/60/89/89/60/60/89/89. NOT kept: ties or regressions;
+// original body restored, request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2042,6 +2048,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // 122, with the header local 122; own-unit fields at each use 129 (345 bytes); the player unit read at the top
 // 109; the own weapon getter before the player unit read 102. Retail keeps unit_index in EBP and spills the
 // unit into the dead unit_index home; every form keeps the unit in ESI and reuses it for the first getter.
+// M335: Native receiver/offered/returned scalar identities, subsets 1/2/4/3/5/6/7,
+// then all with the give-result identity: 97/97/97/97/97/97/97/97. Original complete body restored;
+// frame/result-byte and pooled unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

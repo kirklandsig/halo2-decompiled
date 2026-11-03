@@ -661,6 +661,9 @@ struct s_collision_result_buffer_1697c0
 // all scale * vector, compound `*=`, the sum k, j, i 303 each (same code). Also on 322: the best vector after the
 // axis normalization 343 (0x297660 4), the axis declared first 331, the candidate at function scope 322,
 // `best_fraction < fraction` 322.
+// M336: Returned success owns loop admission or tail termination, bool/byte/short/long,
+// with failure-owned best-fraction updates: 351/346/363/361/346/353/363/362. All regress;
+// original break, result and whole body restored. Native scratch/axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
