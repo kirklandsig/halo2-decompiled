@@ -290,6 +290,9 @@ bool function_a7670(long object_index);
 // consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
 // Original consumed island index, signed live bound, indexed cleanup and complete body restored.
 // NOT kept: frame grows to 0x428 and every form regresses.
+// DH324: Native active-bit tests at component/primary/both releases, direct or Boolean-macro,
+// then paired nonzero/true equality: 234/211/255/153/153/153/255/255. NOT kept: word-field release
+// accesses grow beyond retail; original byte tests, stores and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

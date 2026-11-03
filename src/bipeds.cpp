@@ -3109,6 +3109,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M342: Both native double trig results at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
 // then all const: fast 623/605/601/602/623/623/602/602 (control 600, full 561). NOT kept:
 // no exact native-result lifetime graph. Original complete body restored; flight/result/vector homes remain.
+// DH324: Actual initial mode/current-state/prior-turn discriminator values, seven
+// subsets then immutable values: fast 599/599/611/599/611/601/609/609 (control 600, full 561).
+// NOT kept: 599 gains only one against reduced 600. Original field observations and
+// complete body restored; result/flight/vector homes remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5122,6 +5126,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 // pre-timer scopes, original then animation-flags-first acquisitions: 655 each
 // against reduced control 655 (full 648). Original complete body restored; tag/state/
 // animation homes and completion expansion remain.
+// DH324: Native flag-word/timer-array/output forward-push fields, seven subsets,
+// then direct native push reads: fast 655/655/655/655/655/655/655/655 (control 655, full 648).
+// Original actual record declaration, field accesses and complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
