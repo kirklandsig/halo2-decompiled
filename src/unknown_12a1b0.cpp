@@ -1806,6 +1806,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // M343: Canonical inactive-range predicate bool/byte/short/long with original request
 // 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
 // in EDI and no predicate form matches. Original mask, request and full body restored.
+// J247: Coordinated query/preparation/stop/scanner inline contracts, original/full request:
+// 305/305/305/305/305/305/305/305. NOT kept: no gain; scanner raises 73 other scores.
+// Original complete body, request and every contract restored; frame and range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
