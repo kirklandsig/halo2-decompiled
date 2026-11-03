@@ -97,6 +97,9 @@ PRIVATE __forceinline bool polygon_clip_intersection_23a430(plane2f const *plane
 // without the defaulted distance 16, with an early defaulted projection 16; output base declared
 // after the previous index 9; staged point-first numerator 9. Original helper and loop restored;
 // the three setup stores and first intersection's x product remain.
+// Round 124 (m3 lane 7, fast): the copy as `output[result] = ...; result++;` 5; the arms swapped (`!= 0` arm
+// first) 93; the helper's points as references 5; plane, points and output all references 5; a point pointer in
+// the classification loop 9. Original body restored.
 // @retail 0x23a430
 short function_23a430(short count, point2f const *points, plane2f const *plane,
 	real epsilon, short capacity, point2f *output)

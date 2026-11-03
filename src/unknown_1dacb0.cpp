@@ -1243,6 +1243,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // line) 3494; early return in place of the block 995; `while (entry && !found)` 1132. Left on the 755 form: found_mode's
 // dead home goes to iterator_mode (retail: the candidate), and retail's `xor ebp, ebp` zero for the fifth type request
 // and the inheritance init (matched 0x1dc8c0 has `xor ecx, ecx` there; ours `test`, immediates and a jmp over padding).
+// Round 124 (m3 lane 7, fast): iterator outputs renamed resolved_* 828 (same code); no candidate, result
+// set in an if/else on `named` 977 (2825 bytes); a `graph` local for `this` 828 (same code); a `for` over
+// the iterate call with a found break 998 (2839 bytes); chained NULL entry stores 828. Body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
