@@ -965,6 +965,9 @@ extern long *g_51e9cc;
 // listing): field pointer, staged `+=`, a capture, an if/else clamp, the sum through an inline pin or add, the sum
 // assigned back to crouch_change: field first in all. The velocity block's conditional call is what flips it: the
 // block ending in an unconditional call loads crouch_change first, any `if` around 0xb7360 loads the field first.
+// P293: Owning word-flag crouch/contact/other publications, seven subsets then direct final
+// response-bit production: 42/42/42/42/42/42/42/71. Original complete body and helpers restored; no
+// qualifying gain.
 // Y551: Sole final flag-clear/return ownership at complete component/activity/ground
 // admissions, seven subsets then all with entry lookup storage: 42 each. Original
 // nested callback body restored; lookup rematerialization and crouch/contact schedules remain.
@@ -1402,6 +1405,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // producers 648/648/585/585; turning false-default/true-default/first-test/final-chain
 // 585/585/556/556. NOT kept: 556 uses a distinct turning-result branch graph from retail
 // and keeps frame 0xf8 versus 0xfc; original bool producers and complete body restored.
+// P292: Called walk result, walk attenuation product/complement, called boost result,
+// boost increment, spread fraction, walking-rate quotient and doubled-radius span:
+// 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
+// shortens away from retail; 584 gains one, 581 gains four and shortens away.
+// Original complete body restored; missing frame word and material/airborne/animation homes remain.
 // AC500: Actual initialization state/tag/read-only domains, masks 1-7, then read-only rigid body:
 // 585 each. Native fields retain every observation and key width; original real record, receivers,
 // packed output, helper graph and complete body restored. Frame 0xf8 versus 0xfc and scalar homes remain.
@@ -2760,6 +2768,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // 1/2/4/3/5/6/7, then all with centroid-normalization loop:
 // 567/562/556/588/598/598/615/631; 1732-1816 versus retail 1908 bytes.
 // All regress; original complete body and arithmetic restored.
+// P292: Actual computed-vector aggregate initializers for hit difference/body impulse/
+// fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
+// 530 each. Original declarations, component producers and entire body restored;
+// frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
 // AC500: Real array-range mass/farthest/push masks 1-7: 541/530/519/516/532/514/529; native final size 539.
 // NOT kept: 519 combines tying/regressing parts; 516/514 hold a cursor unlike native base/size reloads; 529 below gain gate.
 // Original complete body restored; frame 0x44 versus 0x4c, result/state bytes and point/scalar homes remain.
@@ -3054,6 +3066,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
 // Original full-width special and complete truth graph restored; result/flight scalar homes and
 // vector scheduling remain.
+// P292: Multi-use actual up/forward/goal field pointers, subsets 1/2/4/3/5/6/7,
+// then all references: reduced 607/683/690/630/598/687/638/638 (control 600).
+// NOT kept: 598 gains only two; first +7 is entry scheduling; original entire
+// body restored. Full 561 retained; flight-result/scalar and vector homes remain.
 // AC500: Admitted-mode tag ownership with producer-local/entry-only declaration, each with
 // original/direct/if-else/default flight threshold: 607/617/607/680/607/617/607/680 (fast control 600, full 561).
 // Original tag lifetime, threshold producer and complete body restored; flight/result homes remain.
@@ -3395,6 +3411,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // vector3d_from_points3d) 378/33. With the if/else select instead of the ternaries 329/42, with its defaults assigned
 // first 326/42, with only the child default 372/42. Lead 326: retail's shape, but the bool is one-use (not kept
 // without a match). Without it: arms 363/69, no arms 391/91, default select with arms 364, without 394.
+// P293: Admission-produced placement result in bool/byte/short/long, entry-default then query-boundary
+// lifetime: 973/961/954/956/973/961/954/956. Original complete body and helpers restored; no qualifying
+// gain.
 // M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
 // pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
 // matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.

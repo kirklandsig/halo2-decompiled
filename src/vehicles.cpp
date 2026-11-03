@@ -1231,6 +1231,10 @@ long function_10f5f0(long object_index);
 // and original/six-real buffer: 565/565/561/561/565/565/561/561.
 // NOT kept: four-point lead is below threshold; six-real frame 0x1990 still
 // exceeds 0x1984. Original complete body and arithmetic restored; flag stores and reduction remain.
+// P295: Direct Boolean snapshot/activity/physics tests on the ordinary result graph,
+// masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
+// Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
+// Original tests, load widths, API buffer and entire body restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

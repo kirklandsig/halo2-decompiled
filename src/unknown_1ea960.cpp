@@ -363,6 +363,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // 375/402/312/138/138/138/138/410. Existing null-owner base construction,
 // special/scalar/composite/all: 138/138/138/138. NOT kept: no gain; original
 // constructors and body restored. Restore-header/payload order, packed key and listener homes remain.
+// P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
+// masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
+// and complete body restored; restore-header, packed-key and listener ordering remain.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

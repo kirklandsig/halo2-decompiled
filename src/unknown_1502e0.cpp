@@ -276,6 +276,16 @@ void function_151ea0(long player_index, long object_index)
 // M337: Initial winner predicate with guarded/direct equality, equality-first result, and
 // priority-range result, bool/byte carriers: 74/104, 112/102, 81/79, 82/91.
 // All restored; the equal-priority jne still chooses the other existing epilogue.
+// P294: whole-record memcpy 1;
+// whole-record memmove 81;
+// all named fields 37;
+// readonly candidate 1;
+// readonly memcpy 1;
+// readonly memmove 81;
+// readonly named fields 37;
+// memcpy then success 4.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -1128,6 +1138,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Round 552: original ternary producers with direct first-loop do/while, then native slot/final/both
 // loops on each entry graph 284/636/284/636/284/636/284/636. All loops, observations, helper and complete body restored.
 // NOT kept: no score gain or byte match.
+// P295: Original ternary results with delayed held/both publication, completed held-slot scope,
+// immutable results and readonly slot receivers: 284/281/284/281/284/281/284/281.
+// NOT kept: three-point gain and one-use pending receiver; pool/player/tag carriers remain.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1489,6 +1502,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // N343: Six semantic mask-home naming forms and independent traversal/pass home names 587 each.
 // Original names and complete body restored; native mask/index homes, memory cursor and
 // missing inline expansion remain. NOT kept: unmatched storage-only renaming.
+// P295: Existing option/user/controller vector setters 618/543/663/576;
+// complete test/set families 629/536/644/435. NOT kept: scalar masks become
+// indexed word addresses with sar 5, absent in retail; original mask code restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
