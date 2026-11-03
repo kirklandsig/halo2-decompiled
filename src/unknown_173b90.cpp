@@ -643,6 +643,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 343: Native property-bit views, alpha/color/scale subsets 1..7 with Boolean conversion
 // 124/224/229/42/124/224/229; all bits tested directly 199. Original real flag storage,
 // all six observations, shared rotations and complete body restored; offset/default/reload and row-i schedule remain.
+// M3 lane 4 r157 (fast): the particle pointer declared at the emitter body's top or before the particle loop, the
+// emitter pointer declared before the emitter loop 42/42/42 (identical); indexed definitions with scale first 113
+// (re-measured, 1136 bytes), with the motion rotated before the position 116; the emitter-mask refresh before the
+// frame query 140 (1131 bytes); the particle copies after the particle-mask refresh 340 (1172 bytes).
 // AC495: Actual cache identity field system/location/particle pointer types, seven subsets,
 // then all with immutable emitter-row receiver: eight at 42, 1130 bytes. Original field types,
 // declarations and complete body restored; offset/default/reload and row-i residence remain.
