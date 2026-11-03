@@ -51,7 +51,7 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
     arg_3->k = k;
 }
 
-// score 176 (was 176): up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
+// score 176 (was 176): frame 0x2c agrees (1711/1706 bytes); unity XMM5 versus XMM4, root/acos +0x10 versus yaw +0xc, and rotation homes remain.
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1711 bytes against 1706); the sqrt temporaries sit at +0x10 with
 // up to the rotations only the root/1.0 homes and registers differ; the rotation products are hoisted differently. frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x14 with
 // frame 0x2c agrees (1710 bytes against 1706); the sqrt temporaries sit at +0x10 with
@@ -274,6 +274,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // magnitude common, zero-result common, magnitude-result common, failure-first magnitude/result,
 // early success result, branch outputs with common return success/failure first: 171/403/412/182/212/417/203/212.
 // NOT kept: five-point best gain; common magnitude fixes early unity and first +0x84, but root/yaw homes remain.
+// Round 550: Existing vector setter at normalizer/rotation/pitch-axis output boundaries,
+// masks 1/2/4/3/5/6/7: 241/176/238/241/281/238/281; native rotation-result publication 251.
+// NOT kept: result/frame forms miss; normalizer setter also loses the matched sibling to 12.
+// Original helpers, alias-safe scalar outputs and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
