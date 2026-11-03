@@ -2536,6 +2536,9 @@ dword __cdecl function_131fc0(real alpha);
 // producers 406/406/390/414; branched producers 406/406/390/414.
 // NOT kept: all regress and disturb the matched prefix; original flag reads,
 // state stores, fallback arrays and complete body restored.
+// F357: Complete shader-admission truth in bool/byte/word/dword, logical
+// producers 140/140/140/140; eager Boolean producers 243/243/243/243.
+// NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2978,6 +2981,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // immutable pairs, first-producer scope and late second-output declaration, all
 // eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
 // original trig carriers, output declarations and complete body restored.
+// F357: Float trig APIs at both angle producers, cosine/sine/both with
+// reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
+// pairs and complete producer scopes 250/250.
+// NOT kept: all regress; original real results, helper, normalized parameters and body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,

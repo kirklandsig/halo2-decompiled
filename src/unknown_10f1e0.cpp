@@ -2125,6 +2125,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
 // 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
 // 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
+// F357: Complete persistent-channel admission results in bool/byte/long/dword:
+// logical conjunctions 776/776/776/776; eager conjunctions 823/823/808/808.
+// NOT kept: no gain; original direct guards, scratch lifetime, helpers and samples restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

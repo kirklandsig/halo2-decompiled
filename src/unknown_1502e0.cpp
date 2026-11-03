@@ -458,6 +458,10 @@ struct s_tail_player_identifier
 // N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
 // and the CRT int comparison result: all eight 31. Original body restored; options
 // acquisition, delayed saves and comparison register ownership still differ.
+// F357: Native scenario count/list/selector operand lifetimes, seven subsets
+// 31/31/31/31/31/31/31; complete operands with direct truth producer 68.
+// Existing player/object lookup inline, forced and unhinted policies: eight 31.
+// NOT kept: no gain; original observations, ordinal scan and full comparison restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1320,6 +1324,10 @@ void function_150820(dword *bits, bool local_only)
 // N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
 // and the int hand-negation result: all eight 43. Original body and calls restored;
 // ESI/EDI player/hand ownership still differs.
+// F357: Canonical shared object/header lookup with mutable or read-only
+// player/unit receivers: eight 43; existing player/object inline, forced and
+// unhinted expansion policies: eight 43. Every other user keeps its score.
+// NOT kept: no gain; original helpers, includes, receivers and complete body restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
