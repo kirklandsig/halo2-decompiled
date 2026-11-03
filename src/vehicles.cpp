@@ -594,6 +594,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // M329: Complete positive angular-admission channel, bool/byte/short/long, direct
 // producer 189/189/188/190; complete if/else 189/189/188/190. Every consumer was
 // complemented consistently. All regress; original reversing channel, helpers and body restored.
+// P287: Complete input-product/angular-projection boundaries, subsets 1/2/4/3/5/6/7,
+// then all with steering-time definition observation: 225/126/126/225/225/126/225/297.
+// Original body restored; velocity receivers, early 1.0 and x87/SSE ranks remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3601,6 +3604,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
 // then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
 // Exact-only precision forms restored; original real angle, setters, helpers and body retained.
+// P287: Final branch-owned return truth, five producer graphs 222/222/222/214/214;
+// first three with a native normalization-result receiver 231/231/231. All restored;
+// projection input ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

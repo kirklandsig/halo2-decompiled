@@ -2412,6 +2412,9 @@ __forceinline char unit_action_round(real value)
 // F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
 // ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
 // Original complete body restored; pool/type/name and completion-byte homes remain.
+// P287: Animation admission owns return truth and gates common publication; four
+// producers, special success before/after work: 290/307/303/305/290/306/257/239.
+// All restored; pool/index/type/name and completion-byte homes remain; callers stay exact.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -4602,6 +4605,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // P280: Consumed scale-result cross input, direct existing double-factor scale and
 // its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
 // entry declarations 175/294. Original complete body restored; frame and basis homes remain.
+// P287: Actual object/inverse/output quaternion declarations at their producers,
+// seven subsets, then all three at function entry: 175 each. No initializer or
+// observation moved; original declarations/body restored. Frame and basis/point homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
