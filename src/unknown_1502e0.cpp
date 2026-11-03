@@ -1164,6 +1164,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Y561: Initial hand selector char/short/word/dword 345/345/345/284;
 // final hand selector char/short/word/dword 283/282/282/284. NOT kept:
 // two-point best below the gate; native full-width selectors/body restored.
+// Y563: Count-slot rejection guards/held guard/Boolean accumulation/rejection plus
+// accumulation, final guarded/early-exit tail: 284/284/318/318/284/284/318/318. NOT kept:
+// no gain; original count admission, field observations and complete body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1540,6 +1543,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // M344: Complete default-owned acceptance/rejection pass outcomes in bool/byte/short/long
 // storage 668 each (1850/1992 bytes). NOT kept: outcome flags do not match and shorten
 // the body; original switch, masks, traversal state, helpers and complete body restored.
+// Y563: Eight existing pass-switch case orders, including 2/1/default/0: 587 each.
+// Original Boolean result and mask/index homes persist; complete source restored.
+// NOT kept: no gain or byte match; native memory cursor and inline expansion remain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

@@ -2543,6 +2543,9 @@ dword __cdecl function_131fc0(real alpha);
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
+// Y563: Common output workspace across shader arms, shader/function scope, original/shared
+// raw workspace and ternary/upper-default short alpha: 140/145/140/145/140/145/140/145.
+// NOT kept: no gain or byte match; original workspace scopes and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2989,6 +2992,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
 // NOT kept: precision/transport forms regress and move the extent away; original float
 // carriers, helper inputs, rounding and complete body restored.
+// Y563: Native real cosine/sine/both APIs with reused and independent pairs,
+// then both with late output/immutable pairs: 250/250/250/249/249/250/250/250.
+// NOT kept: all regress; original APIs, trig carriers, helper and complete body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
