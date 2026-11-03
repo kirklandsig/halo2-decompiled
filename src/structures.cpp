@@ -1132,6 +1132,12 @@ done:
 // entry attempt initialization and availability producer masks 0..7 give
 // 136/136/144/144/136/136/144/144, all 452/470 bytes. Original exits,
 // reset phases, exclusion, grouped workspace and complete body restored.
+// Round 81 (m3 lane 9, fast with 0xd2a50): retail holds NONE and then the exclusion flag in EBX (`mov bl, 1` /
+// `xor bl, bl`, re-set by `or ebx, -1` at the back edge), the direction in ESI and the result only in its parameter
+// slot; ours threads the flag, keeps NONE in ESI and the result in BL. The triangle used directly without the
+// reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
+// 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
+// (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

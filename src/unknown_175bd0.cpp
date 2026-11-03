@@ -3259,6 +3259,11 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // declaration and direct/named multiplication: 108/108/108/108/122/122/122/122.
 // All lose matched caller 0x176f60 (25); original cached mode, cursor, query,
 // successor, input contract and complete body restored.
+// Round 81 (m3 lane 9, fast with 0x176f60): the live mode (definition->location_mode in the loop call) 108 with
+// 0x176f60 25: both parameters then become register arguments (effect index in EAX, system in ECX) because the
+// effect pointer is formed in EAX and copied to EBP, where retail and our cached form load the index straight into
+// EBP; on the live form the system looked up before the effect 119 (348 bytes); colours read at the call 122 (320
+// bytes); colours declared before the particle-location index 108; the location pointer declared first 108.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

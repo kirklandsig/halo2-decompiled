@@ -516,6 +516,11 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
 // completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
 // complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
+// Round 80 (m3 lane 9, fast; positional/aligned, base 80/56): the count test's rest nested in `if (local_6)` in place
+// of the return 80/56 (same code); that with a long ordinal 115/42 (long alone 115/42, the volatile reads still
+// add `mov edx, eax`; left: table reads in EBX or ECX at case 5, 2 and the chain call, index*5 in case 2/4);
+// a1 used directly with no s_handle_block alias 80/56 (same code); without the volatile reads, long ordinal, no
+// alias 207/60 (524 bytes); plain cursors with a `for` over the ordinal 209/57 (524 bytes).
 // Round 78 (m3 lane 16, fast): the long validation ordinal (M303's long/case form) re-measured 115, new reason:
 // every frame home is then retail's (validity byte in the dead a1 home, ordinal at +0x18, items +0x14,
 // data +0x10, the count-one reads too); left are the preheader registers, the loop entered at its top (retail
