@@ -3098,6 +3098,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then all references: reduced 607/683/690/630/598/687/638/638 (control 600).
 // NOT kept: 598 gains only two; first +7 is entry scheduling; original entire
 // body restored. Full 561 retained; flight-result/scalar and vector homes remain.
+// F356: Existing complete staged projection outputs at first/second/pair/third/fourth/pair/all sites, then all direct shared outputs on the retained long-special graph:
+// 599/613/597/612/612/604/636/605. NOT kept: no qualifying match or gain; original complete body restored.
+// F356 ordinary confirmation of the initial pair: 604, 2720/2712 bytes versus baseline 561;
+// NOT kept: full-image count regresses despite eight-byte shortening. Original body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5023,7 +5027,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
-// score 648 (was 648): the logic was walked against retail block by block and agrees (callees, argument order,
+// score 648 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency
+// and completion-call expansion remain.
+// Earlier: the logic was walked against retail block by block and agrees (callees, argument order,
 // field offsets, condition directions, constants 0.1/0.15/0.5/0/+-32768/4/6/+-1). The later velocity is
 // move.velocity itself: retail adds to it in place (0xe2a2c-0xe2a38, [esp+0x44]), stores it to linear_velocity and
 // passes &move.velocity to 0x1c4b00 (0xe2b3b), so the second copy is gone and `velocity` lives only in the matrix
@@ -5086,6 +5092,8 @@ void __stdcall function_b8600(long object_index, long unknown);
 // bool/byte/short/long in both truth domains: fast 655 each against control 655,
 // 2285/2190 bytes. Original body restored at full 648; frame 0xd0, tag/state/animation
 // homes and completion expansion remain.
+// F356: Actual persistent low-byte/high-byte/word-bitfield views, seven subsets, then all with read-only tag receiver:
+// 663/655/655/663/663/655/663/663. NOT kept: no qualifying match or gain; original complete body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

@@ -436,6 +436,8 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
+// F356: Existing equality predicate with shared/native/scalar/absolute coordinate producers, original long then Boolean departure:
+// 208/208/170/170/254/254/248/248. NOT kept: no qualifying match or gain; original complete body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {
