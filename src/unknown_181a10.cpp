@@ -665,6 +665,7 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC477: Native three-float origin/hit/completed-normal copy loops, subsets 1..7, then
 // short copy ordinal: 315/313/326/357/344/329/342/307. One-point lead rejected; original
 // aggregate copies, setters, plane math and body restored. Frame/point/plane homes remain.
+// M323: Native instance/mesh-surface/direct-surface layouts, seven subsets and complete readonly inputs, all 308. Original input observations, types and body restored; frame 0x4c versus 0x44 and classifier/plane/output homes remain.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

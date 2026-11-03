@@ -1342,6 +1342,9 @@ long function_2197f0(real gain);
 // N314: Sequential composite time as base accumulator/release accumulator/complete time accumulator/
 // staged release-time producer, each with original/table-first entry: 137/146, 137/146, 137/145, 137/145.
 // All helpers, arithmetic associations, gain representation and complete original body restored.
+// F338: Aggregate gain with completed same-ambience, hold-rejection and attack-duration
+// terminal boundaries, seven subsets then all with disabled rejection: 183/195/187/195/187/189/189/188.
+// All restored; table/index entry and interpolation/hold-copy homes remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -3812,6 +3815,9 @@ struct s_128ca0
 // N329: Existing file-local gain sum with first-reference/second-value inputs at
 // inner/outer/both/both-plus-scale: 262/221/262/248; first-value/second-reference 263/222/263/249.
 // NOT kept: one-point gain below threshold; shared users regress. All signatures and body restored.
+// F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
+// additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
+// All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

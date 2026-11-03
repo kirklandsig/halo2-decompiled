@@ -860,6 +860,9 @@ static __forceinline long real_to_long(real value);
 // rejection and magnitude/query homes remain.
 // Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
 // Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
+// branch-owned complement 437/437/448/453. Original result and whole body restored;
+// early rejection placement and magnitude/query homes remain.
 // N328: Readiness false producer at far entry versus only the non-action mode, bool/byte/short/long:
 // 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
 // readiness, admitted return and query aliases restored; early rejection and magnitude/query homes

@@ -319,6 +319,8 @@ static inline void quaternion_transform_vector(
 // N329: Actual half-angle outputs own cosine/sine/both-sequential/both-early radicands: paired storage
 // 253/253/249/289, independent halves 270/270/258/258. All regress; original root expressions, paired
 // storage, helper and full body restored; frame and spill overlap remain.
+// DH304: Cosine/zero/default-quaternion/common-scalar construction results, paired/independent halves, 277/283/244/300/246/308/243/241.
+// NOT kept: moved stores/observations or common one-use scalar without a match. Original construction restored; quaternion/spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,

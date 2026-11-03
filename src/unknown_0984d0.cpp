@@ -494,9 +494,16 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // names, lifetimes and complete body restored; validity/cursor homes and loop entry remain.
 // M316: On signed-byte ordinal graph: size/handle producer forwarding with inherited/plain cursor reads, then long producer result 188/194/189/209/209/209/209/80.
 // Validity home, validation carriers and loop-entry reload remain; original helper and inherited cursor reads restored. Original executable body restored.
+// DH302: On the signed-byte ordinal graph, call-first conjunction / compound Boolean
+// intersection / conditional accumulation / call-first intersection 211/209/210/209;
+// validity declared after the ordinal repeats 211/209/210/209. Original complete body restored.
 // AC483: Only items/data cursor observed ordinarily with signed-byte/short/word/int64 ordinals:
 // 209/209/208/193/208/193/205/220. Original helper, both inherited local-slot observations and
 // complete body restored; validity home, cursor carriers and loop-entry reload still differ.
+// Cursor-derived progress: items displacement guarded/pretested 206/201; data displacement 193/210;
+// items live endpoint 210/212; data live endpoint 203/205. Validity/cursor homes and loop-entry reload
+// remain; original body restored.
+// Unguarded live endpoints 207/150/206/201 NOT kept: mutable count can be negative.
 // N327: One actual element ordinal reused by validation and notification; signed-byte/byte/short/long
 // storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
 // validation ordinal, separate long notification ordinal, helper and both inherited local-slot

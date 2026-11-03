@@ -344,6 +344,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // update == true 643, paired with first coefficient before its time product 719 and matched caller
 // loss. Original formals, sole call, fields, coefficients and complete body restored;
 // direction/sample residence remains.
+// M320: Existing vector setter at activation/refresh/angular fallback subsets
+// 1/2/4/3/5/6/7: 659/667/645/651/643/651/652; all plus initial output setter 667.
+// All restored; original direction/sample homes and 0x24 frame remain; exact caller preserved.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

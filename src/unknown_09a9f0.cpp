@@ -540,6 +540,9 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // Round 328: creation/header failure result bool/byte/short/long 83/83/64/61;
 // entry failure cleared after attachment in those domains 68/68/63/65.
 // Original validity result, independent observations and complete body restored; BL/EBP and CSE remain.
+// M320: Twice-used notification output at creation/publication/object-store/attachment,
+// native validity 61/61/62/49; early Boolean success 75/75/53/77. All restored.
+// Pre-attachment Boolean form recovers the prologue, but header CSE and EBP lifetime remain.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
