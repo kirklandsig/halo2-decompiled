@@ -3112,6 +3112,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M342: Both native double trig results at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
 // then all const: fast 623/605/601/602/623/623/602/602 (control 600, full 561). NOT kept:
 // no exact native-result lifetime graph. Original complete body restored; flight/result/vector homes remain.
+// M349: Actual special/wall/left entry-only declarations, seven subsets, then
+// constant-false result first: eight fast 600s against control 600 (full 561).
+// NOT kept: no byte match for declaration allocation. Original body restored;
+// result/flight scalar homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
@@ -5121,6 +5125,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // pre-timer scopes, original then animation-flags-first acquisitions: 655 each
 // against reduced control 655 (full 648). Original complete body restored; tag/state/
 // animation homes and completion expansion remain.
+// M349: Producer-owned still/grabbing/change declarations, seven subsets, then
+// admitted motion declaration: eight fast 655s against control 655 (full 648).
+// NOT kept: no byte match for declaration allocation. Original body restored;
+// tag/state/animation homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
