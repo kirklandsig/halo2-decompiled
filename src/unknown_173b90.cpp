@@ -643,6 +643,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 343: Native property-bit views, alpha/color/scale subsets 1..7 with Boolean conversion
 // 124/224/229/42/124/224/229; all bits tested directly 199. Original real flag storage,
 // all six observations, shared rotations and complete body restored; offset/default/reload and row-i schedule remain.
+// AC495: Actual cache identity field system/location/particle pointer types, seven subsets,
+// then all with immutable emitter-row receiver: eight at 42, 1130 bytes. Original field types,
+// declarations and complete body restored; offset/default/reload and row-i residence remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
