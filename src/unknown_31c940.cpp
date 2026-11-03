@@ -211,12 +211,11 @@ static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e
 {
 	// SSE consumes a rounded float while result accumulation retains the x87
 	// value. Passing the impulse by reference would round both paths early.
-	float rounded_impulse;
-	float volatile &store = rounded_impulse;
-	store = impulse;
-	__m128 scalar = _mm_load_ss(&rounded_impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
+	float rounded_impulse = impulse;
+	__m128 input_a = _mm_set_ss(rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
+	__m128 input_b = _mm_set_ss(rounded_impulse);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), *inverse_b_pointer);
 	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
 	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
 	a->linear = _mm_add_ps(a->linear, linear_a);
@@ -598,9 +597,12 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 		float factor = limit / magnitude;
 		impulse *= factor; row->b.m128_f32[3] *= factor;
 	}
-	__m128 scalar = _mm_set_ss(impulse);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
+	// Round the SIMD input once, then construct each body's broadcast separately.
+	float rounded_impulse = impulse;
+	__m128 input_a = _mm_set_ss(rounded_impulse);
+	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
+	__m128 input_b = _mm_set_ss(rounded_impulse);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), inverse_b);
 	__m128 axis_a = row->a, axis_b = row->b;
 	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
 	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
@@ -780,7 +782,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1890: normal fallbacks, writeback lifetimes, and captured update inertia.
+// score 1882: normal fallbacks, writeback lifetimes, and separate friction broadcasts.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
