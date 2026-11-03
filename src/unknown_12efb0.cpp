@@ -343,6 +343,15 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // N306: Native output combined/separate rejection, nested/intensity-first acceptance, each with
 // original/early-exit merge: 616/616/616/616/616/616/616/616. Original helpers and complete body restored;
 // palette/record and SIMD zero/contribution carriers remain.
+// P271: Conditional intensity computed after the RGB stores, load/default, guarded
+// default, if/else and named conditional, with short/char palette:
+// 609/712/720/720/698/702/708/708. Original helper and body restored; palette/record/SIMD homes remain.
+// P271 follow-up: Late two-use intensity with CWRI/CRWI/CWIR, conditional-result
+// CIWR/CWRI/CRWI/CWIR, and late two-use CRIW: 703/703/609/609/703/703/609/703.
+// Original helpers/body restored; isolated seven-point lead remains below the keep gate.
+// Round 541: Standard weighted-array multiplication ranges a/b/c, seven subsets and returned
+// output-iterator chain: 795/789/773/804/780/754/766/774. Frame becomes 0x4824; every
+// form regresses. Original ten stores, includes, helpers and complete body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

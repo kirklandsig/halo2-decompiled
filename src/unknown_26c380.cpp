@@ -271,6 +271,12 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // first also 396 at 1606/1605 bytes. Not kept (coordinator): retail keeps first as a byte (byte
 // stores of 1/0 to [esp+0xf], read through al), so the word is a score-picked type; byte success
 // alone (retail's byte at [esp+0xe]) is 414. Both declarations restored at 410.
+// DH296: Outer input-admission conjunction partitions 1-7 all 410; fully
+// phased admission with byte success 414 (1598 bytes). Original guards and body restored;
+// independent normal homes, frame 0x5c/0x64 and result/first/hit tails remain.
+// DH303: Common first-endpoint producer, native orientation/vertex-table ownership,
+// and planar memcpy 465/467/449/440/413/406/388/392. NOT kept: all lose four matched
+// callers. Original body restored; normal/planar homes and byte/output tails remain.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

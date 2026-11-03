@@ -1,6 +1,7 @@
 #include "unknown_11c920.h"
 #include "frame_storage.h"
 #include "effects.h"
+#include "vector_products.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -36,7 +37,7 @@ PRIVATE __forceinline real function_248ef0(real const *arg_0)
 	return local_1;
 }
 
-PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *const &arg_3, void *arg_2)
+PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {
 	real local_0 = 0.f;
 	s_248df0 const *local_1 = (s_248df0 const *)arg_3;
@@ -72,12 +73,16 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 		break;
 	case 9:
 		if (local_2->effect_index != NONE)
-			return ((s_effect_datum *)g_4ea93c->data)[local_2->effect_index & 0xffff].scale_a;
-		return 0.f;
+			local_0 = ((s_effect_datum *)g_4ea93c->data)[local_2->effect_index & 0xffff].scale_a;
+		else
+			return 0.f;
+		break;
 	case 10:
 		if (local_2->effect_index != NONE)
-			return ((s_effect_datum *)g_4ea93c->data)[local_2->effect_index & 0xffff].scale_b;
-		return 0.f;
+			local_0 = ((s_effect_datum *)g_4ea93c->data)[local_2->effect_index & 0xffff].scale_b;
+		else
+			return 0.f;
+		break;
 	case 11:
 		if (local_1) local_0 = function_248ef0(&local_1->field_38);
 		break;
@@ -85,24 +90,20 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 		if (local_1 && arg_2)
 		{
 			vector3f local_3;
-			local_3.i = local_1->field_1c.x - g_485618.position.x;
-			local_3.j = local_1->field_1c.y - g_485618.position.y;
-			local_3.k = local_1->field_1c.z - g_485618.position.z;
+			vector3d_from_points3d(&g_485618.position, &local_1->field_1c, &local_3);
 			function_4efb0(&local_3);
-			local_0 = function_248eff((local_3.k * g_485618.forward.k + local_3.j * g_485618.forward.j + g_485618.forward.i * local_3.i) * local_1->field_38);
+			local_0 = function_248eff(dot3f(&local_3, &g_485618.forward) * local_1->field_38);
 		}
 		break;
 	case 13:
 		if (local_1 && arg_2)
 		{
 			vector3f local_3;
-			volatile vector3f local_4;
+			vector3f local_4;
 			local_3.i = local_1->field_1c.x - g_485618.position.x;
 			local_3.j = local_1->field_1c.y - g_485618.position.y;
 			local_3.k = local_1->field_1c.z - g_485618.position.z;
-			local_4.i = g_485618.up.j * g_485618.forward.k - g_485618.up.k * g_485618.forward.j;
-			local_4.j = g_485618.up.k * g_485618.forward.i - g_485618.up.i * g_485618.forward.k;
-			local_4.k = g_485618.up.i * g_485618.forward.j - g_485618.up.j * g_485618.forward.i;
+			cross3f(&g_485618.up, &g_485618.forward, &local_4);
 			function_4efb0(&local_3);
 			local_0 = function_248eff((local_4.k * local_3.k + local_4.j * local_3.j + local_4.i * local_3.i) * local_1->field_38);
 		}
@@ -114,7 +115,8 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 	return local_0;
 }
 
-// score 30 (was 30): case 12's projection loads the global factor first in all three products
+// score 2 (was 30): case 12's dot evaluates its terms k, i, j; retail k, j, i (operand sides follow the position).
+// Earlier at 30: case 12's projection loads the global factor first in all three products
 // (retail: the stack component first for k and j, the global for i); case 13's cross-product
 // XMM roles and scheduling differ. The volatile cross vector keeps case 13 apart: a plain one
 // (or any helper writing it) makes case 13 exact but moves the result to XMM1 and lets case 13
@@ -154,8 +156,26 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void const *
 // cross3f_staged plain 212, with the inherited qualified vector 31, plain with a named projection
 // 212; ordinary inline on the private implementation 1074 (17 bytes); case 13 dot3f in either
 // argument order 31/31.
+// Round 60: the volatile cross vector is gone; a plain vector with `cross3f`, case 12 through `vector3d_from_points3d`
+// and `dot3f`, and cases 9/10 as `if (valid) result = scale; else return 0.f; break;` reach 2; on those, case 13's
+// displacement and dot through helpers too 3 (typed wrapper parameters also 3); `dot3f` in case 13 either order 3/3;
+// helper displacement with written dot in 13 66; case 12's displacement written 4, also with dot3f in 13 8; helper in 13 and
+// written in 12 68, with dot3f in 13 8; `cross3f_staged` 2; dot3f arguments exchanged 2; written case 12 dot in
+// orders k,j,i i,j,k j,k,i i,k,j k,i,j j,i,k 68/67/68/67/68/68; a named projection or scale 2; a forward pointer 10; a by-value vector copy 139/149; the normalize's
+// returned pointer as the dot argument 54; a shared projection helper for both cases or case 12 alone 313/247, a shared
+// direction helper (dot3f either order, written dot) 314/314/306, its body written out 314/306, in case 12 alone 247/247; a direct
+// definition without the wrapper 93; vectors at function scope 3; vector names 3; case 13 before case 12 77; a ticks helper
+// for case 8 2. Diagnostic, not keepable: a pointer or reference to the whole local at the displacement and dot gives
+// k, j, i with the j term's sides still reversed, 2. Route to 2: named `forward_i`/`up_i` after cross.i on the plain
+// vector made case 13 exact (4 with those cases 9/10), and the helpers then fixed case 12's sides. Before that: forward
+// pointer in 12 70; forward and up pointers in 13 30; dying-operand product order 30; 18 named one-use locals 26.
+// A 600 s permuter run on the final form, none below 2.
+// AC492: On the plain-vector/helper graph, case-9/case-10/both retained effect indices
+// 2/2/2; first/second/both native word-channel inputs 2/2/2; case-11 value fraction
+// 155; complete immutable remainder/result arms 164. Original whole body and helpers restored;
+// case-12 i/j projection scheduling remains. One-use field carriers NOT kept without a match.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {
-	return function_248df1(arg_0, arg_1, arg_3, arg_2);
+	return function_248df1(arg_0, arg_1, arg_2, arg_3);
 }

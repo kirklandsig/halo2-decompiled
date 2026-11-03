@@ -1560,6 +1560,10 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // `inline` on 0x1d1160's definition 126; with an unused fifth parameter on 0x1d1160 126. Fast, from 3: a positive
 // guard around the for 3; the mirror set in each selection arm 36 (872 bytes); the mirror stored at the top of each
 // iteration and after the loop 119 (870 bytes); `i = local_0 = 0` 161 (882 bytes); int index 3.
+// Round 124: uninitialised loop state inside a positive do guard 39; `_count`, vector names and count
+// declared first 39 each; reversed guard and initialised count 39 each; guarded for 39. Guard only around
+// the mirror 5, braced 5, nonzero 143 (882 bytes), induction in the for initializer 147 (882), literal zero 5;
+// the same-scope while with 0x1d10b0 as a component member 3 (the member stays matched). Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

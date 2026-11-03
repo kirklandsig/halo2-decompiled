@@ -214,6 +214,12 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // DH282: Complete double squared-magnitude producer with repeated component inputs, all square parts and
 // single-result completion, seven nonempty subsets then all with k/j/i component declaration priority [750,
 // 750, 805, 798, 798, 798, 801, 801]. Original executable body restored.
+// M315: direct input/native normalized setter with all six complete projection-product declaration
+// orders 818 each; with scaled products at each residual or before all residuals 806/806.
+// Original body and private helper restored; frame/input/heading and normalizer memory homes remain.
+// Round 541: Standard component-range heading copy, paired default/normalized-input/final-output
+// families, masks 0..7, with direct input: 839/840/834/829/828/848/851/836. Two forms reach
+// retail length but regress; original input storage, transfers, includes and full body restored.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
