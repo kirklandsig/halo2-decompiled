@@ -246,6 +246,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // with complete rotation-role names: 173 each. Only uninitialized declarations
 // move; cosine/dot/cross/sine and scale order stay fixed. All restored; frame
 // 0x11c versus 0x118 and cross/trig homes remain. Three exact controls survive.
+// Round 64 (m3 lane 1, fast): the (vector, axis, sine, cosine) helper of matched 0x2551f0/0x1ecf50 (scalar cross
+// i/j/k, rows `v*cos + projection*axis - cross*sin`, called with sin then cos of the angle) 236 (1190 bytes, frame
+// 0x114: sine first as retail, but heading at +0x10 and cosine at +0x1c, retail cosine +0x10 and heading +0x14; only
+// the row-i result spills where retail spills cross j and k); with dot3f 236; cross terms declared j, k, i 236 (same
+// code); the cross through cross3f into a vector 226 (1209 bytes, frame 0x120), with dot3f 226.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

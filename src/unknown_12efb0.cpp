@@ -352,6 +352,10 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 541: Standard weighted-array multiplication ranges a/b/c, seven subsets and returned
 // output-iterator chain: 795/789/773/804/780/754/766/774. Frame becomes 0x4824; every
 // form regresses. Original ten stores, includes, helpers and complete body restored.
+// Round 64 (m3 lane 1, fast): char palette slot 705 (3835 bytes: byte compare with -1 as retail, record still
+// in ESI); long slot 713; char slot with the record chosen by one nested ternary 705; that with the source index
+// re-read from the byte 683 (3832; ESI keeps the cluster record, the selected record moves to EDI, not EBX);
+// that with a long slot index at the top of the branch 683.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
