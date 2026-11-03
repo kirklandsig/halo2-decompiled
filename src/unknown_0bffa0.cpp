@@ -1117,6 +1117,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // extents read first, scale after, `*=` steps 315 (same code); bounds stored after the corners in retail's x0, y0, x1, y1
 // order 315 (aligned 279 -> 276); both 603; extents-first with bounds last 315; centre read into named x/y 568; plane
 // distance through dot3f 315; depth stored after has_plane 377.
+// Lane 17 r36 (fast): the file's direction_normalize_c0840 for the left vector 315 (same code as normalize3d: our
+// scale keeps left.i in XMM5 from the cross where retail reloads it); reference picked by a ternary copy 647 (2793
+// bytes); scale stored before position 331; orthogonal/has_plane stored after the matrix 589; the count as an
+// if/else 323. Original body restored.
 // Round 61 (m3 lane 10, fast): in the cone arm retail stores the four points, then the bounds as x0, y0, x1, y1,
 // then the point count, and divides for the scale only after the centre projection: the bounds stores moved after
 // the points in that order 315 (retail's store sequence there, same count); on it the far edges as `half + centre`

@@ -612,6 +612,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH310: Complete case orders 04123/04132/02413/02431/02314/03124/03142/03214 on the signed-state graph,
 // 422/448/426/433/416/444/451/431. All original case-body hashes agree; every new priority regresses.
 // Original cases, observations, qualifier and whole body restored; frame excess and stacked actor remain.
+// Round 35 (m3 lane 17, fast with 0x1e34e0): prior state as short 413; the sampler's result in its own
+// `context_valid` flag (initialised false, tested for the 0x264330 call) 415 (frame 0xa0 and 1616 bytes as
+// retail, but `update` still takes BL and the actor stays a stack argument; a flag tested later, not kept); that
+// with the short prior state 419 (1620 bytes); sampled_one declared after the two entry calls 414; sampled_one
+// declared before maximum 412 (same code).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

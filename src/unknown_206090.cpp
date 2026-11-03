@@ -333,6 +333,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // then all with the three coefficient lifetimes ended: 1355/1355/1355/1355/1355/1355/1355/1355. NOT
 // kept: no byte match; original complete body and every helper restored. Excess frame and
 // component/velocity/query homes remain.
+// Round 35 (m3 lane 17, fast): the second normalizer's accumulator as real 1380 (6211 bytes); the steering
+// magnitudes through fabs 1438 (6208 bytes); the three friction coefficients from one if/else on the dynamic
+// flag 1353 (two points, not kept); the twice-used dynamic/moving test named for both impact calls 1395 (6211
+// bytes, frame 0x5d0); the rest-length product computed before the other 1355 (same code).
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.

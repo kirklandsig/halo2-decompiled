@@ -488,6 +488,11 @@ static inline bool teams_enabled_19e1c0()
 // 667/404; a MIN(a, b) macro clamp (`a > b ? b : a`) in the four name/team cases 467 plain, also in the fallback 462
 // plain, 493 volatile: the tails stop merging, but wcslen is called twice and compared unsigned (ja), not retail's
 // one call and cmovle; retail's caller sets ECX then EDX (fastcall, /Gr), so no parameter reorder applies.
+// Round 35 (m3 lane 17, fast): plain result with token_length unsigned (definition, declaration, caller's pointer)
+// 691; plain result with `return result;` closing every copy arm 691 (same code), the volatile result with those
+// returns 390 (same code); the engine's token text in a `written` local returned when nonzero, volatile/plain
+// result 397/693. Retail: event EBX, token_length EDI, remaining EBP, result ESI from the top; the opponent loop
+// runs on `cmp edi, 8` (no free register for a down counter), where ours counts EBX down from 8.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

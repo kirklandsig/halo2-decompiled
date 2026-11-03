@@ -645,6 +645,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // with native byte success, original/shared differences 358/366. Original helper calls,
 // result qualifier, includes and complete body restored; early root/actor ownership remains.
 // M323: Actual first-edge/second-edge/projection-field references, seven subsets and complete trace-element references, all 278. Original body restored; early root/actor ingress and vector scheduling remain.
+// Lane 17 r36 (fast): corners a, b, c, d re-measured 299 (1284 bytes; the actor load is still scheduled before
+// `push ebx`, so pathfinding arrives in EDX, and case 1's projection/origin loads are re-coloured); on that graph case 5
+// first in the switch 353, the surface as `surfaces + surface_index` 299 (same code), a const surface pointer 299 (same
+// code), the inverse length computed before the projection 299 (same code). Original c, b, a, d body restored.
 // Round 33 (m3 lane 18, fast; 0x270d90 295 throughout): the result as a plain bool (the volatile dropped)
 // 340 (1252 bytes); case 5's actor test as an outer if 278; one function-scope position pointer for cases
 // 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`

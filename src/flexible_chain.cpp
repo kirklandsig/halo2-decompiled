@@ -423,6 +423,9 @@ void __stdcall function_1160c0(real dt)
 // `inverse_dt * (...)` 179; the last-segment index as `i - 1` 183. The first real difference is the segments base:
 // retail loads it into EDX and keeps the segment in EDX (ours EDI, then ECX), which shifts the scratch rotation of
 // the physics call's argument setup (retail forms the tag address after pushing -1 and the location).
+// Round 35 (m3 lane 17, fast): `if (record->fixed || !(dt > 0.f)) return;` guard 179 (same code); position and
+// direction declared beside previous/predicted 179; location declared before origin/forward 179; a const vertical
+// 179; the const vertical with the angle call as (&vertical, &direction) 177 (two points, not kept).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
