@@ -1681,6 +1681,14 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
 // Original real argument domain and narrowing preserved; all one-use captures restored.
 // Frame, unit/mode homes and independent look divisions remain.
+// Round 205 (m3 lane 3, fast control 220, full 218), re-measured listed forms: the settings rate read once into a
+// named local for all six uses 526 (2178 B); the mode lookup after the spring defaults 236; the unit fetched after
+// the mode 573 (2189 B); a short weapon index 421 (2220 B); the look values declared at their computation 220 (same
+// code). New forms: the active result passed straight to first_person_weapon_set_active (no local) 406 (2189 B);
+// the orientation offset as user and weapon terms scaled separately 220 (same code); the view entry's yaw/pitch
+// read at each use with no look pointer 444 (2205 B); the spring overrides tested as `if (field)` 220 (same code);
+// the pitch rate product with its operands swapped 221. The ESI/EDI save region stays BLOCKED-BY the build's
+// stand-in caller (the round 98 finding, not re-verified here).
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

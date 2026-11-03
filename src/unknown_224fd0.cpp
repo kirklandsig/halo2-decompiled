@@ -211,6 +211,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // B385: Existing camera/direction basis providers and composed-return receiver, subsets
 // 1/2/4/3/5/6/7, 222/221/622/495/623/622/628; all with basis output 429.
 // Original complete body/declarations restored; axis-specific spills and table placement remain.
+// Round 205 (m3 lane 3, fast): the rotation's statements in retail's first-case flow (k^2, k*s, i^2, j*s, s*i,
+// forward.i, ij rows, j^2, ik/jk, left.j, ik rows, up.k, jk rows) 352 (1812 bytes); four more random
+// dependency-respecting orders 400/412/426/433 (1824/1884/1780/1784 bytes). The kept order stays the best.
+// Also: the two matrices declared basis first 219, the rotation helper's axis by const reference 219 (same code).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -682,6 +682,13 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 121 (fast; aligned count, control 93): named ring value 90 (92); with a named ring phase above the spoke loop 143 (144);
 // direct sin/cos arguments 215 (81), with the named ring 218 (95), with the phase as well 231 (133).
 // Also: origin declared with the sector index 90 (93); trace distance read at each row 101 (98); origin first in the point rows 90 (93).
+// Round 205 (m3 lane 3, fast): distance computed in the spoke loop after the angle 240 (1082 B; cvtsi2ss as
+// retail but ring times radius moves to SSE); that with the ring product in double 248; ring phase named before
+// the distance 143 again (the ring block is then retail's instruction for instruction; left are frame 0xdc from
+// the rotation spill at +0x40, the radius copied through EDX and the sector load after the radius); the collision
+// marker and the entry pointer between the trace rows and the half-axis adds 216 (1092 B); the marker alone there
+// 89 (retail stores it before the last point stores; a one-point gain, not kept); the trace, world and collision
+// records declared at function scope 94; the trace record alone there 90 (same code).
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
