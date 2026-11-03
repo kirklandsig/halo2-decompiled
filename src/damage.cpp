@@ -2433,6 +2433,9 @@ struct s_unit_event
 // N328: Native section/seat/child last-consumer scopes, seven subsets, then one reset name carrier across
 // all phases: 472 each. Original body restored; permutation stack/EAX transport, call-cycle register
 // homes and sixteen excess bytes remain.
+// M328: Independent child/seat iterator and event role names, seven subsets then
+// all with the primary receiver renamed: eight 472s. Complete original body
+// restored; frame agrees but permutation ingress and call-cycle homes remain.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
