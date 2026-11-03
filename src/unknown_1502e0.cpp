@@ -1534,6 +1534,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // P295: Existing option/user/controller vector setters 618/543/663/576;
 // complete test/set families 629/536/644/435. NOT kept: scalar masks become
 // indexed word addresses with sar 5, absent in retail; original mask code restored.
+// M344: Complete default-owned acceptance/rejection pass outcomes in bool/byte/short/long
+// storage 668 each (1850/1992 bytes). NOT kept: outcome flags do not match and shorten
+// the body; original switch, masks, traversal state, helpers and complete body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

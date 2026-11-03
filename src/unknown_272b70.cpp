@@ -1494,6 +1494,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH320: Existing request producer returns canonical submission in byte/signed-char/char/
 // short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
 // and complete body restored; iterator/leave-selector/request homes remain.
+// M344: Winning-seat presence/absence produced by all original score improvements,
+// bool/byte/short/long 147/147/143/147/147/147/147/151. NOT kept: unmatched selection
+// flags grow the frame and body; original short winner, requests and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

@@ -2318,6 +2318,10 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // lookup declared before the state view 155. Retail's 0x400 block copies the parent into AX with `mov ax, dx`
 // before testing it (one byte more than ours), and the 0x2000 block's two loads and dead add make up the rest
 // of the 9 missing bytes.
+// M343: Complete approximate-position equality in bool/byte/short/long, direct initializer
+// or default-false test result: 155/155/155/155/155/155/155/155. Original full body restored;
+// object/offset and low-mask homes remain.
+// NOT kept: unmatched comparison-result lifetimes.
 // Round 84 (m3 lane 12, fast): the 0x400 flag update between the two stores 156 (ours still loads the
 // result first: retail must store 0x90 before it reuses EAX, which holds the NONE short there, so the order
 // follows the head block's EAX/EDX/ECX rotation, not the statements); the low request intersection named

@@ -2485,6 +2485,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // Original two-use helper and complete body restored; turn/spin schedules remain.
 // P297: Default-first turn/gear-throttle/engine-throttle clamp results, seven subsets,
 // then all with entry declarations: 43/50/50/51/51/50/51/51. Original body restored; turn-product/spin transport remains.
+// F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
+// original/forced-inline existing helper 213/213/213/213/213/213/213/213.
+// NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
