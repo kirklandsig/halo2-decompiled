@@ -218,6 +218,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // M332: Existing iterator on the local successor, pointer/declaration while, plain for,
 // or native index admission, each with result/break or direct completion: 57/55/57/55/91/73/52/53.
 // All regress; original walk, helper, publication and complete body restored.
+// m3 lane 11 r63 (fast, with 0x1a303b/0x2b393c): `while ((index = *iterator) != NONE)` with early returns 65
+// (112 bytes, both callers lose), with result/break 66 (111 bytes, callers lose); a for loop with a successor
+// local stepped at the end and early returns 49; that as a while with the flag tests nested over a named
+// 64-bit identity 49; `while (index != NONE && !result)` with no break 52 (callers lose). All restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

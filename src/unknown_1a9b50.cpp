@@ -551,6 +551,11 @@ extern point2f *g_468778;
 // AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
 // seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
 // guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
+// m3 lane 11 r63 (fast), on the actor-first form with `return !f14 && !f13 && !f2d;` in the arm (393
+// re-measured; retail passes arg_0 to the settings call in EBX from EDI, keeps the actor in EBP and spills
+// the settings pointer, ours spills the actor): settings test nested apart from the flag tests 393; prop-less
+// arm first 401; slot pointer before the settings call 393; prop lookup before the clock 393; a four-use
+// `&field_2d` pointer in the tail 393. All restored to the 375 body.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

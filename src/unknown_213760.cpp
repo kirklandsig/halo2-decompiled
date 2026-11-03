@@ -1464,6 +1464,12 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
 // all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
 // initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
+// m3 lane 11 r63 (fast): round 53's three match-only forms rebuilt on this body (count scoped in the write
+// block, write success set by its own test, `else if (cache_file_header_read(index))` with `valid = true`)
+// 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX: one scratch step,
+// consistent with retail loading the handle first). On the 7 form: permuter 54 tries, none below 7;
+// `bool written = resized;` cleared when the count != 0x800 7; `s_file_write_flags(false)` 7; `sizeof` for
+// the size and the count test 7; `handle[0]` 7. All restored to the 33 body.
 // @retail 0x213970
 void function_213970(void)
 {

@@ -811,6 +811,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
 // bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
 // without an exact match. Original actor observations, bit consumer and full body restored.
+// m3 lane 11 r63 (fast): actor pointer declared first 757 (2995 B); `*complete` read after the actor/height
+// block 673, after the output clears 676, just before the step loop 704; that 673 form with bool result 755;
+// `ignored` set after the out-count test 675; `radius < source.radius` 675. All restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,
