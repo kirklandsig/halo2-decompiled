@@ -318,6 +318,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // F336: Native rejection continues in first/second/third marker scans, seven subsets:
 // 931/931/931/931/931/931/931; all scans with direct first/second array consumers 981.
 // Fast control 931, full 882. Original guards, receivers, buffers and complete body restored.
+// M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
+// then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
+// Original full body restored; frame, actor/unit and priority/query/marker homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1640,6 +1643,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
 // step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
 // scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
+// Round 345: existing direction-difference/normalizer/squared-length forceinline declarations, seven
+// subsets; all with dot product: 420/420/420/420/420/420/420/420. Original body and contracts restored.
+// Radius staging, persistent zero and metadata homes remain.
 // Round 380: Complete positive-distance/avoidance admission, bool/byte/short/long
 // acceptance then rejection complement: 420/420/420/420/420/420/420/420. All canonicalize; radius staging,
 // persistent zero and metadata homes remain. Original separate guards/body restored.

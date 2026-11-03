@@ -5585,6 +5585,10 @@ void __stdcall function_d6bc0(long object_index);
 // M327: Native entry-record cursor with body/outer receiver and pointer/reference/direct/early-used timer:
 // 242/242/242/246/242/242/242/246, frames 0x1c versus retail 0x18, extents 879/882 versus 869.
 // Original indexed body restored; independent timer spill and entries-base reloads remain.
+// N335: Complementary waiting decision, bool/byte/short/long with comparison default:
+// 168/168/150/154; exhaustive branch default: 168/168/150/154. NOT kept: unmatched complementary
+// result carriers all regress. Original schedule, timer observations and complete body restored;
+// frame 0x14/0x18 and timer/base homes remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

@@ -867,6 +867,8 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // the read 2; both declarations before the read 2; result/timeout declarations swapped 2; timeout/pump bound
 // declarations swapped 4; split attempt initialization 2; attempt/pump declarations swapped 2; guarded switch
 // with a shared attempt store 97. Opening body restored.
+// Round 41 (lane 2, fast): the shared reader's local non-volatile with a C address taken, as `(void)&local`, a dead pointer,
+// a const reference, a volatile pointer, or LARGE_INTEGER 93 each (the zero stores vanish); a volatile store through a cast 2.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

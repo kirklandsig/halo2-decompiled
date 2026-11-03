@@ -1991,6 +1991,9 @@ void function_27dd10(void)
 // interpolation test 2, the inheritance read from the global 2, flags at function scope 2; in
 // function_288571 the later passes' count as a ternary copy 2 (0x281b60 39), as a clamped copy 2,
 // separate translation and scale copies 2 (0x288570 120). All restored.
+// Round 79 (fast; 0x281b60 has the same tie through function_288572): the count by const reference 2; the clamp operands reversed 53;
+// the flags byte read and pointer step split 2; the shift before the tail steps 2 (0x288570 12); a per-pass count copy 2 (0x281b60 62,
+// 0x288570 120); the shift in the for increment 12.
 // @retail 0x27dff0
 void function_27dff0(void)
 {
