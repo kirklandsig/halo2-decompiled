@@ -843,6 +843,9 @@ struct s_device_machine_view
 // N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
 // subsets, then all with immutable bounded publication: all eight 34. NOT kept:
 // single-use library results do not match. Original callback and observations restored.
+// P307: Actual machine bitfields with logical/bitwise admission, original/native group masks,
+// and absent/present velocity zero: 34/142/120/131/117/146/122/137. NOT kept: no exact native
+// observation/type graph; original view, word/masked result and entire callback restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

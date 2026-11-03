@@ -1237,6 +1237,9 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// P307: Complete in-place cross differences, with component cosine ownership, cross sine
+// ownership and full projection product: 832/834/832/834/811/813/811/813. The 811 forms
+// reach 4096 bytes; NOT kept: two-count gain. Original helpers and complete body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

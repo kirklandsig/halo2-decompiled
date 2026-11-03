@@ -245,6 +245,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// P307: Initialization-failure result feeding guard/four stores, bool/byte/char/word/short/int/long/dword:
+// 101/229/229/226/226/227/227/227. NOT kept: 101 adds neg/sbb/inc absent in retail,
+// and leaves outer EBP and clamp homes unresolved. Original entire body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

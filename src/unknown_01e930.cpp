@@ -528,6 +528,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // P304: Surround/stereo volume arrays at their own consumer, delayed or consumer-scoped
 // in eight lifetime pairs: 264/264/263/263/263/263/263/263; all 1115/1098 bytes. NOT kept: regressions and
 // nonnative delayed initialization. Original arrays/body restored; frame and clock/output homes remain.
+// P307: Native unsigned timestamp return with signed/native start, immediate signed/unsigned
+// second-tick producers and original/selected nonnegative elapsed: eight body forms 246 each;
+// return-only calibration 246. Original clock contract, scratch and complete body restored.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
