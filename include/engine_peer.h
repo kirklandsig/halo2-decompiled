@@ -46,8 +46,8 @@ public:
 	virtual bool p27(short, short) { return false; }
 	virtual void p28() {}
 	virtual void p29(long, long, long) {}
-	virtual void p30(long, long, long, long) {}
-	virtual long p31(long, long, long) { return 0; }
+	virtual void p30(long, long, bool, long) {}
+	virtual long p31(long, long, bool) { return 0; }
 	virtual void p32() {}
 	virtual void p33() {}
 	virtual void p34() {}

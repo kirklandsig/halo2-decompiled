@@ -852,7 +852,7 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 
 
 
-// score 433 (was 590): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
+// score 433 (was 433): 3037 bytes (retail 3047), frame 0x30; left are product sides and register homes in the crosses, the
 // direct arm's rows, the low-normal arm and the history row. Closest form so far: `input->i` for `state->input.i` in the direct
 // arm's rows and the low arm's projected rows, one settings local for the ground compares: 433 at 3047 bytes, aligned 138 and the ground
 // chain exact (mixed reads, not kept).
@@ -989,6 +989,24 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // damping-disabled: 604/606/614/605/612/614/627/629. Mutable response-word gravity/plus
 // damping/plus direct/all 631/646/645/669, each loses matched 0x1f0450 in reduced controls.
 // Complete original body and helpers restored; frame 0x34/0x30, flag and vector homes remain.
+// Round 534: complete predicate/direct raw-bounded/general raw-bounded roles, seven
+// subsets then early uninitialized direct bounded workspace: 433/433/433/433/433/433/433/433.
+// Original complete body restored; damping carrier, raw/bounded homes and product sides remain.
+// DH297: Complete direct/positive-normal/low-normal product groups, subsets 1-7,
+// then column-owned planar terms: 556/556/437/473/425/417/473/473. Best: the positive-normal and both
+// low-normal product groups as ten one-use named product locals, 417 plain (3038 bytes; first difference
+// at +0xd, damping in ECX/EDX). NOT kept: one-use temporaries that only steer evaluation order are kept
+// only with a match; body restored at 433.
+// F335: native direct clip predicate/direct fallback first/general fallback first, subsets 1/2/4/3/5/6/7
+// 360/432/498/359/482/497/481; all with named normalization return 470. NOT kept: one-use
+// predicate steers allocation; fallback alone gains one. Frame 0x30 agrees, raw/bounded homes still differ.
+// B374: planar bounded producer with native/library raw backup before/after step, alone or
+// with general producer: 393/385/388/398 twice; 3034-3035/3047 bytes, frame 0x30.
+// NOT kept: reversed producer and length farther from retail; original raw-first body restored at 433.
+// DH305: Complete state/settings words and mask predicates on the planar/eight-normalization
+// graph, seven subsets then opposite complete-word declaration order: 526/610/562/495/573/609/559/560.
+// NOT kept: retail reads both words again at history admission; unsupported observation/predicate
+// steering needs a match. Original body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1656,6 +1674,13 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // P263: complete selected-normal/final-vector native/memcpy/memmove pairs
 // 221/221/221/231/355/239/355/231; memcpy ties, memmove changes expansion and regresses.
 // Original transfers, magnitude, call sites and complete body restored.
+// DL247: Flat native material/speed admission with original dot, native movement,
+// contact fields at use and ordinary fallback inline: 221/224/222/221/221/224/222/221.
+// All restored; zero width, reset/selection homes and selective material-call expansion remain.
+// Round 482: Fallback-owned movement truth, block comparison/call comparison/implicit
+// call/block truth, original double root 307/313/313/307; real root 313/306/306/313.
+// Original motion sample precedes every reset in all forms; root/predicate lifetimes
+// and complete body restored. Zero width, reset homes and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
