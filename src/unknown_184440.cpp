@@ -315,6 +315,10 @@ __forceinline bool function_184448(long arg_0)
 // AC497: Eligible effect, created resource and accepted sample regions, subsets
 // 1/2/4/3/5/6/7, then origin-owned zero-spacing fallback: 965/965/965/991/965/965/991/991.
 // Original admission, copies, random order and body restored; frame and geometry homes remain.
+// Round 130 (m3 lane 8, fast): the 2D sample point assigned by fields 965 (same code); both direction copies
+// before the two plane-distance calls 965 (same code); the force record pointer before the velocity copy 969
+// (4595 B); the four arrays declared in reverse order 965 (same code); the sample point copied after its two
+// random offsets 966. Ours still uses every slot to +0x1e0 where retail ends at +0x1d8 (frame 0x11d4/0x11cc).
 // Round 144 (m3 lane 6, fast; [LCS-aligned] this body [938]): the worklist seeded before its count 965, the world
 // bounds initialized after the seed 965, the neighbour test with the group compare first 965 (same code each); the
 // per-face projected bounds initialized by a two-pass loop 980 [1026], that loop at the top of each face iteration

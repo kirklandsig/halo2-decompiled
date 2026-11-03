@@ -368,6 +368,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the cap as `k * globals->rate` 642; the duration test as `t >= 0.001f` 642; `fail` declared before `globals`
 // 642; the first count as one ternary 683 (2877 bytes); both 12/8 factors as `k = 12.f; if (!s->fast) k = 8.f;`
 // 642. Original body restored.
+// Round 50 (m3 lane 15, fast, caller 0x1eb6f0 matched in each): the distance stored as the clamped length
+// local 667 (2889 bytes); the step factor as `n * v * rate` 642 and `n * rate * v` 642 (same code); the limited
+// flag computed first and the clamped length taken from it 722 (2858 bytes); the duration sum written count
+// first 642 (same code). Retail's EBX holds the next stack parameter at entry (ours the one before it).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

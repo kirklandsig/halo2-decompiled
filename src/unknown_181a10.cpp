@@ -680,6 +680,11 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // (1250); that with the in-place normal 328 (frame 0x40), with the normal copied into the plane by components
 // 329; origin through real_point3d_set 315, with the in-place normal 344; the in-place normal on the kept form
 // 357 (1208 bytes, frame 0x40); all 18 origin/hit/normal combinations at or above 308.
+// Round 130 (m3 lane 8, fast): retail keeps first->next->shape in ECX for its test and the call (`mov ecx,
+// [eax]; test ecx, ecx; mov eax, ecx`), ours compares memory and reloads. A next pointer and next-shape local
+// assigned in the test 309 (gives the register load, EAX not ECX); a next pointer local alone 312; the clamp
+// helper comparing with its own `value` 332 (1232 B); the second shape in a local for the exclusion test 346;
+// the key range test as `key < 0 || key > count - 1` 308 (different code, aligned worse).
 // Round 144 (m3 lane 6, fast; register-masked aligned [169]): `plane3f plane`, the transformed normal, and
 // material/friction/restitution each declared at function scope 308 (same code); the classifier reading
 // `shape->data` at each use 308 (same code); the exclusion test as a single-exit bool helper on the shape (result =
