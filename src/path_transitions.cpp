@@ -661,6 +661,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
 // constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
 // if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
+// m3 lane 14 r56 (fast; 0x270d90 295 throughout): case 2's trace through the `data` local 319; the parent-point
+// test as an early `break` 278 (same code); the radius test as `radius * 2.f < first_length` 278 (same code);
+// the origin sum before the projection 278 (same code); corners declared d, c, b, a 280. All restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

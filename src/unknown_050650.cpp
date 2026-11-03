@@ -507,6 +507,11 @@ struct s_collision_result_buffer_1697c0
 // score 303 (was 322): frame 0xa8 agrees; first +0x19: retail puts one 4-byte temp (the length, the random
 // integer and the sine) at the frame bottom where ours puts it above the result byte, so the axis/result
 // homes sit 4 lower; the two rotations keep the candidate in registers in retail (ours spills it between them).
+// Round 85 (m3 lane 12): `real versine = 1.f - cosine;` named in the rotate-in-place helper 293 (NOT kept (review):
+// a one-use local, match only; retail forms the dot then 1 - cos, as the inline product; there the axis/result homes
+// agree and first +0x31: retail keeps the length, random integer and sine in one frame-bottom temp; 0x297d30 stays 23); sine/cosine passed in the rotate call 303; cosine computed first 300, with versine 290 (0x297d30 23 -> 41);
+// the normaliser's products as `j *= scale`/`scale * k`/all compound 293/293/293; versine and projection after the
+// cross terms 286 (0x297d30 23 -> 158); the dot named before/after versine 293/293.
 // Earlier at 322: first +0xa acquires pitch inputs before the default vector.
 // Normalization scratch at +0x2c versus +0xc displaces axis/result homes; trig and rotation schedules differ.
 // Earlier at 333: the frame remains 0x98 versus 0xa8; axis, random/trig and vector schedules differ.
@@ -932,6 +937,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // B386: Plain real-array direction-input/five-point-input/optional-output loops, subsets 1/2/4/3/5/6/7, then
 // direct descending component index: 400/320/317/389/373/332/401/400 (fast control 258; full 257). Original
 // record copies and body restored; byte homes and shared-tail predecessor remain.
+// Round 85 (m3 lane 12, plain): the weapon fallback as `vector3d_from_points3d(...); goto normalize_direction;` 283
+// (1420 B); the output stores swapped 257; point_valid folded into the output test 257 (same code); point_valid set
+// before the state lookup in cases 1 and 2 261; before the point copies in cases 3 and 5 257. Body unchanged.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1387,6 +1395,10 @@ struct s_actor_looking_structure_view
 // axis j load ahead of the copy and the score's order; other searches real 25/25/135 (928 bytes). Pointers at every use of axis i+j 29, axis
 // k+vector j+k 127, axis k+vector j+i 128, axis k+i+vector i 139, axis j+vector j 33, axis j+vector k 29, vector k+axis j 31, axis k 138,
 // axis j 140, axis j+k 144, all of the axis 61 (928 bytes where a three-figure count). The score i,k,j never appeared in about 2,300 compile-only forms.
+// Round 159 (fast; one plain control agreed): rotation with a separate result parameter, same pointer passed twice 68; copy inside the helper with separate input
+// and output 478 (660 bytes); score `dot3f(&directions[i], &forward)` 33; named angle with sine and cosine passed to the in-place
+// helper 146 (927 bytes); axis local in the loop body with the fraction before the copy 174 (910 bytes); `dot3f(axis, vector)` in
+// the helper plus the dot3f score 142 (926 bytes).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {

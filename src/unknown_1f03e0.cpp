@@ -1026,6 +1026,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // B389: Complete native aggregate producers: direct rotation/raw/working, general working/raw,
 // direct raw+working, general raw+working and all: 433/433/497/551/433/497/551/584.
 // Original raw-first body restored; damping and raw/bounded homes remain.
+// B391: Actual external normal/facing/input identities, subsets 1/2/4/3/5/6/7, then
+// all with up identity: 346/509/533/477/511/587/513/511. NOT kept: the normal-field
+// reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
+// does not show that new field-alias lifetime or its projection load pattern. Exact-only
+// identities and complete body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
