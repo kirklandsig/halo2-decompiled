@@ -265,6 +265,14 @@ real normalize2d(point2f *arg_0);
 // vector3d_from_points3d used in both projections 232 (1028 bytes); the clearance computed after
 // normalize2d 245 (1013 bytes); `result = true` before the out-pointer store 241 (1031 bytes);
 // local_11's squares written i, j, k 217; the actor-to-point vector from local_1 182.
+// M3 lane 2 r47 (fast, on 180): the to-center copy declared before the actor-difference call 226 (1027 bytes); the copy
+// taken right after the input copy, before the object lookup, 232; `2.0f - local_11` inside the normalize-success
+// block 245 (1013 bytes: that block then is retail's code, sqrt stored and re-read after the call; aligned 121 -> 119);
+// the actor difference from local_1 instead of arg_2 182 (1028), with the copy declared first 182.
+// DH319: Current in-place-copy graph, center-difference vector with original,
+// early-success, query-test and complete query arms 232/241/255/253;
+// uniform scalar terms 238/245/253/249. All restored; four query-result forms
+// change entry convention and lose callers; point/SSE and success ordering remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

@@ -333,6 +333,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // B387: Direct location/raised members and library location copy on the unqualified-settings
 // graph, seven subsets, then actual count declaration before the query: 931 each
 // (reduced control 931, full 882). Original complete body restored; frame/homes remain.
+// Round 143 (m3 lane 5; fast control 931, full 882): priority/range/self-unit names chosen to sort
+// in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
+// enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
+// flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1220,6 +1224,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // B387: Serial native radial/displacement phases, shared-domain/scope subsets and independent
 // serial control: 400 each. All recover frame 0x28 at 1312 bytes; NOT kept: regression
 // from 324. Original full body restored; zero/radius and endpoint/history homes remain.
+// Round 143 (m3 lane 5, fast): both offsets through the existing point2f_set with per-coordinate
+// sums 472 (1375 bytes); start/end chosen as pointers in the if/else 435 (1352); dot test as
+// `(dot < 0.0f) == side` 324 (same code); node pointer formed just before its flag test 396 (1263);
+// node fields read through data->nodes[node_index] with no node pointer 381 (1266).
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1440,7 +1448,7 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 418 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// score 418 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1686,6 +1694,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // both long 476; count through its address, const reference or local copy 440 (same code); edge outside the loop, dword edge, order of the top
 // assignments, candidate while/decl forms, scan compare against type/next/step 440 (same code). Root left: our count CSE holds EBX through the
 // scan where retail's edge lives in EBX and count is read from memory; retail's dead `query+4` store shares the location's slot.
+// Round 143 (m3 lane 5, fast = plain here): avoidance trace declared at the untyped branch scope
+// 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
+// copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
+// (same code); emitted type from the type local instead of the step 421 (1755 bytes).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

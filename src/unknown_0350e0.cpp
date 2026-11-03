@@ -116,6 +116,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // NOT kept: one-point lead below gate; hoisted one-use trig results require a match.
 // Original helper signature, both helpers and complete body restored.
 // M323: Component-loop producer with long/dword/short/word ordinal 356/356/715/715; the same with native running sum 356/356/732/732. Narrow loops reach frame 0x90 but lose native extent; original producer and body restored.
+// Round 64 (fast, aligned counts from 346): in place through vector3f_rotate_into_axes 465 (aligned 322), through function_2477b1
+// 465; scalar in-place helper (i, j, k read once; k re-read as retail) as one expression, running sum or staged 377/377/377 (aligned 276,
+// frame 0x64). On that: squares before trig 376; named sine products 411; hoisted angles 394; squares+products 420; squares+angles 396;
+// products+angles 434; all three 440; with rows in retail's pair order 481. Retail's matrix slots: first at 0x60, second at 0x2c.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1708,6 +1712,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
 // 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
 // home and frame 0x14 versus 0x18 remain.
+// Lane 16 r80 (fast): retail's xmm0 zero serves the `0.0f -` negations while `result` keeps its own slot; ours
+// folds both into one constant. Negations spelled `-(...)` 193 (identical code); result declared at the y test with
+// `return 0.0f` in case 0/default 291 (904 bytes); case 0 merged into default 194; `return 0.0f` in case 0/default
+// 193; `if (y)` 193. Body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2027,20 +2035,26 @@ struct s_render_reset_state;
 void function_16b10(s_render_reset_state *state);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 
-PRIVATE __forceinline vector3f direction_from_angles(real heading, real elevation)
+#include "object_markers.h"
+
+struct s_angle_pair
 {
-    vector3f result;
-    result.i = (real)(cos(elevation) * cos(heading));
-    result.j = (real)(cos(elevation) * sin(heading));
-    result.k = (real)sin(elevation);
-    return result;
+    real heading;
+    real elevation;
+};
+
+PRIVATE __forceinline void direction_from_angle_pair(s_angle_pair const *angles, vector3f *direction)
+{
+    real cosine = (real)cos(angles->elevation);
+    direction->i = (real)cos(angles->heading) * cosine;
+    direction->j = (real)sin(angles->heading) * cosine;
+    direction->k = (real)sin(angles->elevation);
 }
 
 struct s_direction_entry
 {
     byte unknown0[0xc];
-    real heading;
-    real elevation;
+    s_angle_pair angles;
     long unknown14;
     long tag;
     byte unknown1c[0x18];
@@ -2055,65 +2069,6 @@ struct s_direction_list
 typedef char assert_direction_entry_size[(sizeof(s_direction_entry) == 0x34) ? 1 : -1];
 typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 : -1];
 
-// MiniMax R (11-01): no new form, no lower score: our frame is still 0x80 against retail's 0xc0, and the angle work still mixes x87 and SSE differently.
-// score 177 (was 177): earlier 188; earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
-// earlier 204, 220, 298; frame 0x80 vs 0xc0, vector/loop homes and argument copies differ.
-// Earlier: the statements match retail (cos(elevation) is evaluated first, the entry's tag is read again
-// at the call instead of cached, `left` is built from g_4687b0 directly while `up` is a separate copy). Writing the result back
-// with `local = direction;` (retail stores the new direction into the slot of `local`, 0x14) took 220 to 204. What still differs:
-// frame 0x7c against retail's 0xc0 and 846 against 857 bytes, and the register roles (retail keeps the loop count in ebx, the entry
-// in ebp, spills `definition` to [esp+4] and the entry offset to [esp+0x2c]; ours keeps `definition` in ebx). Retail builds `local`
-// and `forward` straight into their slots (0x14, 0x20) and then block-copies local, forward and up into one argument-like area
-// (0x30, 0x3c, 0x54, with a slot for `left` at 0x48 that is never stored); `left` stays in xmm registers there.
-// Retail reads the entry's heading and elevation straight from memory for `local` (fld [ebp+0x10] ... fld [ebp+0xc] twice) but
-// loads the definition's heading once for `forward`, so `local` is not a call of the same helper as `forward`.
-// Tried: sin/cos without the (real) casts (223), out-pointer helper for both (284/260), for `local` only (256/228), by-value basis helper with `left` as a vector (261, 357 when
-// passed whole) or as three reals (253), `left` from a returning cross helper (235), `local` written inline from the entry fields
-// (269/247), a by-value world_direction(local, forward, up) helper (203 but 846 bytes of different temps), basis declared before position (no change).
-// Round 435: shared/staged left cross 182/182; native matrix plus shared rotation 181/181,
-// in-place 189/189; original cross rows with shared rotation 191, in-place 189. All restored;
-// six/seven-point leads are below the keep gate. Current frame 0x80 vs 0xc0; loop/vector homes differ.
-// Round 503: native entry/list/both 188/188/188; each with shared axes 181/181/181.
-// Both records with capacity checked after entry selection 177 (861/857), kept;
-// shared axes plus that capacity check 176, exact-only and restored. Frame and vector homes remain.
-// P266: Native paired entry angles with const-pointer/reference/value/mutable-pointer
-// input, value-vector output 192/192/182/192, output-pointer vector 223/223/205/223;
-// each uses the existing zero-pitch forward producer. Original fields, scalar inputs,
-// vector returns, helper, include set and caller restored; frame/vector-copy homes remain.
-// DL240: Local/forward/up whole-vector memcpy subsets 1/2/3/4/5/6/7: 177/177/173/177/177/177/173;
-// complete memmove 263. Four-point leads fail the keep gate and returned-value one-use diagnostics
-// do not match. Original body restored; frame 0x80 versus 0xc0 and angle/copy homes remain.
-// DL240: Follow-up input const-reference heading/elevation/both 178/180/173; with rotated-vector
-// memcpy 178/180/173; heading/both plus memmove 197/201. Four-point leads and literal-bound
-// reference forms rejected; original angle producer and complete body restored. Frame and vector
-// homes remain.
-// P269: native double heading/elevation and twice-used elevation-cosine subsets 1..7,
-// then both double inputs with complete aggregate result: 215/233/210/234/209/233/210/210.
-// Original helper and body restored; frame/angle/vector-copy homes remain.
-// P271: Complete existing entry pointer/reference/value/mutable-pointer input,
-// each with native vector return/output production and shared zero-pitch forward:
-// 192/192/200/192/223/223/205/223. Original producer, type position and body restored; frame/copy homes remain.
-// N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
-// 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
-// angle/vector copies and draw homes remain.
-// Round 533: Immutable native entry direction with independent rotation output,
-// forward and up inputs, subsets 1/2/4/3/5/6/7 and complete vector role names:
-// 186/177/177/186/186/177/186/186. Original captures, writeback and body restored;
-// frame 0x80 versus 0xc0 and angle/vector-copy/draw homes remain.
-// AC480: Local/forward assignment initialization and existing native result setter, subsets
-// 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
-// original producer and body restored. Frame and independent vector-copy homes remain.
-// DL247: Existing angle producer output reference / returned pointer / aggregate vector /
-// immutable aggregate, forced/ordinary inline: 224/224/224/224/177/239/177/239.
-// All restored; nonmatching output contracts shorten past retail, and the 0xc0 frame remains absent.
-// DH301: Actual drawing matrix, complete point setter and complete facing setter,
-// subsets 1/2/4/3/5/6/7, then all with uninitialized draw outputs before reset: 177 each.
-// All tie; complete original drawing objects, helper calls and body restored. Frame
-// 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
-// M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
-// M326: Complete left-cross/rotation/draw-position accumulations, subsets 1/2/4/3/5/6/7,
-// 178/174/177/174/178/174/174; all with earlier bare output declarations 174. NOT kept:
-// three-point gains above 30; frame/copy homes remain. Complete original body restored at 177.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2130,33 +2085,34 @@ void function_3eec0()
             s_direction_entry *entry = definition->entries + i;
             if (i >= 64) break;
             if (entry->tag == NONE) continue;
-            vector3f local = direction_from_angles(entry->heading, entry->elevation);
-            vector3f forward = direction_from_angles(definition->heading, 0.0f);
-            vector3f up = *g_4687b0;
-            vector3f left;
-            left.i = g_4687b0->j * forward.k - g_4687b0->k * forward.j;
-            left.j = g_4687b0->k * forward.i - g_4687b0->i * forward.k;
-            left.k = g_4687b0->i * forward.j - g_4687b0->j * forward.i;
-            vector3f direction;
-            direction.i = local.j * left.i + local.k * up.i + local.i * forward.i;
-            direction.j = local.i * forward.j + local.j * left.j + local.k * up.j;
-            direction.k = local.i * forward.k + local.j * left.k + local.k * up.k;
-            local = direction;
+            vector3f local;
+            direction_from_angle_pair(&entry->angles, &local);
+            s_angle_pair facing;
+            facing.heading = definition->heading;
+            facing.elevation = 0.0f;
+            vector3f forward;
+            direction_from_angle_pair(&facing, &forward);
+            matrix3x3 axes;
+            axes.forward = forward;
+            axes.left.i = forward.k * g_4687b0->j - forward.j * g_4687b0->k;
+            axes.left.j = forward.i * g_4687b0->k - forward.k * g_4687b0->i;
+            axes.left.k = forward.j * g_4687b0->i - forward.i * g_4687b0->j;
+            axes.up = *g_4687b0;
+            vector3f_rotate_into_axes(&axes, &local, &local);
             if (1.0f > g_4b9f58)
             {
                 g_4670bc = true;
                 function_16b10((s_render_reset_state *)g_485b48);
-                point3f position;
-                position.x = local.i * 1023.875f + g_4b9da0.x;
-                position.y = local.j * 1023.875f + g_4b9da0.y;
-                position.z = local.k * 1023.875f + g_4b9da0.z;
-                vector3f basis[3];
-                basis[0].i = 0.0f - local.i;
-                basis[0].j = 0.0f - local.j;
-                basis[0].k = 0.0f - local.k;
-                function_11d000(&basis[0], &basis[2]);
-                function_30bf0(&basis[2]);
-                function_2dba0(entry->tag, false, 3, 0, i, &position, basis, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
+                s_object_marker marker;
+                marker.matrix.position.x = local.i * 1023.875f + g_4b9da0.x;
+                marker.matrix.position.y = local.j * 1023.875f + g_4b9da0.y;
+                marker.matrix.position.z = local.k * 1023.875f + g_4b9da0.z;
+                marker.matrix.forward.i = 0.0f - local.i;
+                marker.matrix.forward.j = 0.0f - local.j;
+                marker.matrix.forward.k = 0.0f - local.k;
+                function_11d000(&marker.matrix.forward, &marker.matrix.up);
+                function_30bf0(&marker.matrix.up);
+                function_2dba0(entry->tag, false, 3, 0, i, &marker.matrix.position, &marker.matrix.forward, (color3f const *)((byte const *)g_4686cc + 4), 1.0f - g_4b9f58, 1.0f, 1.0f);
             }
         }
     }
@@ -2331,6 +2287,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // subsets 1/2/4/3/5/6/7: 57/57/63/57/63/63/63; ordinary static random helper 57.
 // Both other body users preserve their calibrated scores. Original declarations, helper and body
 // restored; frame 0xc, delayed saves and the split post-fstp count comparison remain.
+// Round 64 (fast): only motion[1]'s product and the count compare differ (their 3 bytes are the length gap). Motion record
+// struct 40; group struct 40; both 40; while loop 40; normalize_inline 48; `*(long *)group > i` 40; motion[7] from
+// motion[1] 137; pointer local to motion[1] 40; byte-offset stores of motion[0]/motion[2] 40; vector3f view pointer 40.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2449,6 +2408,10 @@ real magnitude3d(vector3f const *v);
 // AC492: On the retained fallback loop/frame, explicit current/target clamp producers
 // 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
 // Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
+// Lane 16 r80 (plain): retail's dot is re-read as a float for acos (ours keeps a double copy at +0xc,
+// moving angle/sine/cosine homes); acos on a fresh dot3f 198 (1039 bytes); arms swapped under the
+// inverted test 171; sine, projection dot, cosine, then the product 170; fallback `-step > delta` 170
+// (identical); fallback delta through the nested ternary clamp 188 (1025 bytes). Body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2750,6 +2713,9 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // subsets 1/2/4/3/5/6/7: 413/335/317/413/413/335/413; all with the existing swap
 // scratch declaration separated from assignment 413. Original complete source restored;
 // frame 0x30 agrees, prefix/state and ordinal homes plus the rotated decay base remain.
+// Round 64 (fast): a copy of `first` for the sorts 370; the third pass through state->entries[i] with no entry pointer 318;
+// `--last` as its own statement in the third pass 317, in the fourth pass 317; first swap through the flags pointer 375;
+// `entries[first++]` in the second pass 317; `first = i + 1` 442. `first` stays in EBP in all of them.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3081,7 +3047,6 @@ void function_36ab0(void)
     g_50941c = 0.0f;
 }
 
-#include "object_markers.h"
 
 real function_be6d0(long object_index, long attachment_index);
 bool function_bad50(long object_index, long index, point3f *out);
@@ -3152,17 +3117,6 @@ void function_41c80(short type, s_41c80_state const *state)
     }
 }
 
-// score 139 (was 153): a full attachment list (64 added) ends the marker loop (retail jumps from the flag store to
-// the next attachment), the lens scale starts at 1.0f and takes the matrix scale only when the tag flag is set,
-// and the count, colour and markers are plain locals (count in ebx until the marker loop, amount and scale in
-// retail's slots). Still different: retail's marker cursor points at matrix.up (ours at matrix.forward), and it
-// holds 0x40 in eax for both `added < 64` and the tag flag test, then reloads `added` for the lens call.
-// Round 55 (plain unless noted): break alone 165 fast; with the scale default 146 (646 bytes); amount renamed
-// 145 fast (slots do not move); plain locals 139; dword flag test 117 fast (= control); no matrix pointer 155 fast;
-// full-list exit first (`if (added >= 64) { ...; break; }`) 117 fast; colour declared first 117 fast; const matrix 117 fast.
-// Earlier: score 146 (was 149 on a 169-source fast image): retail has color, marker count and the markers in one
-// frame block with the amount in its own slot, and loops on a count it holds in ebx; the slots still differ. Tried:
-// separate color/count/markers locals (+1), one shared scale local (no change).
 // @retail 0x41980
 void __stdcall function_41980(short type, long object_index)
 {
@@ -3179,14 +3133,14 @@ void __stdcall function_41980(short type, long object_index)
             s_attached_render_entry *entry = ((s_attached_render_entry *)*(byte **)(definition + 0x98)) + i;
             if ((entry->type == 0x6c656e73 || entry->type == 0x4d475332 || entry->type == 0x7464746c) && entry->tag != NONE)
             {
-                long count = function_b8d30(object_index, entry->marker, markers, 65, false);
+                long marker = entry->marker;
+                long count = function_b8d30(object_index, marker, markers, 65, false);
                 real amount = function_be6d0(object_index, i);
                 color = *(color3f const *)g_468710;
                 if (entry->color_index)
                     function_bad50(object_index, entry->color_index, (point3f *)&color);
                 for (long j = 0; j < count; ++j)
                 {
-                    transform4x3f *matrix = &markers[j].matrix;
                     if (entry->type == 0x6c656e73)
                     {
                         if (added < 64)
@@ -3194,8 +3148,8 @@ void __stdcall function_41980(short type, long object_index)
                             byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                             real scale = 1.0f;
                             if (tag[0x28] & 0x40)
-                                scale = matrix->scale;
-                            function_2dba0(entry->tag, function_3e9c0(object_index), 0, object_index & 0xffff, added, &matrix->position, &matrix->forward, &color, 1.0f, amount, scale);
+                                scale = markers[j].matrix.scale;
+                            function_2dba0(entry->tag, function_3e9c0(object_index), 0, object_index & 0xffff, added, &markers[j].matrix.position, &markers[j].matrix.forward, &color, 1.0f, amount, scale);
                             ++added;
                         }
                         else
@@ -3210,13 +3164,13 @@ void __stdcall function_41980(short type, long object_index)
                         byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
                         real scale = 1.0f;
                         if (*(long *)(tag + 8) > 0 && (**(byte **)(tag + 12) & 0x20))
-                            scale = matrix->scale;
-                        function_42850(object_index, entry->tag, &matrix->position, &matrix->forward,
-                            &matrix->up, scale, amount, (vector3f *)&color);
+                            scale = markers[j].matrix.scale;
+                        function_42850(object_index, entry->tag, &markers[j].matrix.position, &markers[j].matrix.forward,
+                            &markers[j].matrix.up, scale, amount, (vector3f *)&color);
                     }
                     else if (entry->type == 0x7464746c)
-                        function_429a0(0, object_index, entry->tag, NONE, &matrix->position,
-                            NULL, &matrix->forward, &matrix->up, 1.0f);
+                        function_429a0(0, object_index, entry->tag, NONE, &markers[j].matrix.position,
+                            NULL, &markers[j].matrix.forward, &markers[j].matrix.up, 1.0f);
                 }
             }
         }
@@ -3286,6 +3240,16 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // fades, seven subsets, then the final producer consumed directly:
 // 177/177/177/177/177/177/177/177. Original body and shared helper restored; the four-byte frame
 // gap and initial/final scratch scheduling remain.
+// Lane 16 r80 (fast unless marked plain): kind without volatile 242 (747 bytes); alpha declared ahead of kind 178;
+// the final fade through existing 0xc6b90 (property 0x11000088) 176 plain; that with kind not volatile 242;
+// with the getter's outputs zeroed (`real fade = 0.0f; bool active = false;`, retail's two dead stores and frame
+// 0x1c) and kind not volatile 231 (758 bytes: kind takes EBP, the table is not cached). Diagnostic, NOT kept
+// (re-tests result): that graph with `result = !(alpha <= 0.0f) && result;` 113 (775 bytes, first +0x58: entry,
+// both cases and frame are retail's; left the folded `test [esi+0x10a],4` and the first fade), `result &= alpha >
+// 0.0f` 116; on it the flag as word/dword/byte-cast/no bool cast/`!= 0` 113 each, the first fade read per use
+// 144, kind as signed char 220. On the if-form graph: `!(alpha > 0.0f)`, `0.0f >= alpha`, a ternary, the getter's
+// return tested, the header unnamed, result initialised false 231 each; kind as signed char 211 (773 bytes),
+// short 226, declared after alpha 233. Body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3820,6 +3784,9 @@ bool __stdcall function_391f0(void *state);
 // 310/251/277/295/288/277/275/275. All tie or regress; original complete body, reads,
 // publications and loops restored. Frame 0x74 versus 0x70 and zero/portal/fog homes remain.
 // M323: Existing native state-group fields with bool/byte/short/long outcomes 251/251/281/286; explicit conditional assignments 297/297/263/281. The 263 form reaches 1014 bytes but regresses; original body and phase observations restored.
+// Round 64 (fast, aligned counts from 132): long current cluster at the guard 302 (frame 0x6c, aligned 129); camera read at the plane
+// test 251 (aligned 131); fog word widened into a long after its NONE test 251 (132); current+camera 302; current+fog 302;
+// camera+fog 251; all three 284 at 1020 bytes (aligned 127, frame 0x6c). Retail's slots: remaining 0x10, ordinal 0x14, structure 0x18.
 // @retail 0x36b50
 void function_36b50()
 {

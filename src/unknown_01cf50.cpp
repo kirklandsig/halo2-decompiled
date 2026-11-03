@@ -4618,6 +4618,11 @@ long g_485a60;
 // binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
 // the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
 // Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
+// Round 65 (m3 lane 1, on the 353 body before round 126 merged): the existing 0x16ae0 with per-use binding reads
+// and a counted loop 210; that with the original slot/destination/source locals 365 (0x16b90 back to 47); the
+// location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
+// address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
+// in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
