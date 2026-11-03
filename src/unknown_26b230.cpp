@@ -2007,6 +2007,11 @@ void function_269250(long clump_index, long actor_index);
 // excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
 // exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
 // remain.
+// F350: Native created-center memcpy/memmove, actual output pointer/reference,
+// original then shared selected/created result: 87/125/87/125/87/125/87/125.
+// memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
+// Original assignment, receiver and full body restored; pool/selection and
+// x87 score homes remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2273,6 +2278,10 @@ void function_269250(long clump_index, long actor_index)
 // original whole-group result, categories, deletion, node and tracking walks restored.
 // DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
 // Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
+// F350: Native final tracking/state receiver with same/other-object cleanup
+// predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
+// One-use predicates are exact-only and restored; original categories, mutation
+// result, deletion continuation, all shared pools and complete body retained.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

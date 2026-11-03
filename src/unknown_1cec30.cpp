@@ -1045,6 +1045,11 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// F350: Native transform/reset word masks 89/90/94; shifted Boolean word
+// forms 65/65/65; direct bitfields 94; both masks with the existing aligned
+// copy 40 at 223/220 bytes. NOT kept: only the combined mask/copy graph gains,
+// retail shifts the flags, and the length moves away. Original body restored;
+// aligned frame, constructor copy and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
