@@ -2771,6 +2771,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
 // 530 each. Original declarations, component producers and entire body restored;
 // frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
+// AC504: Push-setting receiver at random/centroid/average/push boundaries,
+// mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
+// give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
+// Original whole body restored; result/state bytes and point/scalar homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3398,6 +3402,10 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // M338: Native scale/transform-row/complete point-geometry ordinal loops, subsets 1/2/4/3/5/6/7 and final
 // pivot translation: 369/369/364/369/364/364/364/364. Original helper and body restored;
 // matrix/origin/pivot homes remain. NOT kept: four-point lead above 30 fails the eight-point gate.
+// AC504: Both pivots through existing alias-safe/scalar-input/axis rotations, with
+// component/shared/in-place translation: 895 each (1412 bytes, helper outlined).
+// Native inline expansion on four producer forms: 389/389/389/391; all regress.
+// Original helper/body restored; matrix/origin, pivot/property homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
@@ -5039,6 +5047,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // bool/byte/short/long in both truth domains: fast 655 each against control 655,
 // 2285/2190 bytes. Original body restored at full 648; frame 0xd0, tag/state/animation
 // homes and completion expansion remain.
+// AC504: Constant-default animation-result construction at entry/pre-motion/post-motion/
+// pre-timer scopes, original then animation-flags-first acquisitions: 655 each
+// against reduced control 655 (full 648). Original complete body restored; tag/state/
+// animation homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

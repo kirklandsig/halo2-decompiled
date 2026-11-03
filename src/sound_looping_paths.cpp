@@ -748,6 +748,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // the function top 150, at the camera-block top 150; the transition definition through g_4e0348 279 (1037 bytes: bsp then
 // takes retail's +0x14 home but a cached zero takes ESI before the request loop, where retail reloads bsp); on that, the
 // position copied before the cluster 279, `count` at the camera-block top 279. Body restored.
+// AC504: Actual query-consumer cursors for indices/portals/clusters, masks 1/2/4/3/5/6/7,
+// then all with array-end termination: 276/259/262/259/253/196/230/178. All regress;
+// original indexed consumers and complete body restored. BSP/count homes remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
