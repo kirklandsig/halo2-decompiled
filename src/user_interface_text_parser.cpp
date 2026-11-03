@@ -658,6 +658,9 @@ done:
 // Round 61 (m3 lane 10, fast; parse_variant stays matched), on the 32 form: `(word *)&g_55c6e4` at the translator
 // 32; the success copy calling function_08cc20 directly 32; `&g_55c6e4[0]` at the success copy 32, at both 32; the
 // success path's copy moved after the `if` with an `else goto done` 32 (all identical code).
+// Round 81 (m3 lane 16, fast; parse_variant stays matched), on the kept form: the selector read from the
+// variant getter in the switch (no variant local) 44; const globals 32, a dword tag 32, a dword name 32 (same
+// code each); the tag declared and read after the switch, just before the translator call 45.
 // Round 141 (m3 lane 5, fast; parse_variant stays matched), on the natural one-copy form 54 (173 bytes): a const pointer
 // local for the translator's buffer 54; `&g_55c6e4[0]` 54; a named copy source 54; a named selector 54; the tag read in the
 // translator call 45 (171). The EBX hoist of the buffer stays in all of them.

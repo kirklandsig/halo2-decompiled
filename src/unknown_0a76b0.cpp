@@ -962,6 +962,9 @@ extern vector3f *g_4687b0;
 // F349: Actual speed-tag, native seat flags and throw-global receiver subsets 1..7,
 // then complete mutable receivers: 309/309/309/309/309/309/309/309. All original
 // record receivers and body restored; frame 0xcc agrees, tag/index/direction homes remain.
+// Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
+// (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
+// first in the function 309 (same code); one function-scope origin for both throw branches 312.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1798,6 +1801,11 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // stored before its mode 138, the secondary arm's flag as the constant false 138 (same code each); the
 // other hand's getter given `!hand` re-measured 141. Retail's first lookup addresses [index + data + 8] (ours
 // [data + index + 8]) and re-reads the pool data for the hand getter.
+// Round 81 (m3 lane 16, fast): the player index read once into a local for its test and the value getter 162
+// (512 bytes); flag declared before mode 138; the definition compare sides swapped 138; the slot read through
+// UNIT_ACTION_HEADER_GET 138 (same code each); the weapon through the char-index unit_action_weapon_get(unit,
+// !primary) 132 (542 bytes; gain of 6, not kept). Retail reloads only the pool's data field (the pool pointer
+// and the scaled index stay CSE'd) for each hand lookup, as in 0xe9190.
 // M335: Primary/selected-hand/paired-weapon scalar identities, subsets 1/2/4/3/5/6/7,
 // then all with the animation-flag identity: 138/138/138/138/138/138/138/138. Original complete body restored;
 // same-block pool reload and selected-weapon/mode homes remain.
@@ -2065,6 +2073,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // M335: Native receiver/offered/returned scalar identities, subsets 1/2/4/3/5/6/7,
 // then all with the give-result identity: 97/97/97/97/97/97/97/97. Original complete body restored;
 // frame/result-byte and pooled unit/weapon homes remain.
+// Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
+// through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
+// and calls 97, `given` declared first 97 (same code each).
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
