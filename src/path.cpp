@@ -1091,8 +1091,8 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				}
 			}
 			if (blocked || (!input->unknown04 && TEST_FIELD_BIT((link->flags >> 1) & 1) &&
-				function_1fa6b0(&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index],
-					(s_pathfinding_data *)state->pathfinding)))
+				function_1fa6b0((s_pathfinding_data *)state->pathfinding,
+					&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index])))
 			{
 				continue;
 			}
