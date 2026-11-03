@@ -219,6 +219,11 @@
 // Round 545: Native indexed input scaling/copy producers, first-scale/second-pair/copy
 // subsets 1/2/4/3/5/6/7 and complete unsigned-counter graph 581/581/699/581/699/699/699/699.
 // Original scalar producers, helpers, sixth conversion and body restored; frame 0x58/0x60 remains.
+// Round 139 (m3 lane 5, fast; both ret 0x20 now): both shape pointers NULL then if/else 622 (2622 bytes), inv after
+// them 636, shape1 declared first 622; the 575 composite (plain sixth product, entry shapes, global sine arguments,
+// first wave through vector3f_add_scaled; six, under the bar) re-measured 575; on it the four trig factors as named
+// doubles 615 (forward-substituted), cos 7.75y first in the sum 575, the inner product parenthesised 575, wave_shift
+// declared before s1 575, second wave through vector3f_add_scaled too 642 (2600 bytes).
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -798,6 +803,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 545: Native color/width default producers, aggregate/library color seeds,
 // separate/both defaults and positive state arms 336/577/561/615/336/578/558/616. All original
 // output producers and body restored; frame 0xa8/0xac and spill homes remain.
+// Round 139 (m3 lane 5, fast): with the 4-byte frame shift u_step and the first.y spill already sit in retail's slots;
+// retail's v + width lies at +0xac over a dead dword. v_width read before v 266; `v_width = v + v_width` 265; u_step
+// before u 265; width scale in its own local 265; `width` declared before `color` 265; `previous` before `index` 265.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

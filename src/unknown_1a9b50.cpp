@@ -551,6 +551,9 @@ extern point2f *g_468778;
 // AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
 // seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
 // guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
+// Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
+// final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
+// code); the two-use distance local alone 425 (1567 bytes).
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
