@@ -974,6 +974,8 @@ extern long *g_51e9cc;
 // M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
 // 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
 // Nonmatching single-consumer truth carriers restored.
+// F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
+// 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -2345,6 +2347,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // M338: Complete validated-query result in bool/byte/short/long, positive/complementary channels:
 // 63/63/63/63/63/63/63/63. Original body restored; extra EBP, body transport and flag schedules remain.
 // Nonmatching single-consumer query results restored.
+// F355: Condition-declared signed settling count in char/short/long/read-only-long, original/entry query output:
+// 82/84/63/63/82/84/63/63. NOT kept: no gain; original body restored.
 // N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
 // validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.

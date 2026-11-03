@@ -1745,6 +1745,9 @@ bool function_0b6760(s_index_pair const *pair);
 // in DL (retail a stack byte), the state offset loaded once (retail compares memory and re-reads it), the volatile
 // definition re-read four times in the acceleration block (retail once into EDX) and the group pointer's spill
 // around the 0x1c6620 call.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
 // Round 81 (m3 lane 9, fast): the header type byte read through s_device_header (DEVICE_GET's own shape) 285
 // (same code); with a plain index 411 (1466 bytes: retail's 0x20 frame and the index*12 CSE spilled at
 // [esp+0x1c], but in ESI/EDI where retail has EBX/ESI); the state test through the existing
