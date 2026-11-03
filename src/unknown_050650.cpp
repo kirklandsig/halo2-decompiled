@@ -642,6 +642,10 @@ struct s_collision_result_buffer_1697c0
 // frame-bottom scratch and pitch-axis/result homes remain.
 // DH304: Private normalization-success bool/byte/short/long results, direct/common exits, 340/340/340/340/340/340/340/340.
 // Original real normalization result, helper and sampler restored; frame-bottom scratch and axis/result homes remain.
+// m3 lane 9 r76 (fast): pitch axis by member stores 322; pitch axis declared first 331; attempt at function scope
+// 322; candidate at function scope 322; best_fraction before result and clear after the axis 322. Left: retail keeps
+// the x87-to-SSE length temp and the draws' fild/fsin temps at the frame bottom (0xc/0x10) with everything above 4
+// bytes higher; ours puts them at 0x2c/0x3c, and the two hoisted bound differences sit in swapped slots.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -893,6 +897,11 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
 // 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
 // NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
+// m3 lane 9 r76 (plain): case 2's remembered branch first (inverted state test) 257 (same code); with case 1 as
+// `state < 1` exit then its remembered branch first 263 (1440 B); case 1's producers as case 6's form (one
+// `goto aim_at_point` after the if/else) 257; case 2's non-aiming if/else swapped 257; `!aiming` first in cases 1
+// and 6 257. Left: ours tail-merges case 1's and case 2's cafc0 blocks into the one that falls into the direction
+// chain; retail keeps both inline (each `jmp` to the chain) and CSEs neither 0x1e3b00 `&point` (it recomputes `lea edi`).
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
@@ -1554,6 +1563,9 @@ struct s_actor_looking_turn_request
 // EBX); that with bool valid 585 (1960 B, frame 0xc4, valid in BL as retail); the re-get before the three output
 // copies 461. The EBX hold comes from three users of the table (entry, the inlined 0x1fdd90, the re-get); retail
 // has only the two, so BLOCKED-BY 0x1fdd90 stands.
+// m3 lane 9 r76 (plain): the turn block reading actor->unit_index at each use 442; forced declared with the top
+// flags 445; the aiming output as `valid ? direction : reference_vector` plus `aiming = valid != 0` 548 (2040 B);
+// the target-point output stores swapped 457 (2008 B); the override decrement as nested ifs 442 (same code).
 // @retail 0x298370
 void function_298370(long actor_index)
 {
