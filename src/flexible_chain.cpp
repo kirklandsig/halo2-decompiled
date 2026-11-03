@@ -413,6 +413,11 @@ void __stdcall function_1160c0(real dt)
 // Y547: Native double length-ratio/axis-reciprocal/paired-trig residence, seven subsets
 // then all with double returned angle: 328/236/348/317/430/372/440/494. Exact-only precision
 // forms restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 79 (m3 lane 16, fast): the segment as a ternary of two element addresses 297 (1379 bytes); previous copied
+// before the node's position store 179; position/direction declared at the loop-body top 179; the velocity rows as
+// `inverse_dt * (...)` 179; the last-segment index as `i - 1` 183. The first real difference is the segments base:
+// retail loads it into EDX and keeps the segment in EDX (ours EDI, then ECX), which shifts the scratch rotation of
+// the physics call's argument setup (retail forms the tag address after pushing -1 and the location).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

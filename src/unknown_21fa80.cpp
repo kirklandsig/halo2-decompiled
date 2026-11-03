@@ -218,6 +218,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // before the phase or at entry, each original reference/plain gain value: eight at
 // 532 fast (control 532; full 545). Original body and lifetimes restored;
 // frame 0x22c versus 0x224 and stream/gain/mixed-math homes remain.
+// Round 79 (m3 lane 16, fast control 532, full 545): the gain difference in a named real before its fabs 537;
+// direct read before the stream lookup 579 (1921 bytes); mode read before changed 570 (1917 bytes); the voice
+// branch's status declared in each arm 532 (same code); buffer/submix property declarations swapped 532 (same code).
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

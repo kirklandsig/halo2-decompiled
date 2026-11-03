@@ -336,6 +336,11 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 79 (m3 lane 16, fast): first-loop cross through cross3f_staged 1462 (6179 bytes); through the file's own
+// k/j/i cross helper 1426 (6238 bytes, retail's length: local_5 then preloads like retail, but the local_4 add folds
+// into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
+// the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
+// local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

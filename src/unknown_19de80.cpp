@@ -476,6 +476,12 @@ static inline bool teams_enabled_19e1c0()
 // AC489: First-word-only text initialization at entry for player/team/formatted families,
 // subsets 1/2/4/3/5/6/7: 425/427/435/437/451/453/467; team-only with ordinary result 609.
 // Original buffer, result and full body restored; frame/capacity homes and separate copy tails remain.
+// Round 79 (m3 lane 16, fast): plain result with the fallback as `if (result) return result;` 693; plain result
+// with the local-team value long 693; plain result with switch-side-time `result = remaining` plus the early
+// fallback return 734; long opponent team with `best_score <=` and both event teams read at each use, plain/volatile
+// 667/404; a MIN(a, b) macro clamp (`a > b ? b : a`) in the four name/team cases 467 plain, also in the fallback 462
+// plain, 493 volatile: the tails stop merging, but wcslen is called twice and compared unsigned (ja), not retail's
+// one call and cmovle; retail's caller sets ECX then EDX (fastcall, /Gr), so no parameter reorder applies.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

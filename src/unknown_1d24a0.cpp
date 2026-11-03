@@ -308,6 +308,11 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // homes remain. NOT kept: Private producer consumers tie or regress; quaternion-return chain 894
 // removes the retail q-address copy and moves quaternion/body homes, so its eight-point preview gain is
 // unsupported; other out-of-line chains fail the gain threshold. Original executable source restored.
+// Round 79 (m3 lane 16, fast): the mass-center point copied without the pointer local 965 (4284 bytes); a
+// block-scoped response fraction in each of the two blocks that share it 935; the clamp compared inline without
+// the NONE-default count 917 (4283 bytes); the linked component as one ternary 901 (one point, not kept); the
+// record flags read at each use 964 (4248 bytes). Retail keeps the array header in EBX across the loop (reloaded
+// at the top, reused by the swap-remove block) and saves EBX; ours never uses EBX here.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {
