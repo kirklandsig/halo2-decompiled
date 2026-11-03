@@ -1494,6 +1494,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // `if (second != NONE)` 349 (1301 B); interruptibility as `(flags & 0x10) != 0` 348 (1321 B); overlay and
 // name read at their switches 381 (1232 B); both held lookups first, then one `&&` depletion 352 (1319 B);
 // both held queries through `*unit_reference` 164 (same code). Original body restored.
+// Round 39 (m3 lane 18, fast): a headers local for the entry unit and the first slot read, the second
+// query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
+// depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
+// with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1734,6 +1738,10 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 82 (m3 lane 12, fast): bool depleted 482 (1773 B); bool overlay interruptibility 466 (1785 B);
 // `result = requested == 0x600008c || interruptible;` 477 (1773 B); overlay test re-reading the controlling
 // field 450 (same code); first depletion as `first != NONE && count <= 0` 481 (1777 B). Original body restored.
+// Round 39 (m3 lane 18, fast): overlay flag computed inside the controlled block 519 (1749 B); case
+// 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
+// into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
+// index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -1953,7 +1961,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 	result->k = up->k * input_direction.k + up->j * input_direction.j + up->i * input_direction.i;
 }
 
-// score 790 (was 790): frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
+// score 776 (was 790): frame 0xcc versus 0xd4 and first angle expansion remain; retail calls channel_play
+// (0x1cb490) out of line at five sites and expands only the final animation_10c start, ours expands the
+// overlay loop's call. At entry retail also loads an otherwise unused render-model tag into a stack slot.
+// Earlier at 790: frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
 // frame 0xcc/0xd4 and first angle/overlay inline allocation remain.
 // Earlier: frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
 // frame 0xcc versus 0xd4 and first angle expansion remain. At entry retail also
@@ -2108,6 +2119,12 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // `control->overlays[i].index != NONE` test 875 (3357 B: 0x1cb490 then stays out of line in the loop as in
 // retail, 0x11df30 still called twice), that with a `for` loop 905 (3305 B); final slot test through the
 // entry unit pointer 815 (3365 B); seat weight as one ternary 792 (3382 B). Original body restored.
+// Round 39 (m3 lane 18, fast): the final animation_10c start through the existing channel_play in place
+// of its body written out 776 (3418 B, kept); before it: definition and render model in a local struct 802
+// (frame 0xc8, the store still dropped); overlay loop without the id local 872; angles copied whole from
+// g_4687c4 856; definition looked up right after the unit 795. On 776: id copied inside the index test
+// 842; final slot test inverted with arms swapped 776 (same code); overlay loop as `for` 869 (first
+// 0x11df30 inlined as retail, frame 0xc8); `for` with the id inside the test 873; ratio `0.5f + 0.5f * x` 776.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -2271,7 +2288,7 @@ void __stdcall function_112070(long unit_index, dword const *node_mask, long nod
 			dword flags = 0;
 			if (control->slots[0].unknown1 && function_1d9370((s_1d9240 *)&control->slots[0]) < 0.0001f)
 				flags = 0x400;
-			if (state->graph_tag_index != NONE && state->channel_start(&channel, control->animation_10c, NONE, NONE, NONE, NONE, flags))
+			if (state->channel_play(&channel, control->animation_10c, flags))
 				channel.sample(1.0f, node_mask, node_count, transforms);
 		}
 	}
@@ -3271,6 +3288,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // (action in channel scratch; NOT kept: under eight and wrong frame); scalar/one-short local
 // comparisons 60 each; set-scoped scalar 44; set-scoped second-short output 39, with the
 // predicate declarations swapped 39. Original executable body restored.
+// Round 65 (m3 lane 1, plain): overlay initialised to NULL at its declaration 46; `*flag = false` after the
+// three table reads 65; the action short in the innermost else block 44 (same code); the force flag in the
+// set block 46, with the action short there too 46. The 0xe70b0 two-byte return still waits on held files.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

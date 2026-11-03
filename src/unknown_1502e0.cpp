@@ -223,6 +223,10 @@ struct s_flag_word_bits
 // short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
 // NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
 // Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
+// DH319: Existing rounding producer duration/rate accumulators and named-rate
+// products 114/114/114/114; the same with a short return 135/135/135/135.
+// Original helper restored; player/root scheduling, duration XMM ownership,
+// effect dispatch and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -448,6 +452,9 @@ struct s_tail_player_identifier
 // [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
 // NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
 // Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
+// F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
+// 32/68/56/56/32/67/67/56.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1008,6 +1015,9 @@ struct s_tail_transfer_traits
 // do-while, admitted age, once/per-use clock, weapon-result home names and per-use second lookup:
 // 154/154/154/180/165/165/154/154. All complete original source and existing helper bodies restored.
 // NOT kept: no score gain or byte match.
+// DH319: Last-match array ordinal long/dword/short/byte, range admission
+// 189/189/196/197; unequal-sentinel admission 189/189/196/197. Original
+// pointer selection restored; selected-traits/unit/NONE homes and pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1301,6 +1311,9 @@ void function_150820(dword *bits, bool local_only)
 // returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
 // result before dispatch 101. All original calls, observations and executable body restored.
 // NOT kept: no score gain or byte match.
+// F353: Native hand arm/default producers, original then actual mode/result storage names
+// 43/45/45/43/43/45/45/43.
+// NOT kept: no gain; original full body/helpers restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1826,6 +1839,9 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // special-success return arm 91. NOT kept: 17 adds setne and grows to 253/251 bytes;
 // 88 is only a three-point gain. Native flag-load/false-result prefix remains.
 // Focused byte-input plus complete default-result lifetime 91; native prefix still differs.
+// DH319: Active result byte/short/long/dword 89/70/72/72; complete single-return
+// result byte/short/long/dword 73/77/78/78. NOT kept: wider truth storage or
+// complete result raises the native 0xc frame to 0x10; CL/AL entry remains.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {
@@ -1962,7 +1978,9 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// score 202 (was 202): the prologue's registers differ: retail keeps the player base in ebx
+// score 202 (was 202): Frame 0x28 agrees; player data uses ECX versus EDX,
+// the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
+// Earlier: the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
 // argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this. Logic walked against retail: no
 // behaviour difference found. Retail re-reads [ebx+0x2c] at 0x150ec0 and g_4e0300->data at 0x150e90 (edx still holds
@@ -1975,6 +1993,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
 // 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
 // Original body restored; entry player/header-offset ownership and spill remain.
+// Y557: Native signed-short scan as for/while 242/202; counter live from
+// entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
+// Original do-loop, counter position and weapon lifetime restored. Frame 0x28
+// agrees; player-data ownership and the EBP header-offset spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

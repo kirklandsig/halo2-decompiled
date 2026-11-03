@@ -359,6 +359,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // DH311: Existing base element retained, default zero initialization deferred to all six derived
 // constructors; scalar/special/composite header-before-element masks 0-7:
 // 204/206/205/207/206/208/207/209. Exact-only constructor ownership/order forms restored.
+// J244: Restore policy in six derived constructors, then composite/all families:
+// 375/402/312/138/138/138/138/410. Existing null-owner base construction,
+// special/scalar/composite/all: 138/138/138/138. NOT kept: no gain; original
+// constructors and body restored. Restore-header/payload order, packed key and listener homes remain.
 // P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
 // masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
 // and complete body restored; restore-header, packed-key and listener ordering remain.
