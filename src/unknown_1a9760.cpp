@@ -172,6 +172,9 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
 // named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
 // root before the offset loop 181. Original body restored at 4.
+// M330: Existing normalized/side/displacement vector role names, seven subsets then
+// all with the offset role: eight 4s at 996 bytes. Original identities and body restored;
+// the two x87/SSE scheduling swaps remain.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {

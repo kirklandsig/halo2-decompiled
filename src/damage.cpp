@@ -2436,6 +2436,9 @@ struct s_unit_event
 // M328: Independent child/seat iterator and event role names, seven subsets then
 // all with the primary receiver renamed: eight 472s. Complete original body
 // restored; frame agrees but permutation ingress and call-cycle homes remain.
+// M330: Independent object/region/permutation declaration ranks, six orders, then
+// both edge orders with uninitialized datum at entry: eight 472s. All producer
+// assignments stayed fixed; original declarations and body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
