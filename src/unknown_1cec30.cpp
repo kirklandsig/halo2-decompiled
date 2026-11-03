@@ -1045,6 +1045,9 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// N342: Fixed-path reset flag as bool/byte/short/long enabled truth 93/93/93/93,
+// disabled complement 94/94/94/94. NOT kept: one-use predicates do not match;
+// original constructor, two-use slot, fresh post-reset lookup and full body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
