@@ -161,6 +161,10 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // AC484: Separate native short/word/byte/long quadrant components with a short total
 // 474/474/488/474; with a long total 474/474/488/474. Original components, helper
 // and body restored; frame 0x38/0x40, rounded angles and simultaneous snap homes remain.
+// B398: Native axis-pair snap returns with scalar/value/pointer/reference inputs,
+// component publication 586/706/586/586; aggregate publication 586/706/586/586.
+// NOT kept: native pair storage does not match and grows the frame/length.
+// Original helper, body and includes restored; both exact callers stay matched.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

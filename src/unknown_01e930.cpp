@@ -522,6 +522,10 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH306: whole initial readiness/loading admission, false construction or true rejection
 // refinement, bool/byte/short/long 252 each. NOT kept: result-tested flag needs exact equality.
 // Original body restored; missing frame word and zero/clock/output homes remain.
+// B398: Allocation-result zero after status query/readiness guard/loading guard/
+// finished store/mode decision/size store/used clear/pointer clear:
+// 251/252/256/256/264/264/264/264. Original zero lifetime and full body restored;
+// frame 0x3c/0x40, status/clock/output homes and instruction policy remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
