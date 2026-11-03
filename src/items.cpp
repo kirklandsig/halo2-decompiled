@@ -663,6 +663,9 @@ struct s_item_collision_bsp
 // uninitialized declarations and complete body restored; protected plane width,
 // plane-join allocation and native spin/speed homes remain.
 // N319: Axial scalar setter with separate axis retained, crossed with fallback/final setters and exact-group length provider: eight 211. Original producers and full body restored; protected plane width and plane/spin homes remain.
+// Round 541: Separate actual contact/axial marker outputs, contact-query/axial-function/spin-after-contact
+// lifetime subsets 0..7: 217/211/217/217/217/211/217/217. Expanded frame 0x110; narrow
+// contact scope reproduces 0xa0 and the original code. Original marker, spin and body restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1205,6 +1208,9 @@ struct s_item_flags_view_10b850
 // 877/914/902/915. Frame stays 0x154; original helper and whole body restored;
 // entry Boolean publications and native collision/carrier/rotation homes remain.
 // N319: Retained cosine locals plus complete per-row sums, sequential/staged sums and cosine/sine products: 832/840/841/840/815/837/826/837. Original helper and full body restored; frame 0x154/0x12c and Boolean/vector homes remain.
+// Round 541: Native flow-cross result through the shared scalar setter, first/second reused scalar
+// inputs and ordinary inline boundary, masks 0..7: 813/821/821/887/969/969/969/932. Both
+// scalar inputs recover frame 0x148 but regress; original helper, operands and body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1607,6 +1613,13 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // copy written out field by field in an order picked from six by score). Shared point alone not
 // measured. Return-byte +0xe/+0xf and release/event loads remain.
 // N319: Inactive-parent default with late active overwrite, long/dword parent and bool/byte/short/long accumulator: 196/192/200/202/196/192/200/202. Original parent join and full body restored; return-byte/release/event homes remain.
+// AC491: Independent contact/activation/expiry outcome results, masks 1/2/4/3/5/6/7, then direct spin
+// arm: 190/196/196/174/174/212/202/202. NOT kept: conditional outcome flags require an exact match.
+// Original accumulator, spin capture and body restored.
+// N333: One captured object-activation predicate drives admission and parent selection,
+// bool/byte/short/long with conditional/branch parent producer: 193/193/195/194 in each graph.
+// Original parent join and full body restored; return-byte/release/event homes remain.
+// NOT kept: extra predicate/width-selected graphs remained unmatched and regressed.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

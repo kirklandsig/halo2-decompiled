@@ -2086,6 +2086,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 478: complete native zone-entry/cluster/both/const-both values with
 // cached/live zone selectors: 379/375/375/375 in both sets. Every producer
 // outlines; original complete zone helper, observations and body restored.
+// M328: Post-transform node rejection by OR/conditional/branch/default-result,
+// bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
+// body restored. Early color/query homes and frame 0x40/0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2461,6 +2464,9 @@ event_done:
 // tested). With the root index: second test as `NONE != ...` 197; a bool helper for the first test 197;
 // `if (effect && effect->object_index != NONE)` 130 (retail's head and reload, but the reloaded index is
 // then cached in ESI for 0x1794a0 and NONE takes EBX); nested head ifs 130; tail reading the field 130.
+// Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
+// both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
+// tail object index at function scope 63. Original executable body restored.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -3205,6 +3211,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // matched caller but still regresses. Separate signed/bitwise tests on fields
 // or one native node word, cached/live: 94/109/105/113/94/109/96/115.
 // Original complete body restored; frame and system/color/definition homes remain.
+// M328: Post-transform inverse node admission, complement/OR in
+// bool/byte/short/long: 111/111/107/108/111/111/107/108. All regress; complete original
+// body restored. Frame, system/successor/color homes and cached mode remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
