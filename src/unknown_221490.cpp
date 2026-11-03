@@ -721,6 +721,9 @@ bool sound_driver_voice_create_buffer(
 // B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
 // then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
 // signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.
+// B391: Split low-byte capture then spatial mask at entry/clear/count/input boundaries,
+// canonical bool then byte playback: 71/80/80/73/71/80/80/73. Original complete
+// body restored; spatial/play homes and descriptor zero/input scheduling remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

@@ -385,6 +385,9 @@ public:
 // but the counter's zero store moves after it too); the guard with the child table indexed by the counter 60
 // (frame changes); the guard with a pretested while and the increment first in the tail 100; the allocation's
 // break first and the initialization unconditional 54 (same code); `child_count > local_14` 55.
+// B391: Actual pool/initialized-child/linked-child external identity references, subsets
+// 1-7, then all with updated-child identity: 54/54/54/54/54/54/54/54. Original complete
+// body restored; child pretest, pool/sentinel ranks and salted-index construction remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

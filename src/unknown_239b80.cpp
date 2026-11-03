@@ -421,6 +421,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
 // angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
 // native vector grouping, shared header and complete original executable source restored.
+// B391: Actual lowest/current/candidate external point references, subsets 1-7, then
+// complete external coordinate references: 170/170/170/170/170/170/170/170. Original
+// complete body restored; extra frame word, count/departure and compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

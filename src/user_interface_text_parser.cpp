@@ -655,6 +655,10 @@ done:
 // Round 61 (m3 lane 10, fast; parse_variant stays matched), on the 32 form: `(word *)&g_55c6e4` at the translator
 // 32; the success copy calling function_08cc20 directly 32; `&g_55c6e4[0]` at the success copy 32, at both 32; the
 // success path's copy moved after the `if` with an `else goto done` 32 (all identical code).
+// B391: Existing provider returns the actual external object by reference, fallback/positive/
+// default-first/conditional producers with repeated then shared copy: 32/48/53/48/54/54/59/54.
+// Default-first provider loses the matched variant parser (22); provider, callers and complete
+// original body restored. Early EDI save, tag/selector and scratch cache remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
