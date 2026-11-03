@@ -418,6 +418,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // F346: Completed lowest-coordinate, candidate-ranking and hull-geometry lifetimes in
 // seven subsets 170 each; all with overlap CRT 259. NOT kept: 762/784 bytes, caller 80.
 // Original complete executable body restored.
+// DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
+// 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
+// caller. Original pass, state, copy, helpers and entire executable body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

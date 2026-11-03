@@ -516,6 +516,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
 // completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
 // complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
+// DH316: Whole-case terminal-return regions, seven subsets then positive validated
+// admission: eight 80s at 540/540 bytes. NOT kept: no byte match; original complete
+// body restored. Validity/cursor homes and validation-loop entry still differ.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
