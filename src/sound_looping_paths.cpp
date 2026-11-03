@@ -289,6 +289,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P285: Existing shared used-mask/runtime-word/fixed-word flag helpers, subsets 1..7,
 // then complete helpers with CRT bit-vector initialization: 917/876/927/926/931/928/928/928.
 // All original helpers, direct flag operations, counts and complete body restored.
+// AC502: Shared pin macro at range/blend/active fade/active gain/inactive fade/inactive gain,
+// then all body/all logarithmic clamps: 866/866/865/865/862/866/853/853. NOT kept:
+// compound-only gain misses the native active-bound reload/lifetime. Original body/helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
