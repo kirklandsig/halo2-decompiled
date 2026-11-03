@@ -304,6 +304,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // planar components captured in named reals before 0x29b2e0 (diagnostic) 380 (1906 bytes, frame 0x5c);
 // all three working vectors as whole-struct copies 442 [406] (1887 bytes, frame 0x60); the working vector
 // alone as a whole-struct copy 449 [421] (1884 bytes, frame 0x60).
+// Y556: Zero-initialized discarded query vector, aggregate/library-clear/shared setter/
+// chained fields at query/entry scope: 345/345/345/345/345/345/345/345. NOT kept: added local initialization
+// fails byte agreement; original uninitialized output and complete body restored.
 // m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
 // dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
 // (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same

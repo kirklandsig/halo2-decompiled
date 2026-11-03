@@ -365,6 +365,9 @@ struct s_block_candidate
 // Original arithmetic, clock observations and full body restored; missing frame dword,
 // page/ring ownership and policy placement remain.
 // NOT kept: weighted storage/clock forms tie and retain the deficient frame.
+// Y556: One busy-callback pointer observation at occupied/segment/admitted/entry scope,
+// short-circuit/guarded result on original timestamp graph: 347/347/347/347/358/358/358/358.
+// NOT kept: no qualifying gain or missing-frame recovery; original body restored.
 // m3 lane 11 r62 (fast): offset after the result with previous's NONE in the block 380; offset first with
 // previous's NONE in the block 357 (retail stores that NONE in the block, at +0x48); the page shift in a twice-used
 // local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the

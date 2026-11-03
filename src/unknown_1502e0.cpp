@@ -1946,7 +1946,9 @@ void function_15e8e0(long object_index, long player_index);
 void __stdcall function_191ec4(long definition_index, long player_index, short count);
 void __stdcall function_191e51(long definition_index, long player_index);
 
-// score 202 (was 202): the prologue's registers differ: retail keeps the player base in ebx
+// score 202 (was 202): Frame 0x28 agrees; player data uses ECX versus EDX,
+// the object uses EBP versus ESI and the scaled header offset spills instead of staying in EBP.
+// Earlier: the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
 // argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this. Logic walked against retail: no
 // behaviour difference found. Retail re-reads [ebx+0x2c] at 0x150ec0 and g_4e0300->data at 0x150e90 (edx still holds
@@ -1959,6 +1961,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
 // 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
 // Original body restored; entry player/header-offset ownership and spill remain.
+// Y557: Native signed-short scan as for/while 242/202; counter live from
+// entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
+// Original do-loop, counter position and weapon lifetime restored. Frame 0x28
+// agrees; player-data ownership and the EBP header-offset spill remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

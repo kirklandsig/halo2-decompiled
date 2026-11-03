@@ -4632,6 +4632,11 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
 // actual admission result 83. NOT kept: six-point criterion gain is below eight; all
 // executable forms restored. Native support/result byte homes and early success store remain.
+// Y557: State criterion assigned to the returned result within the existing
+// call argument, with success at actor/support/velocity/entry boundaries:
+// OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
+// NOT kept: the six-point best is below eight and an embedded assignment
+// requires byte equality. Original result/support lifetimes and full body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
