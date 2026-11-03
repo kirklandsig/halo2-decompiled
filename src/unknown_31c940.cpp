@@ -199,10 +199,11 @@ static __forceinline __m128 project_second_spin_vector(solver_linear_row_31e7b0 
 	return _mm_add_ps(angular, _mm_mul_ps(relative, row->linear));
 }
 
+// Keep the angular projection's A load distinct from the tangential rows.
 static __forceinline float project_spin_angular_velocity(solver_angular_row_31e7b0 const *row,
 	solver_velocity_31c940 *a, __m128 const &angular_b)
 {
-	return sum_three_31c940(_mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(angular_b, row->b))).value;
+	return sum_three_31c940(_mm_add_ps(_mm_mul_ps(_mm_load_ps((float const *)&(a->angular)), row->a), _mm_mul_ps(angular_b, row->b))).value;
 }
 
 static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e7b0 const *row,
@@ -784,7 +785,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1855: normal fallbacks, writeback lifetimes, captured mass, and row reloads.
+// score 1854: normal fallbacks, writeback lifetimes, captured mass, and row reloads.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
