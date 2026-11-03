@@ -308,6 +308,9 @@ void c_window_channel::v9()
 // built request copies ECX (they call the local's own load); v10, which calls the member's load
 // (`call [esi + 0x2c]`), forms it again. Lead only: matched 0x2354aa also forms a request address
 // (its id, a different expression from the builder's argument) right after the call.
+// Round 31 (lane 17, fast): type cleared after the load call 15; base parameters storage with field_c
+// cleared after the builder 13; the member load read into a local after the builder 5; `screen`
+// declared NULL ahead of the request 3; the user flags passed as short 3.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

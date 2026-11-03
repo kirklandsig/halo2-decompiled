@@ -636,6 +636,10 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // `while (result && ...)` with the completion guarded after the loop 44. Retail = four-way join (BL for the
 // false exits, CL for success, constant 1 for the restore) with the restore's copy laid out last; VC keeps the
 // function's single return block last whatever the source order.
+// Round 41 (lane 2, fast): the sentinel test inverted with the restore in the else arm: `result = false` in the
+// then arm 74 (226 bytes); gotos in both arms 10; `return result` / `return true` 20 (retail's block order, but the false exit
+// folds to `xor al, al` and BL takes the true result); `return false` then the restore and the goto 25; a `would_block` local
+// assigned to the result 74; the result from the sentinel, tested, then the restore 74.
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {

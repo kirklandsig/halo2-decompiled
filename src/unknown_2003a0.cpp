@@ -1586,6 +1586,9 @@ PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *ar
 // update 196; active return of the stored squad 2; behavioral local names 2; helper defined before
 // the caller 2; lighter squad step in the caller 169; record-subobject reference 2; long mode 2;
 // byte-return helper 2; boolean datum step directly in the caller 150.
+// Round 41 (lane 2, fast): in the squad step, the pool read after the search 2, in each arm 2, the iterator field at each use 2,
+// read again after the search 2, a `found` local tested 2. In the shared index search (0x1c8700 alongside): direct returns 2;
+// while loop 2; result assigned after the loop 68 (380 bytes, 0x201df0, 0x200d80 lost); count local 2; mask local 2.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
