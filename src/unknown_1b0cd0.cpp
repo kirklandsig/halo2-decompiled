@@ -434,6 +434,9 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // `index != NONE && call` 70 (757); the point at function scope 12; the mode local at the top of the
 // list branch 138 (759); the point as a point2f 30 (frame moves). Retail's other 0x1b0e40 callers set
 // its register arguments in differing orders (0x1b13b0: ECX, EDI, EBX), so no parameter order is implied.
+// Round 100: origin or output first-component addresses 12/12, both 12; no slot local 28; slot local
+// at entry 12; forward basis pointer at the declarations or after initialization 12/12; direct slot
+// reads with the forward pointer 12. Opening body restored.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
