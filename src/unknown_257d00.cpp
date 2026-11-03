@@ -1768,6 +1768,11 @@ void function_b7360(long object_index);
 // recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
 // NOT kept: the 290 recording high-word form uses narrower loads than retail and
 // shortens away from 1848 bytes. Original reference observations and callback restored.
+// Round 84 (m3 lane 12, fast): at the 1/19 site ours keeps the datum's point reference in ESI across the
+// 0x25ab50 call where retail reloads it after the actor test (`mov edi, [edi + 0x28]`); the point arm
+// first under `unknown018 == NONE` 300 (1840 bytes); case 4's slot as a ternary 414; case 13 with the
+// shared 0xb7360 call after the if/else 301 (same code); case 5's slot as a ternary over 0 304; case 20
+// with the unknownac store before the point copy 301.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

@@ -321,6 +321,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
 // then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
 // Original full body restored; frame, actor/unit and priority/query/marker homes remain.
+// Round 84 (m3 lane 12, plain): previous-direction dot with the k and j terms' operands swapped 882
+// (same code); range bounds renamed to sort before block/ignore (ours lays the four priorities out
+// in name order, retail min/max/block/ignore) 882 (same homes); `else straight = true;` for retail's
+// second store of 1 on the actor NONE path (0x2c0e9a) 912 (3721 bytes); local_4d3867 declared before
+// the other two bools 882 (store order only); the object-distance offset in its own block 882.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1197,6 +1202,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
 // then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
 // names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
+// Round 84 (m3 lane 12, fast): the edge pointer renamed to sort after the helper's magnitude 324
+// (identical code: retail's edge 0x18/magnitude 0x1c homes are not name-ordered here); the node
+// index as `first_open ? nodes[1] : nodes[0]` 410 (1295 bytes); from/to as two ternaries 342 (1316);
+// the portal type test as `continue` 324 (identical); the dot test as `(dot < 0.0f) == side` 324.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
