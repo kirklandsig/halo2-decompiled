@@ -1869,6 +1869,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // P282: Complementary mode admission bool/byte/short/long in its original block, then entry
 // uninitialized storage: 99/99/104/105 twice. Original positive mode result, cases and body restored;
 // request/weapon homes and player-getter expansion remain.
+// M329: Independent request/weapon/result/modes declarations separated from their
+// original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
+// 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

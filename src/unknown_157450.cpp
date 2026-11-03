@@ -5576,6 +5576,9 @@ void __stdcall function_d6bc0(long object_index);
 // Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
 // and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
 // domains restored; frame 0x14/0x18 and independent timer spill remain.
+// M327: Native entry-record cursor with body/outer receiver and pointer/reference/direct/early-used timer:
+// 242/242/242/246/242/242/242/246, frames 0x1c versus retail 0x18, extents 879/882 versus 869.
+// Original indexed body restored; independent timer spill and entries-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

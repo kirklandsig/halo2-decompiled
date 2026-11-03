@@ -591,6 +591,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // subsets 1/2/4/3/5/6/7, then all with enclosing speed: 278/126/507/278/502/507/502/502.
 // Complete staged graph with existing normalizer forced inline 348; original helper/body restored.
 // Velocity receivers, early 1.0 residence and later SSE/x87 colouring remain.
+// M329: Complete positive angular-admission channel, bool/byte/short/long, direct
+// producer 189/189/188/190; complete if/else 189/189/188/190. Every consumer was
+// complemented consistently. All regress; original reversing channel, helpers and body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2743,6 +2746,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // consumed scale return, crossed with distinct relative output and shared force/torque
 // mass scales: 728/728/738/738/728/728/738/738. Frames remain 0xd0/0x104;
 // original full body restored. Retail frame 0xfc and scalar/vector homes remain.
+// M327: Named squared magnitude / accumulated magnitude / completed short-vector fallback / existing normalization scale:
+// 692/740/708/692 on original output, 699/748/710/699 with independent relative output.
+// Original full body restored; frames remain 0xd0/0x104 versus retail 0xfc.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4156,6 +4162,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
 // Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
 // original full body restored. Found-index/world/clamp/final flag allocation remains.
+// M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
+// 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
+// 176/176/176. Original full body restored; found-index retest and collision/result homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4417,6 +4426,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // NOT kept: shared one-use inputs and join labels 688. Original direct calls with
 // calculated limits named per case (all/steering/turn): 756/755/789. All restored;
 // frame 0x18 agrees, zero/result SIMD, entry definition and per-site one homes remain.
+// M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
+// tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
+// all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
