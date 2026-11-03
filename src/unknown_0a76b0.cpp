@@ -1963,6 +1963,10 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M335: Positive mode-switch result char/byte/short/word, with failure default in
 // its switch arm or initialization: 60/60/89/89/60/60/89/89. NOT kept: ties or regressions;
 // original body restored, request/weapon homes and getter expansion remain.
+// Y558: Complementary final pickup failure bool/byte/short/long, cleared after
+// reporting 75/75/140/140; set from the pickup test 142/142/100/94. NOT kept:
+// every form regresses. Original mode/result graph, shared player observation and
+// complete body restored; request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -2512,6 +2516,10 @@ __forceinline char unit_action_round(real value)
 // P287: Animation admission owns return truth and gates common publication; four
 // producers, special success before/after work: 290/307/303/305/290/306/257/239.
 // All restored; pool/index/type/name and completion-byte homes remain; callers stay exact.
+// Y558: Complementary final attack-failure bool/byte/short/long 235/235/235/235;
+// each with the existing signed-short hand accessor 297/297/297/297. NOT kept:
+// negative completion ties and the native-width lookup still regresses. Original
+// getter, completion result, all calls and complete body restored.
 // Lane 17 r39 (fast): the 0xe000607 fallback tested before the three-name/range arm 235 (same code); the range
 // as `>= 0xe000608` 235; name/type/first-person declarations reversed 235, type first 235; is_biped computed
 // before the weapon 307 (1191 bytes). Original body restored.
@@ -4735,6 +4743,10 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // in place) and the final copies schedule pos.z before q.i. On that graph: local declared at the top/before
 // frame/after the quaternions 201 each; the quaternion copy first 246; `x *= matrix->scale` in the helper
 // 201 (0xee090 still MATCH); untransform in place into world 201.
+// Y558: Existing output matrix directly owns up/forward/both/normalized-side/
+// up+side/forward+side/all producers 216/200/249/183/271/203/296; all with
+// delayed relative-point output 261. NOT kept: all regress. Original basis locals,
+// native position output, quaternion roles and complete body restored.
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.

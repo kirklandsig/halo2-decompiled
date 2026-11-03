@@ -4307,6 +4307,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
 // for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
 // no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
+// Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
+// 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
+// producers, found-index retest and world/fallback/final-writer homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

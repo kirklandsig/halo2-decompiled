@@ -4184,6 +4184,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
 // consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
 // output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
+// Y559: Full unrounded CRT cosine/sine/both double results, original then
+// producer declarations; float trig pair with original/producer declarations:
+// 223/182/276/223/182/276/191/191. NOT kept: no byte match; normalization SIMD,
+// native cosine/sine and rotation/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {

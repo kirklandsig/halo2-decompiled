@@ -910,6 +910,10 @@ static __forceinline long real_to_long(real value);
 // bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
 // straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
 // second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Y558: Shared add-scaled/difference prediction into a point or consumed direction,
+// squared-length boundary independently, 478/478/478/478; complete relative-velocity
+// input on each graph 474/474/474/474. NOT kept: all regress and change the frame or
+// length. Original prediction, helper set, query aliases and complete body restored.
 // Round 57 (m3 lane 13, fast; 0x1a9d80/0x1a9e00 matched each time): the prop-index test inverted (`== NONE`
 // clears field_2c first) 497; the inner admission test inverted with `local_6 = false` first 382 (same code);
 // local_6 dropped with the second test re-testing field_12/17/18 442 (1907 bytes); the second goto as
