@@ -661,6 +661,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
 // original word then full-width pixel result: 139/172/182/183/163/166/174/175.
 // NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// N348: Stable write/count-only mode shared by all five output checks, bool/byte/short/long:
+// 206/206/241/241 in either truth channel. NOT kept: mode storage regresses the frame,
+// length and alpha/literal schedules. Original pointer checks, helper and body restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

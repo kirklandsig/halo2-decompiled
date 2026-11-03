@@ -674,6 +674,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through +0x60, but a width cast on one side of a compare, and retail compares dword: `movzx eax, cx; cmp esi, eax`;
 // not kept); a word new-mask local ahead of the change test 133 (375 B); the added mask declared ahead of the change
 // test 130 (375 B), 59 on the word mask; the volatile present declared first on the word mask 86.
+// N348: Sentinel-owned loop continue, saved-word/team-short/condition-player
+// subsets 0..7: 32/77/107/64/32/77/107/64. Original nested guard, masks,
+// qualifiers and body restored; native word entry and shared post-loop reload remain.
 // @retail 0x158140
 void function_158140(void)
 {

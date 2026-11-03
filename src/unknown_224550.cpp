@@ -354,6 +354,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // entry 223 (same code); uv_b's default bounds copied from uv_a 347 (1956 bytes); the tint and its clamps in their own
 // block ending at the pack 249 (1906 bytes); `uv_b,uv_a` declaration order 223 (same code); the flip read before the
 // extents 250 (1949 bytes). Original body restored.
+// N348: Native box storage for geometry/primary/secondary UV, seven subsets, then
+// native box encoder output, on the current frame/plain-pivot graph: 223 each.
+// Original union views and all input-before-store captures restored; tint/UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

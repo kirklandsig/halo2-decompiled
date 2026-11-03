@@ -974,6 +974,9 @@ extern long *g_51e9cc;
 // M338: Complete actual activity admission in bool/byte/short/long, positive/complementary channels:
 // 42/42/42/42/42/42/42/42. Original body restored; lookup receiver and crouch/contact schedules remain.
 // Nonmatching single-consumer truth carriers restored.
+// N348: Packed index/surface/kind extraction before key admission, subsets 1/2/4/3/5/6/7:
+// 79/51/42/245/79/51/245; all with short kind 245. Original decoder scopes and full
+// body restored; lookup receiver retention and crouch/contact scheduling remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
