@@ -2103,6 +2103,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // unknown-first form: cursor and colour locals read before the spawn stores 180 (572 bytes); multiplied() as
 // the call's argument 132; spawn declared first 124; effect cursor read after set_location 132; matrix at
 // function scope 124.
+// Round 123 (m3 lane 7, fast with callers/callees): spawn as an aggregate `= { scale, unknown, location }` after
+// set_location 128 (same code); with colour locals after/before it 184/184 (572 bytes); the type-query block's
+// braces removed 128 (same code); the mode cached in a word local before the loop 179 (564 bytes).
 // DH315: Live mode/placement field references, readonly/mutable single/both,
 // entry and iteration scopes: 128 in all eight forms, 556/552 bytes. Both
 // matched callers and transform producer stay exact; original descriptor reads,
@@ -3248,6 +3251,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // function_1751d0() call 85 (331 bytes; not kept, retail makes that call); node predicate before the transform
 // call 115 (0x176f60 25); colours declared before the particle-location cursor 93; location pointer at function
 // scope 93; colours as long 93; location pointer declared in the while condition 93.
+// Round 123 (m3 lane 7, fast with callers/callees): spawn cursor re-measured 89; with the effect location index
+// declared inside the definition test 93; spawn + per-call mode 109 (0x176f60 25: the definition takes EBX, the
+// effect is computed in EAX and its index becomes a register argument), with the location index inside the test
+// 109, the node flag written in the call's argument 112 (327 bytes), the matrix declared beside the spawn 109.
 // DH315: Live mode-field reference, readonly/mutable, original/outer cursor
 // declaration and direct/named multiplication: 108/108/108/108/122/122/122/122.
 // All lose matched caller 0x176f60 (25); original cached mode, cursor, query,

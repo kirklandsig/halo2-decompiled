@@ -1192,6 +1192,9 @@ bool function_108530(long device_index, long name)
 // pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
 // stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
 // denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
+// Round 123 (m3 lane 7, fast with both callers, which stay 31/13): both ramp-down clamps as `<=`/`>=` ifs 122;
+// the ramp-up zero clamp as an if 122; the initial-velocity store first in the inner block 122; an early
+// `return` on the tiny duration 121 (same code); one nested ternary for both ramp-down clamps 127.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
