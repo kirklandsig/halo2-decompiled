@@ -200,7 +200,20 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 114 (was 124): flag 4 read through a word bitfield view gives retail's load-and-shift; the rest still differs.
+// score 114 (unchanged): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
+// header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
+// because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
+// call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
+// keeps the call out of line (105) but is a flag set inside a test, so it isn't kept; `/Ob1` on unknown_1916dc.cpp
+// (106) is another file's flags. The word-bitfield view stays.
+// Still differing: retail forms the player before it loads g_4e0300 (ours hoists that load above the pushes, so
+// ecx/edx and the first lines are off by one register), loads the 0x130 float into xmm0 before the cvtsi2ss (ours
+// folds it into the mulss), holds the ticks in edx (ours eax), and tests kind == 3 as `movsx eax, si; sub eax, 3; je`
+// with the 0 and 1 stores on branches (ours branches on `cmp ax, 3`; the ternary and every if/else spelling give
+// `setne` instead, 106). Tried: object/player through pointer locals (same), header first (128), header by
+// tail_object_get (100), flag test before the ticks (108), the float in a local first (same), `seconds * field` or
+// `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
+// table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1216,6 +1229,13 @@ void function_150820(dword *bits, bool local_only)
     }
 }
 
+// score 43 (was 43): the walk found no difference in logic (same stores, calls, argument order, held_slots/weapons
+// offsets, mode == 4 byte test, result kept in bl with its stack copy). Only the callee-saved pair is swapped:
+// retail keeps the player in esi and the hand in edi (edi pushed late), ours the reverse, and the unit index and the
+// `primary` temporary sit in ecx/edx and edx/al instead of edx and cl/eax. Tried: hand declared before the player
+// (43), result declared first (43), `primary ? 0 : 1` / `primary == 0` (43), `primary ^ 1` (75), bool hand (89),
+// hand after the unit lookup (70), unit_index cached in a local (43), modes declared at the top (43), the weapon and
+// mode tests nested (47).
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
