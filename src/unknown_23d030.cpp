@@ -399,6 +399,9 @@ extern byte g_51ec11;
 // 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
 // not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
 // 86 form with the scratch normalizer 264 (aligned 47).
+// AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
+// masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
+// Original input layout, observations and full body restored; zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

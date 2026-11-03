@@ -1626,6 +1626,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N337: Late selected-parent presence/missing predicates, bool/byte/short/long,
 // 146/146/151/150 in each polarity. NOT kept: conditional predicates remain unmatched;
 // original parent handle, return byte, release helper and complete body restored.
+// AC501: Completed spin/expiry-owner/item-tag phase scopes, masks 1/2/4/3/5/6/7,
+// then all with active-phase spin declaration: 140/140/143/140/143/143/143/143.
+// Original complete body restored; return-byte, release and event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

@@ -282,6 +282,9 @@ struct c_aggregate : c_child
 // B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
 // then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
 // outputs and complete body restored; escaped output and the lowest loop homes remain.
+// AC501: Native callback output/capacity/source integer domains, masks 1/2/4/3/5/6/7,
+// then all with completion output after arrays: 31/31/31/31/31/31/31/42. Original interface,
+// outputs and full body restored; escaped output and the lowest loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
