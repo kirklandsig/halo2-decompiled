@@ -333,6 +333,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // then all with the three coefficient lifetimes ended: 1355/1355/1355/1355/1355/1355/1355/1355. NOT
 // kept: no byte match; original complete body and every helper restored. Excess frame and
 // component/velocity/query homes remain.
+// Round 35 (m3 lane 17, fast): the second normalizer's accumulator as real 1380 (6211 bytes); the steering
+// magnitudes through fabs 1438 (6208 bytes); the three friction coefficients from one if/else on the dynamic
+// flag 1353 (two points, not kept); the twice-used dynamic/moving test named for both impact calls 1395 (6211
+// bytes, frame 0x5d0); the rest-length product computed before the other 1355 (same code).
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

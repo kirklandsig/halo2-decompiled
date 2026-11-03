@@ -413,6 +413,9 @@ void __stdcall function_1160c0(real dt)
 // Y547: Native double length-ratio/axis-reciprocal/paired-trig residence, seven subsets
 // then all with double returned angle: 328/236/348/317/430/372/440/494. Exact-only precision
 // forms restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 35 (m3 lane 17, fast): `if (record->fixed || !(dt > 0.f)) return;` guard 179 (same code); position and
+// direction declared beside previous/predicted 179; location declared before origin/forward 179; a const vertical
+// 179; the const vertical with the angle call as (&vertical, &direction) 177 (two points, not kept).
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

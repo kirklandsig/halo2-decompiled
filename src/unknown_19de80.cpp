@@ -476,6 +476,11 @@ static inline bool teams_enabled_19e1c0()
 // AC489: First-word-only text initialization at entry for player/team/formatted families,
 // subsets 1/2/4/3/5/6/7: 425/427/435/437/451/453/467; team-only with ordinary result 609.
 // Original buffer, result and full body restored; frame/capacity homes and separate copy tails remain.
+// Round 35 (m3 lane 17, fast): plain result with token_length unsigned (definition, declaration, caller's pointer)
+// 691; plain result with `return result;` closing every copy arm 691 (same code), the volatile result with those
+// returns 390 (same code); the engine's token text in a `written` local returned when nonzero, volatile/plain
+// result 397/693. Retail: event EBX, token_length EDI, remaining EBP, result ESI from the top; the opponent loop
+// runs on `cmp edi, 8` (no free register for a down counter), where ours counts EBX down from 8.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {

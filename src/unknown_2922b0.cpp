@@ -276,6 +276,11 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // product parts, eight non-original pairs: 616/622/614/628/624/627/624/627.
 // NOT kept: shared dots gain at most four and change the sum trees without a match.
 // Original body, helpers and all in-place copies restored; success/input/minimum/hit homes remain.
+// Round 35 (m3 lane 17, fast): the input copy after the hit clears 629; the hit clears before the minimum and
+// output zero 618 (same code); success declared after the object/settings lookups 631; the root clamp as
+// `1 - a/b < 0 ? 0 : ...` 618; the output scale stored before the origin copy 618. Retail's homes: success +0x17,
+// minimum +0x18, hit bytes +0x1c, input copy +0x40 (ours +0x1b, +0x10, +0x24, +0x4c); retail also reloads the
+// half-width for the fourth offset point, where ours reuses the third point's negation.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
