@@ -997,6 +997,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // low-normal product groups as ten one-use named product locals, 417 plain (3038 bytes; first difference
 // at +0xd, damping in ECX/EDX). NOT kept: one-use temporaries that only steer evaluation order are kept
 // only with a match; body restored at 433.
+// F335: native direct clip predicate/direct fallback first/general fallback first, subsets 1/2/4/3/5/6/7
+// 360/432/498/359/482/497/481; all with named normalization return 470. NOT kept: one-use
+// predicate steers allocation; fallback alone gains one. Frame 0x30 agrees, raw/bounded homes still differ.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

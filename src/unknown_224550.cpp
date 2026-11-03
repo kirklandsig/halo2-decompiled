@@ -319,6 +319,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // graphs, two axis-paired graphs and late selector: 241/321/260/296/302/236/295/238. Original
 // interpolation stages, scalar lifetimes, selector and complete body restored; tint/second-UV and blend
 // homes remain.
+// F335: complete lower/upper clamp passes, lower-first then upper-first, both direct ordinal
+// directions in each pass: 267/269/271/271/272/272/272/273. Tint/secondary-UV homes persist;
+// original component-owned clamp, alias-safe UV producer and complete callback restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

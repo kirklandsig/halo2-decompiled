@@ -1690,6 +1690,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
 // result home remains.
 // Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
+// F339: Whole local declaration orders ryxvp/rpxyv/rvpyx/yxrpv/pvyxr/xyrvp/
+// vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
+// 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
+// home and frame 0x14 versus 0x18 remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3193,6 +3197,10 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // 168/192. Minimal original lookups plus only the logical result 168 (retail length 773) NOT kept:
 // `result = result && !(alpha <= 0.0f)` re-tests result, which retail does not (0x3dace: one comiss,
 // then xor dl, dl). Body restored at 177; frame and fade scratch homes remain.
+// F339: Existing shared scalar-clamp producers for temporal/guarded-first/final
+// fades, seven subsets, then the final producer consumed directly:
+// 177/177/177/177/177/177/177/177. Original body and shared helper restored; the four-byte frame
+// gap and initial/final scratch scheduling remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {

@@ -303,6 +303,11 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // entry; body restored at 271); chained defaults 327/327; constants before calls 345/268. Pure ordinal long/dword/word on
 // the 261 graph 259/259/276; two-point ordinal gains rejected. Frame 8 agrees; unit/name/offset ranks and
 // shared-call threading remain.
+// F339: Actual callback selectors for ending/name, starting/name and starting/hand
+// dispatch, seven subsets, then all with the query-chain ending selector:
+// 351/293/168/336/350/307/331/343. NOT kept: the shared hand callback selector 168 (plain),
+// first +0xb0 and frame 8, raises caller 0x111650 from 666 to 713.
+// Original body restored; incoming unit/name/actions ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -904,6 +909,10 @@ extern vector3f *g_4687b0;
 // restored; tag/index/type/direction homes and SSE scheduling remain.
 // P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
 // Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
+// F339: Plain native component traversals for speed/blend/projectile subtraction, seven
+// subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
+// All shorten away from retail; original body restored. Frame 0xcc agrees;
+// definition/index/direction homes and offset/SSE scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1811,6 +1820,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
 // static 119/128/120/128. Original fields, six calls and complete body restored.
 // DL246: common result exits for weapon/query, mode and pickup failure subsets 1-7 give 60 each; full exit graph with earlier result lifetime 130. Two read-only player queries at their consumers on four new exit graphs give 72 each, rejected as nonmatches. Request/weapon homes and getter expansion still differ; original body restored.
+// F339: Whole mode-arm orders 6543(01)d/d(01)6543/3(01)456d/4(01)635d/
+// 543(01)6d/6(01)354d/d6453(01)/456(01)3d: 119/64/75/80/80/79/119/82.
+// Original complete body restored; request/weapon homes and getter expansion remain.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

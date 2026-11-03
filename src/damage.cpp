@@ -703,6 +703,8 @@ void function_d6a70(long object_index)
 // original lookups 203 (633); fresh test only 190 (590); second pointer 162.
 // P272: Uniform direct primary-object fields, post-guard accumulator declaration and independent entry child iterator subsets, then complete workspace names: 219/159/159/219/219/159/219/219.
 // Original executable source restored; frame 0x4c versus 0x50, retained-pool/object/index and owner homes remain.
+// F335: completed-path exit, region skip and separate parent admission, seven subsets, then
+// separate child admission too: 159 each (606 bytes); frame 0x4c/0x50 and pool/object/owner homes persist.
 // P274: Repeated header ordinal/shared parent index/accumulated last-child result,
 // subsets 1/2/4/3/5/6/7: 159/168/169/168/169/185/185; all with long result 174.
 // Original body restored; frame 0x4c versus 0x50 and pool/object/index/owner homes remain.
@@ -964,6 +966,8 @@ PRIVATE inline long damage_object_root(long object_index)
 // Round 532: object ordinal consumed by the array read before validation, signed char/short/int/long,
 // with original conditional return or explicit final result: 320/320/310/310/320/320/310/310.
 // Extents 872-880 against 782; frame and verifier expansion remain. Original object induction and body restored.
+// F335: last-default, full-branch, existing-result fallback and early-return completion, each
+// with positive-unit admission or absent-unit skip: 206 each (783 bytes). Aligned frame and first verifier remain.
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
@@ -2073,6 +2077,9 @@ real function_db090(s_damage_info *info, void const *region_entry, long object_i
 // A test-only entry local 5, a has-entry bool 5, nested ifs 5 (the read stays below the je); an info copy 227; entry
 // tested first 166; one symbol for entry and index 227; index read at each use 233 (877); short index 233.
 // The lea: a shared inline effect wrapper in four parameter orders 5 (0xd9110 10); an owner pointer local 5.
+// Round 337: result, normalized-damage and paired vitality workspaces at enclosing scope,
+// seven subsets 5 each; all with the maximum-body workspace 5. Computations stayed at their
+// original sites. Original body restored; region-load and final owner-address schedules remain.
 // @retail 0xd8cb0
 void function_d8cb0(long object_index, s_damage_effect_definition const *definition, s_type_1e6529 *data,
 	s_damage_region_accumulator *accumulator)
@@ -2376,6 +2383,9 @@ struct s_unit_event
 // permutation receiver tie or regress, including read-only input. Permutation stack/EAX transport and
 // call-cycle homes remain. Scores 547/472/537/547/538/537/538/538.
 // Original executable source restored.
+// F335: uniform direct permutation/object/datum receivers, subsets 1/2/4/3/5/6/7, then
+// entry event declaration: 980/662/541/1165/1022/794/1204/1204. Original cached receivers and
+// body restored; incoming permutation transport and excess length remain.
 // P274: Native zero-then-type/type-in-value event initialization, crossed with actual
 // read-only info and existing inline declaration contracts: eight forms 477 at 1880 bytes.
 // Original body and both declarations restored; permutation stack/EAX ingress and call-cycle homes remain.

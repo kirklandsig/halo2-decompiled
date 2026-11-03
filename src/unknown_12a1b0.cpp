@@ -2365,6 +2365,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // paired with signed-word class payload 617/617/601/601 (fast control equals full 597).
 // All three declarations and original body restored; entry true/flags, record/track homes and loop padding remain.
 // DL245: Frame 0x3c and retail length agree; entry true/flags ownership, record/track homes and energy-loop alignment remain. Seed conditional value with bool/byte/short/word track truth 613/613/644/642; two explicit seed arms 613/613/644/642. Both forms regress; all RNG state identities, original seed producer, truth types, transitions, gains and body restored.
+// F336: Paired initial/replacement state publication from their actual selected values,
+// char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
+// 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
+// the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
