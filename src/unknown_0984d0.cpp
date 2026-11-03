@@ -522,6 +522,12 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // jumps past the items reload) and the item value loaded into EAX then copied to EDX. On it: no cursor
 // reads 207 (524 bytes), only the data cursor read 207, only the items cursor read 210 (524 bytes each);
 // function_991d0 called directly with the items 137. Plain cursors on the byte ordinal 209 (524 bytes).
+// P288: Both notification phases with actual item cursors, body/at-use advancement
+// and completed validation last-use scope: 93/93/93/93/93/93/93/93. Original full body restored;
+// validity/cursor homes and validation-loop entry remain.
+// DH316: Whole-case terminal-return regions, seven subsets then positive validated
+// admission: eight 80s at 540/540 bytes. NOT kept: no byte match; original complete
+// body restored. Validity/cursor homes and validation-loop entry still differ.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {
