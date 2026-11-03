@@ -1940,6 +1940,9 @@ struct s_filter_rows
 // constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
 // 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
 // index. So a state of the caller picks it, not the helper's source.
+// Round 97 (fast): direct index bits 17; bottom-tested stage loop 403; loop-local definition 233;
+// direct first-color row 121; own context address 17; const definition 17; function-scope stage 17;
+// result-first 17; reversed shader branch 64. Original 17-difference body restored.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {

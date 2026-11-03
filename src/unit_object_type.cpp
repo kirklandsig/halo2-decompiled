@@ -804,6 +804,10 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // computed type mask 13; boolean predicate 10; word setter with early guard/void return 10/10;
 // masked lookup, word setter and predicate 9; minimal word setter and predicate 9 (both 92 bytes).
 // Both forms scoring 9 lose 0xc2d00 (0 -> 2) in ordinary full links; rejected and original body restored.
+// Round 97 (fast): existing bitfield view for the first clear 13; literal 0xfb 13; explicit first clear 13;
+// animation flag reference 10 (NOT kept: one-use reference and gain below four); named type predicate 10
+// (NOT kept: narrow shift and gain below four); explicit return 13; early guard 13; const unit pointer 13;
+// final parameter read through its address 13. Original body restored.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
