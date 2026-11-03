@@ -590,6 +590,9 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // setting only the three scales, the three point2f built after 868 (3287); the sweep points declared in the
 // loop body 719 (same code); the reversed direction negated by component 822 (3355); the obstacle distance
 // through the existing magnitude2d 719 (same code). Frame 0x124/0x114 and the cached radius (XMM5) remain.
+// DL254: Current ordinary-result graph with byte/short/word/dword edge-center outcomes, then obstacle facing:
+// 719/744/744/761/719/787/787/751. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

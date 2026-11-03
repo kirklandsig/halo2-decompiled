@@ -3441,6 +3441,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // component/shared/in-place translation: 895 each (1412 bytes, helper outlined).
 // Native inline expansion on four producer forms: 389/389/389/391; all regress.
 // Original helper/body restored; matrix/origin, pivot/property homes remain.
+// DL254: Two-use pivot output-pointer contract, direct/scalar/setter/aggregate producers, ordinary then forced inline:
+// 895/421/895/895/368/421/369/367. Original complete body and helper contracts restored;
+// NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)
