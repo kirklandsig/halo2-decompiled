@@ -2422,7 +2422,9 @@ dword function_1cc30(long index);
 dword __cdecl function_131fc0(real alpha);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
+// score 140 (was 154): Frame and retail extent agree; caller flag residency and native
+// fallback selection remain. Both complete coverage clamps now follow the retail upper-default stores.
+// Earlier 154 (was 251): frame 0x28 agrees; zero/sampler homes, bitmap transport and late fallback selection remain.
 // Earlier: 251 fast (was 252 fast): the pixel-shader RGB output mask is selected before the shift
 // ((inverse ? 8 : 0) << 8), which gives retail's and/shl pair instead of a single 0x800 mask.
 // Earlier: 252 fast (was 335 fast): the standard marker gives retail's stack convention (ret 0x34,
@@ -2512,6 +2514,11 @@ dword __cdecl function_131fc0(real alpha);
 // 156 (1729 bytes, first +0x280); two calls in order (tag, fallback, stage) 267; (fallback, tag, stage) 267;
 // (stage, tag, fallback) 154 (first +0x32b); (stage, fallback, tag) 154; (fallback, stage, tag) 156; with the
 // matching 0x144f0 154.
+// J242: Shared upper-default/if-ternary coverage clamps 140/140; independent-zero/default-input
+// 219/154. Separate producer counterparts 148/148/223/162. Coherent alpha inline/force-inline
+// 181/181, both raise 0x3a5c0 from 31 to 248; complete native fallbacks 156, with inline 204. Keep
+// only the plain-confirmed upper-default pair, 154 to 140 at retail length. NOT kept: all later
+// forms regress or worsen a helper user. Caller flag residency and fallback selection remain.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2568,8 +2575,14 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     if (!simple && !preserve_alpha)
     {
         g_484f68.PSCombinerCount = 0x11002;
-        real alpha = 1.0f - *(real *)(g_4b99b0 + 0x30);
-        alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
+        real unclamped_alpha = 1.0f - *(real *)(g_4b99b0 + 0x30);
+        real alpha;
+        if (unclamped_alpha < 0.0f) alpha = 0.0f;
+        else
+        {
+            alpha = 1.0f;
+            if (!(unclamped_alpha > 1.0f)) alpha = unclamped_alpha;
+        }
 #pragma inline_depth(0)
         g_484f68.PSConstant0[0] = function_131fc0(alpha);
 #pragma inline_depth(255)
@@ -2579,8 +2592,13 @@ void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
         g_484f68.PSConstant0[1] = function_131f40(strength, color);
         g_484f68.PSRGBInputs[1] = 0x8011811;
         g_484f68.PSRGBOutputs[1] = 0xcd;
-        alpha = 1.0f - *(real *)(g_4b99b0 + 0x2c);
-        alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
+        unclamped_alpha = 1.0f - *(real *)(g_4b99b0 + 0x2c);
+        if (unclamped_alpha < 0.0f) alpha = 0.0f;
+        else
+        {
+            alpha = 1.0f;
+            if (!(unclamped_alpha > 1.0f)) alpha = unclamped_alpha;
+        }
 #pragma inline_depth(0)
         g_484f68.PSFinalCombinerConstant0 = function_131fc0(alpha);
 #pragma inline_depth(255)
@@ -2827,7 +2845,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 }
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
+// score 247 (was 279): Frame 0x58; 2027/2022 bytes. Maximum/reciprocal and
+// trigonometric scheduling remain; both normalized scales now use their native parameter results.
+// Earlier 279 (was 282): Frame 0x58 agrees; six excess bytes, sampler constants,
 // bitmap-call transport and scale/trig homes remain.
 // Round 139: the first difference (+0x194, the stage loop's constants 2/3 in EBP/EDI where retail
 // has EDI/EBP and 0 in EBX) follows from the 0x144f0 call: retail passes the fallback in EBX, so
@@ -2926,6 +2946,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // address-taken priority 280; direct without the volatile 283; two calls 366 (2044 bytes, a positional shift,
 // first still +0x17); two calls in order (tag, fallback, stage) 345; (fallback, tag, stage) 346; (stage, tag,
 // fallback) 366; (stage, fallback, tag) 366; (fallback, stage, tag) 365; with the matching 0x144f0 366.
+// J242: First-parameter native results 260/260; second 273/273, NOT kept: incomplete parallel
+// result contracts without a match. Both parameters 247/247, first form plain-confirmed 247 and
+// kept; branch-owned results 251/251. Frame 0x58 and packed-alpha prefix agree; five excess bytes
+// and maximum/reciprocal/bounds/trigonometric scheduling remain.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -2986,14 +3010,12 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     function_1c590((s_shader_cache *)g_51f0f0,
         *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
     function_1c710(g_51f0f0);
-    real first_texture_scale = first_scale;
-    real second_texture_scale = second_scale;
-    real scale = first_texture_scale > second_texture_scale ? first_texture_scale : second_texture_scale;
+    real scale = first_scale > second_scale ? first_scale : second_scale;
     if (scale > 0.0f)
     {
         real inverse_scale = 1.0f / scale;
-        first_texture_scale *= inverse_scale;
-        second_texture_scale *= inverse_scale;
+        first_scale *= inverse_scale;
+        second_scale *= inverse_scale;
     }
     real scaled_width = scale * width;
     real scaled_height = scale * height;
@@ -3002,19 +3024,19 @@ void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     bounds[1] = 320.0f + scaled_width * 0.5f;
     bounds[2] = 240.0f - scaled_height * 0.5f;
     bounds[3] = 240.0f + scaled_height * 0.5f;
-    if (first_texture_scale == 0.0f) first_texture_scale = 1.0f;
-    if (second_texture_scale == 0.0f) second_texture_scale = 1.0f;
+    if (first_scale == 0.0f) first_scale = 1.0f;
+    if (second_scale == 0.0f) second_scale = 1.0f;
     real first_coordinates[8], second_coordinates[8];
     real cosine = (real)cos(first_angle), sine = (real)sin(first_angle);
-    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, first_texture_scale, &first_coordinates[0]);
-    texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_texture_scale, &first_coordinates[2]);
-    texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_texture_scale, &first_coordinates[4]);
-    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_texture_scale, &first_coordinates[6]);
+    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[0]);
+    texture_corner_rotate(1.0f, -1.0f, cosine, sine, first_scale, &first_coordinates[2]);
+    texture_corner_rotate(1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[4]);
+    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, first_scale, &first_coordinates[6]);
     cosine = (real)cos(second_angle); sine = (real)sin(second_angle);
-    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, second_texture_scale, &second_coordinates[0]);
-    texture_corner_rotate(1.0f, -1.0f, cosine, sine, second_texture_scale, &second_coordinates[2]);
-    texture_corner_rotate(1.0f, 1.0f, cosine, sine, second_texture_scale, &second_coordinates[4]);
-    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, second_texture_scale, &second_coordinates[6]);
+    texture_corner_rotate(-1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[0]);
+    texture_corner_rotate(1.0f, -1.0f, cosine, sine, second_scale, &second_coordinates[2]);
+    texture_corner_rotate(1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[4]);
+    texture_corner_rotate(-1.0f, 1.0f, cosine, sine, second_scale, &second_coordinates[6]);
 #pragma inline_depth(0)
     D3DDevice_Begin(D3DPT_TRIANGLEFAN);
     D3DDevice_SetVertexData2f(1, first_coordinates[0], first_coordinates[1]);
@@ -3397,6 +3419,11 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // selector producers and shared quantizer restored; reload pairs and shift/clip homes remain.
 // Uniform parallel scale/gain product operand directions, seven subsets and all with the
 // cutoff product reversed, 31/31/31/31/31/31/31/31; original product inputs restored.
+// J242: Native truth-valued parameter carriers: clip/shift/center/skip-state byte singly,
+// clip+shift, with center, with all four, and signed clip+shift: 31 each at 4828/4828. NOT kept:
+// all neutral and equivalent input-type selection requires byte equality. Original complete body,
+// four bool inputs, every helper and call tuple restored; selector register production, post-bias
+// reciprocal/constant load order and six shift-versus-clip quantizer homes remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
