@@ -2129,6 +2129,11 @@ bool function_1e11b0(long actor_index, bool active);
 // lookup in the flag test 75 (215); squad_get at every use 93 (225); the step written out 68 (214); the
 // header squad_actors_next 13; iterator.actor_index at each use 13; two address reads (diagnostic) 13; the
 // permuter (anneal, 600 s, 49 variants) nothing below 13.
+// Round 143 (m3 lane 6, fast): the 13 form rebuilt with retail's short-view shift return 13 (199 B; with the
+// byte full-width return 27, 192 B). On 13: word flag test 13; 0x1e11b0 given iterator.actor_index 13; the address
+// local declared after the squad 13; the depth pair around both 0x203ed0 and 0x203f60 13; `(void)&actor_index` 13;
+// the second lookup in the flag test instead of the +0x7e test 13, with the address read at the +0x34 store 13;
+// the squad re-fetched for the return 80 (218 B: any index use after the loop ends the pointer's liveness there).
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2399,6 +2404,11 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // on the walk form areas/point/raised/location at function scope or renamed 312 each; the area overlap as a
 // forceinline helper 301. Diagnostic: an extra use of point inside the squad walk gives retail's frame 0x54 and
 // every slot (point 0x30, walk/raised 0x3c, areas 0x50), 299: retail's point is live across the walk.
+// Round 143 (m3 lane 6, fast): the state test through the existing 0x1f8660 call 324 (1092 B: it stays out of line,
+// so retail inlined it); elapsed without the `(short)` cast 312 (1104 B, aligned 114 against 160: retail reloads
+// elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
+// a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
+// 312 (aligned 109).
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2896,6 +2906,9 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // after the record tests 148 (580 bytes); the trigger guard as two nested ifs 50; the pending word
 // read at each use 50; `local_3 > 0` tested before the task 54; the pending arms swapped (compute arm
 // first, `else if (+0x64 <= 0)`) 145 at 578 bytes, aligned 11 (the reload stays).
+// Round 143 (m3 lane 6, fast): the compute arm's found/count test nested 50; local_4 left uninitialised and set to
+// NONE inside the pending arm 50; the follow-up (0x202e90 + 0x1fb8a0) as a forceinline helper taking the index,
+// task and event 50; the 0x290cd0 index argument as `(word)arg_1` 117 (582 B); the index parameter as dword 50.
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {

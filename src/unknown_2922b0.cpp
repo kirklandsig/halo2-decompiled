@@ -309,6 +309,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `local_4 = local_19 < local_4 ? local_19 : local_4` 618; hit flag stored before the distance 619; the clamp test
 // as `local_19 / local_6 < 0.1f` 618; success cleared before the clamped distance 618. Retail reloads and negates the
 // half-width again for the fourth offset point (ours reuses the third's negation).
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
