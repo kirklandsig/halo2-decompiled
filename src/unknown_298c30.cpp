@@ -529,6 +529,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // M315: current ordinary-result graph with consistent index/transform/both inline contracts,
 // without/with complete sweep scope 759 each; both with separate phase cosines, without/with
 // full sweep scope 753/753. All body and declaration trials restored; frame/radius/trace homes remain.
+// Round 490: Native two-edge trace/state/sector collections, seven subsets
+// 763/735/739/780/772/780/738; complete graph with both point-pair collections 739.
+// NOT kept: grouped-storage nonmatches; all regress. Original body/helpers restored;
+// frame, radius and trace/trig/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

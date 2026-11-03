@@ -108,6 +108,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // setters and matrix/trig role names 422/422/478/478/422/422/478/478; original-graph trig/vector/matrix
 // home names 356/356/356/356/356/356/356; complete names with row-local diagonal differences 356.
 // Original helpers/body restored; frame 0x98 versus 0x90 remains.
+// Round 490: Existing builder consumes caller-computed sine/cosine, pair ownership
+// call/first/second/both 355/355/358/357; with two-use real angles 368/368/357/370.
+// NOT kept: one-point lead below gate; hoisted one-use trig results require a match.
+// Original helper signature, both helpers and complete body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {

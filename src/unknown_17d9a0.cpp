@@ -885,6 +885,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 771/793/771/804; total also owns phase admission 771/794/771/805 (fast).
 // Original total, decrement, admission and body restored; tag/count/plane homes remain.
 // Ordinary outer-group decrement 746 at 3647 bytes versus full 539: NOT kept; fast lead was not confirmed.
+// Round 490: Native initial/group-candidate/selection-emission ordinal role names,
+// seven subsets tie fast 795; complete names with entry-owned initial zero 787.
+// Minimal initial-zero ownership also 787 fast but 544 plain versus full 539: NOT kept.
+// Original body/helpers restored; tag/count/plane homes remain.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

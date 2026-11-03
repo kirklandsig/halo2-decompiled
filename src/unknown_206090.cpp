@@ -323,6 +323,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // AC486: Native-array magnitude loops, reverse/forward and zero/first-product sums
 // 1398/1387/1535/1572; with reverse component dot loop 1468/1433/1608/1599. NOT kept:
 // no match; original captures, float trees, kernels and whole body restored; frame/home differences remain.
+// Round 490: Explicit near/increasing/decreasing compression-ramp result arms,
+// seven subsets 1355 each; complete arms with twice-used ray length 1382.
+// Original complete body and every kernel restored; excess frame and early homes remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {
