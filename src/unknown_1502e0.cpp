@@ -265,6 +265,9 @@ void function_151ea0(long player_index, long object_index)
 // (12), `a >= b` test first (13), copy arm's stores swapped (4), `return false` as an early exit before the
 // copy label (67), copy label in the same arm with `return result` (69).
 // Permuter (25 min on r654, about 1030 variants): nothing below 1.
+// M337: Initial winner predicate with guarded/direct equality, equality-first result, and
+// priority-range result, bool/byte carriers: 74/104, 112/102, 81/79, 82/91.
+// All restored; the equal-priority jne still chooses the other existing epilogue.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {
@@ -419,6 +422,10 @@ struct s_tail_player_identifier
 // scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
 // from the indexed form).
+// M337: Native range-end scan with early/delayed options and direct/common result
+// [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
+// NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
+// Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1188,6 +1195,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
 // inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // Permuter (25 min on r654): best 12, only with a volatile read of the unit index; not kept.
+// M337: Returned availability owns unit and held-slot admission; bool/byte/short/long
+// states with the original short slot [48, 68, 85, 80]; native signed-byte slot [46, 66, 81, 76].
+// All restored; the saved unit-index and table/slot registers remain exchanged.
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
