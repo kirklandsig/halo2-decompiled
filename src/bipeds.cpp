@@ -2354,6 +2354,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
 // F358: Complete sole-exit success/failure carriers in byte/short/long/dword:
 // 63/63/63/63/63/63/63/63. NOT kept: no exact outcome-carrier repair; original count, both return paths and all stores restored.
+// F360: Complete settling-period expression at four pre-validation phases, mutable/immutable:
+// 68/68/68/71/68/68/68/71. NOT kept: no exact period-lifetime/EBP repair; retail computes the period after body validation.
+// Original complete body and helpers restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {

@@ -5658,6 +5658,9 @@ void __stdcall function_d6bc0(long object_index);
 // B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
 // producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
 // NOT kept: all regress; original memory counter, timer observations and complete body restored.
+// F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
+// 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
+// Original complete body and helpers restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
