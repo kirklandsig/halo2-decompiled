@@ -965,6 +965,9 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
 // a ring reference 22; a const ring pointer 22; the size output declared before the count 22;
 // `+= 1` for either count 22; result declaration split from its initialization 22;
 // the header scoped to the write/serialization block 22.
+// Round 52 (lane 14, fast; see 0x80e10's note for the shared helper's forms): `buffer->data` before `buffer->size` 21 (the only store order that
+// moves; not kept for one line); with `used` before `start` 21, the header after `result = true` 21, `size` declared before the increment 21,
+// `count = count + 1` 21. Without it: chained `start = used = 0` 22, `used` first 22, all three zeros chained 22, a memset of the two fields 97.
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
