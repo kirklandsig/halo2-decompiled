@@ -542,11 +542,12 @@ static __forceinline void update_angular_values(float impulse,
 
 // Target and mass are captured before projection. Axes remain references so
 // the angular contributions observe the preceding linear writes, including
-// overlapping row/body storage. Form both contributions before updating A.
+// overlapping row/body storage. Capture B inertia before the body writes, and
+// form both angular contributions before updating A.
 static __forceinline void solve_linear_error_kernel(float target, float mass,
 	__m128 const &axis_a, __m128 const &axis_b, __m128 const &axis_linear,
 	__m128 &angular_a, __m128 &angular_b, __m128 &linear_a, __m128 &linear_b,
-	__m128 const &inverse_a, __m128 const &inverse_b,
+	__m128 const &inverse_a, __m128 inverse_b,
 	solver_step_31c940 *const volatile &step, float *result)
 {
 	__m128 relative = _mm_sub_ps(linear_a, linear_b);
@@ -557,8 +558,12 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 	float projected;
 	_mm_store_ss(&projected, xyz);
 	float impulse = mass * (target * load_error_scale(step) - projected * load_velocity_scale(step));
-	volatile float rounded = impulse;
-	__m128 scalar = _mm_set_ss(rounded);
+	// Give the rounded SIMD input a scalar object; keep the extended impulse
+	// live for result accumulation. Retail reads this copy directly with MOVSS.
+	solver_scalar_31c940 rounded;
+	float volatile &store_rounded = rounded.value;
+	store_rounded = impulse;
+	__m128 scalar = _mm_load_ss(&rounded.value);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
 	__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
@@ -775,7 +780,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1897: normal fallbacks, writeback lifetimes, and captured angular inertia.
+// score 1890: normal fallbacks, writeback lifetimes, and captured update inertia.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
