@@ -941,6 +941,15 @@ extern vector3f *g_4687b0;
 // P285: Existing complete scalar-output setters at left/normal/position producers,
 // subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
 // Original scalar trees, stores, helpers, scopes and complete body restored.
+// Round 78 (m3 lane 16, fast): direction, origin or left renamed 309 (same code: names do not order these
+// slots). LEAD: the throw-offset block as a forceinline helper taking the direction by value gives retail's
+// second direction copy at retail's slots with up kept in EBX: with the original sum 316 (frame 0xd8), with
+// the sum as three in-place vector3f_add_scaled phases 307 (frame 0xcc, 1693 bytes); on that the offsets
+// pointer passed as an argument 307 (same code), direction declared beside origin, before or after, 307
+// each, the spread blend as vector3f_scale + vector3f_add_scaled 310 (1699 bytes); the phases in place in
+// the parameter then copied out 299 (1717 bytes), the helper calling function_b75a0 on it 332 (1684 bytes);
+// the helper returning the point by value 295 (1717 bytes: retail writes the point into the copy's slot
+// with no copy, and loads the offsets pointer first). Not kept: one-caller helper, no match.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1762,6 +1771,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // complete array graph with short slot / Boolean hand / both / forced accessor / all:
 // 136/146/143/138/143. NOT kept: best 136, gain 2 below the gate. Original body and helper
 // restored; frame 0xc, same-block pool reload and weapon/mode homes remain. All shared users unchanged.
+// Round 78 (m3 lane 16, fast): hand as `primary ? 0 : 1` 138, as `primary == false` 138, each arm's flag
+// stored before its mode 138, the secondary arm's flag as the constant false 138 (same code each); the
+// other hand's getter given `!hand` re-measured 141. Retail's first lookup addresses [index + data + 8] (ours
+// [data + index + 8]) and re-reads the pool data for the hand getter.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2016,6 +2029,10 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // native drop-request call scope, subsets 1/2/4/3/5/6/7: 97/97/97/97/97/97/97; native byte
 // argument store 97. All sixteen shared-accessor users and notification control stay at
 // calibrated scores. Original helper and body restored; frame/result and pool/weapon homes remain.
+// Round 78 (m3 lane 16, fast): the unit read through a header local 97 (same code); nested admission re-measured
+// 122, with the header local 122; own-unit fields at each use 129 (345 bytes); the player unit read at the top
+// 109; the own weapon getter before the player unit read 102. Retail keeps unit_index in EBP and spills the
+// unit into the dead unit_index home; every form keeps the unit in ESI and reuses it for the first getter.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {

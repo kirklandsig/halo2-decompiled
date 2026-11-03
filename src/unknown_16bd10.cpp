@@ -894,6 +894,11 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // DH308: Point-mode planar cosine/sine product pairs and distance-clamp subsets
 // 1/2/3/4/5/6/7, then all with enclosing product declarations: 245/245/236/236/245/245/236/236.
 // All retain frame 0x48 and 1696 bytes; executable rows tie or regress. Original body restored.
+// Round 78 (m3 lane 16, fast): length `dot3f(direction, &plane.n)` 251 (retail's d.j preload; the copied normal
+// loads i/j/k into XMM5/3/4 for retail's XMM3/4/5 and the plane-offset product copies n.i), with `0.0f !=
+// length_squared` 250, with plane.n copied from camera->point.left 251; `0.0f != length_squared` alone 235
+// (one point, not kept); the length written i,j,k direction-first 253; plane.d as dot3f(&plane.n, position)
+// 236 (same code), with the dot3f length either operand order 251/251.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {
