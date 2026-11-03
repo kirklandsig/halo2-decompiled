@@ -365,6 +365,12 @@ struct s_block_candidate
 // local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the
 // block 379. Retail keeps offset's zero in EBX from before the type clamp (it is the clamp's zero) and stores
 // oldest's NONE from the result's register in the block.
+// M3 lane 9 r83 (fast): the type clamp as an if/else chain 347 (same code); the matched block's time read before its
+// pages (retail reads pages first, ours reversed it) 344, with time-first in all three segment arms 344, plus the
+// ring insertion stored previous/offset/time/pages as retail 344 (three-point gain, not kept); on that: offset
+// declared at the top of the admitted block 384; switch cases ordered default/1/0 344 (same code: retail lays case 1
+// and case 0 after the default arm, ours moves both past the scan whatever the order); previous declared in the
+// block after current 357; the ring insertion indexed without the candidate pointer 345.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

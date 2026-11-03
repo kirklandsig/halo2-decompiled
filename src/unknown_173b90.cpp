@@ -1168,6 +1168,11 @@ public:
 // constant); valid/fallback arms swapped (`== NONE ||` first) 184 (same code); xyz magnitudes plus the
 // parent colour in a local after the position copy 261 [84] (1363 bytes); arms swapped plus xyz
 // magnitudes 248 [76] (1355 bytes, as xyz alone); magnitudes written in the tests (no locals) 285 [167].
+// M3 lane 9 r83 (fast; 0x175270 stays matched): the spawn record filled location index first (retail stores it
+// before the scale divide) 182 (two points, not kept); on it: location, dt, then scale 184; the spawn declared and its
+// location stored ahead of the matrix scale/position 182; the position copied before the 1.0 scale 182; the spawn
+// declared with the matrix 182; the location stored at the top of the particle block 228. Retail reads the parent
+// colour into EAX between the position copy's dwords and keeps the child tag index in ECX for the group lookup.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

@@ -249,6 +249,12 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // (1694; caller 698), with the `(double)` differences 513 (1646), plus a short outer counter 504 (1651); short
 // inner-angle counter 395 (same code), with the short candidate count 464; all three short with double dx/dy
 // 488 (1669; caller 698).
+// M3 lane 9 r83 (fast): the point locals renamed by role (center/direction/endpoints/offset/angles/candidate) 395
+// (same code: names move no slot here); the far branch's difference through the existing vector2d_from_points2d 407
+// (1743 bytes); the loop distance through a file-local accumulating distance2d 451 (1751); the root summed y-first
+// 395 (same code). Retail negates the inner sine's angle on x87 (`fld [angle]; fchs`), ours with SSE `0 - x`: the
+// sine argument as `-(double)a : (double)a` 425 (1709 bytes, fchs as retail but the entry moves to +0x2); the sine
+// as an if/else of two calls 419 (1715 bytes).
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

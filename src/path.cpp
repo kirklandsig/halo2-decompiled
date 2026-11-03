@@ -1014,6 +1014,11 @@ bool function_2715a0(byte *buffer)
 // 0x210be0 call.
 // M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
 // 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// M3 lane 9 r83 (fast): the node pointer taken after the NONE break 485 (one point, not kept); on it: a forceinline
+// declaration of the insertion 0x271fd0 579 (2152 bytes; matched 0x2713f0 inlines it too, 466 bytes); the edge margin
+// computed before the 0x210be0 call 486 (the root then precedes the call as retail, but the divide stays x87 ahead of
+// it); the diameter computed once at entry 510 (2084); the entry_distance copy dropped 485; the heap update arms
+// swapped (`!= NONE` first) 489.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
