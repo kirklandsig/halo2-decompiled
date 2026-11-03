@@ -289,6 +289,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // P285: Existing shared used-mask/runtime-word/fixed-word flag helpers, subsets 1..7,
 // then complete helpers with CRT bit-vector initialization: 917/876/927/926/931/928/928/928.
 // All original helpers, direct flag operations, counts and complete body restored.
+// F351: Native 64-bit used-vector word/byte/wide storage 867/874/886;
+// dword/word/byte/wide start after collection 880/866/871/886; word CRT zero 871.
+// NOT kept: no gain with retail storage/frame evidence. Original mask, lifetimes and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
