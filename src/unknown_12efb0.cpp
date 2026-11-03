@@ -349,6 +349,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // P271 follow-up: Late two-use intensity with CWRI/CRWI/CWIR, conditional-result
 // CIWR/CWRI/CRWI/CWIR, and late two-use CRIW: 703/703/609/609/703/703/609/703.
 // Original helpers/body restored; isolated seven-point lead remains below the keep gate.
+// Round 541: Standard weighted-array multiplication ranges a/b/c, seven subsets and returned
+// output-iterator chain: 795/789/773/804/780/754/766/774. Frame becomes 0x4824; every
+// form regresses. Original ten stores, includes, helpers and complete body restored.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
