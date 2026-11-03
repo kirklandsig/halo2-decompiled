@@ -555,6 +555,10 @@ void function_245400(s_source_245400 const *source, long index,
 // DH306: native plane-receiver identity with bool/byte/short/long sides, original/staged
 // cross, 235 each (756 bytes); caller 0x245aa0 becomes 43. NOT kept: retail compares decoded
 // ordinals, shorter extent and caller loss. Original body restored; frame and side homes remain.
+// M3 lane 4 r157 (fast): the scale test as `1.f != scale` 209; the transformed point declared in the transform block 209
+// (and it would dangle); the material table read before the surface's first index 209; the edge vector after the
+// side flags 203 (786 bytes, re-measured; 6 points, under the margin), with the second material read first 207, with the
+// sides before the plane pointers 203; the endpoint pointers and edge vector both after the sides 212 (aligned 171 -> 147).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

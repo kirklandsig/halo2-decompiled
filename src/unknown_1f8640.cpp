@@ -543,6 +543,9 @@ struct s_1f8a70_actor
 // B381: complete existing path-query record begun at scratch/case/route/destination/reset/unit/actor/entry
 // phases 228/228/228/228/228/228/228/228. All tie; NOT kept: grouped homes require an exact match. Original frame 0x84,
 // pool/data scheduling and unit-output/result packing remain.
+// M3 lane 4 r157 (fast): the unit index passed straight to 0xe70b0 232; the three resets through `actor` (no second
+// actor_get) 431; the 0x5d2 flag stored before unknown504 230; the movement getter before the properties getter 232;
+// the zero-route node test before the radius test 228 (same code).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

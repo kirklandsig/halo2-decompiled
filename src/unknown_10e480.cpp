@@ -347,6 +347,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // Round 343: Object acquisition/weighted-animation/countdown-weight last-consumer scope
 // subsets 1..7 each 207; joint scopes with the confined base identifier 207. Original
 // observations, constructor points and body restored; frame, getter and ordinal homes remain.
+// M3 lane 4 r157 (fast; LCS-aligned base 110): the frame entry in a twice-used `long` 257 (967 bytes, aligned 99:
+// retail's 32-bit frame compare and one load; the countdown still spills because the inlined getter leaves the
+// channel's tag index in EBX across the loop for the data get), with the frame read before the weight 257, with the
+// data struct in the sampled block 260; the sample test as a `continue` 207 (same code); the frame count read once
+// after the getter into a `long` 254 (965 bytes).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
