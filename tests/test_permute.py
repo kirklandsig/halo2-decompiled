@@ -486,6 +486,7 @@ typedef unsigned short word;
 typedef unsigned long dword;
 typedef float real;
 #define NONE -1
+#define PRIVATE
 
 struct s_point
 {
@@ -509,6 +510,11 @@ void store(long a, bool b);
 #define TEST_FIELD_BIT(field) ((bool)(field))
 static inline long doubled(long a) { return a + a; }
 static inline bool has_flags(s_thing *t, word mask) { return (t->flags & mask) != 0; }
+static inline long twice(short a) { return a + a; }
+static inline long first(long a, long b) { return a; }
+static inline bool any_flags(s_thing *t, word flags) { return (t->flags & flags) != 0; }
+static inline long by_ref(long &a) { return a; }
+PRIVATE __forceinline real halved(real x) { return x * 0.5f; }
 '''
 PARAMS = 's_thing *thing, long index, short count'
 
@@ -600,8 +606,17 @@ CASES = [
     (permute.mut_single_exit, '\n\tif (index)\n\t\treturn 1;\n\treturn index + 2;\n',
      {'\n\tlong result;\n\tif (index)\n\t\treturn 1;\n\tresult = index + 2;\n\treturn result;\n'}),
     (permute.mut_inline_helper, '\n\treturn doubled(index) + has_flags(thing, 4);\n',
-     {'\n\treturn ((long)(index + index)) + has_flags(thing, 4);\n',
-      '\n\treturn doubled(index) + ((bool)((thing->flags & 4) != 0));\n'}),
+     {'\n\treturn ((long)(((long)index) + ((long)index))) + has_flags(thing, 4);\n',
+      '\n\treturn doubled(index) + ((bool)((((s_thing *)thing)->flags & ((word)4)) != 0));\n'}),
+    # the argument keeps the conversion to the parameter's type (here the truncation to short)
+    (permute.mut_inline_helper, '\n\treturn twice(index);\n', {'\n\treturn ((long)(((short)index) + ((short)index)));\n'}),
+    # a parameter named like a member: only the parameter is replaced, not '->flags'
+    (permute.mut_inline_helper, '\n\treturn any_flags(thing, 4);\n',
+     {'\n\treturn ((bool)((((s_thing *)thing)->flags & ((word)4)) != 0));\n'}),
+    # an unused parameter whose argument is a name: nothing is lost
+    (permute.mut_inline_helper, '\n\treturn first(index, count);\n', {'\n\treturn ((long)(((long)index)));\n'}),
+    # a PRIVATE helper (file-local, defined empty) is inlined too
+    (permute.mut_inline_helper, '\n\treturn halved(index);\n', {'\n\treturn ((real)(((real)index) * 0.5f));\n'}),
     (permute.mut_test_field_bit, '\n\tif (thing->ready && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
      {'\n\tif (TEST_FIELD_BIT(thing->ready) && !g_thing->ready)\n\t\treturn 1;\n\treturn 0;\n',
       '\n\tif (thing->ready && !TEST_FIELD_BIT(g_thing->ready))\n\t\treturn 1;\n\treturn 0;\n'}),
@@ -658,6 +673,10 @@ def test_typed_mutations_leave_alone_what_they_must():
                                    permute.Context(PARAMS, 'void', HEADER)) is None
     # an argument the helper reads twice is evaluated once only when it is a name or a literal
     assert permute.mut_inline_helper('\n\treturn doubled(index + 1);\n', rng(), ctx) is None
+    # an argument the helper never reads is kept as a call unless it is a name or a literal
+    assert permute.mut_inline_helper('\n\treturn first(index, helper(index, count));\n', rng(), ctx) is None
+    # a parameter type that cannot be written as a cast (a reference) leaves the call alone
+    assert permute.mut_inline_helper('\n\treturn by_ref(index);\n', rng(), ctx) is None
     # a helper from another file (an included header) stays a call
     assert permute.mut_inline_helper('\n\treturn doubled(index);\n', rng(),
                                      permute.Context(PARAMS, 'long', HEADER, own='')) is None

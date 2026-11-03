@@ -2068,65 +2068,67 @@ def mut_single_exit(body, rng, context=None):
     return '\n' + unit + decl + head if head.startswith('\n') else unit + decl + '\n' + head
 
 
-STATIC_HELPER = re.compile(r'^[ \t]*static[ \t]+(?:(?:__forceinline|inline)[ \t]+)?(?P<ret>(?:const[ \t]+)?[A-Za-z_]\w*'
+STATIC_HELPER = re.compile(r'^[ \t]*(?:static|PRIVATE)[ \t]+(?:(?:__forceinline|inline)[ \t]+)?(?P<ret>(?:const[ \t]+)?[A-Za-z_]\w*'
                            r'(?:[ \t]*\*)*)[ \t]*\b(?P<name>[A-Za-z_]\w*)[ \t]*\((?P<params>[^()]*)\)\s*\{\s*'
                            r'return\s+(?P<expr>[^;{}]+);\s*\}', re.M)
 SIMPLE_ARG = re.compile(r'^\s*(?:[A-Za-z_]\w*|-?\d[\w.]*)\s*$')
 
 
 def _helper_params(params):
-    """The parameter names of a helper's list, or None when one cannot be named."""
-    names = []
+    """The (type, name) pairs of a helper's parameter list, or None when a
+    parameter cannot be named or its type cannot be written as a cast (a
+    reference, an array, a function pointer, a default or '...')."""
+    out = []
     for p in [p.strip() for p in params.split(',')] if params.strip() not in ('', 'void') else []:
         m = re.search(r'([A-Za-z_]\w*)\s*$', p)
-        if not m or m.group(1) in NOT_NAMES or p == m.group(1):
+        if not m or m.group(1) in NOT_NAMES or p == m.group(1) or re.search(r'[&\[\]()=]|\.\.\.', p):
             return None
-        names.append(m.group(1))
-    return names
+        out.append((p[:m.start()].strip(), m.group(1)))
+    return out
+
+
+def _param_name(name):
+    """A parameter name as a whole word that is not a member after '.' or '->'."""
+    return r'(?<![\w.>])%s\b' % re.escape(name)
 
 
 def mut_inline_helper(body, rng, context=None):
-    """A call to a static helper defined in the function's own file whose
-    body is one 'return e;' -> e itself, cast to the helper's return type,
-    with each parameter replaced by its argument (parenthesized). An argument
-    the expression reads more than once must be a plain name or literal, so
-    nothing is evaluated twice."""
+    """A call to a file-local helper (static or PRIVATE) defined in the
+    function's own file whose body is one 'return e;' -> e itself, cast to the
+    helper's return type, with each parameter replaced by its argument cast to
+    the parameter's type (so a narrowing or a float conversion stays). An
+    argument the expression reads other than exactly once must be a plain name
+    or literal, so nothing is evaluated twice and no call is dropped."""
     own = getattr(context, 'own', None) if context else None
     if not own:
         return None
     helpers = {}
     for m in STATIC_HELPER.finditer(own):
-        names = _helper_params(m.group('params'))
-        if names is not None:
-            helpers[m.group('name')] = (m.group('ret').strip(), names, m.group('expr').strip())
+        params = _helper_params(m.group('params'))
+        if params is not None:
+            helpers[m.group('name')] = (m.group('ret').strip(), params, m.group('expr').strip())
     if not helpers:
         return None
     cands = []
     for m in re.finditer(r'(?<![\w.>])(?P<name>' + '|'.join(map(re.escape, helpers)) + r')\s*\(', body):
-        ret, names, expr = helpers[m.group('name')]
+        ret, params, expr = helpers[m.group('name')]
         got = _call_args(body, m.end() - 1)
         if got is None:
             continue
         spans, end = got
         args = [body[s:e].strip() for s, e in spans]
-        if args == [''] and not names:
+        if args == [''] and not params:
             args = []
-        if len(args) != len(names):
+        if len(args) != len(params):
             continue
-        ok, new = True, expr
-        for p, a in zip(names, args):
-            uses = len(re.findall(r'\b%s\b' % re.escape(p), expr))
-            if uses > 1 and not SIMPLE_ARG.match(a):
-                ok = False
-                break
-        if not ok:
+        if any(len(re.findall(_param_name(p), expr)) != 1 and not SIMPLE_ARG.match(a)
+               for (_, p), a in zip(params, args)):
             continue
         # substitute every parameter at once, so an argument naming another parameter stays put
-        lookup = dict(zip(names, args))
-        if names:
-            new = re.sub(r'\b(?:%s)\b' % '|'.join(map(re.escape, names)),
-                         lambda x: lookup[x.group(0)] if SIMPLE_ARG.match(lookup[x.group(0)]) else f'({lookup[x.group(0)]})',
-                         expr)
+        lookup = {p: f'(({ty}){a})' if SIMPLE_ARG.match(a) else f'(({ty})({a}))' for (ty, p), a in zip(params, args)}
+        new = expr
+        if params:
+            new = re.sub('|'.join(_param_name(p) for _, p in params), lambda x: lookup[x.group(0)], expr)
         cands.append((m.start(), end, f'(({ret})({new}))'))
     if not cands:
         return None
