@@ -216,6 +216,9 @@
 // point-setter/second-return contract 690/581/690/581; complete read-only basis inputs
 // on those graphs 690/581/690/581. Frame stays 0x58; first-wave shared addition grows
 // to 2654 bytes. All producers, basis contracts and complete body restored.
+// Round 545: Native indexed input scaling/copy producers, first-scale/second-pair/copy
+// subsets 1/2/4/3/5/6/7 and complete unsigned-counter graph 581/581/699/581/699/699/699/699.
+// Original scalar producers, helpers, sixth conversion and body restored; frame 0x58/0x60 remains.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -792,6 +795,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
 // field then actual opacity value storage: 265/269/265/269/276/278/276/278.
 // Original product, its intermediate, signed zero, record publication and complete body restored.
+// Round 545: Native color/width default producers, aggregate/library color seeds,
+// separate/both defaults and positive state arms 336/577/561/615/336/578/558/616. All original
+// output producers and body restored; frame 0xa8/0xac and spill homes remain.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

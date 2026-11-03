@@ -969,6 +969,10 @@ real normalize2d(point2f *v);
 // AC484: Multi-use origin pointer at entry/valid scope, with late/early result declaration,
 // 135 each; each with direct request return 182. Original field addresses, result scope
 // and complete body restored; retained DL success and distinct return transport remain.
+// Round 545: Negative trajectory outcome producers, original/complementary unit-state arms,
+// assigned/terminal request results 182/120/187/141/189/113/193/156.
+// NOT kept: 120 adds a Boolean canonicalization absent in retail; 113 also moves length away.
+// Original request/movement graph and body restored; retained DL result and return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {
