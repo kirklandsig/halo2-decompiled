@@ -1168,6 +1168,10 @@ bool function_108530(long device_index, long name)
 // field domains: 142/142/142/142/106/106/106/106. Original-target and ordered-pin/complete-field/early-down-half
 // refinements 106/106/106/140. The 106 forms introduce a frame and raise the second caller 13 -> 28;
 // original input observations, publications and complete body restored.
+// F344: Actual initial-speed publication at entry/after floors/after bounds/before
+// reset, with original parameter arithmetic 128/123/123/126; consistent stored-speed
+// arithmetic 128/123/123/126. NOT kept: early publication/disabled-path clears add
+// stores absent in retail and grow length; original complete body and callers restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1678,6 +1682,10 @@ bool function_0b6760(s_index_pair const *pair);
 // Round 333: Complete typed tag receiver and direct selected event fields, with ordinary
 // index/saved-pointer/result-first domains: 342/367/400/405/342/367/400/406. All regress; original
 // tag type, both declarations, qualifiers, field observations and body restored.
+// F344: Native external power/position/activity flag-bit views, seven subsets,
+// 294/294/369/294/369/369/369; all explicit-bool tests 458. Other 29 file scores
+// unchanged; frame stays 0x1c versus 0x20. NOT kept: activity stores and bool
+// extraction grow nonretail code; original word layout and complete body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

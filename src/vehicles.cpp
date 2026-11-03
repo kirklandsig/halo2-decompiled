@@ -1194,6 +1194,13 @@ long function_10f5f0(long object_index);
 // Native short stopped alone 571; full-width reused final result 570.
 // Extent-only control 565 repeated an earlier form and is excluded; all executable
 // source restored. Frame, native flag-result bytes and sum-loop scheduling remain.
+// AC491: Entry-owned bounds/time/reduction scalar declarations, masks 1/2/4/3/5/6/7, then coherent
+// scalar identities: 565/565/565/565/565/565/565/565. Original complete body and producers restored;
+// native frame and homes remain.
+// P283: Direct idle admission with original/six-real output and original/zero-filled
+// name array: 565/565/571/572; completed logical idle value with the same variants:
+// 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
+// Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2406,6 +2413,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // DH300: Existing spin helper advance owned before the field store, native/staged, with
 // per-use/once period 42/151/42/151; gate-scoped input 51/157; new advance with joined final
 // output 78/191. Original helper and complete body restored; turn-product and spin-store schedules remain.
+// AC491: Native two-side torque arrays, aggregate/assigned/immutable/entry-owned with
+// conditional/indexed selection, 48/95/48/95/48/95/48/95 (frame 0x14; NOT kept: grouped storage needs
+// a match). Paired turn magnitudes at their expression producers, first before the shared turn
+// product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
+// NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
+// placement form, kept only with a match). Body restored at 42.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3014,6 +3027,13 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // N322: Scalar control/upright-target/upright-error storage, subsets 1/2/4/3/5/6/7:
 // 1095/1076/1076/1061/1053/1069/1061; all plus scalar lateral storage 1077.
 // Control/error storage reaches retail length with frame 0x84 but regresses; original body restored.
+// F344: Completed speed/acceleration-policy/yaw-policy scopes, seven nonempty
+// subsets, and completed airborne target/axis/error scope: 1052 each. Frame stays
+// 0x80 versus 0x74; original complete body restored. Extra scope-only probe 1052
+// excluded from eight-trial credit because it closes no additional local lifetime.
+// DH308: Existing integer sign helper zero-result/positive-result/nested-result/flat-result/early-return/
+// nonzero-result/negative-first correction/negative-first conditional: 1057/1049/1052/1052/1052/1057/1051/1052.
+// NOT kept: best gain is three points; all retain frame 0x80 versus 0x74. Original helper and body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3571,6 +3591,13 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // Round 370: Complete forward parts with cosine-up/sine-axis/outer-trig declaration
 // subsets 1/2/4/3/5/6/7, then all with native fallback copy: 145/156/131/155/145/156/155/159.
 // Five-point best rejected; original body restored. Projection/cross ranks and angle/trig homes remain.
+// F344: Native final-left fields as projection/flip-axis workspaces, direct
+// projection/axis/both 220/207/288; field receivers 215/219/291; mixed receivers
+// 288/287. NOT kept: output-storage graph adds nonretail stores and length.
+// Original complete body, actual helper contracts and real precision restored.
+// DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
+// then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
+// Exact-only precision forms restored; original real angle, setters, helpers and body retained.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4407,6 +4434,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
 // publication alone 749 fast/plain, 2974/2974 bytes; retained with original
 // bypasses and bool state. Initial SIMD/definition allocation remains.
+// P283: Shared ratio-provider inputs for angular/engine/scalar-limit families,
+// subsets 1/2/4/3/5/6/7, then entry declaration: 749/805/688/849/771/857/914/914.
+// NOT kept: shared one-use inputs and join labels 688. Original direct calls with
+// calculated limits named per case (all/steering/turn): 756/755/789. All restored;
+// frame 0x18 agrees, zero/result SIMD, entry definition and per-site one homes remain.
 // M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
 // tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
 // all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
@@ -4925,6 +4957,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // the shared driver-tilt weighting, plain 1087 at retail length; frame 0xf8 versus 0xd8 remains.
 // M316: On pre-magnitude axis graph: sequential facing/current, current/state and desired/tensor matrix ownership subsets 1/2/4/3/5/6/7, all with consumed flip output 1119/1095/1170/1119/1165/1170/1170/1169.
 // Reuse reaches frame 0xd4 rather than retail 0xd8; entry index/offset and matrix/vector homes remain. Original executable body restored.
+// AC491: Complete translation/orientation/spin phase scopes, masks 1/2/4/3/5/6/7, then all with
+// coherent matrix identities: 1087/1087/1087/1087/1087/1087/1087/1087. Original complete body and
+// producers restored; native frame and homes remain.
+// P283: Existing complete quaternion converter, with desired normalization,
+// torque rotation/scale and sequential current/state ownership subsets:
+// 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
+// expanding as retail does; all regress and shorten below retail. Original full body,
+// matrices, axis/angle production and math providers restored; frame/index homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
