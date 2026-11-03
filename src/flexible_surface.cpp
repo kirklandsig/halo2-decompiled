@@ -538,6 +538,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // the axis draw 121; the projection as `(1 - cosine) * dot3f(..)` 117; sine and cosine declared separately 117; `cross`
 // declared ahead of the trig values 117; the frame-count store as a plain `g_55e710 = g_4ba034;` 207 (886 bytes,
 // 0x118140 0 -> 53: the reload after the call is needed).
+// Round 47 (lane 15, fast): scalar j, k, i rotation on the global, cross j and k in locals as retail spills them, 175 (856 bytes, frame
+// 0x1c); casts on the sine argument and last cosine for retail's three float stores 164 (888); both 165 (864); both with the RNG first
+// 209 (861); the dot on the global with cross3f and both casts 163 (880). Body unchanged at 117.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

@@ -1051,6 +1051,8 @@ void function_143250(
 // 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
 // NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
 // original polynomial, conversion producers and complete body restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
