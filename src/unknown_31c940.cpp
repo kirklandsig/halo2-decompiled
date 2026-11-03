@@ -217,16 +217,24 @@ static __forceinline void apply_spin_linear(float impulse, solver_linear_row_31e
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
 	__m128 input_b = _mm_set_ss(rounded_impulse);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), *inverse_b_pointer);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_b);
+	// Capture both linear contributions before either body write.
+	__m128 linear_contribution[2] =
+	{
+		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
+		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
+	};
+	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
+	linear_velocity_b = _mm_sub_ps(linear_velocity_b, linear_contribution[1]);
 	// Reload the axes after both linear writes, then form both contributions
 	// before either angular write. Row storage may overlap the body fields.
-	__m128 angular_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_a);
-	angular_velocity_b = _mm_add_ps(angular_velocity_b, angular_b);
+	// Capture both angular contributions before either body write.
+	__m128 angular_contribution[2] =
+	{
+		_mm_mul_ps(change_a, row->a),
+		_mm_mul_ps(change_b, row->b)
+	};
+	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
+	angular_velocity_b = _mm_add_ps(angular_velocity_b, angular_contribution[1]);
 	*result += impulse;
 }
 
@@ -486,14 +494,22 @@ static __forceinline void solve_linear_friction(float target, float const volati
 	__m128 scalar = _mm_set_ss(impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), *inverse_b_pointer);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_b = _mm_sub_ps(linear_b, delta_b);
-	__m128 angular_change_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_change_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_change_a);
-	angular_b = _mm_add_ps(angular_b, angular_change_b);
+	// Capture both linear contributions before either body write.
+	__m128 linear_contribution[2] =
+	{
+		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
+		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
+	};
+	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
+	linear_b = _mm_sub_ps(linear_b, linear_contribution[1]);
+	// Capture both angular contributions before either body write.
+	__m128 angular_contribution[2] =
+	{
+		_mm_mul_ps(change_a, row->a),
+		_mm_mul_ps(change_b, row->b)
+	};
+	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
+	angular_b = _mm_add_ps(angular_b, angular_contribution[1]);
 	*result += impulse;
 }
 
@@ -669,11 +685,15 @@ static __forceinline void solve_unilateral_linear(float target,
 		__m128 scalar = _mm_set_ss(impulse);
 		__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 		__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
-		__m128 delta_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear);
-		__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear);
+		// Form both linear contributions before reloading and writing either body.
+		__m128 linear_delta[2] =
+		{
+			_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), axis_linear),
+			_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), axis_linear)
+		};
 		// Reload A for the update instead of retaining its projection load.
-		a->linear = _mm_add_ps(_mm_load_ps((float const *)&a->linear), delta_a);
-		linear_b = _mm_sub_ps(linear_b, delta_b);
+		a->linear = _mm_add_ps(_mm_load_ps((float const *)&a->linear), linear_delta[0]);
+		linear_b = _mm_sub_ps(linear_b, linear_delta[1]);
 		__m128 angular_a = _mm_mul_ps(change_a, row->a);
 		__m128 angular_second = _mm_mul_ps(change_b, row->b);
 		a->angular = _mm_add_ps(a->angular, angular_a);
@@ -689,14 +709,22 @@ static __forceinline void update_linear_limit_values(float impulse, solver_linea
 	__m128 scalar = _mm_set_ss(impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
 	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), b->inverse_inertia);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 delta_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
-	a->linear = _mm_add_ps(a->linear, linear_a);
-	linear_b = _mm_sub_ps(linear_b, delta_b);
-	__m128 angular_change_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_change_b = _mm_mul_ps(change_b, row->b);
-	a->angular = _mm_add_ps(a->angular, angular_change_a);
-	angular_b = _mm_add_ps(angular_b, angular_change_b);
+	// Capture both linear contributions before either body write.
+	__m128 linear_contribution[2] =
+	{
+		_mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear),
+		_mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear)
+	};
+	a->linear = _mm_add_ps(a->linear, linear_contribution[0]);
+	linear_b = _mm_sub_ps(linear_b, linear_contribution[1]);
+	// Capture both angular contributions before either body write.
+	__m128 angular_contribution[2] =
+	{
+		_mm_mul_ps(change_a, row->a),
+		_mm_mul_ps(change_b, row->b)
+	};
+	a->angular = _mm_add_ps(a->angular, angular_contribution[0]);
+	angular_b = _mm_add_ps(angular_b, angular_contribution[1]);
 	*result += impulse;
 }
 
