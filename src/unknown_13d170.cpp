@@ -386,6 +386,9 @@ struct s_block_candidate
 // P305: Final predecessor/successor/both/all linked-record references, each with
 // mutable/fixed backing receiver: eight at 347. Original complete body and native
 // record accesses restored; missing frame dword and page/ring/policy allocation remain.
+// P309: Initial page/category-limit admission as positive/complementary bool/byte/short/long
+// producer outcomes: 347/347/347/347/347/347/347/347. NOT kept: one-use outcomes
+// do not match; original complete body restored, missing frame dword and page/ring homes remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

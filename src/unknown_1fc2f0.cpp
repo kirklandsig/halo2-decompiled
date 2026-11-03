@@ -519,6 +519,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
 // divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
 // if/else inverted with the fallback arm first 32 (same code).
+// P309: Existing scaler native-copy/library-copy/two-loop/fused-loop, ordinary/forced, with
+// direct update argument: 149/149/99/99/149/149/99/99. Copy/fused loops also lose its matched
+// user. NOT kept: larger frame/length and no exact target; original helper and full body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

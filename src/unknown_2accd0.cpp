@@ -850,6 +850,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 66 (m3 lane 10, fast; 0x2adb10 102 throughout): the header read test as `header_size == bytes` 36; the body
 // progress sum offset first 34 (same code); the header case's open test as its own if around the read 34 (same code);
 // the scratch clamp as `MIN(remaining, size)` 35; the signature-state test as `!(offset < size)` 34 (same code).
+// P309: Guarded header/body/finalization signing-status masks 1/2/4/3/5/6/7, then all signed:
+// 83/34/34/83/83/34/83/83. Header result adds frame/length; other outcomes tie. NOT kept:
+// unmatched one-use/test-produced status; original full body restored, total/seek/size homes remain.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

@@ -1726,6 +1726,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// P309: Complete category admission as direct positive/negative or named positive/negative
+// predicates, original/real movement: 231/231/231/231/228/228/228/228. Original
+// selection graph and complete body restored; zero/reset homes and material expansion remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
