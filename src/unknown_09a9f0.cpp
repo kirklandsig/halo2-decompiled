@@ -564,6 +564,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
 // test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
 // assigned in one chained statement 49 (same code).
+// m3 lane 14 r56 (fast): the flag test through the existing object_header_get (slot_handler.h) 49 (same code);
+// bool result preset false with the flagged arm first and `result = true` before the value test 75 (160 bytes);
+// the long result with `if (result && flagged) { clear; result = false; }` then `if (result)` the attach block
+// 52; the flagged arm setting `result = false` before the clear 50; a long result preset false and set true
+// after the attach 67. All restored.
 // m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
 // sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
 // header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
