@@ -857,6 +857,10 @@ static inline bool player_datum_iterator_next_inlined(s_data_datum_iterator *ite
 // dword unit 171 (405, the test returns but the unit takes EAX and the iterator index leaves the frame), named
 // object 171, short test as well 172. Parent copied ahead of the unit object: while 108, for 108, guarded do-while
 // 108, dword 171; copied right after the unit read 106; parent and unit as two field reads 171 (405).
+// Round 92 (fast control 44; plain baseline 43): shared header table 44; existing typed object getter 44; typed
+// header getter 44; unit-first with the table 44; exact unit-start/NONE-root walk on that form 109; unit-object
+// declaration before the guard 44; const player/unit-object pointers 44; forced private object getter inline 44
+// (0x14deb0 stays matched). Original body/helper restored; player/unit carriers and root-walk entry remain.
 // @retail 0x14df40
 bool __stdcall function_14df40(long *unit_index)
 {
