@@ -530,6 +530,8 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
 // before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
 // and a dword cast 3 each (all still the 16-bit load).
+// Round 134: bool return 33; direct initial pool expression 31; one-use pool receiver 89; initial early return 132;
+// direct initial guard 121; found early return 144; both early exits 136; declared loop current 3. Opening body restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
