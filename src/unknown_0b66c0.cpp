@@ -328,6 +328,10 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 528: native int start/count and immutable destination formal, seven subsets
 // 40 each; complete native graph with exhaustive result arms 48. Original signature,
 // shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
+// Round 140 (m3 lane 6, fast with 0xb5f10/0xb61d0): the sign tests swapped 40 (same code); the length
+// in a local before the tests 46 (92 bytes, 0xb5f10 6); the inverted guard with a `result = false` arm 48
+// (95 bytes, 0xb5f10 41); a `size = count + 1` local clamped and passed 53 (90 bytes, 0xb5f10 104); the
+// result assigned from the whole test 44 (0xb5f10 41).
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
