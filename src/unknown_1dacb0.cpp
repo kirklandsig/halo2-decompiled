@@ -1233,6 +1233,16 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // N334: Complete per-attempt result defaults before/after lookup, aggregate/member transfer,
 // then the same four without the guaranteed mode default: 989/927/993/1002/988/926/992/995. Frames
 // 0x2c/0x34 and result/output homes regress. Separate candidate, iterator and full body restored.
+// Round 63 (m3 lane 10, plain-confirmed): the matched siblings' form (0x1dc790/0x1dc8c0: `if (weapon_class
+// != NONE)` block, iterator stores graph/step/entries then mode/class/type, first iterate before `while (!found
+// && entry)`, `found = true` or re-iterate in the else arm) 755 at 2825 bytes (twin 0x1dbc80 the same); without
+// the flag as `while (result.index == NONE && entry)` with `if (result.index == NONE)` re-iterate 755 (same code).
+// Not kept: a flag set in a test / a guard repeating the loop test, kept only on a match. On it: the loop as
+// `while (entry && result.index == NONE)` 1104; `while (entry) {...; if (found) break; iterate}` 1049; original
+// iterator store order 765; candidate renamed after the iterator outputs 755; existing 0x1ddd00 called (stays out of
+// line) 3494; early return in place of the block 995; `while (entry && !found)` 1132. Left on the 755 form: found_mode's
+// dead home goes to iterator_mode (retail: the candidate), and retail's `xor ebp, ebp` zero for the fifth type request
+// and the inheritance init (matched 0x1dc8c0 has `xor ecx, ecx` there; ours `test`, immediates and a jmp over padding).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1431,6 +1441,16 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 546: Alias-safe named/returned/both identifier transfers 986/977/992;
 // mixed library boundaries 977/986; alias-safe with native returned/named words
 // 1012/988; both with late candidate 1007. All regress; original complete body restored.
+// Round 63 (m3 lane 10, plain-confirmed): the matched siblings' form (0x1dc790/0x1dc8c0: `if (weapon_class
+// != NONE)` block, iterator stores graph/step/entries then mode/class/type, first iterate before `while (!found
+// && entry)`, `found = true` or re-iterate in the else arm) 755 at 2825 bytes (twin 0x1dbc80 the same); without
+// the flag as `while (result.index == NONE && entry)` with `if (result.index == NONE)` re-iterate 755 (same code).
+// Not kept: a flag set in a test / a guard repeating the loop test, kept only on a match. On it: the loop as
+// `while (entry && result.index == NONE)` 1104; `while (entry) {...; if (found) break; iterate}` 1049; original
+// iterator store order 765; candidate renamed after the iterator outputs 755; existing 0x1ddd00 called (stays out of
+// line) 3494; early return in place of the block 995; `while (entry && !found)` 1132. Left on the 755 form: found_mode's
+// dead home goes to iterator_mode (retail: the candidate), and retail's `xor ebp, ebp` zero for the fifth type request
+// and the inheritance init (matched 0x1dc8c0 has `xor ecx, ecx` there; ours `test`, immediates and a jmp over padding).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
