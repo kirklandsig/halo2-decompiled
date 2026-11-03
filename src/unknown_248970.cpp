@@ -395,6 +395,10 @@ public:
 // just before the loop 243 (725 bytes); no position pointer (the field at the viewer call) 54; the link element
 // looked up by the allocation index 54 (same code each); the new element's fields set through the lookup at
 // each use 105 (754 bytes: the allocation retest comes back, retail's 743 is lost).
+// Round 141 (m3 lane 5, fast with 0x175270): retest/salt in place/indexed table grid re-measured 54/59/176/176/118/120/248/248
+// (salt forms lose the frame: 0x8-0x0c against 0x14, location in EBX); location through its address with retest+salt 220,
+// plus indexed 221, retest only 118 (0x175270 21: the bool loses its register in the callee and leaves AL). Retail reloads
+// the location from its stack home in the link arm while EDI holds it only through the viewer loop.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
