@@ -1191,6 +1191,10 @@ long function_10f5f0(long object_index);
 // Native short stopped alone 571; full-width reused final result 570.
 // Extent-only control 565 repeated an earlier form and is excluded; all executable
 // source restored. Frame, native flag-result bytes and sum-loop scheduling remain.
+// P283: Direct idle admission with original/six-real output and original/zero-filled
+// name array: 565/565/571/572; completed logical idle value with the same variants:
+// 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
+// Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4391,6 +4395,11 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
 // publication alone 749 fast/plain, 2974/2974 bytes; retained with original
 // bypasses and bool state. Initial SIMD/definition allocation remains.
+// P283: Shared ratio-provider inputs for angular/engine/scalar-limit families,
+// subsets 1/2/4/3/5/6/7, then entry declaration: 749/805/688/849/771/857/914/914.
+// NOT kept: shared one-use inputs and join labels 688. Original direct calls with
+// calculated limits named per case (all/steering/turn): 756/755/789. All restored;
+// frame 0x18 agrees, zero/result SIMD, entry definition and per-site one homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4906,6 +4915,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // the shared driver-tilt weighting, plain 1087 at retail length; frame 0xf8 versus 0xd8 remains.
 // M316: On pre-magnitude axis graph: sequential facing/current, current/state and desired/tensor matrix ownership subsets 1/2/4/3/5/6/7, all with consumed flip output 1119/1095/1170/1119/1165/1170/1170/1169.
 // Reuse reaches frame 0xd4 rather than retail 0xd8; entry index/offset and matrix/vector homes remain. Original executable body restored.
+// P283: Existing complete quaternion converter, with desired normalization,
+// torque rotation/scale and sequential current/state ownership subsets:
+// 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
+// expanding as retail does; all regress and shorten below retail. Original full body,
+// matrices, axis/angle production and math providers restored; frame/index homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

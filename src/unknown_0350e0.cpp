@@ -3566,6 +3566,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // and retail length 1819, but worse than 231; not kept). Full scalar role names 231/225.
 // Offset inputs stay staged before stores; the sum accepts its first input in
 // place. Corner, offset and origin are distinct at all four calls. Shared helpers unchanged.
+// P283: Complete final-coordinate scalar staging with direct stores, native color and
+// three-use negative-radius subsets: 388/388/407/389; with the existing point setter:
+// 412/403/417/409. All regress; original helper, full body and alias-safe input capture
+// restored. Frame/radius/scaled-coordinate homes remain; no one-use scalar staging retained.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

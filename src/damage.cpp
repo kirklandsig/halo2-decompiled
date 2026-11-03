@@ -4627,6 +4627,10 @@ struct s_damage_object_creation
 // DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
 // scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
 // offset/definition and detached/node homes remain.
+// P283: Actual node-size/offset fields, eight-byte metadata records and shared
+// header index, seven subsets then unsigned index: 174 each (808/808). All tie;
+// original data layouts, indices, observations and complete body restored.
+// Native handle/offset and detached-mask homes remain unresolved.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
