@@ -884,6 +884,11 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // the zero becomes a shared register and the kind still follows both zero stores), with the named data
 // pointer 20; a copy from a static const zero header 120 (419 bytes); the data address as `destination +
 // header.offset` 106 (410 bytes), as `header.offset + destination` 106. Original body restored.
+// Round 98: a four-byte clear, kind, then a direct offset zero 111 (400 bytes); two partial clears with
+// the terminal arm first and the data pointer 18, also with the terminal buffer declared first 18; a dword
+// first-half view with the offset memset 18, with kind `+= 1` 18; the full clear and kind `+= 1` with the
+// data pointer 10 (interleaves the stores but emits `inc` and moves the count test), with a named positive
+// test 10; kind `= !kind` there 116 (414 bytes). Original body restored.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
