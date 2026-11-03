@@ -1494,6 +1494,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
 // receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
 // and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
+// DH323: Actual collection/sorted-candidate/selected-seat record lvalues, seven
+// subsets 150/32/150/32/150/32/150; all four seat/candidate roles 150.
+// NOT kept: no handle/scaling, leave-selector or publication-home recovery;
+// comparator remains exact. Original pointers and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2741,6 +2745,10 @@ struct s_scenario_scripting_view
 // B392: Actual external actor-record reference with scenario/data/set reference masks 0..7:
 // 80/80/96/96/80/80/96/96. Original complete search and all observations restored; actor/counter/set
 // homes remain.
+// DH323: Existing point-base getter, decoded/masked set bits, pointer/record
+// receivers and early/loop-owned signed-short traversal 168/164/168/164/168/166/168/166.
+// NOT kept: rooted re-observation grows frame 0x18 to 0x20 and length to
+// 430/433 bytes. Original signed stride/wrap, bounds and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

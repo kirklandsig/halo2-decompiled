@@ -3127,6 +3127,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // F354: Live default-target receiver/repeated steering direction/fraction numerator,
 // singles and pairs/all/all forced inline: 1077/1047/1053/1089/1060/1053/1105/1105.
 // NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
+// DH323: Repeated clamp inputs at yaw/paired upright controls/final ground
+// fraction, subsets 1/2/4/3/5/6/7 1068/1064/1052/1068/1068/1064/1068; all plus boost fade 1068.
+// NOT kept: ties or regressions, frame remains 0x80 versus 0x74. Original
+// complete expressions, helper contracts and body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

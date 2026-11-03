@@ -1518,6 +1518,10 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // P295: Existing option/user/controller vector setters 618/543/663/576;
 // complete test/set families 629/536/644/435. NOT kept: scalar masks become
 // indexed word addresses with sar 5, absent in retail; original mask code restored.
+// DH323: Actual controller/user/both output-array search accumulators, decoded
+// then absolute ordinal 587/587/578/588/587/443; controller/user lvalues 587/587.
+// NOT kept: native searches retain EAX/EBP results before final array stores;
+// array workspaces shift mask/iterator homes despite 443 at 1898/1992 bytes.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
