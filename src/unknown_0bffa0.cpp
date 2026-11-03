@@ -1137,6 +1137,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
 // `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
 // at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
+// Round 81 (m3 lane 9, fast): the first cross through the file's cross_product_c1a80 (operands swapped) 290 (same
+// code); both crosses through it 433 (2821 bytes); only the second 433; a one-caller cross with the i term written
+// `b->k * a->j` (diagnostic, removed) 290 (same code: the operands re-sort; retail's first cross differs only in
+// xmm colours, ref.i/ref.j/ref.k in xmm1/xmm4/xmm1 where ours has xmm4/xmm3/xmm4); a one-caller plane-point add
+// computing y, z, then x as `scale * v->i` (diagnostic, removed) 297 (retail computes x last as `movaps xmm0,
+// scale; mulss xmm0, [forward.i]` but in xmm0, y/z in xmm1/xmm2).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

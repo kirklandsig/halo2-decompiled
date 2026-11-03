@@ -369,6 +369,13 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 616 (same code); the 131030 arm's fog range clamped straight from the definition field like the palette arm
 // (`def[0x44] > 0 ? (def[0x44] < 10 ? def[0x44] : 10) : g_547f80`) 619 (3842 bytes: that clamp block then has retail's
 // shape, re-reading the field at each test), with the char palette slot 708 (3838).
+// Round 205 (m3 lane 3, plain; fast carries a 0x131030 CAVEAT): the normalization helper's output as `real (&)[6]` 616
+// (same code); the three six-field publications written in the body like the four-field one 710 (3850 bytes): those
+// three blocks then are retail's exactly (load, multiply, store in field order, intensity through the copied
+// inverse), so retail's publication is not our interleaving helper, but the loop grows; that with a char slot 723;
+// the NULL-record `goto` replaced by a second copy of the default arm 853 (3956, not tail-merged); the body
+// publications with the palette byte read at every use 698 (3842). Loop left: zero in XMM5 (retail XMM7 for the
+// whole arm), slot byte in CL with the 0x130f60 result in EDX, the accumulator store interleaving.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

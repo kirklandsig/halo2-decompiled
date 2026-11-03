@@ -2400,6 +2400,10 @@ static __forceinline long player_round_ticks(real value)
 // test 686. Mask 0xfffd needs ESI where the candidate address takes it: named mask 705, const mask 705, nested test 705,
 // array or byte-array candidate 705, reference, pointer and plain word forms 705. Weapon helper through 0xcbd50 705 (aligned
 // 185, loads merge); 0xcd660 718 (stays out of line); named data read at the top 705; forty-eight dead reads 705.
+// Round 49 (m3 lane 15, fast): the lunge set by `if (distance > 0.81f) lunge = true;` 704 (2733 bytes; retail's
+// `mov bl, 1` with no clearing arm, but the listing shifts); the offsets declared x, y, z 701 (same code); both 704;
+// that with the sum written x, y, z 704 (same code: ours still subtracts x first, retail z first); the offset through
+// the existing vector3d_from_points3d and length_sq3f 704.
 // @retail 0x14f820
 void __stdcall function_14f820(long player_index, long unit_index, byte *input)
 {

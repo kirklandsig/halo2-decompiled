@@ -295,6 +295,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Left on 169: the x87 transfer temporaries (roots, acos) at +0x10 with local_11 where retail packs them at +0xc
 // with the yaw, the length/first-i/second-length XMM3/6/5 (ours 6/5/3), the yaw clamp's zero copy hoisted above
 // its branch, the pitch spilled into arg_4's home, and the rotations' slots/schedule. All restored.
+// J244: Existing staged rotation cross on the retained in-place angle/rotation graph,
+// with original/ordinary/staged pitch axis, result setter and shared dot:
+// 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
+// versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
