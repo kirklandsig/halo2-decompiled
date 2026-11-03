@@ -669,6 +669,10 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// P292: Common contact completion, bool/byte/word/long admission, compound then nested
+// query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
+// Original one-test contact graph, observations, marker, plane/spin producers and full body
+// restored; protected plane-index width, plane joins and pending spin-k homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
