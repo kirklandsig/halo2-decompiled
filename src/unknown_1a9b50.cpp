@@ -548,6 +548,9 @@ extern point2f *g_468778;
 // Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
 // primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
 // early actor/settings/prop carriers and prediction homes remain.
+// AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
+// seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
+// guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
