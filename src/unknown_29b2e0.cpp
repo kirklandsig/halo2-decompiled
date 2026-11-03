@@ -279,6 +279,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // masks 1/2/4/3/5/6/7: 241/176/238/241/281/238/281; native rotation-result publication 251.
 // NOT kept: result/frame forms miss; normalizer setter also loses the matched sibling to 12.
 // Original helpers, alias-safe scalar outputs and complete body restored.
+// N340: Complete normalized scalar outputs in ijk/jik/kij/jki producer order,
+// magnitude publication after/before component stores: 241/241/241/241/363/363/401/363.
+// NOT kept: unmatched scalar staging/order; original helper and whole body restored.
+// The shared helper also raises sibling 0x29b990 to 12/15/41; no edit retained.
 // DH311: Plain native rotation component-array production, with complete cosine/projection/sine
 // phase masks 0-7: 218/269/285/340/269/368/315/410. Native output/phase records are exact-only;
 // all regress, original alias-safe helper/body restored; root/yaw and rotation homes remain.

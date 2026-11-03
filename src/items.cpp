@@ -1633,6 +1633,15 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N337: Late selected-parent presence/missing predicates, bool/byte/short/long,
 // 146/146/151/150 in each polarity. NOT kept: conditional predicates remain unmatched;
 // original parent handle, return byte, release helper and complete body restored.
+// N339: Staged release rate-to-scale accumulator with native aggregate/setter/array/
+// copied-vector outputs, receiver before then between factors:
+// 140/140/171/237/140/140/140/237. Original helper and full body restored.
+// NOT kept: no gain; copied-value and input-order forms remain unmatched.
+// Return byte, release RMW/tail and event/location homes remain.
+// N341: genuine source-point/matrix input pointers and native node byte, seven independent/joint
+// input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
+// NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
+// paired point setters and body restored; return-byte, contact/event and release homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

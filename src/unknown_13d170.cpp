@@ -355,6 +355,11 @@ struct s_block_candidate
 // declared at the top of the admitted block 376 [243] (entry stores gone, prologue then pushes three);
 // offset after the result, previous in the block 380 [257]; previous alone in the block 357 [262];
 // offset after the limit clamp 378 [241]; current declared first in the block 347 (same code).
+// N339: Complete default-policy named products, staged products and sequential/paired
+// weight accumulators, each with original/single clock observation: 347 each (eight forms).
+// Original arithmetic, clock observations and full body restored; missing frame dword,
+// page/ring ownership and policy placement remain.
+// NOT kept: weighted storage/clock forms tie and retain the deficient frame.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

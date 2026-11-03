@@ -4671,6 +4671,9 @@ struct s_damage_object_creation
 // N336: Combined/separate admission returns, section/tag cleanup joins and detach continues
 // 174 each; bounded-search result and direct selected-node scan 217/217 (811/808 bytes);
 // piece-failure continues 174. Original complete body restored; handle/offset and later homes remain.
+// N338: Actual object-header/tag/component lookup-source receivers, seven subsets and
+// table-first acquisition, 174 each at 808/808 bytes. NOT kept: one-use receiver forms
+// require a match. Original complete body restored; native handle/offset and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

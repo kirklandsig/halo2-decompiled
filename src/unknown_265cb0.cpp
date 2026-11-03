@@ -1992,6 +1992,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // Round 537: acceptance-result false lifetime at player/admitted/geometry/distance
 // boundaries, bool 194/194/194/194; byte 194/194/194/194. Original complete body restored;
 // established/visible homes and normalized direction residence remain.
+// N340: Whole actor/vehicle admission regions, original/failure-first/success-first
+// trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
+// lookup operands, established/visible homes and direction residence remain.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

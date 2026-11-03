@@ -837,6 +837,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // in a local used three times 34 (same code); the signature's body size in a local 34 (same code); the body test as `!=` 161 (689 bytes). On
 // round 56's helper form (a new one-caller seek helper, not kept): `remaining` in both arms with `body_size > body_offset` 29; remaining with
 // one `if (body || size > remaining)` after the arms 166 (698 bytes). No existing helper gives the sums' fresh registers.
+// N340: Complete header/body extent snapshots, mutable/const individually and
+// together, then const total/denominator: 218/219/193/218/219/193/193/193.
+// NOT kept: unmatched extent observation/storage changes; original full body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {

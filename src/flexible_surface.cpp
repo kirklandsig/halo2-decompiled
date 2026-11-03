@@ -528,6 +528,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N332: Native clock-value and initial weighted-fraction producers, seven subsets
 // then all immutable: 117 each. Original entire body restored; frame 0x28/0x20,
 // seed/time scheduling and direction/axis/cross homes remain.
+// N339: Initial sampled-direction table receiver with field/native-copy/array/complete-value
+// transfers, direct then short sampled ordinal: 161/155/188/235/161/155/188/228.
+// Original initial acquisition and complete body restored; frame 0x28/0x20 and
+// seed/time/direction/cross storage remain.
+// NOT kept: transfer/one-use ordinal and value-copy forms regress beyond native length.
 // Round 199 (fast, with 0x118140): the convention already agrees (index EAX, wind EBX, plain ret); the 8 extra frame
 // bytes are the stack copy of `old` (retail reads the global's j/k straight into XMM5/XMM4). `old` declared before
 // the axis draw 121; the projection as `(1 - cosine) * dot3f(..)` 117; sine and cosine declared separately 117; `cross`

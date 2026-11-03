@@ -200,7 +200,7 @@ struct s_flag_word_bits
 	word bit15 : 1;
 };
 
-// score 114 (unchanged): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
+// score 114 (was 114): the walk found no behaviour difference. Retail tests flag 4 as `test dl, 0x10` on the
 // header's flag byte; that faithful `header->flags & 0x10` (with the parameters read directly) gives 124 here,
 // because with the early returns our link inlines 0x191fab (src/unknown_1916dc.cpp) at the straight-line tail
 // call (364 bytes), where retail calls it. Nesting the body under a `proceed` flag instead of the early returns
@@ -215,6 +215,10 @@ struct s_flag_word_bits
 // `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
 // table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
+// N341: direct unavailable producer 122; call-result admission flat/nontrivial-kind scopes 98/87;
+// short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
+// NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
+// Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1453,6 +1457,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // Tried: iterator beside the free slot as separate locals (545), explicit `= {NONE...}` controllers (556),
 // the three masks in all six declaration orders (543-559), `index` at function scope (545), the loop
 // over two weapons as `for` with an index (555 unrolled) or as a helper (510, unrolled).
+// N341: retained local-index short, controller/user loop admission and failure guards 587 each;
+// real datum-iterator API 934; absolute cursor subscripts 586; subscript name 587.
+// NOT kept: one-point cursor reduction; native mask/index homes and missing inline expansion remain.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1771,6 +1778,11 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
 // not natural source, so it is not used.
 // Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
+// N341: enabled Boolean/byte retained for the inactive return 17/91; failure flag through ordinary/all
+// admissions 92/88, complete failure single exit 92; pointer end/countdown copies 106/92;
+// special-success return arm 91. NOT kept: 17 adds setne and grows to 253/251 bytes;
+// 88 is only a three-point gain. Native flag-load/false-result prefix remains.
+// Focused byte-input plus complete default-result lifetime 91; native prefix still differs.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {

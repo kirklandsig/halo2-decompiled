@@ -1214,6 +1214,13 @@ long function_10f5f0(long object_index);
 // name array: 565/565/571/572; completed logical idle value with the same variants:
 // 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
 // Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
+// N338: Complete axial/radial response products, squared-radius and radial-scale
+// accumulator subsets, then running response accumulators: 566/565/565/565/565/566/565/565.
+// Original complete body restored; frame 0x19ac/0x1984, flag-result and reduction homes remain.
+// N340: Branch-owned initial powered/open/maximum production, seven subsets,
+// then complete logical numeric selection: 543/565/565/543/543/565/543/587. All restored;
+// native frame, predicate-result byte stores and reduction homes remain.
+// NOT kept: 543 shares the initial unity load where retail loads it twice.
 // P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
 // seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
 // NOT kept: embedded predicate assignments require a match; original entire body restored.
@@ -2441,6 +2448,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // AC499: Float remainder with direct/joined/advanced/returned output, original then
 // paired magnitude producers: 42/127/127/127/34/127/127/127. NOT kept: 34 uses two one-use
 // magnitude locals without a match. Original two-use spin helper and full body restored.
+// N338: Advancing contact cursor with conditional/right-default/left-default/branch
+// torque results, loop/function declaration scopes, 46/46/49/46/46/46/49/46.
+// NOT kept: no exact cursor/one-use result form. Original body and spin helper restored;
+// turn-product and spin scratch/store schedules remain.
 // P286: Complete conditional spin dividend as fmod argument/positive arms/conditional assignment/
 // joined result, per-use period 84/181/42/145; native gate/correction capture with denominator
 // observed at fmod 116/200/112/186. All restored; turn-product and spin-store schedules remain.
@@ -4526,6 +4537,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // AC499: Float magnitude boundaries for fields/computed scalars/projections, seven subsets
 // then the existing magnitude selector too: 772/760/739/769/751/738/768/768. NOT kept: 738 grows
 // to 3010/2974 bytes and changes rounding boundaries without a match. Original full body/helper restored.
+// N338: Complete blend accumulation, native blend clamp and averaged-ratio
+// accumulator subsets, then both blend contributions named, 749 each at 2974/2974.
+// Original complete body restored; entry definition, zero/result SIMD and unit-constant homes remain.
 // P286: Terminal active truth: forced-first logical/eager normalized 749/749; positive/reject
 // branch returns 765/765; positive/forced complete arms 769/755; forced/positive default
 // publications 784/771. All restored; entry definition and zero/result/one residency remain.
