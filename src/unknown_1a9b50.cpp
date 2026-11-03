@@ -888,6 +888,11 @@ static __forceinline long real_to_long(real value);
 // 381 (one count, not kept), as a full if/else 382; the distance zeroed in the facing arm 382; the
 // limit declared in the flag block 396, as a ternary there 400; the field_2e approach flag as an if /
 // else-if chain 455 (1912 bytes). All restored; the threaded false exit's place remains.
+// Round 35 (m3 lane 18, fast, 0x1a9d80/0x1a9e00 matched each time): the first goto replaced by nesting
+// (the approach arm in the threshold test's else, `field_2c` set in both arms, no near flag) 492 (1888
+// bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
+// straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
+// second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
@@ -969,9 +974,8 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 					if (local_3->field_1c > local_17 && !function_25d9b0(local_1->prop_index) && !((s_prop_state_64 *)local_8)->unknown64)
 					{
 						local_0->field_14 = true;
-						goto local_18;
 					}
-					if (local_3->field_20 > local_17)
+					else if (local_3->field_20 > local_17)
 					{
 						real local_19 = local_3->field_28;
 						real local_20;
@@ -1002,7 +1006,6 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 				else
 					local_10 = 0.5f > local_17 - (object_velocity->k * local_11.k + object_velocity->j * local_11.j + local_11.i * object_velocity->i) * local_15 * g_510c54->rate;
 			}
-		local_18:
 			if (local_0->field_18 || (local_10 && !local_0->field_2e))
 			{
 				point2f local_25 = *(point2f const *)&local_11;
