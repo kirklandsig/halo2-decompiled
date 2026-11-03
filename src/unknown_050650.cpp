@@ -1352,6 +1352,10 @@ struct s_actor_looking_structure_view
 // axis j load ahead of the copy and the score's order; other searches real 25/25/135 (928 bytes). Pointers at every use of axis i+j 29, axis
 // k+vector j+k 127, axis k+vector j+i 128, axis k+i+vector i 139, axis j+vector j 33, axis j+vector k 29, vector k+axis j 31, axis k 138,
 // axis j 140, axis j+k 144, all of the axis 61 (928 bytes where a three-figure count). The score i,k,j never appeared in about 2,300 compile-only forms.
+// Round 159 (fast; one plain control agreed): rotation with a separate result parameter, same pointer passed twice 68; copy inside the helper with separate input
+// and output 478 (660 bytes); score `dot3f(&directions[i], &forward)` 33; named angle with sine and cosine passed to the in-place
+// helper 146 (927 bytes); axis local in the loop body with the fraction before the copy 174 (910 bytes); `dot3f(axis, vector)` in
+// the helper plus the dot3f score 142 (926 bytes).
 // @retail 0x297d30
 PRIVATE bool function_297d30(long actor_index, s_type_952051 *specification)
 {
