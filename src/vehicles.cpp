@@ -3696,6 +3696,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
 // 173/173/159/159/173/173/159/159.
 // NOT kept: no gain; original full body/helpers restored.
+// AC507: X87 fraction carrier with real/double angle/cosine/sine domains, masks
+// 0..7, 198/203/237/237/230/230/237/222. NOT kept: all regress, change the
+// frame and lack a precision match; original real fraction/trig graph restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)

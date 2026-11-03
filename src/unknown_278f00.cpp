@@ -281,6 +281,9 @@ bool function_a7670(long object_index);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
 // continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
 // index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
+// 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
+// original eager scans, live bounds, consumed index, releases and body restored.
 // @retail 0x278f00
 void function_278f00()
 {

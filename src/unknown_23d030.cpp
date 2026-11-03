@@ -422,6 +422,9 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
+// original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
+// diagnostics do not match and grow the body; original up producer and full body restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
