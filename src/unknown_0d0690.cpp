@@ -1503,6 +1503,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
 // body; five native-frame forms also regress the caller 363 -> 440. Original
 // selection result, frame, helpers and entire body restored.
+// M353: Common failure exit with completed bool/byte/short/long results,
+// retained count guard then early count exit: 573/579/575/576/573/579/575/576.
+// All regress and lose matched caller 0x3db00; original full body and helpers restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

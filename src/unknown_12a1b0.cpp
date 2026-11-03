@@ -1420,6 +1420,9 @@ struct s_looping_detail_request
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.
 // NOT kept: unmatched admission outcomes; every form regresses.
+// M353: Shared admission/traversal remaining count, long/short with while/for,
+// native audible output 110/110/113/113; temporary/copy 130/130/141/141.
+// No gain; original separate count/skip, output and complete body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2468,6 +2471,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 668/668/799/793; default-true state-test counterparts 755/755/800/794.
 // All regress; original completion polarity, sole exit and complete body restored.
 // NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
+// M353: Complete per-track availability bool/byte/short/long conjunction results
+// 680/680/671/680; conditional values 679/679/685/685 fast (control 694; full 597).
+// NOT kept: retail first copies alternate, then clears only the unavailable path;
+// complete-result stores differ. Original producer, widths and whole body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
