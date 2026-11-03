@@ -392,6 +392,12 @@ extern byte g_51ec11;
 // DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
 // failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
 // Original shared body restored; zero/side normalization and up/roll allocation remain.
+// Round 77 (m3 lane 9, fast with 0x23d790/0x23d030, both stay matched): the zero fallback as two stores
+// `side.j = 0.f; side.k = 0.f;` 276 (1326 bytes; the up rows then store k, j, i as retail, but the x87 length still
+// squares i before j and every register is renamed), with normalize3d 261 (1326), with side filled i, j, k 276; the
+// fallback chained `side.k = side.j = 0.f` 274 (1326); `side` declared at the function's top 89 (same code); a
+// forward pointer local for the up cross 236 (1330). Retail's length keeps side.j on the x87 stack (fst) and
+// squares it first; zero XMM1 and the up/roll allocation remain.
 // Round 199 (fast, with 0x23d790): side assignment orders k/j/i, j/i/k, j/k/i, i/j/k on the current body 89 each;
 // diagnostic, a scratch normalizer with the length as `i*i + (j*j + k*k)` or `(j*j + k*k) + i*i` gives retail's
 // j-first squares and 1326 bytes but 266 (aligned 52, unchanged), `k*k + j*j + i*i` / `j*j + i*i + k*k` 271

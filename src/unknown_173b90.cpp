@@ -653,6 +653,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // M3 lane 4 r159 (fast): scale first with the emitter definition declared first 40; declared first alone 42; offset as a for-loop init with scale first 40;
 // on the indexed form with scale first: scale through a shared inline 113, rotated offset local 196 (1086 bytes), motion rotated first 116, matrix local 112
 // (1134 bytes), `+=` origin 113, particle copies swapped 121.
+// Round 122 (lane 7, fast; base 42 [aligned 38]): position rotated from the particle's own position into
+// the copy (not in place) 189 (1131 bytes); motion rotated from the particle's velocity into the copy 143
+// (1136); origin/result pointers declared before the rotation 42 (same code); scale first with the motion
+// rotated before the position 90; scale first with origin declared first 40 [36] (the 1.0 stores only).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1162,6 +1166,11 @@ public:
 // definition for the tag read 252 [79] at 1364 bytes (tag in ECX as retail, match-only); twelve orders of the
 // scale/position/colour/spawn stores on that 252 [79..82]; tag switch written in place 255 [86]; multiplied
 // and tinted read into locals 273 [130]. Body unchanged.
+// Round 122 (lane 7, fast; base 184 [aligned 78]): default-case negation written per component
+// (diagnostic, an existing helper by hand) 248 (1355 bytes; the velocity still loads after the -1.0
+// constant); valid/fallback arms swapped (`== NONE ||` first) 184 (same code); xyz magnitudes plus the
+// parent colour in a local after the position copy 261 [84] (1363 bytes); arms swapped plus xyz
+// magnitudes 248 [76] (1355 bytes, as xyz alone); magnitudes written in the tests (no locals) 285 [167].
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {
@@ -1663,6 +1672,11 @@ bool function_17afd0(long effect_index, long value);
 // bytes) [3], the closest shape: same_view's early false store keeps it on the stack and BL for availability, but the store shape differs; if/else same_view 131 (504
 // bytes) [57], with an early false 131 [57], with an inline out parameter 131 [57]; byte same_view 121 [51]; byte/char availability 131/131 [57/57]; two-step same_view
 // 117 [55]; named query result 47 [5].
+// Round 122 (lane 7, fast; base 73): availability false-then-set 144 (507 bytes); attachment gated on
+// effect_index != NONE instead of the effect record 102 (486 bytes: owner/NONE coalescing lost); view global
+// at each use 143 (502); bit 9 as (bool)(((dword)word >> 9) & 1) 113 (500); owner declared before the effect
+// record 73 (same code). Retail: effect index EDI, view ESI, owner EBP, availability BL; ours effect index EBX,
+// record ESI, view EDI.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

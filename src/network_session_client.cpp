@@ -772,6 +772,10 @@ static inline bool session_set_machine_limit(c_class_58d20 *session, long value)
 // pair named in the flag block ahead of a `missing` flag 218 (361 bytes); preset pair with the variant named just
 // before the member count 46; preset pair with a plain `for` copy loop 108 (477 bytes; both callers lost in each
 // preset form).
+// Round 44 (m3 lane 2, plain check with both callers): the mask computed from the field with the count local
+// read after it 22 (same code); the summary getter written in the call 147 (493 bytes, both callers lost); a
+// `dword` copy index 22; the player buffer as an s_unknown_3648 block indexed through a cast 22; the player mask
+// read into a local before the player loop 130 (493 bytes).
 // @retail 0x6e720
 bool function_06e720(c_class_58d20 *session)
 {
@@ -1069,6 +1073,8 @@ bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
 // step before the count 216 (728 bytes); the state reread through a volatile view of its home for the
 // call 198 (`joining` takes ebx) or through `*const *` 195; the count declared at the top 195, after the
 // close call 201, just before the branch 198, assigned zero inside the branch 201.
+// Round 138: all_players compared to false 9; loop index declared before the clear 9; else arm's count assigned after
+// the copy 197; destination step before the count 17; source element named in the arm 9.
 // @retail 0x6fe90 standard
 bool __stdcall function_6fe90(c_session_state_joining *state, bool all_players, bool reserve)
 {

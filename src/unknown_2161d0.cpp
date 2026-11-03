@@ -91,6 +91,8 @@ bool function_2161d0(long file_index, void *buffer, long size)
 // it here as retail does) 10, kept in place of its body written out, with its type argument named first 10;
 // the profile copied from the bounded index 110 (309 bytes); result set before the task stores 20; progress
 // stored first 13; state first 12; succeeded first 11.
+// Round 138: if on the path helper's bool 10; `&&` of helper and read 23 (290 bytes); cache pointer before the bit
+// test 17; inverted first test 10; separate result assignment 10.
 // @retail 0x2162b0
 bool function_2162b0(long file_index, void *buffer, long size, s_saved_game_file_task *task)
 {

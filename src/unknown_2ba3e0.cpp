@@ -499,6 +499,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // use 10; the distance estimate named 10; the attraction scale and add as two statements 10; the separation
 // radius/scale named before the call 303 (1523 bytes); the 0x2b9a00 property named before its call 236
 // (1521 bytes); re-measured: a separate speed-squared value 10.
+// Round 120 (lane 7, fast): the two branches' normalizers swapped 35 (1520 bytes); the header's
+// normalize_inline in the maximum branch 230; the velocity normalizer then the file scale helper there
+// 32 (1521); the velocity normalizer's sum through length_sq3f, in both branches 29 (1521); its sum as
+// i,j,k statements in both 41 (1520); as k + (i + j) in both 75.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {
@@ -892,6 +896,9 @@ real g_55e618;
 // Position through vector3f_add_scaled before/after the impact 116 (1548), with the named last argument 155; assignments in a comma argument 236
 // (1554: the stores still precede the load); normal direct fields 60/54, with the named argument 82/76; impact at the block's top 50/65; helper
 // taking the collision point 156 (1547). Next: an unnamed read that sits ahead of the stores.
+// P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
+// staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
+// restored; sweep/collision homes and cross-placement projection spills remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

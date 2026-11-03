@@ -825,6 +825,11 @@ struct s_device_machine_view
 // AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
 // before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
 // masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
+// Round 42 (m3 lane 2, fast; each with the 0x1200055f zero store): a two-value dispatch on `group->flags & 3`
+// 120 (diagnostic); the group pointer formed after the machine test with direct field masks 127 (657 bytes); word
+// masks with a dead `else group_flags = 0;` 122 (diagnostic); `function_value = (f & 1) && (f & 2) ? 1.0f :
+// function_value;` 122; the word flags read at the declaration before the machine flags, nested tests 115 (the
+// load folds into `mov ax, [eax + edx*4 + 2]` ahead of the machine test, no pushed ESI).
 // N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
 // 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
 // native group-word sharing and velocity-zero join remain.
@@ -1175,6 +1180,12 @@ bool function_108530(long device_index, long name)
 // reset, with original parameter arithmetic 128/123/123/126; consistent stored-speed
 // arithmetic 128/123/123/126. NOT kept: early publication/disabled-path clears add
 // stores absent in retail and grow length; original complete body and callers restored.
+// Round 63 (m3 lane 10, fast, both callers 31/13): retail stores the zero straight into the ramp-down slot at its
+// clamp and compares the minimum against memory, never touching xmm6 before the inner block. The three zero clamps
+// written `0.0f < x ? x : 0.0f` 121 (same code); both ramp-down clamps as one PIN(ramp_down_time, 0.0f, remaining) 127;
+// the zero-denominator velocity as `(target - position) / duration` 149 (533 bytes); the position pinned at the top
+// before the time clamps 139 (525 bytes, the fast image changes both callers' conventions); the ramp-down zero clamp
+// after `remaining`, right before its minimum 123.
 // Round 34 (lane 17, fast, with both callers): the initial velocity moved to the second parameter
 // (definition and both calls; diagnostic, no retail order evidence) 123 (callers 25/23, still six
 // stack floats); the ramp-down minimum written `ramp_down_time < remaining ? ...` 121; the target
@@ -1553,7 +1564,7 @@ struct s_index_pair
 };
 bool function_0b6760(s_index_pair const *pair);
 
-// score 294 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
+// score 285 (was 294): our frame is 0x1c and retail's 0x20, and the index, header, state and result
 // homes still differ; the group path reloads the definition pointer from three base registers.
 // Earlier (294, was 294): our frame is 0x1c and retail's 0x20; the index, header, state and result
 // homes still differ, and the group path reloads the definition pointer from three base registers.
@@ -1698,6 +1709,13 @@ bool function_0b6760(s_index_pair const *pair);
 // 294/294/369/294/369/369/369; all explicit-bool tests 458. Other 29 file scores
 // unchanged; frame stays 0x1c versus 0x20. NOT kept: activity stores and bool
 // extraction grow nonretail code; original word layout and complete body restored.
+// Round 42 (m3 lane 2): retail's channel-0 tests are 0x0b6760's shape inlined (`mov ecx, [ebp + 0x18c]; cmp ecx, -1;
+// lea reg, [ebp + 0x18c]; cmp word [reg + 6], -1`, the pointer then `this` in ESI), so a `power_channel` pointer to
+// channels[0] serves both tests and both calls: 294 -> 285 (1496 bytes; kept). Tried: the two channel-0 tests as calls
+// to function_0b6760 383 (plain index 376; all four sites stay out of line); the pointer on the plain index with
+// both event-id selects 302 (1476 bytes); the pointer with a direct `if` for the first test 292; a second pointer
+// for channels[1] 287; the definition read after the state block 286; event ids as selects between two field
+// reads, both/either 331/317/317 (1506/1501 bytes); a plain (non-volatile) definition pointer 386.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
@@ -1741,12 +1759,13 @@ bool __stdcall function_106790(long volatile device_index)
 		}
 		else
 		{
+			c_animation_channel *power_channel = &device->channels[0];
 			bool power_channel_animates = false;
 			if (state)
-				power_channel_animates = device->channels[0].graph_tag_index != NONE &&
-					device->channels[0].animation_id.index != NONE;
+				power_channel_animates = power_channel->graph_tag_index != NONE &&
+					power_channel->animation_id.index != NONE;
 			if (power_channel_animates)
-				device->channels[0].set_frame_ratio(device->power);
+				power_channel->set_frame_ratio(device->power);
 			real position_acceleration = *(real const *)(saved_definition + 0xcc) * device->position;
 			real remaining_acceleration = *(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
 			real acceleration = position_acceleration + remaining_acceleration;
@@ -1779,8 +1798,8 @@ bool __stdcall function_106790(long volatile device_index)
 				if (previous != device->power || (device->flags & 0x80))
 				{
 					function_107520(device_index);
-					if (state && device->channels[0].graph_tag_index != NONE && device->channels[0].animation_id.index != NONE)
-						device->channels[0].set_frame_ratio_and_advance(device->power, state,
+					if (state && power_channel->graph_tag_index != NONE && power_channel->animation_id.index != NONE)
+						power_channel->set_frame_ratio_and_advance(device->power, state,
 							(animation_event_callback)function_bf600, device_index);
 				}
 			}

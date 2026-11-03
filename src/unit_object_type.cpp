@@ -804,6 +804,10 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // computed type mask 13; boolean predicate 10; word setter with early guard/void return 10/10;
 // masked lookup, word setter and predicate 9; minimal word setter and predicate 9 (both 92 bytes).
 // Both forms scoring 9 lose 0xc2d00 (0 -> 2) in ordinary full links; rejected and original body restored.
+// Round 97 (fast): existing bitfield view for the first clear 13; literal 0xfb 13; explicit first clear 13;
+// animation flag reference 10 (NOT kept: one-use reference and gain below four); named type predicate 10
+// (NOT kept: narrow shift and gain below four); explicit return 13; early guard 13; const unit pointer 13;
+// final parameter read through its address 13. Original body restored.
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -2604,6 +2608,9 @@ struct s_unit_placement
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
+// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
+// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {

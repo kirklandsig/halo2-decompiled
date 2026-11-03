@@ -352,6 +352,11 @@ void c_animation_channel_data_get(c_animation_channel const *channel, s_animatio
 // channel's tag index in EBX across the loop for the data get), with the frame read before the weight 257, with the
 // data struct in the sampled block 260; the sample test as a `continue` 207 (same code); the frame count read once
 // after the getter into a `long` 254 (965 bytes).
+// Round 122 (lane 7, fast; base 207 [aligned 150], ret 0x18 now as retail): the weighted getter called in
+// the loop test 284 (992 bytes, inlined every pass); one data record shared by the first two arms 281 (921);
+// the animation pointer declared at the arm scope 207 (same code); the frame field read at each use 260 [149]
+// (955; retail reloads it in the else arm); the base animation id read from the field at each use 256 [210]
+// (940 bytes, the weighted getter still inlined, frame still 0x30).
 // @retail 0x10e530
 void function_10e530(long object_index, s_animation_state *state, long unused, dword const *node_mask,
 	long node_count, real_quaternion_transform *transforms, byte *dest)
