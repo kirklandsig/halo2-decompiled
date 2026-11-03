@@ -333,6 +333,9 @@ struct s_object_damage_view
 // Round 372: positive engine/valid-selection/eligible-assist regions, subsets 1/2/4/3/5/6/7,
 // then common conditional slot fallback: 353/353/353/353/353/353/353/353. Original complete body
 // restored; scalar homes and amount-biased history cursor remain.
+// Round 390: External amount-field identity after timestamp acceptance, original/whole
+// record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
+// Original body restored; scalar homes, amount-biased cursor and attribution remain.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

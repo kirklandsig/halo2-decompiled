@@ -294,6 +294,9 @@ struct s_24e9c7_bounds
 // 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
 // long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
 // computed before the height 131. All restored; early across spill and scalar homes remain.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
