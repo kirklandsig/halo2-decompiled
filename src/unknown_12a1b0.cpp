@@ -1392,6 +1392,9 @@ struct s_looping_detail_request
 // redundant guard requires a byte match; original query expansion and offset publication remain:
 // 129/26/25/26/11/10/114/114.
 // Original complete source restored; no eligible gain.
+// B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
+// with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
+// original completion and full body restored; first-player call and detail/offset homes remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1753,6 +1756,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // each with complete request storage, then both with per-pass counts and either
 // request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
 // NOT kept: no exact representation match; original fields and body restored.
+// B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
+// parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
+// Original full body restored; request/frame, playback/NONE and range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2396,6 +2402,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // F349: Existing source-record flag fields at copy/attenuation/release consumers,
 // subsets 1..7, then immutable attenuation tail: 694 each (fast control 694, full 597).
 // Original aliases, tail and full body restored; entry true/flags and record/track homes remain.
+// B387: Existing byte-flag writer at all three final publication sites, seven subsets,
+// then all with masked native truth arguments: 694 each (reduced control 694, full 597).
+// Original complete body restored; entry true/flags, record/track homes and loop padding remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

@@ -977,6 +977,9 @@ real normalize2d(point2f *v);
 // AC498: Retry-force logical/reversed/bitwise/conditional producers 253/217/304/135;
 // force true/nonfalse/positive/inverse conditional admission 182/135/135/135.
 // Original complete body restored; initial DL retention and movement/request returns remain.
+// B388: Independent trajectory outcome transferred to outer validity at the final join,
+// bool/byte/short/long 186/186/159/153; direct request-to-sole-exit companions
+// 193/193/153/173. All regress; original two producers, calls and return graph restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

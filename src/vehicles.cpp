@@ -2774,6 +2774,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // M331: Existing projected-speed dot3f boundaries, subsets 1/2/4/3/5/6/7 then all with independent relative
 // output: 717/692/715/717/704/715/720/728. NOT kept: no qualifying gain or byte match. Original complete
 // body restored; retail frame 0xfc and scalar/transform scheduling remain.
+// B385: Plain vector-array normalization/force/torque loops, subsets 1/2/4/3/5/6/7,
+// 690/739/692/692/691/739/687; all with final mass-scaling loops 687.
+// NOT kept: best gain five is below eight; original complete body restored.
 // M333: Actual bound/reciprocal, directional-mass and projected-speed/force lexical
 // homes, seven subsets: 692 each; all with independent relative output 699. Frames
 // remain 0xd0/0x104 versus 0xfc; original full body and all producers restored.
@@ -5031,6 +5034,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // AC499: Existing current-axis/desired-input/paired-target setters, seven subsets then
 // complete force setter: 1211/1154/1109/1225/1157/1094/1220/1225. No native frame recovery; all
 // original producers, matrix/vector ownership, observations and full body restored.
+// B385: Existing current/state transpose and staged-cross boundaries, subsets 1/2/4/3/5/6/7,
+// 1112/1112/1087/1112/1112/1112/1112; both transpose returns consumed 1112.
+// Original complete body restored; frame, handle/offset and vector/matrix homes remain.
 // M333: Actual up-length/inverse, bank-axis and quaternion-axis lexical identities,
 // seven subsets, then independent component/point ordinals: 1087 each. Frame 0xf8
 // remains; original full body restored, with native index and matrix/vector homes unresolved.

@@ -329,6 +329,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // N337: Direction/null-sample/invalid-range early-continue subsets 1..7 and complete
 // combined sample guard: all eight 336 (fast control 336; full baseline 324).
 // Original admission tests and complete body restored; full-image ESI/unit/scale homes remain.
+// B388: Complete opposite/direction squared-norm nodes and rounded magnitude in double,
+// subsets 1/2/4/3/5/6/7, then both sums in double: 337/338/400/338/399/388/388/459
+// (fast control 336; full 324). All regress; original norm expressions and storage restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

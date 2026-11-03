@@ -922,6 +922,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // `goto aim_at_point` after the if/else) 257; case 2's non-aiming if/else swapped 257; `!aiming` first in cases 1
 // and 6 257. Left: ours tail-merges case 1's and case 2's cafc0 blocks into the one that falls into the direction
 // chain; retail keeps both inline (each `jmp` to the chain) and CSEs neither 0x1e3b00 `&point` (it recomputes `lea edi`).
+// B386: Plain real-array direction-input/five-point-input/optional-output loops, subsets 1/2/4/3/5/6/7, then
+// direct descending component index: 400/320/317/389/373/332/401/400 (fast control 258; full 257). Original
+// record copies and body restored; byte homes and shared-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

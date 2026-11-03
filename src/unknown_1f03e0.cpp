@@ -1023,6 +1023,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // DL251: Plain general bounded-scale/normal-correction/history-publication component loops,
 // subsets 1/2/4/3/5/6/7, then unsigned ordinals: 433/433/435/499/433/433/500/500.
 // Original complete source restored; no eligible gain.
+// B389: Complete native aggregate producers: direct rotation/raw/working, general working/raw,
+// direct raw+working, general raw+working and all: 433/433/497/551/433/497/551/584.
+// Original raw-first body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

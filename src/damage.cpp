@@ -722,6 +722,9 @@ void function_d6a70(long object_index)
 // P282: Original-object/ownership-input identities and accumulator declared before acquisition,
 // subsets 1/2/4/3/5/6/7: 159 each; all with region-receiver identity 159. Original names/declarations
 // restored; frame 0x4c/0x50 and pool/object/index/owner homes remain.
+// B386: Read-only original-object/child and immutable parent bindings, seven subsets, then immutable region
+// receiver: eight 159s. Original bindings/body restored; frame 0x4c/0x50 and early pool/original-object/index
+// homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -2461,6 +2464,8 @@ struct s_unit_event
 // M330: Independent object/region/permutation declaration ranks, six orders, then
 // both edge orders with uninitialized datum at entry: eight 472s. All producer
 // assignments stayed fixed; original declarations and body restored.
+// B386: Complete existing dispatcher orders 01234/02143/04213/01324/03124/02431/04231/03412:
+// 515/513/474/522/521/473/475/515. Original cases and body restored; permutation ingress remains.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)

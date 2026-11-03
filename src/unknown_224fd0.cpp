@@ -208,6 +208,9 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // sine and i square 382; forward.i right after the sine products 357; left.j right after the j
 // square 350. Retail's second switch keeps its range check as ours does; the 4-byte table shift follows
 // the case-body schedule. Original helper restored.
+// B385: Existing camera/direction basis providers and composed-return receiver, subsets
+// 1/2/4/3/5/6/7, 222/221/622/495/623/622/628; all with basis output 429.
+// Original complete body/declarations restored; axis-specific spills and table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

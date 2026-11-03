@@ -2723,6 +2723,9 @@ struct s_scenario_scripting_view
 // M334: Native outer-data-count/admitted-set-count/admitted-set-table observations,
 // seven subsets 80 each; all with loop-owned original short counter 87.
 // Exact-only one-use captures restored; actor/counter/set homes and early data read remain.
+// B388: One guard/lookup actor-handle observation, long/dword, native/readonly actor,
+// original/traversal short counter: 80/87/80/87/80/87/80/87. Wrapper stays exact;
+// original handle observations, actor receiver, counter scope and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

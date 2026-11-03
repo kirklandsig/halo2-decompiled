@@ -424,6 +424,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // that with previous_angle declared before the lowest scan 273, with a long count 271; the original
 // with previous_angle declared first 207; the original's pass loop as `while (hull_count < count)`
 // with `indices[hull_count] = current; hull_count++;` 267 (756 B). Original body restored.
+// B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
+// angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
+// native vector grouping, shared header and complete original executable source restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

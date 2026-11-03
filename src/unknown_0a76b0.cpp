@@ -2452,6 +2452,9 @@ __forceinline char unit_action_round(real value)
 // F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
 // ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
 // Original complete body restored; pool/type/name and completion-byte homes remain.
+// B386: Paired zero-byte/absent-tick chained stores and existing full-width rounding, subsets 1/2/4/3/5/6/7,
+// then late constant success: 237/237/235/239/237/237/239/239. Original stores, conversion consumers and body
+// restored; pool/type/name and completion-byte homes remain.
 // P287: Animation admission owns return truth and gates common publication; four
 // producers, special success before/after work: 290/307/303/305/290/306/257/239.
 // All restored; pool/index/type/name and completion-byte homes remain; callers stay exact.
@@ -4657,6 +4660,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 546: Early point input/output workspace; native/library input, position/world
 // inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
 // NOT kept: 45 extra bytes and no match. Original complete body restored.
+// B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
+// 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
+// output lifetime and full body restored; frame and basis/point homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {

@@ -325,6 +325,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // motion/physics receivers: 924/933/923/882/925/900/925/925 fast (control 931).
 // Device fields alone plain 896 versus 882; NOT kept: byte/shift instead of retail
 // word/masks and no full gain. Original types and body restored; excess frame word homes remain.
+// B387: Direct location/raised members and library location copy on the unqualified-settings
+// graph, seven subsets, then actual count declaration before the query: 931 each
+// (reduced control 931, full 882). Original complete body restored; frame/homes remain.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1205,6 +1208,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // at traversal scope: 449/397/416/338/437/394/417/417. Flag1 forms recover frame 0x28 but regress;
 // flag0 forms also raise sibling 0x2c2060 to 461 from 420. Original header, helpers
 // and body restored; frame 0x30/0x28 and zero/radius and endpoint/history homes remain.
+// B387: Serial native radial/displacement phases, shared-domain/scope subsets and independent
+// serial control: 400 each. All recover frame 0x28 at 1312 bytes; NOT kept: regression
+// from 324. Original full body restored; zero/radius and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
