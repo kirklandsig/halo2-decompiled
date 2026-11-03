@@ -333,10 +333,19 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
 // and product ranks remain. Scores 42/87/76/90/54/82/66/90.
 // Original executable source restored.
+// P276: Four-use corner helper transform/horizontal/vertical/axis/side/output/point
+// lexical roles, independently and all together: 46 each at 983 bytes. Original helper
+// and complete body restored; plane base, selector carriers and product ranks remain.
 // DH300: Existing corner helper owns native/immutable/library transform inputs, basis plus origin,
 // immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
 // 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
 // helper and body restored. Plane-store base, first-selector roles and product ranks remain.
+// Round 376: First-corner side truth produced by native tests in bool/byte/short/long,
+// false-default 190/190/194/193; complementary true-default 189/189/193/192.
+// Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
+// P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
+// axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
+// carriers and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -889,6 +898,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // seven subsets tie fast 795; complete names with entry-owned initial zero 787.
 // Minimal initial-zero ownership also 787 fast but 544 plain versus full 539: NOT kept.
 // Original body/helpers restored; tag/count/plane homes remain.
+// Y539: Complete decoder output reference/pointer return/reference return/value return,
+// forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
+// 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
+// homes and body restored; native value returns move extent away from retail.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

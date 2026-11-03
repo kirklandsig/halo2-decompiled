@@ -326,6 +326,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // Round 490: Explicit near/increasing/decreasing compression-ramp result arms,
 // seven subsets 1355 each; complete arms with twice-used ray length 1382.
 // Original complete body and every kernel restored; excess frame and early homes remain.
+// Y539: Existing peak/release lifecycle boundaries 1389/1389; native object/clock getters
+// 1355/1355; peak/release with object or clock 1389 each. Original helpers and body
+// restored; lifecycle APIs shorten to 6201 bytes without recovering frame 0x58c.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

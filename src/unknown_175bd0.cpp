@@ -2452,6 +2452,9 @@ event_done:
 // tested). With the root index: second test as `NONE != ...` 197; a bool helper for the first test 197;
 // `if (effect && effect->object_index != NONE)` 130 (retail's head and reload, but the reloaded index is
 // then cached in ESI for 0x1794a0 and NONE takes EBX); nested head ifs 130; tail reading the field 130.
+// Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
+// both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
+// tail object index at function scope 63. Original executable body restored.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
