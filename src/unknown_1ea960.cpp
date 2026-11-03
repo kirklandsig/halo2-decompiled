@@ -341,6 +341,9 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // and both base-owner assignments in constructor bodies: 138 each. Native element
 // ownership in the special/list shapes: 140/140. All restored; frame 0x20
 // agrees, first +0x198 remains the restore constructor's flags/element order.
+// DH309: Native word header owned by existing shape base, separate/default-owner constructors,
+// then unified construction, initializer/body owner storage and complete array/tree pointer
+// completion: 153/155/157/159/153/153/159/159. Original hierarchy restored; restore-header order, key and listener lifetimes remain.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

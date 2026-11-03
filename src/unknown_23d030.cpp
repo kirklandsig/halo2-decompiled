@@ -383,6 +383,9 @@ extern byte g_51ec11;
 // branch/conditional/default/additive updates with producer/entry result declarations:
 // 322/322/321/319/322/322/321/319. All lengthen the body; original control result, state observations and
 // complete body restored. Zero/side/up allocation remains.
+// DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
+// failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
+// Original shared body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
