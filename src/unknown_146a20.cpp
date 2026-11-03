@@ -257,6 +257,9 @@ bool g_47f05b;
 // J239: intermediate fixed-base storage with byte/next-object/sizeof buffer before reset [34, 34, 34];
 // after reset [34, 34, 34]; scoped next-object/sizeof with chained state [34, 34].
 // Original placements and body restored; intermediate vtable store and successful-arm reload remain.
+// Round 124 (m3 lane 8, fast with 0x146b80/0x22c3e0 matched): `void *const block` 34 (same code); `block` read
+// after the NONE store 34; the stores ordered g_479890, g_479884, g_479880 38; the pool constructed with `()`
+// 34; `g_479880 = true` moved to the end 48 (155 bytes).
 // @retail 0x146a20
 void function_146a20(void)
 {

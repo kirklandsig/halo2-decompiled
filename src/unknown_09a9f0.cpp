@@ -546,6 +546,10 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // M325: Zero-notification completion guard with bool/byte/short/long creation-validity
 // results 63/93/68/65; entry-false success 70/68/73/71. All restored;
 // false BL, temporary EBP and independent header/object computations remain.
+// Round 124 (m3 lane 8, fast): the header test indexed through `(word)object_index` with the entity's index
+// stored again at the top of the unflagged arm 67 (188 bytes); the entity store after the result 49; the object
+// index declared before `value` 49; the entity's field read into a local before the header test 49; the header
+// test or the object read through the entity's stored index (long result) 49/49 (forwarded, same code).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {

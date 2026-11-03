@@ -528,6 +528,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // P282: Actual named readiness field, twice-used prop handle and both 49; positive comparison-result
 // work graph, alone/with each and both, 267/267/267/267; compound positive admission 267. Original
 // observations/result graph restored; table/AL, marker setup and tail roles remain.
+// Round 124 (m3 lane 8, fast): `return result` at the missing-prop exit 49 (same code); result declared
+// before the actor and assigned after it 49; the state pointer read before the 0x1e4be0 call 49;
+// `unknown` declared before `other_actor` 49; the actor's flag stored before the state's 50.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
