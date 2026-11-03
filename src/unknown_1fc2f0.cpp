@@ -512,6 +512,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
 // divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
 // if/else inverted with the fallback arm first 32 (same code).
+// DL253: one plain tick/delta component loop with long/dword counters 59/59;
+// short/word counters 140/140 (403 bytes); full prediction/tick/delta loop
+// with long/dword counters 98/98 (374 bytes), short/word 96/96 (366 bytes).
+// NOT kept: all regress; counter-width selections require equality. Tick reuse still differs.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

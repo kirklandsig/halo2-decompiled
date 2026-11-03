@@ -2416,6 +2416,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
 // then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
 // denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
+// DL253: Shared scaler input captures j/k, i/k and i/j, mutable/const, then lone j and lone k,
+// all 91 at 1459 bytes. NOT kept: one-use captures require equality and every form regresses
+// other users (9-14 lost matches). Original scaler and complete target restored; early velocity
+// j/k loads, speed-product carriers and property-zero residence remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
