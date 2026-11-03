@@ -3141,6 +3141,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
 // P297: Existing ground/yaw/boost dot3f producers, seven subsets, then all with the
 // angle producer forced inline: 1051/1071/1068/1071/1068/1071/1071/1071. NOT kept: changed float trees require equality; original body/helpers restored.
+// M350: Existing angle producer magnitude mutable/const 1057/1057; complete
+// result initialized/assigned/const 1052/1052/1052; magnitude plus result,
+// result-first and both const 1053/1053/1053. Frame stays 0x80; original
+// helper/body restored, with force/velocity homes still differing.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -5155,6 +5159,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // weighted-driver graph, seven subsets then consumed flip output:
 // 1090/1087/1140/1090/1140/1140/1140/1205. Sharing reaches frame 0xd4 rather
 // than native 0xd8; original complete body restored at frame 0xf8 and retail length.
+// M350: Plain wind/forward-target/lateral-velocity component loops, subsets
+// 1..7: 2767/2759/2759/2726/2726/2742/2682, frame 0xfc and 6443-6518 bytes.
+// Native final point cursor 1087. Original body restored; frame/index homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

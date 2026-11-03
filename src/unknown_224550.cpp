@@ -359,6 +359,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // M348: Native two-axis UV defaults primary/secondary/separate/joint loops
 // 407/410/434/408; library zero defaults primary/secondary/both/upper loop
 // 351/351/376/432. NOT kept: no byte match; original body and alias-safe captures restored.
+// M350: Uninitialized angle/complement/width entry declarations, seven subsets,
+// then paired primary-aspect storage at entry: 223 each. All producers stay at
+// their original phases; complete body restored, tint/secondary-UV homes remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
