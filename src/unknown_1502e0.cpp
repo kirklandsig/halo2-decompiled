@@ -215,6 +215,10 @@ struct s_flag_word_bits
 // `(real)field * seconds` in the helper (same), an outer switch with `goto` into the shared 0x152000 call (jump
 // table, 96 at 340 bytes), switch over 2/5/3 under `kind != 1` (binary tree, 109), `kind - 3 == 0` (102).
 // Permuter (25 min on r654): best 86, only with a volatile header pointer; not kept.
+// F352: Native header-byte mask producer with both existing stack aliases retained,
+// bool/byte/short/long default-false arms 124/124/129/128; complete true/false
+// arms 123/123/126/125. All restored; player-base/root scheduling, ticks/effect
+// homes and the expanded tail remain. Original word-bitfield view retained.
 // N341: direct unavailable producer 122; call-result admission flat/nontrivial-kind scopes 98/87;
 // short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
 // NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
@@ -1216,6 +1220,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
 // inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // Permuter (25 min on r654): best 12, only with a volatile read of the unit index; not kept.
+// F352: Complete rejection returns / sole-exit rejection / exhaustive outcomes / retained-false
+// dispatch outcomes, saved player receiver: 50/35/48/78; existing lookup at every player
+// field: 46/46/46/71. All restored; saved unit/table EDI/ESI still reversed.
 // M337: Returned availability owns unit and held-slot admission; bool/byte/short/long
 // states with the original short slot [48, 68, 85, 80]; native signed-byte slot [46, 66, 81, 76].
 // All restored; the saved unit-index and table/slot registers remain exchanged.
@@ -1791,6 +1798,10 @@ bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 // early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
 // not natural source, so it is not used.
 // Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
+// F352: Existing traits-record bool/byte flag with admission-owned disabled return,
+// independent false result, disabled guard, and sole outcome exit: bool 91/91/91/91;
+// byte 17/91/17/16. NOT kept: byte normalization grows to 253/251 bytes; bool
+// loads AL rather than CL. Original record, input access and entire body restored.
 // N341: enabled Boolean/byte retained for the inactive return 17/91; failure flag through ordinary/all
 // admissions 92/88, complete failure single exit 92; pointer end/countdown copies 106/92;
 // special-success return arm 91. NOT kept: 17 adds setne and grows to 253/251 bytes;

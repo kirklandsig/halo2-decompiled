@@ -292,6 +292,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC502: Shared pin macro at range/blend/active fade/active gain/inactive fade/inactive gain,
 // then all body/all logarithmic clamps: 866/866/865/865/862/866/853/853. NOT kept:
 // compound-only gain misses the native active-bound reload/lifetime. Original body/helpers restored.
+// F351: Native 64-bit used-vector word/byte/wide storage 867/874/886;
+// dword/word/byte/wide start after collection 880/866/871/886; word CRT zero 871.
+// NOT kept: no gain with retail storage/frame evidence. Original mask, lifetimes and complete body restored.
 // Lane 17 r37 (fast): the four query-array names prefixed to force an alphabetical order, and the target count renamed,
 // leave every slot unchanged (diagnostic; names do not place these homes); query count read directly with a long choice
 // count 942 (3297 bytes: the choice address becomes an induction pointer in ESI, retail recomputes it from the count in

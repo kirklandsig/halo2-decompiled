@@ -517,6 +517,9 @@ struct s_physics_component_walk : s_havok_component
 // Round 555: Neighbor scan-success bool/byte/short/long, then both scan-success
 // outcomes: 151/151/151/151/151/151/151/151. NOT kept: branch-set search outcomes need
 // an exact match. Original indexed scans, count tests and complete method restored.
+// F351: Split-open terminal/neighbor/both query results 200/152/220;
+// split-closed results 177/153/303; exhaustive open/closed results 192/177.
+// NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
