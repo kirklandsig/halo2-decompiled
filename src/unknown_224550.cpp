@@ -345,6 +345,8 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // the aspect next-product locals inlined 223 (same code), the inverse ones inlined 245; the four tint clamps as
 // explicit statements 223 (same code). Left: tint/uv_b homes swapped (0x60/0x50), blend not held in XMM5
 // after the sequence block (retail cross-jumps the context/blend reload), reciprocal schedule.
+// DH318: Existing shared seed RGB scale, product output in tint/seed scratch, plain seed/input traversals:
+// 244/244/253/253/245/245/245/245. Tint/secondary UV homes and blend residence remain. All restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

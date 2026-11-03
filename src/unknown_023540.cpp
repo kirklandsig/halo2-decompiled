@@ -2524,6 +2524,9 @@ dword __cdecl function_131fc0(real alpha);
 // 181/181, both raise 0x3a5c0 from 31 to 248; complete native fallbacks 156, with inline 204. Keep
 // only the plain-confirmed upper-default pair, 154 to 140 at retail length. NOT kept: all later
 // forms regress or worsen a helper user. Caller flag residency and fallback selection remain.
+// DH318: Complete packed register selectors, ternary/branch results in byte/word/dword/long:
+// 199/164/209/209/140/213/140/213. Flag residency and fallback parameter-home selection remain. All
+// restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2955,6 +2958,9 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // result contracts without a match. Both parameters 247/247, first form plain-confirmed 247 and
 // kept; branch-owned results 251/251. Frame 0x58 and packed-alpha prefix agree; five excess bytes
 // and maximum/reciprocal/bounds/trigonometric scheduling remain.
+// DH318: Maximum second-default/first-default/if-else/const results, mutable/const reciprocal on paired
+// parameter outputs: 258/258/255/255/247/247/247/247. Maximum/reciprocal allocation, five excess bytes and
+// trig scheduling remain. All restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3429,6 +3435,9 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // all neutral and equivalent input-type selection requires byte equality. Original complete body,
 // four bool inputs, every helper and call tuple restored; selector register production, post-bias
 // reciprocal/constant load order and six shift-versus-clip quantizer homes remain.
+// DH318: Existing quantizer direct-floor/rounded lower tests separated, nested/logical forms, bool/byte
+// flag and mutable/const sample: 31/31/31/31/31/31/31/31. Selector, reload-pair and six sample-home
+// differences remain. All restored.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
