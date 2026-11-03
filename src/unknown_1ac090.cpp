@@ -778,6 +778,8 @@ bool function_1f8660(long arg_0);
 // Round 32 (lane 17, fast): the early `goto done` folded into the entry test 7; the slot cast at each use (no slot
 // local) 7; the 0x26c object index read once at entry into the later local 211; result and slot declared before
 // the actor 52 (968 bytes); the failure store through the actor local 206 (939 bytes).
+// Round 134: fresh actor after/before buffer 227/33; const argument, native object index, const
+// slot/tag/reference/radius 7 each. Opening body restored.
 // @retail 0x1ad6a0
 bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 {

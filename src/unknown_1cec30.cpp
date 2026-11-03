@@ -1060,6 +1060,9 @@ void function_1d1540(s_havok_component *component);
 // AC505: Native body-pointer member receiver, pointer/reference and fresh reset receiver,
 // constructor copy 60/60/60/60; aligned set copy 93/93/93/93 (234/220 bytes).
 // NOT kept: gain 5 below the gate; member receivers and all copy forms restored.
+// N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
+// constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
+// NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -2412,6 +2415,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
 // length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
 // and shared-helper body is restored. Original executable source restored.
+// P293: Existing property completion: absent-early/present-two-arm/absent-two-arm, then each with
+// native word before lookup, present-early and present-early word: 100/99/100/155/155/155/99/155.
+// Original complete body and helpers restored; no qualifying gain.
 // DL251: Existing normalize/scale declaration boundaries and private-property inline; ordinary
 // annotations tie, automatic annotations lose matched users and are NOT kept:
 // 91/91/91/91/247/247/366/430.

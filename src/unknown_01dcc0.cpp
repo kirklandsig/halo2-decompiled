@@ -213,6 +213,11 @@ bool function_01dd60(long index, long *width, long *height)
 // height 26; pre-subtracted byte pitch 20 (movzx; NOT kept: width-only score steering); pitch subtraction
 // in x 18; word height 18 (movzx, index EAX; NOT kept: retail uses the full input); pre-subtracted word
 // height 21; both pre-subtracted 23; typed SDK Size stores 24.
+// Round 85 (m3 lane 12, fast): a signed pitch keeps retail's unfolded `lea [esi*4]; shr 6; shl 0x18`: `long pitch =
+// (width * 4) / 64;` 22, `(long)` casts on x/y 22, pitch/x/y all long 22, compound x/y subtractions on it 22, a long
+// height copy 22, dword subtractions of long x/y 22 (all: the -1 still folds as `add 0xff`/`lea [edi+0xfffff]` before
+// the shifts, index in EAX); `((pitch - 1) << 24) | ((height - 1) << 12)` with long pitch 28 (Horner); 0x12c0d0's
+// Horner spelling 28; `>> 6` for `/ 64` 24 (same code); `+` for `|` 30. Not kept (2 points).
 // @retail 0x1ddd0
 void function_01ddd0(long index, dword width, dword height)
 {
