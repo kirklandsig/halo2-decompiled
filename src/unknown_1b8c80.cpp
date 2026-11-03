@@ -1537,6 +1537,10 @@ void function_1f86a0(long actor_index);
 // Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
 // for the unit 230; existing object-header getter 134; same-root byte/short/long results
 // 134/140/139 (864/863 bytes for the wider two). Original body restored.
+// AC506: Concrete-slot/untyped/byte/header callback pointer formals, each paired
+// with indexed native member payload first and original payload: eight at 134.
+// NOT kept: alias contracts do not recover the mask spill or EBX entry; original
+// callback definition/declaration, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
