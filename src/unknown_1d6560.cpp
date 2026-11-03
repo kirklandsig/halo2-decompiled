@@ -492,6 +492,10 @@ struct s_physics_component_walk : s_havok_component
 // DH307: Object formal first/middle/last in both section-query interfaces, all eight
 // nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
 // tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
+// DL250: Complete native entry admission, first-body rejection and neighbor-body availability
+// predicates, subsets 1..7 then method-scope predicate declarations:
+// 146/146/146/146/146/146/146/146.
+// Original complete source restored; no eligible gain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
