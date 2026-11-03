@@ -545,6 +545,9 @@ struct s_physics_component_walk : s_havok_component
 // DH328: Direct replacement range on completed-section predicates, exclusive/inclusive
 // and complementary tests 305/290/305/290; availability produced directly 312 each.
 // NOT kept: regressions and 900-byte extent versus 922; original full method restored.
+// DH336: Shared complete two-query predicate, open/closed bool/byte/short/long
+// results: 146/146/146/146/146/146/146/146. Original complete method and
+// both scans restored; native frame agrees, latch reload and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

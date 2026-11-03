@@ -1423,6 +1423,9 @@ struct s_looping_detail_request
 // DH332: Typed source/offset/velocity copies, seven subsets then complete backward ranges:
 // 172/181/202/114/165/175/196/182. NOT kept: all regress; query expansion and detail/offset transport remain.
 // Original complete body and contracts restored.
+// DH336: Declared byte/char/word/long completion with original bool storage,
+// request output then native temporary/copy: 110/110/129/128/127/127/153/152.
+// Original Boolean contract and complete body restored; first-player expansion remains.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

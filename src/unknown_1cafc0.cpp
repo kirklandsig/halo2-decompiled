@@ -654,6 +654,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
 // success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
 // destructive graph-base/reload ownership and low-byte return remain.
+// DH336: Name/primary/alternate library publication on the twelve-byte shared
+// request graph, original output-index tests: 587/385/386/590/590/492/597/617.
+// Original complete body restored; graph-base/reload homes and byte normalization remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

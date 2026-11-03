@@ -355,6 +355,9 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// DH336: Two real award buffers/counts in array and record ownership forms:
+// 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
+// NOT kept: grouped storage needs equality; original complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
