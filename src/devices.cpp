@@ -1716,6 +1716,9 @@ bool function_0b6760(s_index_pair const *pair);
 // both event-id selects 302 (1476 bytes); the pointer with a direct `if` for the first test 292; a second pointer
 // for channels[1] 287; the definition read after the state block 286; event ids as selects between two field
 // reads, both/either 331/317/317 (1506/1501 bytes); a plain (non-volatile) definition pointer 386.
+// F354: Complete channel-array receiver across manual and group phases, ordinary
+// index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
+// NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
