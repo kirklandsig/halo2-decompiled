@@ -840,6 +840,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // N340: Complete header/body extent snapshots, mutable/const individually and
 // together, then const total/denominator: 218/219/193/218/219/193/193/193.
 // NOT kept: unmatched extent observation/storage changes; original full body restored.
+// Round 66 (m3 lane 10, fast; 0x2adb10 102 throughout): the header read test as `header_size == bytes` 36; the body
+// progress sum offset first 34 (same code); the header case's open test as its own if around the read 34 (same code);
+// the scratch clamp as `MIN(remaining, size)` 35; the signature-state test as `!(offset < size)` 34 (same code).
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1166,6 +1169,11 @@ struct s_signed_file_write_parameters
 // expression, no change [52]: the sum as body + (header - size) or header + body - size, a body-first file-size test, body-first size clamp, 96 declaration and clamp
 // combinations (other offset spellings 54-125), a stride local, a separate capacity local for the clear count, the clear count named, the clamp as a written ternary.
 // Left on it: capacity EAX/EBX in the header site, extend arm offset EBX / size EBP / buffer spilled and body-first sum.
+// Round 66 (m3 lane 10, fast; 0x2ad7c0 in brackets): the scratch getter as buffer, flag, size, owner 107 [36]; buffer,
+// flag, owner, size 109 [36]; a header-size position local in the header extension arm (SetFilePointer argument and
+// compare), declared first / between / last 115/119/115 [34] (declared first that arm's saved homes become retail's,
+// header EDI, body EBX, size EBP, but every scratch register after it rotates one step); the `void *` parameters
+// view as 0x2ad7c0 takes it 102 (same code), with the position local 115.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

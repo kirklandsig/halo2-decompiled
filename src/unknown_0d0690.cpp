@@ -1576,7 +1576,7 @@ real g_467494 = 5.0f;
 real function_30bf0(vector3f *vector);
 
 // MiniMax D (11-01): no new form tried, no lower score.
-// score 364 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
+// score 363 (was 364): Frame 0x4c versus 0x40; normal-copy and limited/rotation/color homes remain.
 // Round 52 (lane 13, fast; structural = LCS count with registers and offsets masked, base 212): in-place
 // rotation 435 (structural 143) as the base for: kij square with j/k normalize products as `*=` 429, all
 // three as `*=` 429 (identical); the shared normalize computing its own (i, j, k) magnitude with 0x30bf0's
@@ -1664,8 +1664,14 @@ real function_30bf0(vector3f *vector);
 // Round 207: staged cross/complete rotation setter/both 364/364/364; complete
 // normalizer setter with neither/cross/rotation/both 430 each (retail frame and length);
 // all three with native-value rotation input 490. Original helper/output graph restored.
+// Round 65 (m3 lane 10, fast): parameters reordered to (type, query, flag, record) everywhere, from retail 0x3dfe0's
+// call setup (`lea esi` record, then `push` flag; this function ends `ret 4` with record in ESI): 363, 0x3dfe0 27 -> 21
+// with its own declaration fix. On it: direction2 copied, negated and rotated in place 436 (1870 B, frame 0x40, aligned
+// 320 -> 293, masked 199 -> 164); plus (k, i, j) squared length 430 (aligned 285); plus the axis read through a
+// `vector3f const *` from g_4687b0 in lighting_rotate 464 (1842 B; 0x3db00 lost, 0xd37f0 610; retail reads the axis live
+// in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
 // @retail 0xd4080
-void function_d4080(long type, s_effect_color_query const *query, s_lighting_record *record, long flag)
+void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
 	long const *const flag_reference = &flag;
 	long flag_value = *flag_reference;
