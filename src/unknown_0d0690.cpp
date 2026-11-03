@@ -2241,6 +2241,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
+// ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
+// restored; native status/mesh/color/UV homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

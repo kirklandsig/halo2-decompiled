@@ -1466,6 +1466,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // then all with zero-extended selected type 423/418/476/409/475/476/475/475. NOT kept: 409
 // needs both width changes; either alone regresses/ties, and native link stores stay
 // word-sized. Original storage restored; frame 0x114/0x10c and zero homes remain.
+// Round 404: Trace start/target/both shared setters 426/378/370; direct-start stores 418, with target
+// setter 378; const start 418/378; attempt-owned start 412. NOT kept: target setter adds an in-loop z
+// store; retail initializes z before the loop. Existing planar target setter alone/with start setter
+// 427/435. Original endpoints/body restored; frame/zero/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

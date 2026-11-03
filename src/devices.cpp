@@ -1764,6 +1764,9 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// Round 404: Repeated position/power velocity cursors 294/372/379; complete position/power/both output
+// pairs 373/403/398; both with ordinary index/saved pointer 406/371. Original receivers and qualifiers
+// restored; frame/index/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

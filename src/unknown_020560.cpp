@@ -989,6 +989,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // jointly, after first or before samples 457 each (same code); one shared index 457; nearest declared before
 // closest_distance 459; `if (i == nearest) continue;` 457. Retail's 0x2c frame keeps delta.i/j in XMM5/6
 // with delta.k at +0x38 and stores offset.i to its own home at +0x24; the 457 form spills delta.j/k instead.
+// Round 404: Actual coefficient-count long/dword/word/size_t producers 547/547/601/547; with separate
+// byte extents 547/547/605/547. Original copy span/helper and body restored; frame/input,
+// vector/selection and fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
