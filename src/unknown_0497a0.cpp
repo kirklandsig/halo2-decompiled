@@ -813,6 +813,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 548: Complete double length residence in vertical/planar/camera-pair subsets
 // 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
 // NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
+// Round 552: branch-produced V endpoint; separate signed U producer with original/separate/branch
+// V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
+// 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1213,6 +1217,10 @@ void __stdcall function_43720(s_43740_input *input)
 // padding zeroed); the group lookup through `(word)tag` 67 (204 bytes, 0x42b20 4); the record
 // filled before the texture test 74 (218 bytes); the vertex count without the short cast 68
 // (203 bytes). All restored; the early EAX/EBP tag split remains.
+// Round 35 (m3 lane 18, fast; 0x42b20 checked each time): the vertex count stored first 65; the slot
+// stored after the shader and normal 62; an early `return` when the tag is NONE 62; the record declared
+// at function scope 62; a block-local long point index for both arrays 62; the vertex count
+// pushed from its own expression (no short store) 66 (215 bytes). All restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

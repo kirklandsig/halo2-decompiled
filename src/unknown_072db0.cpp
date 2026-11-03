@@ -1593,10 +1593,21 @@ struct s_rating_summary
 // Round 345: completed name-conversion/summary-publication/adjusted-rating phases, seven subsets; all
 // phases with immutable query table: 31/52/52/31/31/52/52/52. Original body and contracts restored.
 // Formatter/count schedule and team/counter homes remain.
+// M3 lane 13 r54 (fast, on the one-use identity-string local, control 25; match-only, not kept): team index
+// short 143 (1228 bytes); counters as a const reference 25 (same code); the bound test as `!(i < count)` 25;
+// team skill read at each use 237 (1200 bytes); counters pointer declared at function scope 25. Retail's team
+// loop keeps both cursors stored at the head (teams +0x14, counters +0x18, counters in ECX at the latch).
 // F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 44 (m3 lane 2, fast): retail's team-loop head is the tail-merge target of preheader and latch (both
+// cursors arrive in ECX/EDX and are stored there); ours keeps the counters cursor in memory and steps it in ESI
+// at the latch, so the store does not merge (the 4 bytes). A walking team pointer declared before the team loop
+// and stepped at the body's end 116 (collection register changes from +0x45; named team/entry/zteam alike); a
+// walking counters pointer 38 (base at the struct, not +6; homes unchanged), named zcounters 38 (names do not
+// move these homes); the switch without its `default: __assume(0)` 105 (1197 bytes); the formatter's result
+// in a local 25 again (match-only; only the team latch left).
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

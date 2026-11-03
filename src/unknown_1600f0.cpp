@@ -1528,7 +1528,7 @@ void __stdcall function_1608e0(long player_index, s_score_panel_1608e0 *panel, r
 		}
 		row_position[1] += 0x14;
 		color3f color;
-		color = *function_7f720(&color, (short)team);
+		color = function_7f720((short)team);
 		byte *entry = scores + team * 0x12;
 		short seconds;
 		if (g_4e6948->flag1128)

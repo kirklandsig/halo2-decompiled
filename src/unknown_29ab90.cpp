@@ -273,9 +273,32 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // AC491: Forward-correction scalar result before fields/aggregate/setter vector publication,
 // default/complete arms; entry scalar with fields/aggregate: 352/354/352/354/352/354/352/352.
 // Original complete body and producers restored; native frame and homes remain.
+// M3 lane 4 r157 (fast; positional / LCS-aligned, base 345 / 230): LEAD: retail keeps a full copy of the working
+// vector made before 0x29b2e0 (i in ESI, j/k at +0x60/+0x64, sharing the query output's +0x5c home) and builds the
+// planar input from it after the call; `vector3f previous = local_4;` before the call with the planar input
+// from `previous` gives retail's frame 0x64 (first difference +0x2 -> +0x42) 386 / 216 (1915 bytes), the 0x668 store
+// after the planar copy 386; with the planar helper zeroed in place (scale arm first) 385 / 182 (1910 bytes); plus
+// magnitude terms ijk/kji/ikj 383/385/383 (aligned 175/182/179); plus the magnitude helper zeroed in place
+// 435 / 177 (1898 bytes; its block is retail's but for the 0x10/0x14 homes of the definition pointer and the
+// magnitude); on that, renaming the magnitude, the definition pointer or the query vector 435 each (same code).
+// The rest is the entry copies: retail struct-copies all three working vectors (dword moves, the +0x290 one through
+// `mov edx, ebx`); as struct copies here: all 479 (frame 0x68: arg_0 moves to ECX and arg_2 to EAX, so the query
+// bools lose arg_2's dead stack home), the +0x290 one only 484, the second constant one only 450; earlier forms
+// struct copies 513, +0x290 copied from the field 450, non-const +0x290 pointer 438. Also on the 435 form: the
+// history read through a pointer to its field (retail reads +0x678..0x680 in place) 413 / 175 (1878 bytes, 449
+// instructions; alone on the original 361 / 230, 1845 bytes); the correction vector written into the output vector
+// (retail's +0x38 home) 413 (same code); with the entry struct copies all/first/constants 430/460/423 (the struct copy of
+// +0x290 always moves the pointer out of EBX into ebp+0x290 addressing and passes arg_2 in EAX, ret 0x1c), with the
+// pointer declared at entry 442 or in the settings block 460, through a two-pointer copy helper 460. Restored.
 // DH311: Existing pointer-input scale as plain coordinate-array loop, long/dword/short/byte
 // with streaming stores 345/345/435/435; complete native output before publication 464/464/515/515.
 // Original helpers/body restored; frame 0x58/0x64 and magnitude/query overlap remain.
+// Round 122 (lane 7, fast; base 345 [aligned 276]; retail keeps the planar copy's pre-call values in ESI and
+// the query slot, then stores them into the magnitude copy's slot after 0x29b2e0): the query outputs in their
+// own block 345 (same code); the planar vector declared at the top of the settings block 345 (same code);
+// planar components captured in named reals before 0x29b2e0 (diagnostic) 380 (1906 bytes, frame 0x5c);
+// all three working vectors as whole-struct copies 442 [406] (1887 bytes, frame 0x60); the working vector
+// alone as a whole-struct copy 449 [421] (1884 bytes, frame 0x60).
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

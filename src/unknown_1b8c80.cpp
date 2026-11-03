@@ -1528,6 +1528,9 @@ void function_1f86a0(long actor_index);
 // to the entry, which leaves the entry on the stack and the mask out of its +0x13 slot.
 // The slot data-block form (selection through slot->unknownc) 134 [109]; a whole data struct 140 [109], with the positive predicate 141 [97]:
 // retail folds +0xc into its reads through the slot here, so that form does not apply.
+// Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
+// for the unit 230; existing object-header getter 134; same-root byte/short/long results
+// 134/140/139 (864/863 bytes for the wider two). Original body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
