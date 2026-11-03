@@ -348,6 +348,8 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // Round 79 (m3 lane 9, fast): both aspect defaults as ternaries on `ax>ay` 264; blend as a ternary on the
 // 0x20 flag (0 otherwise) 261; the aspect updates as `remaining*aspect + next` 223 (same code); blend declared
 // after the definition local 223; the tint declared at entry 223 (same code each).
+// Round 51 (m3 lane 15): pivot defaults as two stores 223; UV sets declared uv_b, uv_a 223; width after the two
+// UV encodes 419; quarter-turn added right after the angle 482; size in a named local before the call 233.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
