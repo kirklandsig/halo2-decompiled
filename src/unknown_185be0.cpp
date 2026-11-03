@@ -405,6 +405,10 @@ union s_185be7
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.
+// DH326: Existing flag mutator with short/word/dword canonical predicates, pointer then
+// native reference destinations: 626/626/625/626/626/625; ignored pointer/reference destination
+// results with Boolean predicates 622/622. Original helper and full body restored; root/NONE
+// ownership, settings/zero homes and flag joins remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

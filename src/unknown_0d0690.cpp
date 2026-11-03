@@ -2236,6 +2236,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// DH326: Branch-owned bitmap UV, texture-region base UV and publication-ended combined color,
+// subsets 1..7 then all with aggregate color initialization: 629/677/798/542/629/677/798/798.
+// Original output lifetimes and full body restored; status/mesh homes and helper expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

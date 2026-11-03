@@ -293,6 +293,10 @@ bool function_a7670(long object_index);
 // DH324: Native active-bit tests at component/primary/both releases, direct or Boolean-macro,
 // then paired nonzero/true equality: 234/211/255/153/153/153/255/255. NOT kept: word-field release
 // accesses grow beyond retail; original byte tests, stores and complete body restored.
+// DH326: Lazy second membership after first-list miss, original found flag then completed
+// first ordinal, bool/byte/short/long admission: 274/274/267/267/273/273/229/229.
+// NOT kept: regressions; native membership remains eager. Original body restored;
+// selector/island/count homes, scratch phase and admission register remain.
 // @retail 0x278f00
 void function_278f00()
 {

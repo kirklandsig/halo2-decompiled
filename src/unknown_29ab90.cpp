@@ -320,6 +320,10 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // native/aggregate/setter/library copies, original then single-root planar result
 // 363/332/366/363/325/366/332/325. NOT kept: 325 at 1874/1863 bytes moves length away from the starting 1866;
 // native XY transfer/homes remain. Original helpers and complete body restored.
+// DH326: Consistent native-pointer/direct history reads 361/360; history pointer with
+// full pre-update native/coordinate/setter/library direction and separate later XY 362/356/356/362;
+// native/coordinate saves with shared planar normalization 385/380. Full saves recover frame 0x64
+// and first +0x42, but grow to 1895/1897 versus 1863 bytes. Original full body/helpers restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

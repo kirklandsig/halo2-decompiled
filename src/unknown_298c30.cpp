@@ -263,6 +263,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // DH324: Whole native output-record references at first/second/repeated emission,
 // seven subsets then all native pointers: 413/413/431/432/450/450/468/468. Original destinations,
 // helper, publication graph and complete body restored; entry/normalized homes remain.
+// DH326: Positive-default evaluation output; negative arm from original/stored input,
+// pointer/reference output formals and void/ignored-pointer result contracts:
+// 420/420/420/420/434/434/434/434. Original emitter and complete body restored;
+// entry sum and normalized XY/magnitude homes remain.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
