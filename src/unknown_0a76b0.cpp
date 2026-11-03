@@ -2360,6 +2360,9 @@ __forceinline char unit_action_round(real value)
 // 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
 // Pool/index/type/name and result-byte homes remain. Original executable body restored.
 // N323: Dual-use mode-two selection in bool/byte/short/long, each with original/default-first combo results: 320/337/320/337/322/340/319/337. Original body restored; pool/type/name and completion-byte homes remain.
+// F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
+// ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
+// Original complete body restored; pool/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

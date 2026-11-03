@@ -955,6 +955,9 @@ extern long *g_51e9cc;
 // 45/45/38/38/45/45/38/38. Four-point best above 30 rejected; original predicate,
 // declarations, flag stores and complete body restored. Lookup and crouch schedules remain.
 // N323: Upper-first complete crouch sum: ternary/direct-field branches/mutable else-if/successive bounds, each without/with shared word flags: 47/40/295/295/47/40/47/40. Original complete body restored; lookup receiver rematerialization and crouch/contact schedules remain.
+// F340: Last-consumer scopes for root/input/height, seven subsets, then all with
+// a role-named contact lookup: 42/42/42/42/42/42/42/42. Original complete body restored;
+// frame 0xb8 agrees; receiver rematerialization and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -4555,6 +4558,9 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
 // long/short contact truth: 317/228/228/228/228/228/228/231/228.
 // State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
+// F340: Natural-input last-consumer scopes for definition/raw/relative, seven subsets,
+// then all with admitted success: 228/228/228/228/228/228/228/224. Frame 0x28 recovers, but
+// length is 626/683 and exact callers lose 61/14; original complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
