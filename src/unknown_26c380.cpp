@@ -296,6 +296,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // declaration 437; the no-edge exit's temporary dropped (`success = result->blocked;`) 425 (1611); `success = true;`
 // there 410 (1598, aligned 268); `success = true;` in the no-hit exit 409; both 412 (1605). Retail keeps the zero in
 // EBX (byte stores through BL) and pathfinding in EBP where ours swaps them.
+// M339: Raw edge-query positive/complementary test-owned hit in bool/byte/short/long:
+// 446/452/452/452/446/452/452/452. NOT kept: test-produced flags did not match; original full body
+// restored.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

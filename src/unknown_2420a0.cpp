@@ -591,6 +591,16 @@ long function_243b10(long key_b, bool team_only, long *second)
 // continue;` 200, `k != 0` with the arms swapped 200, the array selected by k and then indexed 191 (691 bytes, caller
 // 0x240160 46). On the current body: the key as `mode_180 == 9 ? 3 : 1` 173 (same code); dy computed before dx 174;
 // the bound-update arms as `if (k != 0)` with the arms swapped 173.
+// Round 79 (m3 lane 9; fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160, plain confirmed): kept: no table
+// local (g_51ec80 at each use), the bounds init stores before the query and round 87's accumulated distance 146
+// (711 bytes, retail's length; the else arm's global reload is now retail's; k is spilled and the count held in EBX
+// where retail spills j and count and keeps k in EBX and the table in EBP). With the slots local, the init stores
+// before the query 185 (711 bytes). On 146: the init stores between the query and the point copy (retail's order)
+// 142 (caller 0x240160 46: not kept); the marker select as if/else 184; k declared in its for 146; results at
+// function scope 146; plain sqrt(dx * dx + dy * dy) 150; the key before the init stores 186 (caller lost).
+// NOT kept (review): the 146 combines a re-read of g_51ec80 at each use where retail holds the table in EBP,
+// the init stores placed before the query where retail stores them after it, and a two-statement distance
+// sum: a combination picked by score; body restored at 173.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

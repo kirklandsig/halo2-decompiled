@@ -238,6 +238,10 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // consumers, then input pairs and all consumers: 410/395/395/395/410/410/410/410.
 // NOT kept: shared real-result/operand-order forms do not match; original expressions,
 // helpers and full body restored; entry sum and normalized XY/magnitude homes remain.
+// Round 554: On evaluation-first emission and recovered seven-word cleanup, complete
+// normalizer input/native-root/void-contract subsets 437/437/395/395/437/437/395;
+// all with complementary early rejection 395. Original helper and body restored; every
+// shared user unchanged. Entry sum and normalized XY/magnitude homes remain.
 // Round 44 (m3 lane 2, fast with caller 0x29a190 at 389): both now return with `ret 0x1c`. Retail stores the
 // centre's x at once (`movss [esp+0x50]`), takes dx/dy on x87 from it, and keeps 16-bit counters (outer in
 // EBX, compared through bx; candidate count in BP, stored as a word). The loop differences as `(double)c - p`
@@ -573,6 +577,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // reverse vector in its own block around its trace 782 (frame stays 0x124). Retail packs the three bools at +0x11..+0x13
 // (ours puts the result at +0x3f; renamed `result` on the nested form 782, home unchanged) and has one 12-byte home fewer
 // between the pivot (+0x94) and the first trace (+0xb8).
+// Round 554: Complete scalar direction-input/rotation-input/squared-distance boundaries,
+// seven subsets 784/719/784/719/784/719/784; all with separate phase cosines 783.
+// NOT kept: staging nonmatches; original helper inputs, scalar precision and whole body
+// restored. Frame 0x124/0x114, eager radius and trace/trig/pivot homes remain.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,
