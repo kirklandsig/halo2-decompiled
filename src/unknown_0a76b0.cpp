@@ -316,6 +316,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
 // raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
 // incoming ranks and shared-call threading remain.
+// P288: Complete name-case priorities grouped by actual output outcomes, eight forms
+// 271 each; original full dispatch and body restored. Frame 8 and incoming
+// unit/name/actions ranks, shared-call threading remain.
 // M333: Actual hand-result/count/output lexical identities on original receivers,
 // seven subsets, then complete observed-state/unit/actions identities: 271 each.
 // Original full body restored; incoming unit/name/actions ranks and shared calls remain.
@@ -1506,6 +1509,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
 // then all with completed state selection:
 // 95/95/95/95/95/95/95/95. Original complete executable body restored.
+// P289: Twice-used animation channel long/dword/short/byte at its producer, then
+// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
+// no exact match. Original body restored; early pool/hand and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -2853,6 +2859,9 @@ long function_c8f60(long unit_index, short seat_index);
 // F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
 // complementary nonvehicle polarity:
 // 293/293/299/299/300/300/319/321. Original complete executable body restored.
+// P289: Real unit seat/node offsets, paired seat velocities and activity byte,
+// seven field subsets and guarded full-width activity result: 293/293/293/293/293/293/293/296. Original
+// complete record/body restored; entry vehicle/unit/ordinal residence remains.
 // F348: Native typed seat receiver mutable/readonly with original, complete, conditional
 // and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
 // All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.

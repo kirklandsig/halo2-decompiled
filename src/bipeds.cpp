@@ -1902,6 +1902,11 @@ void function_dfd70(long arg_159e6d)
 // Y553: Complete first-ray displacement/final-clearance/start-setter subsets
 // 234/240/236/240/234/240/236; both point setters 236. Original helpers restored.
 // NOT kept: no target gain; scaled-displacement/clearance forms also raise shared users.
+// P290: Native nested nonzero-origin/mode-three admission with original switch,
+// standing-first/crouching-first results, explicit default branches, zero/one initial
+// crouch and default-owned zero: 104/261/261/104/104/245/242/247.
+// NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
+// Original helpers/body restored; mode-three layout and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4590,6 +4595,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 143/143/133/133; complementary support with late/query-bound success and branched
 // criterion 156/155/155; sole actual result exit 92. All preserve both exact callers.
 // NOT kept: result/support lifetime forms regress; original complete body restored.
+// P290: Tested actor-result return 68; explicit state criterion in result and branched criterion
+// 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
+// actual admission result 83. NOT kept: six-point criterion gain is below eight; all
+// executable forms restored. Native support/result byte homes and early success store remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4993,6 +5002,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // test-owned arms, original/existing squared length: 665/649/665/652 twice
 // versus fast 655. NOT kept: flag-set forms require a match; six-point best
 // also fails the margin. Original body restored; frame/homes/call expansion remain.
+// P291: Actual early skip/apply movement decision separated from the still result,
+// bool/byte/short/long in both truth domains: fast 655 each against control 655,
+// 2285/2190 bytes. Original body restored at full 648; frame 0xd0, tag/state/animation
+// homes and completion expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

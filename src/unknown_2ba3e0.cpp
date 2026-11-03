@@ -896,6 +896,9 @@ real g_55e618;
 // Position through vector3f_add_scaled before/after the impact 116 (1548), with the named last argument 155; assignments in a comma argument 236
 // (1554: the stores still precede the load); normal direct fields 60/54, with the named argument 82/76; impact at the block's top 50/65; helper
 // taking the collision point 156 (1547). Next: an unnamed read that sits ahead of the stores.
+// P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
+// staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
+// restored; sweep/collision homes and cross-placement projection spills remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)
