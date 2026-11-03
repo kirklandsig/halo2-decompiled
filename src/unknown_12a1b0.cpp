@@ -1372,6 +1372,9 @@ struct s_looping_detail_request
 // Original common tail, result, native offset and complete body restored; first-player expansion remains.
 // Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
 // 154/173/155/162/136/169/151/149; original complete body restored.
+// DL247: Coordinated ordinary-inline first-player contract with native offset, CRT source
+// copy and repeated definition index: 110/134/110/134/141/165/141/165. All provider users
+// retain their preview scores; query still expands. Original contracts and body restored.
 // DH301: Whole detail-input native/immutable/assignment/memcpy ownership, each with
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
@@ -1726,6 +1729,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // the detail request given 0x125f70's full 0xa0-byte play-state tail 305 (frame 0x12c); the pitch sum with
 // playing->pitch first 305, with the lower bound first 305 (both same code); sounds and gains filled by one
 // plain 9-step loop 335; `long selected` 427 (1908 bytes).
+// AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
+// with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
+// NOT kept: one-use captures without a match; original body restored, frame/homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

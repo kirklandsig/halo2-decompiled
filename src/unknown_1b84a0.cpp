@@ -507,10 +507,24 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // force/force 1393. State contracts worsen shared callers; forced marker
 // inlining expands the target. Original declarations and complete body restored;
 // table/result producer, marker setup and late actor/reference/slot cycle remain.
+// P276: Actual payload signed-selector output/native marker-byte/native outcome-byte
+// contracts, seven subsets, then all with readonly character input: 49 each. Shared
+// Outcome-byte users regress 7 to 22; originals restored. Entry AL and tail roles remain.
 // DH300: Twice-used optional-distance snapshot, native/immutable/outer 49/49/49; with complete
 // movement-limit observation 53, sector result arms 49, conditional fallback reference 197,
 // invalid-first reference publication 110, combined limit/reference forms 192. Original field
 // observations and body restored; entry table/result production, marker setup and tail roles remain.
+// Round 376: State-field reset/output receivers selected/pending/selection, seven subsets
+// 51/52/52/55/55/55/55; complete entry storage 55. Exact-only field pointers restored.
+// Original frame/result home and native clear-address sequence already agree; table/result producer,
+// marker setup and tail homes remain.
+// Round 378: Combined available/success admission result at its actual tail producer,
+// bool/byte/short/long complete and pending truth, 49 in all eight. Exact-only one-use
+// admissions restored with the complete body; actor-table/result production, marker setup
+// and actor/reference/slot tail homes remain. Indexed slot-data form is already applied.
+// P278: On recovered ordinary-result/common-release graph, call-owned marker indices, movement-bound
+// phase and search-owned entry, seven subsets 49/49/49/108/108/108/108; all with search-request role
+// name 108. Original storage restored; entry result, marker setup and tail homes remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

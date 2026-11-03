@@ -3820,6 +3820,9 @@ long __stdcall effect_new_from_parameters(s_effect_parameters *parameters);
 // ray producer + collision miss continue 48; native facing producer + native ray producer + collision
 // miss continue 67; native facing producer + native ray producer + collision miss continue + readonly
 // marker 67; total owns first marker result 141. Original body restored.
+// Round 91: long primary count 169; primary-count address reference 48; direct definition macro at
+// the tag store 138; const definition 48; const primary count 48; const total 48; facing copied in
+// j/k/i order 67; four-byte-aligned short primary count 127 (prologue changed). Original body restored.
 // @retail 0xf6060
 void __stdcall function_f6060(long vehicle_index)
 {
@@ -3923,6 +3926,10 @@ extern byte g_5107ee;
 // the middle point 41 (kept); copy after the memset 39 (retail stores two words before it, not kept);
 // dot declared where computed 41; dot3f(normal, facing) / dot3f(facing, normal) 45/45; a pointer to
 // effect_markers[6] 41; the reflection through vector3f_assign 41.
+// Round 90: incoming/normal/bounce pointers 45; incoming+normal 45; bounce alone 41;
+// sequential dot with component midpoint stores 165 (frame 0x8bc), with the whole copy 47;
+// reflection-order pointers 45, also before the vector providers 45; point setter 154
+// (frame 0x8bc); normal pointer 43; incoming pointer 45. Original executable body restored.
 // @retail 0xf62f0
 void __stdcall function_f62f0(long vehicle_index)
 {

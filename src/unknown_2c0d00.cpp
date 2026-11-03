@@ -1622,9 +1622,18 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
 // circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
 // Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
+// DH302: Actual typed-step scan cursor with short/short, long/short, short/long, long/long
+// scan/candidate ordinals 477/455/496/434; also walking the reverse candidates from one-past
+// 485/460/488/458. Original indexed traversals restored; radius staging and zero/metadata homes remain.
 // Round 371: Native selected successor/type/link widths, subsets 1/2/4/3/5/6/7,
 // 455/424/463/462/456/424/458; all with full output count 503. Original short
 // carriers and complete pointer body restored; radius/zero/metadata homes remain.
+// Typed-selection, trace-admission and found-result branch orientations and their pairs/all
+// 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
+// and metadata homes remain; original body restored.
+// N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
+// step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
+// scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
