@@ -644,6 +644,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// P293: Recovered twelve-byte request graph, native primary/alternate/both query-result ownership with
+// byte then Boolean success, both mutable with byte/Boolean: 387/402/491/508/518/548/491/548. Original
+// complete body and helpers restored; no qualifying gain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
