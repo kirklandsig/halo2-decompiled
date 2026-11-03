@@ -1723,6 +1723,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // DH315: Shared score/predicate/ordinal initialization masks 1/2/4/3/5/6/7,
 // then all with real movement: 227/225/225/229/229/227/221/224. Original
 // independent initializers, magnitude, observations and complete body restored.
+// DH321: Test-produced preservation result in bool/byte/signed-byte/short/word/int/unsigned/
+// dword domains: 304/304/304/319/319/333/333/333. NOT kept: flag-in-test/domain forms lack equality;
+// original predicate, magnitude, reset/selection graph and material calls restored.
 // N344: Coherent state-first material interface, then real movement/sentinel phase/airborne
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,

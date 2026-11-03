@@ -338,6 +338,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // M342: Explicit refreshed virtual child count at the native latch, provider carry and
 // count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
 // handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
+// N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
+// complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
+// complete body and declarations restored; split post-sample comparison and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -685,6 +688,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B387: Read-only settings/immutable particle/immutable allocation identity, seven subsets,
 // then all with immutable effect identity: 356 each. Original complete body restored;
 // frame 0xb0 and late EBP save, escaped blend and random/getter homes remain.
+// B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
+// age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
+// original complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // Round 66 (m3 lane 1, fast): grouped workspace members in retail's frame order (probe point, direction, the
 // collision result moved in, blend, sample, placement) 355 at 1652 bytes (point/direction/collision/placement
 // land on retail's offsets; retail's unused 16 bytes are the blend and sample slots, both kept in registers); on
@@ -695,6 +701,10 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // B393: Direct-expression initial scaled point aggregate/scalar parts, native/setter publication,
 // age after/before publication: 393/393/358/363/357/376/358/376. NOT kept: no exact match;
 // original complete body restored; late EBP save, escaped blend and random/getter homes remain.
+// M344: Allocated-record pointer results at producer/entry, conditional/default-owned,
+// positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
+// NOT kept: unmatched nullable admission adds a pointer test; original handle admission,
+// record observations, inherited qualifier, helpers and entire body restored.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
