@@ -540,6 +540,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH303: Real eight-byte node metadata record with memcpy/aggregate transport
 // and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
 // layout and body restored; extra output cursor, initial zero and flag homes remain.
+// M3 lane 13 r54 (fast; 0x270930 kept): the edge array declared after the flags 295; the clamp as
+// `maximum_steps < initialize_count` 295; the converted points named begin/end 295; the output-index compare
+// swapped 295; margin declared at the top 295 (all same code). Retail's start/end conversion homes stay swapped.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

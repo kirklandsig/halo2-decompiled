@@ -249,6 +249,9 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // AC488: native candidate range/type, best-score/validator and final-selected admission
 // nesting subsets 1/2/4/3/5/6/7: 390/390/390/390/390/390/390; all with native long group 461.
 // Original body restored; selected defaults, root/group roles, point bitmap and pass homes remain.
+// M3 lane 13 r54 (fast): the structure table read before the root-table test 452; the group record pointer
+// formed right after the group bit is set 438 (1576 bytes); a link-count local for both link loops 439 (1576
+// bytes); the nearest-distance compare swapped 390 (same code); the path sum written last-to-first 390 (same code).
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)
