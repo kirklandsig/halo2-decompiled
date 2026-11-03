@@ -1513,6 +1513,9 @@ void function_1f86a0(long actor_index);
 // AC489: Separate distance/seat validation guards and negative special admission, seven
 // subsets, plus native slot-member payload on the complete graph: eight at 134. Original
 // body restored; frame, mask spill and entry/root carriers remain.
+// Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
+// for the unit 230; existing object-header getter 134; same-root byte/short/long results
+// 134/140/139 (864/863 bytes for the wider two). Original body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
