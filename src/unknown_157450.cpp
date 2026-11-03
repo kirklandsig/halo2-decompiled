@@ -4402,6 +4402,9 @@ void function_15fe20(long team_index, color3f *color);
 // restored; native team-color transfers, shared NONE and shift-count residency remain.
 // Round 471: Direct native member publication, rival/own/both team and rival/own/both palettes
 // 562/534/563/139/429/458; all outputs with const/mutable returned sources 685/685. All restored.
+// N329: Existing complete weapon helper/native unit-view getter, original/twice-used unit handle and
+// full/word presence mask: 119/88/119/88/119/88/119/88. Native getter ties; complete helper reaches
+// retail length but regresses. Original body and include list restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

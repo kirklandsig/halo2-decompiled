@@ -2918,6 +2918,9 @@ static inline short sound_voice_find_available_channel(char type)
 // paired chained defaults: 91/126/120/133/153/149/137/130. Driver-only defaults 91 at 432/430:
 // NOT kept: five-point gain below eight while above 30. Original defaults, byte result,
 // helper and full body restored; frame, shared sentinel and search/failure joins remain.
+// N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
+// references with complemented playing status 127. Original pointers, saved byte result, search and full
+// body restored; frame twelve/eight and failure-tail placement remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3806,6 +3809,9 @@ struct s_128ca0
 // Round 308: actual playback gain-bit member with original/inner/outer/both in-place sums
 // Round 308: 222/269/222/269; with native signed location-bit member 222/269/263/306.
 // Round 308: Original physical types, both headers, sum helpers and body restored; gain homes and clamp joins remain.
+// N329: Existing file-local gain sum with first-reference/second-value inputs at
+// inner/outer/both/both-plus-scale: 262/221/262/248; first-value/second-reference 263/222/263/249.
+// NOT kept: one-point gain below threshold; shared users regress. All signatures and body restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

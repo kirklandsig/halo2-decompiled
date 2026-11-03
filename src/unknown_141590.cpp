@@ -316,6 +316,9 @@ static inline void quaternion_transform_vector(
 // code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
 // the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
 // existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
+// N329: Actual half-angle outputs own cosine/sine/both-sequential/both-early radicands: paired storage
+// 253/253/249/289, independent halves 270/270/258/258. All regress; original root expressions, paired
+// storage, helper and full body restored; frame and spill overlap remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
