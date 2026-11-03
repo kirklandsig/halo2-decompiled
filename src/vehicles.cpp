@@ -591,6 +591,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // subsets 1/2/4/3/5/6/7, then all with enclosing speed: 278/126/507/278/502/507/502/502.
 // Complete staged graph with existing normalizer forced inline 348; original helper/body restored.
 // Velocity receivers, early 1.0 residence and later SSE/x87 colouring remain.
+// M329: Complete positive angular-admission channel, bool/byte/short/long, direct
+// producer 189/189/188/190; complete if/else 189/189/188/190. Every consumer was
+// complemented consistently. All regress; original reversing channel, helpers and body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1191,6 +1194,13 @@ long function_10f5f0(long object_index);
 // Native short stopped alone 571; full-width reused final result 570.
 // Extent-only control 565 repeated an earlier form and is excluded; all executable
 // source restored. Frame, native flag-result bytes and sum-loop scheduling remain.
+// AC491: Entry-owned bounds/time/reduction scalar declarations, masks 1/2/4/3/5/6/7, then coherent
+// scalar identities: 565/565/565/565/565/565/565/565. Original complete body and producers restored;
+// native frame and homes remain.
+// P283: Direct idle admission with original/six-real output and original/zero-filled
+// name array: 565/565/571/572; completed logical idle value with the same variants:
+// 565/565/571/572. All tie or regress; original body, buffer and array stores restored.
+// Idle-call expansion, frame/state homes, flag-result stores and sum scheduling remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2406,6 +2416,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // Round 345: completed throttle/side-result/turn-clamp scalar phases, seven subsets; all phases with
 // loop-owned contact ordinal: 42/42/42/42/42/42/42/42. Original body and contracts restored. Turn-product
 // and spin scratch/store schedules remain.
+// AC491: Native two-side torque arrays, aggregate/assigned/immutable/entry-owned with
+// conditional/indexed selection, 48/95/48/95/48/95/48/95 (frame 0x14; NOT kept: grouped storage needs
+// a match). Paired turn magnitudes at their expression producers, first before the shared turn
+// product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
+// NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
+// placement form, kept only with a match). Body restored at 42.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2733,6 +2749,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // consumed scale return, crossed with distinct relative output and shared force/torque
 // mass scales: 728/728/738/738/728/728/738/738. Frames remain 0xd0/0x104;
 // original full body restored. Retail frame 0xfc and scalar/vector homes remain.
+// M327: Named squared magnitude / accumulated magnitude / completed short-vector fallback / existing normalization scale:
+// 692/740/708/692 on original output, 699/748/710/699 with independent relative output.
+// Original full body restored; frames remain 0xd0/0x104 versus retail 0xfc.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3012,6 +3031,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // subsets, and completed airborne target/axis/error scope: 1052 each. Frame stays
 // 0x80 versus 0x74; original complete body restored. Extra scope-only probe 1052
 // excluded from eight-trial credit because it closes no additional local lifetime.
+// DH308: Existing integer sign helper zero-result/positive-result/nested-result/flat-result/early-return/
+// nonzero-result/negative-first correction/negative-first conditional: 1057/1049/1052/1052/1052/1057/1051/1052.
+// NOT kept: best gain is three points; all retain frame 0x80 versus 0x74. Original helper and body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -3573,6 +3595,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // projection/axis/both 220/207/288; field receivers 215/219/291; mixed receivers
 // 288/287. NOT kept: output-storage graph adds nonretail stores and length.
 // Original complete body, actual helper contracts and real precision restored.
+// DH308: X87 angle with complete forward/cosine-up/sine-axis part subsets 1/2/4/3/5/6/7,
+// then all with native fallback copy: 172/176/175/178/176/176/171/140. All regress at 776..786 bytes versus 806.
+// Exact-only precision forms restored; original real angle, setters, helpers and body retained.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4146,6 +4171,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // with shared in-place ray scaling: 191/170/185/176/191/170/185/184.
 // Cached default-first reaches 1361 bytes, but the six-point lead is below the keep gate;
 // original full body restored. Found-index/world/clamp/final flag allocation remains.
+// M327: Complete active/default scalar orders olr/rol/rlo/lor/lro on shared translation and late reach:
+// 180/179/194/181/194. Three-use post-search admission with complete scalar results in bool/byte/long:
+// 176/176/176. Original full body restored; found-index retest and collision/result homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
@@ -4402,6 +4430,14 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
 // publication alone 749 fast/plain, 2974/2974 bytes; retained with original
 // bypasses and bool state. Initial SIMD/definition allocation remains.
+// P283: Shared ratio-provider inputs for angular/engine/scalar-limit families,
+// subsets 1/2/4/3/5/6/7, then entry declaration: 749/805/688/849/771/857/914/914.
+// NOT kept: shared one-use inputs and join labels 688. Original direct calls with
+// calculated limits named per case (all/steering/turn): 756/755/789. All restored;
+// frame 0x18 agrees, zero/result SIMD, entry definition and per-site one homes remain.
+// M327: Complete Boolean / guarded boost / admitted magnitude result producers on the retained
+// tag-table and direct-active graph, masks 1/2/4/3/5/6/7: 777/749/749/777/777/749/777;
+// all with direct Boolean-to-real results 751. Original full body restored; zero/result/1.0 and entry definition homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4917,6 +4953,14 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // the shared driver-tilt weighting, plain 1087 at retail length; frame 0xf8 versus 0xd8 remains.
 // M316: On pre-magnitude axis graph: sequential facing/current, current/state and desired/tensor matrix ownership subsets 1/2/4/3/5/6/7, all with consumed flip output 1119/1095/1170/1119/1165/1170/1170/1169.
 // Reuse reaches frame 0xd4 rather than retail 0xd8; entry index/offset and matrix/vector homes remain. Original executable body restored.
+// AC491: Complete translation/orientation/spin phase scopes, masks 1/2/4/3/5/6/7, then all with
+// coherent matrix identities: 1087/1087/1087/1087/1087/1087/1087/1087. Original complete body and
+// producers restored; native frame and homes remain.
+// P283: Existing complete quaternion converter, with desired normalization,
+// torque rotation/scale and sequential current/state ownership subsets:
+// 1203/1316/1203/1295/1203/1316/1203/1295. Converter stays called rather than
+// expanding as retail does; all regress and shorten below retail. Original full body,
+// matrices, axis/angle production and math providers restored; frame/index homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

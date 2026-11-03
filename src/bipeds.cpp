@@ -1382,6 +1382,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // speed+material/speed+boost/material+boost/all: 584/585/585/585/585/584/585/585. NOT kept: no byte
 // match; original complete body and every helper restored. Frame and material/airborne/animation homes
 // remain.
+// M329: Complete airborne false-default/true-default/positive-if-else/negative-if-else
+// producers 648/648/585/585; turning false-default/true-default/first-test/final-chain
+// 585/585/556/556. NOT kept: 556 uses a distinct turning-result branch graph from retail
+// and keeps frame 0xf8 versus 0xfc; original bool producers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -3058,6 +3062,13 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P278: Actual flight-clamp/rate, walking-limit/angle/cosine/sine/overshoot scalar lexical homes
 // independently, then all: reduced 605 each, control 605/full 561. Original body restored;
 // scalar/result homes and vector scheduling remain.
+// Round 543: Existing complete vector setter at axial/clamp/pitch producers, seven
+// subsets then all projections: fast 605/601/639/611/673/676/642/677 (control 600; full 561).
+// All regress and grow; original producers, helpers and complete body restored.
+// Round 379: Ordinary-state/planar/right-turn complementary truth subsets 1/2/4/3/5/6/7, then
+// complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
+// Original full-width special and complete truth graph restored; result/flight scalar homes and
+// vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
