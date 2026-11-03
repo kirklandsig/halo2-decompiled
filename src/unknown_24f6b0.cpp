@@ -83,6 +83,16 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // Round 67 (m3 lane 1, fast): on the kept inverted-test body, the test written `1.f == scale` 61 (245 bytes);
 // z declared first 9; `x = scale * x` arm products 9; variable-first transform products (`z * axes[2].i`) 9; all three
 // components read in both arms (`x = point->i` / `x = scale * point->i`) 9; the permuter (72 tries) found nothing below 9.
+// P294: complete branch inputs 9;
+// nonunity-first inputs 10;
+// branch inputs with direct scale 58;
+// scale-default z 9;
+// returned transform output 9;
+// unused transform return 9;
+// returned output with branch inputs 9;
+// returned output with scale-default z 9.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

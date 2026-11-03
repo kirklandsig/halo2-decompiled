@@ -665,6 +665,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // trace through the `data` local 319; case 5's call result in a `found` flag set under the actor test 278 (same
 // code); the negation as `-1.f * direction.i` 278; the corner tests as `vertices[i] != 0xffff` 357 (1292 bytes,
 // 0x270d90 368).
+// m3 lane 14 r56 (fast; 0x270d90 295 throughout): case 2's trace through the `data` local 319; the parent-point
+// test as an early `break` 278 (same code); the radius test as `radius * 2.f < first_length` 278 (same code);
+// the origin sum before the projection 278 (same code); corners declared d, c, b, a 280. All restored.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

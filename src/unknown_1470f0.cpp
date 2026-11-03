@@ -286,6 +286,9 @@ void *c_game_havok_memory::allocate16(long size, long memory_class)
 // retail's EAX bounds but turns the first call block's class/vtable to EAX/EDX (retail EDX/EAX), so the blocks don't merge.
 // Named first and second ends in nested blocks with the third `>= || ==` in the test: compile-only 8, only the named ends' lea
 // ahead of the jg (start EDX) still differs; the third range, the merged calls and the jne are retail's.
+// Round 159 (fast): early return with each arm returning and the three-way macro on all ranges 43 (127 bytes); early return head only 8
+// (same code); allocator local shared by the first two arms 43 (127 bytes); third end `size + buffer` with the macro 43 (127 bytes);
+// fixed-memory local with the macro 34 (126 bytes); one bound local reassigned in the test 70 (151 bytes).
 // @retail 0x147320
 void c_game_havok_memory::deallocate16(void *address, long size, long memory_class)
 {

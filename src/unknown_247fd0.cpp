@@ -327,6 +327,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
+// Round 48 (fast with 0x248cc0): a compiled-out `do {} while (false);` between the field_38 sample and the
+// compare 55 (same code, still split); 0x173ba0's record argument read back from field_50 (as 0x247950 does)
+// 133 (876 bytes); the seed bits by an explicit 0x1fff mask and shift 232 (876 bytes); `s_248000 *const` record
+// pointer 55 (same code); child result declared before the loop, on the 55 graph, 55 (same code).
 // Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
 // `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
 // ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
