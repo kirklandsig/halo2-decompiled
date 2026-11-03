@@ -368,6 +368,13 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // the cap as `k * globals->rate` 642; the duration test as `t >= 0.001f` 642; `fail` declared before `globals`
 // 642; the first count as one ternary 683 (2877 bytes); both 12/8 factors as `k = 12.f; if (!s->fast) k = 8.f;`
 // 642. Original body restored.
+// Round 59 (m3 lane 13, fast, caller 0x1eb6f0 MATCH in each): retail's q is EBX from entry but unused until the update
+// block's integer copies borrow EBX, then reloaded after the refresh normalize and kept for the output copy, the dot
+// and `cmove ebx, [g_4687a4]` for the counter-zero fallback (ours stores the fallback to q's stack slot). The whole
+// `if (update)` body as a forceinline helper taking d 655 (2872 bytes; d still EBX, the parameter is coalesced); the
+// fallback as `q = counter == 0 ? g_4687a4 : q;` 642 (same code); the failure flag initialised after the update block
+// 687; d and q as const pointees (definition and declaration) 642 (same code); the settle alignment dot before the
+// first-settle block 653; the fallback dot with q's components first 642 (same code). Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

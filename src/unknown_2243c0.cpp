@@ -459,6 +459,15 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 390: Complete callback context after search, field/aggregate construction,
 // crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
 // Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
+// Round 59 (m3 lane 13, fast; 0x2243c0 and 0x224d90 checked each time): m3 lane 1 round 59's score-8 chain rebuilt (8; the four
+// cache zeros must stay in field order, 12 otherwise); a permuter run on it found nothing below 8 in 49 tries. On the
+// chain: the record pointer formed after its +0x232 read (named pointer advanced) 132; the cache zeros before the
+// material lookup 13 (the stores then precede the loads); the material record as element 1 of a 0x1c-byte block 8
+// (same code); the material definition bound from the by-value tag accessor, with that record 92 and inside its own
+// block 92 (552 bytes: the definition takes EDI as retail, but the 0x1c620 and 0x1bbf0 argument registers swap and a
+// loop pad appears); that with the 0x1c590 index unbound 90 (0x224d90 lost), the head unbound 38 (544 bytes: material
+// and pass definitions as retail, the head block's registers differ), the fallback unbound 47, the head bound in its own
+// block 92, head and stage unbound 135, the tag definition unbound 94, the stage unbound 124. Original body restored.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

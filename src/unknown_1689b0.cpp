@@ -1699,6 +1699,11 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // is read again for the second. The existing 0x120790 for both points 651 (2925, masked aligned 206, against 194 here); with long counters 640 (2917, masked
 // 202); the distance through plane_distance_to_point 620 (2895, masked 222); every prism read through shapes.prisms[index] 686 (2956, cursor still point_count);
 // a plane pointer local 554 (2896, masked 199); j product first 552 (same code); a point cursor for the first reconstruction 629 (2924); count before the inside flag 552 (masked 195).
+// Round 59 (m3 lane 13, fast): retail's direction length sums i*i, k*k, j*j after an fstp of k (ours keeps k on the x87
+// stack and starts with it in every form). The direction normalize through the existing normalize_inline 554; that
+// with the direction through vector3d_from_points3d 554; through normalize3d 554; vector3d_from_points3d for the
+// relative, edge, difference, direction and half vectors 680 (2951 bytes); for the half alone 554; the difference
+// alone 553; relative and edge 671 (2947). Original body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
