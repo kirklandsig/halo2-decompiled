@@ -811,6 +811,9 @@ short __stdcall function_c8b80(long object_index, s_object_seat *seats, short ma
 // animation flag reference 10 (NOT kept: one-use reference and gain below four); named type predicate 10
 // (NOT kept: narrow shift and gain below four); explicit return 13; early guard 13; const unit pointer 13;
 // final parameter read through its address 13. Original body restored.
+// Round 38 (lane 17, plain): 0xe4bd0 declared first among the callees 13; declared just before this function
+// 13; the mask test `== 1` 13; flag 2 cleared through the file's s_unit_flags_10a_view bit (struct moved up)
+// 13; an early return before the 0xe4bd0 call 13. Still BLOCKED-BY 0xe4bd0 (its file held by other lanes).
 // @retail 0xcaf00
 void function_caf00(long unit_index)
 {
@@ -2611,6 +2614,9 @@ struct s_unit_placement
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
+// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
+// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
 // Round 38 (lane 17, plain): 0xc98a0 fastcall with its unit read through its address 22 (fast); 0xc98a0
 // __cdecl 58 (fast); 0xc98a0 declared after 0xbd020/0xd6a70/0xd6800 34/34/34 (0xc98a0 gets retail's ECX,
 // 256 -> 250, but 0xd6800 takes ECX/EDX and 0xd6bc0 is lost); 0xcaa60 declared before 0xc98a0 32 at 291

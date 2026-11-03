@@ -322,6 +322,12 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // M333: Actual hand-result/count/output lexical identities on original receivers,
 // seven subsets, then complete observed-state/unit/actions identities: 271 each.
 // Original full body restored; incoming unit/name/actions ranks and shared calls remain.
+// Round 83 (m3 lane 12, fast): the c7070 test inverted with the switch first 248 (1163 bytes; NOT kept:
+// reverses retail's fall-through block order, same register ranks); actions looked up before the unit
+// local 271; the state field read at each test 271 (same code); both weapon tests through the unit local
+// 372; 0xe70b0 defined ahead of this function 271. Retail's switch cases for 0xe68c0 are threaded to one
+// shared call with the weapon tests (ours jump back to the name test), and the twenty extra retail bytes
+// are the name reloads (`mov esi, [esp+0x18]`) in each c7070 arm after its call.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -1512,6 +1518,11 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P289: Twice-used animation channel long/dword/short/byte at its producer, then
 // entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
 // no exact match. Original body restored; early pool/hand and second unit load remain.
+// Round 83 (m3 lane 12, fast): diagnostic only (reverted at once): a long hand read through a
+// volatile pointer to its home 198 (590 bytes): retail's hand store does not explain the second entry
+// load, VC still shares one unit load. `long has_other = function_cbd50(...) != NONE` 95 (same code);
+// the slot index as `primary` 193; `long i` declared at the slot 95; 0xee8a0's argument as `primary`
+// 201 (589 bytes); a short loop index 188 (604 bytes). Retail's ret 0x10 with primary in EAX already agrees (the ret 0x14 premise is stale).
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -4694,6 +4705,13 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
 // 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
 // output lifetime and full body restored; frame and basis/point homes remain.
+// Round 83 (m3 lane 12, fast): 0xee090's own form, the untransform into a `point3f local` copied to the seat
+// after the second 0x11d820 and before the quaternion copy, gives retail's 0x11c frame and every retail slot
+// (position at +0x24, orientation +0x30, actions +0x40) but 201 at 1406 bytes: the away scale's XMM colouring
+// (matched in the 175 form) flips, and the transform's scale block still multiplies into a copy (retail
+// in place) and the final copies schedule pos.z before q.i. On that graph: local declared at the top/before
+// frame/after the quaternions 201 each; the quaternion copy first 246; `x *= matrix->scale` in the helper
+// 201 (0xee090 still MATCH); untransform in place into world 201.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
