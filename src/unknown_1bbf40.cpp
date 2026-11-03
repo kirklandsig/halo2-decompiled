@@ -689,6 +689,10 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Y547: Post-scan age-state permission, young-first/test-derived/true-default/false-default,
 // bitwise special 88/114/124/88; logical special 192/189/202/192.
 // All restored; NONE EBP/EBX and special BL/CL remain.
+// Round 59 (m3 lane 11, fast): `special = false; if (type == 6) special = actor->unknown268 != 0;` 99; a named
+// `riding` (unknown268 != 0) for the bitwise def and the tail test 113; the vehicle index read once into a local for
+// its seven uses 224; the bitwise flag with the prop test nested under `if (special)` 47 (same code); the player index
+// fetched inside `if (player)` 52.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {
