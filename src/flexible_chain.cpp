@@ -413,6 +413,11 @@ void __stdcall function_1160c0(real dt)
 // Y547: Native double length-ratio/axis-reciprocal/paired-trig residence, seven subsets
 // then all with double returned angle: 328/236/348/317/430/372/440/494. Exact-only precision
 // forms restored; segment/previous/axis homes and rotation scheduling remain.
+// Round 201 (fast): retail's 12-byte rest offset sits below previous (0x50 against 0x5c) and its
+// length spill below the segment spill, ours the reverse; local names do not move them: segment,
+// axis, length (two names), offset and previous renamed 179 each. Rest offset as a const reference
+// 337 (1334 bytes); previous copied from the node's stored position 179; the step reciprocal ahead of
+// the loop 189; stiffness computed in the non-initial arm 316. Original body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

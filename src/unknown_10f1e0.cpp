@@ -550,6 +550,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // gives the mask test); the clear's size as `<< 2` 155, with the mask test 145 (stosd only, set still split).
 // With the mask test the size taken from the node-count parameter 140 or the graph's count 141 (diagnostics)
 // still splits the set: any variable-size memset of the visited words does.
+// Round 201 (fast): the clear through bit_vector_fill with a __forceinline declaration here 216 (463 bytes:
+// still called out of line), with `inline` on its definition instead (diagnostic, plain check too) 216,
+// 0x1253d0 unchanged at 3; each arm's iterator stores before its graph lookup 110 (523 bytes); `found`
+// declared before the loop 37 (same code); the mask test written out with bit_vector_set 42 (545 bytes).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
