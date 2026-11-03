@@ -1891,6 +1891,9 @@ void function_dfd70(long arg_159e6d)
 // vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
 // on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
 // head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
+// Y553: Complete first-ray displacement/final-clearance/start-setter subsets
+// 234/240/236/240/234/240/236; both point setters 236. Original helpers restored.
+// NOT kept: no target gain; scaled-displacement/clearance forms also raise shared users.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4564,6 +4567,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
 // Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
 // the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// Y553: Explicit state criterion with success before/after support or velocity query
+// 143/143/133/133; complementary support with late/query-bound success and branched
+// criterion 156/155/155; sole actual result exit 92. All preserve both exact callers.
+// NOT kept: result/support lifetime forms regress; original complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

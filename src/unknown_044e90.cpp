@@ -212,6 +212,10 @@ struct s_visibility_bound_record
 // nested unseen admission then already-visible continue: 406/406/406/406/406/406/406/406.
 // NOT kept: one-use predicates do not match; original direct bit test, containment
 // initialization and complete body restored. Entry/table and plane/query homes remain.
+// Y553: Independent fallback-center input scalars 448; part-entry storage 448;
+// branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
+// point setter on update/branch/all producers 448/463/462. All controls survive.
+// NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
