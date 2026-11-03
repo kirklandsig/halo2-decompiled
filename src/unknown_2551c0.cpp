@@ -252,6 +252,10 @@ short __stdcall function_2551c0(long actor_index)
 // Round 343: Angle/trace-output last-consumer scopes 43/43/43; completed score/forward
 // search scope alone and with those scopes 45 each; joint scopes with library best-vector copy 45.
 // Original helper and complete body restored; early cross products and score-dot schedule remain.
+// Round 77 (lane 16, fast): found declared after the two vectors 43; the helper taking the input vector by value
+// with an output pointer (no direction copy) 143 (834 bytes); the loop counter declared at block scope 43; reach
+// then alignment named (no vector_k) 42 (814 bytes, first +0xf5: early cross products become retail's, but the
+// forward copy's loads and the projection dot reorder); that as `reach * alignment` 42.
 // Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
 // projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
 // cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
