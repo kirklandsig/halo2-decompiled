@@ -1462,6 +1462,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P280: Native object-type predicate byte/char/short/word/long/dword storage
 // 95/95/109/109/108/108; Boolean declarations at observation/before companion test
 // 95/185. Original complete body restored; entry lookup and hand homes remain.
+// P284: Shared low-word entry ordinal long/dword/word/short 196/196/194/194;
+// with the existing later slot getter 234/234/230/230. Complete original body
+// restored; early pool acquisition, second unit load and full hand home remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -2775,6 +2778,10 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 487: Multi-use target vehicle scalar at entry/between results/before
 // admission/inside admission, long then dword: 293/293/293/293/293/293/293/293.
 // Original formals, lifetimes, admissions, outputs and complete body restored.
+// P284: Success/reset byte role names entered/motion_reset, seat_entered/animation_cleared,
+// entered/animation_cleared and seat_entered/motion_reset, each in both declaration orders:
+// eight at 293. Original output names, declarations and complete body restored;
+// entry vehicle promotion, unit/ordinal residence and output-byte homes remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
