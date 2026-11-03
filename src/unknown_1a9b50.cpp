@@ -879,6 +879,9 @@ static __forceinline long real_to_long(real value);
 // AC492: Complementary internal eligibility, test-produced bool/byte/short/long
 // 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
 // eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
+// Y547: Active-unit state publication, split/exhaustive-success/conditional/exhaustive-failure,
+// bool admitted result 398/470/384/470; byte result 445/500/429/500.
+// Original field-result graph and complete body restored; early rejection and scalar homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

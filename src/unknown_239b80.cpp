@@ -409,9 +409,15 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH306: complete candidate-ranking decision as bool/byte/short/long 170 each;
 // both complete lowest and candidate decisions 170 each. Original body restored;
 // extra frame word, count/departure homes and compaction boundary remain.
+// M330: Eager-length bound/output-index advance/native compaction-extent ownership,
+// four forms with memcpy then memmove: 294/212/212/298/317/220/220/319. The 220
+// forms recover frame 0x14 and 784 bytes but regress; original body restored.
 // Round 543: Eager produced-length exits on the native output-ordinal graph, classifier/
 // geometry/compaction returns and combinations: 256/185/275/256/254/222/254; all with
 // overlap CRT copy 255. All regress; original stores, exits and complete body restored.
+// F346: Completed lowest-coordinate, candidate-ranking and hull-geometry lifetimes in
+// seven subsets 170 each; all with overlap CRT 259. NOT kept: 762/784 bytes, caller 80.
+// Original complete executable body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -540,6 +540,9 @@ struct s_1f8a70_actor
 // original result and body restored. Frame 0x84, early false and unit-output/route/result homes remain.
 // J239: native active/pending/route-request fields on the unsigned selector, seven subsets [228, 228, 228, 228, 228, 228, 228];
 // all with existing returned unit-mode output 257. Original external view, observations and body restored.
+// B381: complete existing path-query record begun at scratch/case/route/destination/reset/unit/actor/entry
+// phases 228/228/228/228/228/228/228/228. All tie; NOT kept: grouped homes require an exact match. Original frame 0x84,
+// pool/data scheduling and unit-output/result packing remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
