@@ -1475,6 +1475,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
 // positive/complementary polarity: 95 each. NOT kept: staged search flags require
 // exact equality. Original indexed scan, direct exit and complete body restored.
+// F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
+// then all with completed state selection:
+// 95/95/95/95/95/95/95/95. Original complete executable body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -2794,6 +2797,9 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 543: Entry-to-publication reset carrier byte/char/short/long, original then
 // complementary polarity: 300/300/312/313/284/284/300/301. NOT kept: 284 grows
 // to 1224/1209 bytes and changes result representation without a match. Original body restored.
+// F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
+// complementary nonvehicle polarity:
+// 293/293/299/299/300/300/319/321. Original complete executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
