@@ -882,6 +882,12 @@ static __forceinline long real_to_long(real value);
 // Y547: Active-unit state publication, split/exhaustive-success/conditional/exhaustive-failure,
 // bool admitted result 398/470/384/470; byte result 445/500/429/500.
 // Original field-result graph and complete body restored; early rejection and scalar homes remain.
+// Round 33 (m3 lane 18, fast; 0x1a9d80 and 0x1a9e00 matched each time): the outer test inverted with
+// the false arm first 382 (same code); one goto to the single return, result preset false 496; the
+// game time read at its only use 441 (1907 bytes); the facing threshold as a 0.95 preset with an if
+// 381 (one count, not kept), as a full if/else 382; the distance zeroed in the facing arm 382; the
+// limit declared in the flag block 396, as a ternary there 400; the field_2e approach flag as an if /
+// else-if chain 455 (1912 bytes). All restored; the threaded false exit's place remains.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

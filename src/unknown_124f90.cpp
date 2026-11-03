@@ -1607,6 +1607,11 @@ void looping_sound_controller_release(long index);
 // controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
 // through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
 // the unknown03 test nested 40; `(word)` controller index again 31.
+// Round 131: duplicated controller release 37; conditional decrement 5; tail-only pool local 5;
+// decrement in the release argument 59; global pool reference 27; const pool local 43; effect handle
+// for guard and release 34 (pool reaches EBX, but the entry and byte temporary move; NOT kept);
+// release-only handle after the decrement 5; effect field reference 34; release-only handle from
+// entry 34 (the guard coalesces with it, giving the same form as guard and release).
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
