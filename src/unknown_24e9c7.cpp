@@ -305,6 +305,11 @@ struct s_24e9c7_bounds
 // Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
 // kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
 // Original record, copy and full body restored; early across spill and scalar homes remain.
+// Round 143 (m3 lane 6, fast): scale read before size and the across products 125 (same code); across_j before
+// across_i 125 (same code); across_i as `-forward_j` then `*= size` 138 (739 B: the across products are still
+// substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
+// (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
+// single-use temporaries there.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {
