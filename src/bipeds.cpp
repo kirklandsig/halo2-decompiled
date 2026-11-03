@@ -1888,6 +1888,11 @@ void function_dfd70(long arg_159e6d)
 // vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
 // on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
 // head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
+// P290: Native nested nonzero-origin/mode-three admission with original switch,
+// standing-first/crouching-first results, explicit default branches, zero/one initial
+// crouch and default-owned zero: 104/261/261/104/104/245/242/247.
+// NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
+// Original helpers/body restored; mode-three layout and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4557,6 +4562,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
 // Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
 // the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// P290: Tested actor-result return 68; explicit state criterion in result and branched criterion
+// 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
+// actual admission result 83. NOT kept: six-point criterion gain is below eight; all
+// executable forms restored. Native support/result byte homes and early success store remain.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

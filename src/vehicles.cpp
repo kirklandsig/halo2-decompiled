@@ -4219,6 +4219,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M333: Static-marker/cache-schedule/component-hit predicate results, seven subsets:
 // 176 each; all with default-first cached conversion 170 at 1361 bytes. NOT kept:
 // six-point gain below the gate, and one-use predicates require a match. Full body restored.
+// P290: Completed final update-bit writers, set-first/clear-first returns with
+// bool/byte/short/long sound result: 176/176/185/185/289/289/291/291.
+// Original body/result restored; native split writer epilogues, found-index retest,
+// world/zero/fallback allocation and scalar homes remain. No qualifying gain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
