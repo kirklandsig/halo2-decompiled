@@ -1853,6 +1853,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // N330: Native weapon reference, complete header-array capture and request-view reference,
 // seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
 // Header capture changes entry shape; original pointers, observations and complete body restored.
+// M329: Independent request/weapon/result/modes declarations separated from their
+// original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
+// 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {

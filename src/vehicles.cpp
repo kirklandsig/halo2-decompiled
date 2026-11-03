@@ -591,6 +591,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // subsets 1/2/4/3/5/6/7, then all with enclosing speed: 278/126/507/278/502/507/502/502.
 // Complete staged graph with existing normalizer forced inline 348; original helper/body restored.
 // Velocity receivers, early 1.0 residence and later SSE/x87 colouring remain.
+// M329: Complete positive angular-admission channel, bool/byte/short/long, direct
+// producer 189/189/188/190; complete if/else 189/189/188/190. Every consumer was
+// complemented consistently. All regress; original reversing channel, helpers and body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

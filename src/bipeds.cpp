@@ -1378,6 +1378,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // N330: Existing three-dimensional/planar difference and planar magnitude producers,
 // then each with named nonnegative length selection: 585/585/589/589/599/599/600/600.
 // Frame stays 0xf8 versus 0xfc; original scalar deltas, helpers and complete body restored.
+// M329: Complete airborne false-default/true-default/positive-if-else/negative-if-else
+// producers 648/648/585/585; turning false-default/true-default/first-test/final-chain
+// 585/585/556/556. NOT kept: 556 uses a distinct turning-result branch graph from retail
+// and keeps frame 0xf8 versus 0xfc; original bool producers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
