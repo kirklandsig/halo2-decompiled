@@ -815,6 +815,9 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // reach 25/197/19/197/197; side maximum named, reversed, inline, lateral named or if/else 17 each. Guard shapes
 // without the unit local (early return, nested, all in one) 92 at 964 bytes: the argument stays in ECX (one
 // scratch rotation step behind retail). Body unchanged at 89.
+// P286: Native Boolean result owners at first probe/second probe/timing, seven subsets
+// and all with entry-only declarations, 89 each. NOT kept: one-use call-result and embedded
+// assignment forms need a match. Original body restored; unit scratch and scalar homes remain.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

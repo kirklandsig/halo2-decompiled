@@ -512,6 +512,10 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
 // graphs with chained or independent count/capacity producers: 182 each. Original
 // types and body restored; entry/index spill and center/query/bound homes remain.
+// AC496: NONE-tag-first shared selector, single/branch result exits with ordinary/instance
+// arm priority and native/live structure observations: 240/242/240/245/240/240/240/243.
+// NOT kept: target regresses and some shared-user scores rise; original selector,
+// complete body and all declarations restored. Entry/index and point homes remain.
 // P285: Actual query at eight-byte alignment, original/separate center and large-branch
 // producer/lifetime with native/eight-aligned point homes: 182/190/184/205/190/190/184/184.
 // NOT kept: no exact match; original alignments, native objects and whole body restored.

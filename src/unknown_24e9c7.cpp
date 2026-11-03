@@ -294,6 +294,10 @@ struct s_24e9c7_bounds
 // products and then scaled `side.x = (real)half_width * side.x` 139 (742; retail's -8 slot is that across/side y),
 // with unary minus 144, with `*=` 139, with side declared at the top of the inner block 139 (same code). Original
 // body restored; side gets no frame home, so result stays at -8 (retail -0x10 under the side pair).
+// Round 33 (m3 lane 18, fast; 0x24e59f matched each time): the default bounds as one initializer
+// 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
+// long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
+// computed before the height 131. All restored; early across spill and scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

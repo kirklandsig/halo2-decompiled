@@ -279,6 +279,9 @@ struct c_aggregate : c_child
 // seven more instructions). The standing lead above is unchanged: this body built without /GL is byte-exact, and no /GL form shares the output's slot with the two loop spills (a flags decision).
 // M312: Native block-count field with shared query output/block reference/error-first gate
 // subsets 0-7: 31/31/31/31/37/38/37/38. Original body restored.
+// B384: CRT callback-zero/info-failure/both scalar stores with independent/shared query outputs,
+// then both with entry scalar CRT zeros: 31/31/31/31/31/31/31/31. Original scalar stores, independent
+// outputs and complete body restored; escaped output and the lowest loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

@@ -1118,6 +1118,12 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // scale keeps left.i in XMM5 from the cross where retail reloads it); reference picked by a ternary copy 647 (2793
 // bytes); scale stored before position 331; orthogonal/has_plane stored after the matrix 589; the count as an
 // if/else 323. Original body restored.
+// Round 61 (m3 lane 10, fast): in the cone arm retail stores the four points, then the bounds as x0, y0, x1, y1,
+// then the point count, and divides for the scale only after the centre projection: the bounds stores moved after
+// the points in that order 315 (retail's store sequence there, same count); on it the far edges as `half + centre`
+// 315; the scale computed before the centre projection 601 (2776 bytes); the edges declared x0, y0, x1, y1 315,
+// with the far edges as `half + centre` 315. Retail's normalize sums i, k, j (normalize_inline's grouping, which
+// earlier rounds found worse overall).
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {

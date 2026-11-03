@@ -1004,6 +1004,11 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // Lane 17 r36 (fast): bounds copy after the planes 193; `use_plane1 &=` after the planes 209; memset after the
 // near clamp 172; near clamp as `near_distance = near_sum; if (1.52588e-5f > near_sum) ...` 120; `use_plane1 &=`
 // after the bounds copy 151. Original body restored; the vector_e4.i load still follows the normal copy (XMM3/XMM4 swap).
+// Round 33 (m3 lane 18, fast; 0x1648d0 and 0x320b0 matched each time): the clip parameter through
+// the file's existing ray_plane_distance_1648d0 232; no forward pointer, the view's vector read at
+// each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
+// use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
+// `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

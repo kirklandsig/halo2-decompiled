@@ -281,6 +281,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // `1 - a/b < 0 ? 0 : ...` 618; the output scale stored before the origin copy 618. Retail's homes: success +0x17,
 // minimum +0x18, hit bytes +0x1c, input copy +0x40 (ours +0x1b, +0x10, +0x24, +0x4c); retail also reloads the
 // half-width for the fourth offset point, where ours reuses the third point's negation.
+// DH311: Joint actual equal-size retained-input/center, basis and final-projection lexical
+// identities, seven family subsets then complete alternate vocabulary: eight at 618. No native home
+// moves; original names/body restored. Success/input/minimum/hit and rotation homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

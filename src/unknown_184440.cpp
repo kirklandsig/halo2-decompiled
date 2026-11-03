@@ -297,6 +297,9 @@ __forceinline bool function_184448(long arg_0)
 // AC489: Plain component traversals for normalization output, point input scale and world
 // bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
 // with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
+// AC495: Existing shared plane decoder with native polygon-count/edge-pair/selector carrier
+// masks 0/1/2/4/3/5/6/7: 969/1021/985/988/1044/1022/981/1031. Original decoder,
+// declarations, carriers and complete body restored; excess frame and initial geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

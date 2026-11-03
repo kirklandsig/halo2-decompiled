@@ -751,6 +751,11 @@ void function_1537f0(s_profile_record *record);
 // M328: Signed entry distances from start/end, strict/inclusive bounds, each with
 // per-visit/reused source workspace: 100/100/85/86/100/100/85/86. Original complete
 // body restored; identity homes fold and the native signed entry end remains.
+// Round 61 (m3 lane 10, fast): the identity pointer taken from memset's return in its own statement before the
+// record initializer (zeros now stored before the record) on the pointer walk 81 (276 bytes); with an index loop
+// 55 (259 bytes: frame 0xa0 and retail's `cmp edx, end; jl` exit, but the identity at +0x14 with a 4-byte pad under
+// it, the record at +0x20 and the pointer in EBP); that with the 4-aligned s_player_properties record 55; the source
+// declared before the identity 55; a function-scope identity 55; the identity named to sort after the source 55.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1253,6 +1258,12 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M328: Complete inverse direction in bool/byte/short/long, original/direct
 // capacity entry: 53/53/386/376/373/373/365/373. Original direction, admission and full
 // body restored; count/upper allocation and forward ordinal still differ.
+// Round 61 (m3 lane 10, fast): retail's prefix shape, `long removed = NONE; if (g_4cf978 == 350) { removed = g_4cf980;
+// ... }`, `lower = removed > position ? position : removed`, an explicit `>` arm storing `downward = false`, the count
+// path upper first with its own `downward = false` 56: the count now lives in EAX as retail, the `>` arm and the
+// count path share retail's flag store, but upper coalesces with the count in EAX (retail copies it to ECX) and the
+// removed index loads into ESI before EDX; on it upper declared first 56, `g_4cf978 > position` 58, `lower = removed
+// <= position ? removed : position` 58, the bounds declared before `removed` 378.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {
