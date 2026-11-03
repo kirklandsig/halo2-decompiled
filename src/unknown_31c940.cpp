@@ -782,7 +782,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1882: normal fallbacks, writeback lifetimes, and separate friction broadcasts.
+// score 1868: normal fallbacks, writeback lifetimes, and captured bounded-row mass.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
@@ -1104,8 +1104,10 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 			{
 				do
 				{
-					float mass = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
 					solver_velocity_31c940 *body_b = b;
+					// Capture the mass before projection, retaining its x87 value.
+					float const volatile &mass_source = ((solver_linear_row_31e7b0 *)terms)->a.m128_f32[3];
+					float mass = mass_source;
 					__m128 *linear_b_pointer = &body_b->linear;
 					__m128 *angular_b_pointer = &body_b->angular;
 					float target = ((solver_linear_row_31e7b0 *)terms)->linear.m128_f32[3];
