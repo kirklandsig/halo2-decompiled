@@ -870,6 +870,9 @@ static __forceinline long real_to_long(real value);
 // 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
 // readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
 // remain.
+// AC492: Complementary internal eligibility, test-produced bool/byte/short/long
+// 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
+// eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

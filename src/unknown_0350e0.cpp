@@ -2430,6 +2430,9 @@ real magnitude3d(vector3f const *v);
 // P277: Existing scale helper at current/target/both/output/current+output/target+output/all
 // boundaries 191/170/190/170/191/170/190; double-factor helper at all boundaries 224.
 // Original body restored; raw-length/dot/angle homes remain with retail frame 0x38.
+// AC492: On the retained fallback loop/frame, explicit current/target clamp producers
+// 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
+// Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {

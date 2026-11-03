@@ -920,6 +920,9 @@ extern vector3f *g_4687b0;
 // subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
 // All shorten away from retail; original body restored. Frame 0xcc agrees;
 // definition/index/direction homes and offset/SSE scheduling remain.
+// AC493: Player-only second direction copy, native/CRT, with original/first/second/both
+// shared crosses: 328/327/327/328/328/327/327/328. Every form grows frame to 0xd8
+// versus 0xcc; original copies, crosses, nested offset expression and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
