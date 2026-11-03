@@ -290,6 +290,9 @@ bool function_a7670(long object_index);
 // consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
 // Original consumed island index, signed live bound, indexed cleanup and complete body restored.
 // NOT kept: frame grows to 0x428 and every form regresses.
+// P305: Native selected-list/body/header read-only receivers, seven subsets 153 each;
+// all three with the property source typed as its native entity 153. Original complete body
+// restored; selector/index/count homes and admission BL remain.
 // @retail 0x278f00
 void function_278f00()
 {

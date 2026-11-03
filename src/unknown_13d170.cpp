@@ -383,6 +383,9 @@ struct s_block_candidate
 // bytes); oldest_time zero-initialised 392 (1228 bytes); best declared before the candidate ring 347 (same code);
 // the page remainder mask as `~(-1 << shift)` 347 (other code, same count).
 // Retail keeps result's NONE in EAX through the clamp and stores oldest's NONE from it. Original body restored.
+// P305: Final predecessor/successor/both/all linked-record references, each with
+// mutable/fixed backing receiver: eight at 347. Original complete body and native
+// record accesses restored; missing frame dword and page/ring/policy allocation remain.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

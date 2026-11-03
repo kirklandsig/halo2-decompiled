@@ -316,6 +316,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // local_5 366; that with local_4 as a struct copy of the +0x290 vector 442 (1887 bytes); local_6 declared before
 // local_5 412 (1864 bytes); the input magnitude taken inside `if (local_2)` 353. Retail copies local_4 whole (k
 // included) into +0x5c..+0x64 before 0x29b2e0 and builds local_20 from that copy after the call. Original body restored.
+// P305: Native library working/output/secondary entry transfers, seven subsets
+// 449/345/366/449/442/366/442; all with the later requested-vector transfer 442.
+// Original whole body and helpers restored; magnitude/query overlap and native frame remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
