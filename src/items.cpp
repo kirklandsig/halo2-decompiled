@@ -1231,6 +1231,9 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// M345: Complete free/fixed/settled motion state in char/signed-char/byte/short/word/int/long/dword:
+// 853/853/853/909/909/905/905/905. Byte domains recover frame 0x150 but grow to 4113 bytes.
+// NOT kept: scalar-state carriers miss; original separate flags, every consumer and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {

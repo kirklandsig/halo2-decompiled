@@ -1723,6 +1723,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// M345: Default-moving result cleared by the original zero test, bool/char/signed-char/byte/
+// short/word/int/long: 221/247/247/247/283/283/285/285.
+// NOT kept: test-produced result domains do not match; original root, motion predicate and full body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

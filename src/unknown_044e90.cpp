@@ -225,6 +225,10 @@ struct s_visibility_bound_record
 // branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
 // point setter on update/branch/all producers 448/463/462. All controls survive.
 // NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// M345: All four release-ownership results in bool/char/signed-char/byte/short/word/int/long,
+// immediate per release 406/406/406/406/406/406/406/406; together at cleanup entry
+// 507/507/507/507/511/511/528/528. NOT kept: new ownership carriers miss.
+// Original direct sign tests, capacity reloads, cleanup order and complete body restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {

@@ -2322,6 +2322,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // once for the loop test and the first slot test 155; the child counts declared before the child
 // handle/slot defaults 155; the 0x23e compare with the unit field first 155; the child fraction declared
 // first 155.
+// M345: Per-child complete/separate metadata-state change masks, requested-child/iteration
+// scopes and dword/long carriers: 214/214/249/249/221/221/251/251.
+// NOT kept: deferred per-child mask joins miss; original per-store result updates and whole body restored.
 // @retail 0x9d450
 long c_unit_type::v27(long arg_0, long arg_1, long arg_2, long arg_3)
 {
