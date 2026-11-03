@@ -825,6 +825,9 @@ struct s_device_machine_view
 // AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
 // before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
 // masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
+// N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
+// 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
+// native group-word sharing and velocity-zero join remain.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
