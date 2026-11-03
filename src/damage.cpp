@@ -1000,6 +1000,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
 // 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
 // grow to 874/782, frame still 0x1a4; originals and all observations restored.
+// P288: Absolute player-ordinal for traversals, returned-index/search-start ownership with
+// four lexical homes: 396/396/396/396/331/331/331/331. NOT kept: frame/extent regress; original full
+// body restored. Sixteen frame bytes and first verifier call boundary remain.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {

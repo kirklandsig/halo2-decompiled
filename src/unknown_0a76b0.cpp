@@ -316,6 +316,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
 // raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
 // incoming ranks and shared-call threading remain.
+// P288: Complete name-case priorities grouped by actual output outcomes, eight forms
+// 271 each; original full dispatch and body restored. Frame 8 and incoming
+// unit/name/actions ranks, shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {

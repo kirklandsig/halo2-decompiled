@@ -511,6 +511,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
 // completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
 // complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
+// P288: Both notification phases with actual item cursors, body/at-use advancement
+// and completed validation last-use scope: 93/93/93/93/93/93/93/93. Original full body restored;
+// validity/cursor homes and validation-loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

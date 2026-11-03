@@ -4209,6 +4209,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // original producers fixed: 176/176/176/176/176/176/176/176. NOT kept: no qualifying gain or byte match.
 // Original complete body restored; frame 0xec agrees; found-index retest and scalar/world/fallback homes
 // remain.
+// P288: Actual sound-clamp result producers with complete collision input/publication phases
+// 176/181/176/176/182/170/182/182. Store-first sound/collision clamps reach 170 at 1360/1361,
+// six points below the baseline: under the keep gate. Original complete body restored;
+// found-index retest, world/fallback and final flag allocation remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
