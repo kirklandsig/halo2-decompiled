@@ -218,6 +218,10 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 87 here): the rotation's statements in retail's order (forward.i straight after the sines, left.j before ik, up.k before jk) 368 (1812, masked 68);
 // with j and k first in the products 347 (1816, masked 75); with a named complement and k*complement 386 (1804, masked 80); with k*complement alone 368 (1808, masked 79), and j first in ij as well 368 (1808, masked 79);
 // complement alone on the current order 451 (1756, frame 0x68, masked 77); k*complement alone on the current order 220 (1836, masked 82). Retail's two arms multiply in different orders (j, complement, i against complement, i, j) from one helper.
+// Round 82 (m3 lane 16, fast): the rotation helper as plain `inline` 219, with the axis by const reference 219, with
+// the output parameter first 219 (all three identical code: its interface does not reach the schedule); sine and cosine
+// in separate declarations 219 (same code); the cross terms as j*(1-c)*i, k*(1-c)*i, j*(k*(1-c)) (retail's operand
+// order) 403 (1788 bytes).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

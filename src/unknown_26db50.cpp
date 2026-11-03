@@ -698,6 +698,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // point), and the integer register names cascade from that. On the 96 form: the radius read before the record pointer 108;
 // the ring counters declared first 97; the origin pointer at function scope 96; the record pointer as an array
 // element 96; the ring phase named in the spoke loop 100 (1081 bytes, conversion back to fild). Original body restored.
+// DH320: Existing bitmap activation ordinal char/signed-char/byte/short/word/int/
+// unsigned-int/dword domains: 91/91/92/90/92/90/91/91. Both producer users checked;
+// byte domains lose the matched peer. Original helper/body restored; ring conversion/spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

@@ -565,6 +565,13 @@ struct s_1f8a70_actor
 // function_1f8750(actor_index); return result; failed: result = false; function_1f8750(actor_index); return
 // result;` with no initializer and the first exit `return false` 417 (1644 bytes, frame 0x80, prologue as retail,
 // aligned 69), with `result = false;` before the first exit's call 417 (still folded to `xor al, al`).
+// Round 143 (m3 lane 6, fast; aligned base 82): no initializer, the first exit `result = false;` + 0x1f86a0 + `goto
+// done;`, `!result` jumping to a `release:` label past `failed: result = false;`, one `done: return result;`, success
+// `return result;` 429 (1656 B, aligned 71); success `goto done;` 366 (1656 B, frame 0x80, aligned 66: the first exit
+// stays its own tail and no longer folds to `xor al, al`, but keeps the result in a stack byte, not BL; result and unit
+// mode share a slot at +0x10 for retail's +0x12, route's byte neighbour +0x14 for +0x16); `result = false;` after the
+// 0x1f86a0 call 366; with the route default storing false 388 (1672 B); with case 3 in case 5's order and route_mode = 1
+// 413 (1624 B, aligned 99).
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

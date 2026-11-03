@@ -375,6 +375,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // fallback as `q = counter == 0 ? g_4687a4 : q;` 642 (same code); the failure flag initialised after the update block
 // 687; d and q as const pointees (definition and declaration) 642 (same code); the settle alignment dot before the
 // first-settle block 653; the fallback dot with q's components first 642 (same code). Original body restored.
+// Round 50 (m3 lane 15, fast, caller 0x1eb6f0 matched in each): the distance stored as the clamped length
+// local 667 (2889 bytes); the step factor as `n * v * rate` 642 and `n * rate * v` 642 (same code); the limited
+// flag computed first and the clamped length taken from it 722 (2858 bytes); the duration sum written count
+// first 642 (same code). Retail's EBX holds the next stack parameter at entry (ours the one before it).
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

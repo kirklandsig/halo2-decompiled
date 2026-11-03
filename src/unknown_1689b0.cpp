@@ -1704,6 +1704,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // with the direction through vector3d_from_points3d 554; through normalize3d 554; vector3d_from_points3d for the
 // relative, edge, difference, direction and half vectors 680 (2951 bytes); for the half alone 554; the difference
 // alone 553; relative and edge 671 (2947). Original body restored.
+// AC504: Radial/side/nearest loop continuations, masks 1/2/4/3/5/6/7:
+// 552 each; complete continuation graph with native long accepted counts 572.
+// Original full body restored; sum homes, query zero and prism anchor remain.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

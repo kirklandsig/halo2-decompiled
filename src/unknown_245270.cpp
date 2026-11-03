@@ -581,6 +581,9 @@ void function_245400(s_source_245400 const *source, long index,
 // `const &` record and read first 208 (no dead lea); with the plane pointers inside the plane test 222 (767 bytes,
 // 0x245aa0 43); with the code test written second-first 208; with the code copies and side bits made second-first 207;
 // that with the plane table read after the edge vector 204 (0x245aa0 3). Original body restored.
+// Round 50 (m3 lane 15, fast; 0x245aa0 checked): the side flags as `(code & 0x8000) != 0` 209 (same code); the
+// facing arms inverted on `!=` 209 (same code); the facing test as one ternary condition 211; the equal-material
+// case as an early return 209 (same code); short codes with `< 0` sides 224 (762 bytes, 0x245aa0 lost to 6).
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

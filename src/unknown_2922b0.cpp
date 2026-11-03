@@ -316,6 +316,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // written minimum first 612, `0.3f + 0.7f * (...)` 612, the cross helper in retail's product operand order 612,
 // the output components named for the basis product 627 (2816, aligned 219); a named inverse range used by both
 // products 626 (2816). Original body restored.
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
