@@ -1172,6 +1172,12 @@ bool function_108530(long device_index, long name)
 // reset, with original parameter arithmetic 128/123/123/126; consistent stored-speed
 // arithmetic 128/123/123/126. NOT kept: early publication/disabled-path clears add
 // stores absent in retail and grow length; original complete body and callers restored.
+// Round 34 (lane 17, fast, with both callers): the initial velocity moved to the second parameter
+// (definition and both calls; diagnostic, no retail order evidence) 123 (callers 25/23, still six
+// stack floats); the ramp-down minimum written `ramp_down_time < remaining ? ...` 121; the target
+// pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
+// stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
+// denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
