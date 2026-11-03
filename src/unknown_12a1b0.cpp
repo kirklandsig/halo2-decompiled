@@ -1420,6 +1420,9 @@ struct s_looping_detail_request
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.
 // NOT kept: unmatched admission outcomes; every form regresses.
+// DH332: Typed source/offset/velocity copies, seven subsets then complete backward ranges:
+// 172/181/202/114/165/175/196/182. NOT kept: all regress; query expansion and detail/offset transport remain.
+// Original complete body and contracts restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

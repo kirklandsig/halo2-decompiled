@@ -1063,6 +1063,9 @@ void function_1d1540(s_havok_component *component);
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
+// DH332: Typed whole/rotation/translation standard copies, forward then backward native ranges:
+// 77/77/97/97/81/105/81/105. NOT kept: all regress; frame, constructor copy and incoming component/index transport remain.
+// Original complete body and contracts restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

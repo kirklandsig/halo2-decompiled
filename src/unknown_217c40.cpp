@@ -161,6 +161,9 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // AC484: Separate native short/word/byte/long quadrant components with a short total
 // 474/474/488/474; with a long total 474/474/488/474. Original components, helper
 // and body restored; frame 0x38/0x40, rounded angles and simultaneous snap homes remain.
+// DH332: Standard lower/upper clamps and paired divisor selection, seven subsets then real magnitude API:
+// 980/1001/1211/555/982/992/1250/1250. NOT kept: all regress and miss native frame/length; original helper and standard alignment evidence retained.
+// Original complete body and contracts restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

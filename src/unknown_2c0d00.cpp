@@ -341,6 +341,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
 // enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
 // flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
+// DH332: Standard coordinate differences, seven subsets then reverse sphere traversal; reduced control 931:
+// 935/935/917/896/904/959/920/1022. NOT kept: lower previews grow frames away from 0x2cac; one joint gain has regressing parts. Full 882 retained.
+// Original complete body and contracts restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
