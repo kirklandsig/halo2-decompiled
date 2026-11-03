@@ -12,7 +12,7 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
-// score 180 (was 211): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
+// score 180 (was 180): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
 // opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
 // Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Round 132 (m3 lane 5, fast): the output-parameter address read is what keeps the output on the stack
@@ -260,6 +260,11 @@ real normalize2d(point2f *arg_0);
 // from `arg_2` instead of the copy 215 (1001 bytes); the found-flag store before the far-side vector 211; the
 // clearance `2.0f - local_11` named before the perpendicular 266 (996 bytes); the radius times 1.1 named once
 // for both components 211; the first perpendicular's y stored before x 211.
+// Lane 12 r86 (fast with 0x1ba5c0/0x1bdad0/0x1bff80, all still matching): retail forms the
+// center-minus-actor x/y early, before the squared-length test; an actor-to-center vector through
+// vector3d_from_points3d used in both projections 232 (1028 bytes); the clearance computed after
+// normalize2d 245 (1013 bytes); `result = true` before the out-pointer store 241 (1031 bytes);
+// local_11's squares written i, j, k 217; the actor-to-point vector from local_1 182.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
