@@ -1068,50 +1068,44 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 	return ((s_player_weapon_definition *)g_4e3b44[weapon->definition_index & 0xffff].bytes)->flags;
 }
 
+// score 284 (was 322):
+// The logic matches retail block by block (reads, flag bits 3/4/22/23, stores, count >= 2 pass); only the
+// register allocation differs. Retail keeps g_4e0300 in edi for the whole function and loads g_4e3b44 lazily
+// into ecx, with the player in ebp; this build reloads g_4e0300 every iteration of the first loop and hoists
+// g_4e3b44 into ebp, so the player and temporaries land in other registers. Retail's first loop is not
+// aligned (no pad before it), ours is.
+// Tried (scores): taking the parameters' addresses (322, the old form, 962 bytes), `if/else` instead of `?:`
+// for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
+// lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
+// bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
-	long const *weapon_reference = &weapon_index;
-	bool *const *modes_reference = &modes;
 	s_tail_player *player = tail_player_get(player_index);
 	s_player_pickup_unit *unit = (s_player_pickup_unit *)tail_object_get(player->unit_index);
 	long held[2];
 	long pending[2];
 	long count = 0;
+	for (long hand = 0; hand < 2; hand++)
 	{
-		long hand = 0;
-		if (hand < 2)
+		s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(player->unit_index);
+		short slot = current->held_slots[hand];
+		held[hand] = slot == NONE ? NONE : current->weapons[slot];
+		s_player_pickup_unit *next = (s_player_pickup_unit *)tail_object_get(player->unit_index);
+		short next_slot = next->pending_slots[hand];
+		pending[hand] = next_slot == NONE ? NONE : next->weapons[next_slot];
+		if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 3) & 1))
 		{
-			do
-			{
-				s_player_pickup_unit *current = (s_player_pickup_unit *)tail_object_get(player->unit_index);
-				short slot = current->held_slots[hand];
-				held[hand] = slot == NONE ? NONE : current->weapons[slot];
-				s_player_pickup_unit *next = (s_player_pickup_unit *)tail_object_get(player->unit_index);
-				short next_slot = next->pending_slots[hand];
-				pending[hand] = next_slot == NONE ? NONE : next->weapons[next_slot];
-				if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 3) & 1))
-				{
-					(*modes_reference)[hand] = false;
-					(*modes_reference)[hand + 2] = false;
-				}
-				hand++;
-			} while (hand < 2);
+			modes[hand] = false;
+			modes[hand + 2] = false;
 		}
 	}
 	if (unit->parent_index != NONE)
 	{
+		for (long hand = 0; hand < 2; hand++)
 		{
-			long hand = 0;
-			if (hand < 2)
-			{
-				do
-				{
-					(*modes_reference)[hand] = false;
-					(*modes_reference)[hand + 2] = false;
-					hand++;
-				} while (hand < 2);
-			}
+			modes[hand] = false;
+			modes[hand + 2] = false;
 		}
 	}
 	for (long slot = 0; slot < 4; slot++)
@@ -1119,7 +1113,7 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 		long held_weapon = unit->weapons[slot];
 		if (held_weapon != NONE && !(bool)((player_weapon_flags(held_weapon) >> 4) & 1))
 		{
-			dword flags = player_weapon_flags(*weapon_reference);
+			dword flags = player_weapon_flags(weapon_index);
 			if (!((bool)((flags >> 22) & 1) || (bool)((flags >> 23) & 1)) || held_weapon != held[1] || held_weapon != pending[1])
 				count++;
 		}
@@ -1131,13 +1125,13 @@ void function_1509e0(long player_index, long weapon_index, bool *modes)
 			if (hand == 1)
 			{
 				if (held[1] != NONE && !(bool)((player_weapon_flags(held[1]) >> 4) & 1))
-					(*modes_reference)[1] = false;
+					modes[1] = false;
 			}
-			else if (!(bool)((player_weapon_flags(*weapon_reference) >> 4) & 1))
+			else if (!(bool)((player_weapon_flags(weapon_index) >> 4) & 1))
 			{
-				(*modes_reference)[hand] = false;
+				modes[hand] = false;
 				if (held[hand] != NONE && (bool)((player_weapon_flags(held[hand]) >> 4) & 1))
-					(*modes_reference)[hand + 2] = false;
+					modes[hand + 2] = false;
 			}
 		}
 	}
@@ -1173,6 +1167,11 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// score 17 (was 17):
+// Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
+// edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local
+// (45), `hand` before the unit_index test (27), unit before hand (20), the held-weapon test through an
+// inline helper (17), `short` hand (38), `long` slot (38), `!primary` inline in the index (44).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
