@@ -311,6 +311,13 @@ __forceinline bool function_184448(long arg_0)
 // AC497: Eligible effect, created resource and accepted sample regions, subsets
 // 1/2/4/3/5/6/7, then origin-owned zero-spacing fallback: 965/965/965/991/965/965/991/991.
 // Original admission, copies, random order and body restored; frame and geometry homes remain.
+// Round 144 (m3 lane 6, fast; [LCS-aligned] this body [938]): the worklist seeded before its count 965, the world
+// bounds initialized after the seed 965, the neighbour test with the group compare first 965 (same code each); the
+// per-face projected bounds initialized by a two-pass loop 980 [1026], that loop at the top of each face iteration
+// 997 [975]. BLOCKED-BY 0x48e70: in the cell-bounds block retail spills the inverse spacing (+0xd8) and reloads it
+// after every 0x48e70 call, the pattern of a caller that does not see the callee's register usage (the 0x22750
+// effect on 0x22cf0, reproduced there by `inline` on that definition); ours keeps it in XMM2. 0x48e70's definition
+// is in machine 1's src/unknown_02b400.cpp.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
