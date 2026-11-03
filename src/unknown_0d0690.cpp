@@ -1814,6 +1814,10 @@ dword function_015cd0(long index, dword entry);
 // Round 129: callee-side inline sampling declaration 4; inline lock wrapper 4; tag/bitmap-scoped
 // temporary 4/4; tag-scoped UV 84 (303 B); partial aggregate UV 30 (316 B); unsigned result 4;
 // nested sampling guards 4; named palette predicate 4; split bitmap declaration 4.
+// Round 48 (m3 lane 2, fast): the sample/zero-store goto as one if/else at the tag scope 4 (same code,
+// kept); a permuter run on that body, 54 tries, best 4; texture-field test arms swapped 68 (312 B); the
+// conversion as `bitmap = convert ? temporary : NULL; if (bitmap) result = 3;` 39 (314 B); bitmap stored
+// before result = 3 in the success arm 6.
 // @retail 0xd2f90
 long function_d2f90(long flags, short bitmap_index, long palette_index, real u, real v, color3f *out)
 {
@@ -1852,22 +1856,23 @@ long function_d2f90(long flags, short bitmap_index, long palette_index, real u, 
                     else
                         bitmap = NULL;
                 }
-                if (result != 1 && bitmap)
-                {
-                    point2f uv = { u, v };
-                    dword pixel = function_1362b0((s_type_7ba8e9 const *)bitmap, &uv, 1.0f);
-                    if (*(short *)((byte *)bitmap + 0xc) == 0x12)
-                        pixel = function_015cd0(palette_index, pixel);
-                    unpack_color3f(pixel, out);
-                    goto done;
-                }
             }
-            out->blue = 0.0f;
-            out->green = 0.0f;
-            out->red = 0.0f;
+            if (result != 1 && bitmap)
+            {
+                point2f uv = { u, v };
+                dword pixel = function_1362b0((s_type_7ba8e9 const *)bitmap, &uv, 1.0f);
+                if (*(short *)((byte *)bitmap + 0xc) == 0x12)
+                    pixel = function_015cd0(palette_index, pixel);
+                unpack_color3f(pixel, out);
+            }
+            else
+            {
+                out->blue = 0.0f;
+                out->green = 0.0f;
+                out->red = 0.0f;
+            }
         }
     }
-done:
     return result;
 }
 

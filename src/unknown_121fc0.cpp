@@ -233,6 +233,10 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // ahead of the success test 129.
 // Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
 // token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
+// Round 48 (m3 lane 2, fast): the done/success/size out-locals declared before the three buffers 128; the
+// token walk as the matched font_table_parse's for loop (token declared before it) 128; the next-token cursor
+// declared at the block top 128; both counters at the `if (!g_4e3b40)` block top 127; the token table cleared by
+// memset 257 (724 B). EBP is still saved at the token walk.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
