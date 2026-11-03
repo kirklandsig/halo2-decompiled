@@ -4976,6 +4976,12 @@ struct s_membership_update_snapshot
 // M302: Mask zero initialization after validation, added/moved/removed and pair/all subsets,
 // then all four masks: 704/703/704/687/686/686/780/779 (unchanged fast 523).
 // Original initializations restored; mask homes, validation scheduling and stale completion remain.
+// Round 80 (m3 lane 9, fast; positional/aligned, base 523/315 on fast, 569 plain): a whole rewrite as a result chain, no
+// gotos, failures as `result = false` in else arms, loops headed `result && i < count`, phases under `if (result)`, 772/349
+// (2606 bytes): the first loop's head, cursor and bound are retail's, but update takes EBX and session EDX (retail session
+// EBX, update reloaded from the stack) and the host-lost arm moves first. On it: `else` around the host-lost arm 772/349;
+// one exit with a late `result = true` 790/350; a named version and update count for the first loop 772/349 (same code);
+// the opening `bool result = ...` test with no later store 813/359, with the late store 809/353.
 // @retail 0x5cb80
 bool __stdcall function_05cb80(c_class_58d20 *session, const void *message)
 {
