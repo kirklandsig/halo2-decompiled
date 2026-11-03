@@ -1526,12 +1526,12 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // load, VC still shares one unit load. `long has_other = function_cbd50(...) != NONE` 95 (same code);
 // the slot index as `primary` 193; `long i` declared at the slot 95; 0xee8a0's argument as `primary`
 // 201 (589 bytes); a short loop index 188 (604 bytes). Retail's ret 0x10 with primary in EAX already agrees (the ret 0x14 premise is stale).
-// P289: Twice-used animation channel long/dword/short/byte at its producer, then
-// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
-// no exact match. Original body restored; early pool/hand and second unit load remain.
 // B393: Actual input-header/unit/tag identity references, subsets 1-7,
 // then all with the twice-read action field bound by reference: 181/95/181/95/181/95/181/181. NOT kept: no exact match;
 // original complete body restored; entry table/hand homes and second unit load remain.
+// P289: Twice-used animation channel long/dword/short/byte at its producer, then
+// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
+// no exact match. Original body restored; early pool/hand and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

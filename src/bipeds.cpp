@@ -2797,6 +2797,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // fallback impulse, subsets 1/2/4/3/5/6/7, then all with immutable hit at its producer:
 // 530 each. Original declarations, component producers and entire body restored;
 // frame 0x44 versus 0x4c and native result/state-byte, point and scalar homes remain.
+// B395: One actual result exit, byte/signed-byte/short/word accumulator, case-one true
+// at completion/admission: 539/539/539/539/523/522/523/522. NOT kept: 522 reaches the
+// gain bar but uses EAX input/ret instead of native stack input/ret 4 and a word result
+// conversion. Original result graph, all input observations and complete body restored.
 // AC504: Push-setting receiver at random/centroid/average/push boundaries,
 // mutable then readonly: 561/562/530/530/561/562/530/530. Early receivers
 // give frame 0x48 and 1821 bytes; later forms tie original 0x44/1834.
@@ -4696,6 +4700,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
 // NOT kept: the six-point best is below eight and an embedded assignment
 // requires byte equality. Original result/support lifetimes and full body restored.
+// B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
+// 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
+// and native support/result homes remain. Original Boolean result and complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

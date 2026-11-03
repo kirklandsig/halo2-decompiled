@@ -1229,6 +1229,9 @@ long function_10f5f0(long object_index);
 // P286: One ordinary Boolean predicate receiver at original snapshot/activity/physics tests,
 // seven nonempty subsets 575/565/565/575/575/565/575; all with six-real buffer 575.
 // NOT kept: embedded predicate assignments require a match; original entire body restored.
+// B394: Boolean result/changed tail accumulation and the two conditional completions;
+// at original/entry call-result lifetime: 573/573/568/567/573/573/568/567.
+// NOT kept: no exact match; original complete executable source restored.
 // J244: Existing squared-length/dot producers with original/shared point difference
 // and original/six-real buffer: 565/565/561/561/565/565/561/561.
 // NOT kept: four-point lead is below threshold; six-real frame 0x1990 still

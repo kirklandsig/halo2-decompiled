@@ -5651,6 +5651,9 @@ void __stdcall function_d6bc0(long object_index);
 // both 165 (863 B); the timer pointer formed with the index read and used for the reset block's `= 1` 155 (872 B);
 // a bool schedule with the same initializer 167 (862 B). Retail's frame order (pre-push): object 0, preset 4, i 8,
 // rate 0xc, timer 0x10, scenario 0x14; ours has no timer slot.
+// B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
+// producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
+// NOT kept: all regress; original memory counter, timer observations and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

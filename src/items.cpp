@@ -1661,6 +1661,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // AC503: Existing two-site release producer owns the actual item receiver and byte/dword mask,
 // entry/direction/scale/vector clear boundaries 140/140/182/183/140/140/182/183. Original helper and complete body
 // restored; return byte, release RMW/tail and event homes remain. NOT kept: unmatched producer forms.
+// B395: Captured-spin logical OR on paired point setters, result/spin-first with
+// bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
+// regress; original bitwise join, two-use spin value, helper and complete body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
