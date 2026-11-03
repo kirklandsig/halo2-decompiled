@@ -419,6 +419,10 @@ struct s_tail_player_identifier
 // scenario read without a local (67), flag as index vs ?: (43), find-then-test form (31).
 // Permuter (25 min on r654): nothing below 31 (its renderer drops the `i++, entry++` increment, so it started
 // from the indexed form).
+// Round 45 (m3 lane 2, fast, base 31): retail loads the player first, the scenario next and g_4e6948 only after the
+// scenario test (beside `push ebx`); the entry pointer assigned after the alternate test 68 (158 bytes, the loop's
+// entry jump over the padding goes), that with the entry declared first 68; `difference` declared at function scope
+// 31 (same code); the player declared before the entry 32; `alternate` declared first 67 (158 bytes).
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1243,6 +1247,9 @@ void function_150820(dword *bits, bool local_only)
 // mode tests nested (47).
 // Permuter (25 min on r654): best 16, only with a volatile read of the unit index and the held slot read as a
 // char (a behaviour change); not kept.
+// Round 45 (m3 lane 2, fast, base 43): `else if (function_cd4e0(...)) result = true;` 47; `!primary` at each use with
+// no hand local 117 (236 bytes); the player fetched at each use 89 (220 bytes); the unit fetched at each use 43
+// (same code); hand declared at function scope 43.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {

@@ -1233,6 +1233,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // N334: Complete per-attempt result defaults before/after lookup, aggregate/member transfer,
 // then the same four without the guaranteed mode default: 989/927/993/1002/988/926/992/995. Frames
 // 0x2c/0x34 and result/output homes regress. Separate candidate, iterator and full body restored.
+// Round 45 (m3 lane 2, fast, base 828): aggregate-initialized iterator 826 (as round 520's native iterator); the
+// search wrapped in `if (weapon_class != NONE)` 1040 (2857 bytes); early `return c_type_709360();` with the result
+// declared in the block 988 (2825 bytes, the early exit gets its own epilogue); the candidate after the lookup 996
+// (as listed); the three outputs set by one chained assignment 828 (same code).
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

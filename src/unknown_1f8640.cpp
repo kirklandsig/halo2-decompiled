@@ -543,6 +543,14 @@ struct s_1f8a70_actor
 // B381: complete existing path-query record begun at scratch/case/route/destination/reset/unit/actor/entry
 // phases 228/228/228/228/228/228/228/228. All tie; NOT kept: grouped homes require an exact match. Original frame 0x84,
 // pool/data scheduling and unit-output/result packing remain.
+// Round 45 (m3 lane 2, fast, base 228; aligned counts from a difflib listing, base 59): retail's failure block stores
+// result = false and the `!result` exit enters after that store. `failed: result = false;` with the `!result` exit
+// as its own `function_1f8750` + `return result;` block 397 (1648 bytes, frame 0x80; that exit folds to `xor al,
+// al`); the `!result` exit to a second label after the store (diagnostic, gotos only) 250 (1652 bytes, frame 0x80,
+// aligned 36: result and unit mode then share one slot as retail, at +0x10 for retail's +0x12). On that: short
+// route_mode 425; `default: result = false;` 425 (1664); signed long route_mode 417. Left on it: retail's first
+// exit keeps false in BL across 0x1f86a0, the returned unit-mode pointer, word reads of the dword-stored
+// route_mode, the route test and switch laid out after case 5, and the zero test's `setne al`.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
