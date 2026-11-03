@@ -991,6 +991,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
 // admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
 // byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
+// Round 544: Two displacement observations, direct/scalar/shared-vector/
+// independent-vector, negative then positive admission: 284/249/284/284/284/249/284/284.
+// No match; repeated-computation forms NOT kept. Original whole body restored.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {

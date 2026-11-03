@@ -525,6 +525,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // P278: On recovered ordinary-result/common-release graph, call-owned marker indices, movement-bound
 // phase and search-owned entry, seven subsets 49/49/49/108/108/108/108; all with search-request role
 // name 108. Original storage restored; entry result, marker setup and tail homes remain.
+// Round 544: Comparison/true-first/false-first common function exit and
+// true-first early exits, with live prop fields or a twice-used prop handle:
+// 267/112/270/287 twice. Original entry/result and complete body restored.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {
