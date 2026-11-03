@@ -833,6 +833,9 @@ struct s_device_machine_view
 // N336: Failure-owned power-velocity zero at cruise/disabled/power/paired/all leaves
 // 103/49/49/104/103/41/104; including stopped default 108. Original callback restored;
 // native group-word sharing and velocity-zero join remain.
+// N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
+// subsets, then all with immutable bounded publication: all eight 34. NOT kept:
+// single-use library results do not match. Original callback and observations restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1192,6 +1195,9 @@ bool function_108530(long device_index, long name)
 // pinned before the position 141 (507 bytes, a `push ecx` frame and ret 0x14: one float leaves the
 // stack, callers 26/28); the initial-velocity store first among the inner stores 122 (a repeat); the
 // denominator summed cruise, half ramp-up, half ramp-down 121 (same code). Original body restored.
+// N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
+// 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
+// gain. Both callers stay 31/13; original predicates and complete body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

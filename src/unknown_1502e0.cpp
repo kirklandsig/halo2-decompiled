@@ -438,6 +438,9 @@ struct s_tail_player_identifier
 // [53, 45, 55, 46]; plain countdown scan with pointer step in the body [38, 30, 58, 26].
 // NOT kept: 30 gains one; 26 uses a countdown unlike retail and depends on combined forms.
 // Original ordinal scan restored; pointer/comparison roles and delayed saves remain.
+// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
+// and the CRT int comparison result: all eight 31. Original body restored; options
+// acquisition, delayed saves and comparison register ownership still differ.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1288,6 +1291,9 @@ void function_150820(dword *bits, bool local_only)
 // returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
 // result before dispatch 101. All original calls, observations and executable body restored.
 // NOT kept: no score gain or byte match.
+// N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
+// and the int hand-negation result: all eight 43. Original body and calls restored;
+// ESI/EDI player/hand ownership still differs.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
