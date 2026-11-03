@@ -12,7 +12,9 @@ struct s_1badc0
 
 real normalize2d(point2f *arg_0);
 
-// score 211 (was 211): frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
+// score 180 (was 211): retail's length (1025), output in EBP and the input copy at +0x28 now agree; SSE scheduling of the
+// opening point copies and differences remains (retail reads the second copy back from memory for the actor difference).
+// Earlier: frame 0x90 agrees; output EBX/EBP, point/vector homes and SSE scheduling remain.
 // Round 132 (m3 lane 5, fast): the output-parameter address read is what keeps the output on the stack
 // (without it 274, 996 B). That read at the 0x26d100 call instead of the entry self-assignment, reference at the
 // top/just before the call 211/211; the input point copied after the object lookup 211 (1005 B); the result-flag
@@ -246,13 +248,20 @@ real normalize2d(point2f *arg_0);
 // P280: Standalone existing scalar getter feeding the inherited state store,
 // with every entry scalar/collision/adjusted-point declaration subset: eight forms
 // 221. Original getter expansion, scalar stores and full body restored; output/vector homes remain.
+// Round 64 (m3 lane 1, fast, plain confirmed): retail stores the input's z at +0x30 but never subtracts it there, so the
+// point-to-center difference starts as a copy of the input and is differenced in place (kept), with one result for both
+// exits (kept) and the actor difference from the input (kept): 180; the entry self-address read of the output is then not
+// needed (removed, 180). On the way: single result alone 249; with a one-use input copy 182; copy for both differences
+// 234; in-place difference written out per component 231; in place without the single result 229; actor difference from
+// the copy 233; in-place difference after the actor one 181/180; actor difference from the copy after 228. On 180:
+// squared terms swapped 180; projection terms swapped 180; actor difference declared after the copy 226; plain local_15
+// (not volatile) 267; input copy after the object reads 238.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
 {
-    s_type_c3b527 *const *output_reference = &arg_3;
-    arg_3 = *output_reference;
     s_actor_view *local_0 = actor_get(arg_0);
+    bool result = false;
     if (arg_6)
         *arg_6 = false;
     if (!arg_5)
@@ -262,9 +271,9 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         real local_4 = *(real *)(local_2 + 0x3c);
         point3f local_3 = *(point3f *)(local_2 + 0x30);
         vector3f local_5;
-        vector3d_from_points3d(&local_0->position, &local_1, &local_5);
-        vector3f local_6;
-        vector3d_from_points3d(arg_2, &local_3, &local_6);
+        vector3d_from_points3d(&local_0->position, arg_2, &local_5);
+        vector3f local_6 = *(vector3f const *)arg_2;
+        vector3d_from_points3d((point3f const *)&local_6, &local_3, &local_6);
         real local_7 = local_5.j * local_5.j + local_5.i * local_5.i;
         if (local_7 > 0.0f)
         {
@@ -324,26 +333,29 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
         {
             if (arg_4)
                 *arg_4 = local_17;
-            return true;
+            result = true;
         }
-        return false;
-    }
-    real local_18 = local_0->position.x - arg_2->x;
-    real local_19 = local_0->position.y - arg_2->y;
-    real local_20 = (real)sqrt(local_19 * local_19 + local_18 * local_18);
-    if (local_20 > 2.0f)
-    {
-        arg_3->point.x = arg_2->x + g_4687b0->i;
-        arg_3->point.y = arg_2->y + g_4687b0->j;
-        arg_3->point.z = arg_2->z + g_4687b0->k;
-        arg_3->output_index = NONE;
-        if (arg_6)
-            *arg_6 = true;
     }
     else
     {
-        arg_3->point = *arg_2;
-        arg_3->output_index = NONE;
+        real local_18 = local_0->position.x - arg_2->x;
+        real local_19 = local_0->position.y - arg_2->y;
+        real local_20 = (real)sqrt(local_19 * local_19 + local_18 * local_18);
+        if (local_20 > 2.0f)
+        {
+            arg_3->point.x = arg_2->x + g_4687b0->i;
+            arg_3->point.y = arg_2->y + g_4687b0->j;
+            arg_3->point.z = arg_2->z + g_4687b0->k;
+            arg_3->output_index = NONE;
+            if (arg_6)
+                *arg_6 = true;
+        }
+        else
+        {
+            arg_3->point = *arg_2;
+            arg_3->output_index = NONE;
+        }
+        result = true;
     }
-    return true;
+    return result;
 }
