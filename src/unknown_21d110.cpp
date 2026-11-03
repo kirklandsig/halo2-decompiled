@@ -783,7 +783,12 @@ bool function_21a250(long definition_index, dword sound_flags, long identifier, 
 PRIVATE long const g_44a200[] = { 0, 1, 2 };
 PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 
-// score 30 (was 30): every remaining difference is a stack offset. Retail keeps the loop bool
+// score 30 (was 30): every remaining difference is a stack offset.
+// Round 52 (lane 13, plain): `long repeat_state = NONE; long loop_alternate = 0;` 234 (851 bytes); an
+// initialised long flag alone 177 (835 bytes); `effect->type == 2` named once for both tests 209; the 'snd!'
+// case's one-use gain and availability locals read directly, through casts 30 or a named sound-system
+// pointer 30 (identical code; the named pointer kept in place of the generic one-use locals); on it the gain
+// copied as a plain float assignment 64 (827 bytes: retail copies it with integer moves).
 // every remaining difference is a stack offset. Retail keeps the loop bool in a
 // dword-aligned unit (its low byte) just above repeat_state; ours is a one-byte home in the lowest unit,
 // which shifts the lighter dwords by four and reorders the heavier ones. Retail's order: sound flags,
@@ -942,6 +947,9 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // (flag below it), so only the flag's one-byte size sends it to the lowest unit.
 // Round 39 (lane 2): repeat_state and the flag packed into one struct local matches (0); not kept, packing
 // locals into a struct is against the lane rules. A form that places the two the same way without the struct is the lead.
+// Round 289: Independent initialized flag/state producers from one nullable native record pointer,
+// expression/guarded outputs with long/native-char state: 232/215/220/232/236/218/223/236 fast
+// (unchanged preview 58). All regress; original conditional snapshots and body restored.
 // Round 322: Complementary captured primary choice in bool/byte/short/long storage, conditional
 // outputs 145/145/201/199; full branch outputs 147/147/200/199 (fast control 58, plain baseline
 // 30). All restored; alternate-byte and scalar homes remain.
@@ -949,6 +957,19 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // Round 307: secondary request storage at entry 58 fast; full-width selection 58 fast;
 // Round 307: tag capture plus request/selection/both 139/139/139; request plus selection 58;
 // Round 307: all three with full-width case alternate 143. Fast control 58; original body restored.
+// Round 526: Complementary captured loop-primary state in bool/byte/short/long,
+// uninitialized 145/145/201/199, initialized 158/158/212/211 (fast control 58,
+// full baseline 30). Original snapshot, native byte and complete body restored;
+// alternate-byte and scalar homes remain.
+// Round 325: Bounded two-state enum capture, uninitialized/initialized with conditional/branch
+// producers: primary inequality 146/155/193/209; secondary equality 144/153/113/140
+// (fast control 58, plain 30). Original byte capture and complete body restored;
+// the uninitialized enum recovers early homes but widens the capture and consumer.
+// Round 91: four-byte-aligned bool 226 plain (prologue changed); low-byte union view with const
+// definition 12 plain (NOT kept: single-local wrapper without a match). On that view, entry at
+// function scope, loop index at function scope, call outputs at function scope, outputs reversed,
+// location declared first, and controller value declared first: 147 reduced each against 153,
+// with no slot movement. Original body restored.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
@@ -993,12 +1014,10 @@ void __stdcall function_21d630(long effect_index, long mode)
 					state.source_data_size = sizeof(state.source_data);
 					state.effect_marker.link.effect_index = effect_index;
 				}
-				long local_0 = *(long *)&entry->gain;
-				s_sound_system_effect_view *local_1 = (s_sound_system_effect_view *)g_4e6380;
-				bool local_2 = local_1->initialized;
-				*(long *)&state.gain = local_0;
+				*(long *)&state.gain = *(long *)&entry->gain;
 				state.flags |= 0x80;
-				if (local_2 && local_1->hardware_available && local_1->enabled)
+				s_sound_system_effect_view *sound_system = (s_sound_system_effect_view *)g_4e6380;
+				if (sound_system->initialized && sound_system->hardware_available && sound_system->enabled)
 				{
 					long listener_index;
 					long rate_limit_stage;

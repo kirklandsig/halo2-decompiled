@@ -62,7 +62,7 @@ extern byte g_485a76;
 struct s_type_7ba8e9;
 s_type_7ba8e9 *function_137550(long tag, short bitmap);
 bool function_14390(short stage, s_type_7ba8e9 *bitmap, real priority);
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority);
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority);
 bool function_01dd60(long index, long *width, long *height);
 long function_25960(void);
 struct s_shader_cache;
@@ -724,48 +724,52 @@ bool function_14480(long tag, short stage, short index)
 // 0x44040 and both 0x19530 calls pass fallback 1 where retail passes 0; at 0x44040 retail also passes
 // fallback_index 1 and the bitmap as index.
 // @retail 0x144f0
-void function_144f0(long tag, short stage, long fallback, short fallback_index, short index, real priority)
+void function_144f0(short stage, long fallback, long tag, short fallback_index, short index, real priority)
 {
-    long const *fallback_reference = &fallback;
-    s_type_7ba8e9 *bitmap;
     if (tag != NONE)
     {
         byte *group = g_4e3b44[tag & 0xffff].bytes;
-        long count = *(long const volatile *)(group + 0x44);
-        if (count > 0)
+        if (*(long *)(group + 0x44) > 0)
         {
-            bitmap = function_137550(tag, (short)(index % count));
-            if ((long)*(short *)((byte *)bitmap + 0xa) == *fallback_reference)
-                goto selected;
+            s_type_7ba8e9 *bitmap = function_137550(tag, (short)(index % *(long *)(group + 0x44)));
+            if ((long)*(short *)((byte *)bitmap + 0xa) == fallback)
+            {
+                function_14390(stage, bitmap, priority);
+                return;
+            }
         }
     }
-    tag = *(long *)(g_485a80 + *fallback_reference * 8 + 0x64);
-    if (tag == NONE) return;
-    bitmap = function_137550(tag, fallback_index);
-    if (!bitmap) return;
-selected:
-    real selected_priority = priority;
-    function_14390(stage, bitmap, selected_priority);
+    long fallback_tag = *(long *)(g_485a80 + fallback * 8 + 0x64);
+    if (fallback_tag != NONE)
+    {
+        s_type_7ba8e9 *bitmap = function_137550(fallback_tag, fallback_index);
+        if (bitmap)
+            function_14390(stage, bitmap, priority);
+    }
 }
 
 short g_55ece0, g_55ece2;
 
 // @retail 0x14560
-bool function_14560(long tag, short stage, long fallback, short fallback_index, short index)
+bool function_14560(short stage, long tag, long fallback, short fallback_index, short index)
 {
     bool result = false;
     s_type_7ba8e9 *bitmap;
     if (tag != NONE)
     {
         byte *group = g_4e3b44[tag & 0xffff].bytes;
-        long count = *(long *)(group + 0x44);
-        if (count > 0)
+        if (*(long *)(group + 0x44) > 0)
         {
-            bitmap = function_137550(tag, (short)(index % count));
+            bitmap = function_137550(tag, (short)(index % *(long *)(group + 0x44)));
             if (function_12360((s_bitmap_view *)bitmap, 0.0f))
             {
                 if (*(short *)((byte *)bitmap + 0xa) == fallback)
-                    goto selected;
+                {
+                    function_14390(stage, bitmap, 0.0f);
+                    g_55ece0 = *(short *)((byte *)bitmap + 4);
+                    g_55ece2 = *(short *)((byte *)bitmap + 6);
+                    goto done;
+                }
             }
             else
             {
@@ -775,15 +779,16 @@ bool function_14560(long tag, short stage, long fallback, short fallback_index, 
         }
     }
     tag = *(long *)(g_485a80 + fallback * 8 + 0x64);
-    if (tag == NONE)
-        goto done;
-    bitmap = function_137550(tag, fallback_index);
-    if (!bitmap)
-        goto done;
-selected:
-    function_14390(stage, bitmap, 0.0f);
-    g_55ece0 = *(short *)((byte *)bitmap + 4);
-    g_55ece2 = *(short *)((byte *)bitmap + 6);
+    if (tag != NONE)
+    {
+        bitmap = function_137550(tag, fallback_index);
+        if (bitmap)
+        {
+            function_14390(stage, bitmap, 0.0f);
+            g_55ece0 = *(short *)((byte *)bitmap + 4);
+            g_55ece2 = *(short *)((byte *)bitmap + 6);
+        }
+    }
 done:
     return result;
 }
@@ -4453,6 +4458,8 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
     }
 }
 
+// score 580 (was 619): 1668 bytes against retail's 1700. Round 122: 0x144f0 now matches; both its calls here pass
+// retail's values (fallback 0, fallback index 1, from retail's `xor ebx, ebx` and `push ecx` with ECX 1).
 // @retail 0x19530
 void function_19530(long mode, byte const *context, long stage, long *width, long *height)
 {
@@ -4495,7 +4502,7 @@ again:
             if (*(long *)(g_4858c4 + 0xe0) != NONE && !g_485a77)
                 function_14f60(*stage_reference, 13);
             else
-                function_144f0(*(long *)(g_4858c4 + 0x7c), *stage_reference, 1, 0, 0, 0.0f);
+                function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         }
         else
         {
@@ -4510,7 +4517,7 @@ again:
         return;
     case 12:
         if (!g_4858c8) function_143c0(*(long *)(g_485a80 + 4), 0, *stage_reference, 0.0f);
-        else function_144f0(*(long *)(g_4858c4 + 0x7c), *stage_reference, 1, 0, 0, 0.0f);
+        else function_144f0(*stage_reference, 0, *(long *)(g_4858c4 + 0x7c), 1, 0, 0.0f);
         return;
     case 13:
         function_14f60(*stage_reference, 9);
@@ -6205,7 +6212,7 @@ bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short
     else
         function_4fe20();
     short stage = filtered ? 1 : 0;
-    bool skip = tag != NONE ? function_14560(tag, stage, 0, 1, bitmap_index) :
+    bool skip = tag != NONE ? function_14560(stage, tag, 0, 1, bitmap_index) :
         function_14480(*(long *)(g_485a80 + 0x34), stage, bitmap_index);
     if (!skip)
     {

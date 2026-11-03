@@ -236,6 +236,19 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // Y522: Output-record point setter/native input value/returned output cursor, seven subsets
 // 395/397/476/390/395/397/476; complete graph with ordinary output-helper inline 482.
 // Original private output helper and body restored; selected-default, table and endpoint homes remain.
+// DH291: Native selected group/point/record accumulator subsets on the retained output-cursor
+// graph 462/444/390/466/462/409/468; all with full-width input group 440. Original short
+// traversals, selected homes, byte narrowing, bitmaps, metrics and complete body restored.
+// DH293: Joint selected-terminal/best-distance/point-bitmap four-byte lexical
+// priorities, all six 390; two opposite priorities with nearest-distance identity
+// 390/390. Original complete body restored; default/table/bitmap/endpoint homes remain.
+// DH295: Consistent provider/membership/group-record descriptor field observations, subsets
+// 1/2/4/3/5/6/7: 386/452/428/447/450/481/470; all with shared bits 523. The four-point
+// provider-only lead is below the keep gate; original body/includes restored.
+// Selected-default, root-table, bitmap/endpoint and x87 homes remain.
+// AC488: native candidate range/type, best-score/validator and final-selected admission
+// nesting subsets 1/2/4/3/5/6/7: 390/390/390/390/390/390/390; all with native long group 461.
+// Original body restored; selected defaults, root/group roles, point bitmap and pass homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

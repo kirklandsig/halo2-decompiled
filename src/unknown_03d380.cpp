@@ -427,6 +427,11 @@ void function_125a90(long value);
 // with the same global/index forms 29 (415 bytes; still uses the mixed keep store). 0x221810 pinned out of line
 // as a diagnostic gives 25, so the inlining is one of the two real causes; the other is retail's `imul eax` +
 // `lea esi` pair. Body restored at 36.
+// Round 89: special arm without an else assignment 88 (417 bytes), with the fused kind keep test 51;
+// full-width named special predicate 159 (472 bytes); no index local with a pool local 51; pool global
+// at each use with or without the index local 36 each; tag-byte subscript 36; direct global-array object
+// read 34 (416 bytes, -2 not kept); every record field direct with no element local 146 (398 bytes).
+// Original body restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

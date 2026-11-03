@@ -2085,6 +2085,11 @@ void function_2818e0(void)
 // pass gets). The destination index declared at the pass helper's top 2; the pass bound declared there 2; the node
 // count declared first in the orchestration 2; the blend-2 arm tested before blend-1 in the apply 2; the flags
 // declared then assigned at the loop top 2 (all the same code).
+// Round 30 (lane 17): a compile-only build gives the same order (count reload, then flags); renaming the count local
+// keeps it; any float literal left in the code anywhere in the function (`+ 1.0f` in the rotation, translation or scale
+// arm) gives retail's order, while float global loads, an int constant, folded `* 1.0f` or an unused float local do not
+// (retail has no such literal). Fast: the blend-2 rotation multiply through a named rotation pointer 352 (1685 bytes);
+// named source vector 2; named scale 2; named destination vector 2; the existing vector3f_add for the translation 4.
 // @retail 0x281b60
 void function_281b60(void)
 {

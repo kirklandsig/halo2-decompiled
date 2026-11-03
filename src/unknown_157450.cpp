@@ -654,6 +654,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in a local struct or a two-element array, read through the pointer 61 (aligned 34), direct 139.
 // The whole body in a scoped block, word direct/pointer 139/63; the accumulators and what follows in
 // a scoped block with the masks outside it 139.
+// Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
+// subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
+// reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2171,8 +2174,16 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
 // The lookup written as a subscript gives identical code (8); the shared helper still swaps the
 // mode global's register (9). A permuter run was killed before it reported a result.
-// score 8 (was 8): the inlined equipment lookup keeps the object table base and the index in
+// Earlier: the inlined equipment lookup keeps the object table base and the index in
 // swapped registers.
+// Round 125: old-index mask at the call 8; char index 38 (192 bytes), short index 41 (195);
+// const index 8; split declaration 8; iterator reference 8; second current-object pointer 8;
+// inline release declaration 8; grouped record renamed 8; record declared after initialization 8;
+// old-entry comparison reversed 8; upper-bound comparison reversed 10.
+// Round 337: existing grouped record with rejection continuation 8; nested success continuation 8;
+// reversed-upper success continuation 10; rejection with previous-object local 8, coherent class
+// table 8, range result 20, native byte ordinal 38 (192 bytes); combined success continuation 8.
+// NOT kept: no gain. Original body restored; inlined index-scale/data-load scheduling remains.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -4395,6 +4406,13 @@ void function_15fe20(long team_index, color3f *color);
 // restored; native team-color transfers, shared NONE and shift-count residency remain.
 // Round 471: Direct native member publication, rival/own/both team and rival/own/both palettes
 // 562/534/563/139/429/458; all outputs with const/mutable returned sources 685/685. All restored.
+// N329: Existing complete weapon helper/native unit-view getter, original/twice-used unit handle and
+// full/word presence mask: 119/88/119/88/119/88/119/88. Native getter ties; complete helper reaches
+// retail length but regresses. Original body and include list restored.
+// Y538: Existing three-dword display color fields, rival/own/both native aggregate
+// publication 88/88/88; corresponding native member publication 562/534/563; both
+// with library/filled-output publication 88/564. Types, include and complete body restored;
+// returned-color capture, final NONE carrier and byte-shift residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5551,6 +5569,9 @@ void __stdcall function_d6bc0(long object_index);
 // N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
 // with immutable kind, 144 in all eight forms. Original signed-word producers
 // restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
+// Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
+// and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
+// domains restored; frame 0x14/0x18 and independent timer spill remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

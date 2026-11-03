@@ -507,6 +507,18 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // Round 33 (lane 2, fast with 0x170d70 in the image, which keeps the helper inline): NULL/0 file
 // and line in both draws 13; a seed pointer local for both draws 124; double sine/cosine locals 45;
 // the flag set before the draws 150 (1110 bytes); `cross < 0.0f` 13.
+// Round 29 (lane 18, fast with 0x170d70): unused-local probes (1-24 before the draws, the
+// sine, the rotation or at the top; compile-only, diagnostic) never flip the rows, so the
+// order is not a symbol-count effect; a constant scale gives retail's j and k rows and an
+// opaque scale draw retail's j row (diagnostics), so the scale draw's inlined tree decides
+// it. Scale as double 171 (1103 bytes); rotation as double 27; the draw's bounds from the
+// parameter 161 (1104 bytes); scale declared at the top of the block 13; const scale 13;
+// sine and cosine in one declaration 13.
+// Round 127: the second draw after the cross and normalize 132; the scale draw before the
+// forward stores 62 and before the duration update 70; the existing unit-random helper for
+// rotation 29; force-inline declarations for the range and rotation helpers 13/13;
+// slot_random_range for the scale and both draws 189 (1053 bytes) and 232 (1009 bytes).
+// Original body restored.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {
@@ -646,6 +658,9 @@ struct s_player_axes_153d10
 // extra paren or cast shifts them; unused locals only move the dots); every shift flips products 1 and 5
 // together (up.k against forward.j and forward.i), and none of 64 dot spellings, 64 paren sets, 32 j-row
 // pointer spellings, the cross helpers or row orders separates them.
+// Round 128 (plain): both/up-only/forward-only array components through axes 2/2/2; both pointer arrays 18;
+// pointer up array with axes forward 18; axes up array with pointer forward array 2; pointer up field with
+// pointer forward array 18; pointer up array with pointer forward field 18. Original body restored.
 // @retail 0x153d10
 void __stdcall function_153d10(long user_index, long tag_index, void *owner, void *direction, long unused, real scale, real priority, bool directional)
 {
