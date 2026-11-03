@@ -262,6 +262,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // rotation helper: sine then cosine first, the dot after them 182 (frame 0x120); sine, a named dot, then cosine
 // 225 (frame 0x120); the cross scaled by the sine first 227; the final sums written cross + projection +
 // vector 173 (same code). The direction's zero k stored before i and j 173 (same code).
+// Round 206 (m3 lane 3, fast): retail's rotation is the one 0x117dd0 inlines (sine first, X = vector x axis,
+// X.j/X.k spilled with the sine's home between them, X.i formed in row i). Sine, named dot, cosine, scalar X.j/X.k
+// with X.i inline 237 (1221 bytes); sine, dot, cosine, cross3f(vector, axis) subtracted 226 (frame 0x120), with
+// vector-first rows 226; that body as a (vector, axis, sine, cosine) helper 226; sine, cross3f, dot, cosine 233 (1196).
+// Original helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {
