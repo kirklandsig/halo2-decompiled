@@ -738,6 +738,13 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // B381: complete normalization predicate, moving/stationary bool/byte/short/long,
 // 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
 // Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
+// Round 80 (m3 lane 12, fast, 0x24590 listed): the second speed store read back from `state->speed` 132; the
+// jitter offsets as `0.2f * x * limits.i` 132; the definition's 0x90 factor named once and used three times 227
+// (1053 bytes); the definition read before the enable store 132; the direction declared beside the movement
+// output and assigned later 132 (all four 132s identical code).
+// Lane 17 r37 (fast, 0x24590 listed): the clamp as `1.0f < m ? 1.0f : m` 234 (1077 bytes); the speed and 0x148 stores
+// swapped 134; the angular rate declared before the movement 132; limits declared at the top 132; the jitter offsets as
+// `0.2f * x * limits.i` 132. Body restored.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -848,12 +855,26 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
  result->k = a->i * b->j - a->j * b->i;
 }
 
-// score 114 (was 155): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
+// score 114 (was 114): Frame 0x18 and sample home agree; rotation products, side-dot and exit scheduling remain.
 // Round 16: retail takes the animation state in EAX, the component index in EDX, the physics
 // pointer in ECX and the output pointer in EDI, then the object index, the definition, the value
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
+// Then (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
+// separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
+// slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
+// from memory, ours loads the axis (the same for goal.j against rotated.j/k in the turn block, and from them the
+// last dot's order). Tried on this body (fast with a local copy of the helper, the plain build inlines the existing one
+// the same): `moved_away` preset false and set in the test 92 at 1387 bytes (retail's `xor dl, dl`/`mov dl, 1`; a flag set in a
+// test, match only); the side dots as (up, new) * (up, old) 106 (aligned 51; NOT kept: an operand order picked by score, retail
+// forms the old-cross dot first at 0x1e607d; body restored at 114), (new, up) * (up, old) 107 (aligned 44), (old, up) * (new, up) 111,
+// named side values 150 (1382 bytes, the rotation products all load first), moved_away computed before the crosses 190, the
+// crosses declared apart or swapped 106 (same). Compile-only: parameter orders of the helper, cross or dot orders and
+// operand sides, component locals, named sine/cosine (worse), a named rotation or rate, `angle *= rate`, a named axis,
+// helper-returned pointers, indexed or cast access, by-value vector: about 6000 forms, none gives the four products with
+// retail's registers. Past a size limit of the tail block (15 extra one-field reads, diagnostic) the products come out
+// as retail's, but v.j/v.k take XMM1/XMM2 where retail has XMM5/XMM6.
 // Earlier: Frame 0x18 agrees; sampled-vector slot and rotation/output scheduling remain.
 // MiniMax R (10-31): shared sample/forward vector 160 with retail's `!(0.0001f > fabs(angle))` guard, 198 with `>=`; in-place rotated 166, old-body retail guard 173; turn block on the axis 227/210, cross dots on facing_goal 194; no lower score.
 // movement/rotation homes and cross/result lifetimes still differ.
@@ -1032,6 +1053,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // AC502: Three nested animation admissions, four independent failure-prefix lengths and
 // complete admission with small-angle failure: 114 each. Original guard, shared rotation call,
 // vector storage and complete body restored; rotation multiplicands and exit scheduling remain.
+// Lane 17 r37 (plain): `moved_away` as `alignment > 0.99f ? ... : false` 114; its dot as (rotated, goal) 114; the
+// side crosses declared with the sampled vector 114; both side crosses through the existing cross3f_staged 112 (1389
+// bytes, same cross schedule; gain 2, not kept); on that, `dot < alignment` 112. Body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

@@ -202,6 +202,15 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // B381: native square/sine/both workspace input copies, square-first/sine-first, then CRT
 // square/sine/both copies: 273/444/466/466/273/408/466/466. NOT kept: value-copy/input-ownership forms require
 // exact matching. Original frame, axis-specific product/cosine spills and basis homes remain.
+// Round 43 (m3 lane 2, fast): the rotation helper in retail's computation order (k square, sine
+// products j/i/k, i square and forward.i, ij rows, j square and left.j, ik rows, up.k, jk rows) 368
+// (1824 B); a named 1-cosine local 452 (1756 B, frame changes); the j/i/k sine products before the k
+// sine and i square 382; forward.i right after the sine products 357; left.j right after the j
+// square 350. Retail's second switch keeps its range check as ours does; the 4-byte table shift follows
+// the case-body schedule. Original helper restored.
+// B385: Existing camera/direction basis providers and composed-return receiver, subsets
+// 1/2/4/3/5/6/7, 222/221/622/495/623/622/628; all with basis output 429.
+// Original complete body/declarations restored; axis-specific spills and table placement remain.
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,

@@ -156,7 +156,7 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 	return index;
 }
 
-// score 866 (was 886): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
+// score 866 (was 866): frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice carriers remain.
 // Earlier 919 (was 919): count/array homes and choice registers differ in the 0x4e0 frame;
 // count/array homes and choice registers differ in the 0x4e0 frame;
 // Frame 0x4e0 agrees; entry zero, target/primary/query-array homes and choice registers remain.
@@ -292,6 +292,13 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC502: Shared pin macro at range/blend/active fade/active gain/inactive fade/inactive gain,
 // then all body/all logarithmic clamps: 866/866/865/865/862/866/853/853. NOT kept:
 // compound-only gain misses the native active-bound reload/lifetime. Original body/helpers restored.
+// Lane 17 r37 (fast): the four query-array names prefixed to force an alphabetical order, and the target count renamed,
+// leave every slot unchanged (diagnostic; names do not place these homes); query count read directly with a long choice
+// count 942 (3297 bytes: the choice address becomes an induction pointer in ESI, retail recomputes it from the count in
+// ESI); on that, `&choices[choice_count++]` 960, the pointer with the count incremented after the stores 952, the duplicate
+// search as a loop with `break` 1001; the override target filled by index after `target_count++` 886 (3327 bytes).
+// Retail keeps the target count in memory at +0x88 (re-read in the attenuation loop) and forms each new target and choice
+// address from the incremented count. Body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -729,6 +736,15 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
 // qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
 // publication scheduling remain.
+// Round 80 (m3 lane 12, fast): bsp renamed to sort after count, or count renamed to sort before bsp, 150/150 (the
+// homes do not move: bsp's +0x14 is a spill home, not a named slot); the camera formed before the first-listener
+// scan 200 (camera takes a saved register); the scan result in a one-use local before the camera 145 (camera
+// block then retail's, exact-only); on that the request stores as transition, index, fade with `tag == NONE ?
+// 0.0f : 1.0f` 144; that store order alone on the current body 149.
+// Lane 17 r37 (fast): bsp renamed to sort after count (diagnostic) leaves the +0x10/+0x14 homes; `count` declared at
+// the function top 150, at the camera-block top 150; the transition definition through g_4e0348 279 (1037 bytes: bsp then
+// takes retail's +0x14 home but a cached zero takes ESI before the request loop, where retail reloads bsp); on that, the
+// position copied before the cluster 279, `count` at the camera-block top 279. Body restored.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {

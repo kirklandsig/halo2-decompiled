@@ -378,6 +378,11 @@ union s_185be7
 // masks 1/2/4/3/5/6/7, then byte held input: 751/698/986/739/1008/980/990/990.
 // NOT kept: extra old-value/common latch stores lack the native conditional shape.
 // Original complete body, helper calls, stores and all input observations restored.
+// m3 lane 11 r60 (fast 690): diagnostic, taking the view global's address (in the body or a file-scope
+// pointer) 1019 at 3798 bytes: ours then loads it at entry into ECX and re-reads it at the flag test after the
+// pow call as retail, so retail's reload is an address-exposure kill, but NONE then leaves EBX entirely; the pow
+// exponent read from the field at both uses 809 (its loads become retail's `fld [esi+0x5c]`); the range fraction
+// declared before the minimum / above the second lookup 694/694; the fraction as a ternary or an if/else 948/948.
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.

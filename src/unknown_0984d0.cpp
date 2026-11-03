@@ -516,6 +516,18 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
 // completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
 // complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
+// Round 78 (m3 lane 16, fast): the long validation ordinal (M303's long/case form) re-measured 115, new reason:
+// every frame home is then retail's (validity byte in the dead a1 home, ordinal at +0x18, items +0x14,
+// data +0x10, the count-one reads too); left are the preheader registers, the loop entered at its top (retail
+// jumps past the items reload) and the item value loaded into EAX then copied to EDX. On it: no cursor
+// reads 207 (524 bytes), only the data cursor read 207, only the items cursor read 210 (524 bytes each);
+// function_991d0 called directly with the items 137. Plain cursors on the byte ordinal 209 (524 bytes).
+// P288: Both notification phases with actual item cursors, body/at-use advancement
+// and completed validation last-use scope: 93/93/93/93/93/93/93/93. Original full body restored;
+// validity/cursor homes and validation-loop entry remain.
+// DH316: Whole-case terminal-return regions, seven subsets then positive validated
+// admission: eight 80s at 540/540 bytes. NOT kept: no byte match; original complete
+// body restored. Validity/cursor homes and validation-loop entry still differ.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

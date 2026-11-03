@@ -392,6 +392,12 @@ extern byte g_51ec11;
 // DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
 // failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
 // Original shared body restored; zero/side normalization and up/roll allocation remain.
+// Round 77 (m3 lane 9, fast with 0x23d790/0x23d030, both stay matched): the zero fallback as two stores
+// `side.j = 0.f; side.k = 0.f;` 276 (1326 bytes; the up rows then store k, j, i as retail, but the x87 length still
+// squares i before j and every register is renamed), with normalize3d 261 (1326), with side filled i, j, k 276; the
+// fallback chained `side.k = side.j = 0.f` 274 (1326); `side` declared at the function's top 89 (same code); a
+// forward pointer local for the up cross 236 (1330). Retail's length keeps side.j on the x87 stack (fst) and
+// squares it first; zero XMM1 and the up/roll allocation remain.
 // Round 199 (fast, with 0x23d790): side assignment orders k/j/i, j/i/k, j/k/i, i/j/k on the current body 89 each;
 // diagnostic, a scratch normalizer with the length as `i*i + (j*j + k*k)` or `(j*j + k*k) + i*i` gives retail's
 // j-first squares and 1326 bytes but 266 (aligned 52, unchanged), `k*k + j*j + i*i` / `j*j + i*i + k*k` 271
@@ -402,6 +408,12 @@ extern byte g_51ec11;
 // AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
 // masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
 // Original input layout, observations and full body restored; zero/side/up allocation remains.
+// Round 158 (m3 lane 4, fast): normalize3d with a forward pointer and the up rows staged, declared and stored i,j,k 52 (aligned 28); that with the else arm's own speed local 45 (aligned 23, 1330; plain
+// confirmed). NOT kept (review): the gain needs the staged up_i/up_j/up_k, one-use locals (match only); there the zero
+// and side block agree, and the up rows copy forward.i where retail copies side.j/side.k. Body restored at 89.
+// On the way: helper taking pointers, rows i,j,k stored k,j,i 68, rows k,i,j stored j,k,i 56; in the body without the pointer 259-269; with the pointer rows k,i,j stored j,k,i 63, stored i,j,k 53; shared with the roll axis
+// 232 (1326), 62, 95; forward.i through the command 227 (1326); speed at function scope 194; plain rows through the pointer 263-265; rows through a side pointer 136; forward pointer before the side fill 190, at the function top 44 (aligned 27: frame homes shift, not taken);
+// side filled j,k,i 281; product text flips in the rows and roll 53 (same code); cross rows k,j,i 79, j,i,k 52; one-expression rotated rows 52; cosine first 59; trig inside the roll block 47; v after axis 232; `cosine * v + rotated` 45.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
