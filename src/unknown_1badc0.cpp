@@ -260,6 +260,10 @@ real normalize2d(point2f *arg_0);
 // from `arg_2` instead of the copy 215 (1001 bytes); the found-flag store before the far-side vector 211; the
 // clearance `2.0f - local_11` named before the perpendicular 266 (996 bytes); the radius times 1.1 named once
 // for both components 211; the first perpendicular's y stored before x 211.
+// DH319: Current in-place-copy graph, center-difference vector with original,
+// early-success, query-test and complete query arms 232/241/255/253;
+// uniform scalar terms 238/245/253/249. All restored; four query-result forms
+// change entry convention and lose callers; point/SSE and success ordering remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
