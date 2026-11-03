@@ -209,6 +209,16 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 126 (lane 8, on the fixed tail, fast): direct entry store 5 (`second` hoists instead); fresh restore-block
 // packed/next/pass locals 5; entry from the tables local 178; tables re-read into a const local after its store 279;
 // entry reference bound before the parameters lookup 5; permuter 54 tries, best 5.
+// P294: owning cached pointer fields 5;
+// complete owning cache prefix 5;
+// actual table header 5;
+// actual entry/pass prefixes 5;
+// cached fields and entry/pass prefixes 5;
+// cached fields and table header 5;
+// complete cache and table header 5;
+// complete cache/table/entry prefixes 5.
+// Original executable body restored;
+// no exact match from these ownership forms.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)
