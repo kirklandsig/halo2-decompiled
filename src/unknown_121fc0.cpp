@@ -214,6 +214,12 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N306: Existing tokenizer delimiter-tail outputs, four native cut graphs with end-owned/input-owned
 // whitespace scans, 160/128/212/166/214/229/223/176. Original tokenizer and loader restored; early EBP
 // preservation and read-size/count/cursor homes remain.
+// N318: Twice-used native leading span, if/conditional token selection and nested/early null
+// entry, 182/220/182/220; with natural zero read-count 198/221/198/221. Original tokenizer
+// and loader restored; early EBP preservation and read-size/count/cursor homes remain.
+// Actual insertion cursor, displacement bound with ordinal search and pre/post publication 211/218,
+// pointer search 235/250; endpoint bound with ordinal search 213/221, pointer search 242/256. Outer
+// EBP preservation and read-size/count/cursor homes remain; original body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

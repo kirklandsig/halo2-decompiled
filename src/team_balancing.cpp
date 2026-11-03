@@ -994,9 +994,18 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // computed after the count and destination; a plain variable (register, memory, static, element, inline parameter)
 // keeps it in EDX. The all-stack compile-only pass shows the player count in EBX for the plain and the (short) forms
 // alike, so it is no proxy for these roles.
+// Round 289: One ordered union-domain copy/fill traversal, preserving signed iteration ranges,
+// with conditional/logical bounds, maximum comparison directions and named/expression excess:
+// 87/73/87/73/87/72/87/72. Original separate loops, full-width values and body restored.
 // F321: complementary failure result in bool/byte/word/long storage, with
 // conditional-value and branch-owned clamp consumers: 63/63/73/68/90/90/102/96.
 // Original combined scan/fill and success-result graph restored; count ownership remains.
+// Round 75 (m3 lane 9; one-file LTCG harness, control 34, positional counts): new fill values: pointer cast `(long)(char *)next_party` 34, `(long)(__int64)next_party`
+// 34, union member 34, read through its own address 34, 32-bit bitfield 34, one-field struct elements copied whole 34, next_party and the imbalance as a two-element array or two-field
+// struct 43/43 (aligned 37), `next_party > 0 ? next_party : 0` 65, a counted walking pointer 43, a copy declared before the loop 34, a copy per iteration 34; loop shapes: braced body 34, while 34,
+// guarded do-while (two spellings) 64 (no rep stos), walking pointer to an end 54, `slot != end` 59; next_party declared after the index 34. Parameters on the register three, with the
+// entry updated: (extra, list, player) 35, (player, extra, list) 34, (extra, player, list) 35, (list, player, extra) 34, (list, extra, player) 35. The player count stays EDX in all of them.
+// Retail's caller loads EAX, ECX, EDX in that order; the 35s are `lea ebx, [edx + eax]` with no role change.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

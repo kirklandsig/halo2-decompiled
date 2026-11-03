@@ -455,6 +455,12 @@ void __fastcall function_24cdaf(void)
 // Round 77: assignment in the saturation condition 6; nested saturation assignment 6; pointer
 // assignment in the read/store 6/6; direct read with pointer store 6; pointer read with direct
 // store 6; tick update before the countdown 34; constant-first comparison 6.
+// Round 60: the field written directly with an if clamp 6, with a named limit 6, with a ternary 6; a min helper over the
+// field 6; incremented and clamped values named 6; a saturating helper on a short pointer 6; a short reference 6; a
+// by-value saturating add 6; a short current value 6; the clamp as its own statement 6; two stores in if/else arms 38; a
+// guarded `(*ticks)++` 11. Retail's clamp pattern occurs nowhere else in the image, so no shared helper exists. A ticks
+// helper in the loop 6, with the player accessor 6; the player accessor alone 6; the expiry update as a forceinline
+// helper per message 6, or for the whole loop 6; an expiry test helper 145 (the loop falls away).
 // @retail 0x24cdd8
 void function_24cdd8(long player_index)
 {

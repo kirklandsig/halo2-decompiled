@@ -96,8 +96,11 @@ struct s_unit_action_unit
 	byte unknown174[0x1fc - 0x174];
 	short seat_index;
 	byte unknown1fe[0x212 - 0x1fe];
-	char current_weapon_index;
-	char current_secondary_weapon_index;
+	union
+	{
+		struct { char current_weapon_index; char current_secondary_weapon_index; };
+		char current_weapon_indices[2];
+	};
 	byte unknown214[2];
 	char weapon_slots[2];
 	long weapon_object_indices[4];
@@ -284,9 +287,31 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // and entry count storage: 335/336/318/312; the two-use active-word snapshot on the same graphs
 // 337/338/314/310. All restored. The branch-owned unit forms raise caller 0x111650 from 666 to 694;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// J238: Computed state-action result 287; shared actual hand/weapon acquisition 445; existing active
+// query 336; state/hand, state/query, hand/query 365/294/429; all 398, short selected action 383.
+// Original body restored; frame 8, incoming unit/name/actions ranks and shared-call threading remain.
 // M309: Reused self-object header/table 330/332; with uniform per-use state,
 // complete local role names, or both 330/332 each. All eight restored;
 // frame 8 and incoming unit/name/actions ranks remain unresolved.
+// Round 368: Reused current-state read before the pure query/actions lookup, long/dword and
+// mutable/input-only actions: 346/346/346/346/345/345/345/345; original complete body restored.
+// F329: Retained masked self-header index, long/word domains crossed with four
+// disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
+// frame 8 and incoming unit/name/actions ranks remain.
+// N330: Early hand ordinal/callback selection, conditional/branch producers before
+// receivers or after input snapshots: 405/405/408/408/405/405/410/410. Frames
+// grow to 0x10/0x14 versus 8. NOT kept: later forms also raise caller 0x111650
+// 666 -> 672. Original hand paths, helpers, observations and complete body restored.
+// J240: Entry active word dword/long 327/327; with conditional outputs 261/261 (NOT kept: retail stores
+// both defaults, then overwrites them, 0xe6b26-0xe6b4d, and reads the word at the tests, 0xe6c97, not at
+// entry; body restored at 271); chained defaults 327/327; constants before calls 345/268. Pure ordinal long/dword/word on
+// the 261 graph 259/259/276; two-point ordinal gains rejected. Frame 8 agrees; unit/name/offset ranks and
+// shared-call threading remain.
+// F339: Actual callback selectors for ending/name, starting/name and starting/hand
+// dispatch, seven subsets, then all with the query-chain ending selector:
+// 351/293/168/336/350/307/331/343. NOT kept: the shared hand callback selector 168 (plain),
+// first +0xb0 and frame 8, raises caller 0x111650 from 666 to 713.
+// Original body restored; incoming unit/name/actions ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -847,7 +872,7 @@ extern vector3f *g_4687b0;
 
 /* throws the grenade in a unit's hand (or drops it, or attaches it to the
    unit's vehicle seat) */
-// score 309 (was 318): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
+// score 309 (was 309): flag 17 cleared and restored through bit_vector_set (retail reads the flags word
 // twice and keeps the unit in esi from entry), the empty grenade slot as an early return (retail's late
 // `push edi`) and the 0x400 flag set through bit_vector_set (retail's load/add/or/store). Left: the frame
 // slots (direction, origin, center, projectile index and the definition sit elsewhere), retail's second
@@ -877,6 +902,24 @@ extern vector3f *g_4687b0;
 // scaled aim blend retained. The direct random-call producer removes the one-use
 // scale carrier: 309 fast/plain/image-wide at 1699/1699 bytes; no lost match.
 // Unit spill now agrees; definition/index and direction homes, offset/SSE scheduling remain.
+// Round 326: Remaining tag-pointer/released-index/saved-type lexical roles,
+// seven subsets, then all with the uninitialized type declaration before the
+// released index: 309 each. All capture points fixed; original complete body
+// restored. Definition/index/type/direction homes and offset/SSE schedules remain.
+// Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
+// 309/309/309/309/309/309/309/308. Original executable source restored.
+// J240: Scaled offset vectors / complete spread stages / shared completion 326/310/343; offset+blend /
+// offset+completion / blend+completion / all 343/326/344/327; all with shared parent sum 327. All
+// restored; tag/index/type/direction homes and SSE scheduling remain.
+// P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
+// Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
+// P281: Existing seat accessor with admission-time attach/marker defaults and complete forward setter,
+// eight forms 309/329/340/345/302/326/332/341. NOT kept: 302 gains seven above 30 and grows to
+// 1715/1699 bytes. Original accessor expansion, defaults, copies and complete body restored.
+// F339: Plain native component traversals for speed/blend/projectile subtraction, seven
+// subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
+// All shorten away from retail; original body restored. Frame 0xcc agrees;
+// definition/index/direction homes and offset/SSE scheduling remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1354,7 +1397,7 @@ void __stdcall function_e8620(long unit_index, bool flag)
 
 /* takes out the weapon in a unit's slot for a hand: its animations and
    ready animation */
-// score 136 (was 136): frame 0x1c versus 0x18; entry table/hand homes and second unit load remain.
+// score 95 (was 95): frame 0x18 agrees; entry table/hand homes and second unit load remain.
 // Earlier (148): frame 0x18 agrees; entry lookup/hand homes and ready-call scheduling remain.
 // Numeric primary/shared unit/both 195; direct hand and its combinations 200; conditional state
 // with direct hand 148, alone 192; scan fallback exit 148 (kept), with direct hand 203, numeric
@@ -1389,9 +1432,32 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // M291: native bool/long companion predicates with short/char hands and long/short slots
 // 190/200/197/152/136/203/189/171; keep only short hand, plain 136 at 606/604 bytes.
 // M306: Joined terminal animation fallback on the short-hand graph, with original/direct long hand, event branches and companion-predicate initialization: 136/136/136/136/144/144/144/144. Direct hand recovers frame 0x18 and 604 bytes; all restored.
+// M311: Unsigned bounded hand bool/byte/word/unsigned-int, each Boolean/direct long argument:
+// 189/184/189/184/136/144/148/203; restored.
 // Round 470: Native short/word/byte/char two-slot scan ordinals, then each with
 // direct bounded hand at the long argument: 191/191/192/192/197/197/197/197. All restored;
 // extra frame word, second entry lookup and hand transport remain.
+// Round 364: Actual current-weapon array view, long/short slot, Boolean/direct hand
+// and conditional/branch event: 136/203/144/142/139/205/95/188. Keep the real array,
+// direct bounded hand and branch event with the original long slot: plain 95, 606/604 bytes.
+// All other full-image measurements stay unchanged; entry table and second unit load remain.
+// F332: Actual two-element array cursor, endpoint/long/short/word termination
+// 103/186/187/187; with consistent direct receiver observations 264/266/267/267.
+// Original indexed scan and receiver ownership restored; entry pool/hand and second load remain.
+// Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
+// 95/96/95/96/94/95/94/95; original complete body restored.
+// DH302: Slot/weapon/both early failure guards and one complete exit 95/95/106/95;
+// each retaining the companion datum for both predicates 200/200/212/200. Original success
+// scopes and predicate lifetime restored; early table and second unit load remain.
+// AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
+// each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
+// long result and complete body restored; second entry lookup and hand spill remain.
+// Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
+// 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
+// second entry unit load, table/hand homes and downstream scheduling remain.
+// P280: Native object-type predicate byte/char/short/word/long/dword storage
+// 95/95/109/109/108/108; Boolean declarations at observation/before companion test
+// 95/185. Original complete body restored; entry lookup and hand homes remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -1412,7 +1478,7 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 
 		for (i = 0; i < 2; i++)
 		{
-			if ((&unit->current_weapon_index)[i] == slot)
+			if (unit->current_weapon_indices[i] == slot)
 			{
 				function_e8620(unit_index, primary);
 				return;
@@ -1437,8 +1503,8 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 				return;
 			}
 
-			function_d0870(weapon_index, unit_index, hand != 0);
-			(&unit->current_weapon_index)[hand] = (char)slot;
+			function_d0870(weapon_index, unit_index, hand);
+			unit->current_weapon_indices[hand] = (char)slot;
 			unit->weapon_ready_times[slot] = g_510c54->game_time;
 
 			bool animate = function_ee8a0(unit_index, primary != false);
@@ -1446,7 +1512,9 @@ void __stdcall function_e8720(long unit_index, long unknown, bool immediate, boo
 			function_fff40(weapon_index, silent, immediate);
 			if (!silent)
 			{
-				long type = primary ? 0x14 : 0x15;
+				long type = 0x14;
+				if (!primary)
+					type = 0x15;
 
 				if (animate)
 					type = 0x16;
@@ -1637,6 +1705,27 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M291: Direct bool/long eligibility results with native long/short hand and long/short/char slot domains:
 // 165/158/172/151/150/155/151/144. Original executable body restored.
 // M306: Native mode defaults zero/three crossed with bool/long flag storage and a twice-used tail player acquisition: 160/180/152/173/159/179/149/169. All restored.
+// M313: Full primary/selected mode scope/plain interruption-table subsets, all with short slot; original body restored;
+// fast 157/138/157/323/334/323/334/334.
+// Round 535: all-hand unit snapshot, duplicate-weapon scratch scope and short hand,
+// seven subsets, then all with full player value: 167/138/134/167/165/134/165/167. Original body
+// restored; same-block pool reload and weapon/mode homes remain.
+// Short hand alone 134 gains four above 30 and is below the retention gate.
+// Round 537: shared hand-getter result first/valid arms/invalid arms/conditional
+// 138/138/138/138; each with caller success result 171/134/134/134. Helper and
+// complete body restored; 134 gains four and shortens to 526/538, below the keep gate.
+// All helper forms raise other users, including 0xe8510; none is eligible to keep.
+// M317: Native bounded mode char/byte/short/word, each with long/Boolean hand on the original branch-only
+// graph: 146/154/146/154/137/145/137/145.
+// Same-block pool reload and selected-weapon/mode homes remain. Original executable body restored.
+// M326: Native char/byte/short/word primary-request classification 133/133/158/158;
+// complementary hand-first production 140/140/156/156. NOT kept: the five-point
+// gains above 30 and unmatched width-only forms. Original body restored at 138;
+// same-block pool reload and selected-weapon/mode homes remain.
+// P279: Existing hand-array selected-slot/shared-getter/both forms 138/138/138;
+// complete array graph with short slot / Boolean hand / both / forced accessor / all:
+// 136/146/143/138/143. NOT kept: best 136, gain 2 below the gate. Original body and helper
+// restored; frame 0xc, same-block pool reload and weapon/mode homes remain. All shared users unchanged.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -1709,7 +1798,7 @@ void __stdcall function_191fab(long definition_index, long value);
 void __stdcall function_1ca260(long actor_index, long weapon_index, long player_index, long other_weapon_index);
 
 /* picks up a weapon (type 20), in the way the request's mode asks */
-// score 60 (was 72): request/weapon EBX/EBP homes and getter expansion differ.
+// score 60 (was 60): request/weapon EBX/EBP homes and getter expansion differ.
 // Caller getter noinline/inline 68/68; weapon/request names 68/68; result/array first
 // 131/131; long admission 87; call-result carrier 69. Provider noinline 44 at retail
 // length loses five matches; provider inline 68. Original body and declarations restored.
@@ -1741,6 +1830,29 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // Shared player lookup with direct reporting argument 60.
 // Only one pure player observation and direct reporting value selected; ordinary confirms 60 at 392/388.
 // Frame reuse agrees; request/weapon homes and retail getter-call expansion remain.
+// Round 362: Tested pickup-result / nested admission / mode-table case order, seven subsets; then tested result with shared mode.
+// 61/60/62/61/62/62/62/128. Original executable source restored.
+// Round 364: Real shared request payload, pointer/direct access, original/entry result,
+// original/split admission: 60/60/130/130/60/60/130/130.
+// Original request union, body and input observations restored; request/weapon homes remain.
+// N320: One admission/pickup phase result, bool/byte storage, nested admission and native
+// switch/if-chain: all regress and add storage or length. Request/weapon homes and getter expansion
+// remain; original source restored. Scores 141/143/141/143/167/165/167/165.
+// Original executable source restored.
+// Round 366: Native admission field and input-only weapon/pickup contracts, seven
+// subsets, then all with split admission: 60/60/60/60/60/60/60/60. Plain six-entry
+// interrupt table, long/short/dword/word ordinal: automatic 160/176/160/176;
+// static 119/128/120/128. Original fields, six calls and complete body restored.
+// DL246: common result exits for weapon/query, mode and pickup failure subsets 1-7 give 60 each; full exit graph with earlier result lifetime 130. Two read-only player queries at their consumers on four new exit graphs give 72 each, rejected as nonmatches. Request/weapon homes and getter expansion still differ; original body restored.
+// F339: Whole mode-arm orders 6543(01)d/d(01)6543/3(01)456d/4(01)635d/
+// 543(01)6d/6(01)354d/d6453(01)/456(01)3d: 119/64/75/80/80/79/119/82.
+// Original complete body restored; request/weapon homes and getter expansion remain.
+// N326: Failure-owned result defaults on admission/mode/pickup edges, seven graphs
+// and complete leaf-owned result: 158/137/143/136/158/154/128/128.
+// Original result initialization, body and all calls restored; request/weapon homes remain.
+// N330: Native weapon reference, complete header-array capture and request-view reference,
+// seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
+// Header capture changes entry shape; original pointers, observations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
@@ -1833,6 +1945,28 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // original or complementary take-result ownership: 129/129/141/143/140/140/150/150.
 // Original executable body restored; frame/result and pool/weapon homes remain.
 // M306: Persistent result set by the transfer test: original admission with actor-first/taken-first and early/late success assignment 98/106/115/121; nested admission 123/126/116/117. All restored.
+// Own-unit fields at every use: early admission/direct pool with live/captured request
+// 129/125, coherent pool capture 135/129; nested admission/direct pool 143/118,
+// coherent pool capture 158/109. Original pointer, observations and body restored.
+// P267: existing hand accessor empty-slot guard and test-owned result, char/short/long
+// slot storage: 114/108/119 and 114/108/119; short forms with drop scope ending at its call 108/108.
+// Original shared accessor, request workspace, result graph and complete body restored.
+// Round 373: Post-transfer notification owner captured once, bool/byte/short/long
+// give results with original/compound take result: 97/122/129/130/114/135/141/142. Original observations,
+// result ownership and whole body restored; frame/result and pooled roots remain.
+// Round 535: independent received-index result and native mutable received index, each
+// with bool/byte/short/long give-result storage: 132/123/115/117/128/115/105/105. Original body
+// restored; frame, give-result byte and pool/weapon homes remain.
+// M317: Actual admission/weapon predicates owning the returned transfer result, bool/byte/short/long with
+// early/nested admission: 121/118/142/112/156/138/153/131.
+// Frame/result, pool reloads and unit/weapon homes remain. Original executable body restored.
+// M326: Actual player-unit/drop producer phase ends after the first give call, bool/byte/short/long
+// give results, request ending there or at its own call: 97/122/129/130/97/122/129/130.
+// Boolean forms tie; wider carriers lengthen. Original body restored; frame/result and pool homes remain.
+// P279: Original result graph with direct player field / forced existing hand accessor /
+// native drop-request call scope, subsets 1/2/4/3/5/6/7: 97/97/97/97/97/97/97; native byte
+// argument store 97. All sixteen shared-accessor users and notification control stay at
+// calibrated scores. Original helper and body restored; frame/result and pool/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
@@ -2198,8 +2332,7 @@ __forceinline char unit_action_round(real value)
 
 /* starts a melee attack: the animation for the attack's mode (or the next
    in a combo), its damage frames, and the lunge */
-// score 235 (was 235): Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
-// Frame 0x14 agrees; pool/index/type/name homes remain.
+// score 235 (was 235): Frame 0x14 agrees; pool/index/type/name and completion-byte homes remain.
 // Round 187 reached 110 (frame 0x14 agrees; pool/type/name homes differ) only with a `goto done`
 // single exit and the layout switch: not kept at review (match-only forms); without the gotos 305.
 // Numeric hand 297; Boolean active bit 251; both 302; first result 235; all 302;
@@ -2236,6 +2369,20 @@ __forceinline char unit_action_round(real value)
 // M309: Reused self-object header/table 328/330; with numeric hand helper 325/327;
 // with Boolean active test 297/299; both 295/297. All regress and are restored;
 // pool/index/type/name register ownership and result-byte home remain.
+// M311: Native bounded event type short/word/char/byte, original/numeric actual-case order:
+// 243/243/243/243/270/270/270/270; restored.
+// M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
+// fast 326/379/549/338/382/552/556/559.
+// Round 537: failure-result lifetime at play/pre-call/post-call/fallback boundaries,
+// bool 235/235/235/235; byte 235/235/235/235. Every original selection, call and
+// complete body restored; pool/type/name ranks and completion-byte home remain.
+// M317: Channel entry lifetime/function-owned animation/conditional animation acquisition subsets
+// 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
+// Pool/index/type/name and result-byte homes remain. Original executable body restored.
+// N323: Dual-use mode-two selection in bool/byte/short/long, each with original/default-first combo results: 320/337/320/337/322/340/319/337. Original body restored; pool/type/name and completion-byte homes remain.
+// F340: Complete original-width combo arms in orders CADB/DCAB/BDCA/CBDA/DABC/
+// ADBC/BCAD/CDBA (A/B/C/D are the original four nontrivial arms): 235 each.
+// Original complete body restored; pool/type/name and completion-byte homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {
@@ -2567,7 +2714,7 @@ long function_c8f60(long unit_index, short seat_index);
 /* puts a unit in a vehicle's seat: attached to the seat's marker, its
    weapon put away (or dropped), its seat animations, and the seat's
    occupant asked to leave */
-// score 306 (was 306): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
+// score 293 (was 293): retail keeps vehicle_index in ebx from entry, the index offset in ebp and spills
 // the unit pointer (ours keeps the unit in ebp and spills the offset to the same slot), so the constant-1
 // stores and most reloads differ; retail also tests the 0x3dc state as a zero-extended long and has a dead
 // `lea` of the header's unit field. Earlier: score 306 (was 321).
@@ -2592,6 +2739,35 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 360: admission/parent early failure guards and full-width result subsets,
 // 341/325/321/359/333/336/365; all with byte reset 369. Original admissions,
 // Boolean storage and complete body restored; entry vehicle/unit/ordinal residence remains.
+// Round 325: Complete unit/header/vehicle field receivers in seven subsets, then all with
+// final transform library copies: 405/306/293/406/419/289/420/420. Vehicle field reads
+// at both uses kept plain at 293 (1221/1209 bytes); original unit/header receivers and
+// transfers retained. Header/vehicle form 289 restored as a repeated computed address.
+// Entry vehicle promotion, unit/ordinal residence and state comparison width remain.
+// DH298: Reset output from the state-name test 264; final success from occupant
+// admission 305, both 274; short-circuit result 299, with reset 276; native long
+// branch/short-circuit/both-with-reset 296/296/288. NOT kept: the 264 form re-tests
+// `state_name == NONE` after the block to set reset, while retail stores 1 inside it
+// (0xea58f, no setcc); a redundant test picked by score is kept only with a match. Body
+// restored at 293.
+// Round 328: actual unit-slot pointer/reference with native state and vector-zero
+// combinations 308/303/308/303 each. Frame 0xec and entry vehicle in EBP;
+// original native acquisition, scopes, observations and full body restored; residence remains.
+// Round 330: marker inverse in place, native seat-quaternion output and shared request,
+// subsets 1-7 then all with guarded full-width state 287/311/320/305/300/318/320/317. Original body restored;
+// entry vehicle/unit/ordinal residence remains.
+// N326: Completed marker/matrix-input/inverse/output and relative-transform
+// workspace lifetimes: 293/293/293/293/293/293/293/293. All tie at 1221/1209.
+// Original scopes, observations, outputs and body restored; entry vehicle/unit homes remain.
+// P275: Whole header produces the initial unit and refreshes at the later original header
+// observation; guarded full-width state, quaternion-only scope and sequential request
+// subsets 0-7: 293/296/293/296/305/308/305/308. Original body restored; entry vehicle/unit homes remain.
+// P281: Existing request argument fields for drop/exit and a plain three-action interrupt table,
+// seven subsets then all with the unsigned vehicle mask: 293/293/627/293/627/627/627/627.
+// Payload fields tie; table forms grow to 1460/1209 bytes. Original complete body restored.
+// Round 487: Multi-use target vehicle scalar at entry/between results/before
+// admission/inside admission, long then dword: 293/293/293/293/293/293/293/293.
+// Original formals, lifetimes, admissions, outputs and complete body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -2624,8 +2800,7 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 				state_name = function_c7160(unit_index, seat_index, 0, vehicle_index, 0);
 
 			bool is_vehicle = TEST_FIELD_BIT(((1 << UNIT_ACTION_HEADER_GET(unit_index)->type) >> 1) & 1);
-			s_unit_action_unit *vehicle = UNIT_ACTION_UNIT_GET(vehicle_index);
-			byte *seat = *(byte **)(g_4e3b44[vehicle->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
+			byte *seat = *(byte **)(g_4e3b44[UNIT_ACTION_UNIT_GET(vehicle_index)->definition_index & 0xffff].bytes + 0x1cc) + seat_index * 0xb0;
 
 			if (unit->unknown13c != NONE)
 				function_bbe60(unit->definition_index);
@@ -2714,7 +2889,7 @@ bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool 
 				short user_index = unit_action_player_value28_get(unit->unknown13c);
 
 				if (user_index != NONE)
-					function_1874b0(user_index, (vector3f const *)((byte *)vehicle + 0x150));
+					function_1874b0(user_index, (vector3f const *)((byte *)UNIT_ACTION_UNIT_GET(vehicle_index) + 0x150));
 			}
 			result = true;
 			if (force)
@@ -4326,7 +4501,7 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 /* hoists a unit onto a ledge (type 49): its animation by the hoist marker,
    facing away from the ledge, its seat transform kept relative to the new
    frame */
-// score 175 (was 201): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
+// score 175 (was 175): Direct native position output gives 1388/1388 bytes; frame 0x110 versus 0x11c.
 // Scaled-away/frame-left XMM ranks and point sums remain. Earlier (201): the result is retail's
 // (per-case `result = b8d30 > 0 && f10f430`, body under
 // `if (result)`: the constant-1 store, the shared false epilogue and retail's exit sequence). Left: the
@@ -4360,6 +4535,37 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // AC468: Point/first-product/final-product workspace subsets 1-7: 201/201/201/223/223/204/204.
 // Direct native position output 175, plain confirmed at 1388/1388 bytes; kept. Frame 0x110 versus
 // 0x11c, scaled-away/frame-left XMM ranks and point sums remain; every quaternion operand is unchanged.
+// DL241: Native up/frame-field/quaternion memcpy boundaries, seven subsets 173 each; all with a
+// real late relative-position workspace 199. Two-point leads rejected; original native output and
+// whole body restored. Frame 0x110 versus 0x11c, frame-left and point schedules remain. The real-
+// position form recovers all quaternion homes, so another quaternion-name search is not justified.
+// Round 326: Actual away/left/world entry declaration lifetimes, seven subsets,
+// then all with the actual entry frame: 175 each. All producer points unchanged;
+// original declarations and native output restored; frame 0x110 versus 0x11c remains.
+// Round 328: existing complete frame builder 325; scalar up/frame-axis/position
+// setter subsets 1-7: 267/265/297/208/255/257/296. Original native copies,
+// basis construction, helper graph and full body restored; frame and XMM homes remain.
+// M311: Returned object-transform/point-helper composition/reversed actual-case subsets 1-7, all with
+// entry frame: 374/175/374/175/374/175/374/374; restored.
+// Round 330: consumed away/forward, side/frame-left and object/world position storage,
+// subsets 1-7 then all with native memcpy transfers 174/183/182/223/222/204/204/202. Original body restored;
+// frame and basis/point homes remain; original quaternion operands retained.
+// DH298: Complete forward/inverse point products and parallel row-pair sums,
+// seven subsets 175/175/173/175/173/173/173; all with late relative position 199.
+// Every form also raises the other helper caller from 0; both helpers and body restored.
+// Frame 0x110 versus 0x11c and point/basis scheduling remain.
+// Round 371: Actual result byte/short/word/long at original declaration,
+// 308/317/317/317; the same with entry false initialization 308/317/317/317.
+// All restored; native frame, basis and point/quaternion homes remain.
+// Round 373: Actual quaternion/position record receiver as pointer/reference, direct/late
+// position and native/library quaternion publication: 175/173/201/199/175/173/201/199. NOT kept: two-point
+// leads are below threshold; original byte receiver and whole body restored.
+// Round 375: Native/library away-input snapshot before/after up capture, real/double in-place scale:
+// 284/276/284/276/282/276/282/276. NOT kept: input record copies do not match and retain frame 0x110;
+// lengths 1406/1375 versus 1388. Original direct producer and complete body restored.
+// P280: Consumed scale-result cross input, direct existing double-factor scale and
+// its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
+// entry declarations 175/294. Original complete body restored; frame and basis homes remain.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
