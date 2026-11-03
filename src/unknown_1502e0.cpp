@@ -230,6 +230,10 @@ struct s_flag_word_bits
 // products 114/114/114/114; the same with a short return 135/135/135/135.
 // Original helper restored; player/root scheduling, duration XMM ownership,
 // effect dispatch and expanded tail remain.
+// Native definition/object/both field records 114/114/114; complete-definition
+// pointer/reference rounding inputs 114/114; tick-result output pointer/reference
+// 114/114; result-first named scalar homes 114. All restored; player/root,
+// duration, tick/effect homes and expanded tail remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1028,6 +1032,10 @@ struct s_tail_transfer_traits
 // DH319: Last-match array ordinal long/dword/short/byte, range admission
 // 189/189/196/197; unequal-sentinel admission 189/189/196/197. Original
 // pointer selection restored; selected-traits/unit/NONE homes and pool reloads remain.
+// Branch-owned primary/secondary/other default subsets 1/2/4/3/5/6/7:
+// 157/158/162/162/152/160/151; complete conditional slot producers 151.
+// NOT kept: at most two points and unmatched lifetime interaction. Original
+// defaults and body restored; selected-traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -2006,6 +2014,10 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
 // Original do-loop, counter position and weapon lifetime restored. Frame 0x28
 // agrees; player-data ownership and the EBP header-offset spill remain.
+// Entry-scope rounds/mode/request output subsets 1/2/4/3/5/6/7:
+// 202/202/204/202/204/204/204; all with role-based output names 204.
+// Original declarations, producers and body restored; player-data/header-offset
+// ownership and the shared rounds/mode output home remain.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {

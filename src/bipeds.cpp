@@ -4710,6 +4710,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // B395: Byte/signed-byte success accumulators, actor/support/velocity/entry producers:
 // 88/150/140/149 in either domain. NOT kept: all regress; canonical return conversion
 // and native support/result homes remain. Original Boolean result and complete body restored.
+// Native state/offset/jump field-domain subsets 1/2/4/3/5/6/7:
+// 68/68/68/68/68/68/68; complete graph with native early success 143.
+// All native record views and original result timing restored; support/result
+// byte homes and early success remain unresolved.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
