@@ -522,6 +522,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH306: whole initial readiness/loading admission, false construction or true rejection
 // refinement, bool/byte/short/long 252 each. NOT kept: result-tested flag needs exact equality.
 // Original body restored; missing frame word and zero/clock/output homes remain.
+// DH335: Native surround-bin stores, paired surround-gain chains and complete
+// stereo publications, subsets 1..7 and complete interleaved form, 246 each.
+// Original arrays and whole body restored; frame/status/clock and SSE gaps remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

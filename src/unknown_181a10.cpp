@@ -695,6 +695,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // DH331: Native origin/hit/position library-copy subsets 1..7, then all with completed-normal
 // library publication: 308/308/308/331/331/331/331/331. Original copy boundaries and entire body restored;
 // frame 0x4c versus 0x44 and classifier/plane/output homes remain.
+// DH335: Standard backward origin/hit/normal transfers, subsets 1..7, then
+// complete final position transfer: 312/303/372/305/376/352/354/377. NOT kept:
+// hit-only gain five and paired gain three; original complete body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

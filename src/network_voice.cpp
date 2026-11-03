@@ -3605,6 +3605,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // M344: Relay formal char/signed-char/byte/short/word/int/long/dword
 // 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
 // wider forms regress and lose the parser. Original bool contract/body restored.
+// DH335: stride char/signed-char/byte 160 each; word 163; int 139; 64-bit 164;
+// finite two-value stride and immutable long 139 each. No channel-home recovery;
+// non-native extents regress. Original stride and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

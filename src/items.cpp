@@ -1237,6 +1237,9 @@ struct s_item_flags_view_10b850
 // B392: Native rotation input/cross with plain output loops, direct/staged cross, immediate/separate
 // cosine loops and long/unsigned ordinals: 1000/1024/1009/1041/1000/1024/1009/1041. Original complete
 // helper and body restored; frame and Boolean/vector homes remain.
+// DH335: Axial-row scalar homes 839/860/864/878/839/860/864/878; first 839
+// is prior-form calibration. Complete axial-vector component loop 1000.
+// NOT kept: frame/length regress; original helper, inputs and full body restored.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
