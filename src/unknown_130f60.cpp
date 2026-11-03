@@ -176,6 +176,8 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 #define PIN(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
 
 // score 324 (was 324): Entry ESI save (image composition: it moves to the entry when src/unknown_0350e0.cpp is linked), the 1.0 constant's register (XMM5, retail XMM6) and the third accumulation's scheduling still differ.
+// Round 121 (fast control 336, aligned 103): the helper's clamp as if/else if 336 (103); remaining first 348 (156); weight before
+// height 345 (129); remaining before weight 348 (144); a named inverse weight 337 (108).
 // Round 291: Paired double-square terms, complete direction-square terms, both, ordered accumulator
 // clamp, and clamp combinations 410/414/420/402/410/414/420; all with disjoint clears before common
 // remaining initialization 454 (fast control 402; full 444).
@@ -327,6 +329,13 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // N337: Direction/null-sample/invalid-range early-continue subsets 1..7 and complete
 // combined sample guard: all eight 336 (fast control 336; full baseline 324).
 // Original admission tests and complete body restored; full-image ESI/unit/scale homes remain.
+// DH317: Existing planar magnitude/normalizer producers with native/shared opposite
+// construction and mutable/readonly source: 336/468/336/467/336/468/336/467
+// (fast control 336, full 324). Magnitude forms tie; normalizer forms grow 45-46
+// bytes. Original helper, three-component scaling, includes and full body restored.
+// B388: Complete opposite/direction squared-norm nodes and rounded magnitude in double,
+// subsets 1/2/4/3/5/6/7, then both sums in double: 337/338/400/338/399/388/388/459
+// (fast control 336; full 324). All regress; original norm expressions and storage restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

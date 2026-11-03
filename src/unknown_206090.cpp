@@ -333,9 +333,32 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // then all with the three coefficient lifetimes ended: 1355/1355/1355/1355/1355/1355/1355/1355. NOT
 // kept: no byte match; original complete body and every helper restored. Excess frame and
 // component/velocity/query homes remain.
+// Round 35 (m3 lane 17, fast): the second normalizer's accumulator as real 1380 (6211 bytes); the steering
+// magnitudes through fabs 1438 (6208 bytes); the three friction coefficients from one if/else on the dynamic
+// flag 1353 (two points, not kept); the twice-used dynamic/moving test named for both impact calls 1395 (6211
+// bytes, frame 0x5d0); the rest-length product computed before the other 1355 (same code).
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 128 (lane 8, fast control 1355 = plain): retail recomputes `imul index, 0xd8/0x4c/0x3c` at the contact
+// loop's top each iteration (no pointer induction) and leaves the duplicate search straight for its found exit.
+// Tried: a contact pointer for the loop's element 1401 (6211 bytes, still walked); the result-record pointer
+// declared at the loop's top 1355 (same code); the component index read at each use in the ray test 1474; the
+// ray length named and used twice 1382; a collected flag for the duplicate search 1402.
+// Round 201 (fast; aligned = difflib count): the five 12-byte magnitude copies are the frame excess
+// (a compile-only frame probe lists one copy per inlined magnitude). The two buffers declared at the top
+// 1355 (same code); the magnitude read through its pointer 1608 (6022 bytes, frame 0x590, aligned 968
+// against 969); the contact element as a pointer local throughout the contact loop 1401 (frame 0x5c8,
+// aligned 962); both together give retail's exact frame 0x58c and first difference +0x4e (local_4/local_5
+// and the component homes) but 1689 (5942 bytes, aligned 933): our build still biases the element
+// pointers (edi - 0x50) where retail keeps the element base and `lea ebp, [edi + 0xa0]`, and the first
+// loop's per-element pointer starts at +0xe4 where retail's starts at +0xe0; on that form a single-exit
+// normalizer 1689 (same code). Original body restored.
+// Round 79 (m3 lane 16, fast): first-loop cross through cross3f_staged 1462 (6179 bytes); through the file's own
+// k/j/i cross helper 1426 (6238 bytes, retail's length: local_5 then preloads like retail, but the local_4 add folds
+// into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
+// the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
+// local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

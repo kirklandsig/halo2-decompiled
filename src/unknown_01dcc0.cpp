@@ -287,6 +287,10 @@ long g_55e6c0;
 // terms computed before the clamp and the subtractions after it 68 (484 bytes); the width term
 // unsigned 29; the pitch units truncated to a byte local 142 (495 bytes; it keeps retail's
 // `lea [w*4]; shr 6` unfolded, with a movzx and the -1 moved ahead of the shl 0x18).
+// Round 133: native typed Size with subtraction-before-shift in the select 170; computed before
+// the typed select 97; raw level-count local at the clamp/at entry 29/29; multi-use height/width/
+// both dimension locals 29/29/29; native pitch only 31; native height only 96. The typed native
+// form unfolds its shifts but factors the two 12-bit shifts; original packing and body restored.
 // @retail 0x1df20
 bool function_1df20(long index, long kind, long width, long height, bool alternate, bool linear, long count, void *data)
 {

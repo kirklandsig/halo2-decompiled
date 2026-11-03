@@ -1238,9 +1238,21 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // DH306: actual matrix/orientation/node-record-displacement induction, seven subsets
 // 94/210/96/212/230/212/212; matrix-cursor-owned bound 396. NOT kept: best gains only three.
 // Original loop and no-model lookup restored; count entry and data reload remain.
+// Round 62 (m3 lane 10): node loop under `if (count > 1)` 96 (repeats the loop test, not kept); the loop as
+// `while` 97; the render node count named before the root block 212; the current object through the entry
+// header pointer 371 (1394 bytes); the model tag index read at each use 97. Original body restored.
 // Round 124 (m3 lane 8, fast): the default-orientation arm's two stores swapped 99; render index declared
 // before the model 97; `stored` declared beside the orientation test 389 (1370 bytes); the node mask declared
 // beside `stored` 97; the no-model parent indexed through `(word)parent_index` 100 (1380 bytes).
+// Round 45 (m3 lane 2, fast, base 97): walking matrix/orientation pointers in the node loop 97 (same code); a
+// no-model parent header pointer 97; `current` read through `header->object` 371 (1394 bytes, but the current
+// lookup no longer reloads g_4e0300); the render-node pointer scoped in the mask test (re-measured) 97; the
+// no-model data field read as a dword (re-measured) 97. Retail's `test eax, eax; jle` before the node loop's
+// `mov esi, 1; cmp; jle` is still unexplained.
+// Lane 18 round 36 (fast, re-measured on the 97 base): a `short` node counter 179 (1389 bytes); the stored/empty
+// sample-mask test as nested ifs 97 (same code); the no-model parent matrix through the existing function_b8bd0
+// 100 (1378 bytes, stays a call); the default-orientation test as `== 0` with `++node` and `&nodes[node * 0x60]`
+// 97 (same code); the render-node pointer declared inside the mask test 97 (same code).
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

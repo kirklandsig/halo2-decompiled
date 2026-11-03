@@ -2058,6 +2058,11 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // casts, declaration order, else, ternary, literal -1, masking and the truncated 0x13c read: 155,
 // 201, 212 and 269).
 // score 155 (was 155): Frame 0x1c agrees; indexed lookup, object/offset homes and low-mask ownership differ.
+// Lane 18 r37 (fast): plain 0x400000 mask test 168 (1070 B); a pointer to the 0x214 field used for
+// test and store 155; both tail compares written source-first 155; the 0x214 value named for test and
+// store 155; one compare-and-store template helper (reference target and value) for the 0x2000,
+// 0x400000 and all three 0x800000 updates, inline or forced inline, 240/240 at 1081 bytes (it stays an
+// out-of-line call under both). Original body restored.
 // Earlier: this round's head-block forms (the 0x13c value truncated to a short and
 // compared against both NONE forms, in nine source shapes) all score 149, and naming the object
 // index in a local, so the object address keeps retail's SIB base, scores 148 - a gain of seven
@@ -2301,6 +2306,9 @@ static __forceinline long function_9d453(long arg_0, short arg_1)
 // M330: Complete missing-child metadata/count/fraction result arms, seven subsets,
 // then all with uninitialized declarations before the getter: 247/273/212/273/248/273/283/283.
 // Original defaults and body restored; object/offset and low-mask homes remain.
+// Lane 14 r53 (fast, baseline 155 aligned 95): the volatile `this` copy removed 285 (aligned 98); both slot masks
+// named at the loop top 268 (1043 bytes, aligned 170); the first masked test in a named local 155; 0x214 through a
+// scoped field pointer 155; 0x214 as a scoped named value 155; a named `local_5 - 4` shift 155 (all aligned 95).
 // M334: First/mapped-parent scalar identities, independent semantic lexical priorities
 // 10/01/11/20/02/22/12/21, all 155 at 1072/1081 bytes. Original complete body restored;
 // indexed lookup, object/offset homes and low-mask ownership remain.

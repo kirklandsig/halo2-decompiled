@@ -161,6 +161,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // ordinary each-use inputs 687/690/697/687; with emission count-pointer traversal
 // 659/678/664/659. Original helper and body restored; early mesh/count homes, creation
 // call and transform ranks remain. Earlier four-corner loop plan excluded before any trial.
+// Round 77 (m3 lane 16, fast): the entry guard as a positive `if` around the body 122 (2664 bytes); the vertex
+// array declared inside the block after the guard 94 (same code); the maximum as one `first || greater` test 115;
+// the clamp helper without its volatile pointers (one named value) 687 (2551 bytes: the volatile reads are
+// load-bearing); the strip-count loop counter renamed 94 (same code). Still BLOCKED-BY 0x17cfa0 (contributor).
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

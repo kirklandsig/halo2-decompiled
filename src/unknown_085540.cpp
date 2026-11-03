@@ -884,6 +884,11 @@ bool function_1995a0(const byte *source, dword source_size, byte *destination, l
 // the zero becomes a shared register and the kind still follows both zero stores), with the named data
 // pointer 20; a copy from a static const zero header 120 (419 bytes); the data address as `destination +
 // header.offset` 106 (410 bytes), as `header.offset + destination` 106. Original body restored.
+// Round 98: a four-byte clear, kind, then a direct offset zero 111 (400 bytes); two partial clears with
+// the terminal arm first and the data pointer 18, also with the terminal buffer declared first 18; a dword
+// first-half view with the offset memset 18, with kind `+= 1` 18; the full clear and kind `+= 1` with the
+// data pointer 10 (interleaves the stores but emits `inc` and moves the count test), with a named positive
+// test 10; kind `= !kind` there 116 (414 bytes). Original body restored.
 // @retail 0x86800
 bool function_86800(dword capacity, c_simulation_view *view, dword source_size, byte *destination)
 {
@@ -1302,6 +1307,10 @@ bool function_68670(byte *source, long size, void *block);
 // re-derived view-member cursor update 145 (575 bytes); split addition/remainder updates 24; ring-member
 // reader 24; two-use long payload size 129; force-inline read helper 24; const ring receiver 24.
 // Original helper and body restored.
+// Round 140 (m3 lane 5, fast): the start update as `count + buffer->start` 24; case 2's block passed as `block.bytes`
+// 24 and the payload passed as `&payload` 24 (both re-measured on this body: round 34 listed them on its 21 form);
+// the cases in source order 1, 0, 2 24; the header read with a literal 8 24 (all identical code). Left as before: the first read keeps the start in ESI across 0x1a19a0, and 0x68670's
+// arguments are set up ESI before EAX (retail EAX first): BLOCKED-BY 0x68670 (contributor code, single caller).
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

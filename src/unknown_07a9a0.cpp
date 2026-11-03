@@ -1170,9 +1170,22 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // Original word workspace and both populations restored; frame/session/lookup remain.
 // M312: Actual capacity/team selector interior case priorities, five capacity/two team/one joint:
 // 766/766/766/766/766/766/766/766. Original body restored.
+// Lane 14 r53 (fast): the variant lookup after the summary read 803; after the capacity 942 (2732 B, aligned 695 from
+// 750: session then arrives in ECX and 0x73530 reads 1); the variant named on its own line or tested at once 766.
+// The memset and result ahead of the opening lookups 926 (2736 B, aligned 779).
+// Diagnostic, not kept: 0x192e60 pinned out of line gives retail's head, session in EAX and 0x73530 byte for byte,
+// but this function 942 (2700 B) since the capacity switch then stays a call where retail has it inline. So retail's
+// inline choices here are call out of line, capacity inline; ours are the reverse pair.
 // M334: Current Boolean-balance/word-workspace graph with existing team/minimum/maximum/spread/
 // limited/imbalance selectors forced inline, then all party bounds and all except capacity:
 // 766/766/766/766/766/766/766/766. Original inline contracts restored; frame/session/lookup remain.
+// Lane 14 r55 (fast): retail's player loop is the matched 0x63220 (session_summary_get_player_value) expanded: its
+// MAX evaluates 0x1931a0 twice (the inline loop, then the call), with 0x631f0 and 0x192e60 inline inside it; the body
+// here is that function written out. The call to 0x63220 1097 (2524 B: our link keeps it out of line; the function
+// then returns with ret 4 as retail); with a __forceinline declaration here, or `inline` on 0x63220's definition, the
+// same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
+// out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
+// through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
