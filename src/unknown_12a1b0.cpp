@@ -1387,6 +1387,9 @@ struct s_looping_detail_request
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four
 // static calls versus six in retail. Original entire body and all offset/camera observation
 // points restored; detail/offset transport and query expansion remain.
+// B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
+// with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
+// original completion and full body restored; first-player call and detail/offset homes remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

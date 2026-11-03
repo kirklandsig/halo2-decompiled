@@ -1020,6 +1020,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // direct branch-owned result alone/with complemented general result 345/345 (3050/3047 bytes).
 // NOT kept: one-use call-result carriers require a byte match. Original complete body restored;
 // damping ECX/EDX and raw/bounded homes remain.
+// B389: Complete native aggregate producers: direct rotation/raw/working, general working/raw,
+// direct raw+working, general raw+working and all: 433/433/497/551/433/497/551/584.
+// Original raw-first body restored; damping and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

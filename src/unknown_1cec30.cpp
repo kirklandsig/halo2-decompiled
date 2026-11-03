@@ -2397,6 +2397,9 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
 // length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
 // and shared-helper body is restored. Original executable source restored.
+// B389: Complete final-speed factor/numerator/denominator nodes, masks 1/2/4/3/6/5/7,
+// then original speed with division in place: 91/91/278/91/99/88/99/91. NOT kept: factor plus
+// denominator gains only three and only together; original body restored, early velocity j/k and zero homes remain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

@@ -644,6 +644,9 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// B389: One failed-request edge to the sole exit, byte/char/bool/word/short/dword/long/int
+// success domains: 348/348/478/545/545/496/496/496. Original byte guard and body restored;
+// destructive graph-base/reload ownership and low-byte return remain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)

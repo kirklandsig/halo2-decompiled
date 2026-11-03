@@ -718,6 +718,9 @@ bool sound_driver_voice_create_buffer(
 // AC485: existing SDK member calls at submix/spatial creation and buffer operations,
 // subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
 // caller stays matched. One-point form rejected; original API calls/body restored.
+// B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
+// then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
+// signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
