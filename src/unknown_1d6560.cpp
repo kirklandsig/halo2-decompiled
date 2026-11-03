@@ -219,6 +219,9 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
 // one-use getter pointer and early object-pointer read; several forms also lose
 // the matched caller. Original body, both observations and caller convention restored.
+// DH314: Cached model/body-array producer roots, native/readonly, repeated type:
+// 117/117/113/113; shared byte type: 104/104/98/98. All lose the matched caller
+// (215 or 14); original entry acquisition, selected body, type observations and body restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
