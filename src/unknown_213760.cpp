@@ -1461,6 +1461,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // 33 and all controls are unchanged; checksum locals and field-address copies fail their exact-match
 // requirement, and the existing checker inline contract gains nothing. Original executable source
 // restored.
+// F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
+// all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
+// initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
 // @retail 0x213970
 void function_213970(void)
 {

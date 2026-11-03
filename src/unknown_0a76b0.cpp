@@ -1892,6 +1892,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // M329: Independent request/weapon/result/modes declarations separated from their
 // original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
 // 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
+// F347: Explicit case 2/default failure after 01/before 01/after 3/after 4/after 5/after 6:
+// 60/60/60/60/60/60; reverse 6543 with failure before 01/first: 119/119. Original
+// complete body restored; request/weapon homes and getter expansion remain.
 // M331: Isolated mode-0/1 query-result producers, admitted overwrite/positive gate/negative gate/rejection
 // disjunction/conditional/full test/sequential rejection/query leaves: 70/70/70/60/70/60/60/60. NOT kept:
 // no qualifying gain or byte match. Original complete body restored; request/weapon EBX/EBP homes and
@@ -2821,6 +2824,9 @@ long function_c8f60(long unit_index, short seat_index);
 // F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
 // complementary nonvehicle polarity:
 // 293/293/299/299/300/300/319/321. Original complete executable body restored.
+// F348: Native typed seat receiver mutable/readonly with original, complete, conditional
+// and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
+// All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
