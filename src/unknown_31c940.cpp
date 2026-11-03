@@ -526,10 +526,11 @@ static __forceinline float select_angular_limit(double velocity, float const &ta
 }
 
 // Convert only the SIMD update to float; retain the x87 impulse for results.
+// Capture B's inverse inertia before either body update, including aliases.
 static __forceinline void update_angular_values(float impulse,
 	__m128 const &axis_a, __m128 const &axis_b,
 	__m128 &velocity_a, __m128 &velocity_b,
-	__m128 const &inverse_a, __m128 const &inverse_b, float *result)
+	__m128 const &inverse_a, __m128 inverse_b, float *result)
 {
 	__m128 scalar = _mm_set_ss(impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_a);
@@ -774,7 +775,7 @@ static __forceinline float const &capture_writeback_time(solver_step_31c940 *con
 {
 	return step->inverse_time;
 }
-// score 1900: both normal fallback layouts and captured writeback lifetimes.
+// score 1897: normal fallbacks, writeback lifetimes, and captured angular inertia.
 // SSE scheduling, scalar homes, repeated broadcasts and control flow still differ.
 // @retail 0x31c940
 long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *operations,
