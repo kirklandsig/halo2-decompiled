@@ -358,6 +358,12 @@ PRIVATE inline byte *request_unit(long object_index, byte *headers)
 // sum (118 each, before the order change), and early-return, if/else, ternary, written in the caller, nested ifs, force
 // inline (111 each); a named parent object, a named definition index, both (110 each). Rotations left: entry EAX/table ECX
 // at the getter, and each later case block's scratch. All restored.
+// Round 54 (m3 lane 14, fast): the entry through the existing out-of-line 0x1e8d50 (LTCG inlines it) gives
+// retail's getter exactly (table ECX, result EAX; every instruction to case 4 then has retail's size) but 166:
+// case 4's 0xd0590 rotation (BLOCKED-BY 0xd0590) grows one byte and the jump table moves 4; the file's inline
+// getter in 0x1e8d50's shape 118 (same code); on the 0x1e8d50 form, seat read before parent 171, case 4 flags
+// through seats[seat] without the seat pointer 434 (retail adds the pointer before loading), the player index
+// as 0x1e83c0's ternary 618. Retry the 0x1e8d50 call once 0xd0590's order is settled.
 // @retail 0x1e7ab0
 bool function_1e7ab0(long local_index, long type)
 {

@@ -352,6 +352,11 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // Round 541: Standard weighted-array multiplication ranges a/b/c, seven subsets and returned
 // output-iterator chain: 795/789/773/804/780/754/766/774. Frame becomes 0x4824; every
 // form regresses. Original ten stores, includes, helpers and complete body restored.
+// Round 54 (m3 lane 14, fast listed with 0x131030): the three-scalar helper clamping into a named weight
+// instead of reassigning its parameter 617; that helper in colour/intensity/weight/remaining order 723; its
+// scalar products as weight * value 616 (same code: ours copies the weight for the first two scalar products
+// where retail multiplies the loaded scalar in place, the 22-byte length gap); the clamp helper as plain
+// static inline 616 (same code); the merge helper's weight/remaining after its colour block 715.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
