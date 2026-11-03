@@ -604,6 +604,11 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // F336: Maximum dword/once-read twice-used priority/later constant acquisition,
 // seven subsets on the retained signed-state graph, then plain dword with priority:
 // 416/412/414/414/418/414/416/428. Original maximum, observations, cases and complete body restored.
+// Round 46 (m3 lane 15, fast): volatile sample/update flags (diagnostic, reverted) 424 (frame 0xa0; `index`
+// then takes EBX and the actor is still re-read from its stack slot; our loop holds the actor pointer in EDI
+// where retail spills it); loop actor fields through fresh actor lookups 457; plain word maximum 429 (1616
+// bytes); the current-target test as one named bool 438 (1616 bytes); the list head through the held actor
+// pointer 442 (1616 bytes); sample/update declared before the prior state 412 (same code).
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

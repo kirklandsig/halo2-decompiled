@@ -547,6 +547,10 @@ bool __stdcall geometry_cache_block_busy(long block_index)
 // linked flag, a derived-struct group, the block through a cast of its field's address: aligned 8
 // each, as the helper alone (the in-loop block still goes straight to esi; retail loads edx and
 // copies it to esi); the count stored after the block read 32 (the store sinks past the test).
+// Round 46 (fast): the loop's block local declared before the loop 27; declared ahead of the tasks
+// store 27; the release under `if (!linked) continue;` 27; the address as `(byte *)g_4e6494 + (offset <<
+// shift)` 27; the physical block looked up at entry, before the block test, 27 (all identical code). In-loop
+// block still goes straight to ESI (retail EDX, copied late).
 // @retail 0x12e290
 void __stdcall function_12e290(long block_index)
 {
