@@ -1067,6 +1067,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // DH319: Complete final turn-test stop/continue results in bool/byte/short/long
 // storage: 140/140/140/140/140/140/140/140, all 1382 bytes. Original expression
 // restored; native j/k products, side-dot and output scheduling remain.
+// P298: Actual turn admission at entry/sample/scaled/rotation boundaries, short-circuit
+// 382/335/203/192; eager Boolean inputs 336/183/183/183. All restored; rotation
+// multiplicands and exit scheduling remain. NOT kept: early decision lifetimes did not match.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

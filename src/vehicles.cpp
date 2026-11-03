@@ -1235,6 +1235,9 @@ long function_10f5f0(long object_index);
 // masks 1/2/4/3/5/6/7, then six-real output: 575/599/565/617/575/599/617/617.
 // Word-load/shift prefix partly recovered; predicate stores and native frame still miss.
 // Original tests, load widths, API buffer and entire body restored.
+// P298: Control-call accumulation by test/logical/conditional/named-result forms
+// 533/621/533/533; request-call accumulation 614/619/614/614. Original body restored.
+// NOT kept: 533 grows to 2300/2264 bytes; frame and native predicate stores still differ.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

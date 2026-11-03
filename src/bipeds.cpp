@@ -2348,6 +2348,9 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
 // validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
+// P298: Existing dword fallback setter with native word setters at pre-call/post-call/failure
+// clear boundaries, masks 0..7: 73/78/78/100/73/78/78/100. The fallback memory OR agrees;
+// extra EBP and count/body transport remain. Original complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {

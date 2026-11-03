@@ -1785,6 +1785,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
 // parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
 // Original full body restored; request/frame, playback/NONE and range/ring homes remain.
+// P298: Detail-query acceptance in bool/byte/short/long, complete short-circuit results
+// 305/305/305/305; query-failure completion 442/442/444/443. Exact-only carriers restored;
+// native frame and playback/NONE/range/request homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2438,6 +2441,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // B387: Existing byte-flag writer at all three final publication sites, seven subsets,
 // then all with masked native truth arguments: 694 each (reduced control 694, full 597).
 // Original complete body restored; entry true/flags, record/track homes and loop padding remain.
+// P298: Independent energy/output ordinals, two do/do identities 597/597;
+// for/do, do/for, for/for and while counterparts 672/724/769/672/724/769.
+// Original loops and complete body restored; entry true/flags and record/track homes remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
