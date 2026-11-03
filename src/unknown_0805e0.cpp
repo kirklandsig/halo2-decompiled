@@ -228,6 +228,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // the entry 79, a for loop 56 (139), the per-pass result 86 (95), both 86, `*iterator != NONE` test 79; per-pass result
 // stepping `index = *iterator` 59 (135, callers keep; hoist as retail, index and successor share ECX, entry copied to ESI,
 // padded head), a guarded do-while 59; an index or iterator guard around the helper loop 73/73 (108, callers lose).
+// Round 76 (m3 lane 16, fast, with 0x1a303b/0x2b393c): an unsigned index 43 (same code); the two flag tests as an
+// outer `if` around the record tests 43 (same code); the machine-local test on the high xuid dword
+// (`xuid[1] >> 16`) 71 (110 bytes, both callers lose); the machine-local test as a 64-bit mask compare 44; as a
+// `(word)` of the shifted xuid 49.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
