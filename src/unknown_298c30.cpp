@@ -221,6 +221,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // N328: Object receiver after sum/normalization/endpoints/at projection, original then native velocity
 // fields on the retained emitter graph: 395/407/434/436/397/407/434/448. Original receiver timing and
 // body restored; entry sum and normalized XY/magnitude homes remain.
+// DH310: Complete normalized scalar outputs/native point/library copy/component point, original/early-reject guard,
+// 395/467/467/385/395/467/467/385. NOT kept: the unmatched 385 groups outputs in another point record;
+// only SSE ranks improve, native XY/magnitude homes remain. Original helper and entire body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)
