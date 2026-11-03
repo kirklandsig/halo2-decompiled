@@ -657,6 +657,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
 // subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
 // reload remains.
+// N331: Actual notification eligibility bool/byte/short/long on the saved-word graph,
+// original site 77/77/77/77; before bitmap stores 106/106/106/106. NOT kept: one-use
+// admission needs an exact match. Original body restored; shared old-mask reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5576,6 +5579,9 @@ void __stdcall function_d6bc0(long object_index);
 // Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
 // and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
 // domains restored; frame 0x14/0x18 and independent timer spill remain.
+// M327: Native entry-record cursor with body/outer receiver and pointer/reference/direct/early-used timer:
+// 242/242/242/246/242/242/242/246, frames 0x1c versus retail 0x18, extents 879/882 versus 869.
+// Original indexed body restored; independent timer spill and entries-base reloads remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
