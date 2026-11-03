@@ -681,6 +681,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
 // 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
 // present test as `present & ~old` 86 (diagnostic, not equivalent).
+// N351: Mask-field reference/immutable pointer, original/condition-owned immutable player, saved dword/word:
+// 32/77/32/77/32/77/32/77. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: native word entry and shared post-loop mask reload.
 // @retail 0x158140
 void function_158140(void)
 {

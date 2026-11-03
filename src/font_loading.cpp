@@ -664,6 +664,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N348: Stable write/count-only mode shared by all five output checks, bool/byte/short/long:
 // 206/206/241/241 in either truth channel. NOT kept: mode storage regresses the frame,
 // length and alpha/literal schedules. Original pointer checks, helper and body restored.
+// N351: Packed-run case orders 40162357/14062357/61402357/26140357/32614057/53261407/65432107/13502467:
+// 90/91/94/93/167/115/116/97. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: alpha extension, literal assembly and run-two reuse.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

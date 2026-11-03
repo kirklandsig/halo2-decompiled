@@ -252,6 +252,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// N351: One outer admission/cache-finalization exit, counter/table order, returned path and outer-buffer subsets 0..7:
+// 128/126/126/126/128/126/126/126. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: outer EBP preservation and read-size/count/cursor homes.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

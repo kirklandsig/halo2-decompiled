@@ -1138,6 +1138,9 @@ done:
 // reference pointer 158 (454 bytes, 0xd2a50 72); that with the state struct split into three locals 157 (456,
 // 0xd2a50 97); the split alone 157 (0xd2a50 97); a named cluster pointer for the 0xbf9a0 output and its read 138
 // (473); the exclusion preset false and assigned the definition test inside `if (type == 6)` 133 (470 bytes, setne).
+// N351: Native output long fields +08/+0c/+10, subsets 1/2/4/3/5/6/7, then model-output pointer:
+// 125/125/125/125/125/125/125/124. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: exclusion/result/NONE homes and direction reload.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)

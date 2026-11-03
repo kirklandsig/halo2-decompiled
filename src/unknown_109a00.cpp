@@ -599,6 +599,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // seven subsets then the complete family with prior matrix memcpy: 161/207/220/207/222/220/216/216.
 // Previous-center setter recovers the caller but gives 207/911 bytes; NOT kept. Original complete body
 // restored; native input registers, early physics spill and center/projection remain.
+// N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
+// 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
+// Remaining: entry registers, physics-pointer spill and center/projection schedule.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
