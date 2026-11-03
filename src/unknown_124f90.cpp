@@ -637,6 +637,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // as `g_4e6378 + voice_index` with the index advanced in its own statement 3; a long type counter 28;
 // the bound as a short member of the counts struct 3; `system->voice_count +=` 3, with the two final
 // stores through system too 59 (561 bytes).
+// Round 129: typed three-count array reference 3; whole count-record pointer 3; const voice pointer 3;
+// short-sentinel chain 5; stream_reset beside definition_type 11; driver identifier beside sound
+// identifier 8; pointer fields before short sentinels 8; definition_type after the zero bytes 5.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
