@@ -2452,6 +2452,9 @@ struct s_unit_event
 // M328: Independent child/seat iterator and event role names, seven subsets then
 // all with the primary receiver renamed: eight 472s. Complete original body
 // restored; frame agrees but permutation ingress and call-cycle homes remain.
+// M330: Independent object/region/permutation declaration ranks, six orders, then
+// both edge orders with uninitialized datum at entry: eight 472s. All producer
+// assignments stayed fixed; original declarations and body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4640,6 +4643,10 @@ struct s_damage_object_creation
 // DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
 // scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
 // offset/definition and detached/node homes remain.
+// M331: Detached bitmap zero at six capture/receiver/count boundaries, then two separate
+// declaration/assignment forms on invariant creation admission: 174/194/194/194/215/215/194/215. NOT kept:
+// no qualifying gain or byte match. Original complete body restored; entry handle/offset and detached/node
+// homes remain.
 // P283: Actual node-size/offset fields, eight-byte metadata records and shared
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.

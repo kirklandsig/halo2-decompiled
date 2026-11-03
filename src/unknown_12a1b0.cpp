@@ -2377,6 +2377,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
 // 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
 // the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
+// M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
+// then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
+// Distance/maximum homes and entry true/flags remain; original complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

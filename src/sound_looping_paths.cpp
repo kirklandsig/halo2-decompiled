@@ -716,6 +716,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 544: Query-tail output cursor, indices/portals/clusters lead, then
 // parallel cursors with those leads, then one/parallel while forms:
 // 304/303/304/271/259/246/304/271. Original indexed fill and whole body restored.
+// M331: Actual query-array declaration ranks ipc/icp/pic/pci/cip/cpi with count after, then pre-
+// position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
+// qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
+// publication scheduling remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
