@@ -498,6 +498,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // Round 541: Existing scaler pointer/reference result contracts, discarded/scalar/shared-add/native-local
 // consumers, with direct update argument: 99/99/99/148/99/99/99/148. Original helper and
 // body restored. Two alias-sensitive output-first forms 150/150 excluded; no retained change.
+// Round 62 (m3 lane 10): correction adds `correction.c + state->velocity.c` 32; limit before the deltas
+// 46; the limit test inverted with its arms swapped 32; tick scale straight from the short field 32;
+// correction products inline in the output sums 101 (348 bytes). Original body restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
