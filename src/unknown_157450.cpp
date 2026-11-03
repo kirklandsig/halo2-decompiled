@@ -669,6 +669,11 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // for the playing store 63, the index field in a local 63, the added mask at entry 140 (368 bytes) or
 // after the stores 65, the change test staged in a bool 110. The word team mask with the volatile keeps
 // retail's entry through +0x60 (77, aligned 19): the block reload into ECX remains.
+// Lane 14 r55 (fast): word mask control 77; on it, the mask stored through globals but read through the pointer
+// 77 (the engine-index load stays after the playing store); `(word)present_teams != old_team_mask` 24 (retail's entry
+// through +0x60, but a width cast on one side of a compare, and retail compares dword: `movzx eax, cx; cmp esi, eax`;
+// not kept); a word new-mask local ahead of the change test 133 (375 B); the added mask declared ahead of the change
+// test 130 (375 B), 59 on the word mask; the volatile present declared first on the word mask 86.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -4281,7 +4286,9 @@ void function_15fe20(long team_index, color3f *color);
 // mask alone is 87 (was 88). One-use locals are kept only with a match.
 // The remaining differences are register homes (the mode global in EDX against retail's EAX, the
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
-// score 42 (was 88): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
+long function_14de70(long local_player_index);
+
+// score 42 (was 42): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
@@ -4439,12 +4446,16 @@ void function_15fe20(long team_index, color3f *color);
 // ternary or if/else 41 (2692 B, aligned 22), named absolute index 72, named absolute with the slot compare 70,
 // a headers pointer 72, a named byte offset 72. Left: -1 stays immediate where retail compares with ESI, the unit
 // index in EAX for retail's ECX, and the pool read ahead of the index.
+// Lane 14 r55 (fast): weapon default before the unit test with the existing unit_weapon_view_get and an `if` for
+// the slot 73 (2688 B; `or esi, -1` placed as retail, both compares immediate); both NONE tests written against the
+// weapon local 71 (the constant still propagates); `(short)iterator.index` as the zone shift count 41 (retail's
+// `mov cl, byte`, under the keep threshold); OBJECT_DATUM_GET with a signed char slot 75 (`cmp cl, 0xff`); the
+// player index through the existing 0x14de70 42 (same code; kept, it was that function's body written out).
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
     s_statborg *stats = game_engine_statborg_inline();
-    long player_index = NONE;
-    if (local_index != NONE) player_index = g_4e8c20->entries[local_index];
+    long player_index = function_14de70(local_index);
     bool result = true;
     memset(display, 0, sizeof(*display));
     if (player_index != NONE && stats)
@@ -5614,6 +5625,10 @@ void __stdcall function_d6bc0(long object_index);
 // its address at every use 158 [49], a second index local 158, the countdown forms 158, 158. Left: EDI holds
 // entries across blocks where retail reloads it into a scratch at each use and holds the timer in EDI (8 bytes),
 // the case 1 branch polarity, the modifier default's thread, the pool read ahead of the index.
+// Lane 14 r55 (fast): the timer pointer formed from a const volatile read of the `entries` parameter with scenario
+// declared before the rate 180 (884 B: frame 0x18, but the timer slot lands between object and preset where retail's
+// sits between rate and scenario); the timer renamed 180 (no move); `if (*timer > 0) { if (--*timer == 0)` 144 (same
+// code); the modifier as a nested ternary 159 (874 B); the object lookup indexed by `(word)index` 182 (movzx).
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

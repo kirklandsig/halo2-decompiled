@@ -270,6 +270,10 @@ static __forceinline long game_seconds_to_ticks_round(real seconds)
 // first test in a static inline helper 173 (433), forceinline 110; class flag alone in a helper 163; class getter
 // helper 110; the lookup's header helper as if/else with named locals 131 (0x221810 17, 0x129aa0 96), as nested
 // inline getters 110. Restored: retail's first lookup would need conditional depth two or a costlier callee.
+// Lane 14 r55 (fast): an early return for a NONE tag 152 (483 B); the tag's flag tested ahead of the class lookup
+// 160 (446 B; both 0x221810 calls then stay out of line as in retail, but in the wrong test order); one sound_class
+// local for both lookups 110 (same code); the flags built in state.flags 150 (484 B); the flags as one OR of three
+// conditional terms 160 (490 B).
 // @retail 0x189fe0
 long function_189fe0(s_sound_request const *request, long tag_index)
 {
