@@ -606,6 +606,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
 // vector workspaces 225/126/225/126/225/126/225/225.
 // NOT kept: no gain; original full body/helpers restored.
+// Y560: Complete weighted-forward blend products, row/staged scalar then row/staged
+// vector, y/x then x/y publication: 126/126/131/131/210/126/211/131. NOT kept: no byte match;
+// original coefficient/products and whole body restored; velocity/unity and SIMD/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {

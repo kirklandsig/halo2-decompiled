@@ -3278,6 +3278,9 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y560: Zero-empty one-based selected ordinal in long/dword/int64, then count sentinel,
+// with bitwise/conditional radio: 420/420/473/485/415/415/487/435. NOT kept: optional-state
+// representations do not match retail; original independent decisions and full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
