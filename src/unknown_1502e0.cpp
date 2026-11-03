@@ -462,6 +462,9 @@ struct s_tail_player_identifier
 // Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
 // test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
 // delayed saves and identifier/options/comparison allocation remain.
+// M348: Comparison transport unsigned-long/short/word/signed-byte/byte 31/67/67/67/67;
+// equality carrier 31; negative continuation/explicit mismatch arms 32/32.
+// NOT kept: no byte match; native options/identifier/comparison homes remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1336,6 +1339,9 @@ void function_150820(dword *bits, bool local_only)
 // Y559: Complementary final failure bool/byte/short/long, conditional then
 // guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
 // native ESI player/EDI hand and temporary entry registers remain.
+// M348: Hand unsigned-long/word/byte/signed-byte 43/81/89/89; positive result
+// byte/signed-byte/short/long 92/92/90/91. NOT kept: no byte match;
+// native player/hand homes remain. Original body and call tuples restored.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
