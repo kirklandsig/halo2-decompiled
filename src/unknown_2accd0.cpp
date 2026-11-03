@@ -1148,6 +1148,11 @@ struct s_signed_file_write_parameters
 // or clear-produced transfer pointer, eight nonoriginal pairs: 101/101/102/101/101/102/101/101.
 // NOT kept: one-point reductions and one-use call-result carriers without an exact match.
 // Original complete body restored; capacity EAX/EBX and extension buffer/offset homes remain.
+// J243: On the direct-header-return/live-seek graph, capacity-default minimum
+// clear/transfer/both/extension/clear+extension/transfer+extension/all: 95/101/96/229/226/230/227;
+// complete remaining-default producers 166. NOT kept: seven/one/six-point reductions are below the keep
+// bar; extension forms regress. Frame 0x18 agrees; capacity EAX-to-EBX staging and extension
+// buffer/offset homes remain. Original minima and complete body restored.
 // DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
 // callback inline metadata: 102/102/102/102/102/102/102/102.
 // Original complete source restored; no eligible gain.

@@ -320,6 +320,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
 // All 878/870 bytes; original complete body restored. Split post-sample cache comparison
 // and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
+// J243: Fifth sample shared helper/return, distinct helper/return and actual-field output, first-four
+// direct returns with shared/field fifth outputs, and entry-owned shared output: 55 each. NOT kept: no
+// gain. Original output contracts restored; split post-sample comparison and evaluator/child scratch
+// homes remain.
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
