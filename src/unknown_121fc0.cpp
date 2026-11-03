@@ -245,6 +245,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// DH331: Native next-cursor reference in existing tokenizer, original/early-null/nested-result/
+// output-owned graphs, pointer then fixed-array delimiter input: 128/232/193/248/128/232/193/248.
+// Original tokenizer and loader restored; early EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -661,6 +661,9 @@ static inline word font_character_pixel(long alpha, long color)
 // N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
 // original word then full-width pixel result: 139/172/182/183/163/166/174/175.
 // NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// DH331: C-runtime word fill at switch/ordinary/both boundaries, long then word fill values,
+// then both with full-width pixel result and long/word fills: 86/86/87/108/107/108/106/108.
+// Original fills, helper and body restored; alpha widening, literal assembly and two-run reuse remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {
