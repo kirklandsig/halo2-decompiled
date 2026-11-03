@@ -1508,6 +1508,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // mutable/read-only candidate receivers: eight 150s, 848/846 bytes. Original
 // traversal and complete body restored; iterator scaling, leave-selector and
 // request/slot publication remain. NOT kept: all bounds regress and lengthen.
+// DH329: Native inner seat cursor, short/word/long/dword ordinals, mutable/read-only
+// rows 34/176/165/165/34/176/165/165. Original ordinal loop and complete body restored;
+// NOT kept: no match or qualifying gain; iterator/leave-request/publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2768,6 +2771,9 @@ struct s_scenario_scripting_view
 // DH327: Explicit signed set-admission result, positive/complementary,
 // bool/byte/short/long: eight 80s. Original short-circuit guards and complete
 // search restored; actor/counter/set homes and guarded data observation remain.
+// DH329: Own packed-input pointer at entry/actor/scenario/selector scope, native/read-only,
+// eight 101s at 377/367 bytes; wrapper 14. NOT kept: own-input aliases lack equality,
+// lengthen and lose the wrapper. Original input, selector and complete search restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

@@ -1254,6 +1254,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M335: Rejection-owned connection exits on the native-input graph, subsets
 // 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
 // Original complete body restored; delayed ESI save and late expansion remain.
+// DH329: Primary priorities DQCPS/DSQCP/DSPCQ/DSCQP/DPQCS/DPSCQ/DCQPS/QSDPC
+// 207/198/198/208/202/198/206/197 reduced, control 196 (full 153). Original classifiers restored;
+// NOT kept: all regress; delayed ESI save and late-handler expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
