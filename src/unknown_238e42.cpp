@@ -1070,6 +1070,8 @@ bool __stdcall function_2399da(long controller_index)
 // Round 199 (fast): the task index as DWORD 90; the removal test as a named `bool remove` 90; the over-rank test as
 // `!(rank > own_rank)` 90; the identity test split into a NULL test and a 64-bit test, each with its own 0x5c
 // denial 90 (merged back); `if (may_change && !have_member) copy; else if (!have_member) deny` 122 (438 bytes).
+// Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
+// removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

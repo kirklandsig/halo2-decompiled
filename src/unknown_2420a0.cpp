@@ -171,7 +171,7 @@ void function_15e130(long object_index);
 void __stdcall function_b8540(long a);
 void function_157670();
 void function_15e4d0();
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 bool function_bacc0(long object_index, long index, point3f const *point);
 bool function_138860();
 bool function_138880();
@@ -578,6 +578,12 @@ long function_243b10(long key_b, bool team_only, long *second)
 // distance 169 (aligned 83 against 54); `slots` read after the 0x19ec40 call 169, with the accumulated distance 169.
 // Lead: `test; mov ebp, [g]; jne` is the same first instruction of both select arms merged upward, so retail's else arm
 // loads the table twice; every form that reads the global outside `slots` hoists it out of the loop.
+// Round 140 (m3 lane 5, fast with 0x19ec40 and its three callees): one `point3f *bounds` picked by `k == 0 ?
+// &bounds[0][slot] : &bounds[1][slot]` as matched 0x244680 does, with the accumulated distance, 388 (499 B: retail
+// really repeats the k test at each use); the accumulated distance computed inside each k arm 197 (743 B, VC does
+// not merge the two copies upward); the table through the global at each use 200 (688 B; both select arms then load
+// it into their own scratch register and nothing stays in EBP); `short key` 173 (same code); a function-scope pointer
+// to g_4e0350 for the position and the inner loop 178.
 // Round 61 (m3 lane 10, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): retail reloads the table from
 // g_51ec80 itself after borrowing EBP (`mov ebp, [0x51ec80]` in the clause code) where ours reloads the `slots`
 // local's spill; the global at every use re-measured 200 (688 bytes, as rounds 89/115; both select arms then load
@@ -1993,6 +1999,11 @@ long function_242ef0(s_242ef1 arg_0, long team)
 // getter tail 65; the existing initializer and cause setter as calls 123-129 (190-196 B); local initializer storing the
 // subtype first 64, type last 63, in retail's fill order 63, the last two with the getter tail 67. Lead: flags dependencies keep the
 // IL order, so retail's `neg al` before `cmp ebx, 9` means the subtype chain really precedes the type chain.
+// Round 140 (m3 lane 5, fast; each on the getter tail `function_146650() + rounded` with the getter at the time test
+// too): the cause team stored before the cause player 60 (260 B); the type as `long type = 3; if (engine_type == 9)
+// type = 10;` 57 (first difference moves up to +0xc, and matched 0x241620 then differs by 1), the inverted
+// `type = 10; if (!= 9) type = 3;` 57 (0x241620 1), both type and subtype in that if form 64 (259 B), the type if form
+// with the team first 58.
 // @retail 0x2430a0
 void function_2430a0(long player_index, bool flag)
 {
@@ -2108,9 +2119,8 @@ void function_243a20(long object_index)
 
 	if (object->slot != NONE)
 	{
-		color3f buffer;
 		long team = object->slot;
-		color3f color = *function_7f720(&buffer, (short)team);
+		color3f color = function_7f720((short)team);
 
 		function_bacc0(object_index, 0, (point3f const *)&color);
 	}
@@ -3069,8 +3079,8 @@ void c_game_engine_markers::v14(long arg_0)
 				bool local_24 = !local_22 && !local_23;
 				bool local_25 = false;
 				bool local_26 = false;
-				color3f local_27;
-				s_color_bits local_28 = *(s_color_bits *)function_7f720(&local_27, (short)local_15);
+				color3f local_27 = function_7f720((short)local_15);
+				s_color_bits local_28 = *(s_color_bits *)&local_27;
 				if (local_23 && ctf_player_get(local_16->lc)->team == local_1->team)
 					local_25 = true;
 				if (ctf_options()->engine_type == 9 && g_51ec80->flag_bits[local_15].bit3)
@@ -3136,12 +3146,14 @@ void c_game_engine_markers::v14(long arg_0)
 								long local_36 = slot_object_get(local_35)->slot;
 								if (local_36 != NONE)
 								{
-									color3f local_37;
 									s_color_bits local_38;
 									if (local_36 == 8)
 										local_38 = *(s_color_bits *)g_468714;
 									else
-										local_38 = *(s_color_bits *)function_7f720(&local_37, (short)local_36);
+									{
+										color3f local_37 = function_7f720((short)local_36);
+										local_38 = *(s_color_bits *)&local_37;
+									}
 									function_2440a0(&local_14, local_35, (point3f *)&local_38);
 								}
 							}

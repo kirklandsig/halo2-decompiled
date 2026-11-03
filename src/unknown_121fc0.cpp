@@ -231,6 +231,8 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // and first token merged into the success test with a do-while walk 127 (EBP still saved at the walk); the
 // table-full case as `if (count >= 11) { next token; continue; }` 251 (802 bytes); the clamp right after the wait,
 // ahead of the success test 129.
+// Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
+// token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

@@ -212,6 +212,11 @@ void function_1d56f0(s_havok_component *component)
 // that with `inline` on 0x1d0c20 73; 0x1d0c20 and its frame helper ahead of 0x1d0cf0 in the file on the 88 body 73,
 // on the original body 77; the component copied to a local at the 88 body's top 73; m_fixed in a named bool 73;
 // the published count in a named local 77. Restored. BLOCKED-BY 0x1d0cf0 (component in EBX).
+// Round 140 (m3 lane 5, fast with 0x1d0cf0/0x1d0c20/0x1d1b60/0x115b10): the result flag declared after the transform
+// and volume 86 (first difference moves to +0x1b); the volume pointer declared before the transform 77; both
+// declarations ahead of the floating-point control calls 77; the query info at function scope without its block 195
+// (838 B), declared first at function scope 195. Diagnostic: one or two unused locals ahead of the lookup leave its
+// `[eax + edx + 0x40]` order unchanged, so that order is not a symbol-numbering tie.
 // @retail 0x1d5120
 bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_3,
  real arg_4, long *arg_5, long arg_6)

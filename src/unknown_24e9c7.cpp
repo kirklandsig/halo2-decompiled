@@ -290,10 +290,18 @@ struct s_24e9c7_bounds
 // subsets, then the complete graph with native quad point elements: eight at 125.
 // Original private record types and full body restored; early across spill,
 // eight-byte-high scalar homes and geometric SSE scheduling remain.
+// Lane 17 r36 (fast): across as a point local right after size 144 (746 bytes); side assigned the `0.0f -` across
+// products and then scaled `side.x = (real)half_width * side.x` 139 (742; retail's -8 slot is that across/side y),
+// with unary minus 144, with `*=` 139, with side declared at the top of the inner block 139 (same code). Original
+// body restored; side gets no frame home, so result stays at -8 (retail -0x10 under the side pair).
 // Round 33 (m3 lane 18, fast; 0x24e59f matched each time): the default bounds as one initializer
 // 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
 // long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
 // computed before the height 131. All restored; early across spill and scalar homes remain.
+// Round 82 (m3 lane 12, fast): forward_i named for the across j product and the upper x 140 (742 B); scale
+// read before the across products 125 (same code); first_bitmap and bounds declared before the group 125;
+// back as `half_width * -across` products 154 (753 B); upper vector before the half width 123 (gain
+// under four, not kept). Original body restored.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

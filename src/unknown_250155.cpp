@@ -1496,6 +1496,10 @@ int __cdecl matchmaking_compare_value(void const *a, void const *b)
 // Round 349: branch-local append cursors with selected-end tail filling, first/second/both
 // 150/154/178; with indexed tails 151/146/164; both with count published after pointer/indexed
 // filling 168/155. Original array, counts and complete body restored.
+// Round 77 (m3 lane 16, fast): branch two's `item_count = player_count` moved ahead of its scan (no else) 148
+// (424 bytes); that with branch two's index fill 172 (417); both maxima declared at their assignment 83 (same
+// code); both maxima as one conditional expression 83 (same code); branch two's index fill with its maximum declared
+// at the assignment 107 (437).
 // @retail 0x2514fd
 void c_matchmaking_list::v3()
 {
@@ -2693,6 +2697,9 @@ static __forceinline long local_player_find(long const *local_list, long player)
 // Round 349: all first-loop player reads through the populated item value4, with separate
 // display ordinal/unsigned local-search/direct initial flags in eight subsets:
 // 284/285/284/285/274/275/274/275. The intervening range setter leaves value4 unchanged; all forms restored.
+// Round 77 (m3 lane 16, fast): the list-fill call given shown_count 95 (same code), also as the first loop's bound
+// 95 (same code); the first loop's players[i] named once for its two uses 275 (922 bytes); the loop counter declared
+// first 95; the valid test inverted (empty-list arm first) 180 (917 bytes).
 // @retail 0x25042d
 void function_25042d(c_session_lobby_screen *screen, long valid, s_session_flags_view *session, long *players, long *local_list, long count)
 {

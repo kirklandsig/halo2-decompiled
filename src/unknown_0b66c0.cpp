@@ -332,6 +332,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // else count++;` 40, with `> 0x1ff` 40; the guard as `!(start < 0 || count <= 0 || ... > length)` 40;
 // the length test as a second nested if 40 (all same code); start added before the increment 36
 // (0xb5f10 6, as listed).
+// DH313: Native scanner char/signed-char/unsigned-char/byte captures with original
+// postincrement or separate pre-test advance: 40 each; shared find regresses to 15/70 bytes
+// in all eight. NOT kept: no target gain and shared-user loss. Original helper/body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {
