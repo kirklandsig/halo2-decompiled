@@ -2604,6 +2604,9 @@ struct s_unit_placement
 // setters alone/inline; all three setters alone/inline; all setters/byte predicates/inline:
 // eight forms 10 each. Original callee declaration and all flag operations restored.
 // MiniMax R (10-31): no new form, no lower score.
+// Round 96: unit/placement declarations swapped 10; expanded flag-6 assignment 10; animation declaration
+// before its call 10; nested animation tests 10; NULL at each pointer argument 10/10; fresh unit lookup
+// for flag 76; caller unit read through its address 10; null direction local 10. Original body restored.
 // @retail 0xc42e0
 void __stdcall function_c42e0(long unit_index, void const *placement)
 {
