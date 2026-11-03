@@ -3294,6 +3294,10 @@ struct s_voice_route_choice
 // byte agreement; original independent decisions and complete body restored.
 // Y562: Native signed-int count/loop/selected ordinal contracts, subsets 1/2/4/3/5/6/7,
 // then complete talker identity: 363/363/363/363/363/363/363/363. Original full-width declarations and full body restored.
+// Y564: Original calls with radio/nearest/empty completion and engine-rejection exits:
+// radio first 363; nearest first 383; empty first 391; both routes complete 363;
+// mapping rejection 363; both radio engine rejections 363; empty-first rejections 391;
+// both completed with final rejection 363. NOT kept: no gain; original full body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

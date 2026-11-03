@@ -1246,6 +1246,10 @@ long function_10f5f0(long object_index);
 // Y562: Existing six-real API record with long/int count and counter, indexed/remaining
 // traversal: 565/596/565/596/565/596/565/596. Original byte buffer, signed reduction and entire body restored.
 // NOT kept: native record leaves frame 0x1990/0x1984; countdown grows to 2292/2264 bytes.
+// Y564: Actual three-entry request-array initializer at original/entry/post-stop/
+// pre-damage phases 565/629/614/587; entry declaration with late stores 565;
+// post-first-result initializer 565; original/entry initializers with six-real API
+// output 565/629. NOT kept: no gain; original full body and array values restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

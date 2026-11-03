@@ -433,6 +433,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // transform ahead of the displaced sums 270 (994 B); fa/fb declared before ta/tb 195 (same code).
 // Y562: Existing same-camera vector transform, distinct/in-place vector result, scalar/setter
 // point publication, original/direct inverse factors: 222/221/222/221/240/239/240/239. Original alias-safe helper and body restored.
+// Y564: Factor selection deferred until both native reciprocals, independent conditional/
+// independent branches/joint branch/perspective-default/orthographic-default/immutable
+// conditional: 195/195/197/295/293/195; deferred conditional/joint with late inverse
+// defaults 283/280. NOT kept: no gain; original helper, defaults and complete body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

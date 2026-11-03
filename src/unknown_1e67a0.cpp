@@ -1075,6 +1075,10 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // restored; native j/k products, side-dot and output scheduling remain.
 // Y562: Native real absolute/sine/cosine APIs, subsets 1/2/4/3/5/6/7, then all
 // with a double angle producer: 201/196/196/106/106/101/131/131. NOT kept: combined API gains need a byte match; isolated APIs regress. Original body restored.
+// Y564: Existing complete vector setter on the current rotation graph at goal/rotated/initial
+// copy boundaries, subsets 1/2/4/3/5/6/7: 122/176/205/171/197/203/195.
+// Both final overlap-safe library copies 99 at 1382 bytes (plain 99). NOT kept: adds
+// library calls where retail copies three components inline. Original entire body restored.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,
