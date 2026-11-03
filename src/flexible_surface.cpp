@@ -528,6 +528,11 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N332: Native clock-value and initial weighted-fraction producers, seven subsets
 // then all immutable: 117 each. Original entire body restored; frame 0x28/0x20,
 // seed/time scheduling and direction/axis/cross homes remain.
+// N339: Initial sampled-direction table receiver with field/native-copy/array/complete-value
+// transfers, direct then short sampled ordinal: 161/155/188/235/161/155/188/228.
+// Original initial acquisition and complete body restored; frame 0x28/0x20 and
+// seed/time/direction/cross storage remain.
+// NOT kept: transfer/one-use ordinal and value-copy forms regress beyond native length.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

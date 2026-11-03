@@ -1043,6 +1043,11 @@ void function_143250(
 // family subsets 1..7: 1766/1788/1788/1766/1766/1788/1788; all with right-first ownership 1774.
 // All 84 typed outputs agree. NOT kept: unmatched storage reuse ties or regresses and changes
 // length away from retail; original scalar graph and complete body restored.
+// N339: Explicit real narrowing owned by consumers, second-band product/third-band
+// roots/third-band product family masks 1..7, then all with immutable reused double root:
+// 1767/1781/1780/1771/1771/1775/1774/1774. All 84 typed outputs agree.
+// NOT kept: unmatched repeated-value/precision-storage forms regress and move length;
+// original polynomial, conversion producers and complete body restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -350,6 +350,11 @@ struct s_block_candidate
 // homes remain.
 // N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
 // all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
+// N339: Complete default-policy named products, staged products and sequential/paired
+// weight accumulators, each with original/single clock observation: 347 each (eight forms).
+// Original arithmetic, clock observations and full body restored; missing frame dword,
+// page/ring ownership and policy placement remain.
+// NOT kept: weighted storage/clock forms tie and retain the deficient frame.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
