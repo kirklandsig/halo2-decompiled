@@ -1009,6 +1009,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // each use 264 (1867 bytes); the default bounds copied just before the point memcpy 193 (+0x41);
 // use_plane1 masked after the memcpy 209 (+0x6); the pass test as one condition with
 // `&planes[pass]` 258. All restored; the early e4.i load and the zero's XMM role remain.
+// Round 56 (m3 lane 13, fast): the negated forward vector as an aggregate initializer 115 (same code); plane 1's
+// normal negated straight from the forward pointer, no negated vector 465 (1803 bytes); `margin + view->margin`
+// 115 (same code); a plane-0 pointer for the whole plane-0 block 285 (1867 bytes); the near distance as an
+// if-clamp on the sum 266 (1867 bytes); plane 0's d as `near_distance + -d` 423. All restored.
 // AC500: Construction-only scalar scope, per-plane classification array and point-array declaration
 // at input-copy boundary, masks 1-7, then complete projected aggregate initialization: 115 each.
 // All original lifetimes and complete body restored; coefficient preload, zero XMM and projection homes remain.

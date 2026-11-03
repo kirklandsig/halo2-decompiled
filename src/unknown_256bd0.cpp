@@ -38,7 +38,7 @@ real function_30bf0(vector3f *vector);
 real function_11cc90(vector2f const *a, vector2f const *b);
 long function_1e4990(long index);
 void swarm_iterator_new(s_290c50_iterator *iterator);
-long function_28dbd0(long character_index, long perception_index, long definition_index, s_28dab2 const *placement, bool flag);
+long function_28dbd0(long arg_0, long tag_index, long object_definition_index, s_28dab2 const *placement, bool flag);
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute);
 bool function_1e11b0(long actor_index, bool active);
 void __stdcall function_b77d0(long object_index, vector3f const *linear, vector3f const *angular);
@@ -62,7 +62,7 @@ struct s_object_flags_256bd0
 	word unknown0 : 6;
 	word bit6 : 1;
 };
-// score 179 (was 179): the activity test is the loop's condition, so the frame is 0x110 and the
+// score 178 (was 179): the activity test is the loop's condition, so the frame is 0x110 and the
 // activity byte is re-read at every pass as retail does; the first block's register homes differ.
 // Round 34: the activity test moved into the while condition and the step helper no longer reads
 // the global (it steps the iterator and copies its index): retail's frame 0x110 at 179/1074, the
@@ -237,6 +237,13 @@ struct s_object_flags_256bd0
 // Round 349: status assigned in the actual timer arms on the recovered active-loop graph,
 // short/word/long/dword with expired/positive arm first 282/277/282/277/285/280/285/280.
 // Initial status residency and marker-argument ownership regress; original status/body restored.
+// Round 56 (m3 lane 13): the 0x28dbd0 call passed (variant, swarm, tag); its body uses arg_0 as the swarm
+// index (0x28e320), arg_1 as the spawn tag (0x1e06b0) and arg_2 as the object definition (0xb7930), the order
+// matched 0x28dab0 passes, and retail's setup here (variant in EAX, swarm and tag pushed) agrees: fixed, 178
+// (plain). Then (fast): the activity test inside the step helper with entry NULL first 201 (the byte hoists
+// to a frame slot, 1071 bytes); that helper as a non-static function in swarm.cpp (cross-file inline) 201; plus
+// a read of the helper's parameter through its address 273 (1066); `if (--*timer <= 0)` 178 (same code); the
+// unit index named for its two uses 185 (1074 bytes, retail's length, but the actor pointer moves EDI -> EBP).
 // @retail 0x256bd0
 short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 {
@@ -292,7 +299,7 @@ short __stdcall function_256bd0(long actor_index, s_slot *slot, bool active)
 						}
 					}
 					if (selected != NONE)
-						object_index = function_28dbd0(variant, selected, *(long *)(definition + 0x30c), (s_28dab2 const *)&placement, false);
+						object_index = function_28dbd0(selected, *(long *)(definition + 0x30c), variant, (s_28dab2 const *)&placement, false);
 				}
 				if (selected == NONE)
 				{

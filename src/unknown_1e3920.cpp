@@ -706,6 +706,10 @@ real function_267370(long object_index);
 // Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
 // as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
 // The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
+// Round 48 (fast with 0x1e2a90): the zone helper's last plane product written `point->x * plane.i` 98 (same code,
+// canonicalised; 0x11c120/0x25ccd0 still match); the marker point at function scope 98 (same code); diagnostic,
+// both NONE resets through one long local 101; the unit index read once into a named local for the else block
+// 410 (1726 bytes); the object pointer `byte const *` 98 (same code). All restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
@@ -1054,7 +1058,7 @@ void __stdcall swarm_delete(long perception_index);
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type);
 
 
-// score 253 (was 254): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
+// score 253 (was 253): Frame 0x118 and length agree; persistent sentinel EDI/ESI, squad/substitution homes, the unrotated
 // substitution loop and the unit arm's placement (retail puts it after the mode-2 case) remain.
 // Earlier: Frame 0x118 agrees; sentinel EDI/ESI, squad/substitution homes and success layout remain.
 // Earlier 345 (was 364): frame 0x11c versus 0x118; sentinel and success blocks differ.
@@ -1194,6 +1198,10 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // before the definition read 254, their declarations swapped 254 (same code); squad bit as a ternary 337; on
 // 253: ternary substitution result inside the break test 348; the squad-index gate moved into the while test 420
 // (1319 bytes, 0x1e4990 inlined).
+// Round 48 (fast): retail's squad pointer shares its spill slot ([esp+0x10]) with the squad bit and the actor
+// result, ours keeps a separate slot. The substitution loop in a forceinline helper taking the squad pointer 389
+// (1307 bytes); the squad pointer `byte const *` 253 (same code); `bool flag = squad && (bit 10)` 252; the squad
+// lookup ahead of the 0x1e4990 call 264; the loop's probability declared before its bools 253 (same code).
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1907,6 +1915,12 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // probability as `if (probability < increased) probability = increased;` 253; the probability clamp with
 // the missing-options arm first 251; the delay with the random-default arm first 251; `4.0f * probability`
 // 251 (all same code but the 253). Pool EDI / actor ESI / options EBP remain.
+// Round 48 (fast with 0x1e3b60): retail also re-derives the unit (actor field, pool data) between the current
+// and secondary slot queries, where only the weapons[0] store lies between, so its kill is not 0x1e53e0's
+// purity alone. The slot queries writing through an out pointer into weapons[] 251 (same code); `__forceinline`
+// on both queries 251 (same code); the fraction bounds as named locals 262; the grenade reset test split into an
+// outer `state != 1 || !flag` if 251 (same code); the grenade type through a fresh lookup and `unit` fetched
+// after the queries 251 (same code). All restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

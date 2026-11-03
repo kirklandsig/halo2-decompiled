@@ -307,6 +307,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // first and the pointer from `choice_count - 1` 953; one function-scope fade-definition pointer for both
 // loops 959 (retail reads the global again); the override's suppression gain hoisted out of its loop 962
 // (retail calls it per target); the duplicate scan tested `!duplicate` first 917 (3327 B).
+// P295: Late second-limiter bound with original/gain/fade/both/query/inactive/all macros,
+// then the bound before listener publication: 866/866/865/865/866/866/870/870. NOT kept:
+// one-point gain only; complete macro forms grow to 3333/3327. Original body/helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -744,6 +747,9 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // position/entry array declarations on completed query scope: 150/150/150/150/150/150/150/150. NOT kept: no
 // qualifying gain or byte match. Original complete body restored; BSP/count homes, camera/query and
 // publication scheduling remain.
+// DL252: Three direct library-fill orders, then once-observed repair ordinal inside/before guard with
+// direct/shared byte extents or shared element count: 271/271/271/270/270/268/270/270. Original indexed
+// fill, scopes, outputs and complete body restored; BSP/count homes and publication scheduling remain.
 // Round 80 (m3 lane 12, fast): bsp renamed to sort after count, or count renamed to sort before bsp, 150/150 (the
 // homes do not move: bsp's +0x14 is a spill home, not a named slot); the camera formed before the first-listener
 // scan 200 (camera takes a saved register); the scan result in a one-use local before the camera 145 (camera

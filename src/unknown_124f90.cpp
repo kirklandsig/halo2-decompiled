@@ -3273,12 +3273,12 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 24 (was 49): the loop is a for statement whose increment reloads the pool and advances the index, the
+// score 24 (was 24): the loop is a for statement whose increment reloads the pool and advances the index, the
 // switch has a `case 1: continue;` arm (so a non-zero mode skips the record work) and the pitch range is computed
 // above the mode, which keeps the pool in ebp and the index in ebx as retail has them. Left: the range is built
 // before the mode flag test where retail builds it inside case 0, so the flag byte load and the class lookup sit
 // in a different order than retail's.
-// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// Earlier (49, was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
 // sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
@@ -3380,6 +3380,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // definition 78; default-first mode 66 (entry registers right, `test al, dl` rather than `test dl, 1`); flag-first
 // if/else 78; named predicate with default-first mode 66; const definition pointer 78; default-first self-select 66;
 // default-first with a flag-arm assignment 78. Original 24 form restored.
+// Round 38 (m3 lane 18, fast): with the range in case 0 (78, only the index and pool/voice/range swap EBX/EBP):
+// range declared at function top 78; sound_index declared before the pool 78; the class flag read into a bool
+// before the definition 78; a permuter run (45 tries) best 62 (a word voice index, which changes the NONE test).
+// On the 24 form: the range index named before the mode with the pointer in case 0 102; the flag bool 24.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
