@@ -515,6 +515,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // P275: Complete final wind value via native aggregate/existing setter, with uniform
 // direction capture and final scale/result-only scope, subsets 0-7:
 // 156/192/156/192/156/192/156/192. Original body restored; frame and seed/rotation homes remain.
+// J241: Native tail argument producers at first/second/sine/last/first-pair/last-pair/all
+// boundaries 117 each; real sine argument and result 164 at 888 bytes. NOT kept: unmatched
+// precision and one-use argument/result storage. Original entire body and math APIs restored;
+// frame 0x28 versus 0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

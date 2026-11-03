@@ -498,6 +498,11 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P275: Actual packed list-header extent/borrowed-storage bitfields at initialization,
 // release test and release extent, seven subsets and reversed packed-field initialization:
 // 182 each. Original header, release helper and body restored; entry/index and point homes remain.
+// J241: Native storage/header cleanup with original initialization 274/182, native
+// construction 320/248; separate center/query 275/191 and with construction 320/248. Storage
+// cleanup remains out of line and grows the frame to 0x10a4; every construction form loses
+// 0x44720. Original whole body, list types, initializers and release helper restored;
+// entry/index spill and point homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

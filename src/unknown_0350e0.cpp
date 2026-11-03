@@ -2396,6 +2396,11 @@ real magnitude3d(vector3f const *v);
 // P275: Complete current/target/both input snapshots 246/288/266; same native vectors
 // normalized in place 245/287/265; both inputs captured at entry 272; both with early
 // normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
+// J241: Complete rotation output in first/second/rotation/current workspaces 175/170/175/174;
+// uniform scalar row staging 170/170/170/174. Real/double absolute-value stages 170/196; NOT
+// kept: one-use call-result forms do not match. Scoped precision diagnostic 547 at 1287
+// bytes, excluded from real trials and reverted. Original whole body, expressions and helper
+// contracts restored; raw-length and promoted-dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
