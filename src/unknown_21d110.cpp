@@ -965,6 +965,11 @@ PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 // producers: primary inequality 146/155/193/209; secondary equality 144/153/113/140
 // (fast control 58, plain 30). Original byte capture and complete body restored;
 // the uninitialized enum recovers early homes but widens the capture and consumer.
+// Round 91: four-byte-aligned bool 226 plain (prologue changed); low-byte union view with const
+// definition 12 plain (NOT kept: single-local wrapper without a match). On that view, entry at
+// function scope, loop index at function scope, call outputs at function scope, outputs reversed,
+// location declared first, and controller value declared first: 147 reduced each against 153,
+// with no slot movement. Original body restored.
 // @retail 0x21d630
 void __stdcall function_21d630(long effect_index, long mode)
 {
