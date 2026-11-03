@@ -897,6 +897,9 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
 // 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
 // NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
+// B386: Plain real-array direction-input/five-point-input/optional-output loops, subsets 1/2/4/3/5/6/7, then
+// direct descending component index: 400/320/317/389/373/332/401/400 (fast control 258; full 257). Original
+// record copies and body restored; byte homes and shared-tail predecessor remain.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)
