@@ -513,6 +513,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // deltas i, j, then the k product and delta 79; the rate read from the global at each chain use 97 (375 bytes);
 // the delta scaled in place for the correction 32 (same code); the tick conversion placed after the chains 73
 // (369 bytes). Retail converts the ticks into the dead rate register (XMM3), ours into XMM4.
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

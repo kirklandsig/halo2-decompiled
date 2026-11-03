@@ -389,6 +389,11 @@ PRIVATE inline long polygon_round_19f(real value)
 // MiniMax R (11-01): no new form, no lower score (the retail-shaped fade gives 390, the double
 // comparison 316; the call to 0x4b2d0 keeps three stack arguments where retail's takes two).
 // score 316 (was 316): Frame 0x34 versus 0x30; fade/radius homes and protected render-call transport/expansion remain.
+// Lane 18 r37 (fast): retail passes 0x4b2d0 tag/first/second in EDX/ECX/EAX and third/fourth on the stack
+// (ret 8); ours passes tag/fourth in EDX/EAX and three on the stack (ret 0xc). In 0x4b2d0: dropping its
+// `(void)&` reads (one or both) changes nothing; the entry offset computed in place, or named just before
+// the entry, gives ret 8 but passes first in EBX and third in EAX (0x4b2d0 91, 239 B; here 413); with the
+// variant read directly here as well 413. All restored.
 // Earlier at 316 (was 379): the distance to the centre is now computed and compared in double, so the
 // the distance to the centre is now computed and compared in double, so the
 // float copy lands in the dead radius slot and the fade block keeps retail's x87 shape; the fade

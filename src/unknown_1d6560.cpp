@@ -230,6 +230,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // headers declared first 83 [2]; the type read before the rigid body 111 (268 B) [9]; case 0 through
 // `headers[object_index & 0xffff]` 101 [0]; `long result` declared first 28 (same code); the kind-7 path as
 // `if (type == 1) return 0xc;` 94 [0]; the rigid body read at each use 97 (260 B) [122].
+// DH317: Borrowed native type-byte/header-record dispatch bindings, const/mutable,
+// after handle/body: 122/122/94/94/125/125/94/94. NOT kept: every form loses
+// matched 0x1d5bf0 (194 or 13); the 94 forms also gain only two. Original body,
+// both type observations and incoming convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -519,6 +523,12 @@ struct s_physics_component_walk : s_havok_component
 // predicates, subsets 1..7 then method-scope predicate declarations:
 // 146/146/146/146/146/146/146/146.
 // Original complete source restored; no eligible gain.
+// Round 555: Neighbor scan-success bool/byte/short/long, then both scan-success
+// outcomes: 151/151/151/151/151/151/151/151. NOT kept: branch-set search outcomes need
+// an exact match. Original indexed scans, count tests and complete method restored.
+// F351: Split-open terminal/neighbor/both query results 200/152/220;
+// split-closed results 177/153/303; exhaustive open/closed results 192/177.
+// NOT kept: test-owned results do not match. Original predicates, complete body and callback tuples restored.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

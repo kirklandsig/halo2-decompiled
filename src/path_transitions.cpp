@@ -654,6 +654,10 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 5 and 2 278; the second edge declared in the first-length block 278; the margin as `radius * inverse`
 // 278 (each the same code). Retail's case 5 tests the actor in EAX loaded at entry while case 2 reloads it
 // from the stack. All restored.
+// DH317: One pathfinding receiver across dispatch/case 2, with existing first/second
+// differences and complete shared projections in eight subsets:
+// 278/278/297/297/278/359/297/351. Original body and all helpers restored;
+// early root/actor ownership remains, at the original frame and length.
 // Round 82 (m3 lane 12, fast; 0x270d90 295 unless noted): case 5 first in the switch body 300; actor test
 // constant first 278 (same code); const surface pointer 278; byte volatile result 406 (1228 B); case 5 as
 // if/else with the output stores shared after it 404 (1220 B, 0x270d90 368). Original body restored.
