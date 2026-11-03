@@ -578,11 +578,12 @@ static __forceinline void solve_linear_error_kernel(float target, float mass,
 }
 
 // Capture target and limit before projection, retaining the coefficient address
-// across consecutive rows. Only the SIMD copy of the impulse rounds to float.
+// across consecutive rows. Keep B's inertia pointer through the clamp and read
+// its value when forming the update. Only the SIMD copy rounds to float.
 static __forceinline void solve_angular_friction_kernel(float target, float const &limit,
 	float const *const volatile &friction_scale_pointer,
 	solver_angular_row_31e7b0 *row, solver_step_31c940 *const volatile &step,
-	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const &inverse_b, float *result)
+	solver_velocity_31c940 *a, __m128 &velocity_b, __m128 const *const volatile &inverse_b_pointer, float *result)
 {
 	__m128 v = _mm_add_ps(_mm_mul_ps(a->angular, row->a), _mm_mul_ps(velocity_b, row->b));
 	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
@@ -603,7 +604,7 @@ static __forceinline void solve_angular_friction_kernel(float target, float cons
 	__m128 input_a = _mm_set_ss(rounded_impulse);
 	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(input_a, input_a, 0), a->inverse_inertia);
 	__m128 input_b = _mm_set_ss(rounded_impulse);
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), inverse_b);
+	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(input_b, input_b, 0), (*inverse_b_pointer));
 	__m128 axis_a = row->a, axis_b = row->b;
 	a->angular = _mm_add_ps(a->angular, _mm_mul_ps(change_a, axis_a));
 	velocity_b = _mm_add_ps(velocity_b, _mm_mul_ps(change_b, axis_b));
@@ -953,7 +954,7 @@ long __cdecl solve_operations_31c940(solver_step_31c940 *step, unsigned char *op
 				{
 					state.solving.angular_limit = operation_float(op, 4);
 					solve_angular_friction_kernel(((solver_angular_row_31e7b0 *)terms)->b.m128_f32[3], state.solving.angular_limit, friction_scale_pointer,
-						((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, *inverse_b_pointer, result);
+						((solver_angular_row_31e7b0 *)terms), step, a, *velocity_b_pointer, inverse_b_pointer, result);
 					terms += 2; ++result; op += 8;
 				} while (*op == 9);
 
