@@ -2268,7 +2268,17 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 57): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// score 40 (was 57): no `double` locals any more (any double local made LTCG save all four registers at entry;
+// retail saves them lazily inside the two count guards), the random globals are read at each use (loaded after
+// the second guard as retail does), motion[6] is the existing range helper function_259d0 and the length block
+// is the existing normalize3d. Still different: retail folds `cmp ebp, [ebx]` right after the last fstp (ours
+// splits it: mov edx, [ebx]), and the scale of motion[1] is `movaps xmm6, xmm0; mulss xmm6, [edx + 4]` where
+// ours loads it first. Round 55: real upper/lower 223, real fraction 57, real length 179, all three 210;
+// with those, normalize3d 55, random globals at each use 45, the entry fraction without its local 40
+// (x82e52f local / swapped product 40/40), range helper for the entry fraction 160; unused-local probes
+// before normalize3d (1..8) move nothing; then normalize_inline 48, motion pointer before entry 47, motion[2]
+// product operands swapped 40.
+// Earlier: frame 0xc agrees; delayed register saves and the split final count comparison remain.
 // Earlier at 202: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
@@ -2320,7 +2330,6 @@ bool function_39a80(byte *state)
     if (*(long *)(state + 0x64) > 0)
     {
         byte *group = *(byte **)(state + 0x68);
-        s_random_globals *random = g_4e7408;
         for (long i = 0; i < *(long *)group; ++i)
         {
             byte *entry = *(byte **)(group + 4) + i * 0x14;
@@ -2332,39 +2341,28 @@ bool function_39a80(byte *state)
                 *(real *)(state + 0x1c) = 0.1f;
                 *(real *)(state + 0x20) = 0.8f;
             }
-            double upper = *(real *)(state + 0x20);
-            double lower = *(real *)(state + 0x1c);
-            motion[6] = (real)(random_unit_fraction(random) * (upper - lower) + lower);
-            motion[0] = (real)(random_unit_fraction(random) * *(real *)(state + 0x30));
-            motion[1] = (real)(random_unit_fraction(random) * *(real *)(state + 0x34));
-            motion[2] = (real)(random_unit_fraction(random) * *(real *)(state + 0x38));
-            double length = sqrt((double)motion[0] * motion[0] + (double)motion[1] * motion[1] + (double)motion[2] * motion[2]);
-            real magnitude = (real)length;
-            if (!(fabs((real)length) < 0.0001f))
-            {
-                real inverse = 1.0f / magnitude;
-                motion[0] *= inverse;
-                motion[1] *= inverse;
-                motion[2] *= inverse;
-            }
-            double fraction = random_unit_fraction(random);
-            *(real *)(entry + 0xc) = (real)(fraction *
-                (*(real *)(state + 0x28) - (double)*(real *)(state + 0x24)) + *(real *)(state + 0x24));
+            motion[6] = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, *(real *)(state + 0x1c), *(real *)(state + 0x20));
+            motion[0] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x30));
+            motion[1] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x34));
+            motion[2] = (real)(random_unit_fraction(g_4e7408) * *(real *)(state + 0x38));
+            normalize3d((vector3f *)motion);
+            *(real *)(entry + 0xc) = (real)(random_unit_fraction(g_4e7408) *
+                (*(real *)(state + 0x28) - *(real *)(state + 0x24)) + *(real *)(state + 0x24));
             motion[7] = 0.0f;
             if (0.0001f > *(real *)(state + 8)) *(real *)(state + 8) = 1.0f;
             if (0.0001f > *(real *)(state + 0xc)) *(real *)(state + 0xc) = 1.0f;
             if (0.0001f > *(real *)(state + 0x10)) *(real *)(state + 0x10) = 1.0f;
-            real sample = (real)random_unit_fraction(random);
+            real sample = (real)random_unit_fraction(g_4e7408);
             *(real *)entry = (sample + sample - 1.0f) * *(real *)(state + 0x10);
-            sample = (real)random_unit_fraction(random);
+            sample = (real)random_unit_fraction(g_4e7408);
             *(real *)(entry + 4) = (sample + sample - 1.0f) * *(real *)(state + 8);
-            sample = (real)random_unit_fraction(random);
+            sample = (real)random_unit_fraction(g_4e7408);
             *(real *)(entry + 8) = (sample + sample - 1.0f) * *(real *)(state + 0xc);
-            sample = (real)random_unit_fraction(random);
+            sample = (real)random_unit_fraction(g_4e7408);
             motion[3] = sample + sample - 1.0f;
-            sample = (real)random_unit_fraction(random);
+            sample = (real)random_unit_fraction(g_4e7408);
             motion[4] = sample + sample - 1.0f;
-            sample = (real)random_unit_fraction(random);
+            sample = (real)random_unit_fraction(g_4e7408);
             motion[5] = sample + sample - 1.0f;
         }
         state[0x86] = true;
@@ -2520,6 +2518,10 @@ long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output
 s_cached_input_list g_5234e8[4];
 
 // score 132 (was 132): frame 0xa0 and loop constants agree; first +0xb saves
+// Round 55 (plain): the three sibling 0x33400 forms 130; with const list/table reads 130; with a bool object
+// flag 127 (551 bytes; retail stores a long 1/0, so a width artifact); with list read first 130; with the shape
+// buffer at function scope 130. 0x31590's callees all preserve edi, so retail's index copy to ebx is an
+// allocation choice, not a clobbered register; the list/cursor/index permutation remains.
 // EBP for the list, displacing the output cursor and index/object registers. Depth term scheduling
 // also differs. Tried: all six
 // MiniMax R (11-01): no lower score: retail's `!(depth >= 0.0f)` clamp test with `&g_5234e8[view]` at both calls gives 135 (was 136) in the five-function image, below the keep bar; in the full build the three float constants are hoisted into xmm5-xmm7 as retail has them, but the list pointer rides in ebp there instead of a frame slot.
@@ -3135,14 +3137,22 @@ void function_41c80(short type, s_41c80_state const *state)
     }
 }
 
-// score 146 (was 149 on a 169-source fast image): retail has color, marker count and the markers in one frame block with the
-// amount in its own slot, and loops on a count it holds in ebx; the slots still differ. Tried:
+// score 139 (was 153): a full attachment list (64 added) ends the marker loop (retail jumps from the flag store to
+// the next attachment), the lens scale starts at 1.0f and takes the matrix scale only when the tag flag is set,
+// and the count, colour and markers are plain locals (count in ebx until the marker loop, amount and scale in
+// retail's slots). Still different: retail's marker cursor points at matrix.up (ours at matrix.forward), and it
+// holds 0x40 in eax for both `added < 64` and the tag flag test, then reloads `added` for the lens call.
+// Round 55 (plain unless noted): break alone 165 fast; with the scale default 146 (646 bytes); amount renamed
+// 145 fast (slots do not move); plain locals 139; dword flag test 117 fast (= control); no matrix pointer 155 fast;
+// full-list exit first (`if (added >= 64) { ...; break; }`) 117 fast; colour declared first 117 fast; const matrix 117 fast.
+// Earlier: score 146 (was 149 on a 169-source fast image): retail has color, marker count and the markers in one
+// frame block with the amount in its own slot, and loops on a count it holds in ebx; the slots still differ. Tried:
 // separate color/count/markers locals (+1), one shared scale local (no change).
 // @retail 0x41980
 void __stdcall function_41980(short type, long object_index)
 {
-    struct s_attachment_scratch_r16 { color3f color; long count; s_object_marker markers[65]; };
-    s_attachment_scratch_r16 scratch_r16;
+    s_object_marker markers[65];
+    color3f color;
     
     if (type == 0)
     {
@@ -3154,25 +3164,31 @@ void __stdcall function_41980(short type, long object_index)
             s_attached_render_entry *entry = ((s_attached_render_entry *)*(byte **)(definition + 0x98)) + i;
             if ((entry->type == 0x6c656e73 || entry->type == 0x4d475332 || entry->type == 0x7464746c) && entry->tag != NONE)
             {
-                scratch_r16.count = function_b8d30(object_index, entry->marker, scratch_r16.markers, 65, false);
+                long count = function_b8d30(object_index, entry->marker, markers, 65, false);
                 real amount = function_be6d0(object_index, i);
-                scratch_r16.color = *(color3f const *)g_468710;
+                color = *(color3f const *)g_468710;
                 if (entry->color_index)
-                    function_bad50(object_index, entry->color_index, (point3f *)&scratch_r16.color);
-                for (long j = 0; j < scratch_r16.count; ++j)
+                    function_bad50(object_index, entry->color_index, (point3f *)&color);
+                for (long j = 0; j < count; ++j)
                 {
-                    transform4x3f *matrix = &scratch_r16.markers[j].matrix;
+                    transform4x3f *matrix = &markers[j].matrix;
                     if (entry->type == 0x6c656e73)
                     {
                         if (added < 64)
                         {
                             byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
-                            real scale = (tag[0x28] & 0x40) ? matrix->scale : 1.0f;
-                            function_2dba0(entry->tag, function_3e9c0(object_index), 0, object_index & 0xffff, added, &matrix->position, &matrix->forward, &scratch_r16.color, 1.0f, amount, scale);
+                            real scale = 1.0f;
+                            if (tag[0x28] & 0x40)
+                                scale = matrix->scale;
+                            function_2dba0(entry->tag, function_3e9c0(object_index), 0, object_index & 0xffff, added, &matrix->position, &matrix->forward, &color, 1.0f, amount, scale);
                             ++added;
                         }
-                        else if (!g_55e6c7)
-                            g_55e6c7 = true;
+                        else
+                        {
+                            if (!g_55e6c7)
+                                g_55e6c7 = true;
+                            break;
+                        }
                     }
                     else if (entry->type == 0x4d475332)
                     {
@@ -3181,7 +3197,7 @@ void __stdcall function_41980(short type, long object_index)
                         if (*(long *)(tag + 8) > 0 && (**(byte **)(tag + 12) & 0x20))
                             scale = matrix->scale;
                         function_42850(object_index, entry->tag, &matrix->position, &matrix->forward,
-                            &matrix->up, scale, amount, (vector3f *)&scratch_r16.color);
+                            &matrix->up, scale, amount, (vector3f *)&color);
                     }
                     else if (entry->type == 0x7464746c)
                         function_429a0(0, object_index, entry->tag, NONE, &matrix->position,
@@ -3407,8 +3423,8 @@ real g_525980[3];
 struct s_1321f0;
 bool function_1321f0(long index, s_1321f0 const *data);
 
-// MiniMax R (11-01): no new form, no lower score.
-// score 4 (was 4): only the frame slots of `table` and `definitions` are swapped (retail: table at the lower
+// Matched in round 55's full check with no edit here (a link-time side effect of other bodies in this file).
+// Before that: only the frame slots of `table` and `definitions` were swapped (retail: table at the lower
 // slot). This body matched in lane 13 round 38's full image and matched on its earlier --fast image; adding almost any one
 // other source to that image swaps the two slots, so the tie is decided by whole-image LTCG state, not this body.
 // Tried (all 4): `definitions` renamed `scenario`; that and `table` renamed `placements`; `definitions` declared
@@ -3588,6 +3604,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // three-use negative-radius subsets: 388/388/407/389; with the existing point setter:
 // 412/403/417/409. All regress; original helper, full body and alias-safe input capture
 // restored. Frame/radius/scaled-coordinate homes remain; no one-use scalar staging retained.
+// Round 55 (fast): native color4f (alpha, then red/green/blue 1.0f) 225 again: frame 0xe0 agrees, but the
+// spill homes stay x 4 / z 8 / radius 0xc / -radius 0x10 where retail has x 4 / radius 8 / -radius 0xc / z 0x10;
+// on that: corner helper locals renamed three ways 225/225/225 (names move no slot), offsets passed by value
+// 400 (1805 bytes), offset declared first 225, colour declared at function scope 225.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -4579,6 +4599,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Y538: Existing selected-bit admission with completed enabled result before depth in
 // byte/bool/short/long 257/235/240/212; after depth 234/262/198/239. Every shared user
 // regresses. Original helper/caller restored; late pass bytes, dead mode loads and clear convention remain.
+// Round 55 (fast): group as a pointer 138; mask as a ternary 275 (998 bytes); raw pass-8 byte gate 191;
+// `(bool)g_4ba022` gate 138; byte level count 230. Retail 0x14b60 takes the flags in eax with three stack
+// arguments (ret 0xc); ours is a standard 4-argument stub, so its call setup stays different.
 // F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
 // then gate versus complete admission: 218/218/228/231/210/210/242/247.
 // Every shared user regresses; original helper and complete caller restored.
