@@ -71,7 +71,7 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 	arg_1 = function_x82e52f(arg_0, 0, 0);
 }
 
-// score 55 (was 70): frame 0x10 and 870-byte length agree; first +0x1d is the exit span.
+// score 55 (was 55): frame 0x10 and 870-byte length agree; first +0x1d is the exit span.
 // Timestamp order agrees; the cache comparison still splits a memory load, and evaluator/spawn
 // and child scratch registers differ.
 // Earlier at 70: frame 0x10 and length agree. Retail stores field_10 before the field_38
@@ -306,6 +306,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // Round 487: Carried cache result, old-default/branch-owned and void/record pointer
 // storage 132/132/132/132; each with the twice-consumed child duration 131/131/131/131.
 // Original reconciliation, live duration, current-record evaluator and full body restored.
+// DL246: coherent evaluator/spawn/list-link inline subsets 1-7 give 55 each;
+// all with the reconciled current-particle field gives 133. List-link inline loses 178eb0 (41).
+// Every declaration and body restored; folded comparison and evaluator/child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

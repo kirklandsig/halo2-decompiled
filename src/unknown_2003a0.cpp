@@ -3262,6 +3262,14 @@ void function_2011f0(long arg_0);
 // Complete original body restored; frame 0x134 agrees, masked-index/placement and chain homes remain.
 // DL236: Early mask/admission/selection inline declaration subsets 1..7, then all with final success gate: 318/318/318/318/318/318/318/318. Original contracts and body restored; frame 0x134 agrees, masked index/placement/definition and final-chain homes remain.
 // DL244: Point producer inline 318 (other users regress); coherent seat/options/completion subsets 318 throughout. Frame 0x134 agrees; masked-index/placement and final-chain homes remain. Original contracts and body restored.
+// DL246: cleanup cursor, shared object, both, shared squad, cursor/squad, object/squad,
+// all and all with a completion guard: 309/321/328/317/298/321/328/328.
+// Cursor + squad receiver (plain 298 at 1328 bytes) NOT kept: the cursor is a copy of the pending head,
+// which is dead after the loop (a lifetime-shaping local, alone 309); the squad receiver alone 317 (gain 1;
+// retail does form the record address once per pass, 0x2019ff). Body restored at 318.
+// DL246 follow-up: early count guard, early real head/success defaults, both,
+// and both with the shared object receiver: 357/360/356/361. All regress;
+// original entry producers restored.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

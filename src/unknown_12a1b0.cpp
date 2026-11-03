@@ -1372,6 +1372,9 @@ struct s_looping_detail_request
 // Original common tail, result, native offset and complete body restored; first-player expansion remains.
 // Round 368: Uniform direct request/source/tag roots, seven subsets, then all with native count/skip:
 // 154/173/155/162/136/169/151/149; original complete body restored.
+// DL247: Coordinated ordinary-inline first-player contract with native offset, CRT source
+// copy and repeated definition index: 110/134/110/134/141/165/141/165. All provider users
+// retain their preview scores; query still expands. Original contracts and body restored.
 // DH301: Whole detail-input native/immutable/assignment/memcpy ownership, each with
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
