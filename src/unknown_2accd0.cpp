@@ -833,6 +833,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 333: Shared successful header/body progress producer, dword/real numerator,
 // named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
 // Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
+// Lane 16 r80 (fast; 0x2adb10 102 throughout): permuter 600 s, 51 tries, best 34; byte count declared in each
+// case 161 (689 bytes); computed/stored signature declarations swapped 34; header test `header_size == bytes` 36;
+// total grouped `header + (body + sizeof)` 34; signature position declared after the two signatures 34. Restored.
 // Round 61 (m3 lane 11, fast; 0x2adb10 102 throughout): no existing seek wrapper fits (grep of SetFilePointer callers). The body offset
 // in a local used three times 34 (same code); the signature's body size in a local 34 (same code); the body test as `!=` 161 (689 bytes). On
 // round 56's helper form (a new one-caller seek helper, not kept): `remaining` in both arms with `body_size > body_offset` 29; remaining with
@@ -1162,6 +1165,9 @@ struct s_signed_file_write_parameters
 // DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
 // callback inline metadata: 102/102/102/102/102/102/102/102.
 // Original complete source restored; no eligible gain.
+// Lane 16 r80 (fast; 0x2ad7c0 34 throughout): `success` declared ahead of the header getter 121; the header loop
+// tested `success && offset < header_size` 288 (920 bytes); buffer/size at the header case's top 102; the loop's byte
+// count declared outside the loop 102; the extend test `bytes == size` 102. Restored.
 // Round 61 (m3 lane 11, fast; compile-only aligned in brackets, base 59 on the 940 form): retail's header success is not a direct return: its tail
 // `mov [esp+8], 0; mov eax, [esp+8]` after the pops is `result = 0;` reaching the threaded `if (result)`, and that form is retail's 940 bytes: 125 [59]. Retail's
 // setle/dec/and with the sum loaded fresh is the expression repeated (`x > 0 ? x : 0`, no offset copy): on the direct return 103, on `result = 0` 129 (944 bytes) [52].

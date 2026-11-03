@@ -2219,6 +2219,11 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // declared u, v, base_u, base_v 543; the second arm's material lookup before the u/v call 608. Before: one
 // base/normal pair at function scope for both arms 574; the record arm's u/v at its top 555; the first arm's
 // mesh renamed (diagnostic) 555, no slot moves. Left: frame homes, and our inlined second 0x24590 length.
+// Round 64 (m3 lane 1, fast): `result = !dynamic_valid` 687 (3040 bytes); the result as a ternary 687; the
+// validity test inverted 555; the data base's two loads swapped 555; sample offsets written per arm at each
+// argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
+// (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
+// pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

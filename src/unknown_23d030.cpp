@@ -405,6 +405,10 @@ extern byte g_51ec11;
 // 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
 // not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
 // 86 form with the scratch normalizer 264 (aligned 47).
+// Lane 17 r39 (fast, with 0x23d790): retail loads the other operand first in two cross products (`v->k * axis->j`,
+// `axis->i * v->k`); both written the other way round 89, each alone 89/89 (same code); fallback
+// `side.i = 1.f; side.k = side.j = 0.f;` 274, `side.i = 1.f; side.k = 0.f; side.j = 0.f;` 276 (both 1326
+// bytes). Original body restored.
 // AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
 // masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
 // Original input layout, observations and full body restored; zero/side/up allocation remains.
