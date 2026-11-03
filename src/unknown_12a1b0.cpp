@@ -1379,6 +1379,9 @@ struct s_looping_detail_request
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
 // first-player expansion remain; frame 0xc agrees on the original body.
+// Round 345: existing bounded-draw/next-player/camera forceinline declarations, seven subsets; all with
+// nested generator: 110/110/110/110/110/110/110/110. Original body and contracts restored. Detail/offset
+// transport and first-player expansion remain.
 // J241: Shared offset generation with native aggregate/vector-setter/CRT publication and
 // early/late completion 188/190, 197/199, 188/190; native short-count pair 188/190. Frame
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four

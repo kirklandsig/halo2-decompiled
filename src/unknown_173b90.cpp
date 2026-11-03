@@ -1634,6 +1634,9 @@ bool function_17afd0(long effect_index, long value);
 // Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
 // original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
 // and complete executable body restored; flag width and availability/view carriers remain.
+// F346: On the retained two-use effect graph, last-consumer scopes for owner, availability,
+// both and complete effect/classification, each original/shifted-word eligibility:
+// 73/113/73/113/73/113/73/113. Original complete executable body restored.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {
