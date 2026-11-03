@@ -350,6 +350,11 @@ struct s_block_candidate
 // homes remain.
 // N337: Oldest-block replacement/retention expression results, bool/byte/short/long,
 // all eight 347. Original oldest selection and complete body restored; frame and page/ring homes remain.
+// Round 122 (lane 7, fast; base 347 [aligned 260]; retail keeps offset in EBX, current in EDI spilled
+// around the scan, previous on the stack and no entry stores for offset/previous): offset and previous
+// declared at the top of the admitted block 376 [243] (entry stores gone, prologue then pushes three);
+// offset after the result, previous in the block 380 [257]; previous alone in the block 357 [262];
+// offset after the limit clamp 378 [241]; current declared first in the block 347 (same code).
 // N339: Complete default-policy named products, staged products and sequential/paired
 // weight accumulators, each with original/single clock observation: 347 each (eight forms).
 // Original arithmetic, clock observations and full body restored; missing frame dword,

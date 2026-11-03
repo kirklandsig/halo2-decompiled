@@ -325,6 +325,9 @@ static inline void quaternion_transform_vector(
 // 315/315/350/350; paired initial-vector dot reduction 276/276/402/402.
 // Original helper, initial dot and full body restored; quaternion/cross spill overlap remains.
 // NOT kept: indexed reductions regress and fail the exact-match gate.
+// M336: Transform dot/quadratic/doubled-scalar accumulators, seven subsets then all with
+// a positive-validation return: 251/249/253/196/219/210/243/243. NOT kept: four-point
+// combined gain below margin; original helper/body restored, frame 0x1c versus 0x24 remains.
 // N337: Complete running helper-dot accumulation with caller-dot/staged-cross/
 // independent-half subsets 0..7: 251/210/297/309/283/276/256/256. Original helper,
 // paired halves and complete body restored; frame/quaternion/cross homes remain.

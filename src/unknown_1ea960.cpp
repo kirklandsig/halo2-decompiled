@@ -350,6 +350,10 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // DH309: Native word header owned by existing shape base, separate/default-owner constructors,
 // then unified construction, initializer/body owner storage and complete array/tree pointer
 // completion: 153/155/157/159/153/153/159/159. Original hierarchy restored; restore-header order, key and listener lifetimes remain.
+// Round 550: Placement-construction result ownership in array/list receivers and nested
+// linked/special construction: 138/181/376/403; branch-produced array/list storage
+// without/with result receivers: 138/138/138/181. NOT kept: result/order forms miss;
+// original constructors, pointer selections and complete body restored.
 // N340: Complete external-storage predicates, branch-produced storage and count
 // consumers: 249/181/251/249/181/251/454/454. No match; original predicates and complete body restored.
 // DH311: Existing base element retained, default zero initialization deferred to all six derived

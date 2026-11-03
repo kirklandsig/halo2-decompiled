@@ -721,7 +721,7 @@ void function_232d77()
 	}
 }
 
-color3f *function_7f720(color3f *color, short team_index);
+color3f function_7f720(short team_index);
 hsv3f *function_1318d0(const color3f *rgb, hsv3f *hsv);
 color3f *function_131a00(const hsv3f *hsv, color3f *rgb);
 
@@ -937,36 +937,33 @@ void c_postgame_statistics_list_459750::fill_row(c_class_1a2c81 *item, long row)
 	c_class_1a2c81 *place = item->find_child(6, 1, false);
 	c_class_1a2c81 *score = item->find_child(6, 2, false);
 	c_class_1a2c81 *bitmap = item->find_child(8, 0, false);
-	struct
-	{
-		color3f bitmap_color;
-		color3f color;
-		hsv3f hsv;
-	} colors;
+	color3f bitmap_color = function_7f720(g_55dc30[row].color_index);
+	hsv3f hsv;
 
-	colors.bitmap_color = *function_7f720(&colors.color, g_55dc30[row].color_index);
-	function_1318d0(&colors.bitmap_color, &colors.hsv);
-	colors.hsv.saturation = 0.20833333f;
-	colors.hsv.value = 0.79166669f;
-	function_131a00(&colors.hsv, &colors.color);
+	function_1318d0(&bitmap_color, &hsv);
+	hsv.saturation = 0.20833333f;
+	hsv.value = 0.79166669f;
+	color3f color;
+
+	function_131a00(&hsv, &color);
 	if (name)
 	{
 		name->function_22f52e()->set_text(g_55dc30[row].name);
-		name->color = colors.color;
+		name->color = color;
 	}
 	if (place)
 	{
 		place->function_22f52e()->set_text(g_55dc30[row].place);
-		place->color = colors.color;
+		place->color = color;
 	}
 	if (score)
 	{
 		score->function_22f52e()->set_text(g_55dc30[row].score);
-		score->color = colors.color;
+		score->color = color;
 	}
 	if (bitmap)
 	{
-		bitmap->color = colors.bitmap_color;
+		bitmap->color = bitmap_color;
 		bitmap->value6e = true;
 	}
 }

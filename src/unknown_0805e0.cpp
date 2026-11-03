@@ -218,6 +218,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // M332: Existing iterator on the local successor, pointer/declaration while, plain for,
 // or native index admission, each with result/break or direct completion: 57/55/57/55/91/73/52/53.
 // All regress; original walk, helper, publication and complete body restored.
+// Round 76 (m3 lane 16, fast, with 0x1a303b/0x2b393c): an unsigned index 43 (same code); the two flag tests as an
+// outer `if` around the record tests 43 (same code); the machine-local test on the high xuid dword
+// (`xuid[1] >> 16`) 71 (110 bytes, both callers lose); the machine-local test as a 64-bit mask compare 44; as a
+// `(word)` of the shifted xuid 49.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {
@@ -751,6 +755,9 @@ void function_1537f0(s_profile_record *record);
 // M328: Signed entry distances from start/end, strict/inclusive bounds, each with
 // per-visit/reused source workspace: 100/100/85/86/100/100/85/86. Original complete
 // body restored; identity homes fold and the native signed entry end remains.
+// Round 76 (m3 lane 16, fast): `entry <= &g_4cf98c[349]` 53 (same code); flags and timestamp cleared by one
+// chained assignment 62 (253 bytes); the entry pointer declared before the for 53; the four global NONE stores
+// chained 53; an index loop with an entry pointer local 78 (238 bytes).
 // Round 61 (m3 lane 10, fast): the identity pointer taken from memset's return in its own statement before the
 // record initializer (zeros now stored before the record) on the pointer walk 81 (276 bytes); with an index loop
 // 55 (259 bytes: frame 0xa0 and retail's `cmp edx, end; jl` exit, but the identity at +0x14 with a 4-byte pad under
@@ -1258,6 +1265,10 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M328: Complete inverse direction in bool/byte/short/long, original/direct
 // capacity entry: 53/53/386/376/373/373/365/373. Original direction, admission and full
 // body restored; count/upper allocation and forward ordinal still differ.
+// Round 76 (m3 lane 16, fast with the file's queue functions, 0x7f8b0, 0x1537f0 and the 0x805e0 callers): `removed`
+// not const 49 (same code); upper as `position > removed ? position : removed` 50; lower as `removed < position ?
+// removed : position` 49; the count path assigning upper first 50; the entry's player built by the existing
+// 0x7f8b0 call (NULL previous) 98 (1174 bytes).
 // Round 61 (m3 lane 10, fast): retail's prefix shape, `long removed = NONE; if (g_4cf978 == 350) { removed = g_4cf980;
 // ... }`, `lower = removed > position ? position : removed`, an explicit `>` arm storing `downward = false`, the count
 // path upper first with its own `downward = false` 56: the count now lives in EAX as retail, the `>` arm and the
