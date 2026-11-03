@@ -4616,6 +4616,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// AC511: Actual lateral/projection/rejection vector output entry lifetimes, seven
+// subsets and complete graph with existing staged lateral cross: 749/749/749/749/749/749/749/749.
+// NOT kept: frame 0x18 and 2974-byte extent agree but entry definition and zero/result/one
+// homes remain; original output scopes, cross and complete body restored.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

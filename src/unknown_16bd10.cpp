@@ -910,6 +910,10 @@ PRIVATE inline real game_ticks_to_seconds(long ticks)
 // real/double, double/-, double/real, double/double) 407/256/245/413/410/413/413;
 // complete double factor 427. Archived real quotient 236 excluded. Original projection,
 // helpers and body restored; direction/normal/zero homes and flag scheduling remain.
+// AC511: Immutable complete plane with original/default-zero/conditional/zero-first
+// factors, original/producer direction declaration: 443/437/443/443/443/437/443/443.
+// NOT kept: readonly plane producers shorten to 1660/1668 versus 1696 and regress;
+// original plane, direction, factor, scopes and complete body restored.
 // @retail 0x16c840
 void __stdcall function_16c840(long user_index, long unused, s_observer_command *command)
 {

@@ -574,6 +574,10 @@ extern point2f *g_468778;
 // AC509: Admission rejection to the sole result return, compound/negative-result/positive-result/
 // settings-owned gates: 374/407/407/374; actor-first versions 413/435/435/413. NOT kept:
 // best gain 1; original acquisition, result, admission and complete body restored. Early carriers remain.
+// AC511: Actual header-free slot-member record with entry/branch false result,
+// direct completion and early admission, original/actor-first acquisition:
+// 387/440/425/440/410/413/393/413. NOT kept: native receiver/return lifetime graphs
+// regress; original record, lookups, result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

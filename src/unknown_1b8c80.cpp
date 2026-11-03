@@ -1550,6 +1550,10 @@ void function_1f86a0(long actor_index);
 // with indexed native member payload first and original payload: eight at 134.
 // NOT kept: alias contracts do not recover the mask spill or EBX entry; original
 // callback definition/declaration, payload and complete body restored.
+// AC511: Actual search-only/search-and-fallback iterator scopes, original/readonly
+// current-entry receivers, native/original slot-member payload first in each pair:
+// eight at 134. NOT kept: frame 0x10, raw-mask spill and EBX entry remain; original
+// scopes, receivers, payload and complete body restored.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
