@@ -359,6 +359,9 @@ struct s_object_damage_view
 // 360/360/373; count first/second 360/361; count-find/find-count/both count
 // 374/374/375. NOT kept: every form regresses and shortens away from retail. Original
 // whole body and include list restored; scalar homes and amount-biased history cursor remain.
+// B406: Attribution-produced event code byte/word/long/dword, definite assignment
+// 436/451/452/452; conditional selected-code producers 436/440/472/472. All regress;
+// original eager code, scalar homes, history observations and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

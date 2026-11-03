@@ -1420,6 +1420,9 @@ struct s_looping_detail_request
 // with native audible offset 154/154/156/156, with temporary/copy 182/182/183/183. Original
 // complete body restored; query expansion and detail/offset homes remain.
 // NOT kept: unmatched admission outcomes; every form regresses.
+// B406: Final output-mode completion, bool/byte/short/long positive 146/146/146/146;
+// complementary output-mode completion 145/145/145/145. Original carried AL result
+// and entire body restored; native first-player call and offset/detail homes remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -2468,6 +2471,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // 668/668/799/793; default-true state-test counterparts 755/755/800/794.
 // All regress; original completion polarity, sole exit and complete body restored.
 // NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
+// B406: Completed acquisition supplies admission and return, bool/byte/short/long
+// success 749/734/778/782; complementary pending outcomes 732/732/775/780. All regress;
+// original branch-owned result, persistent input truth and complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)
