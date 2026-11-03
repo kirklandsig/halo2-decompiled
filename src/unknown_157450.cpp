@@ -654,6 +654,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // in a local struct or a two-element array, read through the pointer 61 (aligned 34), direct 139.
 // The whole body in a scoped block, word direct/pointer 139/63; the accumulators and what follows in
 // a scoped block with the masks outside it 139.
+// Round 531: Final bitmap after notifications, right-shift membership and unsigned counter, seven
+// subsets 39/96/96/85/92/103/103; complete native-word graph 97. Original body restored; shared old-mask
+// reload remains.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2171,8 +2174,16 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // register and the base lands in EAX, which in turn moves the tail reload and the iterator LEA.
 // The lookup written as a subscript gives identical code (8); the shared helper still swaps the
 // mode global's register (9). A permuter run was killed before it reported a result.
-// score 8 (was 8): the inlined equipment lookup keeps the object table base and the index in
+// Earlier: the inlined equipment lookup keeps the object table base and the index in
 // swapped registers.
+// Round 125: old-index mask at the call 8; char index 38 (192 bytes), short index 41 (195);
+// const index 8; split declaration 8; iterator reference 8; second current-object pointer 8;
+// inline release declaration 8; grouped record renamed 8; record declared after initialization 8;
+// old-entry comparison reversed 8; upper-bound comparison reversed 10.
+// Round 337: existing grouped record with rejection continuation 8; nested success continuation 8;
+// reversed-upper success continuation 10; rejection with previous-object local 8, coherent class
+// table 8, range result 20, native byte ordinal 38 (192 bytes); combined success continuation 8.
+// NOT kept: no gain. Original body restored; inlined index-scale/data-load scheduling remains.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
@@ -3990,6 +4001,19 @@ long function_15a640(long tag_index)
 
 #include "object_markers.h"
 long function_1469f0(real seconds);
+extern point3f g_468d18;
+
+static inline bool game_engine_teams_friendly(short team, short other_team)
+{
+    bool result = false;
+    c_engine_peer *engine = game_engine_get();
+
+    if (engine)
+    {
+        result = engine->p27(team, other_team);
+    }
+    return result;
+}
 
 struct s_player_death_state
 {
@@ -4010,152 +4034,54 @@ static inline long death_seconds_to_ticks(real seconds)
     return result;
 }
 
-static __forceinline long nonnegative_15ce70(long value)
-{
-	return value < 0 ? 0 : value;
-}
-// score 456 (was 456): the mode dispatch written as an if/else chain instead of a switch, and the
-// award's default assigned at the damage decode; the frame is still 0xe4 against 0xe0 and the
-// attacker parameter is still copied into EDX in the entry block.
-// Earlier score 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
-// Earlier at 470 (was 470): frame 0xe4 versus 0xe0; attacker/category/NONE and decision homes remain.
-// Earlier: frame 0xe4 versus 0xe0; attacker/category/NONE and decision-byte homes differ.
-// tried category read at use 568; modifier read at use 668; both decodes at use 644; statistics base value 604; shared chain notification 561; category phase lifetime 559; modifier phase lifetime 568; both phase lifetimes 568.
-// Frame 0xe4 versus 0xe0; attacker/NONE/category homes remain. Existing tick conversion 480; direct one-second minimum 549; lives clamp before decrement 535; first cause setter 563; shared initial ticks 528 (fast).
-// frame 0xe4 versus 0xe0; eager attacker and category/NONE homes differ. Timing-phase
-// scope 480; decoding before lookup 481; different-player arm first 490; override selection 480; shared
-// message formulas 575.
-// Frame 0xe4 versus 0xe0 and attacker/category/NONE homes remain; elapsed scalar reuse 480; delay conditional 611; total before delay 600; byte classification then full override 484; byte award 584; early message result 480 (fast).
-// Positive self-inflicted predicate 480; positive opposing-team predicate 555;
-// both positive predicates 555; default position setter 481; both position setters 568.
-// Award after victim lookup 479; minimum-first total maximum 480; common modifier-one award 470
-// plain; contiguous special range 482; shared absent/self classification 584. Frame 0xe4 versus
-// 0xe0 and attacker/category/NONE homes remain.
-// Frame 0xe4 versus 0xe0, eager attacker, category/NONE and predicate/event homes remain.
-// Earlier 480 (was 480): frame 0xe4 versus 0xe0; attacker loading and category versus NONE register lifetime differ
-// Earlier 480 (was 480): Frame 0xe4 versus 0xe0; attacker/NONE/category homes remain. Existing tick conversion 480; direct one-second minimum 549; lives clamp before decrement 535; first cause setter 563; shared initial ticks 528 (fast).
-// Earlier 480 (was 480): frame 0xe4 versus 0xe0; eager attacker and category/NONE homes differ. Timing-phase
-// Round 201: One reused event 485; distinct inner event names 480; byte different-player 480; byte same-team 480; long different-player 543.
-// Conversion spill names 480; complete special comparisons 577; category-only word 570; modifier-only word 579;
-// plain timed-step for 480. Frame/NONE and event homes remain; helper and body restored.
-// Round 128: attacker read at each use 563; native penalty/elapsed/both fields 470/470/470;
-// penalty/both with fresh attacker 563/563; shared victim ordinal 571, plus fresh attacker 574;
-// classifier/notification/both Boolean virtual parameters 543/542/544. Frame,
-// attacker/category/NONE and decision-byte homes remain; all restored.
-// Round 358: Category-only byte 545; modifier-only byte 530; modifier after category predicate 543;
-// exhaustive subtype result 566; entry statistics ordinal 557. Frame/NONE and decision homes remain; opening
-// body and shared award update restored.
-// Round 364: Native chain/streak/both statistics fields 470/470/470; fresh victim 615;
-// fresh output state 548; both fresh bases 639; native fields plus fresh victim/state 615/548.
-// Clock/round/options base snapshots 566/481/487; clock-round/clock-options/round-options/all 492/558/548/496; role-named marker and both events 470. Frame and attacker/NONE homes remain.
-// Round 131: word special/different/both/team/special-team/different-team/all
-// decision carriers 477/528/540/470/477/528/540; dword subtype 470.
-// Scalar stack-home names for cause, modifier, special test, elapsed, interval, delay, total and mode each 470.
-// Round 235: elapsed/timer/classification consumption scopes, all seven combinations 470 each; statistics-to-message consumption scope 470.
-// Complementary category bool/byte/short/long 470/470/477/550; with self-player result
-// 470, opposing-team result 526, both 526, word category with both 480. Original
-// category, decision bytes and all event/timing work restored; extra frame dword remains.
-// Round 239: actual penalty/ticks/both field references 469/470/469; existing
-// nonnegative helper with positive selection 518, with penalty/ticks/both references
-// 521/518/521; all with award after engine admission 522. One-point gain dropped;
-// original fields, helpers, shared award update and body restored.
-// Round 225: chained award/subtype defaults at entry, admission and victim lookup 549/548/548;
-// award/message 470, all three at entry 549, subtype/message 549; all three
-// after admission/lookup 548/548. Original result defaults and complete body restored.
-// Round 218: Exhaustive award result, entry declaration with before/after subtype leaves and
-// ordinary/excluded category first 579/591/584/602; selection declaration counterparts 579/591/584/602.
-// All restored; frame 0xe4/0xe0 and attacker/category/NONE/event homes remain.
-// Round 251: existing initializer returned-workspace receivers, first/second/both
-// events 576/536/610; immutable receivers 576/536/610; paired mixed receivers
-// 610/610. Both original native event constructions and complete body restored;
-// extra frame dword and attacker/category/NONE homes remain.
-// Round 385: Team/observer/both/whole-function engine receivers 470/557/557/617; with explicit team
-// result 550/509/509/617. All restored; frame 0xe4/0xe0 and attacker/category/NONE/decision homes
-// remain.
-// Round 173: actual external victim/attacker/state record references, all seven nonempty
-// combinations 470; all three with existing complete position setter 471. Original record
-// receivers, both events, shared award update and complete body restored.
-// Round 226: paired existing initializer/cause/effect/sender boundaries 602/609/592/588/567/583;
-// initializer/cause/effect 637, complete event lifecycle 659. Original body and all inline
-// boundaries restored; frame 0xe4/0xe0 and attacker/category/NONE/event homes remain.
-// Round 301: Ascending chain notification, descending streak notification and ascending chain
-// result recognition, seven combinations 470/470/470/543/543/543/543; all plus reversed
-// fixed streak results 532. Original predicate order, values and complete body restored.
-// Lane 3 r173 (fast): retail holds NONE in EBP for the whole function (`or ebp, -1`, `cmp eax,
-// ebp`) and keeps the damage type in [esp+0x24], where ours gives EBP to the damage type and
-// compares with immediates. Award default after the engine test 471 (its store moves to
-// retail's place, still an immediate); with the lives clamp as a ternary and the special
-// subtype as if/else 475; the ternary clamp alone 541 (retail's setle/dec/and, but 2126 B);
-// the if/else subtype alone 543 (retail's branches, 2110 B); `minimum < penalty ? penalty :
-// minimum` for the delay 471 (identical).
-// Round 241: uniform presence/self/both decisions 575/559/560; with native statistics
-// ordinal 572/552/544; both with override join 560, also staged decoding 560.
-// Original body restored; frame 0xe4/0xe0 and attacker/category/NONE homes remain.
-// N271: full forwarding parameter domains long/dword/short/word/byte/signed-char/int/unsigned-int
-// 548/548/549/549/470/470/548/548. Original Boolean contract and complete body restored.
-// Round 264: Independent native first/second/both event entry lifetimes, marker combinations, subtype declaration and direct elapsed publication: 456/455/536/456/455/536/536/536. One-point leads rejected; original event scopes/names, all producers and complete body restored. Extra frame word and attacker/category/NONE homes remain.
-// M283: Minimum ticks before interval, with existing-converter/earlier constant-mode/conditional-total combinations
-// 456/630/456/630/456/630/456/630. Original conversions, production order, mode, clamp and body restored;
-// first +0 eager attacker retention, frame 0xe4/0xe0 and category/sentinel homes remain.
-// Round 315: Native interval-loop quotient, next-interval and repeated earliest-bound expression
-// ownership in seven subsets 456/456/456/456/456/456/456; all with the earliest bound
-// before division 603. Original expression graph and body restored; extra frame word and
-// attacker/category/NONE/decision homes remain.
-// DH272: Signed-byte category/modifier/award subsets 1/2/3/4/5/6/7 give 520/491/517/532/611/582/578; all
-// signed-word 567. Modifier alone recovers frame 0xe0 at 491. On that graph, complete pure decode after
-// elapsed/penalties/ticks/at classification gives 554/566/565/508. All regress; original domains, lifetimes,
-// event workspaces and body restored. Frame 0xe4/0xe0 and attacker/category/NONE homes remain.
 // @retail 0x15ce70
 void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte damage)
 {
     if (!game_engine_get()) return;
     s_engine_player *victim = engine_player_get(victim_index);
+    long award = NONE;
     long damage_type = damage & 0x3f;
     long damage_modifier = damage >> 6;
-    long award = NONE;
     bool special = damage_type == 3 || damage_type == 0x1a || damage_type == 0x18 || damage_type == 0x17 || damage_type == 0x14;
-    long elapsed = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
-    *(long *)((byte *)victim + 0x1b4) = elapsed;
+    *(long *)((byte *)victim + 0x1b4) = MAX(0, g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
     if (attacker_index != NONE)
     {
-        s_engine_player *attacker = engine_player_get(attacker_index);
         bool different = attacker_index != victim_index;
-        bool same_team = game_engine_get() ? game_engine_get()->p27(attacker->team, victim->team) : false;
+        bool same_team = game_engine_teams_friendly(engine_player_get(attacker_index)->team, victim->team);
         if (!different)
             *(long *)victim->unknown168 += death_seconds_to_ticks((real)*(long *)((byte *)g_4e6948 + 0x1c0));
         else if (!same_team && !victim->value164)
-            *(long *)attacker->unknown168 += function_1469f0((real)*(long *)((byte *)g_4e6948 + 0x1e8));
+            *(long *)engine_player_get(attacker_index)->unknown168 += function_1469f0((real)*(long *)((byte *)g_4e6948 + 0x1e8));
     }
     if (g_4e6948->state == 2 && g_4e6948->mode != 4 && function_15b2f0() && victim->value1ac != NONE)
     {
-        long lives = victim->value1ac - 1;
-        if (lives <= 0) lives = 0;
-        victim->value1ac = (short)lives;
+        victim->value1ac = (short)MAX(victim->value1ac - 1, 0);
         function_a7840((short)victim_index, 0x20);
     }
     s_player_death_state *state = (s_player_death_state *)&function_xaee93d()->players[(short)victim_index];
     long interval = death_seconds_to_ticks((real)engine_options()->value1bc);
     long minimum = death_seconds_to_ticks(1.0f);
     long penalty = *(long *)victim->unknown168;
-    long delay = penalty > minimum ? penalty : minimum;
-    long total = penalty + interval;
-    if (total <= minimum) total = minimum;
+    long delay = MAX(penalty, minimum);
+    long total = MAX(penalty + interval, minimum);
     long mode = 2;
     if (function_x340af0()) mode = *(long *)((byte *)g_4e6948 + 0x1e4);
-    if (mode == 0)
+    switch (mode)
     {
+    case 0:
         function_15d6c0(victim_index, total, delay);
-    }
-    else if (mode == 1)
+        break;
+    case 1:
     {
-        long now = nonnegative_15ce70(g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
+        long now = MAX(0, g_510c54->game_time - ((s_engine_round_clock *)g_4e9ae8)->start_time);
         long next = (now / interval + 1) * interval;
         while (next < now + delay) next += interval;
         victim->value164 = next - now;
+        break;
     }
-    else if (mode == 2)
-    {
+    case 2:
         victim->value164 = total;
+        break;
     }
     *(long *)victim->unknown168 = 0;
     if (victim->unit_index != NONE)
@@ -4168,9 +4094,7 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
     else
     {
         state->active = 0;
-        state->position.x = 0.0f;
-        state->position.y = 0.0f;
-        state->position.z = 500.0f;
+        state->position = g_468d18;
     }
     state->ticks = (short)victim->value164;
     state->initial_ticks = (short)victim->value164;
@@ -4195,7 +4119,8 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
             if (special)
             {
                 award = 0;
-                subtype = damage_modifier == 2 ? 0x2b : 0x24;
+                if (damage_modifier == 2) subtype = 0x2b;
+                else subtype = 0x24;
             }
             else if (damage_type == 2 || damage_modifier == 3)
             {
@@ -4245,7 +4170,11 @@ void function_15ce70(long attacker_index, long victim_index, bool betrayal, byte
         if (damage_type == 0xd || damage_type == 0xe) function_1970a0(index, 6, 1);
         if (damage_type == 2 || damage_modifier == 3) function_1970a0(index, 7, 1);
         if (damage_type == 0x16 && damage_modifier == 2) function_1970a0(index, 0xc, 1);
-        if (special) function_1970a0(index, damage_modifier == 2 ? 9 : 8, 1);
+        if (special)
+        {
+            if (damage_modifier == 2) function_1970a0(index, 9, 1);
+            else function_1970a0(index, 8, 1);
+        }
         long message = NONE;
         if (chain >= 7) { message = 9; award = 8; }
         else if (chain == 6) { message = 8; award = 7; }
@@ -4477,6 +4406,13 @@ void function_15fe20(long team_index, color3f *color);
 // restored; native team-color transfers, shared NONE and shift-count residency remain.
 // Round 471: Direct native member publication, rival/own/both team and rival/own/both palettes
 // 562/534/563/139/429/458; all outputs with const/mutable returned sources 685/685. All restored.
+// N329: Existing complete weapon helper/native unit-view getter, original/twice-used unit handle and
+// full/word presence mask: 119/88/119/88/119/88/119/88. Native getter ties; complete helper reaches
+// retail length but regresses. Original body and include list restored.
+// Y538: Existing three-dword display color fields, rival/own/both native aggregate
+// publication 88/88/88; corresponding native member publication 562/534/563; both
+// with library/filled-output publication 88/564. Types, include and complete body restored;
+// returned-color capture, final NONE carrier and byte-shift residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5633,6 +5569,9 @@ void __stdcall function_d6bc0(long object_index);
 // N304: Unsigned-word schedule/kind/modifier domains, seven subsets then all
 // with immutable kind, 144 in all eight forms. Original signed-word producers
 // restored; frame 0x14/0x18, timer spill and entry-base reloads remain.
+// Round 479: Independent long countdown after scheduling with short/bool schedule, short/signed-byte kind
+// and short/long modifier combinations: 158/179/167/184/173/184/182/189. Original short countdown and selection
+// domains restored; frame 0x14/0x18 and independent timer spill remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

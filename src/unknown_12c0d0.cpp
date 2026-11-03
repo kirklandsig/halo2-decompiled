@@ -863,6 +863,10 @@ long texture_cache_bitmap_level(s_bitmap_data const *bitmap, real scale)
 // Round 53 (lane 11, `--fast`): the switch then `return function_80e14(...)` (the existing inline
 // allocator) 87 (288 bytes, four callers lost); the type tests as an if/else-if chain 90; attempts
 // declared before timeout 5; result declared after the switch 94; a plain static reader in this file 2.
+// Round 85: zero-initialized start 100; timeout declaration before the read 2; pump bound declaration before
+// the read 2; both declarations before the read 2; result/timeout declarations swapped 2; timeout/pump bound
+// declarations swapped 4; split attempt initialization 2; attempt/pump declarations swapped 2; guarded switch
+// with a shared attempt store 97. Opening body restored.
 // @retail 0x12d400
 long function_12d400(long type, long size, long user_data, long update, long release)
 {

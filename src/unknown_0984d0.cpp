@@ -486,6 +486,28 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // request 206; while form of the index loop 206. Re-measured on this body: c,b,count (the reverse reads) 86; natural index
 // for loop 206, through the helper 207; dword handle 206; memcmp sized by the request count 195 (handle split at entry), with
 // the index loop 208; entry element pointer in case 2/4 80 (same code).
+// P265: Native rejection bool/byte/signed-byte/short/word/long/dword/int64 on the retained byte
+// ordinal 153/153/153/205/205/203/203/148. All exact-only flag forms restored; validity
+// home, validation carriers and loop-entry reload remain. Original helper and body restored.
+// F332: Paired validity/byte-ordinal lexical priorities, four pairs 80 each;
+// the same pairs with ordinal storage inside the count guard 207 each. Original
+// names, lifetimes and complete body restored; validity/cursor homes and loop entry remain.
+// M316: On signed-byte ordinal graph: size/handle producer forwarding with inherited/plain cursor reads, then long producer result 188/194/189/209/209/209/209/80.
+// Validity home, validation carriers and loop-entry reload remain; original helper and inherited cursor reads restored. Original executable body restored.
+// DH302: On the signed-byte ordinal graph, call-first conjunction / compound Boolean
+// intersection / conditional accumulation / call-first intersection 211/209/210/209;
+// validity declared after the ordinal repeats 211/209/210/209. Original complete body restored.
+// AC483: Only items/data cursor observed ordinarily with signed-byte/short/word/int64 ordinals:
+// 209/209/208/193/208/193/205/220. Original helper, both inherited local-slot observations and
+// complete body restored; validity home, cursor carriers and loop-entry reload still differ.
+// Cursor-derived progress: items displacement guarded/pretested 206/201; data displacement 193/210;
+// items live endpoint 210/212; data live endpoint 203/205. Validity/cursor homes and loop-entry reload
+// remain; original body restored.
+// Unguarded live endpoints 207/150/206/201 NOT kept: mutable count can be negative.
+// N327: One actual element ordinal reused by validation and notification; signed-byte/byte/short/long
+// storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
+// validation ordinal, separate long notification ordinal, helper and both inherited local-slot
+// observations restored. Validity/cursor homes and loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

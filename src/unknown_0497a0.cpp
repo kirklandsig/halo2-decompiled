@@ -200,10 +200,22 @@
 // Round 512: Complete two-bit mask admission with full-kind/projection-mode/flag
 // snapshots, masks 0/1/2/4/3/5/6/7: 677/596/691/671/691/699/598/703.
 // Original decision and complete body restored; shape/basis/wave homes remain.
+// Round 237: Existing real-factor output scales on the retained second-wave addition graph:
+// primary/depth/displacement families, masks 1/2/4/3/5/6/7, 580/702/702/701/700/701/694; all with
+// complete native input scaling 693. Older real-factor forms predate this wave/frame graph.
+// Original scalar expansions, inputs and integer conversion restored; frame 0x58/0x60 and shape/basis/wave homes remain.
 // DL238: Complete shared six-channel clamp with branch-owned attenuation and long/dword/short/byte
 // output modes 959/959/956/962; selected-factor counterparts 997/997/994/1000. Original products,
 // repeated clamp arms, mode publication and sixth-component conversion restored; frame and
 // shape/basis/wave homes remain.
+// Round 333: Perspective rows through separate existing scale/add producers, cross/output
+// receivers, complete rows/paired phases and separate/nested returned receivers:
+// 772/772/844/766/925/837/909/839. All regress; original perspective expressions, helpers,
+// frame graph and sixth-component conversion restored.
+// Round 540: Returned scaler output consumed by first/second/both wave adds and
+// point-setter/second-return contract 690/581/690/581; complete read-only basis inputs
+// on those graphs 690/581/690/581. Frame stays 0x58; first-wave shared addition grows
+// to 2654 bytes. All producers, basis contracts and complete body restored.
 // @retail 0x497a0
 void function_0497a0(
 	s_view_source *source,
@@ -770,6 +782,16 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Coordinator: not kept. The vector2f local exists to shape the frame (its i is dead, its j becomes v + width; a locals-
 // grouping form), and case 0's order was picked from 36 by score. The two existing normalize helpers alone (normalize2d_fast
 // on a side vector, normalize3d on case 0's normal) give 260 fast: a gain of 5, under the bar. Body restored.
+// F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
+// field then actual opacity value storage: 265/269/265/269/276/278/276/278.
+// Original product, its intermediate, signed zero, record publication and complete body restored.
+// Round 540: Twice-used per-channel lower/current input values, initial/next/transition
+// phase subsets 1/2/4/3/5/6/7, 553/550/265/588/553/550/588; all with width owning
+// its transition input 582. Next-phase forms recover frame 0xac but grow the body;
+// NOT kept: no gain or match, and changed load ownership. Original complete body restored.
+// F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
+// field then actual opacity value storage: 265/269/265/269/276/278/276/278.
+// Original product, its intermediate, signed zero, record publication and complete body restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
@@ -1145,12 +1167,20 @@ void __stdcall function_43720(s_43740_input *input)
 // snapshot mutable/read-only 100/100, both snapshots in four constness forms
 // 124 each. Original body restored; all copies lose the matched caller.
 // Early tag EAX/EBP admission and later slot/shader homes remain.
+// Round 237: Actual owning source frame fields in short/word domains, with no additional layout,
+// typed texture field, typed shader/normal record, both: 62/62/62/62/62/62/62/62. Every form includes
+// the new source fields; old standalone tag/shader forms are excluded. Original layouts and full
+// body restored; early tag EAX/EBP admission, signed-slot residence and shader-relative test remain.
 // DL238: Entry source/definition, slot and shader request-header subsets 1/2/3/4/5/6/7/all plus
 // shader-relative normal 66/59/68/67/66/73/73/79. Early slot alone reaches retail length at 59, a
 // rejected three-point gain. On it, shared texture-pointer/Boolean admission 69/75; native
 // count/slot/shader consumer subsets 59/59/59/69/69/69/69. Shader/admission forms lose matched
 // 0x42b20. Complete original body restored; tag admission EAX/EBP split and signed-slot/shader
 // homes remain.
+// M319: Native subordinate header production via sparse member/mutable aggregate/
+// readonly aggregate/sparse library copy, count from published request 79/105/105/79;
+// count from producer header 81/105/105/81. Extra producer forms require exact
+// equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

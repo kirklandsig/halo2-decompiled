@@ -273,6 +273,10 @@ __forceinline bool function_184448(long arg_0)
 // Round 465: complete plane input before orientation, native/memcpy/normal-distance/
 // normal setter-distance, at face/entry scope: 987/987/966/973 twice.
 // Original split plane producer and body restored; frame and geometry homes remain.
+// Round 523: Scalar plane-transform input with complete scalar/native normalizer capture,
+// early/common result and original/scalar point input, 999/1080/1011/1052/1060/982/1033/976.
+// First form recovers frame 0x11cc and first +0x1d but regresses; original in-place inputs,
+// helpers, projection lifetimes and complete body restored.
 // P263: existing dominant-axis provider 1057; six persistent instance/geometry/material
 // pointer priorities 965/965/965/965/965/965; first/last with late worklist 965/965.
 // Original body and declaration restored; excess frame and geometry homes remain.
@@ -287,6 +291,12 @@ __forceinline bool function_184448(long arg_0)
 // statements 969 (4595 bytes, aligned 718). Re-measured: record/surface declarations before the instance pointer 965, surface
 // before record 965, rectangle plus that order 1007.
 // Retail keeps the record pointer (+0x98) and surface pointer (+0xe4) in memory from the start; ours holds them in EDI/EBX.
+// AC485: complete plane-transform input including distance, normal-plus-distance/native/scalar/memcpy,
+// direct/native output: 965/1011/999/1011/1046/1041/981/1041; original in-place helper restored.
+// Frame and geometry homes remain; no other helper user exists.
+// AC489: Plain component traversals for normalization output, point input scale and world
+// bounds expansion, subsets 1/2/4/3/5/6/7: 984/986/969/987/969/991/971; complete graph
+// with short counters 1093. Original helpers and body restored; frame and geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

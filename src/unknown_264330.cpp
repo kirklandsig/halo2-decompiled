@@ -579,6 +579,8 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // DH281: Sampling admission priorities ACB/BAC/BCA/CBA with original and update-first validation on
 // retained 21304/signed-state graph; exact-length 412 ties the opening score [414, 450, 450, 422, 412, 436,
 // 436, 424]. Original executable body restored.
+// Round 324: post-query timer limit from branches/conditional/default, each alone and with
+// native short decrement, then branch/conditional with named elapsed: 412/412/412/412/412/412/412/412. Original restored.
 // P262: Complete sample/update/sampled-once lexical priorities, all six native Boolean
 // orders 412 each; signed prior-state word on sample-first/update-first flag graphs 413/413.
 // Original flags, signed-long state, workspaces, cases and complete body restored.
@@ -587,6 +589,21 @@ void __stdcall function_264b50(long actor_index, long node_index, s_2641c0 *samp
 // saved state: 412/413 in all four pairs. Native state recovers the word store but regresses one;
 // workspace ranks leave the frame and homes unchanged. Original names, full saved-state domain,
 // qualifier and body restored; frame 0xa4 versus 0xa0 and stacked actor remain.
+// DH291: Progress-first case priorities 40123/40132/40213/40312/41023/41032/41203/41230
+// on the retained signed-state graph 424/448/423/450/422/452/421/417. All complete cases,
+// release joins, sampling, qualifiers and original body restored; actor/frame homes remain.
+// DH293: Case-local admission completion, timer reset-first and terminal completion,
+// all seven nonempty combinations 412 each; complete graph with native signed
+// saved state 413. Original cases and complete body restored; frame/actor homes remain.
+// DH295: Signed-state graph with zero-first complete priorities 01234/01243/01324/01342/
+// 01423/01432/02134/02143: 418/424/440/448/424/444/420/426. Original cases restored;
+// actor/update register conflict, frame excess and workspace homes remain.
+// DH298: Timer-first priorities 30124/30142/30214/30412/31024/31042/31204/31240
+// on the retained signed-state graph 440/452/435/447/437/448/433/461. All recover frame
+// 0xa0 but retain the stacked actor; original complete cases and body restored.
+// F336: Maximum dword/once-read twice-used priority/later constant acquisition,
+// seven subsets on the retained signed-state graph, then plain dword with priority:
+// 416/412/414/414/418/414/416/428. Original maximum, observations, cases and complete body restored.
 // @retail 0x262ba0
 void function_262ba0(long actor_index)
 {

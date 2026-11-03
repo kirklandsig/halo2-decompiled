@@ -394,6 +394,19 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Round 513: Complete native transform input/output library transfers, input memcpy/memmove,
 // output memcpy/memmove, then both APIs in all four pairs: 248/294/334/295/690/685/687/692.
 // Input memcpy recovers frame 0x2c but regresses; original alias-safe helper and body restored.
+// Round 57 (lane 11, fast): displaced point y, x, z / z, x, y 218/216 (982 bytes), each with the reverse displacement
+// written into the same point 218/216 (same code); displaced order (x, y, z first) by helper coordinate declaration order:
+// xyz base zyx 228, yzx 237, yxz 230, xzy 227, zxy 225; y-first 230, 236, 207, 227, 225, xyz 218; z-first 227, 232, 223, 225,
+// 224, xyz 216; helper scale statements reordered zyx 229, yzx 217, yxz 199, xzy 201, zxy 205, with y-first displaced
+// 229, 217, 222, 224, 228. The second transform's colours stay x XMM4, y XMM6, z XMM7 (retail XMM7, XMM6, XMM4).
+// Round 523: Direct inverse factors with complete raw/scaled copy/branch/conditional/native-point
+// families, field/coherent scale, 213/227/262/301/301/277/679/226. Final form reaches 955 bytes
+// but not the frame/homes; original alias-safe helper, inverse defaults and full body restored.
+// Round 525: Genuine coefficient-column cursors with indexed/cursor translation and output,
+// repeated/coherent scale, eight graphs 278/276/278/275/278/275/277/276. Original helper and body restored; frame and displaced-transform spills remain.
+// Round 527: Eager admission/eager returned comparisons/library zero-output subsets
+// 1/2/4/3/5/6/7 give 238/243/194/269/237/239/265; all with a Boolean result accumulator 285.
+// One-point clearing lead rejected; original comparisons, output stores, includes, helper and full body restored; frame and inverse/displaced-transform homes remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
