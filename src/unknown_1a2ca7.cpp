@@ -1005,6 +1005,14 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // (eight forms); added-count home becomes +0x68 but sender/cursor allocation still differs.
 // Complete positive exclusion predicate bool/byte/short/long 127/127/128/132;
 // with the eligibility-bound receiver 140/140/144/142. Original body restored.
+// Round 46 (m3 lane 2, fast with 0x63d00): the loop test with the added-count limit first 143 (451 bytes);
+// the remaining count declared in the exclusion for loop 81; the exclusion loop as `while (remaining-- > 0)` with
+// the cursor stepped in the body 81; the contains test nested under the exclusion test 81; that with the
+// if-set exclusion 113 (450 bytes). Still BLOCKED-BY 0x63d00's register information.
+// Round 35 (m3 lane 18, fast with 0x63d00): the added-count limit as a `break` at the body's top 81;
+// the two loop tests swapped 143 (451 bytes); `message_count > i` 87; `20 > added_count` 81; the
+// name buffer declared before the player allocation 81. Retail's 0x63d00 (inlined guest compare, no
+// EDX write) is still treated as clobbering EDX at every retail call; ours is not.
 // @retail 0x1a4441
 long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 {
@@ -1610,6 +1618,9 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // Round 301: equality consumer/provider/both inline 117/195/195; force-inline
 // 117/297/297; ordinary inline with friend-first counts / symmetric equality roles
 // 200/192. All provider metadata and complete body restored.
+// Round 61 (m3 lane 11, fast; aligned in brackets, base [47]): retail's xuid argument roles without the flags lead: (clan, friend) in the merge loop 219 (841 bytes) [69]; (friend, presence)
+// in the friend walk 122 [51]; (player, presence) in the clan walk 183 (838) [39]; the last two 188 (838) [43]; all three 159 (844) [65], with the friend count first 160 (844) [67].
+// 0x63d00 is not address-taken in retail's tables (only unaligned byte hits), so nothing but its build flags pins the convention. BLOCKED-BY 0x63d00 stands.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {

@@ -640,6 +640,9 @@ static __forceinline void sound_environment_reset_1253d0(s_sound_environment *en
 // Round 129: typed three-count array reference 3; whole count-record pointer 3; const voice pointer 3;
 // short-sentinel chain 5; stream_reset beside definition_type 11; driver identifier beside sound
 // identifier 8; pointer fields before short sentinels 8; definition_type after the zero bytes 5.
+// Round 203 (fast, under a 0x219b40 CAVEAT; the fast baseline agreed with plain): the voice pointer declared at block scope 3; the type counter declared ahead of
+// the voice index 3; a walking per-type count pointer advanced with the type 5; a long inner
+// counter 40 (551 bytes); the two zero bytes as one chained store 5.
 // @retail 0x1253d0
 void function_1253d0(void)
 {
@@ -1351,6 +1354,9 @@ long function_2197f0(real gain);
 // F340: Encoded/real scalar views for result/ducking field/both interpolation
 // endpoints, seven subsets then the complete aggregate view: 137 each.
 // NOT kept: unmatched scalar wrappers. Original types, helper and full body restored.
+// M337: Release-end predicate sum, twice-used remaining attack time and distinct-release
+// hold quotient at their producers, seven subsets [137, 193, 137, 193, 137, 193, 193], all with table-first
+// entry 183. All restored; table/index entry, interpolation and hold-copy homes remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -1568,11 +1574,13 @@ real function_12ad30(s_sound const *sound, vector3f const *offset, long definiti
 }
 
 /* a looping sound's controller (g_51ebd8, unknown_12a1b0.cpp), as a
-   playing sound's deletion reads it (0x1c bytes) */
+   playing sound's deletion reads it (0x1c bytes): deleting a synchronized
+   sound counts it down and clears the controller's playback flag */
 struct s_sound_controller_view
 {
 	byte unknown00[3];
-	byte playing_count;
+	byte synch_count : 7;
+	byte synch_playback : 1;
 	long unknown04;
 	byte unknown08[0x14];
 };
@@ -1581,40 +1589,6 @@ void looping_sound_controller_release(long index);
 
 /* deletes a playing sound, letting go of its looping sound's controller */
 #pragma inline_depth(0)
-// score 5 (was 5): Pool save remains EBP versus EBX; void tail result 5, inline release declaration 5,
-// noinline declaration 5, controller workspace first 5, byte count workspace 5, complete decrement
-// predicate 5, signed count view 5, indexed controller 5.
-// playback pool retained in EBP instead of EBX; no frame, length 98 agrees.
-// Controller reference/workspace 5 each; no-effect cleanup 43; decrement rejection 5;
-// scoped controller lookup 39; receiver names 5; scoped reference 39; reference cleanup 43.
-// Inline/forced-inline controller getter 40/40; open-depth inline getter with noinline release 122;
-// playback/both receiver references 5/5; const playback/controller pointers 5/5;
-// unsigned decrement/mask 5/5.
-// Round 56: the byte decrement is what keeps the pool out of EBX (as a dword store it gets EBX);
-// pool local 43 (stack convention); effect index local 5; byte count local 5; count pointer 5;
-// nested decrement tests 5; harness: char field, cast, `--`/`&=`, `+ 0x7f`, long/short/dword
-// temporaries, mask first, bitfield, release without the depth pragma all keep EBP or worsen.
-// Round 107: a dword decrement moves the pool to EBX (diagnostic); tests swapped 40; index parameter
-// read through its address 46; `(word)` controller index 31; `(count + 0xff) & 0x7f` 5; controller
-// pool local 5; decrement helper (kept out of line by the pragma) 29, forced inline 29.
-// Final pool-release inline/noinline declarations 5/5; controller/playback/both direct lookups
-// 58/59/81; unsigned cyclic remainder 5; shared cleanup exit 5; controller-first predicate 40.
-// Round 39: controller declared at function scope 5; unknown03 test in a bool before the lookup 5;
-// pool release in both arms 33; controller test outside the unknown03 test 40; byte cast before the
-// mask 5. Without the depth pragma the release inlines (122); with either test removed the pool
-// still takes EBP, so the byte store's register is what moves it.
-// Round 33 (lane 13; LTCG harness, base 5 = 5; the decrement already uses DL as in retail): the whole
-// decrement cast to byte 5; an early-return form for no effect 33; the controller pool global typed as a
-// record pool (no cast) 5; a `(word)` controller index 31; `(count + 0xff) & 0x7f` 5.
-// Round 73 (fast; both callees match retail byte for byte, so their register summaries agree): the
-// controller view's first bytes declared as a short salt and a byte reference count 5; the decrement
-// through a byte local `--count & 0x7f` 5; `(byte)unknown03 == 0xff` 39; the definition test first with
-// the unknown03 test nested 40; `(word)` controller index again 31.
-// Round 131: duplicated controller release 37; conditional decrement 5; tail-only pool local 5;
-// decrement in the release argument 59; global pool reference 27; const pool local 43; effect handle
-// for guard and release 34 (pool reaches EBX, but the entry and byte temporary move; NOT kept);
-// release-only handle after the decrement 5; effect field reference 34; release-only handle from
-// entry 34 (the guard coalesces with it, giving the same form as guard and release).
 // @retail 0x127390
 void sound_playback_delete(long sound_index)
 {
@@ -1623,7 +1597,10 @@ void sound_playback_delete(long sound_index)
 	{
 		s_sound_controller_view *controller = (s_sound_controller_view *)((s_record_pool *)g_51ebd8)->data + (sound->effect_index & 0xffff);
 		if (sound->unknown03 == NONE && controller->unknown04 != NONE)
-			controller->playing_count = (controller->playing_count - 1) & 0x7f;
+		{
+			controller->synch_count--;
+			controller->synch_playback = false;
+		}
 		looping_sound_controller_release(sound->effect_index);
 	}
 	record_pool_release(g_4e637c, sound_index);
@@ -2426,6 +2403,11 @@ real g_547f14;
 // before the forced bool 35. Compile-only diagnostic (not a keepable form): when the inner sum stays live
 // after the add, VC gives retail's exact pre-test `movss xmm1, base ... addss xmm1, xmm0`, so in retail the
 // inner sum is a register value VC does not reuse for the result.
+// Round 203 (plain): `-64.0f < gain_base + inner` 7; inner as `gain + distance_decibels` 13; the
+// class gain base read before the inner sum 8; both flag tests and the sum in one `||` condition, no
+// bool 42; the class gain base kept as a long, summed through its address 47. A float-consistency
+// pragma on this function alone (diagnostic) 127 (469 bytes, --fast). The same unfolded pre-test
+// `movss xmm1, a ... addss xmm1, xmm0` is open in 0x1251e0, so the cause is shared.
 // @retail 0x126c30
 bool function_126c30(s_sound_play_state *state, long tag_index, long *listener_index, long *reason)
 {
@@ -2938,6 +2920,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
 // references with complemented playing status 127. Original pointers, saved byte result, search and full
 // body restored; frame twelve/eight and failure-tail placement remain.
+// Round 552: direct unchanged/commit/failure Boolean returns without a saved carrier, native
+// outer/early unchanged guards crossed with independent/chained defaults and original/complemented
+// status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3836,6 +3822,9 @@ struct s_128ca0
 // F338: Incoming gain parameter owns the raw sum until the processing call, nested/sequential
 // additions crossed with shared scale and named pitch span: 224/224/276/276/224/224/276/276.
 // All restored; aligned frame 0x49c/0x494, initial gain homes and integer clamp joins remain.
+// M337: Existing whole decibel values through raw/processed/both submission gain
+// stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
+// NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
@@ -3886,8 +3875,9 @@ void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization c
 			byte local_14;
 			if (local_13->unknown04 != NONE)
 			{
-				local_14 = local_13->playing_count & 0x7f;
-				local_13->playing_count = (local_13->playing_count - 1) & 0x7f;
+				local_14 = local_13->synch_count;
+				local_13->synch_count--;
+				local_13->synch_playback = false;
 			}
 			else
 				local_14 = 0xff;

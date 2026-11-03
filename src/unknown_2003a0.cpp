@@ -2107,6 +2107,28 @@ bool function_1e11b0(long actor_index, bool active);
 // 13 at 199 bytes, aligned 13: only EBX/EBP exchanged between the index and next (retail: index EBP, next EBX). On the
 // 13 form: actor index per use, late or loop-scoped 13; written-out loops 68/72/72. Standard marker (diagnostic) 30.
 // None kept: the address read and the in-body pair are only keepable on a match.
+// Round 140 (m3 lane 6, fast): rebuilt the 13 form (0x203d70's loop with the statement-level pair, squad_get
+// for the squad and again in the +0x7e test, one read of the index through its address, game time before a
+// word flag store; 199 B, only EBX/EBP exchanged between the index and next); byte flag store 40 (207 B),
+// without the address read 59 (0x203d70 105); on the 13 form: the +0x34 store from iterator.squad_index 79
+// (215 B), `(void)&squad_index;` 13, the address read at the 0x204d30 call 13, a copy `long index =
+// *&squad_index` 63 (0x203d70 105), iterator.actor_index at each use 13, a compiled-out `do {} while (false);`
+// after the loop or at the loop body's end 13/13; the permuter (anneal, 600 s, 51 variants) none below 13.
+// Round 63 (m3 lane 1, fast): squad_get plus a second squad_get in the +0x7e test 70 (0x203d70 105, 0x201ea0
+// 300: the index becomes a register argument); with one parameter read through its address at the 0x204d30 call
+// 61 (199 bytes, callers restored; match-only form); with the game time stored first 61; the 0x203d70 shift-form
+// return 75 (210), on the 61 form 70 (205).
+// Also round 63: the game time read into a local before the loop 75 (211); the +0x34 store through
+// actor_datum_get(actor_index) 71 (191, 0x203d70 105); the loop test with the NONE test first 66 (199).
+// Round 78 (m3 lane 9, fast; on the 13 form: squad_get plus a second squad_get in the +0x7e test, the
+// parameter read once through its address at the 0x204d30 call, 0x203d70's step loop with the statement
+// pair, game time before the word flag store, full-width return; 199 bytes, only index EBX/next EBP for
+// retail's EBP/EBX): the byte flag store 40 (207); the address read at the loop store, the first or the
+// second lookup 13/13/13; iterator, actor or the address local declared elsewhere 13/13/13; `(void)&` for
+// the read 63 (0x203d70 105); the store from iterator.squad_index 79 (215); one lookup 71 (191); a third
+// lookup in the flag test 75 (215); squad_get at every use 93 (225); the step written out 68 (214); the
+// header squad_actors_next 13; iterator.actor_index at each use 13; two address reads (diagnostic) 13; the
+// permuter (anneal, 600 s, 49 variants) nothing below 13.
 // @retail 0x203bf0
 bool function_203bf0(long squad_index)
 {
@@ -2368,6 +2390,15 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // body with 0x202720's walk and structure first 307 (1102), aligned 74, the next round's lead. Left there: the second
 // active test on the first pass, frame 0x44 against 0x54 (retail's areas shares with nothing), the 16-bit active mask,
 // the overlap loop's intersection in a stack home with overlap in DL, and the wake store order. Nothing kept.
+// Round 140 (m3 lane 6, fast): a compiled-out `do {} while (false);` after the squad's wake/timer tail, at the
+// overlap loop's end, after the area loop, after the +0x7c timer update or before the actor's 0x1e11b0 call:
+// 275 each (same code).
+// Round 63 (m3 lane 1, fast): 0x202720's squad_datum_walk_next walk + long elapsed + long index without word
+// casts + word wake read + `word active` else-if tail 312 (1103; aligned mnemonics 79 -> 36: retail's late
+// pushes, walk slots and block order); the same forms on the while(active) body 308 (1108), without the tail 312;
+// on the walk form areas/point/raised/location at function scope or renamed 312 each; the area overlap as a
+// forceinline helper 301. Diagnostic: an extra use of point inside the squad walk gives retail's frame 0x54 and
+// every slot (point 0x30, walk/raised 0x3c, areas 0x50), 299: retail's point is live across the walk.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -2854,6 +2885,17 @@ bool function_1fb8a0(long arg_0, short arg_1);
 // nested guards 50; second-half index reads through the parameter's address everywhere, as a copy, in the loop or in the
 // tail 50 each (copy-propagated). Diagnostic: no second-half index uses at all 87 (578): gives `mov eax, ebp`, so the
 // reload comes from the index being live past the block.
+// Round 140 (m3 lane 6, fast): a compiled-out `do {} while (false);` closing the else-if arm, inside the
+// follow-up block, after the whole chain, after the first 0x202e90 call (braced) or before the follow-up
+// test: 50 each (same code).
+// Round 63 (m3 lane 1, fast): both halves as forceinline helpers taking the index and squad 50; only the order
+// part 50; only the trigger part 50; first parameter short 56 (580); short task local with uncast follow-up 50.
+// Also round 63: the squad as an s_squad_datum pointer with a byte view 50; the count test first in the
+// compute arm 54.
+// Round 78 (m3 lane 9, fast; aligned 2 = the reload and the pad it shifts): `arg_0 != NONE` tested
+// after the record tests 148 (580 bytes); the trigger guard as two nested ifs 50; the pending word
+// read at each use 50; `local_3 > 0` tested before the task 54; the pending arms swapped (compute arm
+// first, `else if (+0x64 <= 0)`) 145 at 578 bytes, aligned 11 (the reload stays).
 // @retail 0x202be0
 void function_202be0(long arg_0, long arg_1)
 {
@@ -3273,6 +3315,12 @@ void function_2011f0(long arg_0);
 // DL246 follow-up: early count guard, early real head/success defaults, both,
 // and both with the shared object receiver: 357/360/356/361. All regress;
 // original entry producers restored.
+// Round 63 (m3 lane 1, fast): typed placement-definition pointer 318 (same code); one squad byte pointer for
+// +0x2a/+0x76/+0x24 354 (1328); arg_1 unmasked to every long-parameter callee and the +0x3a0 store 378 (1352),
+// with the typed definition from `arg_1 & 0xffff` 347, with the squad pointer too 351 (1328: retail's raw
+// `and eax, 0xffff` entry, arg_2 in a register); on that the optional record by if/else 361, plus seat NONE
+// once 357; diagnostic fresh `squads[(word)arg_1].count` memset size on those 353/346.
+// Also round 63: difficulty cases 0 and 1 sharing one body 318 (same code), with the raw/typed/squad forms 351.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

@@ -840,6 +840,10 @@ void function_1c54b0(char const *variants, long object_index)
 // a force-inline helper for the whole per-island body returning the flag 4 (flag after the call 18, its
 // result added straight into the index 4); a world local read just before the count test 4; a world local
 // at the iteration top for the island and the discard 4. Original body restored.
+// Round 98, with the flag after discard and a world local before the count test except the pre-call control:
+// that world-local form 18; a guarded do inner loop 79; component_index declared at island scope 18; an
+// explicit walking entity pointer 20, with the flag before the call 8; a const island pointer 18; a per-element
+// entity local 18; the post-call flag assigned from `count == entity_count` 18. Original body restored.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
@@ -938,6 +942,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // 0x146bf0 declared first 1; this body moved into src/unknown_1c39c0.cpp (diagnostic) 1; 0x1c4040's definition
 // moved to the end of this file 1. Its other caller 0x146bf0 stays built ahead of it; the declarations that move
 // that sit in src/unknown_278f00.cpp and src/unknown_146a20.cpp, both other lanes' files this round.
+// Round 204 (plain over the 720 cycle members, none lost): `force != false` at the call 24 (70 bytes, fast);
+// this body alone in a new file of its own 1; function_278f00 declared before function_146bf0 in
+// src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
+// src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
+// custom convention for function_1c4040 can give AL.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
@@ -1137,6 +1146,9 @@ struct s_1c4040
 // the record 8. A static definition (diagnostic:
 // the other caller in src/unknown_146a20.cpp no longer links) gives the custom convention, attempt EAX and
 // active CL 13, with 0x1c51c0 at 2.
+// m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
+// steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
+// goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1200,36 +1212,36 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 		{
 			physics_object_get(local_0.field_8)->flags |= 0x20;
 			function_1c3770(local_0.field_8, 0);
-			local_0.field_3 = true;
-			goto local_0;
 		}
-		object = physics_object_get(local_0.field_8);
-		if (effect->effect_index != NONE)
+		else
 		{
-			function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
-				g_4687b0, effect->effect_index, 0, true);
+			object = physics_object_get(local_0.field_8);
+			if (effect->effect_index != NONE)
+			{
+				function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
+					g_4687b0, effect->effect_index, 0, true);
+			}
+			object = physics_object_get(local_0.field_8);
+			if (object->havok_component_index != NONE)
+			{
+				function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
+			}
+			object->bit6 = false;
+			unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
+			if (unknown)
+			{
+				function_146bf0();
+			}
+			havok_object_detach(local_0.field_8);
+			if (unknown)
+			{
+				function_278f00();
+				function_146bf0();
+			}
+			function_b8540(local_0.field_8);
 		}
-		object = physics_object_get(local_0.field_8);
-		if (object->havok_component_index != NONE)
-		{
-			function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
-		}
-		object->bit6 = false;
-		unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
-		if (unknown)
-		{
-			function_146bf0();
-		}
-		havok_object_detach(local_0.field_8);
-		if (unknown)
-		{
-			function_278f00();
-			function_146bf0();
-		}
-		function_b8540(local_0.field_8);
 		local_0.field_3 = true;
 	}
-local_0:
 	return local_0.field_3;
 }
 
@@ -1568,6 +1580,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // declared first 39 each; reversed guard and initialised count 39 each; guarded for 39. Guard only around
 // the mirror 5, braced 5, nonzero 143 (882 bytes), induction in the for initializer 147 (882), literal zero 5;
 // the same-scope while with 0x1d10b0 as a component member 3 (the member stays matched). Restored.
+// m3 lane 9 r76 (fast): the fill loop bounded by count itself 139 (872 B); count declared before the indices 3;
+// `local_0 = ++i;` 3; the mirror declared at the top of the component block and zeroed at the label 3; the node
+// guard as nested ifs 3. Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

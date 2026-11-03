@@ -1387,6 +1387,14 @@ struct s_looping_detail_request
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four
 // static calls versus six in retail. Original entire body and all offset/camera observation
 // points restored; detail/offset transport and query expansion remain.
+// DL251: Zero/nonzero first-player initialization, aggregate publication before or after request
+// metadata, retail camera order, then existing vector setter: NOT kept even at 10 because the
+// redundant guard requires a byte match; original query expansion and offset publication remain:
+// 129/26/25/26/11/10/114/114.
+// Original complete source restored; no eligible gain.
+// B389: Positive branch-assigned completion without an entry default, bool/byte/short/long,
+// with original then early audible completion: 152/159/174/176/152/159/174/176. All regress;
+// original completion and full body restored; first-player call and detail/offset homes remain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
@@ -1740,10 +1748,21 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
 // with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
 // NOT kept: one-use captures without a match; original body restored, frame/homes remain.
+// F349: Detail-only definition/time/alternate rejection continuations, subsets 1..7,
+// then preparation rejection: 479/479/479/380/380/380/380/380 fast (control 479).
+// Alternate rejection alone plain 305, tying baseline; original full body restored.
+// Frame 0x11c/0x128 and request/playback/NONE/range homes remain.
 // B383: Native real views of the existing input/output gain fields, each/both,
 // each with complete request storage, then both with per-pass counts and either
 // request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
 // NOT kept: no exact representation match; original fields and body restored.
+// N342: Independent sound/gain/both counted/both endpoint initialization 468/484/468/483 reduced;
+// first-use mask counterparts 467/482/467/499 (control 479). Sound-only counted fill plain 306
+// versus 305 at retail length, no lost match. NOT kept: no full-image gain; mask combinations
+// lack a byte match. Original arrays, mask, request, loops and complete body restored.
+// B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
+// parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
+// Original full body restored; request/frame, playback/NONE and range/ring homes remain.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {
@@ -2384,6 +2403,15 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
 // then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
 // Distance/maximum homes and entry true/flags remain; original complete body restored.
+// N342: Terminal end/impulse truth pair byte/char/short/long 694/694/682/688 reduced;
+// ordinary-end complements 694/694/682/688 (control 694, full 597). NOT kept: wider
+// predicate storage has no byte match; native entry true/flags and record/track homes remain.
+// F349: Existing source-record flag fields at copy/attenuation/release consumers,
+// subsets 1..7, then immutable attenuation tail: 694 each (fast control 694, full 597).
+// Original aliases, tail and full body restored; entry true/flags and record/track homes remain.
+// B387: Existing byte-flag writer at all three final publication sites, seven subsets,
+// then all with masked native truth arguments: 694 each (reduced control 694, full 597).
+// Original complete body restored; entry true/flags, record/track homes and loop padding remain.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

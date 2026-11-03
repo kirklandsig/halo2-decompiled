@@ -1764,10 +1764,20 @@ void function_b7360(long object_index);
 // F327: Complete single-exit zero/two storage before/after acquisitions,
 // short/long/byte/dword 457/457/543/457 in either position. Original callback
 // restored; actor/output entry carriers and the 24-byte deficit remain.
+// Round 200 (m3 lane 3, fast control 301): fully single-exit form (every `return 0` as `success = true;
+// break;`, every `return 2` as `break;`, the pre-switch exit the one goto to the only return, if/else
+// short result) 467 (1852 bytes: retail's `je fail`/return-0 layout and arg_0 in EBP, but `xor eax, eax`
+// for `xor ax, ax` and the cs index keeps ESI through the reference CSE across 0x25ab50); ending
+// `return success ? 0 : 2;` 639 (1696); actor first 466; empty cases grouped 466; `short result = 2`
+// then `if (success) result = 0;` 640 (1692). All restored.
 // B384: Native packed-reference low/high/both indices at the initial point only,
 // recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
 // NOT kept: the 290 recording high-word form uses narrower loads than retail and
 // shortens away from 1848 bytes. Original reference observations and callback restored.
+// P290: Existing completion produced only by its actual case/default, bool/byte/short/long,
+// 301/301/465/449; direct default failure at those widths 471/471/463/467.
+// Original startup initialization, complete callback and inherited boundary restored;
+// actor/output entry carriers, retained point reference and 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2281,9 +2291,17 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
 // existing actor perception view: 485 each (fast control 485; full 469). Original complete
 // record layout, observations and executable body restored; actor/state and point homes remain.
+// Round 200 (m3 lane 3): case-1 test as `if (d > 1.f) local_3 = false;` 610 plain (retail's
+// comiss xmm0, [c]/jbe and retail length 2396, but the positional compare shifts a line); case-5
+// ternary as if/else 499 fast (loses the movsx store); case 7/8 arm last (retail lays it before the
+// shared sete tail) 492; that with the case-1 test 613; dot terms `x*i + j*y` 484, `i*x + j*y` 484
+// (fast control 485). All restored.
 // B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
 // then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
 // cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
+// Round 64 (lane 10, fast only, under a builds-differently CAVEAT, so these are not plain scores; control 485, full 469): retail's case table order is 1, 2.., 4, 7/8, 0, 13 (the exit), 5, 9, 10, 12, 11, 6, 18, 21, 14, 20, with the tail after case 0 and the sete
+// shared by every `== 0` result. Case 14 moved before 20 491 (2400); with `!(distance > 1.f)` 615 (2396, masked aligned 101); that comparison alone or as an if 622 (2384, masked 94, retail's
+// comiss with the memory constant); an explicit case 13 before 5 485 (same code); command before actor 614; the result first 502 (frame 0x20).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
