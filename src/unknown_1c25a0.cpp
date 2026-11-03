@@ -840,6 +840,10 @@ void function_1c54b0(char const *variants, long object_index)
 // a force-inline helper for the whole per-island body returning the flag 4 (flag after the call 18, its
 // result added straight into the index 4); a world local read just before the count test 4; a world local
 // at the iteration top for the island and the discard 4. Original body restored.
+// Round 98, with the flag after discard and a world local before the count test except the pre-call control:
+// that world-local form 18; a guarded do inner loop 79; component_index declared at island scope 18; an
+// explicit walking entity pointer 20, with the flag before the call 8; a const island pointer 18; a per-element
+// entity local 18; the post-call flag assigned from `count == entity_count` 18. Original body restored.
 // @retail 0x1c50c0
 void function_1c50c0(void)
 {
