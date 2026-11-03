@@ -957,6 +957,12 @@ struct s_tail_transfer_traits
 	byte grenades[2];
 };
 
+// score 153 (was 153): logic walked against retail, no behaviour difference found (loops, offsets, order of the three
+// weapon slots, grenade copy and the memset path agree). Only allocation differs: retail keeps the player in ebx, the
+// unit index in ebp and NONE in edi, and re-reads g_4e0300->data and the unit pointer in the no-seat branch (0x1528af,
+// 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
+// read (159), the three weapons as a long[3] (152), a held[2] array with the no-seat branch as a hand loop over
+// held_slots[] (151, frame grows by 8), held[2] replacing primary/secondary (156), a store through a pointer to other (153).
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1876,7 +1882,11 @@ void __stdcall function_191e51(long definition_index, long player_index);
 
 // score 202 (was 202): the prologue's registers differ: retail keeps the player base in ebx
 // and the object index*12 in ebp, ours gives ebp to the player and spills the index; the
-// argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this.
+// argument convention of the callee 0xccba0 (src/unit_object_type.cpp) decides this. Logic walked against retail: no
+// behaviour difference found. Retail re-reads [ebx+0x2c] at 0x150ec0 and g_4e0300->data at 0x150e90 (edx still holds
+// g_4e0300) where ours reuses edx/ecx, which costs ours the ebp register. Tried: a local unit_index (202), the 0x14c compare
+// through a second tail_player_get (238), g_4e0300 in a local (242), an explicit object offset kept in a local (202),
+// the parent test without the bool (227).
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
