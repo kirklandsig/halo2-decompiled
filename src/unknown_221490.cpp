@@ -718,6 +718,9 @@ bool sound_driver_voice_create_buffer(
 // AC485: existing SDK member calls at submix/spatial creation and buffer operations,
 // subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
 // caller stays matched. One-point form rejected; original API calls/body restored.
+// Lane 17 r37 (fast with 0x191420): the 3D flag as `(flags & 1) == 1` 178 (626 bytes; 0x191420 then differs, 1);
+// play as `flags & 2 ? true : false` 71, as `!!(flags & 2)` 71; the 3D flag as `!!(flags & 1)` 71 (same code each);
+// both bools in one declaration, 3D flag first, 182 (599). Body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,
