@@ -2401,6 +2401,10 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // kept: Completed-result and product forms tie 91; native input captures regress to 223 and increase
 // length; shared-user scores worsen, and the private root form breaks matched 0x1d06c0. Every target
 // and shared-helper body is restored. Original executable source restored.
+// DL251: Existing normalize/scale declaration boundaries and private-property inline; ordinary
+// annotations tie, automatic annotations lose matched users and are NOT kept:
+// 91/91/91/91/247/247/366/430.
+// Original complete source restored; no eligible gain.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

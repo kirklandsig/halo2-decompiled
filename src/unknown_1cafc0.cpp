@@ -644,6 +644,10 @@ void graph_resources_request(s_graph_tag *graph, long mode, long weapon_class, l
 // while all three providers inline to the unchanged 348 score and extent with no higher control scores.
 // No source form gains; every body and temporary inline declaration is restored. Original executable
 // source restored.
+// DL251: Byte return with byte/bool/word/long status, char return with byte/bool/word status, then
+// native bool return with bool status on the twelve-byte expansion; NOT kept: all regress;
+// original graph/name ownership and return normalization remain: 478/478/564/556/478/478/564/478.
+// Original complete source restored; no eligible gain.
 // @retail 0x1cc3f0
 bool s_animation_state::animation_lookup(s_animation_names *names, s_animation_names *found, long mode, long weapon_class,
 	long weapon_type, long set, long lookup_flags, c_type_709360 *result)
