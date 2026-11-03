@@ -861,6 +861,7 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // and the flags on the stack; this file's declaration describes another order and the callers are
 // in other files. Retail keeps the axis pointer in EBP, the sampled vector at [esp+0xc] and the
 // sine and the cosine in the dead argument slots.
+// Earlier 114 (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
 // Then (was 155): 1389 bytes against 1382, aligned 61 against the old body's 97. The existing rotate_direction on a
 // separate copy of forward, with sin and cos as direct arguments and `!(fabs(angle) < 0.0001f)`, gives retail's sample
 // slot, guard, schedule and rotation registers except four products: retail copies v.j/v.k and multiplies by axis.j/axis.k
@@ -1050,6 +1051,12 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // B384: Current rotation-helper input with shared sample/rotation workspace, native/CRT/forward/backward
 // copies; independent CRT/forward/backward/setter copies: 176/176/193/189/114/188/188/205. Original helper input,
 // separate sample and rotated values and complete body restored; rotation product allocation remains.
+// AC502: Three nested animation admissions, four independent failure-prefix lengths and
+// complete admission with small-angle failure: 114 each. Original guard, shared rotation call,
+// vector storage and complete body restored; rotation multiplicands and exit scheduling remain.
+// F351: Exhaustive nested/conjunction moved-away results, bool/byte/short/long
+// 114/114/119/118/114/114/119/118. NOT kept: no match for result/domain forms;
+// original rotation graph and complete body restored; j/k products and output scheduling remain.
 // Lane 17 r37 (plain): `moved_away` as `alignment > 0.99f ? ... : false` 114; its dot as (rotated, goal) 114; the
 // side crosses declared with the sampled vector 114; both side crosses through the existing cross3f_staged 112 (1389
 // bytes, same cross schedule; gain 2, not kept); on that, `dot < alignment` 112. Body restored.

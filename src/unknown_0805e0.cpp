@@ -218,6 +218,10 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // M332: Existing iterator on the local successor, pointer/declaration while, plain for,
 // or native index admission, each with result/break or direct completion: 57/55/57/55/91/73/52/53.
 // All regress; original walk, helper, publication and complete body restored.
+// Round 76 (m3 lane 16, fast, with 0x1a303b/0x2b393c): an unsigned index 43 (same code); the two flag tests as an
+// outer `if` around the record tests 43 (same code); the machine-local test on the high xuid dword
+// (`xuid[1] >> 16`) 71 (110 bytes, both callers lose); the machine-local test as a 64-bit mask compare 44; as a
+// `(word)` of the shifted xuid 49.
 // Round 141 (m3 lane 5, fast, with 0x1a303b/0x2b393c): a self-call in the failure arm 72 (108 bytes, callers lose), with
 // a single result 77 (103); the existing iterate helper in `while ((entry = iterate()) != NULL)` 79 (102 bytes, callers
 // lose; mask hoisted ahead of the loop, iterator reloaded each pass), early return 79, `!result &&` test 79, a do-while on
