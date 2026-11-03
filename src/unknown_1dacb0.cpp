@@ -1445,6 +1445,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // Round 546: Alias-safe named/returned/both identifier transfers 986/977/992;
 // mixed library boundaries 977/986; alias-safe with native returned/named words
 // 1012/988; both with late candidate 1007. All regress; original complete body restored.
+// Lane 14 r55 (fast): the iterator fields in 0x1dc790's store order 828 (same code). The matched siblings' shape
+// (0x1dc790, 0x1dc8c0): `if (weapon_class != NONE)` around the body, the first lookup before
+// `while (!found && entry)` and the next in the else arm 755 at retail's 2825 B (not kept: a flag set inside a test
+// needs a byte match); on it the lookup in an inline helper 755, the candidate renamed 755, three declaration orders of
+// the outputs 755/755/755, a break in place of the flag 1049 (2873 B). Left on that form: retail homes the per-pass
+// candidate id in found_mode's dead parameter slot where ours puts iterator_mode there, so the frame shifts by four.
 // Round 42 (m3 lane 2, fast): the iterator outputs declared class/type/mode and type/class/mode 828/828 (no slot
 // moves); the three in one declaration 828; the result set in both arms of the named test (no candidate) 977 (2825
 // bytes); matched 0x1dc790's found-flag loop (iterate before the loop and in the miss arm) 995 (2825 bytes, first
