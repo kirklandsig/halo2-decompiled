@@ -509,6 +509,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (no tick_scale local) 73 (369 bytes); the three state-velocity copies before the rate and tick reads 94 (370
 // bytes); tick_scale declared bare and assigned after the count read 32 (same code); the call through `tracked`
 // without the parameter reference 99 (+0x2); the rate stage as `v.c = rate * v.c + p38.c; v.c -= p2c.c` 32 (same code).
+// m3 lane 14 r56 (fast): deltas assigned i, j, k 79 (first difference +0x2f: the chains follow); tick products i, j,
+// deltas i, j, then the k product and delta 79; the rate read from the global at each chain use 97 (375 bytes);
+// the delta scaled in place for the correction 32 (same code); the tick conversion placed after the chains 73
+// (369 bytes). Retail converts the ticks into the dead rate register (XMM3), ours into XMM4.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

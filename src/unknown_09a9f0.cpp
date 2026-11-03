@@ -559,6 +559,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
 // test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
 // assigned in one chained statement 49 (same code).
+// m3 lane 14 r56 (fast): the flag test through the existing object_header_get (slot_handler.h) 49 (same code);
+// bool result preset false with the flagged arm first and `result = true` before the value test 75 (160 bytes);
+// the long result with `if (result && flagged) { clear; result = false; }` then `if (result)` the attach block
+// 52; the flagged arm setting `result = false` before the clear 50; a long result preset false and set true
+// after the attach 67. All restored.
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
