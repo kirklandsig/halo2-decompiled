@@ -863,6 +863,9 @@ static __forceinline long real_to_long(real value);
 // rejection and magnitude/query homes remain.
 // Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
 // Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// DL249: Coherent original-provider inline contracts, seven subsets, then all with an
+// earlier uninitialized result declaration: 466/440/507/382/466/440/507/507.
+// The isolated third contract ties; others lose matched callers. All declarations and bodies restored.
 // AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
 // branch-owned complement 437/437/448/453. Original result and whole body restored;
 // early rejection placement and magnitude/query homes remain.
@@ -873,6 +876,9 @@ static __forceinline long real_to_long(real value);
 // N334: Paired query success across fallback, nested/flat/exhaustive/complete fallback arms
 // in bool then byte storage: 461/461/382/461/461/461/382/461. Exhaustive forms tie; other frames move
 // to 0x54 and 1908 bytes. Original query aliases, call roles, result and complete body restored.
+// AC492: Complementary internal eligibility, test-produced bool/byte/short/long
+// 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
+// eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
