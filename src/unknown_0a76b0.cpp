@@ -298,6 +298,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // F329: Retained masked self-header index, long/word domains crossed with four
 // disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
 // frame 8 and incoming unit/name/actions ranks remain.
+// N330: Early hand ordinal/callback selection, conditional/branch producers before
+// receivers or after input snapshots: 405/405/408/408/405/405/410/410. Frames
+// grow to 0x10/0x14 versus 8. NOT kept: later forms also raise caller 0x111650
+// 666 -> 672. Original hand paths, helpers, observations and complete body restored.
 // J240: Entry active word dword/long 327/327; with conditional outputs 261/261 (NOT kept: retail stores
 // both defaults, then overwrites them, 0xe6b26-0xe6b4d, and reads the word at the tests, 0xe6c97, not at
 // entry; body restored at 271); chained defaults 327/327; constants before calls 345/268. Pure ordinal long/dword/word on
@@ -1839,6 +1843,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // N326: Failure-owned result defaults on admission/mode/pickup edges, seven graphs
 // and complete leaf-owned result: 158/137/143/136/158/154/128/128.
 // Original result initialization, body and all calls restored; request/weapon homes remain.
+// N330: Native weapon reference, complete header-array capture and request-view reference,
+// seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
+// Header capture changes entry shape; original pointers, observations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
