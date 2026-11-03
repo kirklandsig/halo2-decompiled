@@ -877,6 +877,10 @@ byte g_55e708;
 // before the count 50; the absolute index computed inside the outer test (the light lookup masking the
 // parameter itself) 38. In the loop retail loads the absolute index early (EDX) and the marker index after
 // three pushes (ECX), the amount in EAX; ours loads the marker index early (EDX), the absolute index late (EAX).
+// Round 92: early shared query/output cursor 38; separate long draw count 113; short raw count with long draw count
+// 115; short count 131; short index 51; both short 77 (610 bytes); per-pass amount local 118 (613); const
+// light/definition 38. Original body restored; fallback/count scratch, loop load schedule, single-marker arm and
+// opacity reload remain.
 // @retail 0xc3340
 void __stdcall function_c3340(long light_index, long unused)
 {
