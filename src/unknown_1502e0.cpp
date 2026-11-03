@@ -1480,6 +1480,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // N341: retained local-index short, controller/user loop admission and failure guards 587 each;
 // real datum-iterator API 934; absolute cursor subscripts 586; subscript name 587.
 // NOT kept: one-point cursor reduction; native mask/index homes and missing inline expansion remain.
+// N343: Six semantic mask-home naming forms and independent traversal/pass home names 587 each.
+// Original names and complete body restored; native mask/index homes, memory cursor and
+// missing inline expansion remain. NOT kept: unmatched storage-only renaming.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
