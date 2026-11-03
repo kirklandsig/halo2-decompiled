@@ -1190,6 +1190,9 @@ void __stdcall function_43720(s_43740_input *input)
 // Y547: Fresh submitted identity reassigned to the original tag, with shader-relative
 // normal/two-use signed count/direct position masks 0..7: 62/67/64/66/62/67/64/66.
 // Exact-only field-result forms restored; early tag/EBP and signed-slot/shader homes remain.
+// N334: Bitmap/texture phases share tag admission in bool/byte/short/long storage,
+// nested then combined consumer guards: 73/73/76/75/73/73/76/75. All extend the body; original
+// complete source restored. Early EAX/EBP tag admission and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

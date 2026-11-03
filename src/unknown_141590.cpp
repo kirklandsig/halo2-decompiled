@@ -1031,6 +1031,11 @@ void function_143250(
 // families 1..7: 1767/1767/1767/1767/1767/1767/1766; complete immutable reused root 1766.
 // All 84 typed outputs/call phases agree; original graph restored; frame/admission/homes remain.
 // NOT kept: precision-sensitive compaction remained unmatched and tied or regressed.
+// N335: Disjoint second-band real/third-band real/both-band double temporary lifetimes, subsets
+// 1/2/4/3/5/6/7: 2186/2262/1767/2722/2186/2262/2722; complete last-available reuse 3063. Third-
+// band sharing recovers ret 4 but frame 0x324 and length grow; double-only frame 0x30c regresses
+// by one. NOT kept: unmatched shared-storage forms; all 84 typed outputs agree, original body
+// restored.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

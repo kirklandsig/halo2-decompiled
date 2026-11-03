@@ -1230,6 +1230,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // 1325/807/1341; cached bounds 999/808/999; urgent/both equality bounds 999/999.
 // Inheritance-only 807/808 loses matched 0x1dc8c0 to 565/558; shared-user
 // gate rejects both. Every helper/body restored; initial/output homes and zero remain.
+// N334: Complete per-attempt result defaults before/after lookup, aggregate/member transfer,
+// then the same four without the guaranteed mode default: 989/927/993/1002/988/926/992/995. Frames
+// 0x2c/0x34 and result/output homes regress. Separate candidate, iterator and full body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

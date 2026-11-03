@@ -3044,6 +3044,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH308: Existing integer sign helper zero-result/positive-result/nested-result/flat-result/early-return/
 // nonzero-result/negative-first correction/negative-first conditional: 1057/1049/1052/1052/1052/1057/1051/1052.
 // NOT kept: best gain is three points; all retain frame 0x80 versus 0x74. Original helper and body restored.
+// N335: Native inverse-scale/paired damping/final mass loops, subsets 1/2/4/3/5/6/7:
+// 1080/1068/1091/1080/1086/1102/1088; complete unsigned loops 1088. All regress with frame 0x80.
+// Original body restored; velocity and force homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
