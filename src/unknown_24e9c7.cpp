@@ -298,13 +298,25 @@ struct s_24e9c7_bounds
 // 125 (same code); the kinds table read once into a local 135 (744 bytes); the marker's kind in a
 // long local 130; the alpha preset to 0 without the hidden arm 125 (same code); the half width
 // computed before the height 131. All restored; early across spill and scalar homes remain.
+// Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
+// kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
+// Original record, copy and full body restored; early across spill and scalar homes remain.
 // Round 82 (m3 lane 12, fast): forward_i named for the across j product and the upper x 140 (742 B); scale
 // read before the across products 125 (same code); first_bitmap and bounds declared before the group 125;
 // back as `half_width * -across` products 154 (753 B); upper vector before the half width 123 (gain
 // under four, not kept). Original body restored.
+// Round 129 (m3 lane 8, fast): retail reads placement->y once (EDX, copied to each corner) and x at each
+// corner; origin y read once into a local, x per corner 194 (699 bytes); scalar x/y corner copies 191 (695);
+// corners 0/1 as `back.x + (up.x + corner.x)` single sums 137 (749); early upper with y-first corner 0 126;
+// early upper with `0.0f -` across 134 (739). Original body restored.
 // Round 390: Actual four-real rectangle array with memcpy/memmove, producer/entry/
 // kind/group storage: 194 in all eight forms (760/743 bytes); caller also loses its match.
 // Original record, copy and full body restored; early across spill and scalar homes remain.
+// Round 143 (m3 lane 6, fast): scale read before size and the across products 125 (same code); across_j before
+// across_i 125 (same code); across_i as `-forward_j` then `*= size` 138 (739 B: the across products are still
+// substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
+// (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
+// single-use temporaries there.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

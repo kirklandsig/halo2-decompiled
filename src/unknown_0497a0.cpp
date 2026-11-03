@@ -227,6 +227,11 @@
 // Round 548: Complete memmove history/point-publication/fallback-axis boundaries,
 // subsets 1/2/4/3/5/6/7, then all with both input snapshots: 709/688/677/675/725/698/659/694.
 // NOT kept: library/clobber/frame shape misses; every native copy, include and full body restored.
+// Round 160 (fast): both shape pointers NULL then if/else, either order, 622/622 (2622 bytes); plus the global sine
+// arguments 604 (2642), plus the first wave through vector3f_add_scaled 578 (2626), the second wave instead 622; the
+// sine arguments and first wave without the entry shapes 670; the 575 composite re-measured 575, on it amp written
+// into the call 629 (2606), k written into the call 583, both 642 (2595), the cross product between s1 and s0 575;
+// the plain sixth product alone 648. The composite stays out: its sines read the global while the waves use a copy.
 // Round 203 (fast): ret 0x20 agrees (frame 0x58/0x60 and the entry shape homes remain); both shape
 // pointers as entry ternaries with the default case reading shape0 708 (2650 bytes); the wave scales
 // written inside the two scale calls 670; the first cross product at function scope 581 (same code);
@@ -817,6 +822,11 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 548: Complete double length residence in vertical/planar/camera-pair subsets
 // 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
 // NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
+// Round 38 (m3 lane 18, fast): v_width renamed to sort first/last 265/265 (identical code); the colour stored
+// `outer->color = vertex[0].color = ...` 263 (retail's store order; a gain of 2, not kept); on it: source and u
+// renamed 263, transition declared at the top 263, a named pixel stored to vertex 0 then outer 263, a named strip
+// start for the tail 615 (2600 bytes), the next state's colour as a color4f 263. Retail leaves 0xa8/0xb0/0xb8
+// (after the pushes) unused and spills point y at 0xb4: its top homes sit eight bytes apart.
 // Round 552: branch-produced V endpoint; separate signed U producer with original/separate/branch
 // V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
 // 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
@@ -1229,6 +1239,11 @@ void __stdcall function_43720(s_43740_input *input)
 // stored after the shader and normal 62; an early `return` when the tag is NONE 62; the record declared
 // at function scope 62; a block-local long point index for both arrays 62; the vertex count
 // pushed from its own expression (no short store) 66 (215 bytes). All restored.
+// Round 160 (fast; 0x42b20 checked each time): the tag test on the field with the tag local inside it 62 (same code);
+// a long slot index for both arrays 62, with the vertex count named first 64 (0x42b20 4), the shader local and
+// shader-relative normal too 65 (213 bytes, 0x42b20 62), the shader field-relative only 65 (213, 0x42b20 62); a named
+// short vertex count without the slot index 64 (0x42b20 4), a long one 65. Retail's definition stays in EBX and its
+// slot word in DX only without those; all restored.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {

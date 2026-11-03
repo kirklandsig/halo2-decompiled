@@ -530,6 +530,8 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 // short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
 // before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
 // and a dword cast 3 each (all still the 16-bit load).
+// Round 134: bool return 33; direct initial pool expression 31; one-use pool receiver 89; initial early return 132;
+// direct initial guard 121; found early return 144; both early exits 136; declared loop current 3. Opening body restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -2019,6 +2021,10 @@ void function_269250(long clump_index, long actor_index);
 // memcpy retains 482 bytes; memmove moves away to 464 versus retail 480.
 // Original assignment, receiver and full body restored; pool/selection and
 // x87 score homes remain.
+// Round 82 (m3 lane 9, fast; this body 89 fast, 87 plain): in-arm compare as `if (!(score <= best))` with the
+// selection stored first 128 (480 B); team mismatch `continue` then the compare 126; the common graph with the
+// selection stored first 89 (same code as fast control); the score as a ternary on the team test 128 (484 B);
+// in-arm compare ending in `continue` 126.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2297,6 +2303,11 @@ void function_269250(long clump_index, long actor_index)
 // predicates in bool/byte/short/long, eight forms 89 each at 743 bytes.
 // One-use predicates are exact-only and restored; original categories, mutation
 // result, deletion continuation, all shared pools and complete body retained.
+// Round 82 (m3 lane 9, fast): retail's deletion arm reloads both pools and joins the unit test after `test bl, bl`
+// (0x26b093), skipping the node scan. The node scan written in both live arms 295 (837 bytes, not merged); `if (unit)
+// continue; break;` 89 (same code); the deletion arm first as `match && replacement == NONE` with the rest in its else
+// (a repeated test) 196 (741 bytes, registers rotate); the 3 form re-measured 3 (ours: node pool EDI, prop pool EBP);
+// on it the node iterator declared beside/before the prop iterator 3/3.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

@@ -211,9 +211,17 @@ PRIVATE __forceinline void draw_rotation(vector3f const *axis, real sine, real c
 // B385: Existing camera/direction basis providers and composed-return receiver, subsets
 // 1/2/4/3/5/6/7, 222/221/622/495/623/622/628; all with basis output 429.
 // Original complete body/declarations restored; axis-specific spills and table placement remain.
+// Round 205 (m3 lane 3, fast): the rotation's statements in retail's first-case flow (k^2, k*s, i^2, j*s, s*i,
+// forward.i, ij rows, j^2, ik/jk, left.j, ik rows, up.k, jk rows) 352 (1812 bytes); four more random
+// dependency-respecting orders 400/412/426/433 (1824/1884/1780/1784 bytes). The kept order stays the best.
+// Also: the two matrices declared basis first 219, the rotation helper's axis by const reference 219 (same code).
 // Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 87 here): the rotation's statements in retail's order (forward.i straight after the sines, left.j before ik, up.k before jk) 368 (1812, masked 68);
 // with j and k first in the products 347 (1816, masked 75); with a named complement and k*complement 386 (1804, masked 80); with k*complement alone 368 (1808, masked 79), and j first in ij as well 368 (1808, masked 79);
 // complement alone on the current order 451 (1756, frame 0x68, masked 77); k*complement alone on the current order 220 (1836, masked 82). Retail's two arms multiply in different orders (j, complement, i against complement, i, j) from one helper.
+// Round 82 (m3 lane 16, fast): the rotation helper as plain `inline` 219, with the axis by const reference 219, with
+// the output parameter first 219 (all three identical code: its interface does not reach the schedule); sine and cosine
+// in separate declarations 219 (same code); the cross terms as j*(1-c)*i, k*(1-c)*i, j*(k*(1-c)) (retail's operand
+// order) 403 (1788 bytes).
 // @retail 0x224fd0
 void __stdcall function_224fd0(s_draw_mesh_seed const *seed, s_draw_value_cache *values,
 	point3f const *position, vector3f const *direction, real scale, color4f const *color,
