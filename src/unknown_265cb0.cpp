@@ -541,10 +541,14 @@ real function_30bf0(vector3f *vector);
 // M336: Pre-collection seat ordinal and facing-entry basis/query-output workspaces,
 // seven subsets: 152/152/152/152/152/152/152; all with cursor advanced after lookup 205.
 // Original scopes/cursor restored; result/range/amount homes and inverse SIMD groups remain.
+// Round 48 (m3 lane 2, fast with 0x263740): the `volatile` dropped from the result 152 (same score, kept: the
+// plain long result is still spilled to +4); on that: occupant and player tests merged 152; facing branch on
+// the negated condition 150; short result 152; amount renamed to sort after result 152 (amount/count keep +0);
+// clamp into a named clipped fraction by ternary 263.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {
-	volatile long result = 0;
+	long result = 0;
 	if (mode == 0 || mode == 1)
 	{
 		s_actor_view *actor = actor_get(actor_index);
@@ -1355,6 +1359,10 @@ long function_146650(void);
 // order needs target and ahead each above direction. Real (fast): ahead from a position copy, then its fields, 197 (1972
 // bytes; ahead's home right, the copy is not removed); target zeroed at its declaration 342 (1977); both 372 (1999);
 // the ahead copy with a library copy of the target 197 (1972); an ahead pointer for the fields and the query 14.
+// Round 65 (m3 lane 10, fast): target_direction copied field by field from the view 77 (1961 B, SSE copy); ahead as an
+// aggregate initializer 14 (same code); offset zeroed by a chained assignment after its declaration 18; a state_position
+// pointer for the three queries 125; an origin pointer for the actor position at all four uses 36. Permuter (600 s):
+// its reduced image scores 248 against the full 14, nothing better in 49 tries.
 // @retail 0x267c50
 void function_267c50(long actor_index)
 {

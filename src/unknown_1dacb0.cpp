@@ -1247,6 +1247,9 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // line) 3494; early return in place of the block 995; `while (entry && !found)` 1132. Left on the 755 form: found_mode's
 // dead home goes to iterator_mode (retail: the candidate), and retail's `xor ebp, ebp` zero for the fifth type request
 // and the inheritance init (matched 0x1dc8c0 has `xor ecx, ecx` there; ours `test`, immediates and a jmp over padding).
+// Round 124 (m3 lane 7, fast): iterator outputs renamed resolved_* 828 (same code); no candidate, result
+// set in an if/else on `named` 977 (2825 bytes); a `graph` local for `this` 828 (same code); a `for` over
+// the iterate call with a found break 998 (2839 bytes); chained NULL entry stores 828. Body restored.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1470,6 +1473,11 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // 823 (2807) [983]. Left on the guard form: 32 bytes of extra jumps and padding around the shared loops, no zero carrier in EBP, `this` in EBP (retail EBX), result in found_mode's home.
 // On the 823 form (same code each, 823): the key declared before the iterator; the iterator's entries cleared first; the key set last to first; the entry pointer declared in the loop;
 // the candidate initialised at its declaration.
+// Round 67 (m3 lane 10, fast): diagnostic, the second resource request removed: the result takes found_mode's dead
+// home and the three outputs go contiguous (retail's output layout), so the outputs' later reads decide that home.
+// The lookup in an inline helper on this do-while 828; the candidate at block scope with the loop testing it 926
+// (2825 bytes); the outputs declared bare and set by one chained `= NONE` 828; the iterator as an aggregate
+// initializer 828; no candidate, `if (named) result = named->animation_id;` 1020 (2791 bytes).
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

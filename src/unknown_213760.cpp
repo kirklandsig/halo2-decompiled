@@ -1473,12 +1473,30 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // F347: Completed query/resize-write/header output phases, masks 1/2/4/3/5/6/7, then
 // all with native byte decisions: 33/33/33/33/33/33/33/33. All tie on failure-only count
 // initialization; original outputs, lifetimes, comparisons, waits and whole body restored.
+// m3 lane 11 r63 (fast): round 53's three match-only forms rebuilt on this body (count scoped in the write
+// block, write success set by its own test, `else if (cache_file_header_read(index))` with `valid = true`)
+// 7 (left: the write's handle loaded after the flags zero, the checksum compare in EDX: one scratch step,
+// consistent with retail loading the handle first). On the 7 form: permuter 54 tries, none below 7;
+// `bool written = resized;` cleared when the count != 0x800 7; `s_file_write_flags(false)` 7; `sizeof` for
+// the size and the count test 7; `handle[0]` 7. All restored to the 33 body.
 // Round 127 (lane 8, fast): `if (read) { valid = true; ...` 103 (932 B; the header-read tail then matches retail,
 // ESI = 1 and threaded); read result and range test in one condition 33; range test as nested ifs 33; `valid` at
 // function scope 33; write count declared before `resized` 33; validity array by initializer 263.
 // Lane 17 r37 (fast): bytes_written renamed write_count 33; prefixed names in both orders (diagnostic) leave the
 // size/count slots unchanged; the header-read validity test merged with the slot-range test 33; bytes_written declared
 // beside size, after or before it, 33/33 (slots do not move); `valid` declared at the loop top 33. Body restored.
+// Round 65 (m3 lane 11, fast; on the 7 form): flags local 7; handle through a const cast 7; header init inside the argument
+// 7; a forceinline by-value handle getter at the write, the write and close, all four calls 7/7/7; bytes_written
+// zero-initialised 153 (frame 0x1140); functional-cast handle copy 114 at 917, the same code as the write local: its two
+// real differences (close copy, checksum EAX) are one rotation step, the copy itself taking the next. Matched 0x7fb50 loads
+// its global handle before the flags zero, so a plain read loads first; `*handle` through the view does not.
+// Round 66 (m3 lane 10, fast): round 56's 7 form (header-read `else if` with `valid = true`, write success set by its
+// own test) reproduces at 7, and with a write handle local 114 (917 bytes; only the close call's `mov ecx, eax` copy is
+// missing: the flags zero takes ECX and the close copy then lands on EAX, where retail's copy takes ECX again, one
+// scratch step later). On that write-local form: the close argument as an explicit `s_file_handle(*handle)` copy 114
+// (same code); one close-handle local for the close test and argument 168 (946 bytes); `written = bytes_written ==
+// 0x800;` 107 (930 bytes, sete join); `bool written = resized;` cleared when the count differs 114. All restored: the 7
+// needs match-only forms.
 // @retail 0x213970
 void function_213970(void)
 {

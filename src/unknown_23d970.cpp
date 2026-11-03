@@ -773,9 +773,24 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // both products then read stack copies), with the else-branch forward pointer 43; forward copy first, right
 // from direction, else pointer 41 (1261 B; products read the stack copy where retail reads command->forward).
 // None kept (gains under 3, different shape).
+// Round 205 (m3 lane 3, fast with 0x1f0870): previous_up copied straight into `right` and crossed in place with
+// cross3f_staged 56 (1262 B); in place with function_1f087b 63 at retail's 1261 bytes: the second product then has
+// retail's form (copies of right's registers, forward multiplied from memory) but the first product starts with
+// the j row and previous_up.k loads before the distance store; that copy made after the forward copy 130 (frame
+// moves); the in-place first product with cross3f for the second 217; the in-place form with the else-branch
+// forward pointer 216 (the camera colours move again).
 // Round 64 (lane 10, plain): a forward pointer in the else arm 43 (retail's ecx-based j and k stores; two points, not kept without a match). On that form the second product k first, as retail schedules it:
 // cross3f_staged 217 (1270, masked aligned 9), the global force-inline k-first helpers of src/unknown_2900b0.cpp and src/impacts.cpp 217 (1270, masked 9), the same with 0x1f087b's or the k-first helper for the first
 // product 221 (1272, masked 13); written out k, j, i with retail's operand sides 225 (1270, masked 17), through a forward pointer 221 (1272, masked 15). All move up.k's load ahead of the distance store and rotate the first product's colours.
+// Round 68 (m3 lane 10, fast with 0x1f0870 and each helper's own file listed): untried out-of-file cross helpers.
+// Second product through 0x206090's k-first helper (copies the second operand, stores k, j, i as it goes) 218 (1270
+// bytes: previous_up.k loads before the distance store again), through 0x441b0's staged k-first helper 217 (1270),
+// through 0x2922b0's staged i-first helper 45 (same code as function_1f087b). First product (with function_1f087b
+// second) through 0x1f2a80's, 0x1703f0's or 0xf4800's plain inline cross 45/45/45 (same code), through 0x441b0's
+// staged helper 49 (1264). Original calls restored.
+// Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
+// forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
+// right declared at function scope 45 (same code); the cosine computed before the distance store 49.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

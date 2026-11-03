@@ -359,10 +359,19 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC495: Complete side-result lifetime through publication and all four corners, bool/byte/short/long,
 // 190/186/180/181; with the retained axis result at all four calls 241/199/194/195. Original
 // field observations, helper and complete body restored; plane base, first selectors and product ranks remain.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
 // AC497: Complete axis-result lifetime without a captured side, short/word/long/dword,
 // normal indexed by the result then by its published field: 186/187/179/179/181/164/191/191.
 // Exact-only later selector retention regresses; original observations and body restored;
 // plane-store base, first selectors and product memory sides remain.
+// Round 57 (m3 lane 13, fast with 0x120810/0x120850): the corner helper taking x and y by value 235 (1008 bytes);
+// its axis parameter short 271 (1009); `short axis = function_120850(...); quad->axis = axis;` with the corners
+// reading the field 257 (997); a `vector3f *normal` for the copy, dot and axis call 258 (1000); the helper
+// returning the point2f, assigned to each corner 275 (1044). Retail stores the first axis from AX (the short
+// return) and re-extends AX for the first corner; ours stores CX.
 // Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
 // `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
 // `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
@@ -930,10 +939,18 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // AC495: Existing shared plane decoder at first/candidate/selected sites, masks 1/2/4/3/5/6/7,
 // 539/723/539/723/539/723/723; all with existing axis normalizer 715. Complete provider
 // preview agrees with full 539. Original decoders, helper and complete body restored; tag/count/plane homes remain.
+// Lane 17 r39 (plain): the definition renamed 539; the first loop's face read into a one-use local with the
+// index incremented before the call 528 (retail's `inc esi` ahead of the pushes; NOT kept: one-use local, no
+// match); the two counts declared face first 539; the definition declared ahead of the arrays 539; the quad
+// declared at the top of the group pass 539; the first loop as a do/while 562 (3631 bytes). Body restored.
 // AC497: Complete decoded-plane/rotation-result/fallback-quad memmove boundaries,
 // subsets 1/2/4/3/5/6/7, then plane+rotation memmove with fallback memcpy:
 // 742/592/803/741/781/819/826/741. NOT kept: all regress or move frame/extent away
 // from retail; original copies, complete input-before-output helper and body restored.
+// Round 67 (m3 lane 10, plain; `--fast` builds this body differently, 795 on unchanged source): the outer do-while
+// as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
+// branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
+// `angle <= maximum` 539 (same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

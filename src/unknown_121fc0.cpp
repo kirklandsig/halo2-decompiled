@@ -231,8 +231,20 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // and first token merged into the success test with a do-while walk 127 (EBP still saved at the walk); the
 // table-full case as `if (count >= 11) { next token; continue; }` 251 (802 bytes); the clamp right after the wait,
 // ahead of the success test 129.
+// Round 56 (m3 lane 13, fast; 0x12000 matched each time): the whole uninitialised-table block as a forceinline
+// helper 128 (EBP still saved at the walk; diagnostic, one-caller helper); the size clamp as an if 128; the next
+// pointer declared at the block's top 128; next and token declared ahead of the token table 128; the unique
+// count post-incremented in the call 128 (all same code). Compile-only: a for walk and a non-zero size test leave
+// the save late; a NULL token compared after the block saves EBP at the top but adds `xor ebp, ebp` and a setcc.
 // Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
 // token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
+// Round 48 (m3 lane 2, fast): the done/success/size out-locals declared before the three buffers 128; the
+// token walk as the matched font_table_parse's for loop (token declared before it) 128; the next-token cursor
+// declared at the block top 128; both counters at the `if (!g_4e3b40)` block top 127; the token table cleared by
+// memset 257 (724 B). EBP is still saved at the token walk.
+// N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
+// then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
+// result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

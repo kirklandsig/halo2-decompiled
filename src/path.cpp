@@ -368,7 +368,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 295 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 286 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
+// sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
+// the node type named once 345 (1400); count zeroed after the init loop 359 (1391); `special` false then set by an if 287
+// (1388 bytes); that with the short link count 362.
 // Round r4 (lane 17): our extra frame word is the links cursor (strength-reduced long link count); retail indexes
 // links[link_count] with a short count. Short link count 368 (1368 bytes, frame 0xe4); with count assigned after
 // the init loop and special set false-then-true 389; count after the init loop 379; separate increment after the
@@ -652,8 +656,7 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				real length = function_30bf0(&edge_vector);
 				if (length > margin * 2.0f)
 				{
-					real projection = offset.k * edge_vector.k + offset.j * edge_vector.j +
-						offset.i * edge_vector.i;
+					real projection = dot3f(&offset, &edge_vector);
 					if (margin > projection)
 						projection = margin;
 					else if (projection > length - margin)
@@ -1005,6 +1008,8 @@ bool function_2715a0(byte *buffer)
 // 579/579/591/591; paired projected-point array production 579/579/508/508.
 // Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
 // original scalar producers and complete body restored.
+// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
+// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
 // Round 44 (m3 lane 2, fast): the pop-or-NONE forceinline loop again 512 (diagnostic; retail's prologue and
 // un-rotated loop, state EBX); with the location order, `!(d > 0.09f)`, the setg flag and per-case depth
 // stores all together 526 (2056 bytes); with each alone 528 (2056)/517 (2064)/512/504. The diameter written
@@ -1014,6 +1019,15 @@ bool function_2715a0(byte *buffer)
 // 0x210be0 call.
 // M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
 // 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
+// M3 lane 9 r83 (fast): the node pointer taken after the NONE break 485 (one point, not kept); on it: a forceinline
+// declaration of the insertion 0x271fd0 579 (2152 bytes; matched 0x2713f0 inlines it too, 466 bytes); the edge margin
+// computed before the 0x210be0 call 486 (the root then precedes the call as retail, but the divide stays x87 ahead of
+// it); the diameter computed once at entry 510 (2084); the entry_distance copy dropped 485; the heap update arms
+// swapped (`!= NONE` first) 489.
+// M3 lane 6 r142 (fast): the pop-or-NONE forceinline loop with 0x271fd0 declared `__forceinline` (diagnostic) 556
+// (2116 bytes; 0x2713f0 108); `result` declared before the link penalty 486 (same code); the node pointer taken
+// before the pop and used for the NONE heap-index store 501; the NONE break before the node pointer 485 (one point,
+// not kept). Original body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {
@@ -1082,8 +1096,8 @@ PRIVATE bool function_271630(s_type_f17a25 *state)
 				}
 			}
 			if (blocked || (!input->unknown04 && TEST_FIELD_BIT((link->flags >> 1) & 1) &&
-				function_1fa6b0(&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index],
-					(s_pathfinding_data *)state->pathfinding)))
+				function_1fa6b0((s_pathfinding_data *)state->pathfinding,
+					&((s_pathfinding_data *)state->pathfinding)->nodes[link->node_index])))
 			{
 				continue;
 			}

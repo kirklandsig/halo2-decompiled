@@ -12,6 +12,7 @@
 #include "unknown_2ae170.h"
 #include "unknown_124f90.h"
 #include "unknown_218ac0.h"
+#include "unknown_21e230.h"
 #include "unknown_221810.h"
 #include "sound_driver.h"
 #include "crc.h"
@@ -78,7 +79,7 @@ struct s_sound_globals_classes_view
    in decibels (real bits), faded in, held, and faded out */
 struct s_sound_class_ducking
 {
-	long gain;
+	s_decibels gain;
 	real fade_in_time;
 	real hold_time;
 	real fade_out_time;
@@ -109,15 +110,9 @@ static inline s_sound_class *function_xaa8231(short class_index)
 	return &((s_sound_globals_classes_view *)g_51ebd4)->classes[class_index];
 }
 
-/* a gain in decibels, copied as a whole */
-struct s_decibels_view
+static inline s_decibels decibels_interpolate(s_decibels a, s_decibels b, real t)
 {
-	real value;
-};
-
-static inline real decibels_interpolate(long a, long b, real t)
-{
-	return (*(real *)&b - *(real *)&a) * t + *(real *)&a;
+	return (b.value - a.value) * t + a.value;
 }
 
 static inline real real_decompress_angle(long value)
@@ -1226,7 +1221,7 @@ bool sound_playback_update_location(long sound_index)
 struct s_sound_class_fade
 {
 	dword target;
-	s_decibels_view current;
+	s_decibels current;
 	real time;
 	byte flags;
 	byte unknownd[3];
@@ -1241,7 +1236,21 @@ long function_2197f0(real gain);
 
 /* a sound class's gain in decibels: its fade, ducked by the current and the
    previous ambience */
-// score 137 (was 137): Frame 0xc agrees; table/index entry, elapsed/interpolation homes and the copied hold gain remain.
+// score 125 (was 137): Frame 0xc and the entry agree. Left: the first arm's sum (retail loads the gain into a
+// register, adds the interpolation into it and keeps the tails apart), its register rotation (inverse, elapsed,
+// 1.0, fade-out), and the gain value carried into the last arm.
+// Round 160: the gain and ducking gains as s_decibels, the interpolation by value and the hold sum through the
+// by-value operator 127 (682 bytes); on it the raw index, `gain +=` in the first arm and divisions with a fade_out
+// local 208 (640 bytes), `t = 1.0f; if (1.0f > time) t = time;` in arms 2 and 4 177 (672 bytes), the fade table read
+// at each field without the fade_out local 125 (kept). On 125: inverse local with the compare `time * inverse` 163
+// (648), plus an if for t 160 (648), `time * inverse` as the value 153 (669), with a fade_out local 171/169 (644);
+// a one-caller by-value add for the first arm 98 (686 bytes, not kept: it copies EDI to a new slot), with the inverse
+// 153/150 (688); `interp + gain` in the first arm 158 (680), in arm 3 157 (678), in arm 4 178; `gain +=` in arms 3
+// and 4 125; arm returns 187 (658); a returned s_decibels 153 (668, EDI lost); the interpolation built on the operator
+// 106 (678, aligned 64: a's load splits, frame 0x10); named sum operands 125 each.
+// Review (m3): the clamps back as `1.0f > time ? time : 1.0f` and the first arm as `gain = gain + ...` 125 (678,
+// same code; the if-form clamps and `+=` were score-picked spellings, not needed).
+// Earlier at 137: Frame 0xc agrees; table/index entry, elapsed/interpolation homes and the copied hold gain remain.
 // Earlier at 137 (was 137): unchanged this round: the entry still loads the class table into EDI where
 // retail uses EDX, the first branch still multiplies the fade-out time before the inverse (so the
 // elapsed difference stays in XMM2 where retail keeps it in XMM3 and every use of it differs), and
@@ -1360,15 +1369,13 @@ long function_2197f0(real gain);
 // @retail 0x127010
 long function_127010(short class_index)
 {
-	long index = class_index;
-	s_sound_class_fade *fade = &g_502118[index];
-	s_decibels_view gain = fade->current;
+	s_decibels gain = g_502118[class_index].current;
 
-	if ((byte)~fade->flags & 1)
+	if ((byte)~g_502118[class_index].flags & 1)
 	{
 /* retail calls the class lookup out of line here */
 #pragma inline_depth(0)
-		s_sound_promotion_view *sound_class = (s_sound_promotion_view *)function_221810(index);
+		s_sound_promotion_view *sound_class = (s_sound_promotion_view *)function_221810(class_index);
 #pragma inline_depth(255)
 		s_sound_system_view *sound_system = SOUND_SYSTEM;
 
@@ -1383,24 +1390,23 @@ long function_127010(short class_index)
 				{
 					if (ducking->fade_out_time >= 0.001f && ducking->fade_out_time + ducking->hold_time > elapsed)
 					{
-						real inverse = 1.0f / ducking->fade_in_time;
-						real time = sound_system->ambience_fade - elapsed + (elapsed - ducking->hold_time) * inverse * ducking->fade_out_time;
-						real t = 1.0f > time * inverse ? time / ducking->fade_in_time : 1.0f;
+						real time = sound_system->ambience_fade - elapsed + (elapsed - ducking->hold_time) / ducking->fade_in_time * ducking->fade_out_time;
+						real t = 1.0f > time / ducking->fade_in_time ? time / ducking->fade_in_time : 1.0f;
 
-						gain.value = gain.value + decibels_interpolate(0, ducking->gain, t);
+						gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 					}
 					else
 					{
 						real time = (sound_system->ambience_fade - elapsed) / ducking->fade_in_time;
 						real t = 1.0f > time ? time : 1.0f;
 
-						gain.value = decibels_interpolate(0, ducking->gain, t) + gain.value;
+						gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 					}
 				}
 			}
 			else
 			{
-				gain.value = *(real const *)&ducking->gain + gain.value;
+				gain = gain + ducking->gain;
 			}
 		}
 		else
@@ -1414,7 +1420,7 @@ long function_127010(short class_index)
 					real time = sound_system->previous_ambience_fade - ducking->hold_time / ducking->fade_out_time;
 					real t = 0.0f > time ? 0.0f : (time > 1.0f ? 1.0f : time);
 
-					gain.value = decibels_interpolate(ducking->gain, 0, t) + gain.value;
+					gain = gain + decibels_interpolate(ducking->gain, s_decibels(0ul), t);
 				}
 			}
 			if (sound_system->ambience_index != NONE)
@@ -1426,7 +1432,7 @@ long function_127010(short class_index)
 					real time = sound_system->ambience_fade / ducking->fade_in_time;
 					real t = 1.0f > time ? time : 1.0f;
 
-					gain.value = decibels_interpolate(0, ducking->gain, t) + gain.value;
+					gain = gain + decibels_interpolate(s_decibels(0ul), ducking->gain, t);
 				}
 			}
 		}
@@ -1445,35 +1451,6 @@ static inline long decibels_sum(long const &a, long const &b)
 /* a sound's gain in decibels: between its definition's bounds, with its
    class's and the caller's */
 inline long function_1251e0(void const *definition_pointer, long gain, real interpolation);
-// score 15 (was 15): retail's length now; everything up to the class gain call matches. Left: the
-// final add: retail loads the converted gain into xmm1 right after the class gain call and adds
-// the inner sum's register to it; ours folds the converted gain in as the add's memory operand
-// (retail 0x127010 shows the same unfolded `decibels_add(gain, computed)`). Kept: decibels_sum for
-// the outer sum, which keeps the converted gain in its stack home from its call on and replaces
-// the volatile local (the volatile form was 15 at 128 bytes). Without either, the conversions
-// move below the class gain call (they are pure); a pointer write to 0x2195f0's own parameter
-// stops that (12 at retail's length) but changes 0x2195f0 (it gains a frame: screened).
-// Tried: the outer sum's operands swapped 36; no volatile 27; no volatile with the operands
-// swapped 49; the inner sum named, operands swapped 36. Round 30: the conversion call written as
-// the outer sum's argument 27 (the class gain call runs before the upper conversion); the inner
-// sum named 15; the converted gain read as a real local for the add 15; the inner operands
-// swapped 16. Screened (compile-only), all folding the converted gain: by-value outer sum, the
-// add in place on it, real locals read before or after the class gain call, by-value real or
-// reference helper parameters, and (one diagnostic) `/Op`.
-// Round 121 (plain/fast): the outer sum in an s_decibels_view result 15; the result seeded from the converted
-// gain before the class gain call, then `+=` the inner sum 16; decibels_sum(inner, converted) 15; the converted
-// gain copied into an s_decibels_view and added in place 16; the add in place on the converted gain's long 16.
-// One-file LTCG probe (exact here): a struct-returning converter, by-value struct operands and a float-
-// consistency pragma (diagnostic) all keep the fold or move the conversions below the class gain call.
-// Round 73 (fast): a real local for the converted gain before the class gain call, then a real sum over
-// a decibels_add inner 15 (class-first inner 16); the converted gain stored straight into a real 15; a
-// by-value outer decibels_add with a class-first inner 27 (LTCG hoists the class gain call above the
-// upper conversion); one result long redefined by `decibels_add(result, decibels_add(class call, gain))`
-// 27, gain-first 27, through decibels_sum 16. Compile-only, 23 tail forms (in-place `+=` on a real or a
-// long, calls inside the arguments, accumulators, either argument order) all fold the converted gain.
-// Round 132: direct typed definition uses 15; scoped class/sum tail 15; reference inner sum 24
-// (112 bytes); const bound/linear values 15/15; named interpolation scalar 15; early class
-// declaration 15; commuted interpolation 15. Original body restored.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -1485,7 +1462,9 @@ long function_1251e0(void const *definition_pointer, long gain, real interpolati
 	long interpolated_decibels = function_2197f0((upper - lower) * interpolation + lower);
 	long class_gain = function_127010(definition->promotion_index);
 
-	return decibels_sum(interpolated_decibels, decibels_add(gain, class_gain));
+	s_decibels sum = *(s_decibels *)&interpolated_decibels + (*(s_decibels *)&class_gain + *(s_decibels *)&gain);
+
+	return *(long *)&sum;
 }
 
 /* requests the chunk a playing sound is at; true once it is loaded. Retail
@@ -2924,6 +2903,13 @@ static inline short sound_voice_find_available_channel(char type)
 // outer/early unchanged guards crossed with independent/chained defaults and original/complemented
 // status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
 // NOT kept: no score gain or byte match.
+// Round 160: bool result with `return true` after the commit on a while scan: assigned/direct exhaustion 130/130, chained
+// defaults 130/130, complemented status 127/127; `result = true;` before the goto on the while scan 88 (430 bytes,
+// aligned 46; a redundant store, not kept: left are the head registers, `or ebp, -1` shared at the channel test, the
+// complemented status and the failure block's place), with complemented status 118, chained defaults too 118; the
+// returning for-search or while-search on it 122/122, with complemented status 121, chained defaults 122/121; the
+// failure calls written in two arms, inverted or not 168/145/168/145 (455/438 bytes), byte result 151, complemented
+// status 178/155.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3287,12 +3273,12 @@ struct s_animation_ref;
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value);
 long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 
-// score 24 (was 49): the loop is a for statement whose increment reloads the pool and advances the index, the
+// score 24 (was 24): the loop is a for statement whose increment reloads the pool and advances the index, the
 // switch has a `case 1: continue;` arm (so a non-zero mode skips the record work) and the pitch range is computed
 // above the mode, which keeps the pool in ebp and the index in ebx as retail has them. Left: the range is built
 // before the mode flag test where retail builds it inside case 0, so the flag byte load and the class lookup sit
 // in a different order than retail's.
-// score 49 (was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
+// Earlier (49, was 49): the start-time test reads the sound through SOUND_PLAYBACK_GET and the sound pointer is
 // declared inside it, which gives retail's loop top (base in ecx, `lea esi,[eax+ecx]`, time folded into the
 // compare). Left: the mode switch is `test ax, ax` where retail has a two-case switch's `movsx eax, ax;
 // sub eax, 0; jne` (3 bytes, shifting every later branch target), and the pool reload sits before the next-index
@@ -3394,6 +3380,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // definition 78; default-first mode 66 (entry registers right, `test al, dl` rather than `test dl, 1`); flag-first
 // if/else 78; named predicate with default-first mode 66; const definition pointer 78; default-first self-select 66;
 // default-first with a flag-arm assignment 78. Original 24 form restored.
+// Round 38 (m3 lane 18, fast): with the range in case 0 (78, only the index and pool/voice/range swap EBX/EBP):
+// range declared at function top 78; sound_index declared before the pool 78; the class flag read into a bool
+// before the definition 78; a permuter run (45 tries) best 62 (a word voice index, which changes the NONE test).
+// On the 24 form: the range index named before the mode with the pointer in case 0 102; the flag bool 24.
 // @retail 0x1282d0
 void function_1282d0(void)
 {
@@ -3705,9 +3695,9 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
-// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
@@ -3825,6 +3815,15 @@ struct s_128ca0
 // M337: Existing whole decibel values through raw/processed/both submission gain
 // stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
 // NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
+// m3 lane 16 r83 (fast): retail's three sums all read like one add helper taking a real first operand and a
+// long-bits second (only the second is copied): playback gain + copied argument, location + that sum, the
+// converted permutation byte + copied local_6. Such a helper (real a, long b) for both opening sums 269
+// (frame 0x494, inner sum exact; the location add still folds), its parameters swapped 269 (same code), at
+// the two pin sums too 247 (1060 bytes; pin operands as retail, but our real -> long -> pin copy collapses),
+// with this file's pin single-exit 261 (0x12a810 still matches), default-first 275 (loses 0x12a810, 25);
+// on 0x1251e0's tail the same helper 23 (was 15). Chunk index read into a local before the next-chunk test
+// 222 (the load moves above the permutation test as retail, zero-extended into ECX); the stream bit through
+// a stream pointer 221 (retail splits that store into load/or/store). All restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

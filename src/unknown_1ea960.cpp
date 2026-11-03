@@ -326,7 +326,7 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 /* builds the shapes of a physics model in place: each shape gets its tag
    element and the shapes it refers to (their keys resolved to pointers); with
    `restore` set they are constructed empty and keep what they hold */
-// score 138 (was a stub): retail copies the tree's child key to the stack and shifts the index
+// score 138 (was 138): retail copies the tree's child key to the stack and shifts the index
 // out of it (ours reads the high word), reads the listener's value before the pair's shape lookup
 // (ours after, at its constructor), and inside the inlined constructors stores the empty 0x455ef0
 // shape's +6 before +8 and the vertex/plane pointers of 0x456008 and the children of 0x455fc0
@@ -359,10 +359,24 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // DH311: Existing base element retained, default zero initialization deferred to all six derived
 // constructors; scalar/special/composite header-before-element masks 0-7:
 // 204/206/205/207/206/208/207/209. Exact-only constructor ownership/order forms restored.
+// M3 lane 4 r161: retail stores the 0x455ef0 restore shape's +6 (1) before +8 and the vtable, and the
+// vertex/plane, children and pair fields before the derived vtable (members of a base class). Chain: a
+// base constructor taking the +6 word 135; vertex/plane pointers in an intermediate base 132; children
+// pointer in an intermediate base 131; tree key copied to a local 72 (1372 B); one pair+listener entry
+// constructor 59 (1388 B); listener's kind read into a local before the pair news 10 (1388 B); pair's
+// three fields in an intermediate base 5 (1388 B, plain, all file functions match; build/r161-1ea960.t7.cpp
+// in lane 4). The 5 is the list constructor's `xor ebx, ebx`/children spill/`mov ecx, edi` order before
+// the devirtualised child_count call. On it: children assigned in the base body 5; element zeroed in the
+// base body 5; children by if/else 5; loop on the placement-new result 145 (call no longer devirtualised,
+// but the stores then take retail's order); counter declared before the loop 5; base built from a null
+// owner 5; permuter 61 tries none below 5. Without the two one-use locals the hierarchy alone 131 (not kept).
 // J244: Restore policy in six derived constructors, then composite/all families:
 // 375/402/312/138/138/138/138/410. Existing null-owner base construction,
 // special/scalar/composite/all: 138/138/138/138. NOT kept: no gain; original
 // constructors and body restored. Restore-header/payload order, packed key and listener homes remain.
+// P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
+// masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
+// and complete body restored; restore-header, packed-key and listener ordering remain.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {
