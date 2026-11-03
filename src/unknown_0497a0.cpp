@@ -813,6 +813,10 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Round 548: Complete double length residence in vertical/planar/camera-pair subsets
 // 1/2/4/3/5/6/7, then all with double reciprocals: 433/544/605/556/635/515/632/633.
 // NOT kept: precision/normalization shape misses; original float roots, reciprocals and full body restored.
+// Round 552: branch-produced V endpoint; separate signed U producer with original/separate/branch
+// V; branch-produced U with original/separate/branch V; conditional signed U with branch V:
+// 615/265/265/615/286/286/632/632. Original texture values, geometry, helper and full body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {

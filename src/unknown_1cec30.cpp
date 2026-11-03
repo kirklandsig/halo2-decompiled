@@ -1045,6 +1045,10 @@ void function_1d1540(s_havok_component *component);
 // Round 548: Existing four-component setters for rotation/translation/both, inverse
 // at use then entry, and both setters with early slot/use-entry inverse: 215/130/254/215/130/254/250/250.
 // NOT kept: scalar-copy/frame and transport shapes miss; original constructor, fresh lookup and full body restored.
+// Round 550: Sole-return done exit with constructor/assignment/set/memcpy/memmove
+// copies 65/90/90/65/78; constructor/assignment/set with inverse at entry 65/90/90.
+// NOT kept: exit/copy forms miss; original implicit exit, constructor, inverse scope,
+// two-use slot and fresh post-reset lookup restored. Frame and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

@@ -2938,6 +2938,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N329: Native pooled voice/playback/channel-system references, seven receiver subsets 96 each; complete
 // references with complemented playing status 127. Original pointers, saved byte result, search and full
 // body restored; frame twelve/eight and failure-tail placement remain.
+// Round 552: direct unchanged/commit/failure Boolean returns without a saved carrier, native
+// outer/early unchanged guards crossed with independent/chained defaults and original/complemented
+// status 131/135/131/135/131/135/131/135. Original byte result, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {

@@ -965,6 +965,9 @@ extern long *g_51e9cc;
 // listing): field pointer, staged `+=`, a capture, an if/else clamp, the sum through an inline pin or add, the sum
 // assigned back to crouch_change: field first in all. The velocity block's conditional call is what flips it: the
 // block ending in an unconditional call loads crouch_change first, any `if` around 0xb7360 loads the field first.
+// Y551: Sole final flag-clear/return ownership at complete component/activity/ground
+// admissions, seven subsets then all with entry lookup storage: 42 each. Original
+// nested callback body restored; lookup rematerialization and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1896,6 +1899,9 @@ void function_dfd70(long arg_159e6d)
 // register for register retail's, so the rise is positional), that with crouch scoped to the else 104/589; crouch
 // scoped to the mode != 3 block 233; switch cases 2, 1, default 233; default's ternary as if/else 233. In the 104 form
 // the forward/up homes are swapped (forward [esp+0x1c], retail [esp+0x28]) and the to_head terms spill.
+// Y553: Complete first-ray displacement/final-clearance/start-setter subsets
+// 234/240/236/240/234/240/236; both point setters 236. Original helpers restored.
+// NOT kept: no target gain; scaled-displacement/clearance forms also raise shared users.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4086,6 +4092,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // 177/162; three named projections k, i, j 170, k, j, i 170, i, j, k 168; one named projection and cross k ahead 184.
 // Lead: retail's first rotation evaluates v.k * axis.k and v.j * axis.i ahead of the cosine; none of these gives it.
 // All raise the positional score, so this body stays.
+// Y551: Actual axis assignment/component initializer/shared setter/library copy
+// on the indexed-dot graph 145/224/211/145; with a separate magnitude result
+// 137/224/228/137. NOT kept: 137 uses a one-use call-result local without a
+// match. Original body/helper restored; normalization SIMD and coefficient homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -4576,6 +4586,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // Lane 18 round 34 (fast): riding renamed to sort after result 68; result renamed to sort first 68; `result = true`
 // right after 0x109e00 on the dot3f body 143 (686 bytes); result declared before riding 68; no result local, `return
 // true` 151 (672 bytes); riding declared at its assignment 68. The result/riding slot swap (result in the argument slot) remains.
+// Y553: Explicit state criterion with success before/after support or velocity query
+// 143/143/133/133; complementary support with late/query-bound success and branched
+// criterion 156/155/155; sole actual result exit 92. All preserve both exact callers.
+// NOT kept: result/support lifetime forms regress; original complete body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4975,6 +4989,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // fast 684/667/646/676/675/658/667/656 against control 655.
 // NOT kept: lean-local 646 hoists the field read and merges the native
 // step/clamp field stores to one final store. Original body restored at full 648.
+// Y551: Late resting result as false/success, call-result/push, true/failure and
+// test-owned arms, original/existing squared length: 665/649/665/652 twice
+// versus fast 655. NOT kept: flag-set forms require a match; six-point best
+// also fails the margin. Original body restored; frame/homes/call expansion remain.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

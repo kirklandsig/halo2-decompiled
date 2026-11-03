@@ -972,6 +972,10 @@ struct s_tail_transfer_traits
 // 0x1528d4) while ours reuses the unit pointer in esi. Tried: primary/secondary/other declared before the unit_index
 // read (159), the three weapons as a long[3] (152), a held[2] array with the no-seat branch as a hand loop over
 // held_slots[] (151, frame grows by 8), held[2] replacing primary/secondary (156), a store through a pointer to other (153).
+// Round 552: existing shared current-weapon producer, all shared object getters, native selection
+// do-while, admitted age, once/per-use clock, weapon-result home names and per-use second lookup:
+// 154/154/154/180/165/165/154/154. All complete original source and existing helper bodies restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -1093,6 +1097,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // for the slot lookups (286), locals for held/pending weapon (295), inline helpers for the held/pending weapon
 // lookups (295), writes through &held[hand] (287), a local copy of g_4e0300 passed to helpers (286, 1019
 // bytes), one 4-entry array for held/pending (295), a struct for them (292), do-while with a hand<2 guard (284).
+// Round 552: original ternary producers with direct first-loop do/while, then native slot/final/both
+// loops on each entry graph 284/636/284/636/284/636/284/636. All loops, observations, helper and complete body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1243,6 +1250,10 @@ void function_150820(dword *bits, bool local_only)
 // mode tests nested (47).
 // Permuter (25 min on r654): best 16, only with a volatile read of the unit index and the held slot read as a
 // char (a behaviour change); not kept.
+// Round 552: guarded command success/direct command/short-circuit result 47/95/87; all admission
+// returns 108, absent-unit return 78, branch-owned result 106, success-default result 88, admission
+// result before dispatch 101. All original calls, observations and executable body restored.
+// NOT kept: no score gain or byte match.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
