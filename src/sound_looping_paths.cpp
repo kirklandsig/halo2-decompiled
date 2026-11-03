@@ -692,6 +692,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 487: Whole-listener eligibility/cue continuations, separately/together 150/150/150;
 // each with pre-primary camera formation 200/200/200; separate active/index admissions
 // with either continuation 150/150. Original complete control graph and body restored.
+// F342: Angle zeros through library-before/aggregate-before/library-fallback/chained-fallback, then
+// each with transition last-use scope: 281/159/159/147/281/159/159/147. NOT kept: no byte match;
+// original complete body and every helper restored. BSP/count homes and camera/publication scheduling
+// remain.
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
