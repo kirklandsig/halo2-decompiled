@@ -165,6 +165,10 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // component publication 586/706/586/586; aggregate publication 586/706/586/586.
 // NOT kept: native pair storage does not match and grows the frame/length.
 // Original helper, body and includes restored; both exact callers stay matched.
+// B400: One rounded snap angle for offset/absolute-angle consumers, with first/second/both
+// atan2-producer lifetimes 485/558/558/561; producer-only first/second/both 501/499/563;
+// complete rounded-angle graph with entry declarations 561. NOT kept: no exact match or gain;
+// original helper, full double inputs and complete body restored; frame/angle/snap homes remain.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

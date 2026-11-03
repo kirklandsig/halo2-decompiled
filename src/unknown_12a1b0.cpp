@@ -1802,6 +1802,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // M343: Canonical inactive-range predicate bool/byte/short/long with original request
 // 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
 // in EDI and no predicate form matches. Original mask, request and full body restored.
+// B400: One reused range-sound handle with producer/entry declarations, independent pass counts
+// and native complete request: 482/482/465/465/480/480/465/465 fast (control 479, full 305).
+// Native request/producer handle restores frame 0x128 and first +0x39, plain 439 at 1923 bytes.
+// NOT kept: no exact match or full gain; original observations, arrays, request and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

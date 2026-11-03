@@ -1726,6 +1726,10 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// B400: Saved two-bit selection state with candidate-state/native movement/shared-contact-byte
+// masks 0..7: 359/294/360/293/359/294/360/293, at 1129/1045 bytes against 1066.
+// NOT kept: no exact match or gain; original separate predicates, magnitude, observations,
+// complete body and material calls restored; zero width and reset/selection homes remain.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

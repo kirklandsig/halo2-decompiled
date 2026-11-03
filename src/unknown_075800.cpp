@@ -1254,6 +1254,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M335: Rejection-owned connection exits on the native-input graph, subsets
 // 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
 // Original complete body restored; delayed ESI save and late expansion remain.
+// B400: Explicit lookup-success results in connection cases 5/6/7, seven subsets, then
+// all with case-local handles: 196 eight times fast (control 196, full 153). NOT kept:
+// no exact match or gain; original classifiers, native input roles and all call tuples restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
