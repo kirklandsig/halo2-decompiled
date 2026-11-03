@@ -514,6 +514,11 @@ void function_154d70(s_speed_request *request, s_speed_slot *slot, real scale)
 // it. Scale as double 171 (1103 bytes); rotation as double 27; the draw's bounds from the
 // parameter 161 (1104 bytes); scale declared at the top of the block 13; const scale 13;
 // sine and cosine in one declaration 13.
+// Round 127: the second draw after the cross and normalize 132; the scale draw before the
+// forward stores 62 and before the duration update 70; the existing unit-random helper for
+// rotation 29; force-inline declarations for the range and rotation helpers 13/13;
+// slot_random_range for the scale and both draws 189 (1053 bytes) and 232 (1009 bytes).
+// Original body restored.
 // @retail 0x154df0
 void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vector3f *direction, real priority)
 {

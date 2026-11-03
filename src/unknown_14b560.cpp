@@ -1096,6 +1096,10 @@ bool function_14ed80(void)
 // or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
 // 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
 // index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
+// Round 126: the existing shared remap helper 8, with inline or force-inline declarations 8;
+// primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
+// pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
+// lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
