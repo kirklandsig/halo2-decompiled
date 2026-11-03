@@ -250,6 +250,9 @@ void function_2232a0(void)
 // increment in the do-while test 109 (same code); the g_485ac2 flag tested before the session test
 // 121; the clamp with the upper bound first 115; the found arm first with a nested source test 120
 // (577 B). Still BLOCKED-BY 0x2b5d0.
+// Round 66 (m3 lane 1, fast): found arm's slot data as a default-first ternary 107; one `local_1 < 4 && g_4686c4
+// != NONE` test with the NONE store nested in the else 121 (579 bytes); the terminal initializer indexed by the
+// loop counter 110, with the tail call's count from it too 128; timer decrements swapped 109 (same code).
 // @retail 0x2234e0
 void function_2234e0(void)
 {

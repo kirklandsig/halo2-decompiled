@@ -551,6 +551,14 @@ extern point2f *g_468778;
 // AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
 // seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
 // guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
+// m3 lane 11 r63 (fast), on the actor-first form with `return !f14 && !f13 && !f2d;` in the arm (393
+// re-measured; retail passes arg_0 to the settings call in EBX from EDI, keeps the actor in EBP and spills
+// the settings pointer, ours spills the actor): settings test nested apart from the flag tests 393; prop-less
+// arm first 401; slot pointer before the settings call 393; prop lookup before the clock 393; a four-use
+// `&field_2d` pointer in the tail 393. All restored to the 375 body.
+// Round 139 (m3 lane 5, fast): actor first with constant exits 393; with a two-use settings distance local at the
+// final calls 403 (1554 bytes); with the default threshold before the clock 393; that threshold order alone 375 (same
+// code); the two-use distance local alone 425 (1567 bytes).
 // Round 47 (lane 15, fast): actor first with `return` of the expression 393, constant returns 413 (1523 bytes); settings rejected
 // early 410; all rejections early 393; prop declared at entry 395; slot read inside the settings arm 393. Retail keeps arg_0 in EDI,
 // actor EBP, slot ESI, prop EBX with settings only at +0x10; every actor-first form keeps arg_0 in EBX.
@@ -899,6 +907,12 @@ static __forceinline long real_to_long(real value);
 // bytes); the near-limit comparison written `unknown28 < field_1c` 382; the timeout scale passed
 // straight to the rounding helper 382; the near flag declared before the facing pointer 382; kept: the
 // second goto (the near-limit stop) as an `else if` for the approach query 382 (plain, same code).
+// Round 57 (m3 lane 13, fast; 0x1a9d80/0x1a9e00 matched each time): the prop-index test inverted (`== NONE`
+// clears field_2c first) 497; the inner admission test inverted with `local_6 = false` first 382 (same code);
+// local_6 dropped with the second test re-testing field_12/17/18 442 (1907 bytes); the second goto as
+// `local_10 = false;` 382 (same code); the query scalars renamed to sort in retail's slot order (local_20 <
+// local_19 < local_15 by address: flight_time/launch_speed/prediction_time) 382 and in the reverse order
+// (time_of_flight/rise_speed/lead_time) 382: names do not move these homes.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

@@ -1519,6 +1519,18 @@ void function_1f86a0(long actor_index);
 // AC489: Separate distance/seat validation guards and negative special admission, seven
 // subsets, plus native slot-member payload on the complete graph: eight at 134. Original
 // body restored; frame, mask spill and entry/root carriers remain.
+// Round 142 (fast; aligned count in brackets, control 134 [109]): retail's decline arm sits above the shared next call and the accept arm
+// below it: the predicate inverted or written positively in an if/else gives that layout, 134 [97] (not kept: the count does not move while
+// the frame and EBX differ); positive with `continue` 134 [97]; `continue` on decline, a decline bool, one goto form, and the for-loop on the
+// original predicate 134 [109] each. On the positive form: unit read directly or a parent local, entry declared first 134 [97] each; same in
+// if/else 245 [104]; bool mask 240 [94]; mask declared first 242 [95]; mask at function scope, char mask 134 [97]; long mask 248 at 873 [81]
+// (frame 0x14, but the whole flags byte takes BL); element index in a two-use local 252 at 845 [90]. EBX goes to the mask where retail gives it
+// to the entry, which leaves the entry on the stack and the mask out of its +0x13 slot.
+// The slot data-block form (selection through slot->unknownc) 134 [109]; a whole data struct 140 [109], with the positive predicate 141 [97]:
+// retail folds +0xc into its reads through the slot here, so that form does not apply.
+// Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
+// for the unit 230; existing object-header getter 134; same-root byte/short/long results
+// 134/140/139 (864/863 bytes for the wider two). Original body restored.
 // Round 47 (lane 15, fast, base 134): no mask local, flags temp at F+3 as retail but the flags byte in BL, 244 (868 bytes); with the
 // found index read after the loop 244; 0x40 through a second selection cast 234 (865); 0x40 as a shift 244; both bits as `& 0x60` 245
 // (871); `same` as false default plus if 239 (865). 0xbaf40 is pure, so the flags load stays common across its calls.

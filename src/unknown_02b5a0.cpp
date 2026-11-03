@@ -196,7 +196,7 @@ void function_3e420(long tag, long object_index, signed char *output, byte level
 
 bool g_467464 = true;
 long function_d1850(long object_index, bool value, s_effect_color_query *query);
-void function_d4080(long type, s_effect_color_query const *query, s_lighting_record *record, long flag);
+void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record);
 void function_ba1d0(long object_index, vector3f *linear_velocity, vector3f *angular_velocity);
 real magnitude3d(vector3f const *vector);
 real distance3d(point3f const *first, point3f const *second);

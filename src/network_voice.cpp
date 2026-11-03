@@ -2378,6 +2378,10 @@ long voice_players_share_team(long other, long player)
 // test 56/56/56; their addresses held in a data pointer (diagnostic) 25, with the global test 56 each. BLOCKED-BY
 // 0x59670: the 56 form needs the session lookup under 0x53de0 to end the global's availability.
 // Original body and helper declarations restored.
+// M3 lane 6 r142 (fast): voice_available() in the entry test with the mode read from the field 34; the mask from
+// voice_get_player_mask_inlined() inside the mode block 118; `else if (mode == 2)` for the mask arm 51 (373 bytes);
+// the entry test on settings alone (getter's own tests) 49 (376 bytes); the loop bit named `dword bit = 1 << i` 98;
+// the mode read from the field before the mask 25 (same code); `mode != 2` 25 (same code). BLOCKED-BY 0x59670.
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
@@ -3276,6 +3280,9 @@ struct s_voice_route_choice
 // the loop 381 at retail's 1287 bytes (frame 0x58: the bit gets a stack home, retail hoists it only in the unrolled
 // copy, into EBP); XUID, bit and per-choice pointer 382 (1290); XUID, bit and if/else-if radio 434 (1242); all four
 // 409 (1258); bit and pointer without XUID 394 (1298).
+// Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
+// actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
+// byte agreement; original independent decisions and complete body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3583,6 +3590,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor; 164) the member mask declared at function scope 164; a named word member bit used for the test and the
 // clear 168 (471 bytes); the route zeroed as `= { 0 }` 164; the size debited right after the size test 169; on the
 // original form the mask at function scope 139 (same code). Retail's EBP channel / spilled member still not reached.
+// Y556: Payload-relative consumed result, long/int/dword/short, original/independent
+// packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
+// original header-inclusive result, live counts and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
