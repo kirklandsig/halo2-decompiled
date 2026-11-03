@@ -359,6 +359,10 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // into the cross registers where retail stores the cross and re-adds); that plus vector3f_add(&local_4, v, v) 1426;
 // the contact cross written straight into field_4c and summed in place (retail's form there: no contact-velocity
 // local) 1388 (6238 bytes), with the first-loop helper too 1451. Aligned (difflib) counts stay 1340-1380 of 1455.
+// Round 144 (m3 lane 5, fast = full 1355): seven of the accumulations through the existing vector3f_add 1401
+// (6211 bytes); the crosses through the existing cross3f 1402 (6259 bytes); the dot product summed i, j, k 1355
+// (same code); the second normalizer's sum i, k, j -> i, j, k 1355; the scales through the existing vector3f_scale
+// 1433 (frame 0x5c8, 6211 bytes). Original body and helpers restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

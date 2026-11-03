@@ -2882,6 +2882,10 @@ void function_c5740(long unit_index, bool start)
 // Round 350: Single-exit weapon/fallback with guarded/conditional handle production, short/char slot and
 // original/pool receivers: 121/121/124/124/123/123/123/123. Definition/material/pool ownership and
 // effect convention remain.
+// Round 144 (m3 lane 5, fast; retail's 0x188180 call takes the point in EAX and the forward in ECX, ours the effect
+// value in ECX, so the first differences are that callee's convention, BLOCKED-BY 0x188180): the definition's tag read
+// before the material play 103; the unit read at each use 94; a weapon unit local 94; a named root index 94; the
+// material tag read at entry 106. Original body restored.
 // @retail 0xceee0
 void __stdcall function_ceee0(long unit_index, long definition_index, short material_index, point3f const *point,
 	vector3f const *forward)
