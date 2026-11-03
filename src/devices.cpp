@@ -1770,6 +1770,9 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// P308: Flattened pending-manual power/position decisions and closing refresh-bit admission,
+// subsets 1/2/3/4/5/6/7: 377/286/377/292/381/291/381; both direct conjunctions 408.
+// NOT kept: no match or gain; original nested decisions, qualifiers and full body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

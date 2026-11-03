@@ -405,6 +405,9 @@ union s_185be7
 // AC497: Entry index presence/absence retained across the output clear,
 // bool/byte/short/long, eight forms 690 each. Original admission, reset,
 // root observations and complete body restored; root/NONE and scalar homes remain.
+// P308: Existing reset as a native subobject/whole-output member, forced/ordinary expansion,
+// 622/1013/622/1013; complete clear owned by output, without/with actual returned output,
+// 1013/1013/1013/1013. NOT kept: no gain; original free reset, clears and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

@@ -2239,6 +2239,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
+// P308: Existing five-value decoder as a native decoded/encoded member, void/reference
+// results with forced expansion 542/542/542/542; ordinary expansion 1039/1039/1039/1039.
+// NOT kept: ties/outlining regressions; original free decoder, samples, offsets and body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

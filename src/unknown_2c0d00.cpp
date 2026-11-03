@@ -1462,6 +1462,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
 // copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
 // (same code); emitted type from the type local instead of the step 421 (1755 bytes).
+// P308: On the retained two-radius lifetime, existing final difference/length/start-setter
+// subsets 1/2/3/4/5/6/7 score 437/418/436/426/429/426/428; complete self-dot 428.
+// NOT kept: ties/regressions; original point values, both radii, helpers and full body restored.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

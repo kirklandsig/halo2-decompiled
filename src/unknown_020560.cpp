@@ -989,6 +989,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // jointly, after first or before samples 457 each (same code); one shared index 457; nearest declared before
 // closest_distance 459; `if (i == nearest) continue;` 457. Retail's 0x2c frame keeps delta.i/j in XMM5/6
 // with delta.k at +0x38 and stores offset.i to its own home at +0x24; the 457 form spills delta.j/k instead.
+// P308: Direct failing-candidate skips at nearest/projection/opposite-distance reductions,
+// all seven subsets 547 each; all with count/override guard exits 570 at 2109 bytes.
+// NOT kept: ties/regression; original searches, guards, helpers and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
