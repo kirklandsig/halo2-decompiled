@@ -96,6 +96,12 @@ void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, lon
 // EDX, the record added in place). The entry as `tag->entries + arg_1` 23; the record block moved after the
 // event data clear 23 (both identical code); the entry computed after the record block 199; the index as
 // `(word)arg_0 * sizeof` 221; the tag as one ternary 195.
+// Round 95 (fast): the stride's operands reversed 23; a literal 0x54 stride 23; both together 23;
+// an unsigned mask 23 (target-only previews); an unsigned handle with that mask 21; an unsigned
+// handle alone 21; a const first-record pointer 21; `sizeof(*record)` 21; the flag stored as 1
+// rather than true 21 (the last five with the three callers included). The restored control with
+// those callers also scores 21; its target-only preview is 23 and its plain score is 21. The handle
+// declarations were restored everywhere; the original body stays at 754 bytes.
 // @retail 0x20d570
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 {
