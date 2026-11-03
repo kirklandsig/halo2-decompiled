@@ -1426,6 +1426,10 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
 // shortens away from retail; 584 gains one, 581 gains four and shortens away.
 // Original complete body restored; missing frame word and material/airborne/animation homes remain.
+// P300: Once-read motion input, twice-consumed turning key and real header byte,
+// graphs 1/2/4/3/5/6/7 plus entry motion declaration: 585 each. No gain; original
+// receivers, real header layout and full body restored. Frame 0xf8 versus 0xfc
+// and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1932,6 +1936,10 @@ void function_dfd70(long arg_159e6d)
 // crouch and default-owned zero: 104/261/261/104/104/245/242/247.
 // NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
 // Original helpers/body restored; mode-three layout and basis/ray homes remain.
+// P300: Sequential forward/back, up/ray and returned-up storage graphs 1/2/3/4/5/6/7:
+// 233/233/233/240/240/233/233; forward/back at its first writer 233. NOT kept:
+// no target gain, and several forms raise shared users. Original helpers/body restored;
+// mode-three placement and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

@@ -4621,6 +4621,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// P300: Existing steering/turning/speed limit-query families, graphs 1/2/4/3/5/6/7:
+// 883/963/1192/1076/1290/1395/1504; all plus reverse maximum 1514. No gain; every
+// form shortens away from 2974 bytes. Original provider boundaries/body restored;
+// entry definition and zero/result/one residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5166,6 +5170,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // weighted-driver graph, seven subsets then consumed flip output:
 // 1090/1087/1140/1090/1140/1140/1140/1205. Sharing reaches frame 0xd4 rather
 // than native 0xd8; original complete body restored at frame 0xf8 and retail length.
+// P300: First/final tensor and quaternion return graphs 1/2/4/3/5/6/7/15:
+// 1090/1124/1035/1124/1079/1117/1117/1117. NOT kept: 1035/1079 shorten to
+// 5075/5062 versus 5094 and grow frame to 0x104 versus 0xd8. All original bodies
+// and workspaces restored; frame, handle/offset and matrix/vector homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
