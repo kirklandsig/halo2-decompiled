@@ -674,6 +674,10 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // through +0x60, but a width cast on one side of a compare, and retail compares dword: `movzx eax, cx; cmp esi, eax`;
 // not kept); a word new-mask local ahead of the change test 133 (375 B); the added mask declared ahead of the change
 // test 130 (375 B), 59 on the word mask; the volatile present declared first on the word mask 86.
+// Lane 13 r58 (fast): word mask, plain present and the post-loop stores/index24 through the getter 63 (384 B,
+// the engine-index load then hoists as retail's); word mask with the added mask written into the second loop's test
+// 90 (396 B); `word const` mask 77 (same as word); word mask with the change tests as XORs 86; word mask with the
+// present test as `present & ~old` 86 (diagnostic, not equivalent).
 // @retail 0x158140
 void function_158140(void)
 {
@@ -2637,6 +2641,10 @@ void function_1e9ce0(long player_index, long counter, s_statborg *statistics, lo
 // delta named once for the three 0x1967d0 calls 116 (338 B); the score-to-win compare's
 // operands swapped 44; the 0x1967d0 dispatch as an if/else-if chain 53 (352 B). Both blockers
 // (0x1e9df0's file and 0x1967d0's file) were off limits this round.
+// Lane 13 r58 (fast): the mode read into a local before the 0x1e9df0 call 88 (369 B); `delta` reassigned to
+// `score - old_score` for the change test and all four calls 128 (331 B); `delta + old_score` 44 (same code); the
+// loop's mode switch as an if/else-if chain 50 (359 B, retail's length); named score-to-win 44 (repeat). Both
+// blockers stand: retail reloads g_4e6948 after 0x1e9df0 and 0x1967d0 and sets up counter, field, statistics.
 // @retail 0x15b650
 void __stdcall function_15b650(long team, long delta)
 {
@@ -4451,6 +4459,10 @@ long function_14de70(long local_player_index);
 // weapon local 71 (the constant still propagates); `(short)iterator.index` as the zone shift count 41 (retail's
 // `mov cl, byte`, under the keep threshold); OBJECT_DATUM_GET with a signed char slot 75 (`cmp cl, 0xff`); the
 // player index through the existing 0x14de70 42 (same code; kept, it was that function's body written out).
+// Lane 13 r58 (fast): weapon NONE default before the unit test with an `if` for the slot 73 (2688 B, `or esi, -1`
+// as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
+// local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
+// re-assigning the default 42 (the dead default is dropped, original code).
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {
@@ -5638,6 +5650,13 @@ void __stdcall function_d6bc0(long object_index);
 // M346: Actual eligibility-query outcome at its original admission test,
 // bool/byte/char/signed-char/short/word/int/long: 144 each, exact 869-byte extent.
 // Frame remains 0x14 versus 0x18; timer spill and entry-base reloads remain. Original body restored.
+// Lane 13 r58 (fast): the schedule's two index tests written on the `index` local 159; d6bc0 given `index` 148;
+// both 165 (863 B); the timer pointer formed with the index read and used for the reset block's `= 1` 155 (872 B);
+// a bool schedule with the same initializer 167 (862 B). Retail's frame order (pre-push): object 0, preset 4, i 8,
+// rate 0xc, timer 0x10, scenario 0x14; ours has no timer slot.
+// B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
+// producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
+// NOT kept: all regress; original memory counter, timer observations and complete body restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

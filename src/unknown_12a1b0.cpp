@@ -2464,6 +2464,10 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // keeps the pointer in ESI where retail copies it from EDX, which shifts the energy loops' padding); with `distance`
 // renamed to sort after maximum/minimum 615 (no home moves); inside the availability block 596 at 2518 bytes; with
 // distance declared before maximum 596; after the definition lookup 602.
+// M343: Complete pending-valued return graph, bool/byte/short/long direct initial state test
+// 668/668/799/793; default-true state-test counterparts 755/755/800/794.
+// All regress; original completion polarity, sole exit and complete body restored.
+// NOT kept: all outcomes regress; wider domains grow the frame to 0x40.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

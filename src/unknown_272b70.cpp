@@ -2744,6 +2744,9 @@ struct s_scenario_scripting_view
 // B392: Actual external actor-record reference with scenario/data/set reference masks 0..7:
 // 80/80/96/96/80/80/96/96. Original complete search and all observations restored; actor/counter/set
 // homes remain.
+// B394: Complete packed winner in long/dword storage, winner-produced/retained set bits;
+// and admitted/entry result lifetime; original low-word NONE test retained: 96/94/91/101/96/94/91/101.
+// NOT kept: no exact match; original complete executable source restored.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

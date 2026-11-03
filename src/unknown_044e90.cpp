@@ -229,6 +229,9 @@ struct s_visibility_bound_record
 // immediate per release 406/406/406/406/406/406/406/406; together at cleanup entry
 // 507/507/507/507/511/511/528/528. NOT kept: new ownership carriers miss.
 // Original direct sign tests, capacity reloads, cleanup order and complete body restored.
+// B394: Inverse-transform scale reference/pointer, whole transform, translation and all-row references;
+// then transform/scale, translation/scale and complete subobject identities: 406/406/406/406/436/406/406/406.
+// NOT kept: no exact match; original complete executable source restored.
 // Round 82 (m3 lane 9, fast): retail tests bit 12 as `mov ecx, [ebx]; shr ecx, 0xc; test cl, 1` and keeps the table
 // in ESI from entry through the bottom arm (no reload). Flags read at each use 442 (1744 bytes); the bit-12 test through
 // TEST_FIELD_BIT 419; both 444 (retail's shr/test and tag in EAX, but no table preload); with the table read once into a

@@ -685,6 +685,13 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // assigned in the test 309 (gives the register load, EAX not ECX); a next pointer local alone 312; the clamp
 // helper comparing with its own `value` 332 (1232 B); the second shape in a local for the exclusion test 346;
 // the key range test as `key < 0 || key > count - 1` 308 (different code, aligned worse).
+// Round 144 (m3 lane 6, fast; register-masked aligned [169]): `plane3f plane`, the transformed normal, and
+// material/friction/restitution each declared at function scope 308 (same code); the classifier reading
+// `shape->data` at each use 308 (same code); the exclusion test as a single-exit bool helper on the shape (result =
+// byte test under the kind/data/classifier test) 320 [178] (retail's `setne al; test al, al`, but the shape stays in
+// ESI where retail re-reads [ebx] after the virtual call); that helper on the contact node, reading `node->shape` at
+// each use, 319 [162]. Retail's three loads of the data and its preloaded clamp constants are reproduced by no form;
+// both matched siblings (0x1c5400, 0x1d4880) use the single-load clamp.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

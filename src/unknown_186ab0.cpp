@@ -290,6 +290,11 @@ void player_action_initialize(s_player_action *arg_0);
 // (both calls stay out of line under this region's inline_depth(0)); that test as `field_23e[...] == 0` 134 (same
 // code); field_20/24 as two real stores 164; the 0x40 bit named once as `bool pressed` 171; the field-first
 // selection compare with the real stores 163. Original body restored.
+// Round 58 (lane 14, fast with every callee listed): round 27's form reproduced at 1 on today's tree (needs its toggle flag and one-caller wrapper, so not kept without a match). On it,
+// same code each: named grenade argument 1; named index and grenade 1; named result 1; arguments cast 1; else-only form of the cycle test 1; named fallback 1; the two struct
+// locals' declarations swapped 1; first two locals assigned apart from their declarations 1; element pointer for the first unit lookup 1. Direction as a variable 419 (1444 bytes);
+// a one-caller inline wrapper of the cycle call 451 (1431 bytes). Diagnostic only: inline_depth 1, 2 and 3 in place of 255, 1 each.
+// Retail holds two copies of this read: the out-of-line 0xcbec0 (base type) and this site (base unit). BLOCKED-BY 0xcbec0 stands.
 // @retail 0x186ab0
 void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_action *arg_3)
 {
