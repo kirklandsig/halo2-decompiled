@@ -230,6 +230,11 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // Round 79 (m3 lane 16, fast control 532, full 545): the gain difference in a named real before its fabs 537;
 // direct read before the stream lookup 579 (1921 bytes); mode read before changed 570 (1917 bytes); the voice
 // branch's status declared in each arm 532 (same code); buffer/submix property declarations swapped 532 (same code).
+// Round 49 (m3 lane 15, plain; fast has a CAVEAT here): the gain test through a `gain_changed` bool set from a
+// block-scoped named difference when not `changed` 545 (same code: still x87 fld/fsub, retail's SSE subss needs the
+// gain loaded with movss); that with a plain real gain value 545 (same code); the stream's 0x20 bit updated before
+// the send flags 576 (1863 bytes); the pitch delta compared without the `(real)` cast 545; the send flag set
+// before the two cached level stores 545.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

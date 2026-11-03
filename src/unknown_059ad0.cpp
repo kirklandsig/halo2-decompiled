@@ -3697,6 +3697,9 @@ bool network_observer_channel_timed_out(s_network_observer *observer, long chann
 // Round 139 (m3 lane 5, fast): reply member-state pointer before the id 94 (seven, under the bar); with the identity
 // address named before the memset 94; with an early not-peer `return false` and `return true` 116 (428 bytes); with the
 // announcement id field by field 94; with the identity as a structure assignment 94; with `leave` declared first 96.
+// Round 49 (m3 lane 15, fast): state range as `state >= 3` 102; the leave test with the flag byte first 101; the
+// value44 reset before the member index store 100 (one point, not kept); announcement flags stored 2, 1, 0 101; the
+// host index read from the session at each use (no assignment inside the condition) 104 (421 bytes).
 // @retail 0x5e3f0
 bool __stdcall function_05e3f0(c_class_58d20 *session, const s_type_99af70 *address)
 {
