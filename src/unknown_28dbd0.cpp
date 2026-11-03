@@ -265,6 +265,11 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // AC503: Shared moving/fixed offset and velocity producers on the added-cross graph, seven
 // subsets then the complete native point receiver 216/180/173/180/173/180/180/173. Original full file/helper restored;
 // frame 0x11c/0x118 and cross/trig homes remain. NOT kept: unmatched producer/field-pointer forms.
+// Round 206 (m3 lane 3, fast): retail's rotation is the one 0x117dd0 inlines (sine first, X = vector x axis,
+// X.j/X.k spilled with the sine's home between them, X.i formed in row i). Sine, named dot, cosine, scalar X.j/X.k
+// with X.i inline 237 (1221 bytes); sine, dot, cosine, cross3f(vector, axis) subtracted 226 (frame 0x120), with
+// vector-first rows 226; that body as a (vector, axis, sine, cosine) helper 226; sine, cross3f, dot, cosine 233 (1196).
+// Original helper restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

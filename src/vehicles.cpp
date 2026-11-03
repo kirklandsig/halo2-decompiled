@@ -2477,6 +2477,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,
 // original/forced-inline existing helper 213/213/213/213/213/213/213/213.
 // NOT kept: grouped storage, frame 0x18/0x10 and 646/682 bytes; original body/helper restored.
+// M342: Native double fmod result, scoped/const/branch/default outputs and direct/branch/default/
+// guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
+// native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
+// Original two-use helper and complete body restored; turn/spin schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2828,6 +2832,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // axes, side-bank/matrix pairs/all/all with independent relative output:
 // 691/692/742/734/691/755/755/763. NOT kept: best gain one; frame remains 0xd0
 // or 0x104 versus retail 0xfc. Original body, record view and all helpers restored.
+// F354: Float CRT bank sine/cosine/both 689/689/692; distinct relative output
+// 699/699/700; both with distinct inverse/current or desired result 702/699.
+// NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3120,6 +3127,9 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Round 555: Existing setters for acceleration, both lateral axes and boost
 // direction, seven subsets; all plus yaw update: 1052/1060/1053/1060/1053/1060/1060/1060.
 // Original complete body restored; frame/force/velocity ownership still differs.
+// F354: Live default-target receiver/repeated steering direction/fraction numerator,
+// singles and pairs/all/all forced inline: 1077/1047/1053/1089/1060/1053/1105/1105.
+// NOT kept: best gain five is below eight; frame stays 0x80 versus 0x74; original body/helper restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4300,6 +4310,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Y559: Complementary silent then unchanged carriers, each bool/byte/short/long:
 // 188/188/289/293/177/177/283/285. NOT kept: no byte match; native positive flag
 // producers, found-index retest and world/fallback/final-writer homes remain.
+// M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
+// for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
+// no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
