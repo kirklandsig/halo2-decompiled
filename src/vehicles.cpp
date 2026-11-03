@@ -1208,6 +1208,10 @@ long function_10f5f0(long object_index);
 // N338: Complete axial/radial response products, squared-radius and radial-scale
 // accumulator subsets, then running response accumulators: 566/565/565/565/565/566/565/565.
 // Original complete body restored; frame 0x19ac/0x1984, flag-result and reduction homes remain.
+// N340: Branch-owned initial powered/open/maximum production, seven subsets,
+// then complete logical numeric selection: 543/565/565/543/543/565/543/587. All restored;
+// native frame, predicate-result byte stores and reduction homes remain.
+// NOT kept: 543 shares the initial unity load where retail loads it twice.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {

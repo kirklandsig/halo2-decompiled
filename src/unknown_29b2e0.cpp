@@ -274,6 +274,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // magnitude common, zero-result common, magnitude-result common, failure-first magnitude/result,
 // early success result, branch outputs with common return success/failure first: 171/403/412/182/212/417/203/212.
 // NOT kept: five-point best gain; common magnitude fixes early unity and first +0x84, but root/yaw homes remain.
+// N340: Complete normalized scalar outputs in ijk/jik/kij/jki producer order,
+// magnitude publication after/before component stores: 241/241/241/241/363/363/401/363.
+// NOT kept: unmatched scalar staging/order; original helper and whole body restored.
+// The shared helper also raises sibling 0x29b990 to 12/15/41; no edit retained.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

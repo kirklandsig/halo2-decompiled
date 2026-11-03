@@ -833,6 +833,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 333: Shared successful header/body progress producer, dword/real numerator,
 // named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
 // Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
+// N340: Complete header/body extent snapshots, mutable/const individually and
+// together, then const total/denominator: 218/219/193/218/219/193/193/193.
+// NOT kept: unmatched extent observation/storage changes; original full body restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
