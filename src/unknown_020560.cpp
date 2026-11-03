@@ -932,6 +932,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // and length_sq3f 547 (both same score at 2122 B).
 // DH294: Joint count/selected-ordinal/blend-fraction lexical priorities, seven subsets and all
 // with native vector-owner names, 547 each. Original names and complete body restored.
+// DH313: Single own-input first-consumer lvalues source/red/green/blue/order/direction/position
+// 547 each; entry-owned query-parameter pointer 563. NOT kept: exact-only own-address/alias
+// forms fail byte agreement. Original body restored; frame/input, scan and fraction homes remain.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

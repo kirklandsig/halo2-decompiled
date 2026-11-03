@@ -328,6 +328,9 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // Round 528: native int start/count and immutable destination formal, seven subsets
 // 40 each; complete native graph with exhaustive result arms 48. Original signature,
 // shared scanner/copy helper and whole body restored; saved-start/scan allocation remains.
+// DH313: Native scanner char/signed-char/unsigned-char/byte captures with original
+// postincrement or separate pre-test advance: 40 each; shared find regresses to 15/70 bytes
+// in all eight. NOT kept: no target gain and shared-user loss. Original helper/body restored.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

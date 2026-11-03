@@ -756,6 +756,10 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// DH313: Crossing XOR/current-conditional/prior-conditional/complement predicates, original
+// fraction 184/268/279/250; denominator-produced zero 112/255/277/247. NOT kept:
+// 112 is a nonmatching predicate/fraction interaction; all exact-only forms restored. Count ECX,
+// prior-side byte and SIMD homes remain.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)

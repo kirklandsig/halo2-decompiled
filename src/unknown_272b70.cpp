@@ -1478,6 +1478,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH311: Single own-parameter first-consumer reads, direct ai/vehicle/range/load 32/32/32/32;
 // entry pointer counterparts 170/237/32/32. All exact-only own-address/alias forms restored;
 // iterator scaling, leave-request registers and request/slot publication homes remain.
+// DH313: Native/read-only iterator actor-index field pointer before/after initialization,
+// at loop entry or candidate admission: 32 each. NOT kept: exact-only field aliases fail
+// agreement. Original body restored; iterator/leave-request and request/slot homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
