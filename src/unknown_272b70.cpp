@@ -1471,6 +1471,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH296: Complete live sorted-candidate/actor/object receiver subsets 1-7
 // 32/198/198/32/32/198/198; all with byte request outcome 198. Actor re-fetches
 // grow to 898 bytes; original receivers and complete body restored at 846 bytes.
+// Round 378: Native slot flag byte/bit view, combined/split clear-set, mask-result and
+// byte-capture producers, then seat/object-interleaved publication: 32/32/52/51/32/32/51/41.
+// Original actual slot type, bit-field stores and complete body restored; iterator/candidate,
+// leave-selector and request/slot publication schedules remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

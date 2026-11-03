@@ -782,6 +782,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // Coordinator: not kept. The vector2f local exists to shape the frame (its i is dead, its j becomes v + width; a locals-
 // grouping form), and case 0's order was picked from 36 by score. The two existing normalize helpers alone (normalize2d_fast
 // on a side vector, normalize3d on case 0's normal) give 260 fast: a gain of 5, under the bar. Body restored.
+// F336: Complete opacity clamp lower-else/upper-else/lower-upper/upper-lower,
+// field then actual opacity value storage: 265/269/265/269/276/278/276/278.
+// Original product, its intermediate, signed zero, record publication and complete body restored.
 // Round 540: Twice-used per-channel lower/current input values, initial/next/transition
 // phase subsets 1/2/4/3/5/6/7, 553/550/265/588/553/550/588; all with width owning
 // its transition input 582. Next-phase forms recover frame 0xac but grow the body;

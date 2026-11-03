@@ -316,6 +316,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // validity publication 137/124/132/129/137/124/132/129; paired two-consumer value-array receivers repeat those counts.
 // All regress; original body restored. Post-sample compare and evaluator/child homes remain.
 // NOT kept: extra evaluator admission and field receiver remain unmatched; all regress.
+// DH307: Cache-request full-default/hit refinement, branch result, pending-default override,
+// and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
+// All 878/870 bytes; original complete body restored. Split post-sample cache comparison
+// and evaluator/child scratch homes remain. Branch-owned request would require an exact match.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -650,6 +654,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // Round 367: Actual cache value array reused by evaluation/spawn, pointer/reference and entry/producer
 // address, then missing-bit result reused for publication: 359/359/359/359/379/379/379/379.
 // Original complete body restored; late EBP save and first-sample/blend/getter homes remain.
+// Round 377: Original-RNG packed header, combined/named initial mask and native category/shifted-bit
+// producers, eight forms 356/359/359/359/359/359/360/360. Original header publications, helper graph and
+// complete body restored; late EBP save and random/geometry/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

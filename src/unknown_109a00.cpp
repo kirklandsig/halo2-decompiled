@@ -546,6 +546,24 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // N318: Complete current-center memcpy/memmove/standard forward/backward copy
 // 112/125/128/128; with complete previous-transform memcpy 116/128/123/123. Original
 // center/copies and full body restored; input roles, physics spill and projection scheduling remain.
+// Round 123 (lane 8, fast with 0xb7060; "aligned" counts differences after aligning the two listings): retail's head
+// needs two things: the center through carrier_vector_from_havok (object index EAX, entry chain in one register) and the
+// component taking EBP with the entry in EBX. Diagnostics with probe stores to a test global, not kept, on the converter
+// form (149, aligned 119, 0xb7060 11): one value use of the component pointer at the physics block flips them and gives
+// retail's head and 0xb7060 0 (208, 926 bytes, aligned 42); two count reads there 201 (aligned 41, 0xb7060 0), one 229
+// (no flip), four reads 208 (926, 0xb7060 0); two count reads before the model index 242 (aligned 51, 0xb7060 0); no flip
+// from count reads inside the update block 224, default-body reads 230, entry reads 257, definition values 230 or constant
+// stores 256. Without the converter the same probes leave the head (value use 247, count reads 266). Natural forms on the
+// converter, none flips: velocity getters taking the component and index 154 (alone 113); a NULL-initialised component
+// tested after, three shapes 243/242/243 (one alone 263); a separate havok-component local 129 (alone 132); body index
+// NONE with one update if/else 149 (alone 112), with the update returning 149; guard tests with one failure label 224
+// (alone 218, 911 bytes). Failure stores in else arms give retail's pops-before-stores: three arms without the converter
+// give retail's head and 0xb7060 0 but the pushes sink past the tests and three epilogues stay (282, 956 bytes); on the
+// converter three arms or returns 224 (969), two arms 189 (946). On the two-read probe: the `+=` dot 206 (926, aligned 32;
+// on the value-use probe 208, aligned 43; alone 110), `up->i = up->i - scaled_i` 201, dot3f(up, forward) 201, the failure
+// stores swapped 201, the axis pointers together 200 (aligned 45), inline scaled terms 201 (aligned 47). What stays with
+// the head flipped: the definition's load register and early store, the default body's movsx/count order, the search
+// body's offset temporary, the dot and scale products' memory operands, the failure pops.
 // Round 540: Common vector converter through shared scalar builder/returned output pointer/output
 // reference/native value, original center 112/112/112/214; the same producer for center
 // 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.

@@ -493,6 +493,9 @@ struct s_physics_component_walk : s_havok_component
 // unsigned/signed full-width 289/329/315/314/289/329/315/314. No exact form; original separate facts,
 // output, clamp and complete method restored; latch reload and neighbor/key carriers remain.
 // NOT kept: the status-mask producers and publications do not reproduce retail.
+// DH307: Object formal first/middle/last in both section-query interfaces, all eight
+// nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
+// tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
