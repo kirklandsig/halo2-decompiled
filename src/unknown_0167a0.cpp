@@ -74,9 +74,8 @@ PRIVATE inline byte const *material_parameters(long tag)
     return *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
 }
 
-// score 47 (was 47): BLOCKED-BY 0x18a90 (src/unknown_01cf50.cpp, contributor file: retail passes the state
-// in EBX, ours pushes it; that tail is about 42 of the 47 lines and the extra byte, the later calls shifting
-// by one instruction) and the restore block's schedule: retail reloads the table field before the entry
+// score 5 (was 47): the 0x18a90 tail now agrees (round 65 gave 0x18a90 retail's EBX state); what is left is
+// the restore block's schedule: retail reloads the table field before the entry
 // store and loads `second` after the two table loads, ours loads `second` right after the entry `lea`.
 // Frame, entry and logarithm agree. Forms (the history ran 167 -> 162 -> 153 -> 132 -> 95 -> 47):
 // restore entry-load order (retail reloads the table field before the entry store) and
@@ -204,6 +203,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 516: Packed entry/chain results in short/word/long pairs on recovered field-reference
 // graph. Restore table/index order and protected sampler state convention remain.
 // Scores 48/47/49/47/50/48/49/47; original executable body restored.
+// Round 65 (m3 lane 1, fast, control 5): entry stored directly to its field (no reference) 5 (first
+// difference +0x1a7: `second` then loads above the store); the existing `entry` local stored then read 181
+// (975 bytes); the entry base from the `tables` local 178; the pass table base read before the next index
+// 5 (same code); permuter (600 s, 51 tries) best 5.
 // @retail 0x16b90
 void __stdcall function_16b90(byte *state, long tag, long first, long second,
     long third, long fourth, real scale)

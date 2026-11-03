@@ -1158,6 +1158,10 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // Round 93: bool/dword force union 44; with component stores 51; existing vector/point setters 56/56;
 // memcpy/direct receiver 44/44; staged squares 42; preloaded-i component stores 49; complete updated vector 135.
 // NOT kept: the exact-only union wrapper, one-use velocity local and value snapshot. Original body restored.
+// Round 65 (m3 lane 1, fast, control 94): the 0x119bc0 result passed straight into the 0x1c4b00 call 101; the moving
+// test written into the flag-setter call 94; object flags read at each use (no snapshot) 156; the physics word at
+// 0xc0 read at each use 132; the requested up/forward copies swapped 98. The bool force flag still waits on files
+// other lanes hold.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
