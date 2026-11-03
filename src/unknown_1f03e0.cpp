@@ -1035,6 +1035,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// DL256: Existing cross/dot expansion pairs forced-inline/inline, inline/forced-inline, both forced,
+// ordinary/inline, inline/ordinary, ordinary/forced-inline, forced-inline/ordinary and both ordinary:
+// 433 each (3037/3047 bytes); every shared user unchanged. Original annotations and full body restored;
+// damping ECX/EDX, raw/bounded homes and cross/history schedules remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

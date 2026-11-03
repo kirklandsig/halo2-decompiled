@@ -356,6 +356,11 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // entry 223 (same code); uv_b's default bounds copied from uv_a 347 (1956 bytes); the tint and its clamps in their own
 // block ending at the pack 249 (1906 bytes); `uv_b,uv_a` declaration order 223 (same code); the flip read before the
 // extents 250 (1949 bytes). Original body restored.
+// DL256: Existing one-object in-place UV encoder, encoder/selector expansion pairs inline/inline,
+// forced/inline, inline/forced, forced/forced, ordinary/inline, inline/ordinary, ordinary/forced,
+// forced/ordinary: 223 each. Complete alpha/RGB record and whole-color/RGB union views: 223/223.
+// All remain 1948/1937 bytes, first +0x5b, with every control unchanged. Original restored;
+// NOT kept: unmatched encoder or color representation; tint/UV homes and XMM5 blend lifetime remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

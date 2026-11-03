@@ -290,6 +290,11 @@ bool function_a7670(long object_index);
 // consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
 // Original consumed island index, signed live bound, indexed cleanup and complete body restored.
 // NOT kept: frame grows to 0x428 and every form regresses.
+// DL256: Existing cleanup provider, coherent definition/all declarations: inline/default 153,
+// forced/default 1456; ordinary/inline/forced cdecl 153/153/1456; stdcall 153/153/1456.
+// Ordinary/inline forms leave all controls unchanged. Forced forms grow to 1889/954 bytes,
+// frame 0x440 versus 0x424, and lose ten matched controls; NOT kept. All seven contracts
+// and original complete bodies restored; selector/island/count homes and admission BL remain.
 // @retail 0x278f00
 void function_278f00()
 {
