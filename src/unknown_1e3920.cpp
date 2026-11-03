@@ -703,6 +703,9 @@ real function_267370(long object_index);
 // before the class read / before the sample call / before the marker point / before the 0x229 flag 98
 // each (same code); typed vector fields for 0x29c..0x2c0 in the actor struct used directly 101, through
 // the up/left pointer locals 98 (same code). All restored.
+// Round 160 (fast 416 control, aligned 33): the zone helper's NONE tests as `(short)NONE` 416 (same code), the cluster test
+// as `(word)` against 0xffff 420 (0x11c120 3), the plane's x term product written the other way 416 (same code), both 420.
+// The helper is unchanged; the `(word)` form gives retail's immediate compare at the head, the lead if 0x11c120 can keep it.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
