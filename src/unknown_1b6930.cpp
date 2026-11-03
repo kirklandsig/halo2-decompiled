@@ -129,6 +129,9 @@ short __stdcall function_272af0(s_match_globals *structure, point3f const *point
 // Round 53 (lane 11, fast): a non-const definition pointer 2; the cluster chosen in an if/else 2; the
 // sign-bit test as `== 0` 2; a const direction pointer 2; the target type as a ternary 44 (687 bytes);
 // re-measured: +0x74 before +0x72 6, the copy as memcpy 2.
+// Round 79 (fast): the success stores in a forceinline taking the view and entry 2 (not keepable, one caller); a second view
+// pointer 2; the state value in a named short 2; a named found test 2; the test as a conditional expression 111 (699 bytes);
+// the definition read through an entry pointer 2.
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {

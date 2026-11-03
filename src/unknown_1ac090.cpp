@@ -775,6 +775,9 @@ bool function_1f8660(long arg_0);
 // prop test 7; the unit index declared then assigned 7; the reference compared against the global without
 // the copy 7; the side dot product scaled in its own statement's expression 7. Re-measured: the reference
 // test reversed (`!=` first, failure in the else) 137 (970 bytes).
+// Round 32 (lane 17, fast): the early `goto done` folded into the entry test 7; the slot cast at each use (no slot
+// local) 7; the 0x26c object index read once at entry into the later local 211; result and slot declared before
+// the actor 52 (968 bytes); the failure store through the actor local 206 (939 bytes).
 // @retail 0x1ad6a0
 bool __stdcall function_1ad6a0(long arg_0, s_slot *arg_1)
 {
