@@ -657,6 +657,13 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // the copy (not in place) 189 (1131 bytes); motion rotated from the particle's velocity into the copy 143
 // (1136); origin/result pointers declared before the rotation 42 (same code); scale first with the motion
 // rotated before the position 90; scale first with origin declared first 40 [36] (the 1.0 stores only).
+// M3 lane 14 r59 (fast, base 42): row i differs only in its second and third terms (ours left*y, up*z, forward*x;
+// retail left*y, forward*x, up*z); the copy's register mapping agrees (y EAX, x EDX, z ECX), only its order
+// follows the sum. The emitter definition formed inside the list block after the 1.0 defaults 56 (its address
+// then follows the list test); the particle copies after the particle-cache invalidation 181; indexed definitions
+// with scale first formed inside the list block 130 (1136 bytes); the first particle read from the emitter at the
+// guard and again for the loop 293 (1145 bytes); the position rotated through the existing
+// vector3f_rotate_into_axes, the motion through the shared helper 129 (1140 bytes).
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1524,7 +1531,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
 long function_155760(long index);
 bool function_17afd0(long effect_index, long value);
 
-// score 47 (was 73): frame 0x14, NONE/owner and Boolean stack homes agree;
+// score 47 (was 47): frame 0x14, NONE/owner and Boolean stack homes agree;
 // flag width, availability and view carriers remain.
 // Earlier: the availability flag written as `query(view) == 0` 102 (the
 // same code as the negation), the definition's bit 9 as (bool)(((dword)word >> 9) & 1) 128 (491
@@ -1680,6 +1687,13 @@ bool function_17afd0(long effect_index, long value);
 // at each use 143 (502); bit 9 as (bool)(((dword)word >> 9) & 1) 113 (500); owner declared before the effect
 // record 73 (same code). Retail: effect index EDI, view ESI, owner EBP, availability BL; ours effect index EBX,
 // record ESI, view EDI.
+// M3 lane 14 r59 (fast, base 47): retail's 498 bytes are ours plus the view reload after 0x17afd0 (6) less the
+// branchy availability set (2). The view global read at each use with availability false-then-set 142 (510 bytes;
+// availability spilled to a stack byte, same_view in BL, NONE in EBX, owner in ESI); that with the owner defaulted
+// to NONE at its declaration 139 (508); that with the availability as one `g != NONE && !query(g)` 123 (496; view
+// in EBP, NONE in EBX, availability in AL); the view local with availability false right after the view read and
+// set on success 131 (504; availability spilled, NONE in EBX, owner in EDI); the view local with one-expression
+// availability 125 (492). Every branchy availability form moves NONE out of EBP and the flag out of BL.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

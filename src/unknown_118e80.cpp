@@ -1165,6 +1165,14 @@ void __stdcall function_1e55d0(s_biped_physics_move *arg_0, void *arg_1, s_biped
 // test written into the flag-setter call 94; object flags read at each use (no snapshot) 156; the physics word at
 // 0xc0 read at each use 132; the requested up/forward copies swapped 98. The bool force flag still waits on files
 // other lanes hold.
+// M3 lane 14 r59: 0x1c4b00's last parameter as `bool force` (its `(byte)force` casts dropped, every declaration
+// changed) 44 plain at 1034 bytes: the 0x119bc0 result is then stored to its stack byte and pushed as a whole
+// dword as retail does, with 0x1c4b00 and all nine matched callers still matching (0xe24f0 648 -> 654). Not kept:
+// the declarations sit in files other lanes held this round (held change, BLOCKED-BY 0x1c4b00's declarations).
+// What remains at 44 is the scratch-register order of the forward copy into the object (Round 93's union forms).
+// On the current body (fast): the existing length_sq3f for the squared length 94 (same code: VC orders the
+// products itself); one physics-output pointer local for its six casts 94 (same code); up/forward pointer locals for
+// the stores and both 0x1e5af0 calls 289 (1042 bytes); the definition-flags pointer declared beside the tag 273.
 // @retail 0x118700
 bool __stdcall function_118700(long arg_0)
 {
