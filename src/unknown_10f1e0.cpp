@@ -2080,6 +2080,10 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
 // DH304: Existing bounds producer returns the following eligibility query, bool/byte/long/dword with forced/ordinary inline, 840/809/809/809/1057/1050/1050/1050.
 // Original helper contract and complete body restored; frame 0xcc/0xd4 and first converter expansion remain.
+// N333: Common terminal sample from start/set result, bool/byte/short/long,
+// entry false/guarded calls 773/773/779/777; branch-owned results 793/793/793/793.
+// NOT kept: one-use call-result/conditional-state locals and a retained branch test require a match.
+// The 773 previews recover retail length only; original body restored; frame/expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

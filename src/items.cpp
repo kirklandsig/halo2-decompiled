@@ -1613,6 +1613,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // copy written out field by field in an order picked from six by score). Shared point alone not
 // measured. Return-byte +0xe/+0xf and release/event loads remain.
 // N319: Inactive-parent default with late active overwrite, long/dword parent and bool/byte/short/long accumulator: 196/192/200/202/196/192/200/202. Original parent join and full body restored; return-byte/release/event homes remain.
+// N333: One captured object-activation predicate drives admission and parent selection,
+// bool/byte/short/long with conditional/branch parent producer: 193/193/195/194 in each graph.
+// Original parent join and full body restored; return-byte/release/event homes remain.
+// NOT kept: extra predicate/width-selected graphs remained unmatched and regressed.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
