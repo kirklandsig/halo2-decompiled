@@ -398,6 +398,9 @@ public:
 // (salt forms lose the frame: 0x8-0x0c against 0x14, location in EBX); location through its address with retest+salt 220,
 // plus indexed 221, retest only 118 (0x175270 21: the bool loses its register in the callee and leaves AL). Retail reloads
 // the location from its stack home in the link arm while EDI holds it only through the viewer loop.
+// B393: Integer allocation outcomes byte/word/long/dword, success then failure polarity,
+// reused by initialization/rejection: 102/107/106/106/102/107/106/106. NOT kept: no exact match;
+// original complete body restored. Child admission, pool/NONE ranks and salted link remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)
