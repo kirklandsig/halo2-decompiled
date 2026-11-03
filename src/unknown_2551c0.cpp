@@ -812,6 +812,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // reach 25/197/19/197/197; side maximum named, reversed, inline, lateral named or if/else 17 each. Guard shapes
 // without the unit local (early return, nested, all in one) 92 at 964 bytes: the argument stays in ECX (one
 // scratch rotation step behind retail). Body unchanged at 89.
+// Round 125 (lane 8, fast, on the rebuilt 17 form): length, projection, index and timing locals renamed so they
+// sort first or last 17/17 (names do not move the slots); the side vector as an initializer 17; the existing
+// dot helper for the 0.95 test 17 (same code), for the lateral dot 29; the two length guards joined (no
+// heading_length) 17; the type radius named 17; the object size read before the dot 194 (975 bytes); the size
+// local in the adjusted subtraction too 185 (970 bytes: it takes its own slot). Body unchanged at 89.
 // @retail 0x255740
 short __stdcall function_255740(long arg_0, s_slot *arg_1)
 {

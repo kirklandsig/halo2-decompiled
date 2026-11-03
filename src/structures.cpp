@@ -1090,6 +1090,11 @@ done:
 // Round 343: BSP/header/object-handle last-consumer scope subsets 1..7 each 125;
 // joint object-phase scopes with the existing availability helper 149 (440 bytes).
 // Original availability, workspace, exclusions and body restored; NONE/result/exclusion homes remain.
+// Round 125 (lane 8, fast with 0xd2a50): the guards as one positive test around the body with `return false`
+// after it 125; `retry = true` before the probe advance 125; `bool retry = true; while (retry)` 125; the
+// direction copied to a local for every use (diagnostic) 125; the exclusion preset false and set by an if 125;
+// an empty excluded arm with the model query and requery as its else-if/else 125 (same code each: the flag is
+// still threaded, the result keeps EBX and the direction no register). Body unchanged.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
