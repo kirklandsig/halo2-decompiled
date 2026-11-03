@@ -1345,6 +1345,9 @@ long function_2197f0(real gain);
 // F338: Aggregate gain with completed same-ambience, hold-rejection and attack-duration
 // terminal boundaries, seven subsets then all with disabled rejection: 183/195/187/195/187/189/189/188.
 // All restored; table/index entry and interpolation/hold-copy homes remain.
+// F340: Encoded/real scalar views for result/ducking field/both interpolation
+// endpoints, seven subsets then the complete aggregate view: 137 each.
+// NOT kept: unmatched scalar wrappers. Original types, helper and full body restored.
 // @retail 0x127010
 long function_127010(short class_index)
 {

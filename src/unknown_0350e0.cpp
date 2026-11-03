@@ -4471,6 +4471,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // DH299: Complete branch-owned fog maximum crossed with raw mode-eight gate,
 // per-use source-group fields and native payload-byte count: 142/193/142/193/234/217/234/217.
 // Original maximum producer and callback restored; late enabled stores, dead mode loads and clear convention remain.
+// F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
+// then gate versus complete admission: 218/218/228/231/210/210/242/247.
+// Every shared user regresses; original helper and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
