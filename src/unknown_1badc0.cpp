@@ -239,6 +239,13 @@ real normalize2d(point2f *arg_0);
 // Round 476: existing complete collision helper with common query-test result,
 // coherent-input/native-object/entry-point subsets: 303/298/303/298/303/298/303/298.
 // All lose three caller matches; original collision tail, observations and body restored.
+// Round 478: existing shared 2D producer with first/second/both initial planar
+// vectors, original/entry storage: 211/216/216/211/216/216; both with coherent
+// captured input, original/entry storage, 265/265. Second-vector planar storage
+// shrinks frame 0x90 to 0x8c. Original full vectors, observations and body restored.
+// P280: Standalone existing scalar getter feeding the inherited state store,
+// with every entry scalar/collision/adjusted-point declaration subset: eight forms
+// 221. Original getter expansion, scalar stores and full body restored; output/vector homes remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

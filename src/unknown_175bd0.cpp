@@ -1846,6 +1846,15 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
 // reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
 // with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
+// Round 123 (lane 8, fast with 0x178360): node-first merges `movsx edx, dx` upward because its else arm's index
+// takes EDX and its base EAX, where this order (and retail) has index ECX, base EDX. On node-first: the scale in a
+// local read before the marker 101; the node index through a local 101 (alone 9); the marker address by byte offset
+// 101; a reference to the else arm's position 101; a forceinline marker getter in the matrix arm, the else arm or both
+// 101/101/101 (alone 9/9/9); a matrix-arm base local 101 (alone 9). Diagnostic only: `> 0.0f` for the scale test (no
+// lahf) 193, alone 192: the matrix-arm base still avoids EAX, so the flags read does not explain it.
+// Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
+// the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
+// base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2074,6 +2083,12 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // Round 476: direct per-case placement rejection, case orders 0123/0213/1023/2013,
 // named/direct final multiplication query: 164/156/164/156/184/172/184/172.
 // Original placement-result lifetime, type-query block and complete body restored.
+// Round 478: complete native zone-entry/cluster/both/const-both values with
+// cached/live zone selectors: 379/375/375/375 in both sets. Every producer
+// outlines; original complete zone helper, observations and body restored.
+// M328: Post-transform node rejection by OR/conditional/branch/default-result,
+// bool then byte: 147/159/159/151/147/159/159/151. All regress; complete original
+// body restored. Early color/query homes and frame 0x40/0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2449,6 +2464,9 @@ event_done:
 // tested). With the root index: second test as `NONE != ...` 197; a bool helper for the first test 197;
 // `if (effect && effect->object_index != NONE)` 130 (retail's head and reload, but the reloaded index is
 // then cached in ESI for 0x1794a0 and NONE takes EBX); nested head ifs 130; tail reading the field 130.
+// Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
+// both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
+// tail object index at function scope 63. Original executable body restored.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2836,6 +2854,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order: velocity first 40; a compress local before the velocity copy 14, stored after location 21 (one-use local); velocity
 // pointer 40; matrix pointer in the attached sound call 23, with velocity first 40; position and forward pointers with
 // velocity first 40; node ternary in the argument list with velocity first 40; tag local with velocity first 40.
+// This round: function-scope direction and velocity 23; that with detached velocity before location 40;
+// compound velocity additions 23; the shared vector-add helper 23; a zero-initialized sound record 104
+// (1363 bytes); a sound location snapshot 26; sound velocity and combined snapshots 23 each. Original
+// body restored.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {
@@ -3184,6 +3206,14 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // Round 476: condition-owned location pointer, bool/byte/short/long tint,
 // cached/live mode: 93/98/99/99/108/108/111/109. Live-mode forms lose
 // the matched update caller; original location scope, carriers and body restored.
+// Round 478: single signed-node threshold in bool/byte/short/long storage,
+// cached/live mode, 111/111/111/111/97/97/97/97. Live threshold preserves the
+// matched caller but still regresses. Separate signed/bitwise tests on fields
+// or one native node word, cached/live: 94/109/105/113/94/109/96/115.
+// Original complete body restored; frame and system/color/definition homes remain.
+// M328: Post-transform inverse node admission, complement/OR in
+// bool/byte/short/long: 111/111/107/108/111/111/107/108. All regress; complete original
+// body restored. Frame, system/successor/color homes and cached mode remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
@@ -3457,6 +3487,10 @@ PRIVATE inline real effect_remaining_fraction_179880(s_effect_datum const *effec
 // Round 476: existing shared native point return, pointer/reference matrix and point
 // inputs, original/default-before-color scale: 340/340/340/340/277/277/277/277.
 // Both other shared users regress; original output contract, helpers and body restored.
+// Round 478: complete native coordinate snapshot with indexed conditional scaling,
+// long/short/byte ordinals and repeated scale observation: 387/402/402/387;
+// with default-before-directions scale 354/374/374/354. Both other shared point
+// users regress in every form; original complete helper and body restored.
 // @retail 0x179880
 void __stdcall function_179880(s_effect_datum *effect, long effect_index)
 {

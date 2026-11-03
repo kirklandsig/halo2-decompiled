@@ -269,6 +269,10 @@ static __forceinline s_object_visibility_header_ab *visibility_header_step(s_rec
 // Round 112: an object-list state pointer 14; a pool pointer shared by both passes 99, also with
 // the state pointer 99; nested first-pass flag tests 2; an entry-index argument carrier 2; an
 // object-index argument carrier after the first call 2; preincrement 2; a const indices pointer 2.
+// Round 123 (lane 8, fast): still BLOCKED-BY 0x109660: the caller matches whenever the callee takes the object index in
+// EAX and the entry index in ECX (reached only with probes or three failure arms, see that function's note; 0xb7060 0 in
+// each). Natural callee forms that keep its count do not reach it. The call's arguments are not swapped: that would pass
+// wrong values to our callee.
 // @retail 0xb7060
 void function_b7060()
 {

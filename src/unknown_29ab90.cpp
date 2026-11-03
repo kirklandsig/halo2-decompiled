@@ -267,6 +267,12 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // first) with the pointer copy 352; the magnitude helper's by-value input `vector3f const` 345 (same code); the query outputs
 // declared before the magnitude 345 (same code: homes follow lifetimes). Re-measured: the query output vector at function scope
 // 345; the three working vectors as struct copies 442 (1887 bytes); the planar helper zeroed in place alone 354.
+// DH297: Twice-used magnitude before independent position/query/initial-vector
+// producers at four native boundaries, then each with entry-owned query outputs:
+// 404/406/459/403/404/406/459/403. Original producer order, query homes and full body restored.
+// AC491: Forward-correction scalar result before fields/aggregate/setter vector publication,
+// default/complete arms; entry scalar with fields/aggregate: 352/354/352/354/352/354/352/352.
+// Original complete body and producers restored; native frame and homes remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

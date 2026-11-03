@@ -545,6 +545,12 @@ extern point2f *g_468778;
 // ESI/EDI/EBP, retail in EDI/EBP/ESI, and that rotation dominates the positional score. Restored.
 // Round 304: primary/secondary displacement production in all six uniform coordinate orders,
 // then primary-only/secondary-only kji: 375 each. Original stores and complete body restored.
+// Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
+// primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
+// early actor/settings/prop carriers and prediction homes remain.
+// AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
+// seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
+// guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -712,7 +718,7 @@ struct s_1aab51
 
 static __forceinline long real_to_long(real value);
 
-// score 382 (was 384): the frame and the length agree, and the early false exit's place, the
+// score 382 (was 382): the frame and the length agree, and the early false exit's place, the
 // object/magnitude homes and the query scalar homes still differ (one earlier round found no new form).
 // Round 53 (lane 11, fast): value fix kept: the trajectory call's origin is the actor's position and its
 // target the prop's position (retail passes the prop's point in EAX and the actor's in ECX, the registers the
@@ -848,6 +854,28 @@ static __forceinline long real_to_long(real value);
 // Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
 // dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
 // the object velocity pointer before the magnitude 381 (one count, not kept).
+// Round 318: Progressive returned admission at short-circuit boundaries, first/last/all flag
+// partitions in bool/byte, then first/last in long; 517/517/517/526/526/526/543/543. Original
+// whole body and helpers restored.
+// Round 331: Query and later planar directions share one consumed vector at
+// direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
+// each. Original workspaces, entry/result graph, query aliases and entire body restored; early
+// rejection and magnitude/query homes remain.
+// Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
+// Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// DL249: Coherent original-provider inline contracts, seven subsets, then all with an
+// earlier uninitialized result declaration: 466/440/507/382/466/440/507/507.
+// The isolated third contract ties; others lose matched callers. All declarations and bodies restored.
+// AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
+// branch-owned complement 437/437/448/453. Original result and whole body restored;
+// early rejection placement and magnitude/query homes remain.
+// N328: Readiness false producer at far entry versus only the non-action mode, bool/byte/short/long:
+// 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
+// readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
+// remain.
+// AC492: Complementary internal eligibility, test-produced bool/byte/short/long
+// 389/389/450/452; branch-produced complement 383/383/449/451. Original admission,
+// eligibility, query aliases and complete body restored; early rejection and magnitude/query homes remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {

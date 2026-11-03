@@ -379,6 +379,10 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 // z, y, d * scale, x and schedule the k row's first add before its third product, where the other planes
 // sum y, d * scale, z, x (one helper gives the same order everywhere); and the x-term operand order
 // (n.i or position.x loaded first) in plane 1 and the top/bottom planes (the diagnostic tests now agree).
+// Round 128: on the two-helper 6 diagnostic, generic one-expression distance 34; position array x 6;
+// normal array x 6; both array x forms 6; position pointer with array x 16; normal pointer with array x 14;
+// both pointers 12; plane3f input/output views 6. NOT kept: the separate top/bottom helper without a match;
+// original helpers and body restored.
 // Round 103: the existing matrix normal rotation 28 (same code); on the top/bottom 6 form, normal pointers
 // or a named normal i 14 each, source/matrix/output formal ranking 6, the final x product folded into the
 // store, normal-first or x-first reassignment 6 each, final i through source 6, all distance normals through
@@ -991,6 +995,9 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // P261: symmetric near/far coefficient captures, all six native component declaration
 // orders 269 each; joint row lifetime and immutable inputs 269/269 (1867 bytes).
 // All exact-only snapshots restored; coefficient preload, zero roles and projection homes remain.
+// P277: Actual margin/clamp/negated-vector/plane-array/denominator/distance/classification
+// scratch identities individually and together: 115 each, 1851/1851 bytes. Original names
+// and body restored; early coefficient preload, zero XMM and projection homes remain.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {

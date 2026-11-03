@@ -311,6 +311,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // Y522: Existing accumulator member/color-input capture/normalized-weight ownership, seven subsets
 // 350/616/596/421/420/685/685; complete overlap-safe color capture 1067 (fast control 336, full 324).
 // Original free accumulation helper, record layout and complete body restored; ESI/unit scheduling remains.
+// Round 57 (lane 11, fast control 336, full 324): green/blue products weight-first in the helper 336, colour
+// accumulation as its own inline 336, weight clamp as its own inline 336 (same code each); remaining as
+// `(1.0f - weight) * out->remaining` 337; the sample weight staged then pinned 406 (1845 bytes).
 // N315: Complete accumulated destination values, native/CRT before/after clamp,
 // 979 each (frame 0x90); complete RGB values in those four forms 790 each
 // (frame 0x54). Original helper and full body restored; full 324, fast 336.
@@ -318,6 +321,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // expression node/named span/named offset/both: 411/411/411/411/400/400/426/426
 // (fast control 336, full 324). Original observations, helper and body restored;
 // ESI/unit-constant/reciprocal and accumulation schedules remain.
+// DH308: Native accumulation clamp ordered/successive/complete-result/copied-result/zero-owned/
+// upper-first/original-input/nested-result graphs: 336/336/421/421/433/349/421/342 (fast control 336; full 324).
+// Original helper and body restored; ESI/unit-constant/reciprocal and accumulation schedules remain.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {

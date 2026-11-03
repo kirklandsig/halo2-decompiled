@@ -644,6 +644,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // 278/278/278; each with both native vector differences 297/297/297; complete point outputs
 // with native byte success, original/shared differences 358/366. Original helper calls,
 // result qualifier, includes and complete body restored; early root/actor ownership remains.
+// M323: Actual first-edge/second-edge/projection-field references, seven subsets and complete trace-element references, all 278. Original body restored; early root/actor ingress and vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

@@ -659,6 +659,10 @@ void hill_build_polygon(s_polygon_2be *hill, long index)
 // Round 133 (plain): loop index declared at the top 2; const-qualified parameters 2; half declared
 // before the count test 2; a field pointer for the steps 93 (136 bytes); the polygon test after the
 // if/else 27 (the restore pair unchanged in each).
+// Round 30 (lane 17, plain; earlier fast-only forms re-run because the reduced image gives 9 here): `(short)index + 11`
+// 2; step products as `32 * (i + 1)` and `32 * i` 2; the count stored as one expression and halved from the field 2;
+// the parity test as `== 0` 2; half declared at its assignment 2. Diagnostic: a float literal for the call's last
+// argument keeps the pair (it flips 0x281b60's pair).
 // @retail 0x2bdc70
 void hill_set(s_polygon_2be *hill, long index)
 {

@@ -1145,6 +1145,7 @@ void function_2118c0(void)
 // or dword/separate band 10/134. Original domains and body restored; partial
 // scaled induction remains. Earlier short/long/word screens excluded these domains.
 // Round 469: Disjoint band/knot bit composition, seven wrapped-row subsets and all five rows: 134/134/134/104/104/104/103/190. Original row sums restored; scaled induction remains.
+// Round 87: output from row 150; output from p1 / p1 from output 194/194; word band and a separate unsigned second-pass band 10/10; band != 3, <= 2 and prefix increment 10 each. Original body restored; partial row induction remains.
 // @retail 0x211cc0
 void function_211cc0(void)
 {

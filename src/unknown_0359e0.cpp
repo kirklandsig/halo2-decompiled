@@ -225,6 +225,8 @@ PRIVATE inline long swizzle_log2(dword value)
 // Round 526: Repeated whole-nibble/byte logarithm scans with threshold/window tests and
 // long/short counts 134/134/135/135/136/136/135/135. Original helper/body restored;
 // delayed coordinate promotion, height/common homes and minimum branch remain.
+// M321: Consumed x/y/both coordinate suffixes, private/shared logarithms, then both native short formals
+// 82/82/82/87/87/87/130/119. Original body restored; early promotions, height/common homes and minimum branch remain.
 // @retail 0x358d0
 void function_358d0(short width, short x, short y, short height, dword *out)
 {

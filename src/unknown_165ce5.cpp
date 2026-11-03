@@ -1658,6 +1658,16 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // Round 476: native pooled-user reference through the existing getter, with
 // unit/iteration-weapon/weapon-object reference subsets: eight at 220 fast
 // (control 220, full 218). Original object roots and complete body restored.
+// Round 478: one native weapon-array pointer with an ordinal derived from its
+// real array position; long/short/dword/word ordinals and !=/< end tests give
+// 455/475/455/475 in both sets (fast control 220, full 218). Original index
+// traversal and complete body restored; frame, unit/mode and look homes remain.
+// AC485: previous-angle input assignment/scalars/memcpy/memmove at branch/user scope:
+// 453/220/453/469/453/220/453/506 fast (control 220, full 218).
+// NOT kept: one-use input captures without a match; original body and smoothing inputs restored.
+// AC489: Inactive history, mismatching idle class and idle-motion rejection first, seven
+// phase-ownership subsets: 236/254/220/270/236/254/270; all with nested countdown admission 270
+// (fast control 220, full 218). Original body restored; frame, unit/mode and look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
