@@ -1187,6 +1187,9 @@ void __stdcall function_43720(s_43740_input *input)
 // readonly aggregate/sparse library copy, count from published request 79/105/105/79;
 // count from producer header 81/105/105/81. Extra producer forms require exact
 // equality; all restored. Entry tag/EBP split and signed-slot/shader homes remain.
+// Y547: Fresh submitted identity reassigned to the original tag, with shader-relative
+// normal/two-use signed count/direct position masks 0..7: 62/67/64/66/62/67/64/66.
+// Exact-only field-result forms restored; early tag/EBP and signed-slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
