@@ -283,6 +283,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
 // 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
 // written y first 92. Original normalizer and body restored; early Y load remains.
+// Round 79 (m3 lane 9, fast): the reaches flag declared after the other locals 92; distance declared before
+// direction 92; sqrtf in the normalizer 156 (634 bytes); the normalizer plain `static inline` 92; the ancestor
+// walk as `while` with the step at its end 92 (all 92 forms same code). Early Y load still missing.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)

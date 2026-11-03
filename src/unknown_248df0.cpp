@@ -177,6 +177,10 @@ PRIVATE __forceinline real function_248df1(long arg_0, void *arg_1, void *arg_2,
 // 2/2/2; first/second/both native word-channel inputs 2/2/2; case-11 value fraction
 // 155; complete immutable remainder/result arms 164. Original whole body and helpers restored;
 // case-12 i/j projection scheduling remains. One-use field carriers NOT kept without a match.
+// Round 133: force-inline dot/displacement declarations 2/2; two-use time pointer 2; shared
+// projection accumulator 2; effect-table pointer in case 9/10/both 2/2/2 (NOT kept: one-use
+// locals without a match); explicit fraction truncation 2; result declared last/middle 2/2.
+// Opening helper graph and complete body restored; the same two case-12 operands differ.
 // @retail 0x248df0
 real function_248df0(long arg_0, void *arg_1, void *arg_2, void const *arg_3)
 {

@@ -1479,6 +1479,9 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // consistent with retail loading the handle first). On the 7 form: permuter 54 tries, none below 7;
 // `bool written = resized;` cleared when the count != 0x800 7; `s_file_write_flags(false)` 7; `sizeof` for
 // the size and the count test 7; `handle[0]` 7. All restored to the 33 body.
+// Round 127 (lane 8, fast): `if (read) { valid = true; ...` 103 (932 B; the header-read tail then matches retail,
+// ESI = 1 and threaded); read result and range test in one condition 33; range test as nested ifs 33; `valid` at
+// function scope 33; write count declared before `resized` 33; validity array by initializer 263.
 // Lane 17 r37 (fast): bytes_written renamed write_count 33; prefixed names in both orders (diagnostic) leave the
 // size/count slots unchanged; the header-read validity test merged with the slot-range test 33; bytes_written declared
 // beside size, after or before it, 33/33 (slots do not move); `valid` declared at the loop top 33. Body restored.

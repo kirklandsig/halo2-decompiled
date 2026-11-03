@@ -564,6 +564,11 @@ void c_turret_entity_definition::v21(s_entity *entity)
 // attach (re-measured) 80 (158 bytes: retail's BL and branches, the header address still shared); the validity
 // test written `object_index != NONE` beside the long result 76 (189 bytes); the entity's index and the local
 // assigned in one chained statement 49 (same code).
+// m3 lane 11 r62 (fast): bool result false first, `result = true` right after the attach (retail's BL
+// sequence) 77 re-measured (160 bytes: EBP then caches the last argument for both virtual calls); with the
+// header flag tested through a bit-field view of the header's flags byte 77 (same code); the result set
+// after the value call 79; the entity's stored index at every use 82; the result set before the attach 72
+// (176 bytes).
 // @retail 0xa5a60
 bool c_object_type_definition::v22(s_entity *entity, long b, s_entity_info *info, long d, long e, long f)
 {
