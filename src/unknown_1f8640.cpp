@@ -543,6 +543,11 @@ struct s_1f8a70_actor
 // B381: complete existing path-query record begun at scratch/case/route/destination/reset/unit/actor/entry
 // phases 228/228/228/228/228/228/228/228. All tie; NOT kept: grouped homes require an exact match. Original frame 0x84,
 // pool/data scheduling and unit-output/result packing remain.
+// Round 139 (m3 lane 6, fast, control 228): retail's result byte and unit_mode share frame +2 (the result is
+// the low byte of unit_mode's slot), so their scopes are disjoint in retail. The reset stores through `actor`
+// instead of a fresh lookup 431; the unit index read inside the 0xe70b0 call 232; the route initializer as
+// `actor->unknown229 != 0` 228 (same code); as `route_mode = 0; if (...) route_mode = 1;` 265 (1660 B);
+// the route initializer before the unit index 232.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {
