@@ -920,6 +920,10 @@ extern vector3f *g_4687b0;
 // subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
 // All shorten away from retail; original body restored. Frame 0xcc agrees;
 // definition/index/direction homes and offset/SSE scheduling remain.
+// N332: Complete scalar offsets / shared spread complement / existing speed scale,
+// seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
+// Original fields, scalar producers, vector operations and full body restored;
+// frame 0xcc and tag/index/direction spill and SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)

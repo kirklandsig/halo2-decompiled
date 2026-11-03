@@ -501,6 +501,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
 // then coherent complete scratch names: 182 each. Initializers and observations never moved;
 // original body restored. Entry/index spill and center/query/bound homes remain.
+// N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
+// graphs with chained or independent count/capacity producers: 182 each. Original
+// types and body restored; entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

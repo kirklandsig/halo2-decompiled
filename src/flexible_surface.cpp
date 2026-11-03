@@ -518,6 +518,9 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // P277: Actual time/fraction/envelope/angle/projection/wave/strength scalar home names,
 // individually then all seven: 117 each, 880/880 bytes. Original names/body restored;
 // seed/time and direction/cross residence remain, frame 0x28 versus 0x20.
+// N332: Native clock-value and initial weighted-fraction producers, seven subsets
+// then all immutable: 117 each. Original entire body restored; frame 0x28/0x20,
+// seed/time scheduling and direction/axis/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

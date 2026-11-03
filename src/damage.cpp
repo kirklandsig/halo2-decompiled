@@ -1113,6 +1113,10 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // P280: Existing cone squared-length helper, complete unit-length error and
 // clamped-dot expression boundaries, seven subsets 286 each; all with consistent
 // direct cone addresses 286. Original body restored; geometry homes and cone ranks remain.
+// N332: Common selected node-center source, branch/conditional selection with
+// native copy/memcpy/memmove/shared setter: 344/344/358/390, repeated for each
+// selection. NOT kept: source-pointer admission fails exact agreement and all
+// extents move away from retail. Original center producers and full body restored.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {
