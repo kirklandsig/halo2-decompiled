@@ -540,6 +540,10 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // DH303: Real eight-byte node metadata record with memcpy/aggregate transport
 // and long/short/int/word link counts 295/305/366/367/295/305/365/367. Original
 // layout and body restored; extra output cursor, initial zero and flag homes remain.
+// B383: Predecessor retained only as its short/long index, direct array fields or
+// a branch-local multi-use receiver, crossed with long/short link count:
+// 294/391/378/399/295/373/382/386. NOT kept: the 294 form gains one point; retail retains
+// both predecessor histories; wide forms lose the matched caller. Original body restored; frame/flag homes remain.
 // DH312: Native coordinate-array projection with long/dword/short/byte ordinals
 // 295/295/335/335; with both complete distance-delta array producers 296/296/451/451.
 // The two narrow complete-delta forms also demote the parent. Original scalar producers,
@@ -987,6 +991,9 @@ bool function_2715a0(byte *buffer)
 // DH303: Fresh projection numerator/denominator and native entry receiver,
 // producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
 // One-point reductions rejected; original body restored; state/scalar/root homes remain.
+// B383: Native branch-updated radius/pruning maxima and attraction minimum,
+// seven subsets, then the complete conditional projection clamp:
+// 488/502/486/504/488/502/504/504. All tie or regress; original scalar producers and body restored.
 // DH312: Actual coordinate-array midpoint, long/dword/short/byte ordinals
 // 579/579/591/591; paired projected-point array production 579/579/508/508.
 // Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;

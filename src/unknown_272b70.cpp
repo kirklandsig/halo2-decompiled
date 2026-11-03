@@ -2715,6 +2715,9 @@ struct s_scenario_scripting_view
 // body restored; actor/set/counter homes and guarded data observation remain.
 // DH304: Uninitialized displacement/resolved-point/metric workspace at entry/admission/pre-actor/search, two lexical priorities, 80/80/80/80/80/80/80/80.
 // Original output scopes and complete search restored; actor/counter/set homes and guarded data observation remain.
+// M334: Native outer-data-count/admitted-set-count/admitted-set-table observations,
+// seven subsets 80 each; all with loop-owned original short counter 87.
+// Exact-only one-use captures restored; actor/counter/set homes and early data read remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

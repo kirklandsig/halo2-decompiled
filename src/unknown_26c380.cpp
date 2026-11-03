@@ -277,6 +277,9 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH303: Common first-endpoint producer, native orientation/vertex-table ownership,
 // and planar memcpy 465/467/449/440/413/406/388/392. NOT kept: all lose four matched
 // callers. Original body restored; normal/planar homes and byte/output tails remain.
+// B383: Standard forward/backward copy of the genuine two planar components,
+// each with long/bool/byte/short success: 432/550/529/437/432/550/529/437.
+// NOT kept: all forms lose ten matched callers and regress; original scalar transfer, result and whole body restored.
 // DH312: Terminal-point actual component-array loops with long/dword/short/byte
 // ordinals: streaming 478/478/549/549; complete native point publication 537 each.
 // NOT kept: every form regresses the other matched helper user. Original shared
