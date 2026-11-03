@@ -4651,6 +4651,9 @@ struct s_damage_object_creation
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.
 // Native handle/offset and detached-mask homes remain unresolved.
+// AC499: Complete scaled header-offset ownership / native definition fields / native basis fields,
+// seven subsets then split offset declaration: 174/174/174/174/174/174/174/174 (808/808).
+// Original data layouts, observations and complete body restored; handle/offset and node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

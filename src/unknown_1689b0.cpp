@@ -1687,6 +1687,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 528: paired radius result selections, point-before-nearest commit and both
 // 552/552/552; with long accepted counts 572/572/572; both with
 // independent sums 594; independent sums and long counts 578. Original whole body restored.
+// AC499: Both count-zero producers after query, word/short/long/dword, declarations
+// at producer or uninitialized before query: 552/552/572/585/552/552/572/585. Query zero stays EBX;
+// original counters, producer boundary, geometry, helper and complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)
