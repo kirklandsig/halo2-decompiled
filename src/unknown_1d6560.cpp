@@ -215,6 +215,10 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
 // with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
 // forms lose the matched caller; original observations, body and convention restored.
+// F344: Actual object-getter acquisition before handle/body/result/main dispatch,
+// repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
+// one-use getter pointer and early object-pointer read; several forms also lose
+// the matched caller. Original body, both observations and caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {

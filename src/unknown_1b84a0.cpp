@@ -528,6 +528,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
 // Round 544: Comparison/true-first/false-first common function exit and
 // true-first early exits, with live prop fields or a twice-used prop handle:
 // 267/112/270/287 twice. Original entry/result and complete body restored.
+// P282: Actual named readiness field, twice-used prop handle and both 49; positive comparison-result
+// work graph, alone/with each and both, 267/267/267/267; compound positive admission 267. Original
+// observations/result graph restored; table/AL, marker setup and tail roles remain.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

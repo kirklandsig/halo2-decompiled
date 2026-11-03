@@ -272,6 +272,17 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC488: first-query positive index/tag/duplicate admission subsets 1/2/4/3/5/6/7,
 // then capacity break in the bounded query: 866/866/866/924/866/866/924/924. Original graph and body restored;
 // entry zero, target/primary/query-array homes and choice carriers remain.
+// AC493: Dispatch-owned primary/target-count defaults and provider-filled query output,
+// subsets 1/2/4/3/5/6/7 then conditional primary result: 963/937/915/924/923/951/915/915.
+// All original defaults, counts, helpers and body restored; entry zero and query/count homes remain.
+// Round 379: Actual audible admission/choice-muted default/exhaustive detail result, subsets
+// 1/2/4/3/5/6/7, then complete audible index arms: 913/869/866/916/913/869/916/905. NOT kept: no
+// exact match for added test-owned outputs. Original body and logarithmic producer retained; entry
+// zero/query/count homes remain.
+// N332: Actual integer/floating decibel views at choice transfer/attenuation/datum
+// publication, subsets 1..7 then readonly completed target: 866/866/866/875/875/875/875/875.
+// Native datum constants reach 3327 bytes
+// but regress. All record types, helper stores and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)
@@ -692,6 +703,10 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // Round 487: Whole-listener eligibility/cue continuations, separately/together 150/150/150;
 // each with pre-primary camera formation 200/200/200; separate active/index admissions
 // with either continuation 150/150. Original complete control graph and body restored.
+// F342: Angle zeros through library-before/aggregate-before/library-fallback/chained-fallback, then
+// each with transition last-use scope: 281/159/159/147/281/159/159/147. NOT kept: no byte match;
+// original complete body and every helper restored. BSP/count homes and camera/publication scheduling
+// remain.
 // Round 490: Pre-query native defaults for indices/portals/clusters, subsets 1..7,
 // then complete library defaults: 293/292/309/293/309/309/322/319. NOT kept:
 // retail repairs after the query; all regress. Original complete body/helpers restored.

@@ -640,6 +640,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // copies, next index early or late and named values: the rotations never get closer than row i's up/forward
 // pair (score 20 of 65 ops against 22 now); indexed with scale first and the mask at each use has the current
 // rotations but the integer homes turn over (232, round 61).
+// Round 343: Native property-bit views, alpha/color/scale subsets 1..7 with Boolean conversion
+// 124/224/229/42/124/224/229; all bits tested directly 199. Original real flag storage,
+// all six observations, shared rotations and complete body restored; offset/default/reload and row-i schedule remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

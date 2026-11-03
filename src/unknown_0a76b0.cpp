@@ -312,6 +312,10 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // 351/293/168/336/350/307/331/343. NOT kept: the shared hand callback selector 168 (plain),
 // first +0xb0 and frame 8, raises caller 0x111650 from 666 to 713.
 // Original body restored; incoming unit/name/actions ranks and shared-call threading remain.
+// P282: Active word captured only after nonzero count, dword/long with consumer/case storage: 271
+// each; each with the shared hand-callback argument 168 at 1168/1155. NOT kept: all shared-hand forms
+// raise caller 0x111650 from 666 to 713. Original complete body and observation points restored;
+// incoming ranks and shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -920,6 +924,13 @@ extern vector3f *g_4687b0;
 // subsets, then all with parent addition: 376/366/328/425/338/353/412/436.
 // All shorten away from retail; original body restored. Frame 0xcc agrees;
 // definition/index/direction homes and offset/SSE scheduling remain.
+// AC493: Player-only second direction copy, native/CRT, with original/first/second/both
+// shared crosses: 328/327/327/328/328/327/327/328. Every form grows frame to 0xd8
+// versus 0xcc; original copies, crosses, nested offset expression and complete body restored.
+// N332: Complete scalar offsets / shared spread complement / existing speed scale,
+// seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
+// Original fields, scalar producers, vector operations and full body restored;
+// frame 0xcc and tag/index/direction spill and SSE schedules remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1455,6 +1466,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
 // 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
 // second entry unit load, table/hand homes and downstream scheduling remain.
+// Round 379: Twice-used animation result byte/char/short/long, at its producer then entry storage:
+// 95/95/142/146/95/95/142/146. Original Boolean result and complete body restored; entry pool/hand
+// and second unit load remain.
 // P280: Native object-type predicate byte/char/short/word/long/dword storage
 // 95/95/109/109/108/108; Boolean declarations at observation/before companion test
 // 95/185. Original complete body restored; entry lookup and hand homes remain.
@@ -1856,6 +1870,12 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // N330: Native weapon reference, complete header-array capture and request-view reference,
 // seven subsets then full-width mode result: 60/114/114/60/60/114/114/103.
 // Header capture changes entry shape; original pointers, observations and complete body restored.
+// P282: Complementary mode admission bool/byte/short/long in its original block, then entry
+// uninitialized storage: 99/99/104/105 twice. Original positive mode result, cases and body restored;
+// request/weapon homes and player-getter expansion remain.
+// M329: Independent request/weapon/result/modes declarations separated from their
+// original producer assignments, orders rpwm/mpwr/rmpw/prmw/wrmp/wmpr/mrwp/mwpr:
+// 60/60/60/60/60/60/60/60. Original initialized declarations and complete body restored.
 // @retail 0xe9000
 bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *request)
 {
