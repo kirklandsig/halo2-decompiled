@@ -360,6 +360,9 @@ struct s_block_candidate
 // Original arithmetic, clock observations and full body restored; missing frame dword,
 // page/ring ownership and policy placement remain.
 // NOT kept: weighted storage/clock forms tie and retain the deficient frame.
+// Y556: One busy-callback pointer observation at occupied/segment/admitted/entry scope,
+// short-circuit/guarded result on original timestamp graph: 347/347/347/347/358/358/358/358.
+// NOT kept: no qualifying gain or missing-frame recovery; original body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

@@ -299,6 +299,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // planar components captured in named reals before 0x29b2e0 (diagnostic) 380 (1906 bytes, frame 0x5c);
 // all three working vectors as whole-struct copies 442 [406] (1887 bytes, frame 0x60); the working vector
 // alone as a whole-struct copy 449 [421] (1884 bytes, frame 0x60).
+// Y556: Zero-initialized discarded query vector, aggregate/library-clear/shared setter/
+// chained fields at query/entry scope: 345/345/345/345/345/345/345/345. NOT kept: added local initialization
+// fails byte agreement; original uninitialized output and complete body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)
