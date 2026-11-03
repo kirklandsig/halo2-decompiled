@@ -226,6 +226,11 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // ahead, 750 (identical code: scope does not shrink-wrap it); the half factor as a float product 806
 // (3505 bytes); the side offset as `0.0f - local_23` 750; the lateral default as an assignment and an
 // if 809 (3505); the last output copied from the 0x66c store 780 (3518).
+// Round 54 (m3 lane 14, fast listed with 0x1f9e70/0x110ab0): the first steering-flag arm setting true in its own
+// else (retail sets the flag per path and its false paths share one `xor al, al`) 810 (3506 B); the offset point
+// as local_24 * component 750 (same code); a named perpendicular { -j, i } of the normalized heading at its three
+// uses (retail computes the negated j once, right after that normalize) 832 (3514 B), declared after the
+// normalize 832; direct input 804 (3499 B). Original body restored.
 // Round 64 (m3 lane 1, fast): normalizer test on `fabs(length)` without the double cast 750; dual double casts
 // in the squares 750; normalize3d's shape (length zeroed in an else, one return) 798 (3499 bytes: retail's float
 // epsilon and zero store, but our squares still keep i/j/k on the x87 stack where retail multiplies from the copy's

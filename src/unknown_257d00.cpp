@@ -2304,6 +2304,9 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
 // then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
 // cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.
+// Round 64 (lane 10, fast only, under a builds-differently CAVEAT, so these are not plain scores; control 485, full 469): retail's case table order is 1, 2.., 4, 7/8, 0, 13 (the exit), 5, 9, 10, 12, 11, 6, 18, 21, 14, 20, with the tail after case 0 and the sete
+// shared by every `== 0` result. Case 14 moved before 20 491 (2400); with `!(distance > 1.f)` 615 (2396, masked aligned 101); that comparison alone or as an if 622 (2384, masked 94, retail's
+// comiss with the memory constant); an explicit case 13 before 5 485 (same code); command before actor 614; the result first 502 (frame 0x20).
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

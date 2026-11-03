@@ -1677,6 +1677,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
 // at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
 // Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
 // Round 83 (m3 lane 12, fast control 220, full 218): look_yaw/look_pitch declared after mode, at function
 // scope, or at their assignments 220 each; mode declared before the unit and assigned after it 220; the
 // pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads

@@ -1440,7 +1440,7 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 420 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1737 bytes against 1746.
+// score 418 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1676,11 +1676,22 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // bool/byte/word/long: 420/420/405/429/428/428/458/435. Word preservation 405 at 1755/1746,
 // frame 0x114 versus 0x10c. NOT kept: unsupported flag width/frame growth; no byte match.
 // Original full body restored; radius staging, persistent zero and metadata homes remain.
+// Round 64 (lane 10; aligned = difflib, masked = registers and stack offsets ignored): value fix from retail's two slots: 0x26ccb0 and 0x2c3030 take the unexpanded
+// radius (E+0x2c, through EDI), 0x2c2740 and 0x2c2910 the expanded one (E+0x30, through XMM6/XMM7), which gives retail's `mov; mov; fld`: 420 -> 418 (kept as a value correction).
+// Not kept: the first corner result in the scan's flag (retail's one byte slot) 418; that with a second `edge = 0xffff` at the typed scan hit 380 plain (masked 62, 1752, frame 0x114): retail has
+// that `mov ebx, 0xffff`, but it stores the value edge already holds; on the 380 form z in a local 416 (1751). Further forms on the 380 body, none kept: side flipped
+// in place frame 0x10c, 436 (1715, masked 70); with an out-point pointer 457 (1725, masked 54); with both conversions nested 440 (1752, masked
+// 55, retail's tail copies; a helper's shape written out); z local 442 (masked 53); origin y through the query first 487 (masked 68); used long
+// 482; long candidate 431 (1758, exact aligned 210: entry zero EBX, count SI, y first as retail, but candidate/NONE registers differ); long end 484,
+// both long 476; count through its address, const reference or local copy 440 (same code); edge outside the loop, dword edge, order of the top
+// assignments, candidate while/decl forms, scan compare against type/next/step 440 (same code). Root left: our count CSE holds EBX through the
+// scan where retail's edge lives in EBX and count is read from memory; retail's dead `query+4` store shares the location's slot.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
 {
-    real radius = (real)(query->source.radius + 0.05);
+    real source_radius = query->source.radius;
+    real radius = (real)(source_radius + 0.05);
     s_pathfinding_data *data = *(long *)((byte *)g_4e0348 + 0xc4) > 0 ?
         *(s_pathfinding_data **)((byte *)g_4e0348 + 0xc8) : 0;
     if (data)
@@ -1730,7 +1741,7 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                             break;
                         s_avoidance_trace trace;
                         if (!function_26ccb0(data, 0, NONE, &origin, sector, points[candidate].node_index,
-                            &direction, radius, distance, false, candidate == count - 1, false, &query->location, &trace))
+                            &direction, source_radius, distance, false, candidate == count - 1, false, &query->location, &trace))
                             break;
                         edge = trace.edge;
                         next = candidate;
@@ -1749,9 +1760,9 @@ void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_vi
                         {
                             point2f corners[2];
                             bool left = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                                &origin, radius, edge, true, &corners[0]);
+                                &origin, source_radius, edge, true, &corners[0]);
                             bool right = function_2c3030((s_pathfinding_data *)query->pathfinding,
-                                &origin, radius, edge, false, &corners[1]);
+                                &origin, source_radius, edge, false, &corners[1]);
                             if (right && left)
                             {
                                 point2f const *previous = next > 0 ? (point2f *)&points[next - 1].point.point :

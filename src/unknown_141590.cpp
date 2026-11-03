@@ -334,6 +334,9 @@ static inline void quaternion_transform_vector(
 // Round 85 (m3 lane 12, fast): the initial dot as the existing dot3f(a, b)/dot3f(b, a) 205/205 (1326 B); the transform
 // helper's dot as dot3f(q, v) * 2/dot3f(v, q) * 2 246/246 (1308 B); the clamp as one nested ternary 297 (1317 B, first
 // +0x0); the halves through sqrtf 249 (1309 B). Original body and helper restored.
+// N343: Complete cross first-product/subtraction lifetimes, vector/scalar storage crossed
+// with shared dot and independent halves: 210/261/203/270/266/251/257/243. Original helper/body restored.
+// NOT kept: no qualifying gain; native frame/quaternion/cross spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1059,6 +1062,11 @@ void function_143250(
 // (result, rotation, coefficients, order), retail's call-setup order, 1766 (same code); rotation reads in index order
 // 1784 (10754 B); `result[0] = coefficients[0];` first 1766; term_9 read before the matrix pointer 1766; the workspace
 // struct as plain locals and a 49-real array 2228 (10304 B, frame 0x300). Body and parameter order restored.
+// Round 47 (lane 15, plain): nested single-exit order tests 1766; matrix read directly on the workspace, no pointer, 2027 (10501 bytes,
+// frame 0x304); term_10 dropped 1766; term_9 in the workspace 1777 (10791, frame 0x318); first two workspace terms swapped 1766.
+// N343: Real storage for both second-band roots, each third-band root, all third-band roots
+// and all roots: 1762/1766/1766/1766/1769/1766/1769/1769. Original double roots and full body restored.
+// NOT kept: unmatched precision/storage changes; native frame/input/basis homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

@@ -1515,6 +1515,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
 // then all with completed state selection:
 // 95/95/95/95/95/95/95/95. Original complete executable body restored.
+// P289: Twice-used animation channel long/dword/short/byte at its producer, then
+// entry-owned declarations: 130/130/128/133/130/130/128/133. NOT kept: native recomputes the channel and
+// no exact match. Original body restored; early pool/hand and second unit load remain.
 // Round 83 (m3 lane 12, fast): diagnostic only (reverted at once): a long hand read through a
 // volatile pointer to its home 198 (590 bytes): retail's hand store does not explain the second entry
 // load, VC still shares one unit load. `long has_other = function_cbd50(...) != NONE` 95 (same code);
@@ -4689,6 +4692,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // Round 546: Early point input/output workspace; native/library input, position/world
 // inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
 // NOT kept: 45 extra bytes and no match. Original complete body restored.
+// B386: Plain actual component-array up/frame-axis/frame-position copy subsets 1/2/4/3/5/6/7:
+// 266/211/206/266/256/215/270; all with real late relative output 295 at 1425 bytes. Original native copies,
+// output lifetime and full body restored; frame and basis/point homes remain.
 // Round 83 (m3 lane 12, fast): 0xee090's own form, the untransform into a `point3f local` copied to the seat
 // after the second 0x11d820 and before the quaternion copy, gives retail's 0x11c frame and every retail slot
 // (position at +0x24, orientation +0x30, actions +0x40) but 201 at 1406 bytes: the away scale's XMM colouring
