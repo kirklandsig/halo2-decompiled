@@ -571,7 +571,7 @@ bool function_101380(long weapon_index);
 bool function_1013e0(long weapon_index);
 bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const *vector, long ignore_object_index,
 	long ignore_unit_index, s_collision_result_1697c0 *result);
-bool function_bc380(long object_index, long block_offset, long size, long a);
+bool function_bc380(long object_index, long block_offset, short size, long a);
 void __stdcall function_10f260(long unit_index);
 void function_114ec0(long unit_index, long a);
 bool __stdcall function_cd7b0(long unit_index, long weapon_index, bool *modes);

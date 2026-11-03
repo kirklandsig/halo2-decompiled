@@ -1096,6 +1096,10 @@ bool function_14ed80(void)
 // or direct: player first 10, first before player 52. Pointer + NULL test 20; pointer from a ternary
 // 25 (167 bytes); bound test nested 8; clamp's >= arm first 16; clamp as one ternary 40 (169 bytes);
 // index zeroed first 45; >= arm + pointer 28; zero + pointer 37.
+// Round 126: the existing shared remap helper 8, with inline or force-inline declarations 8;
+// primary/third output-parameter locals 8/8; const output parameters 8; const globals/player
+// pointers 8/8; one count snapshot 58 (169 bytes, caller convention changes); appearance <= NONE 10;
+// lower bound > NONE 13 (166 bytes). Original body restored; globals/first ESI/EDX remain.
 // @retail 0x14f040
 void player_get_representation(long player_index, long *field_b4, long *third_person)
 {
@@ -1679,6 +1683,9 @@ struct s_unit_player_assignment
 // makes the same 0x1682bf call with our schedule.
 // Round 135: `inline` on 0xb58c0, 0x1872d0, 0x1682bf, 0x13ac42, all four: 17, 17, 17, 17, 17; the
 // existing remap helper directly in the 0x1682bf argument list 17, through a local 17.
+// Round 125: direct player subscript 17; typed getter at the second lookups 17 and at all four 17;
+// const unit_index 17; const player_index 17; unit renamed assignment 17; chained latch reset 19;
+// engine-globals getter 17; unsigned old-unit target 17; const player pointer 17.
 // @retail 0x14cad0
 void function_14cad0(long player_index, long unit_index)
 {
@@ -3093,6 +3100,10 @@ struct s_unit_flags_14d8b0
 // statement and 66 pairs; real build: ten statements) leaves the pointer in EDX or EAX, never ECX.
 // One options pointer variable reassigned before the last two tests, the last three, all four, declared at function
 // scope for the last two 9/9/9/9; a named pool pointer for the root walk 120 (1303 bytes).
+// Round 91: second slot block with both engine globals direct, slots direct alone, engine test
+// direct alone, root walk through object_header_get, late options pointer, second engine result
+// pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
+// All leave +0x304 and the same scratch choices; original helpers and body restored.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {
