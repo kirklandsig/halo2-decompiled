@@ -267,6 +267,10 @@ bool function_a7670(long object_index);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
 // continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
 // index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// M343: Native input-body cursor, retry/island declaration and mutable/read-only slots:
+// consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
+// Original consumed island index, signed live bound, indexed cleanup and complete body restored.
+// NOT kept: frame grows to 0x428 and every form regresses.
 // @retail 0x278f00
 void function_278f00()
 {
