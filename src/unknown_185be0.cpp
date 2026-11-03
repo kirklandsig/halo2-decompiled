@@ -378,6 +378,9 @@ union s_185be7
 // masks 1/2/4/3/5/6/7, then byte held input: 751/698/986/739/1008/980/990/990.
 // NOT kept: extra old-value/common latch stores lack the native conditional shape.
 // Original complete body, helper calls, stores and all input observations restored.
+// Round 127 (lane 8, fast): entry test inverted with an empty then-arm 992; range fraction zeroed in an else arm
+// 948; exponent field read at each use 809; lower bound read at each use 927; clamp helper as two independent
+// ifs 690 (same code).
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

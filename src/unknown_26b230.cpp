@@ -2007,6 +2007,9 @@ void function_269250(long clump_index, long actor_index);
 // excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
 // exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
 // remain.
+// Round 127 (lane 8, fast; body 89 fast): the walk as a `for` loop with the call in init and step 343, with the
+// in-arm compare 339 (624/625 B); in-arm with the score at function scope 126; in-arm with the previous clump read
+// once into a local 144 (plain 140); in-arm with the team test's operands swapped 126.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2273,6 +2276,10 @@ void function_269250(long clump_index, long actor_index)
 // original whole-group result, categories, deletion, node and tracking walks restored.
 // DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
 // Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
+// Round 127 (lane 8, fast): the cleared-prop form re-measured 3 (pool registers only); completion test as
+// `!unit && changed` 89; deletion arm ending in the full completion test 89; deletion arm as `replacement == NONE`
+// before the store 94; `changed` declared outside the clump loop 89; `if (unit) continue; break;` with a char-typed
+// tracking test 89.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

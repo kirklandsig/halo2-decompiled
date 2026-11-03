@@ -3112,6 +3112,8 @@ struct s_unit_flags_14d8b0
 // direct alone, root walk through object_header_get, late options pointer, second engine result
 // pointer, root walk through object_get, and typed root through object_get: 9 each at 1287 bytes.
 // All leave +0x304 and the same scratch choices; original helpers and body restored.
+// Round 127 (lane 8, fast): ticks-arm unit assigned inside the arm 9; root walk on its own local 9; root walk as
+// do/while with no pre-loop init 9; low-time limit compared directly 9; own local in the limit block 9.
 // @retail 0x14d8b0
 void function_14d8b0(void)
 {

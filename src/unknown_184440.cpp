@@ -300,6 +300,9 @@ __forceinline bool function_184448(long arg_0)
 // AC495: Existing shared plane decoder with native polygon-count/edge-pair/selector carrier
 // masks 0/1/2/4/3/5/6/7: 969/1021/985/988/1044/1022/981/1031. Original decoder,
 // declarations, carriers and complete body restored; excess frame and initial geometry homes remain.
+// Round 127 (lane 8, fast): record/surface pointers as two ternary initializers 998 (4608 B); axis selection as
+// if/else-if 965; vector copies, dots and bounds loop in an inner block 965; selector incremented when positive 976;
+// one falloff scalar shared by both force arms 994 (4564 B, frame 0x11cc as retail, first difference +0x1d).
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {
