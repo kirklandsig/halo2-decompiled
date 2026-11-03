@@ -270,6 +270,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 382: Both signed rate-policy predicates, bool/byte/short/long sustained
 // truth then opposed complement: 284/284/284/284/285/285/285/285. No exact-only predicate qualifies; original
 // comparisons, parallel clamps and full body restored. Unity/root/yaw and rotation homes remain.
+// DH309: Numeric/optional length result ownership on the in-place angle/rotation graph:
+// magnitude common, zero-result common, magnitude-result common, failure-first magnitude/result,
+// early success result, branch outputs with common return success/failure first: 171/403/412/182/212/417/203/212.
+// NOT kept: five-point best gain; common magnitude fixes early unity and first +0x84, but root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

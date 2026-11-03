@@ -377,6 +377,9 @@ public:
 // direct/repeated allocation rejection and entry/loop receiver declaration with for/while:
 // 102/157/102/157/102/157/102/157. Original complete body restored; child preheader,
 // pool/NONE ranks, allocation retest and salted-link construction remain.
+// M327: Separate allocation receivers with failure return / success-owned rejection / two-use allocation
+// admission / one exit: 54/54/102/54 with original for, 54/54/102/54 with plain while.
+// Original full body restored; child preheader, pool/NONE ranks, second allocation test and salted link remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

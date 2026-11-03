@@ -1191,6 +1191,9 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // 1..7, tie 324; complete fields with first-history declaration first 322.
 // Two-point gain rejected; original headers and complete traversal restored.
 // Frame 0x30/0x28, zero/radius residency and endpoint/history homes remain.
+// M329: Native ring-anchor/count/selected-vertex role names, masks 1/2/3/4/5/6/7,
+// then all with walking-edge identity: 324/324/324/324/324/324/324/324. Original scalar
+// names and complete traversal restored; frame 0x30/0x28 and zero/radius homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)

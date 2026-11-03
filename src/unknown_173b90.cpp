@@ -640,6 +640,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // copies, next index early or late and named values: the rotations never get closer than row i's up/forward
 // pair (score 20 of 65 ops against 22 now); indexed with scale first and the mask at each use has the current
 // rotations but the integer homes turn over (232, round 61).
+// Round 343: Native property-bit views, alpha/color/scale subsets 1..7 with Boolean conversion
+// 124/224/229/42/124/224/229; all bits tested directly 199. Original real flag storage,
+// all six observations, shared rotations and complete body restored; offset/default/reload and row-i schedule remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1628,6 +1631,9 @@ bool function_17afd0(long effect_index, long value);
 // expression with the shift 123 [51]; false-then-set with every local at function scope, eight orders, 138 [61];
 // effect pointer kept x availability false-then-set, expression, two-step x mask, shift x view reread: 73..160
 // [55..88]. Same view keeps BL over availability in every false-then-set form. Body unchanged.
+// Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
+// original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
+// and complete executable body restored; flag width and availability/view carriers remain.
 // @retail 0x174220
 void __stdcall function_174220(bool view_pass)
 {

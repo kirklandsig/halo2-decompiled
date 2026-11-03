@@ -389,6 +389,9 @@ extern byte g_51ec11;
 // Round 382: Complete entry control admission, bool/byte/short/long active then inactive
 // complement: 236/236/236/236/236/236/236/236. All lengthen and regress; original entry byte test and
 // complete body restored. Zero/side normalization and up/roll allocation remain.
+// DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
+// failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
+// Original shared body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

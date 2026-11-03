@@ -379,6 +379,10 @@ void c_class_2c9e69::select_last_variant()
 // result as the buffer argument 21 (the result moves to ESI, the receiver still re-read); name-arm copy only 13 (159,
 // remeasured: EDI for EBX); that with plain text 36; `variant == NONE && text` / `variant != NONE && text` 36 (159, the
 // second variant test is not threaded away); name-arm copy with the buffer at function scope 13.
+// Round 30 (lane 18, fast): the datum read through widget_item 23; text as the base widget without the
+// qualifier, cast at the empty call 36 (154 bytes); name-arm copy only re-measured 13 (159 bytes: the empty
+// arm tests the stack home, the name arm takes EDI for EBX), with the copy named label/caption/variant_text/
+// a_text 13 each; the name-arm copy without the qualifier 36 (154 bytes). Restored.
 // @retail 0x2c9ff4
 void c_class_2c9e69::v20(c_class_1a2c81 *item, long unused)
 {
