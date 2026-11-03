@@ -3605,6 +3605,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // M344: Relay formal char/signed-char/byte/short/word/int/long/dword
 // 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
 // wider forms regress and lose the parser. Original bool contract/body restored.
+// P302: Actual mutable channel-object reference with cursor/word-kind/dword-member
+// interference graphs 0-7: 139/164/166/164/139/164/166/164. NOT kept: receiver/domain nonmatches;
+// original pointer contract, caller and whole body restored; channel/cursor/member homes remain.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

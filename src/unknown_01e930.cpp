@@ -522,6 +522,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // DH306: whole initial readiness/loading admission, false construction or true rejection
 // refinement, bool/byte/short/long 252 each. NOT kept: result-tested flag needs exact equality.
 // Original body restored; missing frame word and zero/clock/output homes remain.
+// P302: Natural allocation-result for producer, original/byte output and entry/post-clock
+// zero lifetime, with long/short bounded pump ordinal: 269/269/283/283/286/286/289/289. Original while producer,
+// pointer, clock, ordinal and body restored; status/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {
