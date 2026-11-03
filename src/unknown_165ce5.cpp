@@ -1698,6 +1698,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
 // Original real argument domain and narrowing preserved; all one-use captures restored.
 // Frame, unit/mode homes and independent look divisions remain.
+// Round 68 (m3 lane 10, fast control 220, full 218): ours rewrites both look divisions as products with one
+// shared 1/rate computed before the first clamp; retail divides x / rate, reloads g_510c54 after the first
+// clamp's stores, divides -1 / rate and reloads again after the second. Both look clamps through the existing
+// cross-file real_pin (0x2a0c90's file) 220; the two rates through a same-file inline getter by value, by const
+// reference, forceinline by const reference 220/220/220; through the existing cross-file forceinline time-step
+// getter (0x1d2280's file) 220 (all same code: small inline helpers are fully CSE'd). Restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
