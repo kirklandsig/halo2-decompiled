@@ -1261,6 +1261,17 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // matrices argument re-read from object +0x116 90 (1388 bytes, positional only: retail passes the spilled
 // matrices pointer from +0x1c); the node loop's parent node index as a short local 244 (1381 bytes); a node matrix
 // pointer local in the loop 95; render-node pointer inside the mask test 97 again (repeat).
+// Round 68 (m3 lane 10, fast, on the count > 0 guard diagnostic, 44 at 1390 bytes): `stored` escaping through a
+// scratch global (diagnostic) 403, and its no-model branch then holds the pool and re-reads only the data field, as
+// retail does: a store to an escaped local on the path kills the data load but not g_4e0300. Escaping stored,
+// orientations, current or model at the end of the no-model branch 314/363/312/318 (diagnostics). A forceinline
+// lookup helper taking the pool 44, a plain inline one 44, one with a pool local inside 44 (all fully CSE'd); a
+// named header-array local for the current and render lookups 45; a plain inline node-matrix helper taking the
+// pool / the index only / the data member's address 20/20/20 (1399 bytes: reloads g_4e0300 too, as round 28); that
+// helper with a mirrored out-parameter 43; pool local plus that helper, with the render lookup through the local or
+// not 20/292, without the helper 44/286; a pool local declared after the current lookup with the helper 358 (the
+// pool moves to EBP for the whole body); 0xb8bd0 marked inline in its file with the no-model branch calling it 394
+// (inlined at both sites). Original body restored.
 // Round 206 (m3 lane 3, fast, on the 97 base): the node loop as `long node = 0; while (++node < count)` 97 (same
 // code, no count > 0 guard); the node index declared at the top of the render branch (re-measured) 97; the parent
 // index declared once for both branches (re-measured) 341 (1386 bytes); parent and parent_mirrored declared once
