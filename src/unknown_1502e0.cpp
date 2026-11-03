@@ -455,6 +455,9 @@ struct s_tail_player_identifier
 // F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
 // 32/68/56/56/32/67/67/56.
 // NOT kept: no gain; original full body/helpers restored.
+// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
+// and the CRT int comparison result: all eight 31. Original body restored; options
+// acquisition, delayed saves and comparison register ownership still differ.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1314,6 +1317,9 @@ void function_150820(dword *bits, bool local_only)
 // F353: Native hand arm/default producers, original then actual mode/result storage names
 // 43/45/45/43/43/45/45/43.
 // NOT kept: no gain; original full body/helpers restored.
+// N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
+// and the int hand-negation result: all eight 43. Original body and calls restored;
+// ESI/EDI player/hand ownership still differs.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
