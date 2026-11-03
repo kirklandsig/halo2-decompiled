@@ -2817,6 +2817,9 @@ long function_c8f60(long unit_index, short seat_index);
 // F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
 // complementary nonvehicle polarity:
 // 293/293/299/299/300/300/319/321. Original complete executable body restored.
+// F348: Native typed seat receiver mutable/readonly with original, complete, conditional
+// and entry-declared state-name producers: 293/319/317/293/293/319/317/293.
+// All restored; entry vehicle promotion, unit/ordinal residence and 0xf0 frame remain.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
