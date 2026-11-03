@@ -1157,6 +1157,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
 // declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
 // the keep gate; retained pool/player and lazy tag-table ownership remain.
+// Y561: Initial hand selector char/short/word/dword 345/345/345/284;
+// final hand selector char/short/word/dword 283/282/282/284. NOT kept:
+// two-point best below the gate; native full-width selectors/body restored.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {

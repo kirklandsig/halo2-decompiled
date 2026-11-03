@@ -1254,6 +1254,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M335: Rejection-owned connection exits on the native-input graph, subsets
 // 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
 // Original complete body restored; delayed ESI save and late expansion remain.
+// Y561: Current native-input direct priorities 0324/0423/0432/2034/2043/
+// 2304/2340/2430: 196/194/192/196/196/196/196/196 fast (control 196,
+// full 153). NOT kept: four-point best; original classifiers and caller restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

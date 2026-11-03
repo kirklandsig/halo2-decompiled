@@ -1542,6 +1542,9 @@ void function_1f86a0(long actor_index);
 // (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
 // read before the slot-bool test for both arms' 0x20 tests 141; the entry declared in the while condition 134
 // (same code).
+// Y561: Read-only actor/unit/loop-candidate/all receiver contracts,
+// each through member/original payload, eight at 134. Original mutable
+// receivers and payload restored; mask spill and EBX entry remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

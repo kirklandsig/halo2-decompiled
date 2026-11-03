@@ -1742,6 +1742,9 @@ bool __stdcall function_110ab0(long unit_index)
 // 0x600008c as `result = interruptible;` then an inner switch with no default 451; the state name read
 // into a local at entry 530 (1865 B); the overlay read into a local at entry 464 (1793 B, but the unit
 // index then arrives in EDI); a headers local for the unit, first slot and both weapon lookups 476.
+// Y561: Complete uninitialized result short/word/long/dword at original
+// declaration 574/574/554/554; before lookups 574/574/554/554. NOT kept:
+// all regress and grow away from retail; original Boolean result/body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
