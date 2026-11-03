@@ -290,6 +290,9 @@ bool function_a7670(long object_index);
 // consumed at retrieval 266/266/266/266; advanced at body end 274/274/274/274, all 966 bytes.
 // Original consumed island index, signed live bound, indexed cleanup and complete body restored.
 // NOT kept: frame grows to 0x428 and every form regresses.
+// B411: Actual two-list first/second phase do traversals, bool/byte/short/long,
+// 281/281/196/280/285/285/200/284. NOT kept: phase/domain nonmatches, longer extents
+// and byte-phase frame shrink. Original ordinal traversal and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

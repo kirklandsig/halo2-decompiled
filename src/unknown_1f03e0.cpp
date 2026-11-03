@@ -1035,6 +1035,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // all four/all with history/the three with history: 427/438/427/425/441/457/575/444.
 // NOT kept: six-point leads below gate; combined 425 shortens away from retail to
 // 3034/3047. Original word layout, flag producers and complete body restored.
+// B411: Complete entry flying/damping/direct/gravity declaration orders on the planar graph
+// 441/432/441/434/444/445/445/440; NOT kept: one-point reduction and order-only nonmatches.
+// Original observations/body restored; damping ECX/EDX and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1734,6 +1737,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // masks 0..7: 359/294/360/293/359/294/360/293, at 1129/1045 bytes against 1066.
 // NOT kept: no exact match or gain; original separate predicates, magnitude, observations,
 // complete body and material calls restored; zero width and reset/selection homes remain.
+// B411: Existing magnitude producer with double/native/direct/test-produced movement
+// 221/224/226/226; squared-length/dot producers with double/real roots 221/224/221/224.
+// Native zero width fixes only the prefix; original root, declaration and body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
