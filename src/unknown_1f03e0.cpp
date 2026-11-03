@@ -1016,6 +1016,9 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // direct branch-owned result alone/with complemented general result 345/345 (3050/3047 bytes).
 // NOT kept: one-use call-result carriers require a byte match. Original complete body restored;
 // damping ECX/EDX and raw/bounded homes remain.
+// DL251: Plain general bounded-scale/normal-correction/history-publication component loops,
+// subsets 1/2/4/3/5/6/7, then unsigned ordinals: 433/433/435/499/433/433/500/500.
+// Original complete source restored; no eligible gain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

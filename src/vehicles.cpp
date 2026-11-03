@@ -3031,6 +3031,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH308: Existing integer sign helper zero-result/positive-result/nested-result/flat-result/early-return/
 // nonzero-result/negative-first correction/negative-first conditional: 1057/1049/1052/1052/1052/1057/1051/1052.
 // NOT kept: best gain is three points; all retain frame 0x80 versus 0x74. Original helper and body restored.
+// DL251: Plain yaw/airborne torque component loops with long/none, none/long, long/long,
+// unsigned/none, none/unsigned, unsigned/unsigned, long/unsigned and unsigned/long ordinals; frame
+// remains 0x80 versus 0x74: 1096/1080/1113/1096/1080/1113/1113/1113.
+// Original complete source restored; no eligible gain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {

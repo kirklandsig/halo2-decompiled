@@ -1384,6 +1384,11 @@ struct s_looping_detail_request
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four
 // static calls versus six in retail. Original entire body and all offset/camera observation
 // points restored; detail/offset transport and query expansion remain.
+// DL251: Zero/nonzero first-player initialization, aggregate publication before or after request
+// metadata, retail camera order, then existing vector setter: NOT kept even at 10 because the
+// redundant guard requires a byte match; original query expansion and offset publication remain:
+// 129/26/25/26/11/10/114/114.
+// Original complete source restored; no eligible gain.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {
