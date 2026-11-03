@@ -318,6 +318,11 @@ void motion_sensor_blip_set_position(point2f const *point, s_motion_sensor_blip 
 // puts the global and data in ecx and the mask in eax, so nothing survives. The friendly test as a bool
 // `!= NONE && call` local 26, as a flag set under the 0x12c test 26; the type in a long local 26, in a
 // char local 26; a short mask 26.
+// Round 52 (lane 14, fast): ours gives the mask EAX, retail keeps EAX for the pool global, so the mask colouring and the reload look like one
+// cause (the global read at the block's top in retail). The pool local for the first lookup with a direct rider read 26; the header array
+// named for the first lookup 26; the type in a long ahead of the mask 26; a pool local inside the rider arm 26, at the not-friendly block's
+// top 26; a pool local for the first lookup and a second direct read 26; one pool local refreshed after the call in a friendly flag 106
+// (360 bytes, pool in EBX).
 // @retail 0x1a1e49
 char motion_sensor_object_type(long local_player_index, long object_index)
 {

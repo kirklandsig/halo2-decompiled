@@ -501,6 +501,9 @@ bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool ar
 // actor lookups for the final prop index 139; a repeated node lookup 80; one shared state result
 // 95; a shared options pointer 57; separate tick/rate clock views 15; constant-first sentinel
 // comparisons 15; the settings result assigned inside its guard 15. Original best body restored.
+// Round 32 (lane 18, fast, plain 15 at the start): the prop-state NONE test nested under the range test 15;
+// the elapsed compare written `local_4 <= elapsed * rate` 15; the final unknown07c test nested under the
+// random compare 15; the game-time local declared bare at the top 15; `field_6 != (short)NONE` 15.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

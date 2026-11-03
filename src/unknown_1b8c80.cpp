@@ -254,6 +254,9 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 // count 121 (390 bytes); the occupant's object in a named pointer for the team read 3.
 // Round 124: actor declared after the last-object local/seat array/count 3/3/116; object and team
 // rejections inverted 3/3; object and team tests nested 3/3; the else-if split into an else 3. Restored.
+// Round 34 (lane 17, fast): occupant declared at the loop top 3; team compare written actor-first 4;
+// occupant test as `== NONE` with the team arm in the else 49; last_object_index stored before the
+// object test 8; result declared after the count 52 (366 bytes). Restored.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -644,6 +647,9 @@ extern "C" void _ReadWriteBarrier(void);
 // Round 125: pointer names reversed 6; split state initialization 6; split actor initialization 6;
 // actor declared first 6; outer comparison reversed 6; threshold written > 6 gives 8; memcpy point 6;
 // const slot parameter 6; final store before the outer test 52 (189 bytes).
+// Round 34 (lane 17, fast): an early return for a busy actor with the barrier 14 (209 bytes); the
+// state declared inside the NONE block 6; the flags block's stores 0x41c first 6; flags read into a
+// byte before the barrier 38; the busy field in a named long 6. Without the barrier (re-measured) 44.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
