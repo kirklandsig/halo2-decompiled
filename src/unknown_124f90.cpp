@@ -3396,6 +3396,10 @@ long function_2193d0(s_animation_state *state, s_animation_ref *ref);
 // inline (pool, index) next-datum helper with data_find_index 49; that helper in the for loop with `case 1:
 // continue;` 78; a helper taking only the index and reading the pool global after the start index, in the for
 // loop with `case 1: continue;` 78 and in the do-while 49.
+// Round 130, with the range in case 0: definition reference 78; split range declaration 78; mode declared before
+// definition 78; default-first mode 66 (entry registers right, `test al, dl` rather than `test dl, 1`); flag-first
+// if/else 78; named predicate with default-first mode 66; const definition pointer 78; default-first self-select 66;
+// default-first with a flag-arm assignment 78. Original 24 form restored.
 // @retail 0x1282d0
 void function_1282d0(void)
 {

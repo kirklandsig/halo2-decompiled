@@ -1379,6 +1379,9 @@ struct s_looping_detail_request
 // original or twice-used definition-index ownership: 167 in all eight forms. All regress;
 // original complete input observations and body restored. Detail/offset transport and
 // first-player expansion remain; frame 0xc agrees on the original body.
+// Round 345: existing bounded-draw/next-player/camera forceinline declarations, seven subsets; all with
+// nested generator: 110/110/110/110/110/110/110/110. Original body and contracts restored. Detail/offset
+// transport and first-player expansion remain.
 // J241: Shared offset generation with native aggregate/vector-setter/CRT publication and
 // early/late completion 188/190, 197/199, 188/190; native short-count pair 188/190. Frame
 // grows from 0xc to 0x10; first-player query remains expanded and the shared graph has four
@@ -2378,6 +2381,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // char/char, short/short, long/long, dword/dword, char/short, short/char, long/char, char/long:
 // 694/693/693/693/690/697/697/690 (fast control 694, full 597). NOT kept: at most four reduced points;
 // the wider forms also shorten the reduced extent farther from retail. Complete original body restored.
+// M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
+// then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
+// Distance/maximum homes and entry true/flags remain; original complete body restored.
 // @retail 0x21a250
 bool function_21a250(long definition_index, dword sound_flags, long identifier, long controller_definition_index,
 	s_type_99c531 *source, long state, dword flags, real fade_duration)

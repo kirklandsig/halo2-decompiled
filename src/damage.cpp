@@ -994,6 +994,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
 // admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
 // byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
+// Round 544: Two displacement observations, direct/scalar/shared-vector/
+// independent-vector, negative then positive admission: 284/249/284/284/284/249/284/284.
+// No match; repeated-computation forms NOT kept. Original whole body restored.
 // P282: Existing player-index getter at policy/preference sites and actual flags member, subsets
 // 1/2/4/3/5/6/7: 314/206/206/314/314/206/314; all with library record copy 314. Policy-getter forms
 // grow to 874/782, frame still 0x1a4; originals and all observations restored.
@@ -2452,6 +2455,9 @@ struct s_unit_event
 // B383: Direct seat-ejection/current-state/child-bit consumers, seven subsets, then
 // the effect flag at its argument: 504/519/512/531/530/519/531/551. Original native bit values and
 // whole body restored; permutation ingress and call-cycle register homes remain.
+// M330: Independent object/region/permutation declaration ranks, six orders, then
+// both edge orders with uninitialized datum at entry: eight 472s. All producer
+// assignments stayed fixed; original declarations and body restored.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4640,6 +4646,10 @@ struct s_damage_object_creation
 // DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
 // scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
 // offset/definition and detached/node homes remain.
+// M331: Detached bitmap zero at six capture/receiver/count boundaries, then two separate
+// declaration/assignment forms on invariant creation admission: 174/194/194/194/215/215/194/215. NOT kept:
+// no qualifying gain or byte match. Original complete body restored; entry handle/offset and detached/node
+// homes remain.
 // P283: Actual node-size/offset fields, eight-byte metadata records and shared
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.
