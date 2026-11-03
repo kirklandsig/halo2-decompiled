@@ -1491,6 +1491,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH320: Existing request producer returns canonical submission in byte/signed-char/char/
 // short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
 // and complete body restored; iterator/leave-selector/request homes remain.
+// AC503: Native sorted-row pointer/count traversal, short/word/long/dword counters, mutable/read-only
+// receivers 36/36/75/75/36/36/75/75. Original ordinal loop and complete body restored; iterator load, leave-selector
+// and request/publication allocation remain. NOT kept: unmatched traversal/domain forms.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2735,6 +2738,9 @@ struct s_scenario_scripting_view
 // B388: One guard/lookup actor-handle observation, long/dword, native/readonly actor,
 // original/traversal short counter: 80/87/80/87/80/87/80/87. Wrapper stays exact;
 // original handle observations, actor receiver, counter scope and complete search restored.
+// B392: Actual external actor-record reference with scenario/data/set reference masks 0..7:
+// 80/80/96/96/80/80/96/96. Original complete search and all observations restored; actor/counter/set
+// homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {

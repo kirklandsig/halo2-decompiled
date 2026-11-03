@@ -488,6 +488,10 @@ extern "C" void _ReadWriteBarrier(void);
 // datum index set before its pool 122 (same code); the finished arm first with the tick arm as its else 149 (474
 // bytes); the step through the global with the release through `iterator.data` 151 (477 bytes); the flag stored
 // before the control call 153 (476 bytes).
+// Round 66 (m3 lane 1, fast): `pool = g_4f5724` feeding the iterator and the element 122 (same code); with the
+// iterator set from the global 163 (481 bytes); without the barrier 161 (479 bytes); release through the pool
+// local 126; `pool = iterator.data` after the iterator's assignments, element only 122. Retail's frame reads as
+// a four-field datum iterator at +4 plus a prologue-set pool copy at +0 read only for the element.
 // @retail 0x1fb510
 void function_1fb510(void)
 {

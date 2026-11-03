@@ -2532,6 +2532,10 @@ dword __cdecl function_131fc0(real alpha);
 // except its write of each selected default into the parameter's home); with the vertex reads through
 // the parameters' addresses (diagnostic) 150; the arms swapped (`simple || preserve_alpha` first) 140;
 // preserve_alpha read through its address in the short arm 140 (retail reloads it after the call).
+// Y557: Shared actual combiner count, conditional long/dword/word/byte
+// producers 406/406/390/414; branched producers 406/406/390/414.
+// NOT kept: all regress and disturb the matched prefix; original flag reads,
+// state stores, fallback arrays and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2970,6 +2974,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // (retail adds 240 from memory) 247; the two zero-scale tests before the bounds 253 (2023 bytes); bounds[1]
 // before bounds[0] (retail's store order) 247; the maximum as `scale = second_scale; if (first > second)`
 // 258; the scaled products as `width * scale`/`height * scale` 247.
+// Y557: Independent angle pairs on the normalized-parameter graph, with
+// immutable pairs, first-producer scope and late second-output declaration, all
+// eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
+// original trig carriers, output declarations and complete body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
@@ -3451,6 +3459,10 @@ PRIVATE __forceinline void set_filter_blending(bool additive)
 // product's at 0x54; ours shares 0x54. Renames for the slot order: the quantizer's input `amount` 31
 // (plain), the quantized locals `upper_byte`/`lower_byte` 31, `raw_offset` 31, `span_gain` 31 (fast,
 // slots unchanged); the input selector `4 + small` 961 (fast); permuter (41 variants) best 31.
+// Y557: Recyclable shift/clip/center parameter-symbol role names in
+// seven subsets, then all with the skip-state role name: 31 each at 4828 bytes.
+// Original parameter symbols restored; selector scheduling, post-bias reload
+// order and six quantizer inputs in shift rather than clip home remain.
 // @retail 0x3a5c0
 bool __stdcall function_3a5c0(byte const *configuration, real low, real high, long mode,
     bool center, bool shift, bool clip, bool skip_state, real *depth_out)
