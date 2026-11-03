@@ -286,6 +286,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // DH311: Plain native rotation component-array production, with complete cosine/projection/sine
 // phase masks 0-7: 218/269/285/340/269/368/315/410. Native output/phase records are exact-only;
 // all regress, original alias-safe helper/body restored; root/yaw and rotation homes remain.
+// J244: Existing staged rotation cross on the retained in-place angle/rotation graph,
+// with original/ordinary/staged pitch axis, result setter and shared dot:
+// 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
+// versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

@@ -430,6 +430,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // B385: Existing complete 2D magnitude with component/aggregate displacement, scalar/native
 // angle producer and memcpy/memmove: 170/170/180/180/259/259/259/259. No byte match;
 // native vector grouping, shared header and complete original executable source restored.
+// B391: Actual lowest/current/candidate external point references, subsets 1-7, then
+// complete external coordinate references: 170/170/170/170/170/170/170/170. Original
+// complete body restored; extra frame word, count/departure and compaction homes remain.
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
@@ -771,6 +774,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // Actual output cursor at alias join: native/memcpy with rollback 286/286, deferred commit 342/342; at
 // entry: rollback 285/285, deferred commit 325/325. Count/prior-side and SIMD homes remain; original
 // indexed output body restored.
+// M339: Actual current/intersection/last-output element references, subsets 1/2/4/3/5/6/7 then previous
+// endpoint: 129/129/129/129/129/129/129/129. Original pointer/output forms and full body restored.
 // Round 202 (lane 3, harness exact, confirmed --fast): retail keeps both side flags in memory (current +0xc,
 // previous +0xd, the loop end copies through CL); ours keeps the previous side in CL, so count is not loaded once into
 // ECX. `long last = count - 1` index 129; `points + count` then `previous--` 129; the result/flags/mask declared after

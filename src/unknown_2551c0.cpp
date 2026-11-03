@@ -259,6 +259,14 @@ short __stdcall function_2551c0(long actor_index)
 // Round 34 (lane 17, fast), on the vector_k helper (36, partial naming, kept only on a match): the
 // projection dot k-first 36; cross_k computed first 48; the k output written first 118 (814 bytes);
 // cross_i before the projection 36; `1 - cosine` named versine 36. Original helper restored.
+// Round 80 (m3 lane 9, fast), on the 6 form above (vector_k, alignment, reach; only the score dot differs, match-only):
+// dead reads before the dot: forward j,k 43 (816 bytes); forward j,k,i 121; direction j,k 74; forward j, direction j
+// 66; forward j, direction j, forward k, direction k 72. Pointer views of the dot's arguments: forward 72 (818),
+// direction 70 (818), both 25 (814, dot still not j,k,i, one rotation step moves), both swapped 25; swapped
+// with the forward view 72, with the direction view 70. The body stays at 43 without those names.
+// Round 40 (lane 17, fast): single product operands swapped in the cross terms (no vector_k): cross_j's
+// second product axis-first 43, its first product axis-first 43, both 43; cross_k's second product
+// axis-first 43, its first 43 (all the same code: VC canonicalises the operand order). Restored.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -827,6 +835,11 @@ PRIVATE __forceinline real function_255741(vector3f const *arg_0, vector3f const
 // P286: Native Boolean result owners at first probe/second probe/timing, seven subsets
 // and all with entry-only declarations, 89 each. NOT kept: one-use call-result and embedded
 // assignment forms need a match. Original body restored; unit scratch and scalar homes remain.
+// Round 80 (m3 lane 9, fast), on the match-only 17 form rebuilt (the object size named just before the first sum; named
+// at the radius read instead 194, 975 bytes): the adjusted projection in the length variable 17 (aligned 29); a named
+// reach used by both sums 196 (951 bytes: the radius call sinks to its use); with the length variable too 197; renamed
+// a_reach or z_reach 197 each (same code). Slots there: sum and side at one slot, length and adjusted at another, in
+// the opposite order to retail; lateral XMM3, maximum XMM2 (retail XMM2, XMM3). Body unchanged at 89.
 // Round 47 (lane 15, fast, on the match-only 17 form): adjusted projection in the length variable 17 (slot groups retail's, 0x14/0x18
 // swapped); with a named reach 197, reach alone 196 (951 bytes); one final subtraction into it, `= length - x`, `x = x - y` 17/17/17;
 // length and second side renamed either way, six forms 17 each (names do not reorder these slots). XMM2/XMM3 and the swap remain.

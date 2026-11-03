@@ -899,6 +899,11 @@ real g_55e618;
 // P289: Uniform scaled-response tangent/normal/both products, row-local then staged,
 // staged and row-local complete differences: 103/103/102/103/103/102/102/102. Original complete response
 // restored; sweep/collision homes and cross-placement projection spills remain.
+// Round 141 (m3 lane 6, fast): final rows from tangent and perpendicular each scaled in place through
+// vector3f_scale 101 (not kept, one point); tangent alone scaled in place 102; tangent scaled in place
+// right after it is formed 202 (1555 bytes); displacement/sweep/start and the collision call in their own
+// block with a bool result 102 (homes unmoved); `vector3f velocity = particle->velocity;` 223 (1556
+// bytes), with both in-place scales 223. Original body restored.
 // P292: Actual owning 16-bit flag record with contact/floor/stop bitfield subsets
 // 1/2/4/3/5/6/7, then all with native three-bit countdown: 99 each, 1549/1537 bytes.
 // NOT kept: only three points gained; all ten other same-file users unchanged.

@@ -321,6 +321,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // M332: Actual marker result/ordinal/receiver lexical identities, seven scan subsets,
 // then distinct object/sphere ordinals: 931/931/931/931/931/931/931/931 reduced, tying control 931 (full 882).
 // Original full body restored; frame, actor/unit and priority/query/marker homes remain.
+// Round 84 (m3 lane 12, plain): previous-direction dot with the k and j terms' operands swapped 882
+// (same code); range bounds renamed to sort before block/ignore (ours lays the four priorities out
+// in name order, retail min/max/block/ignore) 882 (same homes); `else straight = true;` for retail's
+// second store of 1 on the actor NONE path (0x2c0e9a) 912 (3721 bytes); local_4d3867 declared before
+// the other two bools 882 (store order only); the object-distance offset in its own block 882.
 // F349: Physical motion/sphere/device flag fields, subsets 1..7, then immutable
 // motion/physics receivers: 924/933/923/882/925/900/925/925 fast (control 931).
 // Device fields alone plain 896 versus 882; NOT kept: byte/shift instead of retail
@@ -332,6 +337,10 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // volatile 991/419/171; both 1014/438/171; both with plain location/raised locals 1005/419/167; plus predicates first
 // 1005/419/170; plus one-expression direction dot 1020/421/166; plus self_unit first 1005; plus inflation last 1005;
 // plus one object-scope center 1030/425/167; plus one object-scope offset 1005; both 1029/428/172.
+// Round 143 (m3 lane 5; fast control 931, full 882): priority/range/self-unit names chosen to sort
+// in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
+// enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
+// flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1196,7 +1205,7 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // MiniMax lane E (11-01): reading the step through a pointer instead of copying it, as retail does,
 // scores 490 (490 as well when the pointer is assigned in a second statement); no form tried
 // lowered the 444.
-// score 418 (was 420): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
+// score 418 (was 418): the shape is retail's (see round 27 below); registers and frame homes differ, 1752 bytes against 1746.
 // Earlier 444: frame 0x11c versus 0x10c, 1740 bytes against 1746. Ours copies the whole step
 // (`rep movsd`) where retail reads it through a pointer and keeps only its type and link in stack slots;
 // retail places the count <= 1 arm at the end, keeps 0 in EBX for the whole function, compares the
@@ -1449,6 +1458,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // output index 431; 0x210a30 called 680 (1512 bytes), inline or forceinline declaration 680; with the others 694-699;
 // on the flip: edge first 419, type/link first 419, step last 418/222/57, source first 430, sector/origin last 419,
 // origin per field 418/224/60, both 418, start per field 419; all together 460.
+// Round 143 (m3 lane 5, fast = plain here): avoidance trace declared at the untyped branch scope
+// 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
+// copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
+// (same code); emitted type from the type local instead of the step 421 (1755 bytes).
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
