@@ -9,6 +9,7 @@
 #include "unknown_0662e0.h"
 #include "unknown_0259d0.h"
 #include "network_voice.h"
+#include "unknown_058ee0.h"
 #include <xtl.h>
 #include <string.h>
 #include <float.h>
@@ -2081,22 +2082,43 @@ bool __stdcall function_78a90(long first, long second, const void *context)
 	return values[first] < values[second];
 }
 
-// score 257: the logic walk found no other difference, and this matches (fast check, 923 bytes) with all of the
-// following together. It is held because the last item moves the sort_4byte call, which the lanes' pending
-// sort_4byte parameter-order change touches; apply it once that has landed.
-// - Retail inlines the session getters 0x59670 and 0x596a0 here (0x78bf2-0x78c33): file-local inline copies of
-//   them, as unknown_058ee0.cpp has (with unknown_058ee0.h for g_527330).
-// - The callback flag compares as `(bool)(connection->callback != NULL) != (bool)channel->has_callback` and
-//   `(bool)(connection->callback && connection->callback->active ? 1 : 0) != (bool)channel->callback_active`
-//   (retail's cmp reg8, [channel+2] / [channel+3]; without them movzx + dword compares).
-// - The tolerance as an if/else on !has_callback (retail's branch; the ?: makes a lea), and `i = 0` set before the
-//   second loop's pointer (0x78c77).
-// - The rounded value in `limit`, clamped in place, and the sort's third argument a separate uninitialized
-//   `long maximum` in its own block, which shares the rounded value's stack slot. Retail passes the slot of the
-//   rounded, unclamped value (0x78dbe); the sort (0x13de30) ignores it. The plain form (`maximum` the rounded value,
-//   `limit` the clamped one, the sort call unchanged) gives 99.
-// Behaviour note: the source passes the clamped value as the sort's third argument, where retail passes the rounded
-// one; the sort ignores the argument.
+/* retail inlines the two sessions' getters (0x59670, 0x596a0) into 0x78ac0 */
+static inline bool observer_session_a_get(c_class_58d20 **session)
+{
+	bool result = false;
+	if (g_527330.initialized)
+	{
+		c_class_58d20 *current = (c_class_58d20 *)g_527330.session_a;
+		if (current->state)
+		{
+			*session = current;
+			result = true;
+		}
+	}
+	return result;
+}
+
+static inline bool observer_session_b_get(c_class_58d20 **session)
+{
+	bool result = false;
+	if (g_527330.initialized)
+	{
+		c_class_58d20 *other = (c_class_58d20 *)g_527330.session_b;
+		if (other->state)
+		{
+			*session = other;
+			result = true;
+		}
+	}
+	return result;
+}
+
+// Matches. Retail inlines the session getters 0x59670 and 0x596a0 here (0x78bf2-0x78c33), as the copies above;
+// the callback flag compares carry casts for retail's cmp reg8, [channel+2] / [channel+3]; the tolerance is an if/else
+// (retail's branch); `i = 0` is set before the second loop's pointer (0x78c77). Retail passes the stack slot of the
+// rounded, unclamped value as the sort's third argument (0x78dbe), which the sort (0x13de30) ignores: here the rounded
+// value is clamped in place in `limit`, and `maximum` in its own block shares that slot. The plain form (`maximum` the
+// rounded value and `limit` the clamped one, without the block) gives 99.
 // @retail 0x78ac0
 void function_78ac0(s_network_observer *observer)
 {
@@ -2110,9 +2132,11 @@ void function_78ac0(s_network_observer *observer)
 		if (channel->state)
 		{
 			s_link_connection *connection = link_connection_get(base->connection_index);
+			/* the casts and the `? 1 : 0` make retail's byte compares (cmp reg8, [channel+2]/[channel+3]); without
+			   them the flags compile as movzx + dword compares */
 			if (channel->active && (!enabled || connection->state != 5 ||
-				channel->has_callback != (connection->callback != NULL) ||
-				channel->callback_active != (connection->callback && connection->callback->active)))
+				(bool)(connection->callback != NULL) != (bool)channel->has_callback ||
+				(bool)(connection->callback && connection->callback->active ? 1 : 0) != (bool)channel->callback_active))
 			{
 				channel->active = false;
 				observer->flag4f3c = true;
@@ -2139,8 +2163,8 @@ void function_78ac0(s_network_observer *observer)
 				{
 					switch (g_4c9878.session_kind)
 					{
-					case 1: found = function_59670(&session); break;
-					case 2: found = function_596a0(&session); break;
+					case 1: found = observer_session_a_get(&session); break;
+					case 2: found = observer_session_b_get(&session); break;
 					}
 				}
 				if (found)
@@ -2152,13 +2176,18 @@ void function_78ac0(s_network_observer *observer)
 			}
 		}
 	}
+	i = 0;
 	local_0 = (byte *)observer->channels + 0x4f4;
-	for (long i = 0; i < MAXIMUM_OBSERVER_CHANNELS; i++, local_0 += sizeof(s_network_observer_channel))
+	for (; i < MAXIMUM_OBSERVER_CHANNELS; i++, local_0 += sizeof(s_network_observer_channel))
 	{
 		s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)(local_0 - 0x4f4);
 		if (channel->state && channel->active && channel->probe_pending)
 		{
-			long tolerance = *(long *)((byte *)observer->configuration + (channel->has_callback ? 0x1dc : 0x1d4));
+			long tolerance;
+			if (!channel->has_callback)
+				tolerance = *(long *)((byte *)observer->configuration + 0x1d4);
+			else
+				tolerance = *(long *)((byte *)observer->configuration + 0x1dc);
 			if (channel->smoothed_delay - channel->smoothed_interval > channel->probe_delay + tolerance)
 				observer->function_79c00(i, true);
 		}
@@ -2180,13 +2209,18 @@ void function_78ac0(s_network_observer *observer)
 				values[i] = function_7a2a0(observer, i);
 			}
 		}
-		long maximum = observer_round(count * *(real *)((byte *)observer->configuration + 0x1c4));
-		*(long *)((byte *)observer + 0x4f44) = maximum;
-		if (maximum < 1) maximum = 1;
-		else if (maximum > *(long *)((byte *)observer->configuration + 0x1c0))
-			maximum = *(long *)((byte *)observer->configuration + 0x1c0);
-		*(long *)((byte *)observer + 0x4f44) = maximum;
-		sort_4byte(indices, count, &maximum, function_78a90, values);
+		/* retail passes the stack slot the rounded value was stored to (before the clamp) as the third argument,
+		   which the sort ignores; `maximum` is never written, and its own scope lets it share that slot */
+		long limit = observer_round(count * *(real *)((byte *)observer->configuration + 0x1c4));
+		*(long *)((byte *)observer + 0x4f44) = limit;
+		if (limit < 1) limit = 1;
+		else if (limit > *(long *)((byte *)observer->configuration + 0x1c0))
+			limit = *(long *)((byte *)observer->configuration + 0x1c0);
+		*(long *)((byte *)observer + 0x4f44) = limit;
+		{
+			long maximum;
+			sort_4byte(indices, count, &maximum, function_78a90, values);
+		}
 		for (long i = 0; i < count; i++) function_7a330(observer, indices[i]);
 		function_79260(observer);
 		byte *local_1 = (byte *)observer->channels + 0x4dc;
