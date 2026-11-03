@@ -67,6 +67,9 @@ struct s_6ec83
 // 223; readiness from the mask/data tests 227; the short initialized at entry 237; the pointer
 // initialized at entry 261; both entry initializers 260; a register mask 223; a const machines
 // pointer 223.
+// Round 31 (lane 17, fast): mask zeroed at entry and again in the guard 223; inverted guard with the
+// mask outside it 13; the pointer renamed `machines` 13; the counter zeroed beside the mask before the
+// guard 33; the two flags declared first 13. A 600 s permuter run: 4 tries, none below 13.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

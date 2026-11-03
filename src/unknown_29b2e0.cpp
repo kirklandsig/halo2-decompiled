@@ -267,6 +267,9 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Round 380: Complete direction-validation truth, bool/byte/short/long positive then
 // complementary: 279/279/279/279/279/279/279/279. All retain the wrong root/unity homes and lengthen the body;
 // original short-circuit guard and complete body restored.
+// Round 382: Both signed rate-policy predicates, bool/byte/short/long sustained
+// truth then opposed complement: 284/284/284/284/285/285/285/285. No exact-only predicate qualifies; original
+// comparisons, parallel clamps and full body restored. Unity/root/yaw and rotation homes remain.
 // DH309: Numeric/optional length result ownership on the in-place angle/rotation graph:
 // magnitude common, zero-result common, magnitude-result common, failure-first magnitude/result,
 // early success result, branch outputs with common return success/failure first: 171/403/412/182/212/417/203/212.

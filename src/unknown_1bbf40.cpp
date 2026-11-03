@@ -686,6 +686,9 @@ point3f *function_b9dd0(long object_index, point3f *result);
 // Round 528: result-first seating permission, paired named delay products and signed-long
 // player ordinal, seven subsets 114/47/114/168/164/168/164; all with native int ordinal 164.
 // Original permission, products, short player ordinal and complete body restored.
+// Y547: Post-scan age-state permission, young-first/test-derived/true-default/false-default,
+// bitwise special 88/114/124/88; logical special 192/189/202/192.
+// All restored; NONE EBP/EBX and special BL/CL remain.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

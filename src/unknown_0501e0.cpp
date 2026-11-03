@@ -277,6 +277,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // input ownership, cursor/indexed output and both product orientations:
 // 254/254/250/250/254/254/250/250 at 1136 bytes. Original helper/body restored;
 // extra frame word and coefficient/input/result homes remain.
+// Round 545: Existing shared axis rotation with complete scalar/native/shared-scale
+// input producers, direct/in-place output: 309/309/283/283/414/456/560/560. All nonmatching
+// association/storage forms restored; original helper/body and extra frame word remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {
