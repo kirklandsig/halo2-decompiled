@@ -412,6 +412,9 @@ union s_185be7
 // DH330: Own-input homes at each of the six original first consumers 1031/622/622/622/622/622;
 // controller/action homes at all consumers 1031/623. NOT kept: unmatched own-input
 // indirections; original arguments, helpers and complete body restored.
+// DH338: Actual range-lower/angular-bound/curve-count/curve-pointer/paired-curve/
+// lower-angular/lower-curve/all native field bindings: 927/622/622/622/622/927/927/927.
+// Original body restored; root/NONE and scalar homes remain; lower reload lacks equality.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

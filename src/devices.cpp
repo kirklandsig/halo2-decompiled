@@ -1764,6 +1764,9 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// DH338: First-channel receiver across manual/group phases, pointer/reference,
+// inherited/ordinary index and saved-pointer domains: 376/376/393/393/392/392/441/441.
+// All restored; frame/index/header/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

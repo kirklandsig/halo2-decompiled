@@ -2777,6 +2777,9 @@ struct s_scenario_scripting_view
 // DH329: Own packed-input pointer at entry/actor/scenario/selector scope, native/read-only,
 // eight 101s at 377/367 bytes; wrapper 14. NOT kept: own-input aliases lack equality,
 // lengthen and lose the wrapper. Original input, selector and complete search restored.
+// DH338: Full-word long/dword winners with short traversal after actor/data,
+// admitted-set/for ownership: 92/92/92/93 each. No equality; original winner,
+// traversal and body restored, actor/counter/selector and data homes remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
