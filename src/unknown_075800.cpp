@@ -1259,6 +1259,9 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // NOT kept: unmatched callable ownership; original dispatcher and all call tuples restored.
 // M357: Coherent five native-input formal orders and three unsigned-selector orders:
 // 196/196/197/197/197/196/197/196. NOT kept: no exact producer/contract form; original complete body restored.
+// M359: Common no-op message completions for individual/residual/all hole families,
+// return and break: 196/196/196/196/196/196/196/196 reduced (control 196).
+// NOT kept: no exact classifier/save improvement; original complete body restored.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {
