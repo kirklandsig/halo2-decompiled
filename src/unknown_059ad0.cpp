@@ -3822,6 +3822,10 @@ bool function_07ab10(long key_index, s_type_99af70 *address, long local, word po
 // `channel` at function scope 138, a two-use XNADDR host local 138, `address` before the key release 138, the
 // forceinline as a separate declaration above this function 138 (same code each); clock and channel failure first
 // without the flag 142.
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [34]): one transport local for both value38 reads 144 [34]; in-place loopback flag 136 [31];
+// with channel failure first 152 [19] (554 bytes), with the transport local too 163 [19]; a local copy of session for the part after the loopback test 136 [34]
+// (coalesced, no second register), on the flag/channel form with a host copy too 152 [19]; that part as a forceinline bool helper taking session and host 145 [25]
+// (581 bytes, session still in ESI). No retail call path leads from 0x5fb00, 0x5fb60 or 0x7ab10 back here. BLOCKED-BY the same host/session staging.
 // @retail 0x59e50
 bool __stdcall function_59e50(c_class_58d20 *session, long mode, long local,
  const XNKID *kid, const XNKEY *key, const s_session_member_identity *host,
@@ -4563,6 +4567,10 @@ bool session_peer_map_set_connected(s_session_peer_map *map, const s_session_mem
 // Round 139 (m3 lane 5, fast): identity flag declared at entry 305 (same code); `result` after the state-0/10 exit
 // 307; payload address named before the identity compare 305; `result` before the sender lookup 310; `state <= 2`
 // arm first in the range chain 373 (1246 bytes).
+// Round 58 (lane 14, fast; aligned counts in brackets, this body [245]): host site as `if (sender != NONE) goto acknowledge;` 317 [265] (the block then follows
+// directly); reason 9 as the fall-through after the received block, retail's order 305 [244] (1265 bytes), with an else goto at the host site 305 [244], with the
+// acknowledgement falling out of its block 313 [245] (1272 bytes); `done:` ahead of the acknowledgement 305 [245], with reason 9 last 305 [244]; a flag set at both sites
+// and tested at the end 305 [245]. The block stays right after the reason-5 exit in all but the first: source position and label order do not move it.
 // @retail 0x5e7f0
 bool __stdcall function_05e7f0(c_class_58d20 *session, const s_type_99af70 *address, const void *message,
  long *reason, bool *has_identity, s_session_member_identity *identity)
