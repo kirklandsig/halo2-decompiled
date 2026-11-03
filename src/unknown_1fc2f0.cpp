@@ -495,6 +495,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // P271: Consistent prediction/limit/normalization rate observation on the named-length
 // graph, existing rate/tick/delta producer masks 0..7, direct update parameter:
 // 100/105/100/105/100/97/100/97. Original body and helpers restored; tick/delta/correction homes remain.
+// Round 541: Existing scaler pointer/reference result contracts, discarded/scalar/shared-add/native-local
+// consumers, with direct update argument: 99/99/99/148/99/99/99/148. Original helper and
+// body restored. Two alias-sensitive output-first forms 150/150 excluded; no retained change.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
