@@ -1194,6 +1194,10 @@ long function_10f5f0(long object_index);
 // AC491: Entry-owned bounds/time/reduction scalar declarations, masks 1/2/4/3/5/6/7, then coherent
 // scalar identities: 565/565/565/565/565/565/565/565. Original complete body and producers restored;
 // native frame and homes remain.
+// AC494: Existing word-bit query at initial/active/physics families, masks 1/2/4/3/5/6/7,
+// then all with six-real output: 620/597/633/656/673/663/696/696. Calls remain outlined
+// where retail expands the tests; original complete body and declarations restored.
+// NOT kept: the shared query adds calls absent from the native flag tests.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4400,6 +4404,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // truth publication: 765/765/749/749/749/749/749/749. Minimal direct Boolean
 // publication alone 749 fast/plain, 2974/2974 bytes; retained with original
 // bypasses and bool state. Initial SIMD/definition allocation remains.
+// AC494: Entry kind/spin/engine definition families on the retained table/direct-active
+// graph, masks 1/2/4/3/5/6/7, then table-first: 1027/1027/1027/1027/1027/1027/1027/1026 (2707/2974 bytes). The compiler
+// merges the later definition reads too; original observations and complete body restored.
+// NOT kept: entry ownership merges later reads that remain separate in the native code.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -4918,6 +4926,10 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // AC491: Complete translation/orientation/spin phase scopes, masks 1/2/4/3/5/6/7, then all with
 // coherent matrix identities: 1087/1087/1087/1087/1087/1087/1087/1087. Original complete body and
 // producers restored; native frame and homes remain.
+// AC494: Actual pool root/reused vehicle slot/flip-tick product, masks 1/2/4/3/5/6/7,
+// then all with a named rounded threshold: 1128/1087/1087/1128/1128/1087/1128/1128. Frame 0xf8 persists;
+// root ownership grows to 5104/5094 bytes. Original complete body and observations restored.
+// NOT kept: root snapshot omits the later native reload; the threshold copy is one-use.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
