@@ -4695,6 +4695,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // 62/62; one actual result exit 158; byte/short support 68/148; long result 153;
 // actual admission result 83. NOT kept: six-point criterion gain is below eight; all
 // executable forms restored. Native support/result byte homes and early success store remain.
+// N346: Independent state-criterion argument in bool/byte/short/long, mutable/const,
+// 144/144/144/144/146/146/146/146. NOT kept: one-use argument producers remain unmatched;
+// original support/result lifetimes and complete body restored. Native byte homes remain.
 // Y557: State criterion assigned to the returned result within the existing
 // call argument, with success at actor/support/velocity/entry boundaries:
 // OR criterion 62/143/133/160; conditional criterion 141/145/135/159.
