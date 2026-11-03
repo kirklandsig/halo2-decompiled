@@ -1846,6 +1846,15 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Round 116: else-arm array base 40; with node-first 101; both arms' array bases with node-first 101;
 // reversed matrix-arm pointer addition 9, with node-first 101; reversed else-arm pointer addition 9,
 // with node-first 101; comma-sequenced node store and matrix initialization 101. Original body restored.
+// Round 123 (lane 8, fast with 0x178360): node-first merges `movsx edx, dx` upward because its else arm's index
+// takes EDX and its base EAX, where this order (and retail) has index ECX, base EDX. On node-first: the scale in a
+// local read before the marker 101; the node index through a local 101 (alone 9); the marker address by byte offset
+// 101; a reference to the else arm's position 101; a forceinline marker getter in the matrix arm, the else arm or both
+// 101/101/101 (alone 9/9/9); a matrix-arm base local 101 (alone 9). Diagnostic only: `> 0.0f` for the scale test (no
+// lahf) 193, alone 192: the matrix-arm base still avoids EAX, so the flags read does not explain it.
+// Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
+// the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
+// base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2452,6 +2461,9 @@ event_done:
 // tested). With the root index: second test as `NONE != ...` 197; a bool helper for the first test 197;
 // `if (effect && effect->object_index != NONE)` 130 (retail's head and reload, but the reloaded index is
 // then cached in ESI for 0x1794a0 and NONE takes EBX); nested head ifs 130; tail reading the field 130.
+// Round 90: split root declaration 63; root at function scope 63; definition declared first 63;
+// both 63; named root at function scope 63; visible in the outer block 63, at function scope 63;
+// tail object index at function scope 63. Original executable body restored.
 // @retail 0x1794e0
 bool __stdcall function_1794e0(long effect_index)
 {
@@ -2839,6 +2851,10 @@ void function_177f60(s_effect_datum *effect, dword a_scales, dword b_scales, dwo
 // order: velocity first 40; a compress local before the velocity copy 14, stored after location 21 (one-use local); velocity
 // pointer 40; matrix pointer in the attached sound call 23, with velocity first 40; position and forward pointers with
 // velocity first 40; node ternary in the argument list with velocity first 40; tag local with velocity first 40.
+// This round: function-scope direction and velocity 23; that with detached velocity before location 40;
+// compound velocity additions 23; the shared vector-add helper 23; a zero-initialized sound record 104
+// (1363 bytes); a sound location snapshot 26; sound velocity and combined snapshots 23 each. Original
+// body restored.
 // @retail 0x17a8a0
 void function_17a8a0(s_effect_location_datum *location, bool detached, s_effect_datum *effect, vector3f const *up, s_effect_part *part, point3f const *point, vector3f const *forward, real scale)
 {

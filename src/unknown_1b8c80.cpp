@@ -641,6 +641,9 @@ extern "C" void _ReadWriteBarrier(void);
 // top 44, an early return for a busy actor 46 (212 bytes), the NONE test in a named bool 44; the state after the
 // actor with the barrier after both 6. Matched retail callbacks load a parameter in the entry block only when two
 // sibling paths use it (0x1b22e0, 0x29f370, 0xa9120).
+// Round 125: pointer names reversed 6; split state initialization 6; split actor initialization 6;
+// actor declared first 6; outer comparison reversed 6; threshold written > 6 gives 8; memcpy point 6;
+// const slot parameter 6; final store before the outer test 52 (189 bytes).
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -1532,6 +1535,12 @@ void function_1f86a0(long actor_index);
 // AC468: Complemented specified/root predicate in bool/byte/short/long, each with native/original
 // slot-member payload first: 136/136/136/136/139/139/138/138. Original predicate and payload restored;
 // frame 0x10 versus 0x14, raw-mask spill and entry/root carriers remain.
+// Y538: Saved-mask complement alone in bool/byte/short/long, each with native/original
+// member payload, 245/245/245/245/265/265/254/254. All restored; frame, raw-mask spill
+// and entry/root carriers remain. The actual 0x34-byte member payload is neutral in every pair.
+// AC489: Separate distance/seat validation guards and negative special admission, seven
+// subsets, plus native slot-member payload on the complete graph: eight at 134. Original
+// body restored; frame, mask spill and entry/root carriers remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

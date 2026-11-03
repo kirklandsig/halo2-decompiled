@@ -3198,6 +3198,13 @@ struct s_voice_route_choice
 // and that loses the main loop's pointer. Mixes move the main bias (+4, +0x10 = retail, +0x14, +0x1c).
 // Round 520: native byte/word bitwise radio, with actual receiver/talker mask/both:
 // 363/432/395/438/391/409/394/408. Original bool result, masks and body restored.
+// AC484: Word player-bit producer with actual receiver/full-width talker-mask/conditional-radio
+// subsets 417/395/418/399/415/395/416/375. Conditional radio also raises both
+// matched callers to 18/22. Original body restored; entry saves, cursor bias and remainder remain.
+// Round 540: Shared identity producer as zero/full/const-full/forced-full aggregate
+// 380/379/379/379; with ordinary inline spatial-call declaration 380/379/379/379.
+// NOT kept: nine shared users lose their matches, and target frame shrinks to 0x48.
+// Original producer, declaration and complete routing body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3479,6 +3486,14 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Round 520: native unsigned/short current member on original/word current-kind and
 // original/independent cursor graphs: 139/166/137/169/164/159/140/150.
 // Two-count word-kind lead remains below the keep floor; original body restored.
+// AC484: Native byte/word/short/dword count-clamp returns 174/138/150/156;
+// with independent cursor 159/166/150/159. Every form raises the matched parser
+// score; NOT kept: shared-user regressions, and the best target gain is only one.
+// Original clamp, live count observations, cursor and full body restored.
+// Round 540: One in-function local-delivery phase, conditional/test-produced query result
+// and repeated/shared payload receiver: 193/191/193/191; independent packet cursor
+// 194/192/194/192. All shorten to 455/456 bytes and regress; complete original dispatch,
+// live count reads, removal timing, helpers and body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

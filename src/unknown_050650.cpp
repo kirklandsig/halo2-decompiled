@@ -633,6 +633,15 @@ struct s_collision_result_buffer_1697c0
 // DH297: Test-produced success/failure-owned collision/immediate per-attempt admission,
 // subsets 1-7, then fraction-first fallback: 348/322/348/322/348/322/348/360.
 // Original Boolean result, collision graph, ten draws, helper bodies and complete sampler restored.
+// P276: Existing marked normalizer at axis/candidate/fallback, seven subsets, then all
+// with long sample ordinal: 418/417/448/511/543/562/651/652. Calls remain outlined and
+// alter caller transport; original helper, declaration and complete sampler restored.
+// DH300: Complete normalizer input snapshots, native/setter/library/aggregate/immutable,
+// with float absolute, squared-norm or native output: eight 651s (outlined). Forced native/immutable/
+// squared snapshots 441/441/452; forced complete scalar inputs 329. Original normalizer and body restored;
+// frame-bottom scratch and pitch-axis/result homes remain.
+// DH304: Private normalization-success bool/byte/short/long results, direct/common exits, 340/340/340/340/340/340/340/340.
+// Original real normalization result, helper and sampler restored; frame-bottom scratch and axis/result homes remain.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)
@@ -878,6 +887,12 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // DH297: Eight complete direction/point/reference/object case-family orders
 // 361/332/356/392/369/364/384/375 (fast control 341; full 257). The 0,4,3,5,2,1,6
 // order is 360 plain at 1408/1444, rejected; original cases, predicates and full decoder restored.
+// F336: Positive case-2/case-1 remembered-state nesting and normalized publication
+// ownership, seven subsets, then positive result/presence with nested optional outputs:
+// 341/341/341/341/341/341/341/341 (fast control 341; full 257). Complete original body restored.
+// M325: Nullable actual point source, const/mutable pointers at entry/point/state/origin,
+// 360 each (fast control 258, full 257); frame 0x90 and ECX specification lose three matched callers.
+// NOT kept: unmatched pointer/presence form; original Boolean, frame, calls and whole body restored.
 // @retail 0x2967b0
 PRIVATE bool function_2967b0(long actor_index, s_type_952051 *specification,
 	bool aiming, vector3f *direction, bool *has_target_point, point3f *arg_0e6828)

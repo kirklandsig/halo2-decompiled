@@ -489,8 +489,18 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // Round 309: Indexed coordinate producers at initial/large/both/single-initial captures,
 // each with original/common radius lifetime: 280/280/182/186/280/280/242/242.
 // Original native and scalar copies, radius lifetime and complete body restored; entry/index and point homes remain.
+// Round 533: Native initial sphere construction retaining the complete large-path recapture,
+// point/coordinate prefixes or complete spheres at original/entry producer sites:
+// 238/251/242/249/216/259/236/221. Original capture, query and complete body restored;
+// entry/index spill and center/query/bound homes remain at baseline frame 0x1094.
 // M316: Unsigned-word node cache with original masks; native node/count/query/transform lifetime combinations 209/207/188/211/209/209/207/209.
 // Entry/index spill and center/query/bound homes remain. Original executable body restored.
+// P275: Actual packed list-header extent/borrowed-storage bitfields at initialization,
+// release test and release extent, seven subsets and reversed packed-field initialization:
+// 182 each. Original header, release helper and body restored; entry/index and point homes remain.
+// P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
+// then coherent complete scratch names: 182 each. Initializers and observations never moved;
+// original body restored. Entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

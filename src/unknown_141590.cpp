@@ -316,6 +316,11 @@ static inline void quaternion_transform_vector(
 // code); the existing quaternion_rotate_point with plain half-angle locals 1023 (calls out of line). Linkage diagnostics only:
 // the transform helper `static` or a plain global 1028 (out of line, /Ob1 file), `__forceinline` 200. Re-measured: the
 // existing quaternion_rotate_point for the transforms 258 (1303 bytes), plain half-angle locals 267 (frame 0x18).
+// N329: Actual half-angle outputs own cosine/sine/both-sequential/both-early radicands: paired storage
+// 253/253/249/289, independent halves 270/270/258/258. All regress; original root expressions, paired
+// storage, helper and full body restored; frame and spill overlap remain.
+// DH304: Cosine/zero/default-quaternion/common-scalar construction results, paired/independent halves, 277/283/244/300/246/308/243/241.
+// NOT kept: moved stores/observations or common one-use scalar without a match. Original construction restored; quaternion/spill homes remain.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1010,6 +1015,14 @@ void function_143250(
 // P264: single-consumer real arithmetic owned by second-band product/sum/all,
 // third-band product/sum/all, crossed product/sum and sum/product: 1766/1771/1816/1790/1869/1854/1869/1784.
 // Original scalar graph, workspace, publication phases and complete body restored.
+// N325: Native same-type scalar workspace reuse across complete band boundaries,
+// six distinct boundary graphs, double-only reuse and first-producer declarations:
+// 1767/1767/1788/1766/1788/1780/1767/1788. All 83 typed matrix outputs audited unchanged; original scalar
+// lifetimes and complete body restored. Frame, rotation admission and basis/matrix homes remain.
+// Round 482: Complete seven-row third-band producer-ready columns 0/1/2/3/4/5/6/all
+// give 1952/1805/1778/1767/1779/1786/1859/2210. Exact scalar sequence and all 49
+// matrix values retained in every trial; original publication graph and body restored.
+// Frame 0x314/0x300, rotation admission and basis/matrix homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {

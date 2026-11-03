@@ -315,6 +315,9 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // home subsets 0..7: 915/919/993/1011/903/943/1000/1013 fast (control 931).
 // Count plus independent query, count alone and count plus priorities: 903/938/923 plain.
 // Original body restored; frame, actor/unit and priority/query/marker homes remain.
+// F336: Native rejection continues in first/second/third marker scans, seven subsets:
+// 931/931/931/931/931/931/931; all scans with direct first/second array consumers 981.
+// Fast control 931, full 882. Original guards, receivers, buffers and complete body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1184,6 +1187,10 @@ PRIVATE __forceinline bool edge_node_open_2c(s_pathfinding_data const *data, s_p
 // or edge instead of first_edge. Plain subsets on the kept body: first_vertex first 322; surface in test 321; end first
 // 341; ring pointer 353; first_vertex + surface 319; first_vertex + end 339; end + surface 338; those three 336; pointer
 // + first_vertex 351; pointer + surface 352; pointer + end 342; all four 339.
+// Round 482: Actual typed edge-surface/flag and portal-edge-pair fields, masks
+// 1..7, tie 324; complete fields with first-history declaration first 322.
+// Two-point gain rejected; original headers and complete traversal restored.
+// Frame 0x30/0x28, zero/radius residency and endpoint/history homes remain.
 // @retail 0x2c3030
 bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real radius,
     long edge_index, bool side, point2f *result)
@@ -1615,6 +1622,21 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
 // circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
 // Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
+// DH302: Actual typed-step scan cursor with short/short, long/short, short/long, long/long
+// scan/candidate ordinals 477/455/496/434; also walking the reverse candidates from one-past
+// 485/460/488/458. Original indexed traversals restored; radius staging and zero/metadata homes remain.
+// Round 371: Native selected successor/type/link widths, subsets 1/2/4/3/5/6/7,
+// 455/424/463/462/456/424/458; all with full output count 503. Original short
+// carriers and complete pointer body restored; radius/zero/metadata homes remain.
+// Typed-selection, trace-admission and found-result branch orientations and their pairs/all
+// 493/420/420/493/493/420/493; all with metadata-arm orientation 493. Radius staging, persistent zero
+// and metadata homes remain; original body restored.
+// M326: Native data-availability bool/byte/short/long predicates, conditional/default-null
+// pointer production, 420/420/420/420/420/420/420/420. All canonicalize to the original
+// radius stage and zero/metadata homes; complete original body restored.
+// N327: Actual avoidance, tangent and predecessor last-consumer scope subsets on the retained
+// step-pointer graph, then all with trace-result scope: 420/420/420/420/420/420/420/420. Original
+// scopes/body restored; source-radius staging, persistent zero and metadata homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

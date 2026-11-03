@@ -822,6 +822,9 @@ struct s_device_machine_view
 // Original body restored; word-load/EAX sharing and power-velocity zero join remain.
 // Round 78 (m3 lane 12, fast; word flags + the 0x1200055f zero store, aligned 4): a forceinline word getter taking the group pointer 122, a const pointer copy of
 // the group at the read 122, nested word tests 122, the pointer scoped to a block that ends before the tests 122 (all the pushed ESI, same code).
+// AC484: Native byte/signed-byte second-bit masks after the machine test 120/120;
+// before it 132/132; with velocity zero 122/122 and 64/64. Original word read,
+// masked bits, zero lifetime and body restored; word-load/EAX sharing remains.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1161,6 +1164,10 @@ bool function_108530(long device_index, long name)
 // with endpoint/cruise square-part subsets 0-3: 121 each; field-owned cruise speed 134 each.
 // Original phase expressions, publications and complete body restored; initial velocity
 // XMM6 and ramp-down stack residency remain.
+// Round 333: One-observation position pin with distinct target and complete initial/duration/cruise
+// field domains: 142/142/142/142/106/106/106/106. Original-target and ordered-pin/complete-field/early-down-half
+// refinements 106/106/106/140. The 106 forms introduce a frame and raise the second caller 13 -> 28;
+// original input observations, publications and complete body restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1668,6 +1675,9 @@ bool function_0b6760(s_index_pair const *pair);
 // Original scalar domains reach retail length or frame separately but regress; temporary
 // rate record, receiver, declarations and whole body restored. Frame/index/header/state
 // and activity-result homes remain.
+// Round 333: Complete typed tag receiver and direct selected event fields, with ordinary
+// index/saved-pointer/result-first domains: 342/367/400/405/342/367/400/406. All regress; original
+// tag type, both declarations, qualifiers, field observations and body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

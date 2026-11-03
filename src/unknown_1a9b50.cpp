@@ -548,6 +548,9 @@ extern point2f *g_468778;
 // Round 479: Shared add-scaled then point-difference prediction pipelines, original/native-point/in-place
 // primary and secondary pairs: 376/375/375/377/376/375/376/377. Original producers and include set restored;
 // early actor/settings/prop carriers and prediction homes remain.
+// AC489: Absent-prop, unsubmitted-request and inactive final-processing phase ownership,
+// seven subsets 388/397/375/410/388/397/410; complete graph with separate secondary admission
+// guards 410. Original body restored; frame agrees and early actor/settings/prop carriers remain.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
@@ -851,10 +854,22 @@ static __forceinline long real_to_long(real value);
 // Round 118 (fast): an object pointer local from the object getter 411 (1919 B), from the pool expression 411; the
 // dot product through the view's field 400 (1908 B), with the object pointer 484 (1918 B); the weight as a ternary 386;
 // the object velocity pointer before the magnitude 381 (one count, not kept).
+// Round 318: Progressive returned admission at short-circuit boundaries, first/last/all flag
+// partitions in bool/byte, then first/last in long; 517/517/517/526/526/526/543/543. Original
+// whole body and helpers restored.
 // Round 331: Query and later planar directions share one consumed vector at
 // direction/eligible/entry/receiver scopes 392 each; with sequential query/deadline time storage 394
 // each. Original workspaces, entry/result graph, query aliases and entire body restored; early
 // rejection and magnitude/query homes remain.
+// Round 536: True result published after actor/metadata/initial prop phase/before deadline, bool then byte storage: 384/389/419/526/431/436/466/500 fast.
+// Original result, admission and complete body restored; early exit and magnitude/query homes remain.
+// AC486: Complemented rejection result owned at entry, bool/byte/word/long 528/528/545/544;
+// branch-owned complement 437/437/448/453. Original result and whole body restored;
+// early rejection placement and magnitude/query homes remain.
+// N328: Readiness false producer at far entry versus only the non-action mode, bool/byte/short/long:
+// 382/382/482/415/380/380/480/413. NOT kept: complete bool/byte results gain only two. Original
+// readiness, admitted return and query aliases restored; early rejection and magnitude/query homes
+// remain.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
