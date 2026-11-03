@@ -1142,6 +1142,9 @@ struct s_1c4040
 // the record 8. A static definition (diagnostic:
 // the other caller in src/unknown_146a20.cpp no longer links) gives the custom convention, attempt EAX and
 // active CL 13, with 0x1c51c0 at 2.
+// m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
+// steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
+// goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
@@ -1205,36 +1208,36 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 		{
 			physics_object_get(local_0.field_8)->flags |= 0x20;
 			function_1c3770(local_0.field_8, 0);
-			local_0.field_3 = true;
-			goto local_0;
 		}
-		object = physics_object_get(local_0.field_8);
-		if (effect->effect_index != NONE)
+		else
 		{
-			function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
-				g_4687b0, effect->effect_index, 0, true);
+			object = physics_object_get(local_0.field_8);
+			if (effect->effect_index != NONE)
+			{
+				function_1765e0(&((s_physics_object_detach_view *)object)->position, &((s_physics_object_detach_view *)object)->velocity,
+					g_4687b0, effect->effect_index, 0, true);
+			}
+			object = physics_object_get(local_0.field_8);
+			if (object->havok_component_index != NONE)
+			{
+				function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
+			}
+			object->bit6 = false;
+			unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
+			if (unknown)
+			{
+				function_146bf0();
+			}
+			havok_object_detach(local_0.field_8);
+			if (unknown)
+			{
+				function_278f00();
+				function_146bf0();
+			}
+			function_b8540(local_0.field_8);
 		}
-		object = physics_object_get(local_0.field_8);
-		if (object->havok_component_index != NONE)
-		{
-			function_1d1260((s_havok_component *)havok_component_flags_get(object->havok_component_index));
-		}
-		object->bit6 = false;
-		unknown = TEST_FIELD_BIT(physics_object_get(local_0.field_8)->bit6);
-		if (unknown)
-		{
-			function_146bf0();
-		}
-		havok_object_detach(local_0.field_8);
-		if (unknown)
-		{
-			function_278f00();
-			function_146bf0();
-		}
-		function_b8540(local_0.field_8);
 		local_0.field_3 = true;
 	}
-local_0:
 	return local_0.field_3;
 }
 
@@ -1573,6 +1576,9 @@ PRIVATE inline void contact_motion_vector(vector3f *out, hkVector4 const *value)
 // declared first 39 each; reversed guard and initialised count 39 each; guarded for 39. Guard only around
 // the mirror 5, braced 5, nonzero 143 (882 bytes), induction in the for initializer 147 (882), literal zero 5;
 // the same-scope while with 0x1d10b0 as a component member 3 (the member stays matched). Restored.
+// m3 lane 9 r76 (fast): the fill loop bounded by count itself 139 (872 B); count declared before the indices 3;
+// `local_0 = ++i;` 3; the mirror declared at the top of the component block and zeroed at the label 3; the node
+// guard as nested ifs 3. Restored.
 // @retail 0x1c4c50
 bool __stdcall function_1c4c50(long object_index, long node_index, point3f const *point,
  vector3f const *change_a, vector3f const *change_b, long *result_object, vector3f *linear, vector3f *angular)

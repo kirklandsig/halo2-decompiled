@@ -928,6 +928,11 @@ void function_22a664(s_widget_quad_2b11 const *quad, s_float_rect const *coordin
 // insets 2/2; reversed bottom addend 2; shared rectangle alias 2; aggregate inner 133 (1163
 // bytes); typed input field pointer / direct indexed view 2/2. Member copies before a separate
 // inset pass reproduced 298 (1135 bytes).
+// Round 43 (m3 lane 2, fast): `inner` declared at function scope 2; insets in field order (top,
+// left, bottom, right) 133 (1163 bytes); top offset before bottom 2 (re-measured); bottom inset after
+// the horizontal offsets 39; four scalar short edges copied into the piece 238 (1129 bytes, frame
+// 0x64); each edge inset then offset as two statements 207 (1162 bytes); insets left, right, top,
+// bottom 20 (top/right registers swap as well).
 // @retail 0x1e9140
 bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 {

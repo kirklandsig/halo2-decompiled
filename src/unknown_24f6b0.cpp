@@ -76,6 +76,10 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // 57 (239 bytes; z and the zero share a register, the zero made after the products), `point->k * scale`
 // 57, `z = scale * z` 57, an empty `== 1` arm with the else scaling 57; in the else-form, `z = scale;`
 // then `z *= point->k` 9 and `z = point->k * scale` 9 (same code).
+// Round 35 (m3 lane 17, fast): on the scale local and short x, z set from point->k ahead of a `!=` test with arm
+// x, y, z: `z = scale * point->k` 57 (239 bytes), `z *= scale` 57; that form with the scale read at each use 37
+// (242 bytes, zero after the products), with k stored first 30 (zero first but in xmm2, the step in xmm3);
+// k stored first on the kept inverted-test body 12 (241 bytes).
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {

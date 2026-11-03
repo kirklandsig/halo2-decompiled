@@ -1774,6 +1774,10 @@ void function_b7360(long object_index);
 // recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
 // NOT kept: the 290 recording high-word form uses narrower loads than retail and
 // shortens away from 1848 bytes. Original reference observations and callback restored.
+// P290: Existing completion produced only by its actual case/default, bool/byte/short/long,
+// 301/301/465/449; direct default failure at those widths 471/471/463/467.
+// Original startup initialization, complete callback and inherited boundary restored;
+// actor/output entry carriers, retained point reference and 24-byte deficit remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

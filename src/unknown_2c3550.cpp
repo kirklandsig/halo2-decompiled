@@ -280,6 +280,9 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // M334: Existing normalizer absolute-length predicate as bool/byte/short/long results,
 // then their exact tiny-path complements, 156 in all eight forms at 634/630 bytes.
 // Original test, helper and body restored; early Y transport and XMM roles remain.
+// Round 81 (m3 lane 12, fast): the tiny test as `fabs(distance) >= 0.0001f` 94; the normalizer `static inline`
+// 92 (same code); its root through sqrtf 156 (634 bytes); the normalizer on a `point2f &` 92; the root's sum
+// written y first 92. Original normalizer and body restored; early Y load remains.
 // @retail 0x2c3680
 short avoidance_add_node(s_avoidance_search *search, point2f const *point, bool side, long value08, short obstacle,
 	short value1a, real cost, short parent)
@@ -815,6 +818,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
 // bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
 // without an exact match. Original actor observations, bit consumer and full body restored.
+// B388: Plain two-list transform table, long/short list ordinal, indexed/advancing
+// obstacle receiver and long/Boolean success: 827/861/827/861/794/806/794/806.
+// All regress and shorten away from retail; original distinct transform loops restored.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

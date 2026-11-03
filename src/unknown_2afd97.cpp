@@ -278,8 +278,7 @@ void function_2afeae(s_widget_item *item, c_class_1a2c81 *widget)
 			} while (--count);
 			if ((short)team_index != NONE)
 			{
-				color3f team_color;
-				colors[0] = *function_7f720(&team_color, (short)team_index);
+				colors[0] = function_7f720((short)team_index);
 			}
 		}
 

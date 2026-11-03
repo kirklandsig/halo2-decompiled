@@ -434,6 +434,10 @@ void function_125a90(long value);
 // Original body restored.
 // Round 204 (fast): a declared before b 50; the special arm as `!a && type == 0x26` 36 (same code); the getter
 // argument as `(short)type` 36; a dword index 36; the after-loop calls as `if (b) ... else ...` 39. Restored.
+// Round 125 (lane 8, fast): `a` declared before `b` 50 (the two flag bytes swap stack slots: slot order follows
+// declaration order here); `a` declared in the flag78 block 57, at its use in the b arm 133; the flags as mask
+// tests (`(flags & 0x20) != 0`) 36 and the kind test as `(0x1e >> kind) & 1` 36 (same code each). Still
+// BLOCKED-BY 0x221810 (src/unknown_221490.cpp held this round) and the ESI multiply. Body unchanged.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {
