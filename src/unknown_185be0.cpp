@@ -409,6 +409,9 @@ union s_185be7
 // native reference destinations: 626/626/625/626/626/625; ignored pointer/reference destination
 // results with Boolean predicates 622/622. Original helper and full body restored; root/NONE
 // ownership, settings/zero homes and flag joins remain.
+// DH330: Own-input homes at each of the six original first consumers 1031/622/622/622/622/622;
+// controller/action homes at all consumers 1031/623. NOT kept: unmatched own-input
+// indirections; original arguments, helpers and complete body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

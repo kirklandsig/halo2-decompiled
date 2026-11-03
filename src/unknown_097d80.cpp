@@ -302,6 +302,9 @@ struct c_aggregate : c_child
 // local stored to error after the total is added 32; `total = produced + total` 31; the release output initialized
 // to 0 at its declaration 68 (381 bytes); total declared before error and error initialized from it 31. Frame 0x8024
 // in each; still BLOCKED by the build flag (frame 0x8020 needs `produced` to share a slot).
+// DH330: Cleanup null guard with completed-query scope/shared scalar query output/
+// actual block reference, masks 0-7: 31/31/31/31/31/31/31/31. Shared outputs recover
+// 0x8020 but exchange the low loop homes; original independent outputs/body restored.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
