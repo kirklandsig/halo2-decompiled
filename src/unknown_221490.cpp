@@ -711,6 +711,10 @@ bool sound_driver_voice_create_buffer(
 // bins, play first 71 (same code), the 3D flag first 182 (599 bytes); the submix creation as a force-inline
 // helper taking (globals, voice, input mixbin) with its own pairs, mix bins and descriptor, play first 71 (same
 // code, frame unchanged), the 3D flag first 181 (599); the 3D flag as `(byte)flags & 1` defined first 182.
+// Round 377: Bare success-owned submix/spatial pair arrays and independent mixbins,
+// seven subsets 71/71/71/71/71/71/71; all with spatial-first predicates 182.
+// Original arrays, zero/ID stores, descriptor scopes and complete body restored;
+// spatial/play and zero/input/voice allocation remain.
 // AC485: existing SDK member calls at submix/spatial creation and buffer operations,
 // subsets 1..7 then all with pre-clear count publication: 82/70/82/71/82/70/82/82;
 // caller stays matched. One-point form rejected; original API calls/body restored.

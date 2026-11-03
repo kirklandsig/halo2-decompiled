@@ -1235,6 +1235,9 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // node-count guard 20 (1399, match-only); unified data-member reads 44 (1390, match-only); const pool pointer,
 // shared header accessor, header pointer arithmetic, nonconst data-member pointer and typed current view 20 each
 // (all with the match-only guard). The guarded forms were restored to the 87 form.
+// DH306: actual matrix/orientation/node-record-displacement induction, seven subsets
+// 94/210/96/212/230/212/212; matrix-cursor-owned bound 396. NOT kept: best gains only three.
+// Original loop and no-model lookup restored; count entry and data reload remain.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {
