@@ -415,6 +415,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 264/262/276/232/238/266/260; all with double reciprocal producers 260.
 // Both inverse/factor pairs recover frame 0x2c at 276; delta forms reach 955 bytes
 // but regress. NOT kept: nonexact precision changes; original body restored.
+// Round 554: Native double transform input/scale/complete-row accumulation, seven
+// families 690/465/690/690/690/690/690; all with direct inverse factors 679.
+// NOT kept: nonexact precision forms outline or change scalar code; original alias-safe
+// helper and full body restored. Frame and inverse/displaced-transform homes remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

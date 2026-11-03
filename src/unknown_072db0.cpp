@@ -1597,6 +1597,10 @@ struct s_rating_summary
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 554: Native team/counter cursor as primary induction, derived real-array ordinal,
+// indexed/walking secondary record, iteration/pass-owned bound result:
+// 274/362/387/407/274/362/387/407. Original integer induction and full body restored;
+// formatter/count scheduling and team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {
