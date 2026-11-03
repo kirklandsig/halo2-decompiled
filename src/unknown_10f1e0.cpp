@@ -1498,6 +1498,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // query on the global, 349 (1302 B); with both weapon-object lookups through it 349; plus the if-form
 // depletion 325 (frame four, the three flags at retail's +0x11..+0x13, unit not re-derived, data in EDI);
 // with the controlling field tested directly 325; with the overlay read at its switch 346 (1264 B).
+// AC508: Joint false-default ownership in first conditional/valid-handle assignment and
+// second conditional/depleted-valid assignment, bool then byte status: 357/327/349/322 twice.
+// NOT kept: no exact default/SETLE producer match. Original complete body restored; pool/state
+// ownership, signed-count joins and byte normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

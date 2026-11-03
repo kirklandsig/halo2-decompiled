@@ -436,6 +436,9 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // DH316: Unsigned-word/signed-64-bit pass, long/bool departure and memcpy/memmove:
 // 257/254/187/264/319/299/299/292. NOT kept: all regress; two word CRT forms lose the
 // caller. Original pass, state, copy, helpers and entire executable body restored.
+// AC508: Actual unrounded distance/angle/delta domains, wide subsets 1/2/4/3/5/6/7:
+// 234/216/255/249/263/265/259; native float CRT pair 170. NOT kept: no exact precision match;
+// original body restored. Extra frame word and count/departure/compaction homes remain.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

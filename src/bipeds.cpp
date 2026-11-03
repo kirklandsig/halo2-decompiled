@@ -4184,6 +4184,10 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
 // consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
 // output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
+// AC508: Reversed rotation cross with sine subtraction on retained indexed-dot graph,
+// ordinary/staged producers, shared dot, cross-first capture and complete parallel parts:
+// 179/156/182/158/168/168/178/179. NOT kept: no exact sign/scheduling match; original helper/body
+// restored. Normalization SIMD ranks and trigonometric/basis homes remain.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
