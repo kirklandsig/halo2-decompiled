@@ -353,6 +353,9 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC493: First/second/both plain two-corner row walks, long/short: 66/56/62/295/336/415;
 // both with continuous output cursor long/short 235/407. All original corner calls, helper and
 // complete body restored; plane-store base, first selectors and product memory sides remain.
+// m3 lane 11 r60 (plain): `short axis` local for the store and index 162; no axis local (quad->axis
+// read back) 174; determinant as e1.j*e0.i - e1.i*e0.j / e0.i*e1.j - e1.i*e0.j 46/46 (same code); axis taken
+// from matrix->up 209 (986 bytes); bounds copy after the plane 78.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -909,6 +912,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
 // 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
 // homes and body restored; native value returns move extent away from retail.
+// m3 lane 11 r60 (plain): tag pointer and face count renamed (zz_/a_ prefixes, diagnostic) 539, same slots: names
+// do not order these homes; the decal type read once into a `short type` used at its five uses 741; the quad
+// declared at the group's top 539; the first plane declared at the group's top 539; both counts declared above
+// the face arrays 539 (all same code).
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)
