@@ -186,6 +186,10 @@ static __forceinline void capsule_update_1e55d0(c_z_shape_view *shape, byte *com
 // symbol order does not move the move/input registers); countdown as `if (state[1]) state[1]--;` 320;
 // the 0x54 flag stored after the 0x58 copy 323; the velocity test without `&velocity &&` 319 (same
 // code); case 6 as one expression 319 (same code). Still BLOCKED-BY 0x1ec690 (input in EDI).
+// Round 58 (lane 14; aligned counts in brackets, this body [215]): the draft of 0x1ec690 activated, plain, 349 [235] (input still EBX->EAX at entry; the draft inlines
+// 0x1ed340 where retail calls it; 0x2901e0 29, 0x1ed340 45, 0xb77d0 49, 0x1c4b00 133 stop matching, 0xfa100 holds); fast: state through a pointer to its parameter 319
+// at each use and read once 319, state written as the parameter at each use 319 (all same code); a named base pointer for the three position reads 319; with a named
+// component index too 319.
 // @retail 0x1e55d0
 void __stdcall function_1e55d0(s_biped_physics_move *move, void *physics, s_biped_physics_output *output)
 {

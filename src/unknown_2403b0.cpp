@@ -177,6 +177,9 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 // a named local 86 (same code); the existing unit_index local passed to 0x244680 232 (917 bytes); the p35/0x138880
 // guard as nested ifs 86 (same code); the permission block's flag test split from its mode tests (nested ifs) 86.
 // Pool reload still BLOCKED-BY 0x101280's summary (its other caller 0x241520 sits in a file another lane holds).
+// Round 207 (lane 3, fast): the slot-clear helper as `(flags & 1) ^ 1` 86 (same code); the limit product
+// computed before the first event block 199; the scoring test inverted with the decay arm first 150; the
+// existing unit_index local passed to 0xb9dd0 231 (916 bytes). The scoring flag test as `!((flags >> 3) & 1)` 86 (same code). Pool reload still BLOCKED-BY 0x101280's summary.
 // @retail 0x2403b0
 void __stdcall function_2403b0(long player_index)
 {

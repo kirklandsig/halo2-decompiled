@@ -223,6 +223,9 @@ struct s_flag_word_bits
 // short ticks 114, full-width kind/effect 112/113, nested tick admission and sole exit 114 each.
 // NOT kept: conditional success flags remain unmatched; width-only gains are at most two.
 // Player/object load scheduling, native flag mask, effect dispatch and tail inlining remain.
+// Round 51 (m3 lane 15): the two parameter-address locals dropped, parameters read directly 114 (same code, kept);
+// on that: object through tail_object_get 120; `ticks <= 0 || unavailable` early return 114; player looked up after
+// the ticks 120; the flag tested in the ticks condition (no `unavailable`) 122.
 // DH319: Existing rounding producer duration/rate accumulators and named-rate
 // products 114/114/114/114; the same with a short return 135/135/135/135.
 // Original helper restored; player/root scheduling, duration XMM ownership,
@@ -230,10 +233,8 @@ struct s_flag_word_bits
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
-	long const *player_reference = &player_index;
-	long const *object_reference = &object_index;
-	s_tail_player *player = tail_player_get(*player_reference);
-	s_tail_object_header *header = (s_tail_object_header *)g_4e0300->data + (*object_reference & 0xffff);
+	s_tail_player *player = tail_player_get(player_index);
+	s_tail_object_header *header = (s_tail_object_header *)g_4e0300->data + (object_index & 0xffff);
 	byte *object = (byte *)header->object;
 	byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
 	long ticks = game_seconds_to_ticks_round(*(real *)(definition + 0x130));
@@ -248,25 +249,25 @@ void function_151ea0(long player_index, long object_index)
 			if (kind == 2)
 			{
 				if (!function_d6af0(player->unit_index)) return;
-				player_speed_request_14ea20(*player_reference);
+				player_speed_request_14ea20(player_index);
 			}
 			else if (kind == 5)
 			{
 				if (!function_d6790(player->unit_index)) return;
-				player_speed_request_14ec00(*player_reference);
+				player_speed_request_14ec00(player_index);
 			}
 			else
 			{
 				short effect = kind == 3 ? 0 : 1;
-				if (!function_152000(*player_reference, effect, (short)ticks)) return;
-				if (effect == 0) player_speed_request_14eb10(*player_reference);
+				if (!function_152000(player_index, effect, (short)ticks)) return;
+				if (effect == 0) player_speed_request_14eb10(player_index);
 			}
 		}
-		long definition_index = *(long *)tail_object_get(*object_reference);
+		long definition_index = *(long *)tail_object_get(object_index);
 		function_191fab(definition_index, player->local_index);
 		function_a89c0(player->unit_index, definition_index);
-		if (player->local_index != NONE) function_f8110(*object_reference);
-		function_b8540(*object_reference);
+		if (player->local_index != NONE) function_f8110(object_index);
+		function_b8540(object_index);
 	}
 }
 
@@ -458,6 +459,9 @@ struct s_tail_player_identifier
 // N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
 // and the CRT int comparison result: all eight 31. Original body restored; options
 // acquisition, delayed saves and comparison register ownership still differ.
+// Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
+// test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
+// delayed saves and identifier/options/comparison allocation remain.
 // @retail 0x1529a0
 s_tail_traits *function_1529a0(long player_index)
 {
@@ -1018,6 +1022,9 @@ struct s_tail_transfer_traits
 // do-while, admitted age, once/per-use clock, weapon-result home names and per-use second lookup:
 // 154/154/154/180/165/165/154/154. All complete original source and existing helper bodies restored.
 // NOT kept: no score gain or byte match.
+// Round 51 (m3 lane 15): clock read once before the selection loop 164; alternate as one bool expression 175;
+// primary through the existing unit_get_current_weapon 154; results declared other/secondary/primary 153; no-seat
+// arm first 169. Retail's no-seat primary shares the selection counter's slot and lives in EDI in the seat arm.
 // DH319: Last-match array ordinal long/dword/short/byte, range admission
 // 189/189/196/197; unequal-sentinel admission 189/189/196/197. Original
 // pointer selection restored; selected-traits/unit/NONE homes and pool reloads remain.
@@ -1151,6 +1158,9 @@ static __forceinline dword player_weapon_flags(long weapon_index)
 // P295: Original ternary results with delayed held/both publication, completed held-slot scope,
 // immutable results and readonly slot receivers: 284/281/284/281/284/281/284/281.
 // NOT kept: three-point gain and one-use pending receiver; pool/player/tag carriers remain.
+// Y559: Bounded slot count char/short/int/dword, entry then count-phase zero
+// declaration: 287/283/284/284/305/293/294/294. NOT kept: one-point lead below
+// the keep gate; retained pool/player and lazy tag-table ownership remain.
 // @retail 0x1509e0
 void function_1509e0(long player_index, long weapon_index, bool *modes)
 {
@@ -1252,6 +1262,9 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 // M337: Returned availability owns unit and held-slot admission; bool/byte/short/long
 // states with the original short slot [48, 68, 85, 80]; native signed-byte slot [46, 66, 81, 76].
 // All restored; the saved unit-index and table/slot registers remain exchanged.
+// Round 51 (m3 lane 15): mode arms swapped 27; `primary ? 0 : 1` hand 17; result declared before the player 35;
+// e68c0 code from hand 60; unit index local inside the dispatch block 17; dispatch outcome in its own success flag
+// copied to result (0x152bf0's matching form) 17. Diagnostic: 1-8 unused entry locals 17 each (not symbol numbering).
 // @retail 0x151b80
 bool function_151b80(long player_index, bool primary)
 {
@@ -1320,6 +1333,9 @@ void function_150820(dword *bits, bool local_only)
 // N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
 // and the int hand-negation result: all eight 43. Original body and calls restored;
 // ESI/EDI player/hand ownership still differs.
+// Y559: Complementary final failure bool/byte/short/long, conditional then
+// guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
+// native ESI player/EDI hand and temporary entry registers remain.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
@@ -1518,6 +1534,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // P295: Existing option/user/controller vector setters 618/543/663/576;
 // complete test/set families 629/536/644/435. NOT kept: scalar masks become
 // indexed word addresses with sar 5, absent in retail; original mask code restored.
+// M344: Complete default-owned acceptance/rejection pass outcomes in bool/byte/short/long
+// storage 668 each (1850/1992 bytes). NOT kept: outcome flags do not match and shorten
+// the body; original switch, masks, traversal state, helpers and complete body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {
@@ -1828,41 +1847,22 @@ void function_150400(long player_index, vector3f const *forward, vector3f const 
 void __stdcall function_ccff0(long unit_index);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 
-// score 91 (was 91): logic walk against retail found no behaviour difference. The whole score comes from the
-// first test: retail loads the flag with "mov cl,[edi]; xor al,al; test cl,cl" (return value preset to
-// false), ours emits "cmp byte ptr [edi],0" and the shift makes the rest of the function count as
-// different (align.py shows only that one hunk). Tried: byte/char/long local copy of the flag (91),
-// result preset before the test (72, result lands in ebx), single success variable (109),
-// early return (91), else form (91). A signed-char test "(char)f > 0 || (char)f < 0" gives 4 but is
-// not natural source, so it is not used.
-// Permuter (25 min on r654): best 56, only with a volatile unit pointer; not kept.
-// F352: Existing traits-record bool/byte flag with admission-owned disabled return,
-// independent false result, disabled guard, and sole outcome exit: bool 91/91/91/91;
-// byte 17/91/17/16. NOT kept: byte normalization grows to 253/251 bytes; bool
-// loads AL rather than CL. Original record, input access and entire body restored.
-// N341: enabled Boolean/byte retained for the inactive return 17/91; failure flag through ordinary/all
-// admissions 92/88, complete failure single exit 92; pointer end/countdown copies 106/92;
-// special-success return arm 91. NOT kept: 17 adds setne and grows to 253/251 bytes;
-// 88 is only a three-point gain. Native flag-load/false-result prefix remains.
-// Focused byte-input plus complete default-result lifetime 91; native prefix still differs.
-// DH319: Active result byte/short/long/dword 89/70/72/72; complete single-return
-// result byte/short/long/dword 73/77/78/78. NOT kept: wider truth storage or
-// complete result raises the native 0xc frame to 0x10; CL/AL entry remains.
 // @retail 0x152bf0
 bool function_152bf0(byte const *loadout, long unit_index)
 {
+    bool result = false;
     if (loadout[0])
     {
         byte *unit = (byte *)tail_object_get(unit_index);
         function_ccff0(unit_index);
         long primary, special, secondary;
-        bool result;
+        bool success;
         {
             bool failed = false;
             primary = function_152a50((s_loadout_state_152a50 *)(loadout + 2), unit_index, &failed);
             special = function_152a50((s_loadout_state_152a50 *)(loadout + 0x12), unit_index, &failed);
             secondary = function_152a50((s_loadout_state_152a50 *)(loadout + 0xa), unit_index, &failed);
-            result = !failed;
+            success = !failed;
         }
         for (long i = 0; i < 2; ++i)
         {
@@ -1870,14 +1870,14 @@ bool function_152bf0(byte const *loadout, long unit_index)
             unit[0x23e + i] = loadout[0x1a + i];
         }
         if (primary != NONE && !function_cd0c0(unit_index, primary, 1))
-        { function_b8540(primary); result = false; }
+        { function_b8540(primary); success = false; }
         if (secondary != NONE && !function_cd0c0(unit_index, secondary, 1))
-        { function_b8540(secondary); result = false; }
+        { function_b8540(secondary); success = false; }
         if (special != NONE && !function_cd0c0(unit_index, special, 7))
         { function_b8540(special); return false; }
-        return result;
+        result = success;
     }
-    return false;
+    return result;
 }
 
 bool function_cb810(long unit_index, vector3f *vector);
@@ -1999,6 +1999,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // AC502: Positive unit/parent/owner/radius/all admissions and independent final eligibility
 // 202 each; common notification alone/with complete admissions 232/232 (688 bytes).
 // Original body restored; entry player/header-offset ownership and spill remain.
+// Round 51 (m3 lane 15): rounds scoped in the loop body 202 (modes still takes the object_index argument home;
+// retail shares rounds' slot); parent retest through parent_index 227; weapon_index declared in the loop 202; final
+// dispatch as if/else with one notification 232; offsets declared z, x, y 203.
 // Y557: Native signed-short scan as for/while 242/202; counter live from
 // entry 263/225; iteration-owned weapon 242/202; both lifetimes 263/225.
 // Original do-loop, counter position and weapon lifetime restored. Frame 0x28
