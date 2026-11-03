@@ -4561,6 +4561,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// J245: Magnitude selector on direct-active graph: parameter-owned ternary/early/joined/
+// first-default/second-default, named joined result, MAX expression, named second-default: 749/749/749/803/829/749/749/829.
+// NOT kept: no gain; default-result forms shorten away from 2974 bytes. Frame 0x18 agrees; entry definition and zero/result/one homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5106,6 +5109,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // weighted-driver graph, seven subsets then consumed flip output:
 // 1090/1087/1140/1090/1140/1140/1140/1205. Sharing reaches frame 0xd4 rather
 // than native 0xd8; original complete body restored at frame 0xf8 and retail length.
+// J245: Existing bank/scaled-angular/force producers after driver weighting,
+// subsets 1/2/4/3/5/6/7, then all three cached up inputs with original magnitude tree: 1114/1069/1109/1100/1114/1109/1100/1087.
+// NOT kept: 1069 grows to 5104/5094 bytes; other producers regress and cached up inputs tie 1087. Every frame stays 0xf8 versus 0xd8; all original producers restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

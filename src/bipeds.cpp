@@ -1413,6 +1413,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
 // shortens away from retail; 584 gains one, 581 gains four and shortens away.
 // Original complete body restored; missing frame word and material/airborne/animation homes remain.
+// J245: Actual moved result in bool/byte/short/long with function-scope
+// declaration, then case-scope declaration and separate false producer: 585/585/584/581/585/585/584/581.
+// NOT kept: 584 and 581 gain only one and four; every form retains frame 0xf8 versus 0xfc. Original movement result and all workspace homes restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1918,6 +1921,9 @@ void function_dfd70(long arg_159e6d)
 // crouch and default-owned zero: 104/261/261/104/104/245/242/247.
 // NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
 // Original helpers/body restored; mode-three layout and basis/ray homes remain.
+// J245: Existing head/forward/fallback scalar-setter subsets 1/2/4/3/5/6/7,
+// then first-ray miss setter: 235/229/253/241/255/258/256/245.
+// NOT kept: all forms lose 0xde9d0; 229 gains only four and grows to 1047/1041 bytes. Original dispatch, basis and ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
