@@ -1368,6 +1368,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // state reassignment at case entry: plain 585, 2828 bytes as retail, no other measurement changes or
 // match losses. Retail reloads this receiver before the case calls. No new local or helper. Frame stays
 // 0xf8 versus 0xfc; original packed output observation and all other phases retained.
+// N330: Existing three-dimensional/planar difference and planar magnitude producers,
+// then each with named nonnegative length selection: 585/585/589/589/599/599/600/600.
+// Frame stays 0xf8 versus 0xfc; original scalar deltas, helpers and complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
