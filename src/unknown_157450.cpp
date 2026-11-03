@@ -4402,6 +4402,10 @@ void function_15fe20(long team_index, color3f *color);
 // restored; native team-color transfers, shared NONE and shift-count residency remain.
 // Round 471: Direct native member publication, rival/own/both team and rival/own/both palettes
 // 562/534/563/139/429/458; all outputs with const/mutable returned sources 685/685. All restored.
+// Y538: Existing three-dword display color fields, rival/own/both native aggregate
+// publication 88/88/88; corresponding native member publication 562/534/563; both
+// with library/filled-output publication 88/564. Types, include and complete body restored;
+// returned-color capture, final NONE carrier and byte-shift residency remain.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

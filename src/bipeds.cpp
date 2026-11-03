@@ -1917,6 +1917,9 @@ void function_dfd70(long arg_159e6d)
 // forward-up names / native tag-table receiver, subsets 1/2/4/3/5/6/7, then all
 // with head declared after collision: 228/222/222/228/228/222/228/228. The 222
 // form restores ret 0x14 but needs exact bytes; all bodies and helpers restored.
+// Round 537: real forward/up/direction scratch scope subsets 248/248/248/248;
+// remaining subsets and head-at-copy 248/248/248/248. Original shared helper and
+// complete target restored; offsets transport and forward/up homes remain.
 // N323: Normalized-direction early admission, complete collision-result join and native point setter, seven subsets then complete height-delta producer: 249/249/248/249/249/249/249/249. All original helpers/body restored; shared users regress and offsets/forward/up homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
@@ -2741,6 +2744,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // hit producer 499. Both distance-scan values (494 plain, 1874/1908, frame 0x50
 // versus retail 0x4c) NOT kept: struct copies in two of the three scans, the subset
 // picked by score (mass scan keeps its pointer). Body restored at 530.
+// Y539: Test-produced ragdoll/model admission and the existing bit-test producer,
+// subsets 1/2/4/3/5/6/7: 530/537/530/537/530/537/537; complete graph with
+// natural shared completion 539 (1859 bytes, incoming index differs). Original
+// guards, bit tests, exits and complete body restored; frame/result homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -4508,6 +4515,10 @@ bool function_1f5560(long actor_index, vector3f *facing);
 // frame/state-result lifetime and input convention remain.
 // Complementary bool/byte results recover frame 0x28 at 232, but lose the two
 // matched callers at 61/14 through the natural register input; restored.
+// Round 537: natural input with complementary support result bool/byte/short/long,
+// entry success 229/229/217/219; query-bound success 225/225/213/215. Original complete body
+// restored; native stack input, state/result lifetime and 0x28 frame remain unresolved.
+// NOT kept: natural-input forms lose matched callers through the input convention.
 // M317: Natural input/existing velocity-wake helper; complete jump/up/square parts 1/2/4/3/5/7; all with
 // long/short contact truth: 317/228/228/228/228/228/228/231/228.
 // State-base/result lifetime, frame 0x24/0x28 and input convention remain. Original executable body restored.
@@ -4894,6 +4905,10 @@ void __stdcall function_b8600(long object_index, long unknown);
 // 1/2/4/3/5/6/7, then all with read-only tag receiver: 729/770/741/773/744/780/775/775
 // (fast control 655). All regress; complete original body restored. Frame 0xd0 agrees;
 // animation/state/tag homes and completion expansion remain.
+// Y539: One completion call after the complete mode dispatch, with test-produced
+// admitted/blocked eligibility in bool/byte/word/long: fast 655 each against control
+// 655 (full 648). Compiler completion cloning and frame/homes remain; original
+// switch, repeated calls and complete body restored. Every checked peer is unchanged.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

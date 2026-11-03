@@ -885,6 +885,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // 771/793/771/804; total also owns phase admission 771/794/771/805 (fast).
 // Original total, decrement, admission and body restored; tag/count/plane homes remain.
 // Ordinary outer-group decrement 746 at 3647 bytes versus full 539: NOT kept; fast lead was not confirmed.
+// Y539: Complete decoder output reference/pointer return/reference return/value return,
+// forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
+// 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
+// homes and body restored; native value returns move extent away from retail.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

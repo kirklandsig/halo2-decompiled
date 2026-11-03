@@ -1678,6 +1678,10 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // seven subsets, then all with full player value: 167/138/134/167/165/134/165/167. Original body
 // restored; same-block pool reload and weapon/mode homes remain.
 // Short hand alone 134 gains four above 30 and is below the retention gate.
+// Round 537: shared hand-getter result first/valid arms/invalid arms/conditional
+// 138/138/138/138; each with caller success result 171/134/134/134. Helper and
+// complete body restored; 134 gains four and shortens to 526/538, below the keep gate.
+// All helper forms raise other users, including 0xe8510; none is eligible to keep.
 // M317: Native bounded mode char/byte/short/word, each with long/Boolean hand on the original branch-only
 // graph: 146/154/146/154/137/145/137/145.
 // Same-block pool reload and selected-weapon/mode homes remain. Original executable body restored.
@@ -2308,6 +2312,9 @@ __forceinline char unit_action_round(real value)
 // 243/243/243/243/270/270/270/270; restored.
 // M313: Uniform per-use unit/actions, each with short-hand helper; both with Boolean active test; original body restored;
 // fast 326/379/549/338/382/552/556/559.
+// Round 537: failure-result lifetime at play/pre-call/post-call/fallback boundaries,
+// bool 235/235/235/235; byte 235/235/235/235. Every original selection, call and
+// complete body restored; pool/type/name ranks and completion-byte home remain.
 // M317: Channel entry lifetime/function-owned animation/conditional animation acquisition subsets
 // 1/2/4/3/5/6/7, all with common missing-animation return: 318/235/235/318/318/235/318/318.
 // Pool/index/type/name and result-byte homes remain. Original executable body restored.
