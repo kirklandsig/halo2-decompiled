@@ -172,6 +172,8 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 // Round 120: flag after magnitude/normalization 195/200; outer/inner square-sum operand swaps 4/10;
 // named length_squared 4; flag between squared length and root 18; flag in the component loop 240;
 // root before the offset loop 181. Original body restored at 4.
+// Round 32 (lane 17, fast): sqrtf for the length 261 (1042 bytes, called); the half step as `/ 2.0f` 4; no `facing` pointer
+// (unknown290 read at each use) 21; `unit` declared just before the degenerate test 4; local_3 declared before the copy 4.
 // @retail 0x1a9760
 void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
 {
