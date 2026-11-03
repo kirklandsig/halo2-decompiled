@@ -215,6 +215,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // with the entry declared outside the loop, or read through an inline index getter, the same code. Retail's register plan
 // needs the mask hoisted first, which only the forms with a live result give.
 // M310: Eager pure-Boolean cache/identity/player pairs, seven subsets, then complete eager eligibility [56, 86, 97, 51, 75, 104, 115, 123]. Original body restored.
+// M332: Existing iterator on the local successor, pointer/declaration while, plain for,
+// or native index admission, each with result/break or direct completion: 57/55/57/55/91/73/52/53.
+// All regress; original walk, helper, publication and complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

@@ -1500,6 +1500,11 @@ long function_2421d0(long team)
 // variable assigned in the flat arms 17; shared peer and block variables in nested arms 74 (212 bytes);
 // force-inline tag helper 17; result initialized at its declaration 17; existing peer accessor 17;
 // const peer receiver 17. Original body restored.
+// Round 31 (lane 18, fast): an inline helper(bool bomb) with its own NONE result, the peer test and a two-use
+// block local (ternary, if/else, or two `mp_globals_block()` calls), the caller branching on the type with
+// true/false, 64/64/64 (211 bytes); that helper called once with `engine_type == 9` 153 (93 bytes); a
+// helper(bool) holding only the block local and the ternary (or if/else) in the existing arms 17/17 (the
+// constant folds before allocation). Original body restored.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
@@ -1570,6 +1575,10 @@ void function_2422d0(long slot)
 // This round: team-entry field reference 104 (267 bytes); register index/object/both 7 each;
 // accepted field reread 54; rejected field reread 50; both field rereads 104; nested two-use
 // table-entry pointer 7; force-inline object getter 7. Original body restored.
+// Round 31 (lane 18, fast): the object pointer defined from the team entry before the index local 7; the
+// accepted store through the slot local 31; the call on `object->slot` with the table test on the slot
+// local 31; the second loop's element in a named local 7; the rejected count copied to a loop bound 7.
+// Original body restored.
 // @retail 0x2423f0
 bool function_2423f0()
 {

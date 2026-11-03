@@ -181,6 +181,9 @@ void *c_game_havok_memory::allocate_aligned(long alignment, long size, long memo
 // secondary and fallback done exits 11; secondary-only done exit 11; secondary receiver before its bounds 11;
 // concrete primary global declaration 11. Concrete secondary declaration did not compile at its explicit base
 // destructor; primary declaration without the complete type did not compile at an external upcast.
+// Round 31 (lane 17, fast): third range in its own else with the fixed-memory global in a local 42; that
+// local declared at the top and used for the third's bounds and receiver 44 (123 bytes); address-first
+// second lower bound 12; address-first first upper bound and equality 12; address-first third range 13.
 // @retail 0x147240
 void c_game_havok_memory::deallocate_aligned(void *address)
 {
