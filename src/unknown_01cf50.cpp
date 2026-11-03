@@ -4613,44 +4613,39 @@ again:
 
 long g_485a60;
 
-long function_016ae0(real value);
-
-// score 210 (was 353): retail's EBX state and loop agree (698 bytes against 736); retail inlines 0x16ae0's asm
-// round-down (value stored and reloaded at [esp+0x10], frame 0xc) where ours calls it (frame 8). Retail also does
-// not keep g_485a60 in a register (it reloads it after the state stores and holds g_4e3b44 in EDX through the
-// loop, reloading it after the 0x19530 call); ours holds g_485a60 in EDX and reloads g_4e3b44 at each use.
-// Round 65 (m3 lane 1, fast): the round-down through floor() 353; through the existing 0x16ae0 210 (kept, with
-// the binding bytes read at each use, as retail re-reads them after every state store, and a counted loop);
-// that with the original binding-slot/destination/source locals 365 (546 bytes, the state back on the stack and
-// 0x16b90 back to 47); with the location tag kept in a local 214; the original max/log lines 210 (same code).
-// Leads: 0x16ae0 is declared `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line
-// here; g_485a60's reloads look like retail's definition (a containing aggregate?), BLOCKED-BY src/unknown_03bcb0.cpp
-// (extern declarations of g_485a60 in a file other lanes hold); do not expose its address.
-// LEAD, not kept: a file-local __forceinline copy of 0x16ae0's asm (as src/unknown_02cbf0.cpp has) 158 at 742
-// bytes (335 before the per-use reads); with g_485a60's address exposed as well (diagnostic only) 42 at 736.
-// On the 158 form: the max as `width <= height ? height : width` 155, `height > width ? height : width` 155,
-// `height < width ? width : height` 158; the location-tag comparison operands swapped 158 (same code).
+// score 146 (was 353): retail inlines 0x16ae0's floor body (its asm; a 0xc frame with the value's slot) where ours
+// calls floor, so ours keeps g_485a60 in EDX across the loop where retail keeps the definition table. Round 126:
+// binding bytes read at each use 215; record-array view through input/output pointers 234 (0x16b90 back to 47);
+// the existing 0x16ae0 called 210; flag test before the source pointer and full-expression 0x19530 outputs 146.
+// Diagnostic only: 0x16ae0's body as a file-local forceinline copy gives 736 bytes and 150 (not kept: a twin).
+// Round 65 (m3 lane 1, on the 353 body before round 126 merged): the existing 0x16ae0 with per-use binding reads
+// and a counted loop 210; that with the original slot/destination/source locals 365 (0x16b90 back to 47); the
+// location tag in a local 214; a file-local forceinline asm copy 158 (a twin, not kept). Lead: exposing g_485a60's
+// address (diagnostic only) gave 42 at 736 bytes: retail reloads g_485a60 after the state stores and holds g_4e3b44
+// in EDX; 0x16ae0 is `inline __declspec(noinline)` in src/unknown_0167a0.cpp, which keeps it out of line here.
 // @retail 0x18a90
 void function_18a90(byte *state, word const *descriptor)
 {
-    (void)&descriptor;
     byte *binding = *(byte **)(*(byte **)(state + 0x20) + 0xc) + (*descriptor & 0x1ff) * 4;
-    for (long i = 0; i < (*descriptor >> 9); ++i)
+    for (long i = 0; i < (*descriptor >> 9); i++)
     {
         if (binding[0] != 0xff)
         {
             memcpy(state + 0x1320 + binding[2] * 0x40, state + 0x320 + (signed char)binding[0] * 0x40, 0x40);
-            if ((binding[3] & 2) && *(long *)(state + 0x320 + (signed char)binding[0] * 0x40) != NONE)
+            if (binding[3] & 2)
             {
-                byte *definition = g_4e3b44[*(long *)(state + 0x320 + (signed char)binding[0] * 0x40) & 0xffff].bytes;
-                if ((real)*(long *)(definition + 0x44) > *(real *)(state + 0x338 + (signed char)binding[0] * 0x40))
+                byte *source = state + 0x320 + (signed char)binding[0] * 0x40;
+                if (*(long *)source != NONE)
                 {
-                    byte *bitmap = *(byte **)(definition + 0x48) +
-                        function_016ae0(*(real *)(state + 0x338 + (signed char)binding[0] * 0x40)) * 0x74;
-                    if (bitmap[0xe] & 0x10)
+                    byte *definition = g_4e3b44[*(long *)source & 0xffff].bytes;
+                    if ((real)*(long *)(definition + 0x44) > *(real *)(source + 0x18))
                     {
-                        *(long *)(state + 0x328 + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 4);
-                        *(long *)(state + 0x32c + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 6);
+                        byte *bitmap = *(byte **)(definition + 0x48) + (long)floor(*(real *)(source + 0x18)) * 0x74;
+                        if (bitmap[0xe] & 0x10)
+                        {
+                            *(long *)(state + 0x328 + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 4);
+                            *(long *)(state + 0x32c + (signed char)binding[0] * 0x40) = *(short *)(bitmap + 6);
+                        }
                     }
                 }
             }
@@ -4661,7 +4656,7 @@ void function_18a90(byte *state, word const *descriptor)
             if (binding[1] != 11)
             {
                 *(long *)(state + 0x1320 + binding[2] * 0x40) = NONE;
-                function_19530((signed char)binding[1], state, binding[2],
+                function_19530((signed char)binding[1], state, (short)binding[2],
                     (long *)(state + 0x1328 + binding[2] * 0x40), (long *)(state + 0x132c + binding[2] * 0x40));
             }
             else
@@ -4676,10 +4671,11 @@ void function_18a90(byte *state, word const *descriptor)
                 }
                 if (location)
                 {
-                    if (*(long *)(state + 0x1320 + binding[2] * 0x40) != *(long *)(location + 0x1c) ||
-                        *(real *)(state + 0x1338 + binding[2] * 0x40) != (real)g_485a60)
+                    byte *destination = state + 0x1320 + binding[2] * 0x40;
+                    if (*(long *)destination != *(long *)(location + 0x1c) || *(real *)(destination + 0x18) != (real)g_485a60)
                     {
-                        byte *bitmap = *(byte **)(g_4e3b44[*(long *)(location + 0x1c) & 0xffff].bytes + 0x48) + g_485a60 * 0x74;
+                        byte *definition = g_4e3b44[*(long *)(location + 0x1c) & 0xffff].bytes;
+                        byte *bitmap = *(byte **)(definition + 0x48) + g_485a60 * 0x74;
                         *(real *)(state + 0x1330 + binding[2] * 0x40) = 3.0f;
                         *(long *)(state + 0x1320 + binding[2] * 0x40) = *(long *)(location + 0x1c);
                         *(real *)(state + 0x1338 + binding[2] * 0x40) = (real)g_485a60;

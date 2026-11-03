@@ -430,6 +430,10 @@ void function_14bac0()
 // N331: Parent-record ancestry with cached/per-use headers, original/native result-tested
 // recipients and bounds-only scratch scope: 256/256/265/265/256/256/265/265. Original
 // handle walk, header observations, bounds lifetime and complete body restored; frame/point overlap remains.
+// N338: Root initialized from the admitted unit, four parent-producer/lifetime
+// forms with uniform cached/per-use headers, 256 each at 1050/1043 bytes. NOT kept:
+// read/storage steering without a match. Original complete handle walk and body restored;
+// frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {

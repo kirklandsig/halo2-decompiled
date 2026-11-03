@@ -154,6 +154,10 @@ void function_26c180(long actor_index);
 // 31; the reference test's operands swapped 30; the scratch release before the flag stores 47 (444 bytes).
 // Re-measured: flag8 as an if/else 49 (442 bytes); scratch acquired after the output declarations 29.
 // BLOCKED-BY 0x260670 (its stub keeps the bool's address escaped).
+// Round 120 (lane 7, fast): the bool output cleared before the request call 41 (436 bytes); the second
+// call's reference named and used for the store and the test 29; the bool passed as `unknown != 0` 40
+// (436 bytes); the output struct declared first in the function 29; the request zero-initialized instead
+// of memset 113 (433 bytes).
 // @retail 0x1b0540
 void function_1b0540(long actor_index, s_follow_search_state *state)
 {

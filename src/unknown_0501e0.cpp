@@ -280,6 +280,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 545: Existing shared axis rotation with complete scalar/native/shared-scale
 // input producers, direct/in-place output: 309/309/283/283/414/456/560/560. All nonmatching
 // association/storage forms restored; original helper/body and extra frame word remain.
+// Round 63 (m3 lane 10, fast): retail computes each depth limit only after the two `k < 0` tests and the second only
+// after both tests on the first, and homes the blend scale at [esp] where it is computed (ours keeps it in xmm2 and
+// spills it at [esp+8] for the x87 tail). The cone test as a forceinline predicate with a named limit, called per view
+// 290 (1091 bytes); the second offset loop before the first 223; the blend scale initialised to 0.5f at its declaration
+// with only the perspective arm assigning it 260 (1151 bytes); the blended position as a component loop 222 (1146
+// bytes); the `k < 0` tests in an outer if with the named limits inside it, an early return and the clear at the end
+// 224. All restored.
 // Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
 // subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
 // NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
@@ -287,6 +294,10 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // point pointers for arg_0[0]/arg_0[1] 221 (1147 bytes); the view helper scaling into a copy and pointing
 // its input at it 294 (1174 bytes); both offsets in one fused loop 226 (1146 bytes); the depth limits
 // written into the condition with no limit locals 231 (1151 bytes). Original helper and body restored.
+// Round 550: Plain weighted-output coordinate walks on separate-offset/cursor-transform
+// graph: long/dword index 222/222; long/dword output cursor 221/221; first/second/both
+// input cursors 221/223/221; all cursors 221. NOT kept: no gain, 1146/1147 bytes and
+// extra frame word remain; original three publications, helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

@@ -550,6 +550,10 @@ void function_1d90e0(long render_model_index, long node_index, transform4x3f *no
 // gives the mask test); the clear's size as `<< 2` 155, with the mask test 145 (stosd only, set still split).
 // With the mask test the size taken from the node-count parameter 140 or the graph's count 141 (diagnostics)
 // still splits the set: any variable-size memset of the visited words does.
+// Round 201 (fast): the clear through bit_vector_fill with a __forceinline declaration here 216 (463 bytes:
+// still called out of line), with `inline` on its definition instead (diagnostic, plain check too) 216,
+// 0x1253d0 unchanged at 3; each arm's iterator stores before its graph lookup 110 (523 bytes); `found`
+// declared before the loop 37 (same code); the mask test written out with bit_vector_set 42 (545 bytes).
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -1483,6 +1487,13 @@ long function_cbd50(long unit_index, short weapon_index);
 // N331: Read-only native unit/control/state receiver subsets 1..7 and complete
 // read-only identifiers 164/164/164/164/164/164/164/164. Original receivers, byte
 // result and complete body restored; pool/SETLE/default homes and normalization remain.
+// Round 62 (m3 lane 10): result/depleted/interruptible names in all six sort orders 164 each, on the
+// if-form depletion 330 each; if-form with the second clear nested/`depleted &&`-guarded/as a ternary
+// 330/325/330; `if (first != NONE)` first with the `&&` second 328. Original body restored.
+// Round 82 (m3 lane 12, fast): if-form first depletion with `depleted = depleted && count <= 0` under
+// `if (second != NONE)` 349 (1301 B); interruptibility as `(flags & 0x10) != 0` 348 (1321 B); overlay and
+// name read at their switches 381 (1232 B); both held lookups first, then one `&&` depletion 352 (1319 B);
+// both held queries through `*unit_reference` 164 (same code). Original body restored.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1717,6 +1728,12 @@ bool __stdcall function_110ab0(long unit_index)
 // 441/441/471/441/441/471; paired Boolean depletion 457/457. NOT kept: raw 441
 // raises code differences 424 -> 431, adds null guards absent from retail, and only
 // improves trailing data. Frame remains eight versus twelve. Original body restored.
+// Round 62 (m3 lane 10): depleted/interruptible/overlay names in six sort orders 450 each; the
+// 0x600008d group as a nested requested switch 519; `requested != 0x400000c || allow` 468; the 0xc7070
+// test inverted with the switch first 473; first depletion as `first != NONE && count <= 0` 481.
+// Round 82 (m3 lane 12, fast): bool depleted 482 (1773 B); bool overlay interruptibility 466 (1785 B);
+// `result = requested == 0x600008c || interruptible;` 477 (1773 B); overlay test re-reading the controlling
+// field 450 (same code); first depletion as `first != NONE && count <= 0` 481 (1777 B). Original body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2084,6 +2101,13 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // entry false/guarded calls 773/773/779/777; branch-owned results 793/793/793/793.
 // NOT kept: one-use call-result/conditional-state locals and a retained branch test require a match.
 // The 773 previews recover retail length only; original body restored; frame/expansion remain.
+// Round 62 (m3 lane 10): post-centre activity as `if (...) active = false;` 856; bounds fallback as one
+// call on `screen_a ? screen_a : screen_b` 912; each aiming flag set before its angle conversion 790/792;
+// seat weight test as nested ifs 790. Original body restored.
+// Round 82 (m3 lane 12, fast): centred test i first 790 (same code); overlay id copied inside a
+// `control->overlays[i].index != NONE` test 875 (3357 B: 0x1cb490 then stays out of line in the loop as in
+// retail, 0x11df30 still called twice), that with a `for` loop 905 (3305 B); final slot test through the
+// entry unit pointer 815 (3365 B); seat weight as one ternary 792 (3382 B). Original body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

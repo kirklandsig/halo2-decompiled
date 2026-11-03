@@ -356,6 +356,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // in ESI); long slot 713; char slot with the record chosen by one nested ternary 705; that with the source index
 // re-read from the byte 683 (3832; ESI keeps the cluster record, the selected record moves to EDI, not EBX);
 // that with a long slot index at the top of the branch 683.
+// Lane 18 round 34 (fast): the flag declared before the index output and palette call 618; the best-weight locals
+// declared after the clears 779 (3827 bytes, +0xa); the previous-index test inverted with the scenario lookup nested
+// 616; the flag declared after the source stores 616; the short slot read right after the palette call 616.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {

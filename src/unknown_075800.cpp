@@ -1245,6 +1245,15 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // through its address plus a signed `> 24` return 212 (428 bytes); 11/18 admitted as `break` cases with `default:
 // return` and an if/else tail 216 (0x94420 then stays out of line and the convention is lost: retail's convention
 // appears only when 0x94420 is inlined).
+// Round 63 (m3 lane 10, all plain, base 153): retail's 0x7afd0 call sets type EAX, message ECX, this EDX and pushes the
+// address; the one retail-order switch 217 (420 bytes: this moves to the stack, address EAX, type ECX, and case 10 saves
+// EDI around 0x94220, which takes the address in EDI; retail homes the address in EDI for the whole body); that with
+// (type, message, address) declared at the definition, both declarations and the call 217 (same code); with `break` in
+// every case 217; the late pair as a switch nested in the first switch's default 153 (same code); as `if (type == 18)
+// ... else if (type == 11)` 155. Our convention only matches when the address stays live across a call.
+// M335: Rejection-owned connection exits on the native-input graph, subsets
+// 1/2/4/3/5/6/7, then all with case-local results: 196/196/196/196/196/196/196/196 reduced.
+// Original complete body restored; delayed ESI save and late expansion remain.
 // @retail 0x938e0
 void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_type, const void *message)
 {

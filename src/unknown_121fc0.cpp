@@ -220,12 +220,19 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // Actual insertion cursor, displacement bound with ordinal search and pre/post publication 211/218,
 // pointer search 235/250; endpoint bound with ordinal search 213/221, pointer search 242/256. Outer
 // EBP preservation and read-size/count/cursor homes remain; original body restored.
+// Round 77 (m3 lane 9, fast): the clamp in the subscript as file_read_string writes it (no write-back) 216 (763
+// bytes); the clamp as `if (size > 0x7ff) size = 0x7ff;` 128 (same code); as `size >= sizeof(buffer) ? ...` 128;
+// the size as a long passed through a `(dword *)` cast 128; diagnostic, the clamp and terminator moved ahead of the
+// success test 129 (not semantics-preserving). Retail reads the size from its slot three times around the clamp,
+// which only a volatile size reproduces (not allowed); EBP's late save remains.
 // Round 199 (fast): retail reads the size three separate times around the clamp (compare, select, index) with
 // one store, a pattern only a volatile-qualified size gives (two reads would CSE on a plain memory variable). The
 // token table as `char const *` 128; the delimiters as a named static array 128; diagnostic, the clamp, terminator
 // and first token merged into the success test with a do-while walk 127 (EBP still saved at the walk); the
 // table-full case as `if (count >= 11) { next token; continue; }` 251 (802 bytes); the clamp right after the wait,
 // ahead of the success test 129.
+// Round 158 (m3 lane 4, fast): `register` on the token 128; the tokenizer cursor set to the buffer at the outer block and passed to the first call 128; the
+// token declared NULL at the outer block 128; the clamp as an if 128; clamp and terminator ahead of the success test 129 (aligned 60); the success flag copied to a local for the test 128.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

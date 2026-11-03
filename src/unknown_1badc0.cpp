@@ -256,6 +256,10 @@ real normalize2d(point2f *arg_0);
 // the copy 233; in-place difference after the actor one 181/180; actor difference from the copy after 228. On 180:
 // squared terms swapped 180; projection terms swapped 180; actor difference declared after the copy 226; plain local_15
 // (not volatile) 267; input copy after the object reads 238.
+// Round 80 (m3 lane 12, fast with 0x1ba5c0/0x1bdad0/0x1bff80, which stay matched): the actor-to-point vector
+// from `arg_2` instead of the copy 215 (1001 bytes); the found-flag store before the far-side vector 211; the
+// clearance `2.0f - local_11` named before the perpendicular 266 (996 bytes); the radius times 1.1 named once
+// for both components 211; the first perpendicular's y stored before x 211.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)
