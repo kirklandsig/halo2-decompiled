@@ -142,7 +142,19 @@ union s_185be7
 };
 
 #pragma inline_depth(1)
-// score 690 (was 690): Frame 0xe0 and state/output carriers agree; control-root EBX versus NONE, settings/zero homes and flag joins remain.
+// score 622 (was 690): Frame 0xe0 and state/output carriers agree (3787/3777 B); control-root EBX versus NONE,
+// settings/zero homes, the range-fraction clamp (retail clamps in local_16's slot, upper arm out of line) and
+// the materialized `&&` flag arguments (retail threads them) remain.
+// Round 130 (m3 lane 8, fast, kept forms plain): the rigid-body index from 0x0b67a0 as `long` (retail's
+// `movsx eax, ax; cmp eax, -1`) 690 alone (aligned 268 -> 266); the 16-input copy indexed with no duration
+// cursor 731 alone (3766 B, aligned 258), both 648 (kept); the 0x218-table entry as `local_11 = NONE; if (index
+// != NONE) local_11 = ...;` 622 (kept, retail's `or edx, -1` preload); with the NONE default at the
+// declaration 656. On 622: the view entry as `&g_4ed284->entries[arg_1]` 690 on the old body (same code); view
+// entry before the settings pointer 730; `local_1->field_c` tested in the copy loop 733; named yaw/pitch clamps
+// 648 on 648 (aligned worse); the latch in a bool local 622 (same code); the latch as `? 1 : 0` 625 (gives
+// retail's `mov eax, 1`); every flag through a SET_FLAG/FLAG macro as 0x187b30's file 805 (3760 B; aligned 264
+// -> 228: retail's threaded flag tests and stores); the fraction assigned then clamped into itself 622 (same
+// code), with SET_FLAG 805.
 // Earlier 780 (was 780): Frame 0xe0 and state/output carriers agree; the flag bits are now set with retail's branches. Left: settings/zero homes, clamp-arm placement and unthreaded repeated flag tests.
 // Round 86 (fast, aligned counts in brackets, 383 at the start): turn rates assigned in both arms (retail loads
 // the stored rates on the else path) 788 [367] and the attachment index NONE per path (retail sets it on each
@@ -517,7 +529,7 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
                     if (local_19 != NONE)
                     {
                         s_havok_component *local_20 = (s_havok_component *)(g_51e9b8->data + (local_19 & 0xffff) * 0xa0);
-                        short local_24 = function_0b67a0((s_small_index *)local_20);
+                        long local_24 = function_0b67a0((s_small_index *)local_20);
                         if (local_24 != NONE)
                         {
                             transform4x3f local_21;
@@ -556,15 +568,13 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             }
         }
         local_8 = local_1->field_c;
-        word const *duration_source = local_2.field_10;
         for (long local_24 = 0; local_24 < 16; local_24++)
         {
             if (!(local_8 & (1 << local_24)))
             {
                 local_3[local_24] = local_2.field_0[local_24];
-                local_4[local_24] = *duration_source;
+                local_4[local_24] = local_2.field_10[local_24];
             }
-            ++duration_source;
         }
         bool local_9 = function_185be3(local_1->field_0) && function_e4050(local_1->field_0);
         if (local_3[10] == 1)
@@ -581,7 +591,8 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             {
                 byte *local_12 = function_185be2(local_1->field_0);
                 short local_13 = *(char *)(local_12 + 0x212);
-                local_11 = local_13 != NONE ? *(long *)(local_12 + local_13 * 4 + 0x218) : NONE;
+                local_11 = NONE;
+                if (local_13 != NONE) local_11 = *(long *)(local_12 + local_13 * 4 + 0x218);
             }
             else local_11 = NONE;
             if (((byte *)arg_4->field_0)[6] > 0x7f || ((byte *)arg_4->field_0)[7] > 0x7f) local_10 = false;

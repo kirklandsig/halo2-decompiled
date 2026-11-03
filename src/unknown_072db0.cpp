@@ -1619,6 +1619,13 @@ struct s_rating_summary
 // retail's homes, teams +0x14, counters +0x18, but the team cursor is based at the identity, +0xdd0, where
 // retail's is +0xdc8); a team element pointer 47, with the identity pointer 46; the identity named only for the
 // call 47. Retail's prologue/epilogue is `ret 8` too (the queue's `ret 0` was jump-table data).
+// Round 206 (m3 lane 3, fast): with the formatter's result in a local (match-only) 25 again (only the team
+// latch left: retail stores both cursors at the head, counters from ECX; ours steps counters in ESI and stores it
+// at the latch, homes swapped); on that, the team loop bounded by the existing accessor 0x193440 under the region
+// 163 (1191 bytes, it stays a call); the stats pointer before the two rating calls 25 (same code); the team skill
+// as `long` 55 (1212 bytes, but only because the skill compare moves; the latch is unchanged). Diagnostics without
+// the inline_depth(0) region: unicode_string_to_ascii for the name and the 0x193440 accessor 412 (1264 bytes), with
+// a strncpy-and-terminate inline copy as well 412: 0x192e60 still inlines at entry. Original body restored.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

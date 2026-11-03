@@ -1541,6 +1541,11 @@ void function_1f86a0(long actor_index);
 // with indexed native member payload first and original payload: eight at 134.
 // NOT kept: alias contracts do not recover the mask spill or EBX entry; original
 // callback definition/declaration, payload and complete body restored.
+// Round 130 (m3 lane 8, fast): retail duplicates the loop's next-entry call into the decline path and tests the
+// 0x40 bit with a fall-through decline. The decline test as `(u && !bit40) || (!same && (u || specified))` 234
+// (862 B), its two halves swapped 237, the ternary negated with arms swapped 231 (862 B); a flags byte local
+// read before the slot-bool test for both arms' 0x20 tests 141; the entry declared in the while condition 134
+// (same code).
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

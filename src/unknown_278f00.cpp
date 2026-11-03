@@ -284,6 +284,11 @@ bool function_a7670(long object_index);
 // AC507: Retry-conditional positive/deferred category result in bool/byte/short/long,
 // 278/278/280/279/277/277/280/279. NOT kept: all regress and lengthen beyond retail;
 // original eager scans, live bounds, consumed index, releases and body restored.
+// Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
+// setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
+// index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the
+// increment), with the flagged path as a nested block 233; admission assigned in if/else arms 96 (same code).
+// Retail also forms the type-record pointer before the `local_9 > 0` branch, where ours folds it into the load.
 // @retail 0x278f00
 void function_278f00()
 {
