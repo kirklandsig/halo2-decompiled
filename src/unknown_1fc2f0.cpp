@@ -523,6 +523,10 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // short/word counters 140/140 (403 bytes); full prediction/tick/delta loop
 // with long/dword counters 98/98 (374 bytes), short/word 96/96 (366 bytes).
 // NOT kept: all regress; counter-width selections require equality. Tick reuse still differs.
+// DL255: Ordinary inline update-provider metadata, complete rate/tick/delta producer
+// masks 0..7: 102/117/102/117/94/105/94/105. Tracked-pointer result with original/direct
+// argument storage: 32/99. NOT kept: metadata changes ingress and regresses; result
+// contract ties or regresses. Original complete body, providers and caller declarations restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

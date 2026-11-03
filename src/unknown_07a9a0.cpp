@@ -1186,6 +1186,10 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
 // out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
 // through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
+// DL255: Direct descending group/initial-histogram/validation ordinals, subsets 1..7,
+// then separate reverse native ID transfer: 831/794/831/917/852/824/852/845. NOT kept: all regress,
+// frames 0xd4/0xd8 versus 0xb4 and stack ingress remain. Original complete body,
+// histogram phases, selector contracts, observations and call operands restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
