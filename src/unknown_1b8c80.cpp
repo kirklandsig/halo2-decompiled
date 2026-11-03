@@ -1522,6 +1522,9 @@ void function_1f86a0(long actor_index);
 // Round 132: stable current-entry pointer/reference/field pointer 134 each; nested actor lookup
 // for the unit 230; existing object-header getter 134; same-root byte/short/long results
 // 134/140/139 (864/863 bytes for the wider two). Original body restored.
+// Round 47 (lane 15, fast, base 134): no mask local, flags temp at F+3 as retail but the flags byte in BL, 244 (868 bytes); with the
+// found index read after the loop 244; 0x40 through a second selection cast 234 (865); 0x40 as a shift 244; both bits as `& 0x60` 245
+// (871); `same` as false default plus if 239 (865). 0xbaf40 is pure, so the flags load stays common across its calls.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

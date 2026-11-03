@@ -682,6 +682,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 121 (fast; aligned count, control 93): named ring value 90 (92); with a named ring phase above the spoke loop 143 (144);
 // direct sin/cos arguments 215 (81), with the named ring 218 (95), with the phase as well 231 (133).
 // Also: origin declared with the sector index 90 (93); trace distance read at each row 101 (98); origin first in the point rows 90 (93).
+// Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 37 here): ring conversion as one in-place ring angle in the outer loop 142 (1088, cvtsi2ss as retail, radius through
+// integer registers, masked 37); cross terms named, j and k first 90 (same code), with the angle 142; rows written j, k, i 189 (1088, masked 44); dot written (j + i) + k from the read components 93
+// (masked 37), with the angle 144 (masked 33); the k*i and i*j subtrahends named before the dot 215 (1092, masked 36), with the angle 237 (1095, masked 35), named after the dot 237.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

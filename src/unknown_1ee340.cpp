@@ -381,6 +381,11 @@ bool function_23a220(const point2f *point, short count, const point2f *points, r
 // DL235: Retained projection-table row, pointer/reference, original/shared polygon count,
 // short/long axis: 231/231/247/247/231/231/247/247. All restored;
 // frame 0x84 versus 0x90, retained-origin and edge spills remain.
+// Round 204 (fast, without the 0x23a220 parameter swap, its definition still in another lane's file): the
+// chain's first steps rebuilt here: ray start/end and second/third vertices copied through real_point3d_set,
+// directions from the copies 212; plus fraction by if/else 236; plus a dword count local for the loop and call
+// 249 (1020 bytes). On the original body: a literal 0.0f for field_c 192; the result normal through a local
+// pointer 192 (same code). The chain only gains on top of the swap. Original body restored.
 // @retail 0x1edf50
 void c_vertex_shape::ray_test(bool *hit, const s_shape_ray *ray, s_shape_ray_result *result)
 {
