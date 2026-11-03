@@ -735,6 +735,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // one-use views require exact matching. Original body, both magnitude calls, sample qualifier,
 // declarations and includes restored; unity/limit/direction/jitter XMM ownership and spills
 // remain.
+// B381: complete normalization predicate, moving/stationary bool/byte/short/long,
+// 132/132/132/132/132/132/132/132. All tie; NOT kept: one-use truth carriers require an exact match.
+// Original frame 0x28, unity/limit/direction ownership and jitter spills remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {

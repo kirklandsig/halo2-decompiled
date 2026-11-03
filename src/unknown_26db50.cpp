@@ -675,6 +675,10 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // Round 34 (lane 17, fast): trace.distance read at each use (no trace_distance local) 101 (1084 bytes); the
 // pathfinding as a ternary 217 (1086); the origin pointer before the pathfinding lookup 90 (same code); the
 // direction copy after sine and cosine 101 (1086); the half-axis offset added in the point's first statements 114.
+// P284: Real sine/cosine API subsets 215/215/215; each with the outer ring phase
+// 233/233/233; unrounded angle with original/real APIs 90/90. Complete original
+// body, angle carrier and helper restored; ring SSE conversion, rotation spill
+// and radius-save scheduling remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

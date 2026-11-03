@@ -813,6 +813,9 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // register, 0x13eeb0 18) 86; plain long parameters each read once through its address (stack
 // convention kept, but the character takes EBX and the font stays in memory) 69 in four placements;
 // font as such a long with the character struct 14, the reverse 69.
+// Round 156 (fast): the search in a forceinline helper with its own parameters 14; a long font copy for the search
+// and the store 14; the prediction's fields typed as the parameters' struct 14; the header call's flags in an inner
+// block with a found flag 14; a separate created pointer with a font copy 14.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {
