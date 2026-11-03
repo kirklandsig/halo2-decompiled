@@ -414,6 +414,11 @@ PRIVATE inline s_save_entry_2164c0 *new_save_entry_2164c0(s_save_list_2164c0 *li
 // result in the caller: 51 each (662 bytes; bool CL, count EAX, list EDX; the copy never survives); a
 // false-preset result with the room test in the `if` 54 (654 bytes). One read of the list through its
 // address: on the pointer helper 20, on two of the bool helpers 51/51.
+// Round 32 (lane 18, fast): the slot declared in the `if` condition 20; the pointer helper over a count local
+// (`result = &entries[count]; list->count++;`) 20; the found arm moved into the type loop with `goto close`/
+// `goto next` 20 (same code); that layout with a caller `bool room` (copy under `if (room)`, then `if (!room)
+// goto close`) 32 (setne/test, but list EDX, room CL, count EAX copied to ECX: retail's registers rotated by
+// one, the earlier scratch pairs too); the pointer helper with `list->count < 4096` 20.
 // @retail 0x2164c0
 void function_2164c0(long memory_unit, s_save_list_2164c0 *list)
 {

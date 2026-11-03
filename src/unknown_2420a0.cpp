@@ -584,6 +584,13 @@ long function_243b10(long key_b, bool team_only, long *second)
 // not merge the two copies upward); the table through the global at each use 200 (688 B; both select arms then load
 // it into their own scratch register and nothing stays in EBP); `short key` 173 (same code); a function-scope pointer
 // to g_4e0350 for the position and the inner loop 178.
+// Round 61 (m3 lane 10, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160): retail reloads the table from
+// g_51ec80 itself after borrowing EBP (`mov ebp, [0x51ec80]` in the clause code) where ours reloads the `slots`
+// local's spill; the global at every use re-measured 200 (688 bytes, as rounds 89/115; both select arms then load
+// it into EAX/ECX and EBP stays free); on it the accumulated distance 200 (as round 115), `if (marker_index == NONE)
+// continue;` 200, `k != 0` with the arms swapped 200, the array selected by k and then indexed 191 (691 bytes, caller
+// 0x240160 46). On the current body: the key as `mode_180 == 9 ? 3 : 1` 173 (same code); dy computed before dx 174;
+// the bound-update arms as `if (k != 0)` with the arms swapped 173.
 // @retail 0x243c00
 void function_243c00(long slot)
 {

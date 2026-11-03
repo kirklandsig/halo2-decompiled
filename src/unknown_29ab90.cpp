@@ -273,6 +273,9 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // AC491: Forward-correction scalar result before fields/aggregate/setter vector publication,
 // default/complete arms; entry scalar with fields/aggregate: 352/354/352/354/352/354/352/352.
 // Original complete body and producers restored; native frame and homes remain.
+// DH311: Existing pointer-input scale as plain coordinate-array loop, long/dword/short/byte
+// with streaming stores 345/345/435/435; complete native output before publication 464/464/515/515.
+// Original helpers/body restored; frame 0x58/0x64 and magnitude/query overlap remain.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

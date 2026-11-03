@@ -280,6 +280,9 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // Round 545: Existing shared axis rotation with complete scalar/native/shared-scale
 // input producers, direct/in-place output: 309/309/283/283/414/456/560/560. All nonmatching
 // association/storage forms restored; original helper/body and extra frame word remain.
+// Round 548: Complete post-view double weight-pair/reciprocal/both-radicand domains,
+// subsets 1/2/4/3/5/6/7, then all with normalized scalar results: 267/267/293/270/279/271/282/327.
+// NOT kept: precision/frame shape misses; original float producers, transform helper and full body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

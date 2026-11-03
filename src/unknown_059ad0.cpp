@@ -2434,6 +2434,10 @@ bool network_session_handle_session_disband(c_class_58d20 *session, const s_type
 // to an immediate store); the reason in a union with the result a separate bool 14.
 // Round 15 (diagnostic): BLOCKED-BY 0x616b0: the plain shape matches once 0x616b0's body is
 // written through network_session_enter_state_with_data; this union form is then 22.
+// Round 131: byte initialization and shared success with the reason assigned in the call 14;
+// full value at the join 66; separate reason assignment with shared success 14; reversed union
+// members 10; unsigned value 10; bool-first aggregate 82; inline disconnect declaration with
+// shared success 14 (0x616b0 and 0x5ef20 stay matched); separate Boolean return local 10.
 // @retail 0x5e1a0
 bool network_session_handle_session_boot(c_class_58d20 *session, const s_type_99af70 *address)
 {
