@@ -298,6 +298,11 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // F329: Retained masked self-header index, long/word domains crossed with four
 // disjoint state-arm orders: 271/272/274/274 and 289/289/290/290. All restored;
 // frame 8 and incoming unit/name/actions ranks remain.
+// J240: Entry active word dword/long 327/327; with conditional outputs 261/261 (NOT kept: retail stores
+// both defaults, then overwrites them, 0xe6b26-0xe6b4d, and reads the word at the tests, 0xe6c97, not at
+// entry; body restored at 271); chained defaults 327/327; constants before calls 345/268. Pure ordinal long/dword/word on
+// the 261 graph 259/259/276; two-point ordinal gains rejected. Frame 8 agrees; unit/name/offset ranks and
+// shared-call threading remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -894,6 +899,9 @@ extern vector3f *g_4687b0;
 // restored. Definition/index/type/direction homes and offset/SSE schedules remain.
 // Round 362: CRT copies of direction inputs / vehicle direction / fallback axis, seven subsets; then all with enclosing direction lifetime.
 // 309/309/309/309/309/309/309/308. Original executable source restored.
+// J240: Scaled offset vectors / complete spread stages / shared completion 326/310/343; offset+blend /
+// offset+completion / blend+completion / all 343/326/344/327; all with shared parent sum 327. All
+// restored; tag/index/type/direction homes and SSE scheduling remain.
 // P272: Independent entry-owned marker/center/complete offset workspace subsets, then complete workspace role names: 309/309/309/309/309/309/309/309.
 // Original executable source restored; frame 0xcc agrees; tag/index/direction homes and offset/SSE schedules remain.
 // @retail 0xe7900
