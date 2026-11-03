@@ -272,6 +272,10 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // AC488: first-query positive index/tag/duplicate admission subsets 1/2/4/3/5/6/7,
 // then capacity break in the bounded query: 866/866/866/924/866/866/924/924. Original graph and body restored;
 // entry zero, target/primary/query-array homes and choice carriers remain.
+// Round 379: Actual audible admission/choice-muted default/exhaustive detail result, subsets
+// 1/2/4/3/5/6/7, then complete audible index arms: 913/869/866/916/913/869/916/905. NOT kept: no
+// exact match for added test-owned outputs. Original body and logarithmic producer retained; entry
+// zero/query/count homes remain.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

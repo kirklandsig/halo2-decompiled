@@ -1103,6 +1103,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // Round 375: Scale default at entry/before point call/before node phase/before cone, original jump
 // versus outside-owned falloff: 434/426/434/426/422/422/343/343. NOT kept: extra result lifetime enlarges
 // the frame/body and regresses. Original complete body restored; geometry/cone/node homes remain.
+// Round 379: Late owner sentinel chain/owner-first declaration/owner lexical home, subsets
+// 1/2/4/3/5/6/7, then complete sentinel chain: 286/286/286/286/286/286/286/287. Original clear,
+// local homes and body restored; geometry/cone/node allocation remains.
 // @retail 0xd74e0
 void __stdcall function_d74e0(s_type_1e6529 *data, long object_index, bool child)
 {

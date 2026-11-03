@@ -1448,6 +1448,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Round 375: Test-produced companion truth, long/Boolean, positive/negative default after/before getter:
 // 185/185/182/182/185/185/200/200. Original comparison result and complete body restored;
 // second entry unit load, table/hand homes and downstream scheduling remain.
+// Round 379: Twice-used animation result byte/char/short/long, at its producer then entry storage:
+// 95/95/142/146/95/95/142/146. Original Boolean result and complete body restored; entry pool/hand
+// and second unit load remain.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {

@@ -3042,6 +3042,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // P278: Actual flight-clamp/rate, walking-limit/angle/cosine/sine/overshoot scalar lexical homes
 // independently, then all: reduced 605 each, control 605/full 561. Original body restored;
 // scalar/result homes and vector scheduling remain.
+// Round 379: Ordinary-state/planar/right-turn complementary truth subsets 1/2/4/3/5/6/7, then
+// complementary unchanged result: 605/633/610/633/610/633/633/626 (fast control 605; full 561).
+// Original full-width special and complete truth graph restored; result/flight scalar homes and
+// vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
