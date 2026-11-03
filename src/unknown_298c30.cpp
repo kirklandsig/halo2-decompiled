@@ -570,6 +570,13 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DH312: Existing direction producer as native coordinate-array loops, long/dword/short/byte
 // ordinals, streaming 760/760/746/746; complete difference publication 785/785/828/828.
 // Original scalar producer and whole body restored; frame/radius/trace homes remain.
+// M3 lane 2 r47 (fast, on 719): the rotated points declared in the loop body 719 and the third trace result at its
+// call 719 (same code); the pathfinding getter as a single-exit result (retail's `xor eax, eax; test; jle; mov eax`,
+// g_4e0348 held in EBX for both calls) 775 (aligned 452 -> 443); with the body under `if (sector != NONE) { ... return
+// local_0; } return true;` (retail's last block is a separate `mov al, 1` epilogue) 782 (aligned 436); that with the
+// reverse vector in its own block around its trace 782 (frame stays 0x124). Retail packs the three bools at +0x11..+0x13
+// (ours puts the result at +0x3f; renamed `result` on the nested form 782, home unchanged) and has one 12-byte home fewer
+// between the pivot (+0x94) and the first trace (+0xb8).
 // Round 554: Complete scalar direction-input/rotation-input/squared-distance boundaries,
 // seven subsets 784/719/784/719/784/719/784; all with separate phase cosines 783.
 // NOT kept: staging nonmatches; original helper inputs, scalar precision and whole body

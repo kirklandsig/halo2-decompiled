@@ -652,6 +652,11 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // improvement as `if (less) ... else if (equal && cost) ...` with the same arm 150 (517); the candidate's
 // spread named once for both tests 80; named candidate team pointers for the swaps 150 (518); the candidate
 // declared at the top of the inner loop and assigned from current 224 (576). Original body restored.
+// M3 lane 2 r47 (fast): the spreads passed by value to forceinline (reference, candidate) compare helpers 65 (the
+// reference-left code: argument order does not move the stack candidate's call); the candidate spread named `long const`
+// for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
+// `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
+// `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

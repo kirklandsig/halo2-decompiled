@@ -368,7 +368,11 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 	return result;
 }
 
-// score 295 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// score 286 (was 295): Frame 0xe8 versus retail 0xe4, acquisition, flags and scalar homes remain; geometry now uses shared differences.
+// M3 lane 2 r47: the projection through the existing dot3f(&offset, &edge_vector) 286 plain (kept, 1389 bytes: retail's k, j, i
+// sum order; written out ours summed i first), dot3f(&edge_vector, &offset) 286. On 286 (fast): short link count 359 (1375);
+// the node type named once 345 (1400); count zeroed after the init loop 359 (1391); `special` false then set by an if 287
+// (1388 bytes); that with the short link count 362.
 // Round r4 (lane 17): our extra frame word is the links cursor (strength-reduced long link count); retail indexes
 // links[link_count] with a short count. Short link count 368 (1368 bytes, frame 0xe4); with count assigned after
 // the init loop and special set false-then-true 389; count after the init loop 379; separate increment after the
@@ -652,8 +656,7 @@ PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 				real length = function_30bf0(&edge_vector);
 				if (length > margin * 2.0f)
 				{
-					real projection = offset.k * edge_vector.k + offset.j * edge_vector.j +
-						offset.i * edge_vector.i;
+					real projection = dot3f(&offset, &edge_vector);
 					if (margin > projection)
 						projection = margin;
 					else if (projection > length - margin)
