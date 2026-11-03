@@ -1915,21 +1915,16 @@ void function_79480(s_network_observer *observer)
 	observer->value4f38 = now;
 }
 
-// score 6 (was 6): retail loads received_bytes into ebp first (before the
-// channel pointer is formed), adds bytes and stores it, then reloads ebp with
-// sample_time; ours hoists the sample_time load into ebp first and loads
-// received_bytes into eax. The volatile read only lowers the score from 93
-// (plain `received_bytes += bytes` and the load-add-store local both fuse into
-// add dword ptr [esi + 0x4a8], ecx, 8 bytes short): it does not match. The
-// fast check's call/global address differences are not real differences.
+// Matches with `interval` declared first and the received bytes added in place (the permuter found it): retail
+// loads received_bytes into ebp before it reloads ebp with sample_time. The earlier volatile read of received_bytes
+// (6) is gone.
 // @retail 0x79660
 void function_79660(s_network_observer *observer, long index, long bytes, long delay, long stream_delay)
 {
 	s_observer_bandwidth_channel *channel = (s_observer_bandwidth_channel *)&observer->channels[index];
-	long local_0 = *(volatile long *)&channel->received_bytes;
-	channel->received_bytes = bytes + local_0;
-	channel->stream_delay = stream_delay;
 	long interval = 0;
+	channel->received_bytes += bytes;
+	channel->stream_delay = stream_delay;
 	long last = channel->sample_time;
 	if (last != NONE)
 		interval = observer_time_get() - last;
