@@ -691,6 +691,11 @@ real function_267370(long object_index);
 // three with uniform actor view at use 103. Inline 0x267370 raises its other user 0x266640 from
 // 194 to 565, so those forms also fail the shared-user rule. Original entire body and every
 // declaration restored; frame 0x90 agrees, early NONE sharing and cross operand homes remain.
+// DL248: Existing vector setter at default/stored/up copies, subsets 1..7 [109, 183, 185, 198, 200,
+// 218, 233]; two contact/held flag-pair CRT clears 383. Frame 0x90 and original length agree; early
+// shared NONE, carrier and cross operand homes remain. NOT kept: All vector-setter forms regress and
+// move extent away; the two-pair fill also regresses, with no source-induced control loss. Original
+// executable source restored.
 // @retail 0x1e3b60
 void function_1e3b60(long actor_index)
 {
