@@ -1416,6 +1416,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // DH314: Individual airborne/speed/boost/turning/moved/distance/paired target-size scalar
 // identities, then the complete scalar graph: 585 each. Every initializer and lifetime fixed;
 // frame stays 0xf8 versus 0xfc. Original entire body and helpers restored.
+// DH318: Separate called radius, computed diameter and selected span; height-default/diameter-default/if-
+// else/ternary, mutable/const diameter: 585/585/585/585/585/585/585/585. Frame 0xf8 versus 0xfc and
+// material/airborne/animation homes remain. All restored.
 // P292: Called walk result, walk attenuation product/complement, called boost result,
 // boost increment, spread fraction, walking-rate quotient and doubled-radius span:
 // 550/550/584/585/585/581/585/585. NOT kept: 550 uses a one-use called result and
