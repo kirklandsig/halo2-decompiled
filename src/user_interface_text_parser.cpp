@@ -645,6 +645,13 @@ done:
 // Round 78 (m3 lane 12, fast; aligned counts stack-masked, the one-copy form aligned 21): on the one-copy form, the four scratch buffers as one
 // array 54, the buffer as a file static or a function static 54 (compile-only and real: the EBX hoist stays), a folding-looking `if (variant)` guard 60
 // (177 bytes, not folded), the selector read before the tag 54, the tag read in the translator call 45 (171 bytes, aligned 8: left only the hoist and the tag load).
+// Round 372: actual dense selector/name tables, static/local and NONE/zero absence, then sparse
+// row tables, static/local and emitted/numeric order: 108/109/49/50/95/95/111/111.
+// NOT kept: retail uses immediate case values; original switch/body restored.
+// Round 377: Selector admission truth from the actual default, bool/byte/word/long,
+// availability and absence, 68/68/68/68/68/68/68/68. Exact-only post-test flags
+// restored with the complete original switch/body; early EDI save, tag/selector
+// schedule and scratch-address caching remain.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {

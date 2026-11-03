@@ -242,6 +242,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH296: Velocity publication before moving/fixed position offsets, native/shared
 // scaler and original/late sine: 227/227/227/227/191/191/191/191. Every frame
 // remains 0x11c; original offsets, velocity, private rotation helper and full body restored.
+// F341: Native projection/sine/cosine last-use scopes, seven subsets then all
+// with complete rotation-role names: 173 each. Only uninitialized declarations
+// move; cosine/dot/cross/sine and scale order stay fixed. All restored; frame
+// 0x11c versus 0x118 and cross/trig homes remain. Three exact controls survive.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

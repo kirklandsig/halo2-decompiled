@@ -104,6 +104,18 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // Round 308: existing shared axes helper, first/second/both phases with original snapshots 366/527/370;
 // Round 308: the same phases in place 374/348/465; native first-turn outputs with local/direct
 // Round 308: final outputs 405/429. All exact-only forms restored; shared helper grouping differs.
+// J240: Sequential reused/scoped matrix 488/486; with complete vector setter 488/486; with symmetric
+// reused sine products 467/469; both 467/469. Every trial frame is 0x6c versus retail 0x90. Original frame
+// 0x98, concurrent angles and vector publication homes remain; original body and both helpers restored.
+// Round 531: Global second-turn inputs with original helper, lexical first-result scope, paired scalar
+// setters and matrix/trig role names 422/422/478/478/422/422/478/478; original-graph trig/vector/matrix
+// home names 356/356/356/356/356/356/356; complete names with row-local diagonal differences 356.
+// Original helpers/body restored; frame 0x98 versus 0x90 remains.
+// Round 490: Existing builder consumes caller-computed sine/cosine, pair ownership
+// call/first/second/both 355/355/358/357; with two-use real angles 368/368/357/370.
+// NOT kept: one-point lead below gate; hoisted one-use trig results require a match.
+// Original helper signature, both helpers and complete body restored.
+// M323: Component-loop producer with long/dword/short/word ordinal 356/356/715/715; the same with native running sum 356/356/732/732. Narrow loops reach frame 0x90 but lose native extent; original producer and body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1675,6 +1687,22 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // F323: Independent result home and frame 0x14 versus 0x18 remain; complete original body restored.
 // Whole case orders 01324/02413/13240/24130/43210/31420/12340/04231
 // 195/205/195/205/201/222/193/250; every original case expression and helper preserved.
+// J240: native output staging in the existing perpendicular helper 247; double atan2 carriers 218; one
+// result exit 247/218; full helper input snapshot 314/226; snapshot with one exit 314/225. Frame/output
+// lifetime still differs; restored original body and helper after all eight trials worsened 193.
+// Round 531: Whole direction input, case-owned projection vectors and whole displacement inputs, seven
+// subsets 421/221/341/204/373/275/289; complete immutable inputs 289. The five direction-copy graphs
+// with the existing helper force-inlined 189/273/256/336/336. Original helper/body restored; independent
+// result home remains.
+// Force-inlined direction copy alone: frame 0x18 and result +8 at 189/816 bytes; caller 610.
+// DL249: Complete scalar basis/direction/first-cross ownership, seven subsets, then
+// all with native result library initialization: 192/229/421/193/192/230/421/360.
+// One-point basis gains rejected; direction captures worsen the caller and move length
+// away. Original entire helper, result, switch, arithmetic and input observations restored.
+// F339: Whole local declaration orders ryxvp/rpxyv/rvpyx/yxrpv/pvyxr/xyrvp/
+// vryxp/pyrvx (r result, y/x projections, p perpendicular, v reference):
+// 193/193/193/193/193/193/193/193. Original declarations and body restored; independent result
+// home and frame 0x14 versus 0x18 remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -1780,6 +1808,22 @@ real game_time_get_seconds();
 // F321: entry-owned hash/sample/draw scratch subsets 1/2/4/3/5/6/7 give
 // 507/507/530/507/530/530/530; all with the member vertex API 535 (2308 bytes).
 // Original executable body restored; frame/output homes and EBX/EBP roles remain.
+// Round 369: native external definition/entry/const receiver subsets 1/2/4/3/5/6/7,
+// 507 each; complete native graph with member vertex API 512 at retail length.
+// Original receivers, API and whole body restored; frame/output homes remain.
+// F334: Existing clamp helper initialized-result/early-return/parameter-clamp/completed-
+// branch-result graphs: 567/507/581/567; with the member vertex API 492/512/533/494.
+// Initialized result plus member API 492 (2285/2285 bytes) NOT kept: the clamp graph alone
+// regresses (567) and the gain needs the member vertex call beside this body's C-style
+// D3DDevice_ calls, a combination picked by score. Body restored at 507; frame and output homes remain.
+// Y538: Existing member depth-state API at both/enable/disable sites 507/507/507;
+// with member vertex command 512/512/512; full member graph with opacity arms 511,
+// paired trigonometric admission 529. All restored; frame 0x90 versus 0x94 and output homes remain.
+// Round 376: Twice-used converted angle at intrinsic/shader/point/angle phases,
+// paired real/double trigonometric results 508/552, 510/579, 510/579, 511/579.
+// Earlier real phases reach retail length but frame 0x9c; extended results add 0x9c or aligned
+// 0xac frames. Original float-angle observations, all output scopes, APIs and body restored;
+// frame 0x90 versus 0x94 and definition/NONE/output homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2043,6 +2087,24 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // N316: Independent entry-angle field pointers, value/output contracts and double cosine phase:
 // 203/204/192/228/230/223/200/226. Original private producer, value inputs and body restored; frame,
 // angle/vector copies and draw homes remain.
+// Round 533: Immutable native entry direction with independent rotation output,
+// forward and up inputs, subsets 1/2/4/3/5/6/7 and complete vector role names:
+// 186/177/177/186/186/177/186/186. Original captures, writeback and body restored;
+// frame 0x80 versus 0xc0 and angle/vector-copy/draw homes remain.
+// AC480: Local/forward assignment initialization and existing native result setter, subsets
+// 1/2/4/3/5/6/7, then independent early uninitialized declarations: 177/177/177/177/177/177/177/177. All tie;
+// original producer and body restored. Frame and independent vector-copy homes remain.
+// DL247: Existing angle producer output reference / returned pointer / aggregate vector /
+// immutable aggregate, forced/ordinary inline: 224/224/224/224/177/239/177/239.
+// All restored; nonmatching output contracts shorten past retail, and the 0xc0 frame remains absent.
+// DH301: Actual drawing matrix, complete point setter and complete facing setter,
+// subsets 1/2/4/3/5/6/7, then all with uninitialized draw outputs before reset: 177 each.
+// All tie; complete original drawing objects, helper calls and body restored. Frame
+// 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
+// M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
+// M326: Complete left-cross/rotation/draw-position accumulations, subsets 1/2/4/3/5/6/7,
+// 178/174/177/174/178/174/174; all with earlier bare output declarations 174. NOT kept:
+// three-point gains above 30; frame/copy homes remain. Complete original body restored at 177.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -2206,8 +2268,8 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 57 (was 57; earlier 202): frame 0xc agrees; delayed register saves and the split final count comparison remain.
-// Earlier: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
+// score 57 (was 57): frame 0xc agrees; delayed register saves and the split final count comparison remain.
+// Earlier at 202: the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // the random fraction is (real)random * (1/65535) as before; motion[2] is stored
 // first and the length is then built from the stored motion[] values, so the just-stored z stays on the
 // x87 stack unrounded (retail's `fst [edx+8]`) with no temp; the length is a double kept for fabs, with the
@@ -2236,6 +2298,20 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // P267: coherent range-field observations/range lifetime/normalization lifetime,
 // subsets 1/2/4/3/5/6/7: 237/57/57/237/237/57/237; all with entry-fraction scope 237.
 // Direct-range forms reach retail length but regress; original ranges, scopes and complete body restored.
+// Round 369: existing unit-random producer/entry cursor declarations/entry scalar
+// workspaces, subsets 1/2/4/3/5/6/7: 63/57/57/63/63/57/63; all with full scalar
+// role names 63. Original draws, declarations and complete body restored; lazy saves
+// and the post-fstp count comparison remain.
+// N325: Complete range/normalization/extent validation-result producers, seven subsets,
+// 62/57/57/62/62/57/62; all with outer admission result 62. Original tests and
+// complete body restored; frame agrees, lazy saves and the post-fstp count compare remain.
+// Round 535: complete squared-norm parts, uniform centered sample producer and independent
+// entry-reset order, seven subsets: 57 each; all with magnitude in its consuming scope 57.
+// Original body restored; delayed saves and the post-fstp count comparison remain.
+// P279: Existing target inline / random-helper ordinary inline / nominal real-return contracts,
+// subsets 1/2/4/3/5/6/7: 57/57/63/57/63/63/63; ordinary static random helper 57.
+// Both other body users preserve their calibrated scores. Original declarations, helper and body
+// restored; frame 0xc, delayed saves and the split post-fstp count comparison remain.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2343,9 +2419,29 @@ real magnitude3d(vector3f const *v);
 // Round 527: Native real absolute/sine/cosine API subsets 1/2/4/3/5/6/7 and all with separate
 // sine/cosine declarations: 170 each. Original math APIs and complete executable body restored;
 // frame 0x38 agrees, raw-length/dot/angle homes and rotation allocation remain.
+// AC480: Recovered-frame admission orders and scalar/vector/full workspace names: 170/182/182/182/182/182/182/182/262/314/334.
+// The shared real clamp at current/target/both boundaries gives the final three counts;
+// original macro clamps and complete body restored. Raw magnitude/dot/cosine homes remain.
 // Round 530: ordered dot bounds, exact double dot, double angle with original real rounding,
 // bounds/dot, bounds/angle, dot/angle, all three and complete scalar role names: 191/211/198/242/220/213/244/244.
 // Both exact controls survive; original body, math APIs and all rounding/grouping restored.
+// Round 533: Complete projected-axis/cosine-aligned/sine-tangent expression parts,
+// subsets 1/2/4/3/5/6/7 and all with scalar/vector role names: 170/171/170/170/170/171/170/170.
+// Original products and body restored; raw-length/dot/angle homes and rotation allocation remain.
+// P275: Complete current/target/both input snapshots 246/288/266; same native vectors
+// normalized in place 245/287/265; both inputs captured at entry 272; both with early
+// normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
+// J241: Complete rotation output in first/second/rotation/current workspaces 175/170/175/174;
+// uniform scalar row staging 170/170/170/174. Real/double absolute-value stages 170/196; NOT
+// kept: one-use call-result forms do not match. Scoped precision diagnostic 547 at 1287
+// bytes, excluded from real trials and reverted. Original whole body, expressions and helper
+// contracts restored; raw-length and promoted-dot homes remain.
+// P277: Existing scale helper at current/target/both/output/current+output/target+output/all
+// boundaries 191/170/190/170/191/170/190; double-factor helper at all boundaries 224.
+// Original body restored; raw-length/dot/angle homes remain with retail frame 0x38.
+// AC492: On the retained fallback loop/frame, explicit current/target clamp producers
+// 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
+// Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -2465,6 +2561,19 @@ s_cached_input_list g_5234e8[4];
 // P268: Actual output-record identity/score/packed-flag field families, seven subsets,
 // then all with accepted-output cursor: 136 fast each on control 136 (full 132).
 // Original type/body restored; list/cursor/index homes and reduced-image caveats remain.
+// N326: Native absolute-depth / named ratio / projected-radius producers, seven
+// graphs and direct final score publication: 153/136/136/153/153/136/153/153, fast control 136.
+// Absolute forms add frame 0xa4 versus 0xa0 and regress; original floating tree,
+// observations and complete body restored. Full baseline remains 132.
+// Round 536: Accepted-output receiver before admission, four original/loop/scan/entry shape scopes with combined then separate rejection paths: 136/136/136/136/136/136/136/136 fast.
+// Original whole body restored; list/cursor/index homes and reduced-callee caveats remain.
+// DH299: Complete depth-product declaration schedules zxy/zyx/xzy/xyz/yzx/yxz,
+// immutable complete zxy, then zxy with full position memcpy: 136 each (fast control 136).
+// Original products, position assignment and complete body restored; list/cursor homes remain.
+// P279: Bounded selected-count/view and Boolean object-predicate native domains,
+// subsets 1/2/4/3/5/6/7: 141/145/140/140/144/143/143; complete byte count/view 146.
+// Reduced control 139/549 versus full 132/554. All regress; original full-width
+// carriers and body restored; retail frame 0xa0 and list/output/index split remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2603,9 +2712,26 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Round 308: native flag/key/real-maximum physical views, seven subsets 317 each; complete physical view
 // Round 308: with direct maximum clamp 316 (below the keep gate). Self-aliasing memcpy swap excluded. Original physical type,
 // Round 308: helpers and body restored; prefix/state roles and decay base remain.
+// P272: Alias-safe full-record memmove capture/first-publication/second-publication subsets in the existing shared swap, then all with inline declaration: 481/484/509/499/510/509/463/463.
+// Original executable source restored; frame 0x30 agrees; prefix/state registers, ordinal homes and decay base remain.
 // F329: Output cursor, direct decay initial field and duplicate-scan cursor in seven
 // subsets: 370/417/442/422/425/505/504; complete graph plus output source cursor 505.
 // All restored; frame 0x30, prefix/state ranks and ordinal homes remain.
+// DL247: Standard alias-safe swap with swap/clamp inline and completed clamp result:
+// 568/568/568/568/600/600/600/600; original swap with independent helper inline
+// subsets 317/317/317, completed result alone/with either/both 404/404/404/404.
+// All restored; state/prefix homes and rotated decay base remain.
+// DH299: Native nonnegative prefix and explicit post-swap tail decrements in both
+// removal passes, seven subsets, then complete graph with byte found: 317 each.
+// Original body restored; frame 0x30, prefix/state and ordinal homes plus decay rotation remain.
+// DH301: Original requested parameter retained with a genuine clamped-limit local;
+// branch/conditional clamp, safe entry parameter-copy and bounded unsigned-prefix
+// combinations: 377/321/435/321/377/321/435/321. Complete original body restored; frame 0x30
+// and retail length agree, prefix/state and ordinal homes plus decay rotation remain.
+// P279: Requested-copy/found-initialization/uninitialized-tail declaration admission at entry,
+// subsets 1/2/4/3/5/6/7: 413/335/317/413/413/335/413; all with the existing swap
+// scratch declaration separated from assignment 413. Original complete source restored;
+// frame 0x30 agrees, prefix/state and ordinal homes plus the rotated decay base remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -2732,7 +2858,7 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // score 517 (was 517): frame 0x60 versus 0x38; stored velocity reads and loop homes differ.
 // MiniMax R (11-01): no new form, no lower score.
 // Earlier counts 529 and 561; the logic matches retail block by block (walked statement by statement against
-// score 517 (was 517; earlier 529, 561): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
+// Earlier at 517 (529, 561 before): frame 0x60 versus 0x38; stored velocity reads and loop homes remain.
 // Earlier: the logic matches retail block by block (walked statement by statement against
 // 0x37260-0x37a50: offsets, argument order, condition directions, the z,x,y random order and the clamps all agree); what
 // is left is register allocation and scheduling. Retail's loop keeps one pointer per (base, stride) group starting at
@@ -2762,6 +2888,23 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Caller stays 251; original scalars, helpers, observations and complete body restored.
 // P267: native long cycle/size/reset carriers, subsets 1/2/4/3/5/6/7: 515/511/519/516/518/513/519; all byte carriers 517.
 // Best lead is below the keep threshold; original flag types and complete body restored.
+// Round 369: actual state-scalar/view-and-offset/three-component cursor subsets
+// 1/2/4/3/5/6/7 give 533/523/525/536/536/530/526; all with repeated native
+// flags 557 (frame 0x5c). Original indexed graph and whole body restored; frame and velocity reads remain.
+// F334: Existing random bounded-result initialized/early-return/local-clamp/completed
+// graphs: 502/517/517/517; with coherent per-use rate 500/524/500/524.
+// Local next-value clamp with the rate read at all three uses 500 (2052/2035 bytes, frame 0x64)
+// NOT kept: retail loads the rate once (fld [eax+0xa8] at 0x375a1, held across the three steps)
+// and the clamp alone ties 517. Body restored at 517; frame and velocity/loop homes remain.
+// AC488: complete double component/square ownership in the speed test and normalization:
+// component/original, original/component, both components, square/original, original/square,
+// both squares, component/square, square/component 491/494/515/506/506/557/523/515.
+// NOT kept: independent components 491/494 and independent squares 506 enlarge the frame
+// to 0x64 versus retail 0x38; combined components 515 gain only two. Original body restored.
+// Frame 0x60/0x38, stored velocity acquisition and loop homes remain; original trees/helper preserved.
+// Y538: Last-consumer acceleration/speed/projection scope subsets 1/2/4/3/5/6/7
+// give 533/517/517/533/533/517/533; all with the existing position receiver before
+// old-position capture 526. All restored; frame 0x60 and stored-velocity/loop homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -3062,9 +3205,6 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // MiniMax R (11-01): no new form, no lower score: `kind` still has to be forced into memory to hold retail's frame, and the object table still rides in ebp.
 // score 177 (was 177): Frame 0x18 versus 0x1c; initial alpha/kind and final fade scratch homes remain.
 // Earlier 175/194: the alpha is read from function_4baf0's second output (the byte pushed
-// earlier 175, 194; the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177; earlier 175, 194): the alpha is read from function_4baf0's second output (the byte pushed
-// score 177 (was 177): the alpha is read from function_4baf0's second output (the byte pushed
 // first, at [esp+0x30]). `result` is left unassigned until a branch sets it, so it stays in dl
 // (the early `= false` made it a memory byte); the object is reached through a pointer to the table
 // slot (retail reloads it from the slot after the alpha store); and `(real)sqrt(..) * g_4b9dcc`
@@ -3101,6 +3241,20 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // F327: Complete byte-to-alpha conversion, elapsed product/subtraction and both
 // fade-complement producers, subsets 1/2/4/3/5/6/7, then immutable complements,
 // 177 each. Original complete body and distance helper restored; four-byte frame gap remains.
+// DL249: Existing final property getter with real+byte/real/byte/no receiver defaults
+// 176/176/176/176; guarded-first 204; both property boundaries with both/real/byte defaults
+// 206/206/206. Final getter plus alpha-tested final result 168 plain, 773/773 bytes: NOT kept
+// (re-tests result after the fade, as J240's 168; retail clears dl after one comiss at 0x3dace).
+// Both getters on that result graph 197; ordinary kind 143, 764 bytes: NOT kept because
+// length moves away from the verified retail-length body. Inherited kind qualification restored.
+// J240: Pure ordinal long/dword/word 177/177/203; with final logical result 168/168/192; shared point
+// 168/192. Minimal original lookups plus only the logical result 168 (retail length 773) NOT kept:
+// `result = result && !(alpha <= 0.0f)` re-tests result, which retail does not (0x3dace: one comiss,
+// then xor dl, dl). Body restored at 177; frame and fade scratch homes remain.
+// F339: Existing shared scalar-clamp producers for temporal/guarded-first/final
+// fades, seven subsets, then the final producer consumed directly:
+// 177/177/177/177/177/177/177/177. Original body and shared helper restored; the four-byte frame
+// gap and initial/final scratch scheduling remain.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -3267,6 +3421,9 @@ bool function_1321f0(long index, s_1321f0 const *data);
 // range/record, all native views and const callback arrays each 4. Original body restored.
 // Round 307: positive enabled scope 4; handle per view 4; table root at every use 217;
 // decoded/position/both point storage at entry 4/4/4; node/range and record/geometry storage at entry 4/4.
+// Lane 5 r137 (lead): this function matched in a full check whose only code change was 0x3a5c0's
+// quantizer (023540.cpp, a macro with one shared value; not kept), with no edit here: a link-time
+// side effect. Its own last difference (+0x6b, score 4) may need the form that change implied.
 // @retail 0x41640
 void function_41640(void)
 {
@@ -3383,12 +3540,16 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
         y = matrix->scale * y;
         z = matrix->scale * z;
     }
-    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x + origin->x;
-    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y + origin->y;
-    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
+    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x;
+    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+    vector3f_add((vector3f const *)corner, (vector3f const *)origin, (vector3f *)corner);
+    corner->z += 0.001f;
 }
 
-// score 394 (was 394): the four corners are written out (retail has four copies of the scale
+// score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
+// 1820 bytes (retail 1819), first difference the frame size at +0x2.
+// Earlier 394: the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3416,6 +3577,17 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
 // names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
 // frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
+// F341: Native scaled-input point 523/525; uniform rotation subtotals 412/404;
+// uniform translated subtotals 412/390 (without/with native colour). Existing
+// complete origin sum 231 (kept), with native colour 225 (gain 6, under the bar).
+// On that producer, three-use negative radius 398, with native colour 379 (frame 0xe0
+// and retail length 1819, but worse than 231; not kept). Full scalar role names 231/225.
+// Offset inputs stay staged before stores; the sum accepts its first input in
+// place. Corner, offset and origin are distinct at all four calls. Shared helpers unchanged.
+// P283: Complete final-coordinate scalar staging with direct stores, native color and
+// three-use negative-radius subsets: 388/388/407/389; with the existing point setter:
+// 412/403/417/409. All regress; original helper, full body and alias-safe input capture
+// restored. Frame/radius/scaled-coordinate homes remain; no one-use scalar staging retained.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -3593,9 +3765,24 @@ bool __stdcall function_391f0(void *state);
 // Round 527: Two-use previous timestamp/native short frame/single-exit admission subsets
 // 1/2/4/3/5/6/7 give 294/262/251/290/294/262/290; all with double previous time 324.
 // Original time observations, frame carrier, gates and complete body restored; extra frame dword and zero/loop homes remain.
+// AC480: Natural portal-cursor for increment with the signed post-decrement condition; conditional
+// absolute / array-home names / independent phase ordinal combinations: 266/266/266/266/266/266/266/266. Original
+// loop and complete body restored; extra frame dword and zero/portal/fog homes remain.
 // Round 530: portal-phase current-cluster workspace, existing native material fields, scan-time
 // minimum, current/fields, current/minimum, fields/minimum, all three and native ordinal role names:
 // 273/251/251/273/273/251/273/273. Original body restored; frame 0x74, early zero and loop homes remain.
+// DL247: Standard count/end-point distance fill with CRT zero, aggregate false,
+// count false or end-point false fill: 295/295/296/296/295/279/296/296.
+// All restored: shorter than retail, no frame recovery, and a reduced control regresses.
+// Round 533: One genuine element ordinal shared by update pair/render pair/corresponding
+// first/corresponding second/opposite first/opposite second/all phases/all with ordinal role name:
+// 251 each. Original independent ordinals and body restored; frame 0x74 versus 0x70,
+// early zero and portal/fog homes remain.
+// DH301: Clock at each use, twice-used native elapsed result and distance-array reads
+// at each consumer, subsets 1/2/4/3/5/6/7, then immutable elapsed on the complete graph:
+// 310/251/277/295/288/277/275/275. All tie or regress; original complete body, reads,
+// publications and loops restored. Frame 0x74 versus 0x70 and zero/portal/fog homes remain.
+// M323: Existing native state-group fields with bool/byte/short/long outcomes 251/251/281/286; explicit conditional assignments 297/297/263/281. The 263 form reaches 1014 bytes but regresses; original body and phase observations restored.
 // @retail 0x36b50
 void function_36b50()
 {
@@ -4384,6 +4571,17 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // F327: Existing light-pass producer for individual modes 3/20/7, then
 // 3+20/3+7/3+20+7/8+20/8+7: 200/186/174/206/206/211/205/205.
 // Original complete callback and all shared helpers restored; late enabled stores and mode loads remain.
+// Round 536: Shared cull call owned by nested result/explicit call arms/inside-range arms/normal-cull arms, then the same four with the raw caller gate: 214/138/138/138/217/191/191/191 fast.
+// Original helper and complete caller restored; enabled stores, mode loads and clear-call convention remain.
+// DH299: Complete branch-owned fog maximum crossed with raw mode-eight gate,
+// per-use source-group fields and native payload-byte count: 142/193/142/193/234/217/234/217.
+// Original maximum producer and callback restored; late enabled stores, dead mode loads and clear convention remain.
+// Y538: Existing selected-bit admission with completed enabled result before depth in
+// byte/bool/short/long 257/235/240/212; after depth 234/262/198/239. Every shared user
+// regresses. Original helper/caller restored; late pass bytes, dead mode loads and clear convention remain.
+// F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
+// then gate versus complete admission: 218/218/228/231/210/210/242/247.
+// Every shared user regresses; original helper and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

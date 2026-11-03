@@ -325,6 +325,34 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // DH round 290: complete projected-point native/direct, native aggregate, shared 3D setter,
 // native/array planar sums, native/array parallel products and native running coordinates
 // 46/54/44/60/60/60/60/66. Two-point setter gain rejected; original helper/body restored.
+// Round 273: complete native input captures (both bounds/both basis vectors/origin),
+// subsets 1/2/4/3/5/6/7, then all with entry axis declaration:
+// 137/734/734/747/747/734/747/747. Basis/origin copies end full corner inlining.
+// Original helper/body restored; plane base, selectors and product ranks remain.
+// N320: Paired native 3D point setter and 2D determinant reaches 42, below the eight-point gain bar;
+// plane receiver, first-corner Boolean and short-circuit edge-length combinations regress. Plane base
+// and product ranks remain. Scores 42/87/76/90/54/82/66/90.
+// Original executable source restored.
+// P276: Four-use corner helper transform/horizontal/vertical/axis/side/output/point
+// lexical roles, independently and all together: 46 each at 983 bytes. Original helper
+// and complete body restored; plane base, selector carriers and product ranks remain.
+// DH300: Existing corner helper owns native/immutable/library transform inputs, basis plus origin,
+// immutable basis, complete basis vectors, transform plus bound values, transform plus 3D setter:
+// 334/334/334/730/730/734/751/334. Copies enlarge the frame or outline the helper; original
+// helper and body restored. Plane-store base, first-selector roles and product ranks remain.
+// Round 376: First-corner side truth produced by native tests in bool/byte/short/long,
+// false-default 190/190/194/193; complementary true-default 189/189/193/192.
+// Exact-only two-use side publication/first-corner forms restored; plane-store base, axis/side
+// P278: Actual outer transform/bounds/output lexical roles, seven subsets, then all with the normal-
+// axis role: 46 each at 983 bytes. Original body and four-use helper restored; plane base, selector
+// carriers and product ranks remain.
+// Round 378: Existing four-use corner producer and shared two-component setter declaration,
+// ordinary/inline/force-inline contracts in eight nonoriginal pairs, all 46 on the retained
+// by-value-selector/component-array graph. Original declarations, helper and body restored;
+// live-plane store base, first axis/side roles and product memory sides remain.
+// AC493: First/second/both plain two-corner row walks, long/short: 66/56/62/295/336/415;
+// both with continuous output cursor long/short 235/407. All original corner calls, helper and
+// complete body restored; plane-store base, first selectors and product memory sides remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -854,6 +882,33 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // DH round 290: unconditional decoded plane owned by native value or destination,
 // scalar fields/plain vector loop, then each with common angle result:
 // 896/897/753/753/864/898/737/739. All regress; original decoders, angle gate and body restored.
+// Round 532: native axis/bound-pair/up-component cursors, seven subsets and all with short
+// orientation ordinal: fast 779/771/802/793/779/771/809/873 versus unchanged fast 795.
+// Minimal axis/bounds cursors plain 574/591 at 3631/3599 bytes versus full 539/3647; both rejected.
+// Original indexed component loops, complete body and all helpers restored; tag/count/plane homes remain.
+// Round 330: sequential outer/inner signed-short ordinal and candidate/selected-plane
+// storage subsets 1-7, then all with bound-first search, fast 771/780/781/762/822/807/774/770. Original body restored;
+// first grouping plane stays independent; tag/count/plane homes remain.
+// Plain confirmation: shared candidate/selected plane 754 at 3609 bytes; shared inner
+// ordinal 705 at 3599. Both regress against 539; original body and every helper restored.
+// Round 372: first-present-face searches ending with break, short/word/int/long, then separate
+// bounded scans: fast 779/803/776/776/810/792/780/780 versus control 795.
+// NOT kept: retail prologue/frame lost; original body restored, tag/count/plane homes remain.
+// P274: Complete vector-return rotation producer with native input/component loop/entry basis
+// declarations, eight calibrated forms 575/842/571/842/575/842/571/842 (control 539).
+// Original helper and body restored; tag/count/plane homes and rotation spills remain.
+// AC486: Outstanding total decremented at outer-group completion, short/long/word/dword
+// 771/793/771/804; total also owns phase admission 771/794/771/805 (fast).
+// Original total, decrement, admission and body restored; tag/count/plane homes remain.
+// Ordinary outer-group decrement 746 at 3647 bytes versus full 539: NOT kept; fast lead was not confirmed.
+// Round 490: Native initial/group-candidate/selection-emission ordinal role names,
+// seven subsets tie fast 795; complete names with entry-owned initial zero 787.
+// Minimal initial-zero ownership also 787 fast but 544 plain versus full 539: NOT kept.
+// Original body/helpers restored; tag/count/plane homes remain.
+// Y539: Complete decoder output reference/pointer return/reference return/value return,
+// forced then ordinary inline: fast 795/795/795/875/795/795/795/963 against control
+// 795 (full 539). Every peer score agrees with its preview. Original decoder, plane
+// homes and body restored; native value returns move extent away from retail.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

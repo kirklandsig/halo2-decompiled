@@ -1226,6 +1226,10 @@ c_type_709360 s_graph_tag::animation_find(long mode, long weapon_class, long wea
 // Round 520: actual named-table pointer/reference before/after candidate construction,
 // original/native iterator: 828/828/828/828/826/826/826/826.
 // Field receivers do not match; two-count initialization gains rejected. Body restored.
+// M319: Native urgent-resource/inheritance/both endpoints, field-read bounds
+// 1325/807/1341; cached bounds 999/808/999; urgent/both equality bounds 999/999.
+// Inheritance-only 807/808 loses matched 0x1dc8c0 to 565/558; shared-user
+// gate rejects both. Every helper/body restored; initial/output homes and zero remain.
 // @retail 0x1db170
 c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)
@@ -1418,6 +1422,9 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 // the candidate, no zero carrier in EBP, `this` in EBP and the mode in memory for the second request. On it: names of the result, key or iterator 1040
 // (no move); candidate at function scope 1030 (2856), loop condition on the candidate 1030, break form 1076, a reset candidate 1042; the second mode in a local 1040.
 // 0x1dd560 or 0x1236f0 marked inline on it 1040 each (no move).
+// N325: Resolved-key sentinel chain/iterator null chain/complete optional-publication
+// results, seven subsets and all with class-rejection result: 828 each. Original
+// initialization, conditions, helpers and complete body restored; homes and zero carrier remain.
 // @retail 0x1dbc80
 c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon_type, long set, long *found_mode,
 	long *found_weapon_class, long *found_weapon_type)

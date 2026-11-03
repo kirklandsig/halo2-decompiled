@@ -272,6 +272,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH295: Joint query-count/ordinal/minimum lexical priorities, all six orders, then two
 // opposing orders with the reused per-ray length renamed: eight at 618. Original names
 // and complete body restored; success/input/minimum/hit and later vector homes remain.
+// AC488: final-projection/rotation-axial reductions as shared dots or complete native
+// product parts, eight non-original pairs: 616/622/614/628/624/627/624/627.
+// NOT kept: shared dots gain at most four and change the sum trees without a match.
+// Original body, helpers and all in-place copies restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

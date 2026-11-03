@@ -1489,6 +1489,10 @@ long function_2421d0(long team)
 // (reference local, by-value or reference helper, member helper, typed casts, dead second reads) stay cycling in a
 // compile-only copy. 0x2c0980 has the same chain and a second `or eax, -1` before its peer test, so look for one
 // shared helper.
+// Round 89: one peer guard with a shared two-use block, if/else or ternary 92 (154 bytes); one block
+// variable assigned in the flat arms 17; shared peer and block variables in nested arms 74 (212 bytes);
+// force-inline tag helper 17; result initialized at its declaration 17; existing peer accessor 17;
+// const peer receiver 17. Original body restored.
 // @retail 0x242210
 long function_242210(point3f const *point)
 {
@@ -1556,6 +1560,9 @@ void function_2422d0(long slot)
 // stay); `short slot` 7; nested tests through a table-entry pointer with `continue` 7; one && test with `continue` 7;
 // a named team entry pointer 7; the table value named in the test 7; the flag cleared after the reject store 9
 // (with a named eligibility bool 9); `++i` 7.
+// This round: team-entry field reference 104 (267 bytes); register index/object/both 7 each;
+// accepted field reread 54; rejected field reread 50; both field rereads 104; nested two-use
+// table-entry pointer 7; force-inline object getter 7. Original body restored.
 // @retail 0x2423f0
 bool function_2423f0()
 {

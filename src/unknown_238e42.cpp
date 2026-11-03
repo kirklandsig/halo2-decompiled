@@ -1060,6 +1060,9 @@ bool __stdcall function_2399da(long controller_index)
 // Round 366: Complete authority comparison parts, bool/byte/short/long, original
 // admission or a separate complete admission result: 90/90/90/90/90/90/90/90.
 // Original comparisons and body restored; selected-pointer/rank registers remain.
+// DH306: escaped flags/title/Boolean-output defaults, seven subsets
+// 131/90/136/131/140/136/140; all at entry 165. Original body restored;
+// identity/rank register ownership and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

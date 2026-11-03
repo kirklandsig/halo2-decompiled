@@ -268,6 +268,12 @@ static __forceinline real avoidance_normalize2d(point2f *direction)
 // direct/shared subtraction 175/173/175/173; all four with shared dot/cross consumers
 // 189/187/189/187. Original native difference, normalizer and complete body restored; early Y load
 // and XMM roles remain.
+// Round 75 (m3 lane 9; one-file LTCG harness, control 92, lane 6's helper form 106): matched neighbour 0x2c2a70 has this same early y load through its normalizer (length helper, by-value scale
+// helper, tiny case first): that normalizer with the point/dot/cross helpers 113 (arms swap); the long case first with a scale helper, a named inverse or written out, with or without a length
+// helper, six forms 106 (same code); the inverse repeated at each use 159 (preload gone); a Y-first cross on both factors, on the second only, `< 0` 106 each; the two factors in both orders,
+// both comparison sides and named in both orders across all four helper pairings, 20 forms, 106 (same code); the neighbour's normalizer with the direction read into named locals, y/x or x/y,
+// harness positional 81/78/81/81 against the control's 81, no preload, squares starting at x (best 3 points lower, not kept). Left on the 106 form: y in XMM1 and the inverse in XMM0 (retail swaps them), and the second
+// cross's first product not multiplying y in place.
 // AC475: Existing in-place normalizer with distance output by pointer/reference, branch/common
 // publication and original/shared subtraction: 92/91/96/98/92/91/96/98. Complete shared dot/cross
 // consumers on the four subtraction/output graphs 144/160/144/160; original helper and body restored.

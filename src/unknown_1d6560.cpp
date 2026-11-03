@@ -212,6 +212,13 @@ void __stdcall function_1d6560(s_havok_component *component, s_physics_model_own
 // `(byte *)` arithmetic either way round or from a copied index 38
 // (same code); index modified in place 96; byte-shift spellings of the case 0 flag 38 (same code), the mask 57; inline
 // getters for the rigid body and the type 126 (224 B, caller lost).
+// Round 333: Shared twice-used body flag byte/predicate before or after kind policy,
+// with repeated/shared type: 101/97/106/115/92/92/91/83. Single-type and early flag
+// forms lose the matched caller; original observations, body and convention restored.
+// F344: Actual object-getter acquisition before handle/body/result/main dispatch,
+// repeated type 125/72/95/83; shared byte type 129/88/81/92. NOT kept:
+// one-use getter pointer and early object-pointer read; several forms also lose
+// the matched caller. Original body, both observations and caller convention restored.
 // @retail 0x1d69d0
 long function_1d69d0(s_havok_component *component, long kind, s_physics_model_owner *owner, long level, long rigid_body_index)
 {
@@ -318,7 +325,7 @@ struct s_physics_component_walk : s_havok_component
         char *output, long *output_count, void *other_context, dword *visited, bool *active);
 };
 
-// score 146 (was 172): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
+// score 146 (was 146): frame 0x18 and 922-byte extent agree; body-latch groups/current reload order,
 // neighbor/key homes and remaining cold-block placement differ.
 // Earlier at 172: the body loop now matches retail except the order of the groups/current reloads at its
 // back edge (retail EBX then ESI). Left: in the entry loop `next` lands in EAX where retail has EDX (a rotation
@@ -475,6 +482,24 @@ struct s_physics_component_walk : s_havok_component
 // Round 118 (fast): the object index in a local for the first section query 179 (930 B), in both section loops 179;
 // the next group overwritten by `if` then widened 151; a key_b local 153; a const alias of the component for the
 // section queries 146 (same code).
+// DL246: terminal/neighbor/both section cursors 306/204/331; both with object input 260;
+// short/long keys 312/294, complete short/long inputs 322/305. Original indexed scans,
+// query rereads and complete method restored; frame 0x18 agrees, neighbor/key homes and cold exits remain.
+// Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
+// conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
+// Round 487: Complete native group-body char/short carriers, original/byte output,
+// then explicit output advancement: 309/154/310/261/309/154/310/261. All exact-only forms
+// restored; original promotions, outputs, section predicates and full method retained.
+// DH303: Promoted/branch/table neighbor producers, default first-body outcomes
+// and producer-scoped group receiver 181/163/289/318/316/318/292/303. Original method
+// restored; neighbor/key carriers and cold exits remain (one historical control excluded).
+// Round 542: Native two-fact replacement status, separate/guarded/common/branch publications,
+// unsigned/signed full-width 289/329/315/314/289/329/315/314. No exact form; original separate facts,
+// output, clamp and complete method restored; latch reload and neighbor/key carriers remain.
+// NOT kept: the status-mask producers and publications do not reproduce retail.
+// DH307: Object formal first/middle/last in both section-query interfaces, all eight
+// nonoriginal consistent pairs: 146 each, 922/922 bytes. Original interfaces and call
+// tuples restored; body-latch groups/current reload order and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

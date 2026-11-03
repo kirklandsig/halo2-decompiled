@@ -107,6 +107,15 @@ struct s_9cca0
 // Round 70: the callee's record type shared and used directly 9; the existing point setter 57;
 // the existing vector setter 57; an aggregate location copy 9; the local declarations swapped 9;
 // the global pointer saved at entry 70, between the vector copies 9, and after them 9.
+// Round 123 (lane 8, fast): the two long fields reversed 13; the first long after the first vector 26; the tag after the
+// second vector 9 (same count, other order); the marker before the second vector 10; the memsets swapped 16; references
+// to the input vectors 42. Diagnostic, not kept: 0x184440 giving the location setter a local copy of the location moves
+// the test above the stores as retail (12; 0x184440 1007, 4621 bytes). On that diagnostic: memcpy copies 12, the vectors
+// swapped 14, source pointers 44, the second vector by component 55 (209 bytes), the tag after the second vector 12,
+// marker before tag 10, marker after the zeroing 10, marker before the second vector 10; with marker before tag: longs
+// reversed 13, both longs after the first vector 21, the second long after it 22. The second copy's i store stays late,
+// so more than the escape differs. Retail's 0x184440 passes `arg_2 + 0x1c` to the same self-recursive setter, so the
+// setter's summary is the open question; its file is on another lane's list this round. Still BLOCKED-BY 0x184440.
 // @retail 0x9cca0
 bool c_breakable_surface_damage_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {

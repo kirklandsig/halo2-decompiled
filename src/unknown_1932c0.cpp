@@ -960,6 +960,9 @@ bool __stdcall game_variants_received(s_pending_message_header *header)
 // Round 66: bitwise-or write result 53 (240 bytes); file != NULL 3; call-first short-circuit result 47;
 // null-initialized file 3; write-failure early exit 85; NULL != file 3; write == true 5; write != false 3.
 // Opening body restored.
+// Round 30 (lane 17, fast; a compile-only build gives the same order): the reader's ticks declared, then zeroed 3;
+// file declared first, then the result 3; result zeroed after the allocation 70 (221 bytes); braced success
+// assignment 3; braced asm block 3; harness: `__int64 volatile`, LARGE_INTEGER QuadPart, forceinline reader 3 each.
 // @retail 0x194160
 bool __stdcall game_variants_retry(s_pending_message_header *header)
 {
