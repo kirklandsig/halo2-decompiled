@@ -339,6 +339,11 @@ static __forceinline char *upload_copy_ab(char *destination, char const *source,
 // DH313: Native scanner char/signed-char/unsigned-char/byte captures with original
 // postincrement or separate pre-test advance: 40 each; shared find regresses to 15/70 bytes
 // in all eight. NOT kept: no target gain and shared-user loss. Original helper/body restored.
+// Round 124 (m3 lane 7, fast with 0xb5f10/0xb61d0): retail's 0xb5f10 calls set the count (EAX) before the start
+// (ECX), so the declared start-then-count order already fits. The length helper returning `long` 40 (0xb61d0 1);
+// a plain string parameter with one own-parameter volatile read at the `start +=` 40; result set in an else arm
+// 48 (95 bytes, 0xb5f10 41); the helper's counter initialised in the for 40; `count >= 1` 38 (`cmp esi, 1`, no
+// register change; not kept). Retail pushes EDI in the prologue (start lives there) and EBX only around the scan.
 // @retail 0xb6220
 bool function_b6220(char const *volatile string, long start, long count, char *destination)
 {

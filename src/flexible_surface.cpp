@@ -739,6 +739,9 @@ static inline byte *surface_pointer(byte *base, long offset) { return *(byte **)
 // call; a gain of 7, under the keep bar), with the side loop 434, with the types read per scan 432 (1470), with the rest
 // pointer first 415, all three 435; each scan's NONE default declared just before it 424, with NULL-first lighting 480,
 // plus per-scan types 496. All restored.
+// M341: Actual typed descriptor on retained binormal/position graph, uniform type/count
+// observations and per-scan defaults, masks 0..7: 422/439/422/439/424/433/423/433. Original
+// descriptor/searches restored; frame, application convention and outer API expansion remain.
 // @retail 0x116b00
 void __stdcall function_116b00(long tag_index, long unused, long group, long variant, long pass, long index, void *context)
 {
