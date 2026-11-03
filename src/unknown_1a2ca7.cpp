@@ -1514,6 +1514,10 @@ void online_presence_get_latest(long task_index, DWORD group_id, DWORD count, XO
 // (clan, friend) 198 [25]; plus the friend walk's (friend, presence) 197 [24]; plus the clan walk's (player,
 // presence) 197 [22] (853 B each; roles from retail's ECX/EDX setup). Left on that form: the friend count homed
 // in ESI from its read where retail reloads it after 0x18ff47, and flags20 in a register across 0x1a32fc/0x1a32ae.
+// Round 207 (lane 3, fast): `i` and both counts (friend first) declared ahead of the presence/user
+// buffers 124; friend-first counts declared then assigned as statements 124; the user and both presence
+// buffers declared after the counts 117 (same code); the clan count read after the 0x18ff47 call 124;
+// the merged state as one chained assignment, friend store first, 122. BLOCKED-BY 0x63d00 stands.
 // @retail 0x1a3dfe
 void friends_lists_update_presence()
 {
