@@ -723,6 +723,12 @@ bool sound_driver_voice_create_buffer(
 // `(flags & 1) != 0` 71; no 3D local, `if (flags & 1)` 182 (602 bytes, flags folded to the caller's 0,
 // 0x191420 1); the 3D test inverted with the buffer clear first 132; the result declared after the voice
 // index 71; the 3D flag declared before play 182 (599 bytes).
+// Lane 17 r37 (fast with 0x191420): the 3D flag as `(flags & 1) == 1` 178 (626 bytes; 0x191420 then differs, 1);
+// play as `flags & 2 ? true : false` 71, as `!!(flags & 2)` 71; the 3D flag as `!!(flags & 1)` 71 (same code each);
+// both bools in one declaration, 3D flag first, 182 (599). Body restored.
+// B389: Capacity-produced allocation outcome, bool/byte/short/long with playback-first
+// then spatial-first predicates: 106/106/161/162/103/103/159/160. All regress; original
+// signed result, SDK phases and body restored. Spatial/play and zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

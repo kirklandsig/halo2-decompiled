@@ -308,9 +308,19 @@ PRIVATE __forceinline real function_1d24a7(point3f const *arg_0, point3f const *
 // homes remain. NOT kept: Private producer consumers tie or regress; quaternion-return chain 894
 // removes the retail q-address copy and moves quaternion/body homes, so its eight-point preview gain is
 // unsupported; other out-of-line chains fail the gain threshold. Original executable source restored.
+// Round 42 (m3 lane 2, fast control 902): mnemonic census against retail: ours ~10 rolled scale loops (dec 12/2,
+// mulss 35/58, movaps 19/32); a long scale counter re-measured 933 and still rolled (mulss 35). The bit-13 test as
+// `!(flags & 0x2000)` 939; the four record option bits as `(flags & mask) != 0` 902 (same code); the zero vector
+// copied before `if (!local_21) continue;` 909; the shared response fraction declared at function scope 902; the
+// body-slot clamp as a NONE default plus `if (local_14)` 917 (4283 bytes). Original body restored.
 // Round 81 (m3 lane 12, fast): the record's object index named once (three uses) 926 (4283 bytes); the clamp,
 // its test and the simulating query on the record's byte field directly 955 (4244); the second entry flag
 // renamed 902 (same code); the record flag word read at each bit test 964 (4248); the entry flag as `>=` 1009.
+// Round 79 (m3 lane 16, fast): the mass-center point copied without the pointer local 965 (4284 bytes); a
+// block-scoped response fraction in each of the two blocks that share it 935; the clamp compared inline without
+// the NONE-default count 917 (4283 bytes); the linked component as one ternary 901 (one point, not kept); the
+// record flags read at each use 964 (4248 bytes). Retail keeps the array header in EBX across the loop (reloaded
+// at the top, reused by the swap-remove block) and saves EBX; ours never uses EBX here.
 // @retail 0x1d24a0
 void __stdcall function_1d24a0(s_havok_component *arg_0, float arg_1)
 {

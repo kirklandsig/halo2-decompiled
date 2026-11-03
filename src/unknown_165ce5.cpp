@@ -1668,6 +1668,12 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC489: Inactive history, mismatching idle class and idle-motion rejection first, seven
 // phase-ownership subsets: 236/254/220/270/236/254/270; all with nested countdown admission 270
 // (fast control 220, full 218). Original body restored; frame, unit/mode and look homes remain.
+// m3 lane 11 r60 (fast control 220, full 218): the tail's flag tests under a second `unit_index != NONE`
+// block 213 (diagnostic, a repeated test; the saves still precede the unit test); the loop index declared
+// just above the loop 220; look values in a block around their two smoothing calls 220; look values declared
+// before the unit 220; active preset false then `!155760 && b6780` in an if 383 (2197 bytes, aligned 116 -> 112).
+// Retail spills `active` to [ebp-0x14] (false store before the unit test) and keeps the look values in their own
+// -0x2c/-0x28 slots; ours reuses the spring slots.
 // AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
 // at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
 // Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
@@ -1676,6 +1682,10 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads
 // g_510c54 after each clamped look store (-0x2c/-0x28), as if those stores could alias the global; ours
 // shares one reciprocal.
+// AC497: Native duration/remainder call results, real/double at consumption,
+// eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
+// Original real argument domain and narrowing preserved; all one-use captures restored.
+// Frame, unit/mode homes and independent look divisions remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
