@@ -1211,6 +1211,10 @@ struct s_item_flags_view_10b850
 // Round 541: Native flow-cross result through the shared scalar setter, first/second reused scalar
 // inputs and ordinary inline boundary, masks 0..7: 813/821/821/887/969/969/969/932. Both
 // scalar inputs recover frame 0x148 but regress; original helper, operands and body restored.
+// Y551: Complete first-use contact-flag value in byte/char/word/long storage
+// 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
+// falls to 0x148 but scores regress; all snapshots, original field reads, helpers
+// and body restored. Entry Boolean and collision/carrier/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
