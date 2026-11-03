@@ -1601,6 +1601,10 @@ struct s_rating_summary
 // and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
 // library clears recover extent but regress. Original body restored; formatter/count setup and
 // team/counter homes remain.
+// Round 554: Native team/counter cursor as primary induction, derived real-array ordinal,
+// indexed/walking secondary record, iteration/pass-owned bound result:
+// 274/362/387/407/274/362/387/407. Original integer induction and full body restored;
+// formatter/count scheduling and team/counter homes remain.
 // Round 44 (m3 lane 2, fast): retail's team-loop head is the tail-merge target of preheader and latch (both
 // cursors arrive in ECX/EDX and are stored there); ours keeps the counters cursor in memory and steps it in ESI
 // at the latch, so the store does not merge (the 4 bytes). A walking team pointer declared before the team loop
@@ -1982,6 +1986,9 @@ static __forceinline s_player_slot_flags *function_74aa1(s_player_slot_flags *ar
 // record scan by index 768 (2926, aligned 577); the request identity copied into a local XUID 733 (2910, aligned
 // 489); both 812 (2942, aligned 584). The slot helper's cmovne still needs /arch:SSE, so the positional count
 // cannot reach a match under the file's flags.
+// M339: Complete duplicate-search condition under for/while, ordered/equality endpoint and identity/type
+// filter order: 709/709/698/698/746/746/721/721. NOT kept: type-first 698 grows frame 0xc0 to 0xc8;
+// original body restored.
 // @retail 0x74aa0
 void function_074aa0(void)
 {

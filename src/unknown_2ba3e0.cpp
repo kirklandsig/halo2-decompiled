@@ -904,6 +904,11 @@ real g_55e618;
 // right after it is formed 202 (1555 bytes); displacement/sweep/start and the collision call in their own
 // block with a bool result 102 (homes unmoved); `vector3f velocity = particle->velocity;` 223 (1556
 // bytes), with both in-place scales 223. Original body restored.
+// P292: Actual owning 16-bit flag record with contact/floor/stop bitfield subsets
+// 1/2/4/3/5/6/7, then all with native three-bit countdown: 99 each, 1549/1537 bytes.
+// NOT kept: only three points gained; all ten other same-file users unchanged.
+// Original full type layout, raw flag observations, projection and complete body restored;
+// sweep/collision homes and cross-placement tangent/perpendicular spills remain.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

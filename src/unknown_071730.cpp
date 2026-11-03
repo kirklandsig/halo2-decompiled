@@ -65,7 +65,10 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
-// score 439 (was 439): retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
+// score 426 (was 439): the two session-state tests now call the existing c_class_58d20::function_058d20
+// (0x58d20), which gives retail's dead state stores; 1593 bytes against 1589, frame 0x3e8 versus 0x3e4, both
+// dead stores share one slot (retail 0x20/0x18), and 0x5b080 is still inlined here.
+// Earlier at 439: retail length; frame 0x3e8 versus 0x3e4, result byte and secondary-state/getter homes remain.
 // Earlier: retail length; frame 0x3e8/0x3e4, result byte and getter/readiness handling differ.
 // Round 30 (lane D): the permuter found no better form, so the body is unchanged. What still differs:
 // retail calls 0x5b080 where this body expands it and expands the elapsed-time helpers 0x75870/0x75890
@@ -253,6 +256,11 @@ void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 // Secondary-state spill appears, but frame grows to 0x3ec; original workspace/body restored.
 // M304: Roster bound/matched-count/ordinal descriptive name combinations, eight at 439/1589.
 // Original scalar identities and body restored; frame, result/state homes and getter boundary remain.
+// Round 204 (fast, on the 426 form): the missing variant/data tests as two ifs 442 (1605 bytes); positive
+// transition flag with a bool reset 430 (1576 bytes, frame 0x3e4 agrees), with the long reset 425 (-1, not kept);
+// the existing function_75890 for both elapsed times 481 (called out of line, 1542 bytes); result/transition renamed
+// so the result byte sorts higher 426 (same code). Before it: a volatile copy of the state in each early-exit
+// arm 426, a file-local inline state helper 426 (same code as the kept call).
 // @retail 0x71730
 bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 {
@@ -263,14 +271,12 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		c_class_58d20 *local_2 = local_0->session_b;
 		if (local_1->type != 11)
 			goto finished;
-		long local_4 = local_1->state;
-		if (local_4 != 5 && local_4 != 6 && local_4 != 7 && local_4 != 8)
+		if (!local_1->function_058d20())
 		{
 			function_71e00(arg_0);
 			goto finished;
 		}
-		local_4 = local_2->state;
-		if (local_4 != 5 && local_4 != 6 && local_4 != 7 && local_4 != 8)
+		if (!local_2->function_058d20())
 		{
 			arg_0->mode = 14;
 			local_3 = true;

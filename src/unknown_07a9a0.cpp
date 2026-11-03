@@ -1179,6 +1179,13 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // M334: Current Boolean-balance/word-workspace graph with existing team/minimum/maximum/spread/
 // limited/imbalance selectors forced inline, then all party bounds and all except capacity:
 // 766/766/766/766/766/766/766/766. Original inline contracts restored; frame/session/lookup remain.
+// Lane 14 r55 (fast): retail's player loop is the matched 0x63220 (session_summary_get_player_value) expanded: its
+// MAX evaluates 0x1931a0 twice (the inline loop, then the call), with 0x631f0 and 0x192e60 inline inside it; the body
+// here is that function written out. The call to 0x63220 1097 (2524 B: our link keeps it out of line; the function
+// then returns with ret 4 as retail); with a __forceinline declaration here, or `inline` on 0x63220's definition, the
+// same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
+// out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
+// through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {
