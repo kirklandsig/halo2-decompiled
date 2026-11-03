@@ -933,6 +933,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index);
 // B386: Plain real-array direction-input/five-point-input/optional-output loops, subsets 1/2/4/3/5/6/7, then
 // direct descending component index: 400/320/317/389/373/332/401/400 (fast control 258; full 257). Original
 // record copies and body restored; byte homes and shared-tail predecessor remain.
+// AC505: Existing remembered-point producer return at case 2/case 1/both
+// consumers, separate then shared receiver lifetimes: 265/258/303/265/258/303;
+// both case-owned receivers with byte/short presence 303/386 (fast control 258; full 257).
+// NOT kept: ties/regressions; original point arguments, result graph and full body restored.
 // Round 85 (m3 lane 12, plain): the weapon fallback as `vector3d_from_points3d(...); goto normalize_direction;` 283
 // (1420 B); the output stores swapped 257; point_valid folded into the output test 257 (same code); point_valid set
 // before the state lookup in cases 1 and 2 261; before the point copies in cases 3 and 5 257. Body unchanged.

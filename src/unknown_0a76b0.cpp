@@ -1812,6 +1812,9 @@ PRIVATE inline short unit_action_player_value28_get(long player_index)
 // M335: Primary/selected-hand/paired-weapon scalar identities, subsets 1/2/4/3/5/6/7,
 // then all with the animation-flag identity: 138/138/138/138/138/138/138/138. Original complete body restored;
 // same-block pool reload and selected-weapon/mode homes remain.
+// AC505: Actual duplicate-type admission bool/byte/short/long result
+// 138/138/138/138; guarded complete outcomes 140/140/141/143.
+// NOT kept: no gain or byte match; original predicates, mode/flag, body and calls restored.
 // @retail 0xe8de0
 bool __stdcall unit_action_drop_weapon(long unit_index, s_unit_request *request)
 {
@@ -2081,6 +2084,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // M335: Native receiver/offered/returned scalar identities, subsets 1/2/4/3/5/6/7,
 // then all with the give-result identity: 97/97/97/97/97/97/97/97. Original complete body restored;
 // frame/result-byte and pooled unit/weapon homes remain.
+// AC505: Reverse-transfer result byte/short/word/long with false default
+// 97/107/107/105; complete branch-owned outcomes 105/113/113/111.
+// NOT kept: no gain or byte match; original give/take results, body and calls restored.
 // Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
 // through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
 // and calls 97, `given` declared first 97 (same code each).

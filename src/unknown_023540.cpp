@@ -2540,6 +2540,9 @@ dword __cdecl function_131fc0(real alpha);
 // producers 406/406/390/414; branched producers 406/406/390/414.
 // NOT kept: all regress and disturb the matched prefix; original flag reads,
 // state stores, fallback arrays and complete body restored.
+// AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
+// and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
+// one-use output form regresses; original branch stores and complete body restored.
 // @retail 0x2a8d0 standard
 void __stdcall function_2a8d0(long tag, long bitmap_index, real const *source,
     real const *destination, long arg_af5a49, color3f const *color,
@@ -2982,6 +2985,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // immutable pairs, first-producer scope and late second-output declaration, all
 // eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
 // original trig carriers, output declarations and complete body restored.
+// AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
+// rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
+// NOT kept: precision/transport forms regress and move the extent away; original float
+// carriers, helper inputs, rounding and complete body restored.
 // @retail 0x29b00
 void __stdcall function_29b00(long tag, long first_bitmap, real first_alpha,
     real first_angle, real first_scale, long second_bitmap, real second_alpha,
