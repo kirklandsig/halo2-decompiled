@@ -1191,6 +1191,9 @@ long function_10f5f0(long object_index);
 // Native short stopped alone 571; full-width reused final result 570.
 // Extent-only control 565 repeated an earlier form and is excluded; all executable
 // source restored. Frame, native flag-result bytes and sum-loop scheduling remain.
+// AC491: Entry-owned bounds/time/reduction scalar declarations, masks 1/2/4/3/5/6/7, then coherent
+// scalar identities: 565/565/565/565/565/565/565/565. Original complete body and producers restored;
+// native frame and homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2399,6 +2402,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // DH300: Existing spin helper advance owned before the field store, native/staged, with
 // per-use/once period 42/151/42/151; gate-scoped input 51/157; new advance with joined final
 // output 78/191. Original helper and complete body restored; turn-product and spin-store schedules remain.
+// AC491: Native two-side torque arrays, aggregate/assigned/immutable/entry-owned with
+// conditional/indexed selection, 48/95/48/95/48/95/48/95 (frame 0x14; NOT kept: grouped storage needs
+// a match). Paired turn magnitudes at their expression producers, first before the shared turn
+// product and second at its right-side use, 33 plain at 685/682; first difference +0x137 -> +0x1e2.
+// NOT kept: two one-use locals holding the same |turn|, placed to move the schedule (one-use
+// placement form, kept only with a match). Body restored at 42.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4902,6 +4911,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // the shared driver-tilt weighting, plain 1087 at retail length; frame 0xf8 versus 0xd8 remains.
 // M316: On pre-magnitude axis graph: sequential facing/current, current/state and desired/tensor matrix ownership subsets 1/2/4/3/5/6/7, all with consumed flip output 1119/1095/1170/1119/1165/1170/1170/1169.
 // Reuse reaches frame 0xd4 rather than retail 0xd8; entry index/offset and matrix/vector homes remain. Original executable body restored.
+// AC491: Complete translation/orientation/spin phase scopes, masks 1/2/4/3/5/6/7, then all with
+// coherent matrix identities: 1087/1087/1087/1087/1087/1087/1087/1087. Original complete body and
+// producers restored; native frame and homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
