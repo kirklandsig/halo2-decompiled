@@ -341,6 +341,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
 // complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
 // complete body and declarations restored; split post-sample comparison and child scratch homes remain.
+// DH327: Child-creation admission retained across interface refresh, positive/
+// complementary bool/byte/short/long: 133/133/116/117 twice, 880/870 bytes.
+// Original child result/refresh order and complete body restored. NOT kept:
+// carried flags regress and lengthen; post-x87 fold and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

@@ -1504,6 +1504,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH325: Entry/no-seat completion and no-winner continuation, seven subsets,
 // then split entry exits: 32/32/32/32/32/32/32/32. Original complete body restored;
 // iterator acquisition, leave-selector and request/publication homes remain.
+// DH327: Native sorted-array end bound, cached/per-use, equality/ordered and
+// mutable/read-only candidate receivers: eight 150s, 848/846 bytes. Original
+// traversal and complete body restored; iterator scaling, leave-selector and
+// request/slot publication remain. NOT kept: all bounds regress and lengthen.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
@@ -2761,6 +2765,9 @@ struct s_scenario_scripting_view
 // DH325: Native output-present/absolute resolver-branch predicates in bool/byte/short/long
 // storage: 80/80/80/80/80/80/80/80. Exact-only predicate forms restored;
 // actor/counter/set homes and the early scripting-data observation remain.
+// DH327: Explicit signed set-admission result, positive/complementary,
+// bool/byte/short/long: eight 80s. Original short-circuit guards and complete
+// search restored; actor/counter/set homes and guarded data observation remain.
 // @retail 0x2769d0
 void function_2769d0(long point_reference)
 {
