@@ -1674,6 +1674,8 @@ real function_30bf0(vector3f *vector);
 // 320 -> 293, masked 199 -> 164); plus (k, i, j) squared length 430 (aligned 285); plus the axis read through a
 // `vector3f const *` from g_4687b0 in lighting_rotate 464 (1842 B; 0x3db00 lost, 0xd37f0 610; retail reads the axis live
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
+// Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
+// Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {

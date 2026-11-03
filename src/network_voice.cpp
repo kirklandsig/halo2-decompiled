@@ -1744,6 +1744,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
 // `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
+// Round 402: Complete per-target rejected/allowed query-chain results in bool/byte/short/long after mask admission.
+// Scores 85/85/85/85/85/85/85/85. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
