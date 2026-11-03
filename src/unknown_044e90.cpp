@@ -222,6 +222,9 @@ struct s_visibility_bound_record
 // branch-owned inputs 463; shared scale with update/branch inputs 462/462; existing
 // point setter on update/branch/all producers 448/463/462. All controls survive.
 // NOT kept: all forms regress and shrink away from 1742 bytes; original body restored.
+// B394: Inverse-transform scale reference/pointer, whole transform, translation and all-row references;
+// then transform/scale, translation/scale and complete subobject identities: 406/406/406/406/436/406/406/406.
+// NOT kept: no exact match; original complete executable source restored.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
