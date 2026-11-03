@@ -544,6 +544,9 @@ struct s_physics_component_walk : s_havok_component
 // section index for both scans 146 (same code); the section-count arms swapped (`!= 0` first) 153 (909 bytes).
 // M354: Entry-table base/cursor, mutable/const view and common body/entry ordinal:
 // 304/304/304/304/221/221/221/221. NOT kept: entry transport does not reproduce the native reload/allocation.
+// M356: Persistent terminal-key/neighbor-key/object-field references, seven subsets,
+// then all mutable: 146 each. NOT kept: no gain. Original field reads, queries
+// and complete method restored; latch reload order and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,
