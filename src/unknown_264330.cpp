@@ -1086,6 +1086,9 @@ real function_296600(long actor_index, long prop_ref_index);
 // argument of the first 0x1c8df0 call spills; on it: current renamed to sort after suppressed 267 (byte homes
 // unchanged); a named current-record pointer for both calls before/after the root lookup 272/270; a named
 // sight mode for both calls 326.
+// DH334: Standard inner/outer/both short maxima, with/without null-first unit (fast 372, full 257);
+// then full maximum and secondary-result stages: 350/365/366/368/346/346/365/355.
+// NOT kept: new maximum call and larger frame absent in retail; original complete body restored.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {

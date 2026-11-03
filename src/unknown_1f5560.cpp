@@ -991,6 +991,9 @@ real normalize2d(point2f *v);
 // request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
 // gain appears only with combined forms. Original full body restored; separate facing/default
 // and invalid return paths remain.
+// DH334: Standard typed request-point/normalized-planar/facing-planar record ranges,
+// seven subsets then complete backward ranges: 144/180/194/185/197/198/202/205. NOT kept: all regress;
+// original publications and complete body restored; retained DL and return transport remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

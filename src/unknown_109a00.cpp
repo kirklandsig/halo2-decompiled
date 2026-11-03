@@ -594,6 +594,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // DH331: Typed standard ranges for prior transform/velocity-pair/center, subsets 1..7,
 // then all with backward ranges: 228/242/235/210/219/253/281/285. Original copies, helpers,
 // body and caller inputs restored; native input registers, physics spill and projection remain.
+// DH334: Standard native-array inner products, forward/reverse and both product orientations,
+// each with original/shared add-scale projection: 180/185/180/185/262/264/262/264; caller 11/11/11/11/0/0/0/0.
+// NOT kept: no exact match; original complete body restored; native input roles, physics spill and center/projection remain.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

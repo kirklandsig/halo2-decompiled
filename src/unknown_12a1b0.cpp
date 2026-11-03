@@ -1805,6 +1805,9 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // M343: Canonical inactive-range predicate bool/byte/short/long with original request
 // 417/417/414/416; actual full request 417/417/411/416. NOT kept: retail keeps the raw mask
 // in EDI and no predicate form matches. Original mask, request and full body restored.
+// DH334: Named computed gain difference/pitch interval/detail milliseconds, seven subsets,
+// then complete stages with a named pitch offset: 479 each reduced (control 479, full 305).
+// NOT kept: no gain or native frame recovery; original complete body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

@@ -712,6 +712,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // positive guard/failure exit 409/410/409/410/409/410/409/410, all 1659/1652 bytes.
 // NOT kept: unmatched nullable admission adds a pointer test; original handle admission,
 // record observations, inherited qualifier, helpers and entire body restored.
+// DH334: Standard native-array scaling/translated-position/probe-copy algorithms, seven subsets
+// then all with contact-normal array copy: 405/384/389/405/403/405/420/421.
+// NOT kept: no exact match; original complete body restored; late EBP save, escaped blend and random/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)
