@@ -711,6 +711,10 @@ bool sound_driver_voice_create_buffer(
 // bins, play first 71 (same code), the 3D flag first 182 (599 bytes); the submix creation as a force-inline
 // helper taking (globals, voice, input mixbin) with its own pairs, mix bins and descriptor, play first 71 (same
 // code, frame unchanged), the 3D flag first 181 (599); the 3D flag as `(byte)flags & 1` defined first 182.
+// Round 377: Bare success-owned submix/spatial pair arrays and independent mixbins,
+// seven subsets 71/71/71/71/71/71/71; all with spatial-first predicates 182.
+// Original arrays, zero/ID stores, descriptor scopes and complete body restored;
+// spatial/play and zero/input/voice allocation remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

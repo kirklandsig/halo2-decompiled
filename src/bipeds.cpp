@@ -1922,6 +1922,10 @@ void function_dfd70(long arg_159e6d)
 // with head declared after collision: 228/222/222/228/228/222/228/228. The 222
 // form restores ret 0x14 but needs exact bytes; all bodies and helpers restored.
 // N323: Normalized-direction early admission, complete collision-result join and native point setter, seven subsets then complete height-delta producer: 249/249/248/249/249/249/249/249. All original helpers/body restored; shared users regress and offsets/forward/up homes remain.
+// Round 377: Existing typed object getter and CRT transfers of already-copied head/
+// forward inputs, seven subsets, then both head publications: 248 in all eight.
+// Every shared-user score unchanged; original helpers and target restored.
+// Object/tag acquisition, stacked offsets and forward/up homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
