@@ -1488,6 +1488,9 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH316: Genuine collection/selection pointer-receiver lexical identities, seven subsets
 // then the complete iterator identity: eight 32s, 846/846 bytes. Original entire body
 // restored; iterator scaling, leave-selector and request/slot publication homes remain.
+// DH320: Existing request producer returns canonical submission in byte/signed-char/char/
+// short/word/int/long/dword domains: 77/77/77/77/77/77/77/77. Original bool helper
+// and complete body restored; iterator/leave-selector/request homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

@@ -302,6 +302,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // basis sums (0x292ca9; our copy goes through integer registers); body restored at 618. That local declared before local_17 604; read before the arg_6 test 601; as three real
 // locals 635 (2808 bytes, aligned 461); the private cross with retail's product operand order 604 (identical code);
 // the hit flags as an aggregate initializer 605.
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
