@@ -1687,6 +1687,10 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // Round 528: paired radius result selections, point-before-nearest commit and both
 // 552/552/552; with long accepted counts 572/572/572; both with
 // independent sums 594; independent sums and long counts 578. Original whole body restored.
+// Round 64 (lane 10, fast only, under a CAVEAT for callee 0x16a440, so these are not plain scores): retail's table reads are 0x120790's inlined shape, `(edge_index + 1) % count` runs before the first reconstruction and axis
+// is read again for the second. The existing 0x120790 for both points 651 (2925, masked aligned 206, against 194 here); with long counters 640 (2917, masked
+// 202); the distance through plane_distance_to_point 620 (2895, masked 222); every prism read through shapes.prisms[index] 686 (2956, cursor still point_count);
+// a plane pointer local 554 (2896, masked 199); j product first 552 (same code); a point cursor for the first reconstruction 629 (2924); count before the inside flag 552 (masked 195).
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

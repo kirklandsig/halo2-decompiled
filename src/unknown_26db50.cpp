@@ -679,6 +679,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 233/233/233; unrounded angle with original/real APIs 90/90. Complete original
 // body, angle carrier and helper restored; ring SSE conversion, rotation spill
 // and radius-save scheduling remain.
+// Round 64 (lane 10, fast; masked = aligned, registers and stack offsets ignored, 37 here): ring conversion as one in-place ring angle in the outer loop 142 (1088, cvtsi2ss as retail, radius through
+// integer registers, masked 37); cross terms named, j and k first 90 (same code), with the angle 142; rows written j, k, i 189 (1088, masked 44); dot written (j + i) + k from the read components 93
+// (masked 37), with the angle 144 (masked 33); the k*i and i*j subtrahends named before the dot 215 (1092, masked 36), with the angle 237 (1095, masked 35), named after the dot 237.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {
