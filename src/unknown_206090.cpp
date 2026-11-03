@@ -320,6 +320,9 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // P275: Actual contact-settings control bitfield with native point-row typing, read-only
 // receivers and full-width zero/one control, subsets 0-7: 1355/1355/1355/1355/1356/1356/1356/1356.
 // Original types and full body restored; frame 0x5cc/0x58c and component/velocity/query homes remain.
+// AC486: Native-array magnitude loops, reverse/forward and zero/first-product sums
+// 1398/1387/1535/1572; with reverse component dot loop 1468/1433/1608/1599. NOT kept:
+// no match; original captures, float trees, kernels and whole body restored; frame/home differences remain.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

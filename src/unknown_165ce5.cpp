@@ -1662,6 +1662,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // real array position; long/short/dword/word ordinals and !=/< end tests give
 // 455/475/455/475 in both sets (fast control 220, full 218). Original index
 // traversal and complete body restored; frame, unit/mode and look homes remain.
+// AC485: previous-angle input assignment/scalars/memcpy/memmove at branch/user scope:
+// 453/220/453/469/453/220/453/506 fast (control 220, full 218).
+// NOT kept: one-use input captures without a match; original body and smoothing inputs restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

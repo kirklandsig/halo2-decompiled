@@ -480,6 +480,9 @@ struct s_physics_component_walk : s_havok_component
 // section queries 146 (same code).
 // Round 368: Symmetric two-use endpoint snapshots, short/short, short/long, long/short, long/long,
 // conditional then branch neighbor: 154/177/186/179/193/187/161/171; original complete body restored.
+// Round 487: Complete native group-body char/short carriers, original/byte output,
+// then explicit output advancement: 309/154/310/261/309/154/310/261. All exact-only forms
+// restored; original promotions, outputs, section predicates and full method retained.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

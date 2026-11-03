@@ -2828,6 +2828,12 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // Local next-value clamp with the rate read at all three uses 500 (2052/2035 bytes, frame 0x64)
 // NOT kept: retail loads the rate once (fld [eax+0xa8] at 0x375a1, held across the three steps)
 // and the clamp alone ties 517. Body restored at 517; frame and velocity/loop homes remain.
+// AC488: complete double component/square ownership in the speed test and normalization:
+// component/original, original/component, both components, square/original, original/square,
+// both squares, component/square, square/component 491/494/515/506/506/557/523/515.
+// NOT kept: independent components 491/494 and independent squares 506 enlarge the frame
+// to 0x64 versus retail 0x38; combined components 515 gain only two. Original body restored.
+// Frame 0x60/0x38, stored velocity acquisition and loop homes remain; original trees/helper preserved.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

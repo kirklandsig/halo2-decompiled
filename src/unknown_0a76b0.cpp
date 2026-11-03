@@ -2688,6 +2688,9 @@ long function_c8f60(long unit_index, short seat_index);
 // P275: Whole header produces the initial unit and refreshes at the later original header
 // observation; guarded full-width state, quaternion-only scope and sequential request
 // subsets 0-7: 293/296/293/296/305/308/305/308. Original body restored; entry vehicle/unit homes remain.
+// Round 487: Multi-use target vehicle scalar at entry/between results/before
+// admission/inside admission, long then dword: 293/293/293/293/293/293/293/293.
+// Original formals, lifetimes, admissions, outputs and complete body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
