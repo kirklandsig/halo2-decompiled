@@ -267,6 +267,11 @@ bool function_a7670(long object_index);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
 // continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
 // index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
+// setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
+// index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the
+// increment), with the flagged path as a nested block 233; admission assigned in if/else arms 96 (same code).
+// Retail also forms the type-record pointer before the `local_9 > 0` branch, where ours folds it into the load.
 // @retail 0x278f00
 void function_278f00()
 {
