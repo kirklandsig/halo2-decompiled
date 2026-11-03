@@ -502,6 +502,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // (same code); a pointer local for the state velocity at the copies and deltas 32; delta declared before
 // velocity 32; limit declared at its assignment 32; the correction written `s.c + d.c * scale` per row 101
 // (348 bytes), with retail's i row product-first 101.
+// m3 lane 11 r62 (fast): `real const` tick scale 32 and `real const` rate 32 (same code); the root's
+// divisor written rate first 32 (same code); the fallback publication per component 89 (352 bytes); the
+// if/else inverted with the fallback arm first 32 (same code).
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {
