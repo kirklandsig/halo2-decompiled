@@ -2184,6 +2184,10 @@ void function_159460(long player_index, bool *leading, bool *tied)
 // reversed-upper success continuation 10; rejection with previous-object local 8, coherent class
 // table 8, range result 20, native byte ordinal 38 (192 bytes); combined success continuation 8.
 // NOT kept: no gain. Original body restored; inlined index-scale/data-load scheduling remains.
+// Round 30 (lane 18, fast): retail's out-of-line release (0x15b1e0) loads the base first as ours does,
+// so only the inlined copy's context differs. Old index named once and passed 8; entry element pointer 8;
+// index renamed entry_index 8; the cast receiver as a typed equipment local for every entry access 8;
+// bounds test negated with the clear arm first 8. Restored.
 // @retail 0x15adb0
 void function_15adb0(s_netgame_entry_state *entries)
 {
