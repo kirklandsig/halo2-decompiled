@@ -206,6 +206,10 @@ PRIVATE inline byte const *material_parameters(long tag)
 // Round 516: Packed entry/chain results in short/word/long pairs on recovered field-reference
 // graph. Restore table/index order and protected sampler state convention remain.
 // Scores 48/47/49/47/50/48/49/47; original executable body restored.
+// Round 65 (m3 lane 1, fast, control 5): entry stored directly to its field (no reference) 5 (first
+// difference +0x1a7: `second` then loads above the store); the existing `entry` local stored then read 181
+// (975 bytes); the entry base from the `tables` local 178; the pass table base read before the next index
+// 5 (same code); permuter (600 s, 51 tries) best 5.
 // Round 126 (lane 8, on the fixed tail, fast): direct entry store 5 (`second` hoists instead); fresh restore-block
 // packed/next/pass locals 5; entry from the tables local 178; tables re-read into a const local after its store 279;
 // entry reference bound before the parameters lookup 5; permuter 54 tries, best 5.
