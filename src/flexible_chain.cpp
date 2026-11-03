@@ -6,6 +6,7 @@
 #include "object_markers.h"
 #include "object_queries.h"
 #include "unknown_211060.h"
+#include "vector_products.h"
 #include <math.h>
 
 // Layouts follow the pool and tag accesses in the retail callback group.
@@ -233,7 +234,7 @@ void __stdcall function_1160c0(real dt)
 }
 
 // MiniMax S (11-01): the segments and segment-index locals leave the first difference at +0x37; no lower score.
-// score 179 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
+// score 171 (was 179): previous/axis homes, segment ownership and rotation scheduling differ;
 // seven local-name sets, declaration reversals and entry/loop scopes 194;
 // shared cross 207, both point differences 286, both helpers 280;
 // scaled difference 212, all vector helpers 285.
@@ -430,6 +431,13 @@ void __stdcall function_1160c0(real dt)
 // Round 35 (m3 lane 17, fast): `if (record->fixed || !(dt > 0.f)) return;` guard 179 (same code); position and
 // direction declared beside previous/predicted 179; location declared before origin/forward 179; a const vertical
 // 179; the const vertical with the angle call as (&vertical, &direction) 177 (two points, not kept).
+// Round 143 (m3 lane 5): the target through the existing vector3f_add_scaled together with the
+// angle call as function_11ce20(&vertical, &direction) (retail's ECX/EDX setup) 171 (kept, plain;
+// each alone was 173/177). On 171 (fast): physics index in a local for test and lookup 179 (on 179,
+// same code); direction through vector3d_from_points3d 171 (same code); delta through it 271 (1357);
+// velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
+// (1369); blend complement named and used three times 275 (1347); `previous = node->position =
+// position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {
@@ -461,7 +469,8 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 					function_211060(&node->velocity, 0, g_4e3b44[definition->physics_index & 0xffff].bytes, &location, NONE, &position, 0, 0, 0, .02f, dt);
 				vector3f delta = { position.x - previous.x, position.y - previous.y, position.z - previous.z };
 				real scale = (real)(segment->length / sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i));
-				point3f target = { scale * delta.i + previous.x, scale * delta.j + previous.y, scale * delta.k + previous.z };
+				point3f target;
+				vector3f_add_scaled((vector3f *)&previous, &delta, scale, (vector3f *)&target);
 				position.x = (1.f - stiffness) * target.x + predicted.x * stiffness;
 				position.y = (1.f - stiffness) * target.y + predicted.y * stiffness;
 				position.z = (1.f - stiffness) * target.z + predicted.z * stiffness;
@@ -484,7 +493,7 @@ void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *defin
 				axis = *g_4687ac;
 			vector3f offset = segment->rest_offset;
 			vector3f vertical = { 0.f, 0.f, 1.f };
-			real angle = function_11ce20(&direction, &vertical);
+			real angle = function_11ce20(&vertical, &direction);
 			real sine = (real)sin(angle);
 			real cosine = (real)cos(angle);
 			real along = (axis.k * offset.k + axis.j * offset.j + axis.i * offset.i) * (1.f - cosine);

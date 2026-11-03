@@ -3288,6 +3288,9 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // (action in channel scratch; NOT kept: under eight and wrong frame); scalar/one-short local
 // comparisons 60 each; set-scoped scalar 44; set-scoped second-short output 39, with the
 // predicate declarations swapped 39. Original executable body restored.
+// Round 65 (m3 lane 1, plain): overlay initialised to NULL at its declaration 46; `*flag = false` after the
+// three table reads 65; the action short in the innermost else block 44 (same code); the force flag in the
+// set block 46, with the action short there too 46. The 0xe70b0 two-byte return still waits on held files.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)

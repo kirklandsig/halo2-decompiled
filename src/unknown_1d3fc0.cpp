@@ -252,6 +252,9 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
 // Round 121 (fast; on the 2 form, aligned count in brackets): dot3f through the matrix fields 152 (39), with the projection reading
 // forward through the fields 157 (22), up 163 (107), both 177 (108); the 2 form with the projection reading forward through the fields
 // 157 (12), up 147 (100), both 177 (98); the dot's i term as `up->i * local_1[0].forward.i` 148 (12): the i term stays up-first in all.
+// Round 57 (m3 lane 13, fast): the normalizer's products as i*inv, j*inv, inv*k 110 (same code); `transform4x3f
+// local_1[6]` declared before `local_0` 110; the normalizer returning the length, both pointers taken after the two
+// calls 110; the header normalize3d for forward only 233 (839 bytes); the projection rows in k, j, i order 110.
 // @retail 0x1d3fc0
 void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
 {

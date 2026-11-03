@@ -38,6 +38,8 @@ PRIVATE byte *update_object_0a6430(long index)
 // Round 33 (lane 17): the getter written index-first 16; the 0x200 block's tag index read into a local 16;
 // the 0x100 block through a header pointer (the 0x2 block's form) 16; the 0x200 object ahead of the count
 // with the 0x100 compare state-first 17; the 0x40 flag written in place at the store 36 (548 bytes).
+// Round 134: typed final/0x100/both object views 16/16/16; typed 0x2 header/object 16; count after
+// definition 16; final/0x100 masked index 16/16; const state pointer 16. Opening body restored.
 // @retail 0xa6430
 void function_a6430(c_object_type_definition const *definition, long mask, long object_index, long state_address)
 {

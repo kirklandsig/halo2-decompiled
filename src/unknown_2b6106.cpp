@@ -834,11 +834,20 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // N336: Ordinary main-buffer scopes at status/data alternatives, message/format/both,
 // 583 each; auxiliary arrays at data entry 512; all four there 583. Frame stays 0x860
 // without native EBP bias; original capacities, clear phases and complete body restored.
+// DL252: One caption table at clock/widget/task/data-admission phases, mutable then immutable on current
+// score-pointer/short-selection graph: 542/534/526/515/542/534/526/515. NOT kept: unsupported table
+// lifetimes require a byte match. Original table, buffers, clock observations, scans and complete body
+// restored.
 // DH315: Raw-buffer player/team body advancement and ordinal exclusion masks
 // 1/2/3/4/5/6/7: 512/512/512/519/519/519/519; both advances plus a named
 // team-array end 497, end alone 497. NOT kept: retail counts the fixed team
 // ordinal, with no retained end producer; the new end shifts unrelated scalar homes.
 // Original cursor progression, comparisons, buffers and complete body restored.
+// Round 82 (m3 lane 9, fast): the four buffers as the existing s_text_256 506 (EBP bias as retail, frame 0x860); with
+// `in_session == true` (retail's cmp byte, 1; jne) 504 (wrapped storage is exact-only, not kept); `in_session == true`
+// alone 510; on the 504 body: short count 509, bool campaign 530, `(flags & 0x80) != 0` 504 (same code), long widget
+// counter 505 (retail's jb), message alone wrapped 504, message and format 504. The friend flags still spill (retail
+// keeps them in ESI, the widget index then reuses ESI and the clock takes EDI).
 // @retail 0x2b65b8
 void c_y_menu_player_selected_screen::update_friend_details(XONLINE_FRIEND const *friend_, s_friend_session_2b642e *session)
 {

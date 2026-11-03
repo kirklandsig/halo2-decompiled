@@ -255,6 +255,15 @@ bool function_a7670(long object_index);
 // DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
 // 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
 // complete shared header and body restored. Selector/list/count homes and admission BL remain.
+// Round 84 (m3 lane 12, fast): plain `for` island loop 240 (958 bytes); the second scan setting the
+// first scan's found flag 96 at 954 bytes (match-only: a flag set in a test), and on it: the island
+// index renamed to sort before the selector 96 (same homes: ours index 0x28/selector 0x2c, retail
+// 0x2c/0x28), the plain `for` island loop 233 (957), that with the decrement at the end of the
+// flagged block 261 (958), the list as `(s_278f01 *)(g_51e9a4 + 8) + selector` 282 (936), the
+// record through the existing object_header_get 96 (same code). On 96 what is left: the entry
+// scratch rotation (selector EDX, retail EAX), the island index stored at each definition (retail
+// spills it only after the flagged path's `dec`), the header address folded after the `local_9 > 0`
+// branch, and one reload order before the 0xb4 store.
 // Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
 // on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
@@ -272,6 +281,11 @@ bool function_a7670(long object_index);
 // renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
 // continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
 // index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
+// Lane 14 r57 (fast, from 153): plain `for` island index with the step back inside 240 (958 B); the second scan
+// setting the shared found flag 96 (match-only, restored); on it: the for-loop 233 (957 B: retail keeps the
+// index in ECX on the unflagged path and writes its home only after `dec`; ours homes it at the init and the
+// increment), with the flagged path as a nested block 233; admission assigned in if/else arms 96 (same code).
+// Retail also forms the type-record pointer before the `local_9 > 0` branch, where ours folds it into the load.
 // @retail 0x278f00
 void function_278f00()
 {

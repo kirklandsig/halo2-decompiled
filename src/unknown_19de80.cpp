@@ -497,6 +497,9 @@ static inline bool teams_enabled_19e1c0()
 // returns 390 (same code); the engine's token text in a `written` local returned when nonzero, volatile/plain
 // result 397/693. Retail: event EBX, token_length EDI, remaining EBP, result ESI from the top; the opponent loop
 // runs on `cmp edi, 8` (no free register for a down counter), where ours counts EBX down from 8.
+// Round 143 (m3 lane 5, fast): every clamp as `if (remaining <= result)` 390 (same code); text
+// declared before the result 390 (same code); `best_score <= function_1587f0(team)` with the short
+// team 388; local-team value long 393 (1436 bytes); engine text returned early 390 (same code).
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
