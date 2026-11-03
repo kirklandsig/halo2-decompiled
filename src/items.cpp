@@ -1673,6 +1673,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // B395: Captured-spin logical OR on paired point setters, result/spin-first with
 // bool/byte/short/long accumulators: 179/176/186/183/185/179/186/179. NOT kept: all
 // regress; original bitwise join, two-use spin value, helper and complete body restored.
+// DH333: Typed owner/origin/position record-range copies, seven subsets
+// 167/165/171/164/171/181/187; complete backward ranges 189. Unlike scalar-coordinate ranges,
+// these copy complete records. NOT kept: regressions/shorter extent; full original body restored.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

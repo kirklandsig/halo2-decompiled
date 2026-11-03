@@ -1186,6 +1186,9 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
 // out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
 // through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
+// DH333: Standard player extrema/member maximum/histogram clears, seven subsets
+// 824/836/861/828/829/848/825; typed three-word identity transfers 895. Frame 0xd4/0xb4
+// persists. NOT kept: regressions; original word table, observations and complete body restored.
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

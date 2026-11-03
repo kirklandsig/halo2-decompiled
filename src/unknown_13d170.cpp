@@ -383,6 +383,9 @@ struct s_block_candidate
 // bytes); oldest_time zero-initialised 392 (1228 bytes); best declared before the candidate ring 347 (same code);
 // the page remainder mask as `~(-1 << shift)` 347 (other code, same count).
 // Retail keeps result's NONE in EAX through the clamp and stores oldest's NONE from it. Original body restored.
+// DH333: Standard age/segment/category selections in seven subsets
+// 393/388/419/384/433/366/435; final failure-limit minimum 410. The latter recovers
+// frame 0x1054 but grows to 1243/1213 bytes. NOT kept: regressions; full original body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
