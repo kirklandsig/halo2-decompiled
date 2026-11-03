@@ -302,6 +302,11 @@ PRIVATE __forceinline void function_29ab94(vector3f const *arg_0, real arg_1, ve
 // Y556: Zero-initialized discarded query vector, aggregate/library-clear/shared setter/
 // chained fields at query/entry scope: 345/345/345/345/345/345/345/345. NOT kept: added local initialization
 // fails byte agreement; original uninitialized output and complete body restored.
+// m3 lane 11 r62 (fast): the turn and squared-length floors as `x = x > c ? x : c` 345 (same code); the planar
+// dot product written j-first with operands swapped 345 (same code); the magnitude declared bare at entry 345
+// (same code); computed as the first statement inside `if (local_2)` 353; named requested_magnitude 345 (same
+// code). Retail gives the planar length, speed limit and floor the dead homes of arg_8/arg_7/arg_2 and the
+// magnitude a frame slot; ours gives the magnitude arg_8's home and shifts the rest by one.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

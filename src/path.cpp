@@ -1012,6 +1012,8 @@ bool function_2715a0(byte *buffer)
 // re-multiplies in the second test, as this gives; five points, a computed value at each use, not kept).
 // The root stored back into the squared length (diagnostic) 486, same code: the fsqrt still sinks past the
 // 0x210be0 call.
+// M339: Actual node/link/child array-element references, subsets 1/2/4/3/5/6/7 then collision candidate:
+// 486/486/486/486/486/486/486/486. Original receivers and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

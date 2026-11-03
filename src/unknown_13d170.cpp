@@ -363,6 +363,11 @@ struct s_block_candidate
 // Y556: One busy-callback pointer observation at occupied/segment/admitted/entry scope,
 // short-circuit/guarded result on original timestamp graph: 347/347/347/347/358/358/358/358.
 // NOT kept: no qualifying gain or missing-frame recovery; original body restored.
+// m3 lane 11 r62 (fast): offset after the result with previous's NONE in the block 380; offset first with
+// previous's NONE in the block 357 (retail stores that NONE in the block, at +0x48); the page shift in a twice-used
+// local 347 (same code); head and tail as `head = tail = 0` 347 (same code); oldest declared first in the
+// block 379. Retail keeps offset's zero in EBX from before the type clamp (it is the clamp's zero) and stores
+// oldest's NONE from the result's register in the block.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {

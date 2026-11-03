@@ -1005,6 +1005,10 @@ static inline XUID *message_entry_get_xuid(s_entry *entry)
 // (eight forms); added-count home becomes +0x68 but sender/cursor allocation still differs.
 // Complete positive exclusion predicate bool/byte/short/long 127/127/128/132;
 // with the eligibility-bound receiver 140/140/144/142. Original body restored.
+// Round 46 (m3 lane 2, fast with 0x63d00): the loop test with the added-count limit first 143 (451 bytes);
+// the remaining count declared in the exclusion for loop 81; the exclusion loop as `while (remaining-- > 0)` with
+// the cursor stepped in the body 81; the contains test nested under the exclusion test 81; that with the
+// if-set exclusion 113 (450 bytes). Still BLOCKED-BY 0x63d00's register information.
 // Round 35 (m3 lane 18, fast with 0x63d00): the added-count limit as a `break` at the body's top 81;
 // the two loop tests swapped 143 (451 bytes); `message_count > i` 87; `20 > added_count` 81; the
 // name buffer declared before the player allocation 81. Retail's 0x63d00 (inlined guest compare, no

@@ -942,6 +942,16 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // complete forms 552 each at 2111/2122 bytes. NOT kept: all regress and shorten the exact-length
 // starting body. Original searches, scalar groups, copy/interpolation paths and temporary
 // declaration restored; frame 0x18/0x2c, query/selection and fraction homes remain.
+// Round 140 (m3 lane 6, plain): index body reading `source->entries[i]` at each use, `nearest` index,
+// delta assigned k, i, j, `second` ternary then `fraction = 0; if (second)`: 639 (2057 B); scan 1's sum
+// as `z*z + y*y + x*x` 639 (same code: VC orders the terms itself); scan 1 through the cross-file
+// distance_sq3f 583 (2085 B: retail's x, y, z loads and the esi/ecx pointer pair); with scan 2 through
+// vector3d_from_points3d/dot3f/length_sq3f 654 (2033 B, aligned 301); offset declared before scan 2 654
+// (same code); scan 2's distance through distance_sq3f with the projection through
+// vector3d_from_points3d/dot3f 609 (2062 B, aligned 239: projection and distance share the
+// subtractions as in retail, source in ESI); dot3f arguments swapped 609 (same code). Lead: that 609 body
+// still lacks the 0x2c frame's offset home (+0x24, retail stores x there each pass) and delta's home
+// (delta.k reloaded from +0x38), and `nearest` stays in memory where retail keeps EDI.
 // Round 78 (m3 lane 9, fast): the count test inverted with the fallback first 591; delta declared
 // at function scope 547 (same code); scan 1 as a pointer-end loop 609 (2143 bytes); `second`
 // named before the fraction and passed to 0x22c30 599 (2133 bytes); scan 1's pointer step in the

@@ -405,6 +405,9 @@ extern byte g_51ec11;
 // 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
 // not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
 // 86 form with the scratch normalizer 264 (aligned 47).
+// AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
+// masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
+// Original input layout, observations and full body restored; zero/side/up allocation remains.
 // Round 158 (m3 lane 4, fast): normalize3d with a forward pointer and the up rows staged, declared and stored i,j,k 52 (aligned 28); that with the else arm's own speed local 45 (aligned 23, 1330; plain
 // confirmed). NOT kept (review): the gain needs the staged up_i/up_j/up_k, one-use locals (match only); there the zero
 // and side block agree, and the up rows copy forward.i where retail copies side.j/side.k. Body restored at 89.
