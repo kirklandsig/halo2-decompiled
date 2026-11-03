@@ -1063,6 +1063,10 @@ bool __stdcall function_2399da(long controller_index)
 // DH306: escaped flags/title/Boolean-output defaults, seven subsets
 // 131/90/136/131/140/136/140; all at entry 165. Original body restored;
 // identity/rank register ownership and the extra removal move remain.
+// Round 77 (m3 lane 9, fast): the identity and name pointers declared at their assignments 90; the over-rank
+// denial as the first else-if arm, then rank 3, then the set-rank arm 90; task_index declared at function scope
+// 90; the identity test inverted (`!xuid || !xuid->qwUserID` refusal first) 90; the set-rank arm tested first
+// (`rank != NONE && rank <= own_rank`) with the removal as the next arm 92. Identity ECX/rank EAX remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

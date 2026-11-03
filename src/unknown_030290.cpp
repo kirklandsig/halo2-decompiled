@@ -411,6 +411,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // 1/2/4/3/5/6/7; all with reversed inverse constants: 195/195/195/195/195/195/195/195. NOT kept: no
 // byte match; original complete body and every helper restored. Inverse homes and displaced-transform
 // spill remain.
+// Round 77 (m3 lane 9, fast): both factors as `fabs(z) < k_real_epsilon ? 0.f : 1.f / z` without the inverse
+// defaults 301 (890 bytes); fa/fb initialised 1.f with no orthographic arm 261 (906); the displaced inverse
+// computed before the origin one 239 (1004); b, ta and tb declared together 195 (same code); the success test as
+// `return dx != 0.f || dy != 0.f;` 195 (same code). Restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

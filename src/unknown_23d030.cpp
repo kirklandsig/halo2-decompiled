@@ -392,6 +392,12 @@ extern byte g_51ec11;
 // DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
 // failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
 // Original shared body restored; zero/side normalization and up/roll allocation remain.
+// Round 77 (m3 lane 9, fast with 0x23d790/0x23d030, both stay matched): the zero fallback as two stores
+// `side.j = 0.f; side.k = 0.f;` 276 (1326 bytes; the up rows then store k, j, i as retail, but the x87 length still
+// squares i before j and every register is renamed), with normalize3d 261 (1326), with side filled i, j, k 276; the
+// fallback chained `side.k = side.j = 0.f` 274 (1326); `side` declared at the function's top 89 (same code); a
+// forward pointer local for the up cross 236 (1330). Retail's length keeps side.j on the x87 stack (fst) and
+// squares it first; zero XMM1 and the up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

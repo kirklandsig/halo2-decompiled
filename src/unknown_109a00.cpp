@@ -571,6 +571,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // Round 540: Common vector converter through shared scalar builder/returned output pointer/output
 // reference/native value, original center 112/112/112/214; the same producer for center
 // 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.
+// Round 77 (m3 lane 9, fast with 0xb7060): the projection written `up->i -= forward->i * dot` without the scaled
+// locals 131; a rigid-body local for the two velocity getters with the center through carrier_vector_from_havok 192
+// (0xb7060 11); body_index declared short 197; the matrix through the existing havok_component_rigid_body_matrix_get
+// 112 (same code); the center read through the existing havok_component_rigid_body_get 112 (same code). Restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

@@ -95,7 +95,7 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 }
 
 // MiniMax S (11-01): the tint computed after the UV block moves the first difference earlier; no lower score.
-// score 232 (was 232): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
+// score 223 (was 232): frame 0x60 and the cache/colour/count registers are now retail's; the tint and the
 // second UV set have swapped homes (ours +0x60/+0x50, retail +0x50/+0x60), and retail keeps the blend in XMM5
 // through the aspect block (ours reloads it), so the extents, reciprocals and aspect homes differ.
 // Earlier at 381: Frame 0x50 versus 0x60 (the tint lived in a one-caller helper's scope, so uv_b reused its
@@ -335,6 +335,13 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // B381: complete geometry-source decision, explicit/bitmap bounds in bool/byte/short/long,
 // 293/293/293/232/419/419/419/419. NOT kept: one-use decisions require exact matching. Original tint/secondary-UV
 // homes and blend/reciprocal residence remain.
+// Round 77 (m3 lane 9, fast = plain): the pivot interpolation as one expression per axis,
+// `(1.0f-blend)*first->pivot.x+blend*next->pivot.x`, 223 (kept: retail's first-term-first schedule; with named
+// first-term locals 223); local renames (first_uv/next_uv, color_tint, zuv_b) 232 each; on 223: extents and
+// reciprocals in a/b pairs 223, in retail's schedule order (ax, ay, by, inv_ax, inv_ay, bx, inv_bx, inv_by) 221;
+// the aspect next-product locals inlined 223 (same code), the inverse ones inlined 245; the four tint clamps as
+// explicit statements 223 (same code). Left: tint/uv_b homes swapped (0x60/0x50), blend not held in XMM5
+// after the sequence block (retail cross-jumps the context/blend reload), reciprocal schedule.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)
@@ -401,10 +408,8 @@ void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_c
 					s_draw_sprite_frame const *next=&context->sequence->frames[(index+1)%context->sequence->count];
 					if(!(definition->flags&0x20)) blend=frame-(real)index;
 					uv_a.bounds=first->bounds; uv_b.bounds=next->bounds;
-					real pivot_x_next=next->pivot.x*blend;
-					pivot.x=first->pivot.x*(1.0f-blend)+pivot_x_next;
-					real pivot_y_next=next->pivot.y*blend;
-					pivot.y=first->pivot.y*(1.0f-blend)+pivot_y_next;
+					pivot.x=(1.0f-blend)*first->pivot.x+blend*next->pivot.x;
+					pivot.y=(1.0f-blend)*first->pivot.y+blend*next->pivot.y;
 				}
 			}
 		}
