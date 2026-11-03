@@ -606,6 +606,8 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // F353: Existing shared 2D speed/helper magnitudes and paired angular dots, subsets 1-7; all with real
 // vector workspaces 225/126/225/126/225/126/225/225.
 // NOT kept: no gain; original full body/helpers restored.
+// F355: Complete perpendicular and heading-blend point initializers, seven subsets, then the complete fallback copy:
+// 126/126/126/126/126/126/126/277. NOT kept: no gain; original body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -3694,6 +3696,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // F353: Consistent float CRT trig APIs and actual trig-result name/declaration homes
 // 173/173/159/159/173/173/159/159.
 // NOT kept: no gain; original full body/helpers restored.
+// F355: Wide fraction with real/wide angle, original/entry trig declarations and original/late flip predicate:
+// 199/202/199/202/227/235/227/235. NOT kept: no gain; original body restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
