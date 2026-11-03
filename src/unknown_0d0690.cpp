@@ -1503,6 +1503,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
 // body; five native-frame forms also regress the caller 363 -> 440. Original
 // selection result, frame, helpers and entire body restored.
+// B407: Early degenerate normalizer exit, native/readonly output pointer, direct/existing
+// scaler and forced/ordinary inline: 529/529/608/608/529/529/608/608. NOT kept: no gain;
+// shared user 363 -> 368/364. Original helper, calls and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)

@@ -843,6 +843,9 @@ struct s_device_machine_view
 // N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
 // subsets, then all with immutable bounded publication: all eight 34. NOT kept:
 // single-use library results do not match. Original callback and observations restored.
+// B407: Complete native short-unit 16-bit flag fields, unsigned/signed, masked/full
+// consumption and native velocity zero: 34/117/120/122 twice. No word-load/EAX recovery;
+// every other file score preserved. Original scalar field and complete callback restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {

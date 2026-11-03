@@ -685,6 +685,9 @@ struct s_item_collision_bsp
 // Native normalization result, squared-speed producer and measured/selected-speed
 // ownership on the common pending-k graph: 211/211/245/211/245/245/245;
 // complementary speed admission 252. Original complete body and protected plane contract restored.
+// B407: Joint pending-factor/fallback-speed scalar identities on the common pending-k
+// graph, eight lexical relations: 211 each; all file controls unchanged. Original
+// names and complete body restored; plane joins and scalar/spin homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1690,6 +1693,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // default-zero 131/129/175/170 and exhaustive outcomes 176/176/180/176.
 // NOT kept: branch-set outcome flags require equality; 129 recovers the return-byte
 // home at retail length but remains unmatched. Original two-use spin and full body restored.
+// B407: Native addressed contact/event/owner/payload identities on the paired-setter graph,
+// four isolated and four complete role-name families: 140 each. Original names, helper,
+// workspaces and complete body restored; return-byte, release and event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
