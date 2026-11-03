@@ -547,6 +547,9 @@ struct s_physics_component_walk : s_havok_component
 // M356: Persistent terminal-key/neighbor-key/object-field references, seven subsets,
 // then all mutable: 146 each. NOT kept: no gain. Original field reads, queries
 // and complete method restored; latch reload order and neighbor/key homes remain.
+// M358: Original clamp-identity admission, positive/complementary bool/byte/short/long:
+// 146 each. NOT kept: one-use validity predicates do not match; original statuses,
+// clamp and full method restored; latch reload order and neighbor/key homes remain.
 // @retail 0x1d6630
 void s_physics_component_walk::function_1d6630(s_physics_model_owner *owner, char const *kinds,
     dword const *entry_mask, s_physics_body_groups *groups, void *context, long parent, long current,

@@ -305,6 +305,9 @@ struct c_aggregate : c_child
 // M351: Immutable collection-child/cleanup-block/cleanup-object bindings, all seven subsets,
 // then all with the immutable dispatch end: 31 each. Independent escaped outputs and the
 // complete body restored; frame 0x8024 versus 0x8020 and exchanged low loop homes remain.
+// M358: Allocation-information query success/failure in byte/short/word/long: 31 each.
+// NOT kept: one-use query outcomes do not match; independent outputs and complete body
+// restored; frame 0x8024/0x8020 and exchanged low loop homes remain.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {

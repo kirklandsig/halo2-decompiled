@@ -665,6 +665,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
 // `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
 // `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// M358: Original less-first acceptance byte/short/word/long and complementary rejection
+// bool/byte/short/long: 67 each. NOT kept: one-use decision carriers do not match;
+// original query graph restored; reference-first spread calls and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1048,6 +1051,9 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M356: Reverse combined copy/maximum pass, indexed/cursor, direct/reused sample,
 // branch/conditional maximum: 41/41/73/73/64/64/64/64. NOT kept: all regress;
 // sampled/cursor forms also raise the caller. Original forward combined pass restored.
+// M358: Inclusive maximum-update admission, positive/complementary bool/byte/short/long:
+// 34 each. NOT kept: one-use predicates do not match. Original combined scan/fill restored;
+// player-count EAX/EDX, late fill-value load and clamp homes remain.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,
