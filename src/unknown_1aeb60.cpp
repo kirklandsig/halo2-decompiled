@@ -436,6 +436,8 @@ short *function_e70b0(long unit_index, short *value);
 // of four uses 49 each; an actor copy 49. Getter read directly with the local at 0x227 / 0x229 / the prop test
 // / the prop lookup / 0x18: 117 / 117 / 49 / 49 / 120; pairs 117, 117, 117, 118, 117, 117, 117, 49, 120, 120;
 // all five 117.
+// Round 61 (m3 lane 11, fast): all 43 aligned rows are still one decision, index EDX / actor ECX (retail) or the reverse. The slot typed as the parameter with a table cast 49;
+// the timer test's `!timer` nested 49; a prop index local used twice 49; the final mode test nested 49; `ticks = ticks - 1` with the rate cast written 49 (same code each). BLOCKED-BY 0xe70b0 stands.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {

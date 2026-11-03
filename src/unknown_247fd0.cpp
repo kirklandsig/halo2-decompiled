@@ -323,6 +323,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DL250: Existing sample helper inline/unannotated contracts with shared, distinct, sample-scoped
 // and entry-owned output lifetimes: 55/55/55/55/55/55/55/55.
 // Original complete source restored; no eligible gain.
+// Round 61 (m3 lane 11, fast): no matched function has the post-fstp fold yet (0x39a80, 0x186ab0 still differ). The cached-record compare as
+// `while` with the same body 140 (880 bytes); the compare in a bool ahead of the fifth sample's store 140 (878 bytes; its `test` schedules above the x87
+// ops, no folded cmp); the child counter dword 55 (same code); the tag index in a local for both child-loop uses 221 (872 bytes); the reciprocal declared
+// ahead of the loop 55 (same code). Compile-only: the compare inside a ternary or a short-circuit test still splits.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

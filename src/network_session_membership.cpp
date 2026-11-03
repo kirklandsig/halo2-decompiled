@@ -829,6 +829,18 @@ union s_60403
 // gives that loop retail's code 285/103 (1513 bytes), with the mask declared after the member loop
 // 368/108; the old member computed before the NONE test 352 (1513); the emission test as
 // `i != *local_0 || changed` 175 (1498); member and local_0 declarations swapped 149 (same code).
+// Round 59 (m3 lane 11, fast): round 148's `old_members` (declared before the member loop, used for the old
+// member) with the retained loop reading old_to_new[old player's member] at each use 167 (1497 bytes: retail's
+// entry, previous EBX/current EBP, frame 0x90); that with a plain bool discriminator 146 (1497 bytes, first
+// difference +0x7a: frame 0x94, entry and the mapping/removal loops as retail; left: the retained mask zeroed
+// before the member loop, its count/map-pointer homes, and the member loop rebuilding the old member from the
+// stack argument where retail keeps previous in EBX, `lea esi, [ecx + ebx + 0xc]`, map value ECX); with the
+// discriminator declared first 146 (same code); with the retained mask declared after the member loop 262 (1513
+// bytes; everything before the member loop then agrees); old_members also used by the mapping and removal loops
+// 155; old_members only inside the `if (previous)` mapping/removal block 397 (1513); at-each-use reads with the
+// plain bool alone 278 (1513); old_members with the plain bool alone 289; at-each-use with the late mask 368, with
+// old_members and the late mask 273. Original body restored (146 is -3). The 146 base uses a one-use pointer local
+// (old_members) and writes a three-use value out at each use: both are kept only on a byte match.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {
