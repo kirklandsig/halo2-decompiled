@@ -432,6 +432,8 @@ void function_125a90(long value);
 // at each use with or without the index local 36 each; tag-byte subscript 36; direct global-array object
 // read 34 (416 bytes, -2 not kept); every record field direct with no element local 146 (398 bytes).
 // Original body restored.
+// Round 204 (fast): a declared before b 50; the special arm as `!a && type == 0x26` 36 (same code); the getter
+// argument as `(short)type` 36; a dword index 36; the after-loop calls as `if (b) ... else ...` 39. Restored.
 // @retail 0x1264c0
 void __stdcall function_1264c0(dword flags)
 {

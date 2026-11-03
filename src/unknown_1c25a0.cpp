@@ -938,6 +938,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // 0x146bf0 declared first 1; this body moved into src/unknown_1c39c0.cpp (diagnostic) 1; 0x1c4040's definition
 // moved to the end of this file 1. Its other caller 0x146bf0 stays built ahead of it; the declarations that move
 // that sit in src/unknown_278f00.cpp and src/unknown_146a20.cpp, both other lanes' files this round.
+// Round 204 (plain over the 720 cycle members, none lost): `force != false` at the call 24 (70 bytes, fast);
+// this body alone in a new file of its own 1; function_278f00 declared before function_146bf0 in
+// src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
+// src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
+// custom convention for function_1c4040 can give AL.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {
