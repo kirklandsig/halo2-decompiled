@@ -1756,6 +1756,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // each with complete request storage, then both with per-pass counts and either
 // request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
 // NOT kept: no exact representation match; original fields and body restored.
+// N342: Independent sound/gain/both counted/both endpoint initialization 468/484/468/483 reduced;
+// first-use mask counterparts 467/482/467/499 (control 479). Sound-only counted fill plain 306
+// versus 305 at retail length, no lost match. NOT kept: no full-image gain; mask combinations
+// lack a byte match. Original arrays, mask, request, loops and complete body restored.
 // B387: Native detail-time/entry cursors and read-only detail, seven subsets, then immutable
 // parent binding: 479/491/479/491/479/491/491/491 (reduced control 479, full 305).
 // Original full body restored; request/frame, playback/NONE and range/ring homes remain.
@@ -2399,6 +2403,9 @@ void function_192ce0(point3f const *direction, real *gains, bool linear);
 // M332: Actual attenuation distance/limit/floor scalar lexical identities, seven subsets,
 // then complete normalization identities: 694/694/694/694/694/694/694/694 reduced, tying control 694 (full 597).
 // Distance/maximum homes and entry true/flags remain; original complete body restored.
+// N342: Terminal end/impulse truth pair byte/char/short/long 694/694/682/688 reduced;
+// ordinary-end complements 694/694/682/688 (control 694, full 597). NOT kept: wider
+// predicate storage has no byte match; native entry true/flags and record/track homes remain.
 // F349: Existing source-record flag fields at copy/attenuation/release consumers,
 // subsets 1..7, then immutable attenuation tail: 694 each (fast control 694, full 597).
 // Original aliases, tail and full body restored; entry true/flags and record/track homes remain.

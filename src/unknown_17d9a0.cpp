@@ -368,6 +368,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // reading the field 257 (997); a `vector3f *normal` for the copy, dot and axis call 258 (1000); the helper
 // returning the point2f, assigned to each corner 275 (1044). Retail stores the first axis from AX (the short
 // return) and re-extends AX for the first corner; ours stores CX.
+// Round 83 (m3 lane 12, plain; --fast is unfaithful here, 258 for this body): `short axis` with
+// `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
+// `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
+// store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

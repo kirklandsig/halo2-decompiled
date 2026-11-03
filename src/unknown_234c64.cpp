@@ -311,6 +311,9 @@ void c_window_channel::v9()
 // Round 31 (lane 17, fast): type cleared after the load call 15; base parameters storage with field_c
 // cleared after the builder 13; the member load read into a local after the builder 5; `screen`
 // declared NULL ahead of the request 3; the user flags passed as short 3.
+// Round 133: inline/forceinline builder declarations 3/3 (v9, set_next and 0x2358c3 stay matched);
+// base cast at builder/callback/callback and setter 3/3/3; base dereference at callback/builder 3/3;
+// direct construction from a temporary 3. All steering casts and declarations restored without a match.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

@@ -1681,6 +1681,11 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // eight exact-only forms 220/389/220/220/383/379/383/379 fast (control 220, full 218).
 // Original real argument domain and narrowing preserved; all one-use captures restored.
 // Frame, unit/mode homes and independent look divisions remain.
+// Round 83 (m3 lane 12, fast control 220, full 218): look_yaw/look_pitch declared after mode, at function
+// scope, or at their assignments 220 each; mode declared before the unit and assigned after it 220; the
+// pitch as `y * (-1.0f / rate)` 221. Retail divides `x / rate` and `-1.0f / rate` separately and reloads
+// g_510c54 after each clamped look store (-0x2c/-0x28), as if those stores could alias the global; ours
+// shares one reciprocal.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {
