@@ -1191,6 +1191,11 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // before the definition read 254, their declarations swapped 254 (same code); squad bit as a ternary 337; on
 // 253: ternary substitution result inside the break test 348; the squad-index gate moved into the while test 420
 // (1319 bytes, 0x1e4990 inlined).
+// m3 lane 16 r83 (fast): retail places the unit arm after the actor block (between switch case 2 and case 1)
+// and jumps back to the shared actor test; ours keeps it after the perception arm. Switch with case 1 first
+// 253 (same code); substitution result as a plain if/else 348; loop over a named `next` index 543 (1427 bytes,
+// 0x1e4990 inlined); a compiled-out `do {} while (false);` at the perception arm's end, the unit arm's start,
+// the loop body's top or before the actor test 253 each (same code). All restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1904,6 +1909,11 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // probability as `if (probability < increased) probability = increased;` 253; the probability clamp with
 // the missing-options arm first 251; the delay with the random-default arm first 251; `4.0f * probability`
 // 251 (all same code but the 253). Pool EDI / actor ESI / options EBP remain.
+// m3 lane 16 r83: plain check without the final 0x1e1a00 call (diagnostic) 289 at 1187 bytes, the pool still
+// reloaded at each lookup: that unmatched callee is not what keeps ours from holding the pool. Fast: the
+// probability defaulting to 0.1 before the options test 288; the increased probability as one conditional
+// 251; the grenade reset's mode test as an outer if 251; the random draw inside the rounds expression 251;
+// the delay as one conditional 251 (all same code but the 288). All restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

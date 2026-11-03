@@ -3705,9 +3705,9 @@ struct s_128ca0
 	byte field_468[0x10];
 };
 
+// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
 // MiniMax D (11-01): no new form, no lower score; the frame keeps one 4-byte slot more than
 // retail's and the gain argument's homes and the joined clamp stores still differ.
-// score 222 (was 222): Frame 0x49c versus 0x494, initial gain argument homes and integer clamp-store joins remain.
 // Earlier at 222 (was 215): Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Frame 0x49c versus 0x494; initial gain argument homes and joined integer clamp stores remain.
 // Aggregate packet 314; later packet lifetime 288; role names 241; real gain field 294; full memset 321.
@@ -3825,6 +3825,15 @@ struct s_128ca0
 // M337: Existing whole decibel values through raw/processed/both submission gain
 // stages, seven subsets and complete entry lifetimes: [222, 222, 222, 222, 222, 222, 222, 222].
 // NOT kept: unmatched scalar-record/copy forms; all restored, gain homes and clamp joins remain.
+// m3 lane 16 r83 (fast): retail's three sums all read like one add helper taking a real first operand and a
+// long-bits second (only the second is copied): playback gain + copied argument, location + that sum, the
+// converted permutation byte + copied local_6. Such a helper (real a, long b) for both opening sums 269
+// (frame 0x494, inner sum exact; the location add still folds), its parameters swapped 269 (same code), at
+// the two pin sums too 247 (1060 bytes; pin operands as retail, but our real -> long -> pin copy collapses),
+// with this file's pin single-exit 261 (0x12a810 still matches), default-first 275 (loses 0x12a810, 25);
+// on 0x1251e0's tail the same helper 23 (was 15). Chunk index read into a local before the next-chunk test
+// 222 (the load moves above the permutation test as retail, zero-extended into ECX); the stream bit through
+// a stream pointer 221 (retail splits that store into load/or/store). All restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {
