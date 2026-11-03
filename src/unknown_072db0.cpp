@@ -1597,6 +1597,10 @@ struct s_rating_summary
 // short 143 (1228 bytes); counters as a const reference 25 (same code); the bound test as `!(i < count)` 25;
 // team skill read at each use 237 (1200 bytes); counters pointer declared at function scope 25. Retail's team
 // loop keeps both cursors stored at the head (teams +0x14, counters +0x18, counters in ECX at the latch).
+// F347: Native session memcpy with byte/XUID identity source, aggregate/library summary initialization
+// and scalar/stored query consumers: 31/31/210/210/31/31/210/210. Native copy and identity forms tie;
+// library clears recover extent but regress. Original body restored; formatter/count setup and
+// team/counter homes remain.
 // @retail 0x741f0
 void __stdcall function_741f0(s_match_player_rating_collection *collection, s_query_batch *batch)
 {

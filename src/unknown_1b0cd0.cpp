@@ -430,6 +430,10 @@ bool function_1b1970(long actor_index, short mode, vector2f const *forward,
 // closing flag stores share `mov al, 1`.
 // Round 48: the index as `& 0xffff` 12, as a dword 12; the origin through a second actor_get of the
 // leader 149 (780 bytes); the point declared with forward/left 12; the 0x1b0e40 result named 12.
+// Round 75 (fast): a bool result stored once on the current index 80 (746 bytes); the result as
+// `index != NONE && call` 70 (757); the point at function scope 12; the mode local at the top of the
+// list branch 138 (759); the point as a point2f 30 (frame moves). Retail's other 0x1b0e40 callers set
+// its register arguments in differing orders (0x1b13b0: ECX, EDI, EBX), so no parameter order is implied.
 // @retail 0x1b1a90
 void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_list *list)
 {

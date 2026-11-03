@@ -543,6 +543,14 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // M3 lane 13 r54 (fast; 0x270930 kept): the edge array declared after the flags 295; the clamp as
 // `maximum_steps < initialize_count` 295; the converted points named begin/end 295; the output-index compare
 // swapped 295; margin declared at the top 295 (all same code). Retail's start/end conversion homes stay swapped.
+// B383: Predecessor retained only as its short/long index, direct array fields or
+// a branch-local multi-use receiver, crossed with long/short link count:
+// 294/391/378/399/295/373/382/386. NOT kept: the 294 form gains one point; retail retains
+// both predecessor histories; wide forms lose the matched caller. Original body restored; frame/flag homes remain.
+// DH312: Native coordinate-array projection with long/dword/short/byte ordinals
+// 295/295/335/335; with both complete distance-delta array producers 296/296/451/451.
+// The two narrow complete-delta forms also demote the parent. Original scalar producers,
+// indexed link memcpy and full body restored; frame/flags remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,
@@ -986,6 +994,13 @@ bool function_2715a0(byte *buffer)
 // DH303: Fresh projection numerator/denominator and native entry receiver,
 // producer-scoped or link-scoped root/direction workspace 485/486/485/486/485/486/485/486.
 // One-point reductions rejected; original body restored; state/scalar/root homes remain.
+// B383: Native branch-updated radius/pruning maxima and attraction minimum,
+// seven subsets, then the complete conditional projection clamp:
+// 488/502/486/504/488/502/504/504. All tie or regress; original scalar producers and body restored.
+// DH312: Actual coordinate-array midpoint, long/dword/short/byte ordinals
+// 579/579/591/591; paired projected-point array production 579/579/508/508.
+// Narrow pairs recover state EBP at frame 0xc54 but grow eight bytes and regress;
+// original scalar producers and complete body restored.
 // @retail 0x271630
 PRIVATE bool function_271630(s_type_f17a25 *state)
 {

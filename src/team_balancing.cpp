@@ -644,6 +644,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // P264: whole/header-team best publication via memcpy/memmove, native candidate
 // 67/83/79/95; default-built memmove candidate 185/173/197/186.
 // Native copies, original candidate lifetime, queries and complete body restored.
+// Round 124 (m3 lane 8, fast): both spread tests reference-left re-measured 65 (ours still queries the reference
+// first); the reference pointer `const *const` 67; the first test as `reference spread - candidate spread > 0` 72
+// (516 bytes); the candidate direct-initialised `candidate(current)` 67; `best = candidate;` before
+// `improved = true;` 71 (517 bytes); the loop counters declared before the loops 67 (same code).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
