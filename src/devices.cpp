@@ -843,6 +843,9 @@ struct s_device_machine_view
 // N345: Immediate velocity-magnitude nodes at three guarded divisions, seven
 // subsets, then all with immutable bounded publication: all eight 34. NOT kept:
 // single-use library results do not match. Original callback and observations restored.
+// F362: Existing callback as static device member, ordinary/inline, masked/word
+// flags and original/active-velocity zero: 34/34/120/120/117/117/122/122.
+// NOT kept: word-load/EAX sharing and zero join remain; original callback/table restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1216,6 +1219,9 @@ bool function_108530(long device_index, long name)
 // N345: Direct scalar truth at divisor/derivative tests, seven nonempty subsets,
 // 121 each; nonzero admission on bounded nonnegative ramp-up 132. NOT kept: no
 // gain. Both callers stay 31/13; original predicates and complete body restored.
+// F362: Existing initializer as motion instance/static member, ordinary/inline,
+// local/field cruise speed: 121/121/121/121/134/134/134/134. NOT kept:
+// initial-speed/ramp-down residency unchanged; original routine and both callers restored.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)
@@ -1764,6 +1770,9 @@ bool function_0b6760(s_index_pair const *pair);
 // F354: Complete channel-array receiver across manual and group phases, ordinary
 // index/saved-pointer/result-first domains 376/408/354/437/376/408/354/437.
 // NOT kept: no byte match; original body and qualifiers restored; frame/index/state homes remain.
+// F362: Existing state getter as actual device member, ordinary/forced expansion,
+// with inherited/ordinary index and saved-pointer storage: 285/285/411/411/382/382/442/442.
+// NOT kept: no frame/state/index repair or byte match; original getter, callers and body restored.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {
