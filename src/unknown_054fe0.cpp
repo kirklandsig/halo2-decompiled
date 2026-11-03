@@ -1772,6 +1772,9 @@ struct s_summary_player_sort_entry
 // Round 77 (m3 lane 16, fast): the variant as an if/else 339 (same code); the four nested state guards as one
 // `&&` test 339 (same code); the variant pointer as one conditional expression 375; `statistics` declared at its
 // test 372; `return true` from the block with `return false` at the end 396 (1320 bytes). Still needs the cmovne.
+// Round 66 (m3 lane 1, fast): name pointer read after get_values_4d08 356 (1291 bytes); memset before
+// get_values_4d08 339 (same code); `statistics` declared at its test 372; team_mask beside the player count 375;
+// get_values, memset, then the name pointer 356 (1291 bytes).
 // @retail 0x64d70
 bool __stdcall function_64d70(s_session_browser_summary *output)
 {

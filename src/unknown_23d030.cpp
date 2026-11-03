@@ -405,6 +405,10 @@ extern byte g_51ec11;
 // 276 (1326 bytes, aligned 55), k/j/i 276, `side.j = side.k = 0.f; side.i = 1.f;` 86 (aligned 47, a gain of 3:
 // not kept), `side.k = side.j = 0.f; side.i = 1.f;` 274 (aligned 46), j/k/i separate 276 (aligned 55); that
 // 86 form with the scratch normalizer 264 (aligned 47).
+// Lane 17 r39 (fast, with 0x23d790): retail loads the other operand first in two cross products (`v->k * axis->j`,
+// `axis->i * v->k`); both written the other way round 89, each alone 89/89 (same code); fallback
+// `side.i = 1.f; side.k = side.j = 0.f;` 274, `side.i = 1.f; side.k = 0.f; side.j = 0.f;` 276 (both 1326
+// bytes). Original body restored.
 // AC501: Native input roll/horizontal/vertical field domains on the shared-state graph,
 // masks 1/2/4/3/5/6/7, then complete read-only controls: 274/89/89/118/274/89/118/118.
 // Original input layout, observations and full body restored; zero/side/up allocation remains.
@@ -418,6 +422,10 @@ extern byte g_51ec11;
 // position rows as `camera + speed * movement` 89; the command position stored before the camera state's 125 (1330);
 // the pitch clamp as an if/else chain into the local 274 (1326 bytes); the zero distance stored before the offset
 // copy 101. Zero XMM3/XMM1 and the side/up/roll allocation remain.
+// Round 66 (m3 lane 10, fast): side as an aggregate initializer `{ forward.j, -forward.i, 0.f }` 89 (same code); the up
+// rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
+// `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
+// Zero XMM3 and the side/up homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

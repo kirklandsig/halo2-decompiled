@@ -313,6 +313,9 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // DH308: Direct-file graph completion/success, outcome/ordinal and path lexical-home
 // subsets 1/2/4/3/5/6/7, then all with reversed byte declarations: 44 each. Original file value,
 // wide outcome, waits and body restored; ECX handle and stored-success memory test remain.
+// DL252: Native short/word/long/dword success destinations with wide then destination admission:
+// 74/74/74/74/73/73/74/74. NOT kept: wider result objects and pointer casts lack the native byte-storage
+// shape. Original outcome, result object, file, waits and complete body restored.
 // Round 78 (m3 lane 16, fast): `success = handle test; _ReadWriteBarrier(); if (success)` re-measured 50; with
 // the handle read into a scalar and the file built from it in the branch, the long assigned to success 50;
 // the copy kept with the long assigned 50 (one code each: no xor widening, handle in EAX); without a

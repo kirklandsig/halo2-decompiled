@@ -290,6 +290,10 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
 // the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
 // (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// J244: Existing staged rotation cross on the retained in-place angle/rotation graph,
+// with original/ordinary/staged pitch axis, result setter and shared dot:
+// 213/237/237/213/237/237/240/240. NOT kept: all regress; frames 0x24/0x28
+// versus 0x2c. Original helper, arithmetic, includes and body restored; unity/root/yaw homes remain.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

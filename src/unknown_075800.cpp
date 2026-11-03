@@ -1238,6 +1238,13 @@ void c_class_938e0::function_93aa0(long channel_index, long message_type, long m
 // M332: Repeated typed session/peer/late-message input boundaries, seven subsets, then
 // all with query-message input: 196/196/196/196/196/196/196/196 reduced, tying control 196 (full 153). NOT kept:
 // parameter aliases require a match. Complete classifiers and all handler tuples restored.
+// Round 65 (m3 lane 1, plain): an unsigned `> 24` early return ahead of the two switches 121 (464 bytes; retail's
+// prologue, delayed ESI save and jump table, caller matches; only the inlined case-18 body and late classifier
+// differ), with the late pair as an if/else-if chain 125; NOT kept (the test is implied by the switches). The same
+// return on the one retail-order switch 217 (same code as without it); that switch with the address read once
+// through its address plus a signed `> 24` return 212 (428 bytes); 11/18 admitted as `break` cases with `default:
+// return` and an if/else tail 216 (0x94420 then stays out of line and the convention is lost: retail's convention
+// appears only when 0x94420 is inlined).
 // Round 63 (m3 lane 10, all plain, base 153): retail's 0x7afd0 call sets type EAX, message ECX, this EDX and pushes the
 // address; the one retail-order switch 217 (420 bytes: this moves to the stack, address EAX, type ECX, and case 10 saves
 // EDI around 0x94220, which takes the address in EDI; retail homes the address in EDI for the whole body); that with
