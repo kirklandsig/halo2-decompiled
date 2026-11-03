@@ -1891,6 +1891,7 @@ void function_dfd70(long arg_159e6d)
 // vector declared at the helper's top or in a block 104; every arm ahead of the raise 0xdc5c0 589. In biped_eye_raise
 // on the 104 form: forward or up renamed 104, swapped declarations 104, dot3f(&direction, ...) 104; the test written
 // head-first 80 and direction-first 80 (0xde9d0 stops matching, 20).
+// M340: Actual head/forward/fallback coordinate-array transfers 1/2/4/3/5/6/7, all with returned-up consumption: 240/247/245/256/253/258/268/275. NOT kept: no complete native/shared-user agreement; helpers and body restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4566,6 +4567,7 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // velocity/relative copies swapped 145; ba1d0 into relative 154; relative from raw 161.
 // Review: the state base stays a local at entry: retail loads it there and keeps it in EBX across the calls (a load
 // the compiler cannot move above calls), and inlined at the use it gives 167 and loses matched 0xe4680 (61) and 0xecfc0 (14).
+// M340: Positive support ownership const bool/const byte/test/conditional, original/query-bound success: 68/143/68/143/146/182/146/182. NOT kept: no exact result/slot graph; original body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {
@@ -4965,6 +4967,7 @@ void __stdcall function_b8600(long object_index, long unknown);
 // fast 684/667/646/676/675/658/667/656 against control 655.
 // NOT kept: lean-local 646 hoists the field read and merges the native
 // step/clamp field stores to one final store. Original body restored at full 648.
+// M340: Native orientation coordinate copies/returned-rotation consumption/scaled integration 1/2/4/3/5/6/7, all with local-before-matrix: 1601/652/653/1502/1590/649/1497/1497. NOT kept: rotation/integration gains 3/2, both 6, below gate; coordinate copies enlarge the frame; original body restored.
 // @retail 0xe24f0
 bool __stdcall function_e24f0(long arg_159e6d, long *names, s_biped_physics_output *output)
 {

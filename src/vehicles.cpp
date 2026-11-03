@@ -4227,6 +4227,7 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M333: Static-marker/cache-schedule/component-hit predicate results, seven subsets:
 // 176 each; all with default-first cached conversion 170 at 1361 bytes. NOT kept:
 // six-point gain below the gate, and one-use predicates require a match. Full body restored.
+// M340: Complete indexed predicate for/while, identity/validity first, cached/live count: 255/255/255/255/255/255/255/255. NOT kept: no exact search/world/result graph; original body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {
