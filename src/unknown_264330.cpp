@@ -1059,6 +1059,11 @@ real function_296600(long actor_index, long prop_ref_index);
 // getter and null-first unit combinations 380/397/380/397/380/397/380/397 (fast control 372; full
 // baseline 257). Ordinary late-squad and late-squad/null-first forms 359/364; both regress.
 // Original source and include restored; squad/object, flag and root/hit homes remain.
+// Round 126 (lane 8, plain): unit NULL-first (`byte *unit = NULL;` before the suppression test, set when the
+// object type is 0) 267 at 1278 bytes: head as retail (squad spilled, NULL home, cmovne) but the current-record
+// argument of the first 0x1c8df0 call spills; on it: current renamed to sort after suppressed 267 (byte homes
+// unchanged); a named current-record pointer for both calls before/after the root lookup 272/270; a named
+// sight mode for both calls 326.
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
