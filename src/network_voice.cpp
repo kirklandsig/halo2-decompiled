@@ -1531,6 +1531,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // re-measured on the typed body, 127 again (449 bytes; the bit goes to memory, EBX takes it); the named bit at the header
 // and clear uses 153 (433 bytes, 0x56380 13); `11 + (include_mask ? sizeof(word) : 0)` 137; the loop's player test as an
 // early `continue` 134 (same code). Original body restored.
+// Round 207 (lane 3, fast with 0x56380): the clamp written inline in the test, no local, 135; a short
+// clamped value 180 (0x56380 2); entry size as `11` plus `sizeof(word)` under include_mask 191 (486
+// bytes); a long player bit 134 (same code); `entry_size * written + 2` 134 (same code).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
