@@ -531,6 +531,9 @@ real function_30bf0(vector3f *vector);
 // DH299: Native four-state result enum crossed with range-after-delta, entry
 // distance scratch and entry projection scratch, all eight subsets: 152 each.
 // Original result type and scratch lifetimes restored; result/range/amount homes and inverse SIMD groups remain.
+// DH309: Complete result/range, projection and addressed facing/seat-output lexical role
+// families, seven subsets and complete distance-role names: 152/152/152/152/152/152/152/152.
+// Native scalar homes and SIMD groups unchanged; original complete body restored.
 // @retail 0x263810
 short function_263810(point3f const *origin, long actor_index, point3f const *point, point3f const *endpoint, char posture, short mode, bool use_facing, bool *out_of_range)
 {

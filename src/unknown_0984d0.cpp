@@ -508,6 +508,9 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // storage before validity 172/172/197/115, after validity 172/172/199/117. All regress; original byte
 // validation ordinal, separate long notification ordinal, helper and both inherited local-slot
 // observations restored. Validity/cursor homes and loop entry remain.
+// F342: Single validation-rejection exit with signed-byte/byte/short/long ordinals, then each with
+// completed-validation last-use scope: 80/80/197/115/80/80/197/115. NOT kept: no byte match; original
+// complete body and every helper restored. Validity/cursor homes and validation-loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

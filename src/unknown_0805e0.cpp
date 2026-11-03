@@ -745,6 +745,9 @@ void function_1537f0(s_profile_record *record);
 // 53/53/53/53/62/62/62/62. Original body restored.
 // M314: Signed source sentinel with full-byte header bitfields 44/45/46/47/44-45/46-47/all/44-46:
 // eight 53s. Original real type and complete body restored; identity homes still fold.
+// M328: Signed entry distances from start/end, strict/inclusive bounds, each with
+// per-visit/reused source workspace: 100/100/85/86/100/100/85/86. Original complete
+// body restored; identity homes fold and the native signed entry end remains.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1244,6 +1247,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M312: Paired absolute source/destination ordinals forward/reverse/both, each with native repair
 // cursor, then both signed-int with/without cursor: 384/107/391/789/803/789/391/789. Original
 // body restored.
+// M328: Complete inverse direction in bool/byte/short/long, original/direct
+// capacity entry: 53/53/386/376/373/373/365/373. Original direction, admission and full
+// body restored; count/upper allocation and forward ordinal still differ.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

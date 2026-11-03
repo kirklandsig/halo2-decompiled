@@ -2431,9 +2431,17 @@ real magnitude3d(vector3f const *v);
 // P275: Complete current/target/both input snapshots 246/288/266; same native vectors
 // normalized in place 245/287/265; both inputs captured at entry 272; both with early
 // normalized workspaces 266. Original body restored; raw-length/dot/angle homes remain.
+// J241: Complete rotation output in first/second/rotation/current workspaces 175/170/175/174;
+// uniform scalar row staging 170/170/170/174. Real/double absolute-value stages 170/196; NOT
+// kept: one-use call-result forms do not match. Scoped precision diagnostic 547 at 1287
+// bytes, excluded from real trials and reverted. Original whole body, expressions and helper
+// contracts restored; raw-length and promoted-dot homes remain.
 // P277: Existing scale helper at current/target/both/output/current+output/target+output/all
 // boundaries 191/170/190/170/191/170/190; double-factor helper at all boundaries 224.
 // Original body restored; raw-length/dot/angle homes remain with retail frame 0x38.
+// AC492: On the retained fallback loop/frame, explicit current/target clamp producers
+// 170/170; minimum-default 263/226; nested positive 254/203; conditional-tail 170/170.
+// Original macro clamps, repeated roots, controls and complete body restored; raw-length/dot homes remain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3576,6 +3584,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // and retail length 1819, but worse than 231; not kept). Full scalar role names 231/225.
 // Offset inputs stay staged before stores; the sum accepts its first input in
 // place. Corner, offset and origin are distinct at all four calls. Shared helpers unchanged.
+// P283: Complete final-coordinate scalar staging with direct stores, native color and
+// three-use negative-radius subsets: 388/388/407/389; with the existing point setter:
+// 412/403/417/409. All regress; original helper, full body and alias-safe input capture
+// restored. Frame/radius/scaled-coordinate homes remain; no one-use scalar staging retained.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

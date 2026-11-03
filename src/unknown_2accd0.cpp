@@ -1136,6 +1136,10 @@ struct s_signed_file_write_parameters
 // nested success, seek conditional and failure-only update, bool/native BOOL:
 // 313/199/102/245/314/211/261/302. Original capacity stride and complete body restored;
 // capacity EAX/EBX and extension buffer/offset homes remain.
+// Round 542: Common header/signature success workspace on the direct-header-return/live-seek
+// graph, bool/BOOL with complete transfer/signature producers 102/100/102/100/261/261/261/261. Original phase
+// predicates, getter and complete body restored; capacity and extension homes remain.
+// NOT kept: the two-point 100 form is below the keep bar; full-width forms regress.
 // DH307: Header/scratch-extension clear outputs as original receiver, receiver assignment,
 // or clear-produced transfer pointer, eight nonoriginal pairs: 101/101/102/101/101/102/101/101.
 // NOT kept: one-point reductions and one-use call-result carriers without an exact match.

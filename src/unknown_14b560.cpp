@@ -1389,6 +1389,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // outputs declared outside or swapped or chained, const local, pointer or reference to the field, unsigned against 4u.
 // A test on the same pointer ahead of the mode test (another field, or the state) keeps the pointer live: `cmp [eax+0xc], 4`
 // then `or eax, -1` compile-only, but retail's pointer is EDX with no such test, so the byte temp avoids AL for another reason.
+// Round 93: separate output library fills 46; fills/existing positive/negated mode predicates/NONE|result outputs,
+// each with the timer memset, 43/43/43/43; unified output fill with the timer memset 71; XOR/subtraction mode
+// predicates with the timer memset 244/244 (subtraction reaches `or` but adds full-width work). NOT kept: the
+// 3-point timer-only gain and the grouped output workspace. Original body restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {
