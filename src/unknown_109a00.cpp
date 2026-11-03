@@ -546,6 +546,9 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // N318: Complete current-center memcpy/memmove/standard forward/backward copy
 // 112/125/128/128; with complete previous-transform memcpy 116/128/123/123. Original
 // center/copies and full body restored; input roles, physics spill and projection scheduling remain.
+// Round 540: Common vector converter through shared scalar builder/returned output pointer/output
+// reference/native value, original center 112/112/112/214; the same producer for center
+// 149/149/149/262. Native value returns grow the body to 965/1007 bytes; all restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {
