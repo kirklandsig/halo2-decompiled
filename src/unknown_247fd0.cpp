@@ -312,6 +312,10 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DH303: Native cached-record field with common pointer/flags/both/tested-result
 // completions 131/127/128/124/131/127/128/124. All regress; original
 // body and field declaration restored; folded compare and child scratch homes remain.
+// Round 542: Empty-request evaluator admission, direct/computed mask and unconditional/admitted
+// validity publication 137/124/132/129/137/124/132/129; paired two-consumer value-array receivers repeat those counts.
+// All regress; original body restored. Post-sample compare and evaluator/child homes remain.
+// NOT kept: extra evaluator admission and field receiver remain unmatched; all regress.
 // DH307: Cache-request full-default/hit refinement, branch result, pending-default override,
 // and hit-first result, producer/entry declarations: 135/123/132/135/135/123/132/135.
 // All 878/870 bytes; original complete body restored. Split post-sample cache comparison
