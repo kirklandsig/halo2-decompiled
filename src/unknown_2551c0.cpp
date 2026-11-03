@@ -249,6 +249,9 @@ short __stdcall function_2551c0(long actor_index)
 // 120, and the 60 helper and naming sets that give retail's dot order in a compile-only screen, best 30 (815).
 // Compile-only: 299 neutral forms on the base and all output statement orders leave the dot at k, i, j.
 // The state through the typed slot data block: tried before, 89 (820 bytes).
+// Round 343: Angle/trace-output last-consumer scopes 43/43/43; completed score/forward
+// search scope alone and with those scopes 45 each; joint scopes with library best-vector copy 45.
+// Original helper and complete body restored; early cross products and score-dot schedule remain.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {

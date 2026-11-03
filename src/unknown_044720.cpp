@@ -506,6 +506,12 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P277: Entry-admitted displacement/radius/node-count declarations, all seven subsets,
 // then coherent complete scratch names: 182 each. Initializers and observations never moved;
 // original body restored. Entry/index spill and center/query/bound homes remain.
+// AC493: Existing bitmap admission/absent-bound/sphere helpers, subsets 1/2/4/3/5/6/7,
+// then complete helper graph with failed-geometry exit: 215 each at 885/872 bytes. Original
+// masks, guards, include set and whole body restored; entry spill and point homes remain.
+// N332: Existing dispatch-prefix/header/backing-storage inheritance, three native
+// graphs with chained or independent count/capacity producers: 182 each. Original
+// types and body restored; entry/index spill and center/query/bound homes remain.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {
