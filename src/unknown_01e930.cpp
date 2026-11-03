@@ -519,6 +519,9 @@ PRIVATE inline __int64 bink_read_tsc(void)
 // N318: Existing clock contract without unused scratch, actual uninitialized start/elapsed/retry
 // storage at entry in all eight subsets, 299 each (1079 bytes, frame 0x30). Original clock
 // producer, storage and complete body restored; frame/status/clock/output and instruction policy gaps remain.
+// DH306: whole initial readiness/loading admission, false construction or true rejection
+// refinement, bool/byte/short/long 252 each. NOT kept: result-tested flag needs exact equality.
+// Original body restored; missing frame word and zero/clock/output homes remain.
 // @retail 0x156090
 void function_156090(char const *name, dword flags)
 {

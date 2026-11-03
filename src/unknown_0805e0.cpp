@@ -208,6 +208,12 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // with it 51; the successor read through the table first in the plain while with `break` 60 (137 bytes: rotated
 // loop testing the EBX successor, mask an immediate); an implied second guest test guarding the copy 40 (128 bytes,
 // not kept: no hoist, the test stays). Harness: that second test as the found result or with early returns, no hoist.
+// Round 45 (m3 lane 15, fast, with 0x1a303b/0x2b393c; al = aligned count against this body's 23; each with a separate
+// successor local stepped at the loop's end): while or guarded do-while, `result = true; break;` 51 (al 31; no hoist);
+// `result = tests; if (result) {copy; break;}` 59 (135 bytes, al 31; hoist as retail, ECX index and successor); early returns
+// 49 (al 24; flags and identity registers retail's, EAX index and successor where retail has a hoisted mask and EBX); each
+// with the entry declared outside the loop, or read through an inline index getter, the same code. Retail's register plan
+// needs the mask hoisted first, which only the forms with a live result give.
 // M310: Eager pure-Boolean cache/identity/player pairs, seven subsets, then complete eager eligibility [56, 86, 97, 51, 75, 104, 115, 123]. Original body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
@@ -739,6 +745,9 @@ void function_1537f0(s_profile_record *record);
 // 53/53/53/53/62/62/62/62. Original body restored.
 // M314: Signed source sentinel with full-byte header bitfields 44/45/46/47/44-45/46-47/all/44-46:
 // eight 53s. Original real type and complete body restored; identity homes still fold.
+// M328: Signed entry distances from start/end, strict/inclusive bounds, each with
+// per-visit/reused source workspace: 100/100/85/86/100/100/85/86. Original complete
+// body restored; identity homes fold and the native signed entry end remains.
 // @retail 0x7f930
 void function_7f930(void)
 {
@@ -1238,6 +1247,9 @@ long __stdcall function_80330(const s_cached_player_identity *identity, long pos
 // M312: Paired absolute source/destination ordinals forward/reverse/both, each with native repair
 // cursor, then both signed-int with/without cursor: 384/107/391/789/803/789/391/789. Original
 // body restored.
+// M328: Complete inverse direction in bool/byte/short/long, original/direct
+// capacity entry: 53/53/386/376/373/373/365/373. Original direction, admission and full
+// body restored; count/upper allocation and forward ordinal still differ.
 // @retail 0x7fe90
 long function_7fe90(const s_cached_player_identity *identity, long position, const s_cached_player_source *source)
 {

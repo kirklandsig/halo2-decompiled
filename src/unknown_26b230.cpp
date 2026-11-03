@@ -1998,6 +1998,10 @@ void function_269250(long clump_index, long actor_index);
 // DH296: Joint function-owned group iterator/selected/best storage subsets
 // 1-7 and all with persistent score storage, eight forms 87 each. Every original
 // per-actor initialization and per-candidate assignment retained; full body restored.
+// Round 379: Native team-admission truth at its comparison, bool/byte/short/long eligible then
+// excluded: 87/87/87/87/87/87/87/87 (fast control 87). NOT kept: one-use admission requires an
+// exact match. Original common score graph and body restored; pool/selection and x87/SSE homes
+// remain.
 // @retail 0x2689d0
 void function_2689d0(void)
 {
@@ -2262,6 +2266,8 @@ void function_269250(long clump_index, long actor_index)
 // result 137/137/247/249. False Boolean with group/unit and unit/group chained initializers
 // 83/85, also 83/85 with native node datum. Six- and four-point forms rejected;
 // original whole-group result, categories, deletion, node and tracking walks restored.
+// DH304: Whole-group owner/child comparison-result accumulation, independent bool/byte producers then joint domains, 185/207/189/206/175/196/176/181.
+// Original whole-group result and all traversal restored; category homes, deletion completion and pool carriers remain.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

@@ -1147,6 +1147,8 @@ long function_40de0(long index, bool first, bool second);
 // allocation (retail keeps g_4e3b44 in ebx and spills entry/part to [esp+0x1c]/[esp+0x10]), retail re-reads *part for kind
 // and orders the 40de0 call after the 40e30 pushes. Tried: no volatiles (291, breaks 0x44ac0), second via if-flag (296),
 // ?: for material (312), long/dword kind (316), kind re-read from part (318), part_index/index swapped (306).
+// Also tried (@coldspear, #104 2026-11-02): index as long in all five declarations: 0x41040 315, and the matched caller
+// 0x44ac0 stops matching (137), 0x44c90 107 -> 149. Not a lead.
 // @retail 0x41040
 void function_41040(short index, long part_index, long group, byte weight,
     s_render_part_context const *context, long material_override, bool force,

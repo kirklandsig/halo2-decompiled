@@ -1480,6 +1480,9 @@ long function_cbd50(long unit_index, short weapon_index);
 // Round 531: One shared held-object handle, controlled/entry scope, byte/bool result and guarded second
 // clear 164/164/194/194/328/328/336/336. Original queries and complete body restored; pool/state
 // ownership and count joins remain.
+// N331: Read-only native unit/control/state receiver subsets 1..7 and complete
+// read-only identifiers 164/164/164/164/164/164/164/164. Original receivers, byte
+// result and complete body restored; pool/SETLE/default homes and normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {
@@ -1710,6 +1713,10 @@ bool __stdcall function_110ab0(long unit_index)
 // Round 531: Existing object-header accessor at entry/paired slots/paired counts, seven subsets
 // 450/450/450/450/450/450/450; full accessor graph with read-only receivers 450. Original body and
 // includes restored; frame eight versus twelve and header/state/request homes remain.
+// N331: Nullable first/second/both held-object receivers, conditional/branch producers,
+// 441/441/471/441/441/471; paired Boolean depletion 457/457. NOT kept: raw 441
+// raises code differences 424 -> 431, adds null guards absent from retail, and only
+// improves trailing data. Frame remains eight versus twelve. Original body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
@@ -2071,6 +2078,12 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // fpatan) and calls the second; every other callee count agrees. bounds_112070 as plain inline 1064 (3171 bytes,
 // kept out of line), project_112070 as plain inline 1146, both 1378; a `__forceinline` redeclaration of 0x11df30
 // 790 (still a call); the projection reading its input in place (no copy) 833 (3403 bytes, both 0x11df30 still calls).
+// DH304: Existing bounds producer returns the following eligibility query, bool/byte/long/dword with forced/ordinary inline, 840/809/809/809/1057/1050/1050/1050.
+// Original helper contract and complete body restored; frame 0xcc/0xd4 and first converter expansion remain.
+// N333: Common terminal sample from start/set result, bool/byte/short/long,
+// entry false/guarded calls 773/773/779/777; branch-owned results 793/793/793/793.
+// NOT kept: one-use call-result/conditional-state locals and a retained branch test require a match.
+// The 773 previews recover retail length only; original body restored; frame/expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
@@ -3226,6 +3239,10 @@ static inline real channel_elapsed_seconds(c_animation_channel const *channel)
 // 17 each: frame 0x38 recovered, action still in channel scratch (exact-only). Native
 // two-byte/word decision records with byte-order and constant-init point/order combinations
 // 134/135/240/238/134/135/238/240. All grouped storage restored; original action/flag homes remain.
+// Round 90: one-short array with returned query 44; two-short output first/second 39 each
+// (action in channel scratch; NOT kept: under eight and wrong frame); scalar/one-short local
+// comparisons 60 each; set-scoped scalar 44; set-scoped second-short output 39, with the
+// predicate declarations swapped 39. Original executable body restored.
 // @retail 0x10ff40
 bool function_10ff40(long unit_index, long type, short side, short value,
     bool *flag, short *side_out, short *value_out)
