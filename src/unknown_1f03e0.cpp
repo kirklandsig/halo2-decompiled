@@ -1707,6 +1707,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // before-flight declarations and the original NONE producer: 227/227/227/227, 380/380/380/380.
 // Word forms grow to 1148 bytes and move the frame difference to +2. NOT kept: no exact
 // projected-storage form; original long selection, movement and complete body restored.
+// DH315: Shared score/predicate/ordinal initialization masks 1/2/4/3/5/6/7,
+// then all with real movement: 227/225/225/229/229/227/221/224. Original
+// independent initializers, magnitude, observations and complete body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

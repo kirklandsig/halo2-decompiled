@@ -2103,6 +2103,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // unknown-first form: cursor and colour locals read before the spawn stores 180 (572 bytes); multiplied() as
 // the call's argument 132; spawn declared first 124; effect cursor read after set_location 132; matrix at
 // function scope 124.
+// DH315: Live mode/placement field references, readonly/mutable single/both,
+// entry and iteration scopes: 128 in all eight forms, 556/552 bytes. Both
+// matched callers and transform producer stay exact; original descriptor reads,
+// query/color timing, cases, spawn fields and complete body restored.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3244,6 +3248,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // function_1751d0() call 85 (331 bytes; not kept, retail makes that call); node predicate before the transform
 // call 115 (0x176f60 25); colours declared before the particle-location cursor 93; location pointer at function
 // scope 93; colours as long 93; location pointer declared in the while condition 93.
+// DH315: Live mode-field reference, readonly/mutable, original/outer cursor
+// declaration and direct/named multiplication: 108/108/108/108/122/122/122/122.
+// All lose matched caller 0x176f60 (25); original cached mode, cursor, query,
+// successor, input contract and complete body restored.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

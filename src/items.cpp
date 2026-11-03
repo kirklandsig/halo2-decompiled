@@ -666,6 +666,9 @@ struct s_item_collision_bsp
 // Round 541: Separate actual contact/axial marker outputs, contact-query/axial-function/spin-after-contact
 // lifetime subsets 0..7: 217/211/217/217/217/211/217/217. Expanded frame 0x110; narrow
 // contact scope reproduces 0xa0 and the original code. Original marker, spin and body restored.
+// DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
+// 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
+// all controls unchanged. Original body, pending-k join and protected plane contract restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

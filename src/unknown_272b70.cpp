@@ -1482,6 +1482,12 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // subsets then all immutable: 103/88/32/124/103/88/124/124, all 846 bytes.
 // Original per-use fields and complete body restored; iterator scaling,
 // leave-selector and request/slot publication homes remain.
+// DH313: Native/read-only iterator actor-index field pointer before/after initialization,
+// at loop entry or candidate admission: 32 each. NOT kept: exact-only field aliases fail
+// agreement. Original body restored; iterator/leave-request and request/slot homes remain.
+// DH316: Genuine collection/selection pointer-receiver lexical identities, seven subsets
+// then the complete iterator identity: eight 32s, 846/846 bytes. Original entire body
+// restored; iterator scaling, leave-selector and request/slot publication homes remain.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {

@@ -1405,6 +1405,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // AC500: Actual initialization state/tag/read-only domains, masks 1-7, then read-only rigid body:
 // 585 each. Native fields retain every observation and key width; original real record, receivers,
 // packed output, helper graph and complete body restored. Frame 0xf8 versus 0xfc and scalar homes remain.
+// DH314: Individual airborne/speed/boost/turning/moved/distance/paired target-size scalar
+// identities, then the complete scalar graph: 585 each. Every initializer and lifetime fixed;
+// frame stays 0xf8 versus 0xfc. Original entire body and helpers restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2755,6 +2758,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // AC500: Real array-range mass/farthest/push masks 1-7: 541/530/519/516/532/514/529; native final size 539.
 // NOT kept: 519 combines tying/regressing parts; 516/514 hold a cursor unlike native base/size reloads; 529 below gain gate.
 // Original complete body restored; frame 0x44 versus 0x4c, result/state bytes and point/scalar homes remain.
+// DH314: Weighted centroid via shared scaled-add/point setter/vector setter/weighted vector
+// plus add: 530/530/530/546; each with a named three-use reciprocal: 530/530/530/546.
+// The weighted vector shortens to 1818/1908 and regresses; frame/result homes persist.
+// Original aggregate, complete body and every helper restored.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3041,6 +3048,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // AC500: Admitted-mode tag ownership with producer-local/entry-only declaration, each with
 // original/direct/if-else/default flight threshold: 607/617/607/680/607/617/607/680 (fast control 600, full 561).
 // Original tag lifetime, threshold producer and complete body restored; flight/result homes remain.
+// DH314: False-default special state before key exclusion, true from its native test,
+// bool/byte/char/signed-char/short/word/long/dword carriers:
+// 656/656/656/656/645/645/651/651 (reduced control 600; full 561).
+// Exact-match-only flag forms regress; original producer, guard and complete body restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

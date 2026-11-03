@@ -1109,6 +1109,10 @@ done:
 // after it 169; `result = false` after the inline availability tests 136; the requery flags assigned in the call
 // argument 125 (same code); diagnostic: the requery's lightmap call sharing the no-object call through a label 165
 // (0xd2a50 lost).
+// DH315: One result exit on original exclusion/storage graph; shared sentinel,
+// entry attempt initialization and availability producer masks 0..7 give
+// 136/136/144/144/136/136/144/144, all 452/470 bytes. Original exits,
+// reset phases, exclusion, grouped workspace and complete body restored.
 // @retail 0x14af40
 bool function_14af40(bool include_objects, point3f const *point, vector3f const *direction,
     long ignore_object_index, bool result, void *surface, point3f *probe)
