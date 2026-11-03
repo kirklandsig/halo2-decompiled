@@ -934,6 +934,9 @@ extern vector3f *g_4687b0;
 // seven subsets then all with shared parent sum: 322/312/323/314/320/314/312/312.
 // Original fields, scalar producers, vector operations and full body restored;
 // frame 0xcc and tag/index/direction spill and SSE schedules remain.
+// P285: Existing complete scalar-output setters at left/normal/position producers,
+// subsets 1..7 then all with the initial velocity setter: 309/309/309/309/310/310/309/314.
+// Original scalar trees, stores, helpers, scopes and complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -1475,9 +1478,15 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P280: Native object-type predicate byte/char/short/word/long/dword storage
 // 95/95/109/109/108/108; Boolean declarations at observation/before companion test
 // 95/185. Original complete body restored; entry lookup and hand homes remain.
+// P284: Shared low-word entry ordinal long/dword/word/short 196/196/194/194;
+// with the existing later slot getter 234/234/230/230. Complete original body
+// restored; early pool acquisition, second unit load and full hand home remain.
 // Round 543: Actual first-found equipped-slot result, bool/byte/short/long,
 // positive/complementary polarity: 95 each. NOT kept: staged search flags require
 // exact equality. Original indexed scan, direct exit and complete body restored.
+// F346: Completed companion-index, metadata and scan-ordinal lifetimes in seven subsets,
+// then all with completed state selection:
+// 95/95/95/95/95/95/95/95. Original complete executable body restored.
 // @retail 0xe8720
 void __stdcall function_e8720(long unit_index, long unknown, bool immediate, bool silent, bool primary)
 {
@@ -2798,9 +2807,16 @@ long function_c8f60(long unit_index, short seat_index);
 // Round 487: Multi-use target vehicle scalar at entry/between results/before
 // admission/inside admission, long then dword: 293/293/293/293/293/293/293/293.
 // Original formals, lifetimes, admissions, outputs and complete body restored.
+// P284: Success/reset byte role names entered/motion_reset, seat_entered/animation_cleared,
+// entered/animation_cleared and seat_entered/motion_reset, each in both declaration orders:
+// eight at 293. Original output names, declarations and complete body restored;
+// entry vehicle promotion, unit/ordinal residence and output-byte homes remain.
 // Round 543: Entry-to-publication reset carrier byte/char/short/long, original then
 // complementary polarity: 300/300/312/313/284/284/300/301. NOT kept: 284 grows
 // to 1224/1209 bytes and changes result representation without a match. Original body restored.
+// F346: Actual vehicle-category carrier byte/char/short/word/long/dword, then bool/long
+// complementary nonvehicle polarity:
+// 293/293/299/299/300/300/319/321. Original complete executable body restored.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)
@@ -4599,6 +4615,9 @@ PRIVATE __forceinline point3f *unit_action_untransform_point(transform4x3f const
 // P280: Consumed scale-result cross input, direct existing double-factor scale and
 // its consumed result 175/294/294; away-entry versions 175/294/294, both away/left
 // entry declarations 175/294. Original complete body restored; frame and basis homes remain.
+// Round 546: Early point input/output workspace; native/library input, position/world
+// inverse and native/library late output: 245/243/259/257/243/243/257/257. Frame 0x11c, length 1433.
+// NOT kept: 45 extra bytes and no match. Original complete body restored.
 // @retail 0xecff0
 bool __stdcall function_ecff0(long unit_index, s_unit_request *request)
 {
