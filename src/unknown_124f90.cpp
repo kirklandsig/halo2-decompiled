@@ -1465,6 +1465,9 @@ inline long function_1251e0(void const *definition_pointer, long gain, real inte
 // upper conversion); one result long redefined by `decibels_add(result, decibels_add(class call, gain))`
 // 27, gain-first 27, through decibels_sum 16. Compile-only, 23 tail forms (in-place `+=` on a real or a
 // long, calls inside the arguments, accumulators, either argument order) all fold the converted gain.
+// Round 132: direct typed definition uses 15; scoped class/sum tail 15; reference inner sum 24
+// (112 bytes); const bound/linear values 15/15; named interpolation scalar 15; early class
+// declaration 15; commuted interpolation 15. Original body restored.
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
