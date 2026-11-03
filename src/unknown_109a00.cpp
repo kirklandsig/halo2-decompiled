@@ -591,6 +591,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // the matrix call (not retail's order: retail stores it after the center) 218, but the head then equals retail
 // (object index EAX, entry index ECX, first difference +0x35) and 0xb7060 matches: the register arguments follow
 // where the entry flag store sits, so look for a retail-order form that changes the same first-pass liveness.
+// N349: Actual selected component-row result, immediate/deferred ordinal and original/row-owned
+// downstream inputs 247/268/237/277; with existing center conversion 222/256/249/286.
+// Original complete body restored; input roles, early physics spill and center/projection scheduling remain.
+// NOT kept: selected-row result forms did not match.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

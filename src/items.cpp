@@ -679,6 +679,10 @@ struct s_item_collision_bsp
 // DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
 // 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
 // all controls unchanged. Original body, pending-k join and protected plane contract restored.
+// N349: Actual contact displacement via scalar/shared-scale producers and field/shared-add/native-point
+// publications 211/317/211/317/211/317/211; copied point then scaled additions 282.
+// Original complete body restored; protected plane width, plane joins and spin/speed homes remain.
+// NOT kept: unmatched displacement/copy forms and frame/extent regressions.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {

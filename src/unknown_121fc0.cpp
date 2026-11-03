@@ -245,6 +245,10 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // token walk as the matched font_table_parse's for loop (token declared before it) 128; the next-token cursor
 // declared at the block top 128; both counters at the `if (!g_4e3b40)` block top 127; the token table cleared by
 // memset 257 (724 B). EBP is still saved at the token walk.
+// N349: Actual mapping-slot ordinal shared across default initialization and token mapping, long/dword/short/word,
+// original ordinal search 128/128/232/232; predecessor-pointer search 205/205/203/203. Shared-storage forms
+// did not match; original complete body restored. Outer EBP preservation and read-size/count/cursor homes remain.
+// NOT kept: shared ordinal storage/domain forms did not match.
 // @retail 0x121fc0
 void function_121fc0(void)
 {
