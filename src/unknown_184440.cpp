@@ -302,6 +302,9 @@ __forceinline bool function_184448(long arg_0)
 // swapped (retail's three callers set the single point up in EBX before the polygon in EDX; definition and every
 // call) 965, 0x23a220 still matched, 0x173910 69 -> 70, so not kept; point/plane arrays declared in the other
 // order 965; the per-face bounds pair set field by field 969 (4595 bytes).
+// AC495: Existing shared plane decoder with native polygon-count/edge-pair/selector carrier
+// masks 0/1/2/4/3/5/6/7: 969/1021/985/988/1044/1022/981/1031. Original decoder,
+// declarations, carriers and complete body restored; excess frame and initial geometry homes remain.
 // @retail 0x184440
 void __stdcall function_184440(long arg_0, long arg_1, s_18444a const *arg_2, long arg_3)
 {

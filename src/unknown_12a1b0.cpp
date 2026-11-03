@@ -1740,6 +1740,10 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // AC485: intrinsic attenuation/track-gain/output bit-copy subsets 1..7, then all
 // with independent range counts: 482/349/481/479/481/349/481/490 fast (control 479, full 305).
 // NOT kept: one-use captures without a match; original body restored, frame/homes remain.
+// B383: Native real views of the existing input/output gain fields, each/both,
+// each with complete request storage, then both with per-pass counts and either
+// request extent: 479/477/477/477/477/477/335/335 fast (control 479, full 305).
+// NOT kept: no exact representation match; original fields and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

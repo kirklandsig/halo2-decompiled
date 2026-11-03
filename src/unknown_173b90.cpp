@@ -643,6 +643,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // Round 343: Native property-bit views, alpha/color/scale subsets 1..7 with Boolean conversion
 // 124/224/229/42/124/224/229; all bits tested directly 199. Original real flag storage,
 // all six observations, shared rotations and complete body restored; offset/default/reload and row-i schedule remain.
+// AC495: Actual cache identity field system/location/particle pointer types, seven subsets,
+// then all with immutable emitter-row receiver: eight at 42, 1130 bytes. Original field types,
+// declarations and complete body restored; offset/default/reload and row-i residence remain.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
@@ -1637,6 +1640,11 @@ bool function_17afd0(long effect_index, long value);
 // Round 543: Early visibility result/complete eligibility/nested admission/negative rejection,
 // original then shifted-word flag: 73/238/73/73/113/244/113/113. Original two-use effect graph
 // and complete executable body restored; flag width and availability/view carriers remain.
+// Round 549: Same-view tests owner/available/equal, equal/owner/available,
+// equal/available/owner, available/owner/equal, available/equal/owner on the
+// two-use effect graph: 72/73/72/132/132; shifted-word flag with the first/fourth/fifth
+// orders 114/106/106. Last two recover retail length and entry through +0xb2.
+// NOT kept: one-point best or regression; original body restored.
 // F346: On the retained two-use effect graph, last-consumer scopes for owner, availability,
 // both and complete effect/classification, each original/shifted-word eligibility:
 // 73/113/73/113/73/113/73/113. Original complete executable body restored.

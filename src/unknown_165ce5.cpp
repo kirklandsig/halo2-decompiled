@@ -1674,6 +1674,9 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // before the unit 220; active preset false then `!155760 && b6780` in an if 383 (2197 bytes, aligned 116 -> 112).
 // Retail spills `active` to [ebp-0x14] (false store before the unit test) and keeps the look values in their own
 // -0x2c/-0x28 slots; ours reuses the spring slots.
+// AC495: Post-loop user-activation result from both existing weapon-bit tests, bool/byte/short/long
+// at evaluation or with admission-owned uninitialized storage: eight at 220 fast (control 220, full 218).
+// Original compound test, declarations and complete body restored; frame, unit/mode and look homes remain.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

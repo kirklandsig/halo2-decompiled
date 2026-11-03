@@ -1063,6 +1063,9 @@ bool __stdcall function_2399da(long controller_index)
 // DH306: escaped flags/title/Boolean-output defaults, seven subsets
 // 131/90/136/131/140/136/140; all at entry 165. Original body restored;
 // identity/rank register ownership and the extra removal move remain.
+// Round 199 (fast): the task index as DWORD 90; the removal test as a named `bool remove` 90; the over-rank test as
+// `!(rank > own_rank)` 90; the identity test split into a NULL test and a 64-bit test, each with its own 0x5c
+// denial 90 (merged back); `if (may_change && !have_member) copy; else if (!have_member) deny` 122 (438 bytes).
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {
