@@ -386,6 +386,9 @@ extern byte g_51ec11;
 // Round 380: Final timer-policy truth, bool/byte/short/long suppressed then enabled
 // complement: 232/232/232/232/232/232/232/232. Zero/side/up allocation does not recover; original final
 // guard, publications, decrement and complete body restored.
+// DH309: Existing shared normalizer magnitude/zero/separate/complete result ownership,
+// failure/success polarity and failure early return: 91/276/89/89/335/274/274/89.
+// Original shared body restored; zero/side normalization and up/roll allocation remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

@@ -1036,6 +1036,9 @@ void function_1d1540(s_havok_component *component);
 // Round 380: Actual transformed-frame predicate, bool/byte/short/long relative truth
 // then world complement: 65/65/65/65/80/80/80/80. Frame/copy and stacked index/component remain;
 // original flag observation, native slot, fresh refetch and complete body restored.
+// DH309: Actual whole-array data receiver as pointer/field reference, original/aligned copy,
+// with inverse at use/entry: 86/86/85/85/87/87/88/88. Original element receiver restored;
+// frame, input copy and component/index transport remain.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
