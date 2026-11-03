@@ -497,6 +497,10 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // AC483: Only items/data cursor observed ordinarily with signed-byte/short/word/int64 ordinals:
 // 209/209/208/193/208/193/205/220. Original helper, both inherited local-slot observations and
 // complete body restored; validity home, cursor carriers and loop-entry reload still differ.
+// Cursor-derived progress: items displacement guarded/pretested 206/201; data displacement 193/210;
+// items live endpoint 210/212; data live endpoint 203/205. Validity/cursor homes and loop-entry reload
+// remain; original body restored.
+// Unguarded live endpoints 207/150/206/201 NOT kept: mutable count can be negative.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

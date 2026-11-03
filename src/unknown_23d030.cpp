@@ -370,6 +370,9 @@ extern byte g_51ec11;
 // AC483: Existing planar side normalizer with planar/spatial fallback and original/setter/staged/direct
 // up publication: 268/285/282/282/229/261/127/259. The planar length tree is exact-match-only;
 // no match, so original side/normalization/rotation and complete body restored. Zero and up/roll allocation remain.
+// Actual side/roll-coefficient/movement phase endings and their pairs/all 89/89/89/89/89/89/89; all
+// with transformed-displacement phase ending 89. Zero/normalization/up homes remain; original body
+// restored.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
