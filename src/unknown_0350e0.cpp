@@ -2098,6 +2098,9 @@ typedef char assert_direction_list_size[(sizeof(s_direction_list) == 0x84) ? 1 :
 // All tie; complete original drawing objects, helper calls and body restored. Frame
 // 0x80 versus 0xc0 and independent angle/vector-copy/argument homes remain.
 // M323: Native draw-position/facing/up component loops, seven subsets 193/193/193/390/390/390/390; all with short ordinal 323. Original body and producers restored; frame and angle/vector-copy homes remain.
+// M326: Complete left-cross/rotation/draw-position accumulations, subsets 1/2/4/3/5/6/7,
+// 178/174/177/174/178/174/174; all with earlier bare output declarations 174. NOT kept:
+// three-point gains above 30; frame/copy homes remain. Complete original body restored at 177.
 // @retail 0x3eec0
 void function_3eec0()
 {
@@ -3519,12 +3522,16 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
         y = matrix->scale * y;
         z = matrix->scale * z;
     }
-    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x + origin->x;
-    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y + origin->y;
-    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z + origin->z + 0.001f;
+    corner->x = matrix->forward.i * x + matrix->up.i * z + matrix->left.i * y + matrix->position.x;
+    corner->y = matrix->up.j * z + matrix->left.j * y + matrix->forward.j * x + matrix->position.y;
+    corner->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
+    vector3f_add((vector3f const *)corner, (vector3f const *)origin, (vector3f *)corner);
+    corner->z += 0.001f;
 }
 
-// score 394 (was 394): the four corners are written out (retail has four copies of the scale
+// score 231 (was 394): the corner helper adds the origin as one complete vector sum after the transform;
+// 1820 bytes (retail 1819), first difference the frame size at +0x2.
+// Earlier 394: the four corners are written out (retail has four copies of the scale
 // test and calls End out of line; a counted loop, even one the compiler unrolls, scores 465-496). Retail
 // 0x32d62-0x333f1 agrees with this source: object index masked 0xffff, opacity > 0.05 test, collision call
 // (flags 0x4800001, point object+0x30, vector g_4687bc, NONE, NONE, result), radius = object+0x3c * 0.35, matrix
@@ -3552,6 +3559,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // the existing setter 402; both 402; geometry workspace role names 388; names/aggregate offset 388;
 // names/point staging 402; all three 402; all three with one consistent scale observation 402. Six-point
 // frame lead rejected; original helper and complete body restored. Earlier scores were 460 and 952.
+// F341: Native scaled-input point 523/525; uniform rotation subtotals 412/404;
+// uniform translated subtotals 412/390 (without/with native colour). Existing
+// complete origin sum 231 (kept), with native colour 225 (gain 6, under the bar).
+// On that producer, three-use negative radius 398, with native colour 379 (frame 0xe0
+// and retail length 1819, but worse than 231; not kept). Full scalar role names 231/225.
+// Offset inputs stay staged before stores; the sum accepts its first input in
+// place. Corner, offset and origin are distinct at all four calls. Shared helpers unchanged.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
@@ -4543,6 +4557,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // Y538: Existing selected-bit admission with completed enabled result before depth in
 // byte/bool/short/long 257/235/240/212; after depth 234/262/198/239. Every shared user
 // regresses. Original helper/caller restored; late pass bytes, dead mode loads and clear convention remain.
+// F340: Complementary rejection state in bool/byte/short/long, sequential selected-bit
+// then gate versus complete admission: 218/218/228/231/210/210/242/247.
+// Every shared user regresses; original helper and complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {

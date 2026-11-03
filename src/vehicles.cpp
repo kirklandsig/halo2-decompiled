@@ -1622,6 +1622,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // 361, with both/first/second getters 365/361/365; reversed paired dots with both getters
 // 365. Original body restored; header SIB, join reloads and cross/dot ranks remain.
 // J239: actual table-base capture 521; separate refresh/publication ordinals 17; bounded short ordinal 384; base with separate ordinals 521; base with short ordinal 506; separate short ordinals 384; all three 506; sequential animation-ID output cursor 17; coordinated kind-getter inline declarations 13. Original body and declarations restored.
+// Round 92: raw byte-addressed first/second/both headers 13/13/13; refresh scope 13; const vehicle/graph/state
+// pointers 13; value-initialized cross output 13; three-statement forward sum 11, with reversed final i product 11;
+// k+j initializer plus i 15. NOT kept: the two-point staged gains are below the retention threshold. Original body
+// restored; header SIB, join reloads, shared cross loads and the final forward i load remain.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
