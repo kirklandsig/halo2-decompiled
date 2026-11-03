@@ -302,6 +302,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // basis sums (0x292ca9; our copy goes through integer registers); body restored at 618. That local declared before local_17 604; read before the arg_6 test 601; as three real
 // locals 635 (2808 bytes, aligned 461); the private cross with retail's product operand order 604 (identical code);
 // the hit flags as an aggregate initializer 605.
+// DH320: Complete immutable computed scalars in cross/root/rotation producer subsets,
+// then all with immutable range/ray inputs: 618/618/618/618/618/618/618/618. Original
+// executable body and helpers restored; success/input/minimum/hit homes remain.
 // Round 49 (m3 lane 15, fast control 618): ray lengths as `range + half_width` 618 (same code); the minimum as
 // `local_4 = local_19 < local_4 ? local_19 : local_4` 618; hit flag stored before the distance 619; the clamp test
 // as `local_19 / local_6 < 0.1f` 618; success cleared before the clamped distance 618. Retail reloads and negates the

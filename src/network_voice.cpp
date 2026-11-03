@@ -1531,6 +1531,9 @@ void voice_queue_compact(s_voice_queue *queue, word mask)
 // re-measured on the typed body, 127 again (449 bytes; the bit goes to memory, EBX takes it); the named bit at the header
 // and clear uses 153 (433 bytes, 0x56380 13); `11 + (include_mask ? sizeof(word) : 0)` 137; the loop's player test as an
 // early `continue` 134 (same code). Original body restored.
+// Round 207 (lane 3, fast with 0x56380): the clamp written inline in the test, no local, 135; a short
+// clamped value 180 (0x56380 2); entry size as `11` plus `sizeof(word)` under include_mask 191 (486
+// bytes); a long player bit 134 (same code); `entry_size * written + 2` 134 (same code).
 // @retail 0x55c40
 long function_55c40(s_voice_queue *queue, byte *cursor, long player, byte *output, long capacity, bool include_mask)
 {
@@ -3283,6 +3286,9 @@ struct s_voice_route_choice
 // the loop 381 at retail's 1287 bytes (frame 0x58: the bit gets a stack home, retail hoists it only in the unrolled
 // copy, into EBP); XUID, bit and per-choice pointer 382 (1290); XUID, bit and if/else-if radio 434 (1242); all four
 // 409 (1258); bit and pointer without XUID 394 (1298).
+// Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
+// actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
+// byte agreement; original independent decisions and complete body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3593,6 +3599,12 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor; 164) the member mask declared at function scope 164; a named word member bit used for the test and the
 // clear 168 (471 bytes); the route zeroed as `= { 0 }` 164; the size debited right after the size test 169; on the
 // original form the mask at function scope 139 (same code). Retail's EBP channel / spilled member still not reached.
+// Y556: Payload-relative consumed result, long/int/dword/short, original/independent
+// packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
+// original header-inclusive result, live counts and complete body restored.
+// M344: Relay formal char/signed-char/byte/short/word/int/long/dword
+// 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
+// wider forms regress and lose the parser. Original bool contract/body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
