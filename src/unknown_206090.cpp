@@ -336,6 +336,15 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F347: Existing shared normalizer at direction/friction/tangent, masks 1/2/4/3/5/6/7, then
 // all with the existing squared-length producer: 1385/1387/1414/1409/1421/1414/1457/1488. NOT kept: no match;
 // original floating trees, all captured inputs, private kernels and complete body restored.
+// Round 201 (fast; aligned = difflib count): the five 12-byte magnitude copies are the frame excess
+// (a compile-only frame probe lists one copy per inlined magnitude). The two buffers declared at the top
+// 1355 (same code); the magnitude read through its pointer 1608 (6022 bytes, frame 0x590, aligned 968
+// against 969); the contact element as a pointer local throughout the contact loop 1401 (frame 0x5c8,
+// aligned 962); both together give retail's exact frame 0x58c and first difference +0x4e (local_4/local_5
+// and the component homes) but 1689 (5942 bytes, aligned 933): our build still biases the element
+// pointers (edi - 0x50) where retail keeps the element base and `lea ebp, [edi + 0xa0]`, and the first
+// loop's per-element pointer starts at +0xe4 where retail's starts at +0xe0; on that form a single-exit
+// normalizer 1689 (same code). Original body restored.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

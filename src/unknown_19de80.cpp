@@ -368,6 +368,12 @@ static inline bool teams_enabled_19e1c0()
 // inherited/ordinary result 390/691/390/691/390/691/390/691. Original lifetimes restored.
 // Round 393: Length/copy/comparison/format noinline declarations with inherited result 390/390/390/390;
 // ordinary result 691/691/691/691. All declarations and original case bodies restored.
+// Round 201 (fast): plain result re-measured 691 (1170 bytes); with the event's team field read at both
+// uses instead of the team local 661 (1202 bytes; the event now in EBX as retail, but token_length in EBP
+// and token in EDI where retail keeps remaining in EBP and reloads token); that with the clamp as
+// `remaining <= result` 661; that with the side-time failure as `result = remaining` 701; the volatile
+// result with the field reads 394. Retail's first case stores text[0] from SI (the zero result) before
+// its `lea esi`, so its two player cases differ and are not merged. Team locals and result restored.
 // Round 395: consumed name capacity with result after/before copy, result-fed capacity, and direct capacity exits
 // 618/649/519/621; ordinary result with those four capacity lifetimes 692/692/692/692. All restored.
 // Round 409: native cause/effect/both team-field addresses 390/390/394; formatter outcomes 414;

@@ -808,6 +808,10 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // 749/726/745/768/731/739/743/762. Original complete body restored; success/radius/pathfinding and workspace homes remain.
 // AC475: Native outgoing mask byte/signed-byte/word/dword with long success
 // 774/774/675/675; with Boolean success 775/775/754/754. Original mask, result and full body restored.
+// Round 200 (m3 lane 3, fast control 675): first_output zeroed at the top after flags 700, between actor
+// and flags 701, with bool result 773; actor through actor_get with the typed field 675 (same code);
+// radius ternary with early first_output 676, plus pathfinding read after the radius (retail's entry
+// order) 672, plus bool result 745 (2968 bytes: retail's NONE in EBX and result byte). All restored.
 // B384: Single actor-action predicate bool/byte/short/long, original/native shifted global
 // bit consumer: 773/773/783/782/773/773/783/782. NOT kept: new predicate storage is established inside a test
 // without an exact match. Original actor observations, bit consumer and full body restored.
