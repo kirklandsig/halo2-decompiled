@@ -3286,6 +3286,9 @@ struct s_voice_route_choice
 // the loop 381 at retail's 1287 bytes (frame 0x58: the bit gets a stack home, retail hoists it only in the unrolled
 // copy, into EBP); XUID, bit and per-choice pointer 382 (1290); XUID, bit and if/else-if radio 434 (1242); all four
 // 409 (1258); bit and pointer without XUID 394 (1298).
+// Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
+// actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
+// byte agreement; original independent decisions and complete body restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3596,6 +3599,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // cursor; 164) the member mask declared at function scope 164; a named word member bit used for the test and the
 // clear 168 (471 bytes); the route zeroed as `= { 0 }` 164; the size debited right after the size test 169; on the
 // original form the mask at function scope 139 (same code). Retail's EBP channel / spilled member still not reached.
+// Y556: Payload-relative consumed result, long/int/dword/short, original/independent
+// packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
+// original header-inclusive result, live counts and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {
