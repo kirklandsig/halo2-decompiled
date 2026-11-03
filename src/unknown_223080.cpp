@@ -150,6 +150,8 @@ void function_3f450(long arg_0);
 // only; field-by-field 146; arm swap 122 (earlier rounds).
 // Round 113: shared extent/dimensions/position pointers 2/2/2; all three pointers 2;
 // shared count/mode/both 2/2/2; early extent through three calls 2. Call tuples unchanged.
+// m3 lane 9 r76 (fast): grid locals declared local_2, local_1, local_3 2; local_0 declared in the if block 2; the
+// menu-count test as `> 0` first 31 (445 B); local_4 set in an if/else 126 (447 B); the header stores reversed 4.
 // @retail 0x223080
 void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 	long arg_4, long arg_5, s_223081 const *arg_6)

@@ -670,6 +670,9 @@ struct s_item_collision_bsp
 // query guards: 293/293/288/291/293/293/288/291. All regress and grow beyond retail length.
 // Original one-test contact graph, observations, marker, plane/spin producers and full body
 // restored; protected plane-index width, plane joins and pending spin-k homes remain.
+// DH314: Plain two-component axial spin loops, long/int/short/unsigned-long ordinals:
+// 211/211/288/211; both axial/fallback loops: 211/211/296/211. Short loops grow;
+// all controls unchanged. Original body, pending-k join and protected plane contract restored.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1215,6 +1218,10 @@ struct s_item_flags_view_10b850
 // Round 541: Native flow-cross result through the shared scalar setter, first/second reused scalar
 // inputs and ordinary inline boundary, masks 0..7: 813/821/821/887/969/969/969/932. Both
 // scalar inputs recover frame 0x148 but regress; original helper, operands and body restored.
+// Y551: Complete first-use contact-flag value in byte/char/word/long storage
+// 887/887/873/872; with native contact-kind ownership 881/881/836/835. Frame
+// falls to 0x148 but scores regress; all snapshots, original field reads, helpers
+// and body restored. Entry Boolean and collision/carrier/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1630,6 +1637,15 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N337: Late selected-parent presence/missing predicates, bool/byte/short/long,
 // 146/146/151/150 in each polarity. NOT kept: conditional predicates remain unmatched;
 // original parent handle, return byte, release helper and complete body restored.
+// N339: Staged release rate-to-scale accumulator with native aggregate/setter/array/
+// copied-vector outputs, receiver before then between factors:
+// 140/140/171/237/140/140/140/237. Original helper and full body restored.
+// NOT kept: no gain; copied-value and input-order forms remain unmatched.
+// Return byte, release RMW/tail and event/location homes remain.
+// N341: genuine source-point/matrix input pointers and native node byte, seven independent/joint
+// input graphs 140/140/140/140/140/140/141; complete matrix-before-address graph 141.
+// NOT kept: all one-use input carriers remain unmatched. Original helper, two-use spin,
+// paired point setters and body restored; return-byte, contact/event and release homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

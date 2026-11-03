@@ -1764,6 +1764,12 @@ void function_b7360(long object_index);
 // F327: Complete single-exit zero/two storage before/after acquisitions,
 // short/long/byte/dword 457/457/543/457 in either position. Original callback
 // restored; actor/output entry carriers and the 24-byte deficit remain.
+// Round 200 (m3 lane 3, fast control 301): fully single-exit form (every `return 0` as `success = true;
+// break;`, every `return 2` as `break;`, the pre-switch exit the one goto to the only return, if/else
+// short result) 467 (1852 bytes: retail's `je fail`/return-0 layout and arg_0 in EBP, but `xor eax, eax`
+// for `xor ax, ax` and the cs index keeps ESI through the reference CSE across 0x25ab50); ending
+// `return success ? 0 : 2;` 639 (1696); actor first 466; empty cases grouped 466; `short result = 2`
+// then `if (success) result = 0;` 640 (1692). All restored.
 // B384: Native packed-reference low/high/both indices at the initial point only,
 // recording point only, both complete and crossed consumers: 464/459/464/295/290/307/479/474.
 // NOT kept: the 290 recording high-word form uses narrower loads than retail and
@@ -2285,6 +2291,11 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 365: Native command target/range/readiness fields, subsets 1-7, and all with the
 // existing actor perception view: 485 each (fast control 485; full 469). Original complete
 // record layout, observations and executable body restored; actor/state and point homes remain.
+// Round 200 (m3 lane 3): case-1 test as `if (d > 1.f) local_3 = false;` 610 plain (retail's
+// comiss xmm0, [c]/jbe and retail length 2396, but the positional compare shifts a line); case-5
+// ternary as if/else 499 fast (loses the movsx store); case 7/8 arm last (retail lays it before the
+// shared sete tail) 492; that with the case-1 test 613; dot terms `x*i + j*y` 484, `i*x + j*y` 484
+// (fast control 485). All restored.
 // B384: Complete branch-produced spatial/countdown/scalar completion values, subsets 1-7,
 // then all with canonical Boolean completion: 469/665/480/665/480/688/688/688. Original value producers,
 // cases, iterator, facing copy and complete body restored; actor/state and first point homes remain.

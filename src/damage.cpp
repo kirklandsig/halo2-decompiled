@@ -722,6 +722,9 @@ void function_d6a70(long object_index)
 // P282: Original-object/ownership-input identities and accumulator declared before acquisition,
 // subsets 1/2/4/3/5/6/7: 159 each; all with region-receiver identity 159. Original names/declarations
 // restored; frame 0x4c/0x50 and pool/object/index/owner homes remain.
+// B386: Read-only original-object/child and immutable parent bindings, seven subsets, then immutable region
+// receiver: eight 159s. Original bindings/body restored; frame 0x4c/0x50 and early pool/original-object/index
+// homes remain.
 // @retail 0xd6800
 void function_d6800(long object_index, s_damage_owner const *owner, bool notify_parent, bool unknown)
 {
@@ -2464,6 +2467,8 @@ struct s_unit_event
 // M330: Independent object/region/permutation declaration ranks, six orders, then
 // both edge orders with uninitialized datum at entry: eight 472s. All producer
 // assignments stayed fixed; original declarations and body restored.
+// B386: Complete existing dispatcher orders 01234/02143/04213/01324/03124/02431/04231/03412:
+// 515/513/474/522/521/473/475/515. Original cases and body restored; permutation ingress remains.
 // @retail 0xda110
 void __stdcall function_da110(long permutation_index, s_damage_info *info, long object_index, s_damage_owner const *owner,
 	long region_index, s_damage_region_accumulator *accumulator)
@@ -4660,9 +4665,15 @@ struct s_damage_object_creation
 // header index, seven subsets then unsigned index: 174 each (808/808). All tie;
 // original data layouts, indices, observations and complete body restored.
 // Native handle/offset and detached-mask homes remain unresolved.
+// AC499: Complete scaled header-offset ownership / native definition fields / native basis fields,
+// seven subsets then split offset declaration: 174/174/174/174/174/174/174/174 (808/808).
+// Original data layouts, observations and complete body restored; handle/offset and node homes remain.
 // N336: Combined/separate admission returns, section/tag cleanup joins and detach continues
 // 174 each; bounded-search result and direct selected-node scan 217/217 (811/808 bytes);
 // piece-failure continues 174. Original complete body restored; handle/offset and later homes remain.
+// N338: Actual object-header/tag/component lookup-source receivers, seven subsets and
+// table-first acquisition, 174 each at 808/808 bytes. NOT kept: one-use receiver forms
+// require a match. Original complete body restored; native handle/offset and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {
