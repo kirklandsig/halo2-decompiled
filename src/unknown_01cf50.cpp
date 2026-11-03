@@ -5041,6 +5041,10 @@ void function_2d140(long tag, real const *weights, long columns, long rows, s_fi
 // score 62 (was 62): the second argument arrives in eax where retail takes it in ecx, and the
 // arguments behind it sit one stack slot lower than retail's; the callers of this function are
 // in other files, so the calling convention cannot be changed from here.
+// Lane 18 r37 (fast): without the `(void)&` reads (one or both) 62 (same code); `first * 10` written in
+// place, or its local named just before the entry, 91 (239 B, ret 8: first now arrives in EBX and third in
+// EAX, where retail takes first in ECX, moved to ESI, and second in EAX; retail keeps the tag-table base
+// in EBX and reloads it after the 0x137bd0 call). Restored.
 // @retail 0x4b2d0
 void function_4b2d0(long tag, long first, long second, long third, long fourth)
 {

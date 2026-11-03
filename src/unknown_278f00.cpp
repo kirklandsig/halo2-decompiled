@@ -255,6 +255,11 @@ bool function_a7670(long object_index);
 // DH310: Existing shared property query owns long/native-value/property-pointer results with break/single exit,
 // 277/277/277/277/276/276; completed ordinal 267; native cursor/common result 269. All regress and grow;
 // complete shared header and body restored. Selector/list/count homes and admission BL remain.
+// Lane 18 r37 (fast): second scan sets the first scan's found flag, `if (!found)` 96 (match-only, restored);
+// on it: plain `for` island index 233 (957 B); index stepped back at the flagged block's end 261 (958 B);
+// renamed island index (two names) 96/96; index advanced only on unflagged islands 98; `if (found)
+// continue;` 96. Retail keeps the index in ECX and the list in EDX on the unflagged path, storing the
+// index only after `dec` on the flagged one; ours stores it after the `inc` and keeps the list in EAX.
 // @retail 0x278f00
 void function_278f00()
 {
