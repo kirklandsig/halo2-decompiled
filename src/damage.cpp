@@ -978,6 +978,9 @@ PRIVATE inline long damage_object_root(long object_index)
 // P274: Object-array cursor/native short count/shared sequential verifier receiver,
 // subsets 1/2/4/3/5/6/7: 211/240/206/231/211/240/231; all with entry cursor declaration 231.
 // Original body restored; frame 0x1a4 versus 0x1b4 and first verifier expansion remain.
+// DH305: Player-policy admission result before damage, bool/byte/long/dword, rejection/positive
+// admission: 206/206/206/206/206/206/206/206. NOT kept: a predicate set in the test and consumed later requires
+// byte equality. Copy extent 0x88 agrees; original body restored, with frame gap and first verifier expansion.
 // @retail 0xd6c80
 long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 {
@@ -1085,6 +1088,9 @@ long __stdcall function_d6c80(s_type_1e6529 *data, long ignore_object_index)
 // with role names/long team/impulse name/all roles 391/395/391/395; entry output lifetimes 391.
 // Long team alone 327; admitted definition lifetime 305; unit-vector setter 297; both 305.
 // Original body restored; point/normal/center homes, cone/node registers and unit output homes remain.
+// DH302: On direct geometry fields, interleaved normal updates / complete far vector setter /
+// late unit-direction setter subsets 1/2/4/3/5/6/7 all 286; all with node-backed-only
+// point setter 300. Original body restored; point homes and cone/node allocation remain.
 // AC483: Native selected displacement, two workspace names, producer/entry storage and record/setter
 // publication: 357/364/357/364/357/364/357/364. Node-backed-only point setter with short/long team
 // and producer/entry center: 297/300/297/300; complete direction setters repeat 297/300/297/300.
@@ -1551,6 +1557,9 @@ void function_dbfb0(long object_index, s_damage_owner const *owner, bool a, bool
 // N324: Separate null/player rejection, scan-scoped iterator and result-admitted recursive calls, seven
 // subsets then result-first initialization 71/71/71/118/118/118/118/120. Original complete body restored;
 // initializer receiver and loop latch remain.
+// DH305: Per-visit result refinement on the retained recursive-OR graph, nested admission,
+// short rejection, short-predicate refinement and null/player refinement, bool/byte:
+// 58/58/78/75/56/56/78/75. NOT kept: result-tested predicates require an exact match; initializer receiver and latch remain.
 // @retail 0xdb110
 bool __stdcall function_db110(long object_index, bool players_only, bool walk_siblings)
 {
@@ -4585,6 +4594,9 @@ struct s_damage_object_creation
 // N324: Complete section/connectivity/selection shift parts, seven subsets then both basis vectors copied by
 // library 242/188/242/188/242/188/242/242. Original expressions/copies and body restored; offset/definition
 // and detached/node homes remain.
+// DH305: Twice-consumed complemented piece mask, entry/component/detach/piece declaration
+// scopes, dword/long: 188/188/188/188/188/188/188/188. All canonicalize; original body restored;
+// offset/definition and detached/node homes remain.
 // @retail 0xdbc80
 void function_dbc80(long object_index, short section_mask_a, short section_mask_b)
 {

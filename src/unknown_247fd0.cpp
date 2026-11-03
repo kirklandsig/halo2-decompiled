@@ -309,6 +309,9 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // DL246: coherent evaluator/spawn/list-link inline subsets 1-7 give 55 each;
 // all with the reconciled current-particle field gives 133. List-link inline loses 178eb0 (41).
 // Every declaration and body restored; folded comparison and evaluator/child scratch homes remain.
+// DH303: Native cached-record field with common pointer/flags/both/tested-result
+// completions 131/127/128/124/131/127/128/124. All regress; original
+// body and field declaration restored; folded compare and child scratch homes remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)

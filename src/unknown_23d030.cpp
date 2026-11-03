@@ -367,6 +367,9 @@ extern byte g_51ec11;
 // the target and the matched second user. Original helper restored; zero, normalization and up/roll
 // allocation remain. Scores 291/128/280/304/101/307/295/345.
 // Original executable source restored.
+// DH302: Roll cosine at the unscaled projection / projection-and-cross boundary, then both
+// coefficients at those boundaries: 92/102/89/151; bare entry declarations repeat 92/102/89/151.
+// The 92/102 forms reach 1326 bytes; all tie or regress. Original coefficient phases and body restored.
 // AC483: Existing planar side normalizer with planar/spatial fallback and original/setter/staged/direct
 // up publication: 268/285/282/282/229/261/127/259. The planar length tree is exact-match-only;
 // no match, so original side/normalization/rotation and complete body restored. Zero and up/roll allocation remain.

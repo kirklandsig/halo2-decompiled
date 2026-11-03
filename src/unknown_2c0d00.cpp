@@ -1622,6 +1622,9 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 529: successive source/expanded-radius assignments crossed with candidate-direction,
 // circle-center and tangent-point workspace identities: 420/420/420/420/420/420/420/420.
 // Frame agrees; radius staging folds and zero/metadata homes remain. Original complete body restored.
+// DH302: Actual typed-step scan cursor with short/short, long/short, short/long, long/long
+// scan/candidate ordinals 477/455/496/434; also walking the reverse candidates from one-past
+// 485/460/488/458. Original indexed traversals restored; radius staging and zero/metadata homes remain.
 // Round 371: Native selected successor/type/link widths, subsets 1/2/4/3/5/6/7,
 // 455/424/463/462/456/424/458; all with full output count 503. Original short
 // carriers and complete pointer body restored; radius/zero/metadata homes remain.

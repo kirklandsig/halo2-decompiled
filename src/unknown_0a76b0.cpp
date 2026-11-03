@@ -1439,6 +1439,9 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // Original indexed scan and receiver ownership restored; entry pool/hand and second load remain.
 // Round 368: Reused normalized primary-hand long/short/dword/word, before companion then unit lookup:
 // 95/96/95/96/94/95/94/95; original complete body restored.
+// DH302: Slot/weapon/both early failure guards and one complete exit 95/95/106/95;
+// each retaining the companion datum for both predicates 200/200/212/200. Original success
+// scopes and predicate lifetime restored; early table and second unit load remain.
 // AC483: Actual-array/direct-hand/branch-event graph with long/dword/word/byte hand,
 // each long/bool companion result: 198/200/198/200/95/200/184/197. Original short hand,
 // long result and complete body restored; second entry lookup and hand spill remain.
