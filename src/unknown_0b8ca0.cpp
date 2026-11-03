@@ -1889,6 +1889,10 @@ transform4x3f *function_b8bd0(long object_index, short node_index);
 // 284/285/293/288/293; yxz/xzy/zyx with native activity 282/283/294. The shared sibling
 // regresses 62/127/125/50/127/62/127/125; original helper and full body restored.
 // M305: Terminal missing-component negative guard with shared-exit/bit-vector/ordinary-node subsets 285/285/291/291/285/285/291/291.
+// Lane 16 r80 (fast): BLOCKED-BY 0xb8bd0 (inlined by retail, /Ob1 file) as before. At +0x76 retail builds the header
+// from the fresh data load it uses for the parent; the header with the index recomputed 303; header declared before
+// the parent 285 (identical); the parent read through `pool->data` 298 (1240 bytes); header and saved activity ahead of
+// the parent 294 (1240 bytes); `node` read at each use with no node_index local 295 (1249 bytes). Restored.
 // @retail 0xb93b0
 void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {

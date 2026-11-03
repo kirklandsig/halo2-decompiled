@@ -833,6 +833,9 @@ __forceinline void job_thread_buffer_get(s_async_task *task, byte **buffer, dwor
 // Round 333: Shared successful header/body progress producer, dword/real numerator,
 // named/direct total conversion and early/late return storage: 156/156/214/214/114/114/156/156.
 // Original progress stores, return paths and entire body restored; fresh total and size/seek carriers remain.
+// Lane 16 r80 (fast; 0x2adb10 102 throughout): permuter 600 s, 51 tries, best 34; byte count declared in each
+// case 161 (689 bytes); computed/stored signature declarations swapped 34; header test `header_size == bytes` 36;
+// total grouped `header + (body + sizeof)` 34; signature position declared after the two signatures 34. Restored.
 // @retail 0x2ad7c0
 PRIVATE long __stdcall signed_file_read_work(s_async_task *task, void *parameters_view, long parameters_size)
 {
@@ -1147,6 +1150,9 @@ struct s_signed_file_write_parameters
 // DL250: Native opened-file/valid-extent/signature-start admission results, subsets 1..7 then
 // callback inline metadata: 102/102/102/102/102/102/102/102.
 // Original complete source restored; no eligible gain.
+// Lane 16 r80 (fast; 0x2ad7c0 34 throughout): `success` declared ahead of the header getter 121; the header loop
+// tested `success && offset < header_size` 288 (920 bytes); buffer/size at the header case's top 102; the loop's byte
+// count declared outside the loop 102; the extend test `bytes == size` 102. Restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {
