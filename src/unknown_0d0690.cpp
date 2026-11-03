@@ -1488,6 +1488,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // final ambient clamp 556. Original complete body and all helper/caller contracts restored.
 // M321: Complete input/normal/limited squared-magnitude stages, masks 1/2/4/3/5/6/7, then complete products
 // 529/529/530/529/530/530/530/574. Original complete body restored; frame 0x2c versus 0x28, selection spill and block/query homes remain.
+// P286: Complete cosine/axis/subtraction vector phases with existing setter/add-scaled
+// subsets 1/2/4/3/5/6/7 554/553/554/554/555/554/555; complete initial-scale helper 554.
+// All restored; frame/selection/query homes remain, both shared-user controls unchanged.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
