@@ -1816,6 +1816,10 @@ void function_b7360(long object_index);
 // B430: Selection-owned common validity publication, bool/byte/short/long, default
 // invalid/admitted-arm production 358/358/487/487; default valid/explicit rejection
 // 355/355/345/357. NOT kept: no byte match; original stores, result and callback restored.
+// Y590: Standard bounded byte-copy publications at initial/recording/current-state
+// point records, seven subsets then complete backward copy: 454/309/309/481/472/319/489/489.
+// NOT kept: native ownership is unrecovered and all extents shrink away from 1848;
+// original complete callback and transfers restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

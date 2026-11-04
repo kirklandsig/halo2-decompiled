@@ -462,6 +462,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // first and direct/native output: 693/691/693/691/693/691/693/691; forced expansion of
 // the four direct outputs 525/527/525/527. NOT kept: helper outlines or frame/length
 // regress. Original alias-safe helper/body restored; inverse homes and X/Z spill remain.
+// Y590: Standard binary displacement producers at initial/direction-first/reverse/both/
+// direction-first both and seeded initial/reverse/both: 270/270/280/314/293/294/318/360.
+// NOT kept: allocation or extent regresses; original complete helper/body restored.
+// Native inverse homes and second-transform X/Z spill remain.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {

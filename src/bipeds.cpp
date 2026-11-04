@@ -1020,6 +1020,9 @@ extern long *g_51e9cc;
 // M372: Actual contact point/normal/final-position CRT memcpy transfers, seven site
 // subsets: 42 each; complete memmove 108 at 1462/1481 bytes. Original aggregate
 // transfers and complete body restored; lookup receiver and crouch/contact schedules remain.
+// Y590: Complete switch-default discovery ownership, found/missing channels in
+// bool/byte/short/long storage: 42 each. NOT kept: no receiver-retention or
+// contact-schedule gain; original complete body restored.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -3271,6 +3274,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// Y590: Actual wall-projection/axial-scalar/matrix-conversion last-use scopes,
+// seven subsets then all with planar temporary termination: 600 each (fast control
+// 600, full 561). NOT kept: no byte change; complete original body restored.
+// Changed-result/flight homes and vector scheduling remain.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {
