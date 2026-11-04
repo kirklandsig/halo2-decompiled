@@ -334,6 +334,9 @@ bool function_a7670(long object_index);
 // DH360: Complete first/deferred initialized-prefix membership reductions in bool/byte/short/long,
 // 235/235/265/264/278/278/320/317. NOT kept: regressions; retail stops at the first match.
 // Original eager stopping searches, live bounds, retries, releases and complete body restored.
+// DH362: Root activation result bool/byte/short/long, positive then complementary,
+// eight at 153. NOT kept: native selector/island/count and admission homes do not move;
+// original short-circuit guard, eager searches, retry/release graph and full body restored.
 // @retail 0x278f00
 void function_278f00()
 {

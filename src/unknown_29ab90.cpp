@@ -348,6 +348,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // DH360: Explicit epsilon-test truth in existing magnitude/planar helpers, bool/byte/short/long,
 // eight at 345. NOT kept: unmatched one-use predicates do not recover the 0x64 frame or separate
 // magnitude/query homes; original helpers, all native copies and complete body restored.
+// DH362: Magnitude output-only/numeric-plus-output, pointer/reference, common/complete-arm
+// publication on the retained native-input/result-join graph: eight at 345. NOT kept: frame
+// 0x58 and query/magnitude overlap remain; original helper contract and complete body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

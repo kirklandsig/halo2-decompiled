@@ -297,6 +297,9 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH360: Existing native axis/direction/point-output coordinate-array contracts, seven subsets
 // and complete interfaces with immutable angle: eight at 173. NOT kept: unmatched interface casts;
 // original vector contracts, consumed-axis stages, ordinary pooled reads and full body restored.
+// DH362: Existing coordinate-union access at heading/rotation/request boundaries,
+// seven subsets 173 each; all with native fallback-point copy loop 209. NOT kept: no
+// native frame/cross-home gain; original helpers, draws, ordinary pooled reads and body restored.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

@@ -343,6 +343,9 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH360: Collision record plus material-reset lifetime at success/object/settings/input/minimum/clearance/guard/basis boundaries,
 // eight forms 647/647/646/632/632/632/631/628. NOT kept: all regress and shrink to 2815/2886;
 // original late reset, complete frame, helper inputs and in-place snapshots restored.
+// DH362: Twice-used basis mode captured at entry/acquisitions/input/active boundaries,
+// positive bool 626/626/626/626; complementary bool 723/717/702/699. NOT kept: all regress;
+// original repeated mode tests, helpers, in-place snapshots and complete body restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)
