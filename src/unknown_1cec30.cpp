@@ -1066,6 +1066,10 @@ void function_1d1540(s_havok_component *component);
 // Y560: Complete ordinary-path admission (fixed/flag short circuit), direct/branch-owned
 // bool/byte/short/long complements: 133/133/133/133/142/142/145/143. NOT kept: one-use
 // outcomes do not match; original dispatch, constructor, slot and fresh lookup restored.
+// J246: Native rotation/translation memcpy boundaries 74/116/106;
+// memmove boundaries 86/108/98; paired library copies with inverse at entry 106/98.
+// NOT kept: every copy boundary regresses, and the aligned frame stays 0x84/0x88.
+// Original constructor, slot, fresh post-reset lookup and complete body restored.
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {

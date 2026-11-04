@@ -602,6 +602,10 @@ __forceinline void function_2994a1(point2f const *arg_0, real arg_1,
 // DL254: Current ordinary-result graph with byte/short/word/dword edge-center outcomes, then obstacle facing:
 // 719/744/744/761/719/787/787/751. Original complete body and helper contracts restored;
 // NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// J248: Completed three-dimensional direction/reverse/pivot workspaces for
+// late obstacle deltas, rotated direction or both: 753/734/761/719/763/739/773/747.
+// NOT kept: these native-workspace lifetime forms do not match; original
+// independent workspaces, scalar observations, helpers and complete body restored.
 // @retail 0x299460
 bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, vector3f const *arg_5,

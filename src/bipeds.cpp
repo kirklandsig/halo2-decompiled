@@ -976,6 +976,11 @@ extern long *g_51e9cc;
 // Nonmatching single-consumer truth carriers restored.
 // F355: Complete velocity-threshold positive/complementary truth ownership in bool/byte/short/long:
 // 42/42/42/42/42/42/42/42. NOT kept: no gain; original body restored.
+// J246: Coordinated table-getter inline contract with native word flags,
+// actual crouch field receiver and entry lookup storage: 42/35/39/35/42/35/39/35;
+// coordinated initializer inline contract alone 42. All helper users unchanged.
+// NOT kept: seven-point flag gain is below the gate; field receiver misses.
+// Original body/contracts restored; lookup address and crouch/contact schedules remain.
 // @retail 0xdd990
 void __stdcall function_dd990(long arg_159e6d)
 {
@@ -1430,6 +1435,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // output declarations at case/function entry, paired/all case outputs, all entry outputs,
 // then all plus animated body: eight at 585. Original body restored; frame 0xf8/0xfc
 // and material/airborne/animation homes remain. No input observation or helper changed.
+// J245: Actual moved result in bool/byte/short/long with function-scope
+// declaration, then case-scope declaration and separate false producer: 585/585/584/581/585/585/584/581.
+// NOT kept: 584 and 581 gain only one and four; every form retains frame 0xf8 versus 0xfc. Original movement result and all workspace homes restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -1936,6 +1944,9 @@ void function_dfd70(long arg_159e6d)
 // crouch and default-owned zero: 104/261/261/104/104/245/242/247.
 // NOT kept: every form raises shared user 0xdc5c0; some also lose 0xde9d0.
 // Original helpers/body restored; mode-three layout and basis/ray homes remain.
+// J245: Existing head/forward/fallback scalar-setter subsets 1/2/4/3/5/6/7,
+// then first-ray miss setter: 235/229/253/241/255/258/256/245.
+// NOT kept: all forms lose 0xde9d0; 229 gains only four and grows to 1047/1041 bytes. Original dispatch, basis and ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)

@@ -1184,6 +1184,10 @@ struct s_signed_file_write_parameters
 // compare), declared first / between / last 115/119/115 [34] (declared first that arm's saved homes become retail's,
 // header EDI, body EBX, size EBP, but every scratch register after it rotates one step); the `void *` parameters
 // view as 0x2ad7c0 takes it 102 (same code), with the position local 115.
+// J248: Standard minima at header clear/transfer/extension, subsets 1..7,
+// then all with the standard positive-offset maximum: 285/257/297/231/294/271/305/338.
+// NOT kept: reference-return contracts regress; original capacity staging,
+// extension buffer/offset homes and complete callback restored.
 // @retail 0x2adb10
 PRIVATE long __stdcall signed_file_write_work(s_async_task *task, s_signed_file_write_parameters *parameters, long parameters_size)
 {

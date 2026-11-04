@@ -661,6 +661,11 @@ static inline word font_character_pixel(long alpha, long color)
 // N342: Single-first upper dispatch / lower-first dispatch / flat pair-single / flat single-pair,
 // original word then full-width pixel result: 139/172/182/183/163/166/174/175.
 // NOT kept: dispatch ownership regresses; original helper, cases, observations and body restored.
+// J248: Unsigned dword alpha with word/short/dword/unsigned-int color,
+// each with word/dword pixel result and the original byte-parity expression:
+// 85/106/85/106/85/105/85/105. NOT kept: promotion/interface nonmatches; original
+// helper and decoder restored; parity, literal assembly and run-two reuse remain.
+// Diagnostic scoped size preference 198; NOT kept: compiler setting.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

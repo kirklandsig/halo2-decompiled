@@ -991,6 +991,9 @@ real normalize2d(point2f *v);
 // request with all guards 73 (901/935 bytes), recovering DL. NOT kept: length moves away and
 // gain appears only with combined forms. Original full body restored; separate facing/default
 // and invalid return paths remain.
+// J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
+// 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
+// NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

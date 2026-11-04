@@ -130,6 +130,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Round 202 (lane 3): the team test through the existing function_x340af0() 106 (425 bytes; it gives retail's
 // store of the flag into the code parameter's slot); on it the team read at each use 108, the counter re-read
 // after the increment 106, a short old maximum 106, the row pointer before the old maximum 106. Restored.
+// J247: Actual shared counter-word reader/store view subsets 107/107/107/107/107/107/107;
+// complete view with the team-mode helper 106 (425 bytes). NOT kept: one-point gain below threshold.
+// Original shared type and body restored; enable reload, maximum homes and word schedule remain.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {

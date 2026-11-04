@@ -3298,6 +3298,10 @@ struct s_voice_route_choice
 // radio first 363; nearest first 383; empty first 391; both routes complete 363;
 // mapping rejection 363; both radio engine rejections 363; empty-first rejections 391;
 // both completed with final rejection 363. NOT kept: no gain; original full body restored.
+// J248: Spatial/routing inline summaries and scalar identity force-inline,
+// subsets 1..7, then native callee-pop declaration: 363/363/363/363/363/363/363/363.
+// Original metadata and complete routing body restored; entry registers, cursor
+// bias and priority-tail merge remain.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
