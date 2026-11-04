@@ -254,6 +254,9 @@ PRIVATE inline c_channel_effects_view *channel_effects()
 // flags from memory after every store, the volatile-bool shape. Forms: stream declared before input 532 (same code);
 // gain bits read before `changed` 577 (1921 bytes); the first send bit cast to bool like the other three 550; the
 // three send-bit updates as ternary assignments 532 (same code); `direct` as a bool cast 532 (same code). Restored.
+// B426: Existing SDK C entry points at first/later query, volume, status, playback,
+// mixbin, pitch and complete call phases: 532/532/532/532/532/532/532/532. Original SDK receivers,
+// workspaces and complete body restored; frame/stream/gain and mixed math remain.
 // @retail 0x21fa80
 void function_21fa80(long channel_index, s_looping_channel_properties const *properties,
 	s_looping_effect_playback const *effects, bool force)

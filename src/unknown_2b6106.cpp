@@ -658,7 +658,9 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
     widget->function_22f52e()->set_text(text);
 }
 
-// score 512 (was 512): Frame 0x860 versus 0x85c; EBP bias 0x70, early flag/clock and late score homes remain.
+// score 512 (was 512): EBP is unbiased; allocation 0x860 versus retail 0x85c; flags/clock and score homes remain.
+// Earlier text-buffer/early-bit form 489 (not kept): EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
+// Frame 0x860 versus 0x85c; EBP bias 0x70, early flag/clock and late score homes remain.
 // Earlier lane r83 form 489, not kept: EBP bias 0x70 and frame 0x85c agree (the text buffers as s_text_256, bit 7 taken before
 // the clock read: the flags stay in ESI); the clock in ESI (retail EDI), the small slots' order (row +0x6c,
 // active +0x6a, bit 7 +0x6b, clock +0x64; retail +0x64/+0x6f/+0x6e/+0x68), the long campaign word and the
@@ -859,6 +861,12 @@ PRIVATE __forceinline void show_friend_detail(c_text_widget_45a5e0 *widget, word
 // 506 (retail's `lea ebp, [esp - 0x70]`); with bit 7 taken before the clock read 489 (kept: the flags then stay in
 // ESI and the frame is 0x85c); on 489: short count 514, bool campaign 504, both 526, `s_text_256 teams, game` 489
 // (same code), `in_session == true` 487 (-2, not kept), `long row` 489 (same code).
+// J251: Primary-caption default/conditional/complete/priority producers 546/535/535/550;
+// own stdcall/cdecl/inline/inline-stdcall 512/514/512/512; incoming formal roles
+// independently/together/selected 512/512/512/512. NOT kept: caption forms regress;
+// cdecl loses matched caller 0x2b6e55 (29); other contracts and names tie. Original
+// body/declarations restored; frame 0x860 versus 0x85c, EBP bias and flags/clock homes remain.
+// Status receiver and stack-input setup already agree with retail.
 // B412: Eight-team membership mask advanced with the score cursor: dword/long/word/byte
 // presence 508/508/512/508; absence 509/509/494/509. NOT kept: four-point leads below gate;
 // word absence shifts a narrow complement instead of an indexed dword mask. Full body restored.

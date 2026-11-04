@@ -1093,6 +1093,9 @@ bool __stdcall function_2399da(long controller_index)
 // B416: Membership output ends after exporting its native twice-used privilege value;
 // query-buffer/selected-member/privilege role-name domains on that completed-buffer graph,
 // eight at 90. Original body restored; identity/rank EAX/ECX ownership and removal move remain.
+// B425: Complementary member/permission states singly/both as bool and byte, then
+// both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
+// restored. Selected identity/rank homes and the extra removal move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

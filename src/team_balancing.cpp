@@ -697,6 +697,14 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // M366: Complete three-way spread result from original less/equal tests, signed char/short/long/int64:
 // branch production 67/67/67/67; conditional production 96/103/102/122. NOT kept: no exact
 // candidate-first query repair; original complete body restored; reference-first calls and two extra bytes remain.
+// M370: Reference selection inside the four candidate mutations, after first removal,
+// second removal or first addition, conditional/current-default/best-default forms:
+// 147/117/121/116/122/115/77/103. NOT kept: all regress; one conditional form also
+// loses the caller. Original selection restored; reference-first queries and two extra bytes remain.
+// M372: Outer/inner while induction and positive flag admission, seven subsets
+// then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
+// inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
+// reference-first spread queries and two extra bytes remain.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {
@@ -1086,6 +1094,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M364: Combined copy/maximum selection by input/output element pointer or slot ordinal,
 // branch/conditional producers: 116/116/96/96/120/120/98/98. NOT kept: no exact native
 // fill/count ownership; original scalar maximum, loops and complete body restored.
+// Y581: Standard trivial construction fill, difference/extra count and total/extra
+// endpoints, original excess 67/66/66/66; expression excess 70/69/69/69.
+// NOT kept: all regress and grow to 196/198 versus native 190 bytes; original
+// combined scan, assignment fill, clamp, includes and full body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

@@ -508,6 +508,10 @@ PRIVATE __forceinline vector3f *normalize_particle_velocity_2b(vector3f *v)
 // properties/cache/next declarations 10; next/cache/properties 10; cache/next/properties 10;
 // the same three declaration orders with original properties/next assignments 10 each.
 // All restored; back-edge reloads and the maximum squared producer are unchanged.
+// Round 127 (lane 7, fast), on the one-caller k-first normalizer form 2: a head copy of first at the top 2, after next 2;
+// a definition copy for the properties and masks 34 (1521 bytes); both copies 129 (1518); a named index before the nearest
+// call 2; a per-particle mask 51 (1517), assigned to requested 2; a definition copy for the later mask only 2. The reload
+// order never moves; matched functions (0x1384a0, 0x168e20, 0x2c05f0) reload in reverse prologue order as retail does here.
 // @retail 0x2b9b10
 void function_2b9b10(s_particle_properties_2ba const *definition, void const *origin, long first, real scale, void *system)
 {

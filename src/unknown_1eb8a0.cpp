@@ -183,6 +183,8 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 	}
 }
 
+// MiniMax A (11-04): no new form, no lower score; retail branches on the fast flag before the rate multiply and loads the
+// constant there, ours multiplies first (642, same code).
 // score 642 (was 642): retail keeps q (the fourth stack argument) in EBX from entry (reloading it after the
 // activation copies) and reads d from its stack slot at each use; ours keeps d in EBX from entry. Frame 0x24
 // and clock EDI agree; direction/sample homes and coefficient schedules remain.
@@ -383,6 +385,9 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // 642/642/663/665; complementary admission 652/652/683/684; joint direction/sample
 // formal role names 642/642. Native sample EBX ownership at entry still differs;
 // all other calibrated scores unchanged. Original body restored.
+// DH353: Existing double-factor publishers at displacement/impulse/all tick scales,
+// subsets 1/2/4/3/5/6/7: 716/716/724/783/783/766/817; complete sample graph 830.
+// NOT kept: native SSE/frame/extent disagree; original products and caller restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,
