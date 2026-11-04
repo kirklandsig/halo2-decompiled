@@ -2121,6 +2121,8 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // Y567: Existing complete object getter for unit/pickup/transferred weapon,
 // seven subsets, then complete shared object/header acquisition: 202/202/202/202/202/202/202/202.
 // Original helper uses and body restored; player/header-offset homes remain.
+// J252: Existing notification/completion/transfer inline contracts: 202/202/202/202/202/202/202/202/202.
+// NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
