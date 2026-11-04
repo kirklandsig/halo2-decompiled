@@ -1479,6 +1479,10 @@ struct s_133f70;
 // as one ternary store 175 (same code); a short entry count 365; the top success with the ternary type 173;
 // `if (level_changed) reuse = false;` 371 (1295 bytes); `if (fallback) reuse = false;` 380 (1289 bytes).
 // The tail stays BLOCKED-BY 0x23690 (src/unknown_023540.cpp, avoided this round).
+// Round 145 (m3 lane 6, fast = plain 175, aligned 74): retail's 0x23690 loads its order as a dword (`mov esi,
+// [esp + 0x218]`); order declared long in both declarations 175 (caller `movsx eax`, still passed in EAX,
+// 0x23690 484); header via the existing object_header_get 175; initial level declared first 177; failure
+// count declared after the 0x4bcc0 call 370; a named active-flag pointer for the call and test 175.
 // @retail 0x4b5d0
 void function_4b5d0(bool force, long override, long object_index, real distance, real priority,
     s_133f70 *record, point3f const *unused, bool project_nodes)

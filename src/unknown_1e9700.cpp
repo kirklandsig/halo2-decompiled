@@ -130,6 +130,9 @@ void function_1ea770(byte code, long player_index, s_statborg *statistics, long 
 // Round 202 (lane 3): the team test through the existing function_x340af0() 106 (425 bytes; it gives retail's
 // store of the flag into the code parameter's slot); on it the team read at each use 108, the counter re-read
 // after the increment 106, a short old maximum 106, the row pointer before the old maximum 106. Restored.
+// J247: Actual shared counter-word reader/store view subsets 107/107/107/107/107/107/107;
+// complete view with the team-mode helper 106 (425 bytes). NOT kept: one-point gain below threshold.
+// Original shared type and body restored; enable reload, maximum homes and word schedule remain.
 // @retail 0x1ea5b0
 void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, byte code)
 {
@@ -355,6 +358,31 @@ struct s_object_damage_view
 // Round 390: External amount-field identity after timestamp acceptance, original/whole
 // record reference with short/word/long/dword ordinals: 353/354/355/355/353/354/355/355.
 // Original body restored; scalar homes, amount-biased cursor and attribution remain.
+// DL253: existing streak/final/secondary provider ordinary-inline singles 353/353/353;
+// ordinary-inline pairs 353/353/353 and all three 353 on the native-frame graph;
+// forced streak expansion 962 (1949 bytes), loses a matched caller; NOT kept: shared regression.
+// Original providers and calls restored; scalar homes, history cursor and attribution still differ.
+// B399: Standard prefix searches on the two award arrays: find first/second/both
+// 360/360/373; count first/second 360/361; count-find/find-count/both count
+// 374/374/375. NOT kept: every form regresses and shortens away from retail. Original
+// whole body and include list restored; scalar homes and amount-biased history cursor remain.
+// B406: Attribution-produced event code byte/word/long/dword, definite assignment
+// 436/451/452/452; conditional selected-code producers 436/440/472/472. All regress;
+// original eager code, scalar homes, history observations and complete body restored.
+// P303: Late constant killer-team/hostility defaults and direct statistics parameter, subsets
+// 1/2/4/3/5/6/7: 374/338/353/378/374/338/378; reversed award-array declarations 353.
+// NOT kept: hostility at 338 delays its clear past attribution, unlike retail; original lifetimes and body restored.
+// M346: Existing consideration/hostility/friendly results as byte, masks 1/2/4/3/5/6/7:
+// 353/369/351/369/351/362/362; all char 362. NOT kept: friendly alone or with
+// consideration gains only two through extent, with scalar homes unchanged. Original body restored.
+// M354: Complementary consideration/hostility/both bool and byte, then word/long pairs:
+// 353/369/369/353/369/369/417/392. NOT kept: complemented status publication misses native byte/store allocation.
+// M356: Complete timestamp/strict-improvement results, expression then ordered
+// tests, bool/byte/short/long: 353/353/353/353/353/353/353/353. NOT kept: no gain;
+// original selection and complete body restored. Scalar homes and biased cursor remain.
+// DH336: Two real award buffers/counts in array and record ownership forms:
+// 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
+// NOT kept: grouped storage needs equality; original complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {

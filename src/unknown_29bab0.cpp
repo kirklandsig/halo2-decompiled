@@ -241,12 +241,22 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // epsilon, ja and divss, the length stored at [esp+0x40] as retail) 771 at 3499; plus float radial squares 803 (3482);
 // plus the scale as `local_1 * v` 771. The input/heading homes (input pointer in EBX from entry, local_2 at
 // [esp+0x2c] for retail's [esp+0x20]) keep the rest positional.
+// DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
+// direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
+// input storage, arithmetic helpers and complete executable body restored.
 // Lane 14 r57 (fast, from 750): retail tests the radial distance once (float squares from memory, fsqrt, the
 // gap loaded after it, one fcompi), each arm then taking its own exit tests. The two radial tests as one
 // conditional expression 816 (frame 0x90); with float squares 804 (3504 bytes; the squares are retail's, but
 // the gap is loaded before them); with the distance on the left of the compare 818; float squares and the
 // distance on the left in the original two tests 785; the square root written in the conditional's test 831
 // (frame 0x8c).
+// Round 41 (m3 lane 17, fast with 0x1f9e70/0x110ab0, control 750): the +0x290 pointer written at each use 905 (3578
+// bytes); the input copy before the position query 758; the three velocity dots named before the reciprocal 748
+// (retail divides after the dots, ours still schedules the divide first); the signed-root scale by reference 833
+// (3475 bytes: retail's `fmul [esi+0x6c]`, a parameter change, diagnostic only); the 0x654 arm's two false exits
+// in one test 800 (3501), with the named dots 798 (3499); a named blend complement 801; one radial test with the
+// dot tests in both arms 825. Retail also keeps `0 - heading.j` in a register for its three uses and tail-merges
+// every false exit of the steering flag into two `xor al, al` blocks.
 // DH321: Direct-input ordinary inline declarations for existing mode/query/trace/response/turn/
 // direction/transform/velocity providers individually: 804/804/804/804/804/804/804/804. All declarations,
 // input storage, arithmetic helpers and complete executable body restored.

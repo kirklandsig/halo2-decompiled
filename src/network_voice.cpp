@@ -1744,6 +1744,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
 // `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
+// Round 402: Complete per-target rejected/allowed query-chain results in bool/byte/short/long after mask admission.
+// Scores 85/85/85/85/85/85/85/85. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3281,6 +3283,9 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y560: Zero-empty one-based selected ordinal in long/dword/int64, then count sentinel,
+// with bitwise/conditional radio: 420/420/473/485/415/415/487/435. NOT kept: optional-state
+// representations do not match retail; original independent decisions and full body restored.
 // Round 50 (m3 lane 15, fast; both callers matched each time): retail computes the talker's XUID once for both
 // radio-arm engine calls (ESI:EDI reused). Named XUID re-measured 375 (1288 bytes); with a named talker bit before
 // the loop 381 at retail's 1287 bytes (frame 0x58: the bit gets a stack home, retail hoists it only in the unrolled
@@ -3289,6 +3294,19 @@ struct s_voice_route_choice
 // Y556: Unified NONE/radio/ordinal routing outcome, long/int/dword/int64, original/
 // actual element receiver: 492/492/492/530/492/492/492/530. NOT kept: exact-only state representation fails
 // byte agreement; original independent decisions and complete body restored.
+// Y562: Native signed-int count/loop/selected ordinal contracts, subsets 1/2/4/3/5/6/7,
+// then complete talker identity: 363/363/363/363/363/363/363/363. Original full-width declarations and full body restored.
+// Y564: Original calls with radio/nearest/empty completion and engine-rejection exits:
+// radio first 363; nearest first 383; empty first 391; both routes complete 363;
+// mapping rejection 363; both radio engine rejections 363; empty-first rejections 391;
+// both completed with final rejection 363. NOT kept: no gain; original full body restored.
+// J248: Spatial/routing inline summaries and scalar identity force-inline,
+// subsets 1..7, then native callee-pop declaration: 363/363/363/363/363/363/363/363.
+// Original metadata and complete routing body restored; entry registers, cursor
+// bias and priority-tail merge remain.
+// F361: Actual sixteen-choice array input, reference/pointer and long/int count:
+// bitwise radio 363/363/363/363; conditional radio 411/411/411/411.
+// NOT kept: native entry/cursor allocation unresolved; original table contract and calls restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)
@@ -3595,10 +3613,16 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // Y556: Payload-relative consumed result, long/int/dword/short, original/independent
 // packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
 // original header-inclusive result, live counts and complete body restored.
+// M344: Relay formal char/signed-char/byte/short/word/int/long/dword
+// 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
+// wider forms regress and lose the parser. Original bool contract/body restored.
 // Round 50 (m3 lane 15, fast; 0x564c0 matched each time): on the packet-cursor form (consumed, `size -= consumed`,
 // cursor; 164) the member mask declared at function scope 164; a named word member bit used for the test and the
 // clear 168 (471 bytes); the route zeroed as `= { 0 }` 164; the size debited right after the size test 169; on the
 // original form the mask at function scope 139 (same code). Retail's EBP channel / spilled member still not reached.
+// DL254: Matched current-member/incoming-packet/channel-enqueue inline subsets; then all three with an independent cursor:
+// 139/139/139/139/139/139/139/164. Original complete body and helper contracts restored;
+// channel/cursor/member and route homes remain; no qualifying provider change.
 // Y556: Payload-relative consumed result, long/int/dword/short, original/independent
 // packet traversal: 169/169/169/164/154/154/154/153. NOT kept: exact-only induction/domain forms do not match;
 // original header-inclusive result, live counts and complete body restored.
@@ -3611,6 +3635,18 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // being a register candidate is the cause. Keeping a local member out of registers failed, all 164 with the same code: an
 // unused pointer to it, a const reference to the call, a one-element array, an assignment inside its test (alone, split from the
 // packet test, NONE-initialised), declared at function or loop scope; a local copy of the channel 164; a dword member mask 190 (459 bytes).
+// Twice-used relay payload at entry/member/admission/mask producers: indexed
+// packets 139/139/139/139; independent packet cursor 164/164/164/164 (478 bytes).
+// Original payload expressions, live count reads, traversal and complete body restored.
+// P302: Actual mutable channel-object reference with cursor/word-kind/dword-member
+// interference graphs 0-7: 139/164/166/164/139/164/166/164. NOT kept: receiver/domain nonmatches;
+// original pointer contract, caller and whole body restored; channel/cursor/member homes remain.
+// P304: Native forwarding-route memset with independent cursor/short member/word kind,
+// interference masks 0-7: 152/172/172/170/150/149/163/156. Original route stores, observations and full body restored;
+// channel/packet/member ownership and route homes remain.
+// DH335: stride char/signed-char/byte 160 each; word 163; int 139; 64-bit 164;
+// finite two-value stride and immutable long 139 each. No channel-home recovery;
+// non-native extents regress. Original stride and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

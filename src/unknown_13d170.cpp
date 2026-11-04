@@ -388,6 +388,27 @@ struct s_block_candidate
 // clamp, with previous's NONE in the block 380 (257/139); the policy switch as an inline helper with a return per case 343 (260/145), on that head 375 (258/152). 240
 // random declaration orders of the head, block and segment locals, compile-only: 289-295 against 295, frame never 0x1054. Diagnostics: unused
 // pointers to tail or head 347/380 (same code); tail in a scratch global 376 (1228 bytes, 262/120) still leaves offset in memory.
+// P305: Final predecessor/successor/both/all linked-record references, each with
+// mutable/fixed backing receiver: eight at 347. Original complete body and native
+// record accesses restored; missing frame dword and page/ring/policy allocation remain.
+// P309: Initial page/category-limit admission as positive/complementary bool/byte/short/long
+// producer outcomes: 347/347/347/347/347/347/347/347. NOT kept: one-use outcomes
+// do not match; original complete body restored, missing frame dword and page/ring homes remain.
+// M352: Final failure-limit observed/capped/branch-produced/complementary minimum,
+// compound/nested independent failure-category guards, eight forms 347/347/347/347/347/347/347/347.
+// All restored; frame 0x1050 versus 0x1054 and page/ring/policy ownership remain.
+// DH333: Standard age/segment/category selections in seven subsets
+// 393/388/419/384/433/366/435; final failure-limit minimum 410. The latter recovers
+// frame 0x1054 but grows to 1243/1213 bytes. NOT kept: regressions; full original body restored.
+// N348: Ring insertion admission in bool/byte/short/long, has-room/full truth,
+// 347 each. NOT kept: one-use decisions do not match or recover the missing frame
+// dword. Original ring insertion, page/tail allocation and complete body restored.
+// N350: Final-link successor handle captured for all consumers, long/const long/
+// dword/const dword, pointer/reference predecessor element: 347 each. NOT kept:
+// unchanged frame/page-ring homes; original pooled observations and body restored.
+// N352: Post-callback allocator-clock long/dword, occupied/segment/admitted/entry
+// declarations: 347 each. NOT kept: one-use clock forms remain unmatched and retain
+// frame 0x1050/0x1054 and page/ring homes; complete original body restored.
 // @retail 0x13d370
 long __stdcall function_13d370(s_physical_object *physical, long size, long type)
 {
