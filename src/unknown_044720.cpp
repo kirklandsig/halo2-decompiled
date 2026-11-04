@@ -563,6 +563,9 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
 // P333: Standard copies at initial/query/bound point producers, seven subsets then
 // complete backward copy: 227/209/195/243/233/213/254/254. NOT kept: all regress; initial/query
 // transfers also lose the matched caller. Original copies, includes and full body restored.
+// P335: Standard native point lifetime construction at initial/query/bound producers,
+// seven copy subsets then complete fill: 227/209/195/243/233/213/254/253. NOT kept: all regress;
+// construction copies canonicalize to initialized-copy output and disturb the caller. Original body restored.
 // @retail 0x45560
 void function_45560(short entry_index, point3f const *center, real radius)
 {

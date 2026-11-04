@@ -1972,6 +1972,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
 // 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
 // Actor/options and retained-pool homes remain.
+// P335: Standard min/max probability/increased/delay producers, seven subsets and
+// complete graph with final maximum consumer: 322/325/275/354/323/323/346/395. NOT kept: all regress;
+// original clamps, field observations, includes and complete body restored. Actor/options/pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

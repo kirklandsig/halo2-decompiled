@@ -1021,6 +1021,9 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the 587 forms lose the matched fraction provider and move away from native extent.
 // Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
 // Original provider contract and target body restored; prior ordinal-loop forms not repeated.
+// P335: Standard component-array inner products at nearest/projection/opposite distance,
+// seven subsets then complete graph with anchor transform: 845/1136/1138/1444/1417/1088/1402/1438. NOT kept:
+// all regress and suppress native scan expansion. Original reductions, includes and complete body restored.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)
