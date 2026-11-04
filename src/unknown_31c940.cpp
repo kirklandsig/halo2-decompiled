@@ -800,9 +800,12 @@ static __forceinline void update_residual_pair(__m128 *&cursor,float *&result,so
 
 static __forceinline void subtract_angular_residual(solver_angular_row_31e7b0 *row,solver_velocity_31c940 *a,solver_velocity_31c940 *b)
 {
-	__m128 axis_a = row->a, axis_b = row->b;
-	__m128 va = a->angular, vb = b->angular;
-	__m128 v = _mm_add_ps(_mm_mul_ps(va, axis_a), _mm_mul_ps(vb, axis_b));
+	__m128 angular_contribution[2] =
+	{
+		_mm_mul_ps(a->angular, row->a),
+		_mm_mul_ps(b->angular, _mm_load_ps((float const *)&row->b))
+	};
+	__m128 v = _mm_add_ps(angular_contribution[0], angular_contribution[1]);
 	__m128 xy = _mm_add_ss(_mm_shuffle_ps(v, v, 0x55), v);
 	__m128 xyz = _mm_add_ss(_mm_shuffle_ps(v, v, 0xaa), xy);
 	float projected;
