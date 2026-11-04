@@ -351,6 +351,10 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // DH362: Magnitude output-only/numeric-plus-output, pointer/reference, common/complete-arm
 // publication on the retained native-input/result-join graph: eight at 345. NOT kept: frame
 // 0x58 and query/magnitude overlap remain; original helper contract and complete body restored.
+// DH364: Native magnitude/planar/movement coordinate-union consumer subsets
+// 1/2/4/3/5/6/7, then float root/absolute APIs on complete result joins: eight at 345.
+// Original copies, helpers, expression trees and full body restored; frame/query
+// overlap remains.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

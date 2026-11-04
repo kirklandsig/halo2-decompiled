@@ -346,6 +346,10 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // DH362: Twice-used basis mode captured at entry/acquisitions/input/active boundaries,
 // positive bool 626/626/626/626; complementary bool 723/717/702/699. NOT kept: all regress;
 // original repeated mode tests, helpers, in-place snapshots and complete body restored.
+// DH364: Float root/sine/cosine API subsets 1/2/4/3/5/6/7, then complete graph with
+// published float root 618/610/610/610/610/616/616/614. NOT kept: the eight-point
+// lead requires asymmetric trig API types without a retail precision distinction;
+// complete float trigonometry gains only two. Original helpers and in-place snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

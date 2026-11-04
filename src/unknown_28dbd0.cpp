@@ -300,6 +300,10 @@ __forceinline s_object_ai_data *function_28dbd5(s_handler_object_view *arg_0)
 // DH362: Existing coordinate-union access at heading/rotation/request boundaries,
 // seven subsets 173 each; all with native fallback-point copy loop 209. NOT kept: no
 // native frame/cross-home gain; original helpers, draws, ordinary pooled reads and body restored.
+// DH364: Existing placement-source/output native references and point-pointer
+// return, subsets 1/2/4/3/5/6/7, then point-reference return: eight at 173.
+// Original query address, fallback copy, helper contracts and complete body restored;
+// frame 0x11c versus 0x118 and rotation cross/trig homes remain.
 // @retail 0x28dbd0
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4)
 {

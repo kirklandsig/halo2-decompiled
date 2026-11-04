@@ -1538,6 +1538,10 @@ PRIVATE __forceinline bool function_274a51(long arg_0, s_object_seat const *arg_
 // DH360: Busy-query presence/absence truth at its original publication, bool/byte/short/long,
 // eight at 32; constrained 600s search, 53 proposals, best 32. NOT kept: no exact result;
 // original direct busy store, iterator, geometry, requests, slot publication and full body restored.
+// DH364: Actual candidate actor-handle/truth metadata int with bool/byte/signed-char,
+// dword with bool/byte/signed-char, unsigned-int with bool/byte: eight at 32.
+// NOT kept: no native handle-before-scaling or request-home recovery; original
+// 12-byte record, exact comparator and complete body restored.
 // @retail 0x274a50
 void function_274a50(long ai_index, long vehicle_index, long filter_range, bool load)
 {
