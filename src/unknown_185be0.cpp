@@ -475,6 +475,8 @@ union s_185be7
 // bool/byte/short/long: 624/624/624/624/624/624/624/624. NOT kept: unmatched decision/storage forms;
 // original complete body restored.
 // Control-root/NONE, settings/zero homes and clamp/flag joins remain.
+// AC540: Paired range-angle override/default decisions, bool/byte/short/long: 622/622/622/622/750/750/750/750.
+// NOT kept: unmatched result residence; control-root/NONE and settings/zero homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
