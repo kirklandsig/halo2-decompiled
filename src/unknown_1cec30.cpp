@@ -1068,6 +1068,22 @@ void function_1d1540(s_havok_component *component);
 // N344: Actual two-use slot lexical homes array_slot/body_slot/current_slot/entry_slot,
 // constructor then existing aligned setter: 65/65/65/65/90/90/90/90.
 // NOT kept: aligned setters grow to 231/220 and miss. Original constructor, slot and fresh lookup restored.
+// Round 3 of #1044: statement-by-statement walk of retail against the 88 body (set copy, body pointer,
+// m_fixed first): offsets (+4 flags bit 6/bit 5, +0x30 transform, +0x70 data, stride 0x60, +0x40 body), shifts,
+// both callees with ECX = component, the refetch after 0x1d1260, 0x1d8e80 called in the fixed arm and inlined
+// in the other, and the local at esp+0x10 all agree, so there is no behaviour difference; only the component's
+// transport differs (retail: EAX transform, ECX index, EBX component, plain ret and no push ebx). Retail's
+// register ranks are index offset ESI, body EDI, component EBX; the flag5-first 27 form swaps body and component
+// (body EBX, component EDI argument), the m_fixed-first forms keep retail's ranks but never convert. New: the
+// local as aliased float storage (no aligned type; frame no longer realigned) 93 with the component still on
+// the stack, so the aligned frame is not what blocks EBX here; flag5 first with direct rigid_bodies indexing at
+// every use 77 (0x1d1b60 lost at 60); plain struct copy with flag5 first 85 (rep movsd takes ESI/EDI and the
+// component still stays on the stack, so forcing ESI+EDI busy does not free EBX); parameter order (transform,
+// component, index) on the 27 form 27 (same). Of 31 matched game functions with aligned SSE stack stores none
+// takes an EBX argument, so there is no matched precedent for this shape. Callees 0x1d1260/0x1d1540 each save
+// EBX, ESI and EDI, so their save sets do not explain it. Original body restored.
+// Permuter (25 min on #1044 round 3, about 470 variants): only a volatile short copy of m_fixed with a char
+// cast in the test and the arms swapped gave 60 (frame 0x94); not kept (volatile without a match).
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
@@ -1103,9 +1119,6 @@ PRIVATE inline void component_matrix_frame(transform4x3f const *matrix, hkTransf
 	frame->m_translation = position;
 }
 
-// score 38 (was 38): unchanged this round: retail still passes the component to 0x1d0cf0 in EBX
-// (loaded here after `push ebx`), ours pushes it, so the frame size and every store offset differ;
-// the body is otherwise retail's instruction for instruction.
 // score 38 (was 38): BLOCKED-BY 0x1d0cf0: retail passes it the component in EBX (loaded here from the
 // stack after `push ebx`); ours pushes the component, so the frame and every store offset differ. The
 // body is otherwise retail's instruction for instruction. Tried here: zero transform/translation/both
@@ -2449,6 +2462,7 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // sum (addss xmm4, [contact]) as well: 359/326/376/359 with the old setter (1454 bytes), 281/371/275/281/
 // 275 with the setter building its word first (1454 bytes, the three setter sites then agree); only j/k
 // scalars with velocity.i scaled in memory 159/153 (1467-1470 bytes). Not kept.
+// Permuter (25 min on #1044 round 3, about 1050 variants): nothing below its own baseline (87 in its render).
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {
@@ -3040,6 +3054,18 @@ PRIVATE __forceinline bool velocity_limit_length(vector3f *v, real maximum)
 // Round 66: reversed subscript at all five reads 10; data+index and index+data pointer reads 10 each;
 // direct data reads at the first two 7, the late three 10, the late kind/fixed pair 7; explicit array
 // operator calls 10; one shared element reference 156 (680 bytes). Opening body restored.
+// Round 3 of #1044, score 2 unchanged: the only difference is the order of the two register copies before
+// the call to 0x1d1010 (ours `mov esi, edi; mov ecx, ebp`, retail `mov ecx, ebp; mov esi, edi`). It is
+// decided by the DECLARED parameter order of 0x1d1010 alone: ours emits the setup last-to-first of
+// (index, component, change); with the declaration, definition and this call swapped to
+// (component, index, change) this function MATCHES (and 0x1d1160, which calls it, stays MATCH) but 0x1d1010
+// itself drops to 1 (`[edi + eax + 0x40]` for retail's `[eax + edi + 0x40]`), and its callers in other
+// files would need the same swap, so not kept (no register-copy evidence for the order, round 15 saw
+// 0x1d24a0 920 -> 966). Source-only forms that leave the signature alone, all unchanged at 2: the call
+// inside a nested `if (!m_fixed)`, a `long index = i` copy, a change-vector pointer local, `&*component`,
+// preincrement, a `while` with a trailing `i++`, and a force-inline wrapper with swapped parameters.
+// On the swapped form, 0x1d1010 with the rigid body read directly from `data[index]` and the velocity
+// copy inline is still 1.
 // @retail 0x1ced00
 void function_1ced00(s_havok_component *component)
 {
@@ -3155,6 +3181,13 @@ byte *__fastcall function_30c170(hkWorld *world);
 // and mutable body records, 332/332/332/332/332. Original records and body restored.
 // Round 89 (resolved by the 0x1d83e0 match): retail loads the component into EAX before each 0x1d83e0
 // call and 0x1d83e0 reads it from EAX at entry.
+// Round 3 of #1044, score 15 unchanged: in retail's frame_a equal arm (and its non-equal twin) the zero is
+// rematerialised after the k store of column 0 and the w stores come last in each column; ours stores
+// w first in columns 1 and 2 (the frame_b arm, where the zero is already live in XMM0, keeps retail's
+// order with the same helper), so the cause is the zero constant being defined inside this arm, not
+// the column order. Tried this round, all worse or the same: the equal arm through a local `hkTransform *`
+// 15; the pair parameter non-const 344; `&pair->frame_a` held in a local pointer from the top of the
+// function 298.
 // @retail 0x1d7ef0
 void function_1d7ef0(hkTransform *frame_a, s_havok_component *component,
     s_component_frame_owner *owner, s_component_frame_map const *mapping, hkTransform *frame_b,
