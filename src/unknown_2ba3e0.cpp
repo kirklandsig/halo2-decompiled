@@ -924,6 +924,14 @@ real g_55e618;
 // sums nested in the call 44 (aligned 14); a named `short` last argument read before the sums, named `surface_index` or
 // `a_value` 61 each (1535 bytes: the load moves to the block's top but in EAX whatever the name, so same-size name order
 // does not pick its register); that read with plain position stores after the impact index 234 (frame 0x12c).
+// Round 149 (m3 lane 6, fast; all match-only, body restored; aligned, masked = registers and stack offsets ignored): round 75's form rebuilt (dot written at each product, normal locals,
+// velocity pointer, typed flags/+8/+0x34, the three final rows through the particle). Named sums nested in the setter, with the collision word before the sweep: 84 (1537 bytes, aligned 18, masked 17), plain stores 84
+// (20, 15); the word left before the call 47 (16, 15), unnamed sums 47 (20, 15), normal locals k/i/j 47 (24, 17), unnamed sums with the early word 84 (22, 17); the word right before the start
+// stores (retail's slot, among the pushes) 44 (14, 13). A `short` last argument read after the sums and nested 61 (1535, 42, 11); plain stores 59 (1535, 42, masked 9), read before the sums 59, at the impact
+// index 59: load above the stores but in EAX, later blocks rotate. Direct position stores (`position.x = ...` in place of named sums) 236 (1554, frame 0x12c), with the read before them 234 (1552), after them 236;
+// read first with each sum stored after its statement 234. At 44 only one block is left: v.i load first, retail's `mov edx, [esp + 0xd4]` above the position stores (ours after them), the x sum first, `lea ebx` among the
+// sums. Lead, BLOCKED-BY 0x1697c0 (its file is another lane's this round): ours keeps that load behind the stores through the particle, so check what the record pointer does in 0x1697c0's source for the caller's alias
+// summary; 0x1697c0 itself is at 25, first +0x314. The 44 form leans on the dot written out three times, so it is match-only.
 // @retail 0x2b9060
 void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void *system,
     long first, real scale, long mode)

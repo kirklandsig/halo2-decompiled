@@ -1515,6 +1515,18 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // N358: Complete invalidity result on failure-only resize-count graph, eight native scalar domains:
 // 159/159/159/141/141/140/140/140. NOT kept: unmatched source/representation forms; original executable body restored.
 // Query/write count homes, write setup and checksum/validation joins remain.
+// Round 149 (m3 lane 6, fast): round 53's 7 form rebuilt on the current body, 7 (aligned 6). Probes (dead volatile loads, diagnostic only, reverted at once): on the write-local form
+// one load between the write's wait and the byte-count test restores the close copy `mov ecx, eax` at 930 bytes, and a second ahead of the 0x213800 call gives the
+// checksum EAX, leaving only the two probes and one padding byte. So retail has two more scratch-rotation steps than our source: one between the write's header
+// address and the close copy, one between that copy and the checksum. Header, handle and copy rotate together; the flags zero stays in EAX whatever the probes do.
+// On the 7 form: flags as a local before the header init, a local at the call, a copy-initialised local, a default constructor, an init-list constructor, the field
+// reassigned 7 each (same code). On the write-local form: named count, `written = true` first, named HANDLE test, nested test, named flags, local before the header
+// init 114 each; written_size count local 114 (nested 114; on the 7 form 7); `bool complete` 107; if/else on the count 114; inverted `failed` flag 114. Value-returning
+// blocking helpers (query/resize/write/close, D direct, H helper): DDHD 114, DDHH 114 (aligned 4: only the close copy), DHHD 6, HDHD 6, HHHD 6, HHHH 118, DHHH 118; helper
+// taking flags by value 118, all parameters 118; bool result 114; size from sizeof 114; status returned 114; by-value copy in the helper 114. By-value open-handle
+// predicate at the close test 114, also at the open test 114; HANDLE predicate 114; by-value getter at the test 114, test and argument 114 (aligned 6); close-if-open
+// helper by value 114. Count spellings: `(long)` 114; `(word)` 117 (916 bytes); `!(bytes - 0x800)` 108 (930 bytes, aligned 5: the temporary fixes the copy but leaves
+// `mov eax, count; add eax, -0x800`); `written = written || ...` 114. Pointer-out helpers: bool local 114, `return *bytes == size` 107, `size - bytes` 107 (aligned 5).
 // @retail 0x213970
 void function_213970(void)
 {

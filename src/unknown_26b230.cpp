@@ -1901,8 +1901,8 @@ long function_26ace0(long object_index, long actor_index, short type)
 
 void function_269250(long clump_index, long actor_index);
 
-// MiniMax B (11-03): no new form, no lower score.
 // score 87 (was 87): retail hoists the walk's pool load into ebx and keeps the selection
+// MiniMax B (11-03): no new form, no lower score.
 // only on the stack (stored from esi, best stored in a tail shared with the initialisation);
 // ours keeps the pool in memory and the selection in edi.
 // Earlier: retained frame pointer 187; depth zero 304; selected-result reuse 134; team snapshot 133;
@@ -2032,6 +2032,9 @@ void function_269250(long clump_index, long actor_index);
 // DH355: Strict improvement truth at the common score join, positive/complementary
 // bool/byte/short/long: 89/89/89/89/89/89/89/89 (reduced control 89; full 87).
 // NOT kept: no exact one-use decision; original pool/selection and complete body restored.
+// Round 149 (m3 lane 6, fast; control 89, aligned 58, masked 45): score in the team arm 126 (480 bytes, masked 42), with datum_index selection 128 (57); team mismatch as `continue` 126 / 128 (same
+// code); common path with datum_index selection 146 (458 bytes, 59); a find-best forceinline helper returning the selection: in-arm 126, datum 128, common 89 (the copy coalesces),
+// plain inline 374 (250 bytes, not inlined). Ours keeps the selection in EDI where retail keeps it memory-only (`mov [esp + 0x14], esi`), which leaves the pool in memory.
 // @retail 0x2689d0
 void function_2689d0(void)
 {

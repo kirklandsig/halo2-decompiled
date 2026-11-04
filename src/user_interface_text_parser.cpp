@@ -681,6 +681,10 @@ done:
 // B422: Outer UI-definition admission in bool/byte/short/long, positive/complementary:
 // 32/32/32/32/32/32/32/32. NOT kept: no byte match; all canonicalize to the original complete body.
 // Early EDI save, tag/selector scheduling and the shared scratch-address cache remain.
+// Round 149 (m3 lane 6, fast; natural one-copy form 54, 173 bytes, aligned 22): the whole `if (globals)` as `do { if (!globals) break; ... } while (false);` 54 (aligned 26); `do { } while (false)`
+// around the translator call 54 (26), around switch and call with `continue` for the default 54 (22); a file-scope const pointer at the translator 54, at both uses 54;
+// `(word *)(dword)` at the translator 54; an index folding to zero at the translator 54. The address hoist survives all of them; the early EDI save is already gone on
+// the one-copy form, so the hoist, the tag load's slot and the selector register are what remain there.
 // @retail 0x22d456
 void __stdcall parse_gametype(long string_handle, word *buffer)
 {
