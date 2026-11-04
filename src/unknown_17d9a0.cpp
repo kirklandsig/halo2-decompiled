@@ -406,6 +406,17 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // AC526: Whole inverse result if/else/default/conditional, successful/failed/nested
 // publication returns, default field and nested result: 63/98/63/46/46/46/108/98. NOT kept: no gain;
 // original corner producer and tail restored; plane base, selector/product ranks remain.
+// Round 54 (m3 lane 15; `--fast 0x17d9a0 0x120850 0x22bbca` is exact here, 46: listing 0x22bbca brings point2f_set's file in; a one-link harness
+// with those files is 54 for 46, 0x120850 taking ECX there, with its product pairs as retail's). Ours differs from retail in 1, 4, 6, 0 of
+// the 6 pairs of corners 0-3. Harness, plane helper / axis form / lookup / helper types (320 + 288 forms): nothing below 54; plane helper with
+// a `short axis` local and the existing 0x120810 taking the point built in its first argument 182 (975 bytes, aligned 37), with a named index
+// and horizontal/vertical locals instead 182 (975, aligned 35); plane helper with a named row index 161 (983 bytes, aligned 42, pairs 1, 5, 0, 0:
+// the side load folds to one `movzx`, shifting every later corner by one instruction); axis stored directly 169 to 203; the arguments as
+// `bounds + n` same code. Diagnostic tables of 0-7 locals at the top by 0-7 in the helper: base best 6 of 24 pairs (50, t7 h3), plane helper with a named
+// row index best 4 (158, aligned 37); no state reaches retail's pairs.
+// Real (fast, same round): real px, py named before the setter 48; short horizontal, vertical named 54; the plane helper on the current corner
+// 61; plane helper with a named row index 153; plane helper with 0x120810's body named 151; plane helper, `short axis` local, 0x120810 taking
+// the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
