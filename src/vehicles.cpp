@@ -2844,7 +2844,7 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
    desired speeds along the facing, its left and its up, friction where a
    control is idle, and a torque that turns the vehicle to face its
    facing, banked into its turns */
-// score 692 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
+// score 676 (was 692): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 692 (was 692; earlier 706): Frame 0xd0 versus retail 0xfc; scalar/vector/transform homes and remaining force/trig scheduling differ.
 // Earlier at 728 (was 773): frame 0xd0 versus 0xfc; controls and transform/scalar homes remain.
 // Shared cross products 830 kept; shared friction/bank sums 879; both 867; shared
@@ -2933,6 +2933,10 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // bound/result and entry-result declaration; original then distinct relative output:
 // 692/722/741/692/700/730/749/700. NOT kept: no gain; frames stay 0xd0/0x104 versus native 0xfc.
 // Original helper and complete body restored.
+// Y594: Current/desired/both matrix unit-scale/zero-position initializers and complete current aggregate,
+// original/distinct relative output: 677/721/709/739/685/725/700/749. NOT kept: nonnative aggregate clears;
+// 677 reaches native length but inserts rep stosd. Current axes and three position-zero stores before
+// left cross, original/distinct output 676/682; original output kept at 3244 bytes, plain confirmed.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3108,11 +3112,11 @@ void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state
 
 	transform.scale = 1.0f;
 	transform.forward = vehicle->forward;
-	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
 	transform.up = vehicle->up;
 	transform.position.x = 0.0f;
 	transform.position.y = 0.0f;
 	transform.position.z = 0.0f;
+	cross3f(&vehicle->up, &vehicle->forward, &transform.left);
 	desired.scale = 1.0f;
 	desired.forward = *facing;
 	cross3f(&desired.up, facing, &desired.left);
@@ -3259,6 +3263,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Y591: Initialized facing/forward/paired airborne planar objects, seven subsets,
 // then all plus initialized control point: 1052 each. NOT kept: no gain; frame
 // remains 0x80 versus 0x74. Original full body and helper contracts restored.
+// Y594: Two-entry planar direction table, for/while long/dword/short/word
+// normalization traversals: 1125/1125/1114/1114/1125/1125/1114/1114. NOT kept:
+// frames 0x84/0x88 and lengths 4706/4694 move away from native 0x74/4666.
+// Original complete body restored; incoming velocity and force homes remain.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4479,6 +4487,10 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // Y591: Complete guarded component/query outcome, direct/exhaustive in bool/byte/short/long:
 // 177/177/177/177/177/177/177/177. NOT kept: deferred outcome requires equality;
 // original full search, component reads, collision/fallback and body restored.
+// Y594: First valid search hit owns complete threshold admission in bool/byte/short/long,
+// for/while scans: 173/173/198/197/173/173/198/197. NOT kept: inside-search
+// decision requires a byte match; best gain three is below the gate and 1359 bytes
+// is farther from native 1361. Original whole search and body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

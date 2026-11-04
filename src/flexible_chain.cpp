@@ -471,6 +471,10 @@ void __stdcall function_1160c0(real dt)
 // DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
 // byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
 // direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
+// Y594: Persistent segment cursor with preceding-segment terminal selection,
+// for/while short/word/long/int node traversals: 252/252/317/317/252/252/317/317.
+// NOT kept: cursor/domain forms enlarge the frame to 0xa8 and body to
+// 1386/1380 bytes; native EDX/axis/previous homes remain. Original body restored.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

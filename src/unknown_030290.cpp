@@ -468,6 +468,10 @@ __inline void transform_point(s_camera const *camera, point3f const *p, point3f 
 // Native inverse homes and second-transform X/Z spill remain.
 // Y592: Existing transform with separate scalar outputs, pointer/reference, native/scalar result storage, native/scalar input:
 // 195/195/259/259/228/228/242/242. NOT kept: no native frame/spill recovery; original alias-safe helper and body restored.
+// Y594: Plain paired transformed-point/inverse-depth reciprocal table traversal,
+// for/while with long/dword/short/word ordinals: 197/197/224/224/197/197/224/224.
+// NOT kept: native table residence is nonexact; narrow ordinals recover frame
+// 0x2c but shorten to 937/955. Original alias-safe helper and body restored.
 // @retail 0x30830
 long function_30830(point3f const *a, s_camera const *camera, vector3f const *d, point2f const *scale, bool perspective, bool negate, point2f *out)
 {
