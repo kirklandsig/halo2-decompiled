@@ -694,6 +694,9 @@ static inline word font_character_pixel(long alpha, long color)
 // lexical families, the last two including source/output roles: 212/212/212/212/212/212/212/212.
 // NOT kept: unmatched home/representation forms; original helper and decoder restored.
 // Alpha parity widening, literal assembly and constant-two reuse remain.
+// N365: Actual byte output cursor with complete word-fill/numeric-parity/bounded-byte-run
+// masks 0..7: 85/107/204/208/179/161/172/156. Original word cursor, helper and decoder restored;
+// NOT kept: unmatched cursor/domain forms; parity/literal/two-run gaps remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

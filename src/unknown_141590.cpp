@@ -351,6 +351,9 @@ static inline void quaternion_transform_vector(
 // N363: Existing shared scaled-add owns final cross contribution, crossed with shared
 // initial scale/projection/staged cross: 352/352/351/325/307/307/309/311. Original private helper and body restored;
 // NOT kept: unmatched staged stores. Native frame/quaternion/cross spill homes remain.
+// N365: Existing complete vector setter output with staged-cross/shared-dot/independent-half
+// masks 0..7, 333/346/340/351/344/360/333/368. Paired output restores frame 0x24
+// but grows code. Original helper/body restored; NOT kept: unmatched output ownership.
 // @retail 0x1417b0
 void matrix4x3_rotation_between_vectors(
 	transform4x3f *matrix,
@@ -1100,6 +1103,9 @@ void function_143250(
 // N363: Complete arithmetic-role scalar identities, product/sum-difference/copy-literal
 // masks 1/2/4/3/5/6/7 then all scalar roles: 1766 each. Original names and full body restored;
 // NOT kept: unmatched home allocation. Native frame, rotation admission and basis homes remain.
+// N365: Complete actual-result copy/compound multiply/add/subtract producer families,
+// seven subsets and all with producer declarations, 1766 each. Original scalar graph
+// restored. NOT kept: unmatched producer ownership; native frame/admission/homes remain.
 // @retail 0x143600
 real *function_143600(real const *rotation, unsigned long order, real const *coefficients, real *result)
 {
