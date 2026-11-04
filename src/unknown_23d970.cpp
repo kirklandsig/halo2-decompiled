@@ -791,6 +791,10 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // Round 82 (m3 lane 16, fast with 0x1f0870): the distance named before its store 45 (same code); one function-scope
 // forward pointer for both arms 322 (1266 bytes, prologue changes); named yaw/pitch locals in the else arm 157 (1264);
 // right declared at function scope 45 (same code); the cosine computed before the distance store 49.
+// DL258: Actual output-basis pair, saved-point overlay and input-step fields,
+// all seven nonempty families, 45 each; direct native saved-point member alone 45.
+// NOT kept: no gain. Right I/J colors, repeated forward K and ordinary-angle store
+// bases remain. Original record layouts, snapshots, products and complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

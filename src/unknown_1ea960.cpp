@@ -381,6 +381,11 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // phases, seven subsets, then complete first-pair cursor graph:
 // 143/143/143/148/148/148/153/158. NOT kept: no qualifying native repair; complete original body restored;
 // restore-header, packed key and listener ordering remain.
+// DL258: Native const list access and interface bases 5/5/5 on the prior near-match
+// construction graph; final-list member ownership 6; placement-result receiver 145;
+// child index before construction 5; explicitly inline storage constructor 5; advancing
+// child cursor 129. NOT kept: key/listener captures require byte equality; the child-storage
+// spill, zero index, receiver and payload-store schedule still differ. Original graph restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {

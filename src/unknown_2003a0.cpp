@@ -2409,6 +2409,10 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // elapsed as a dword, gets the late pushes and the pool reloaded per pass in EDI; the frame stays 0x48); on that,
 // a word wake read 312, `while ((squad = function_200d83(&squads)) != NULL)` 318, a long index without word casts
 // 312 (aligned 109).
+// DL259: Declared cluster array/shared scaled point/native movement fields,
+// seven subsets then readonly movement state: 275/275/275/275/275/275/275/275.
+// Original producers, includes and complete body restored; frame, iterator pool,
+// point/current-handle homes and intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
