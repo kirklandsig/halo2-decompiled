@@ -1938,6 +1938,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // on both queries 251 (same code); the fraction bounds as named locals 262; the grenade reset test split into an
 // outer `state != 1 || !flag` if 251 (same code); the grenade type through a fresh lookup and `unit` fetched
 // after the queries 251 (same code). All restored.
+// P321: Actual actor-readiness result in bool/byte/short/long, producer/entry
+// declarations with original post-query observation: 251/251/251/251/251/251/251/251.
+// NOT kept: no native actor/options/pool residence recovered; full body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

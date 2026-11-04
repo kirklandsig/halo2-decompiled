@@ -1999,6 +1999,9 @@ void function_dfd70(long arg_159e6d)
 // forms 233 each; both projections plus clearance or actual obstruction result 234/234.
 // NOT kept: no gain. Original shared helpers restored; native mode-three placement
 // and forward/up/ray homes remain; every checked shared user retains its score.
+// P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
+// switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
+// crouch-default and zero-default also raise shared users. Helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4844,6 +4847,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // recovered state-call/dot graph, original then support-bound success:
 // 68/148/151/151/143/136/142/142. NOT kept: no byte match; native support/result
 // homes remain. Original complete body restored; both exact callers survive.
+// P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
+// success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
+// NOT kept: all regress and shorten to 671/683; full body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

@@ -238,6 +238,9 @@ struct s_flag_word_bits
 // B397: Duration-field pointer/reference inputs to the existing rounding producer,
 // direct/duration/rate/named-rate graphs 114/114/114/114/114/114/114/114. All restored;
 // scalar frame agrees, player/root ownership, separate SSE input and expanded tail remain.
+// P321: Dispatch 2/5/other and 5/2/other, early-return/sole-exit/Boolean-result/short-result:
+// 98/98/98/98/98/98/98/98. NOT kept: native dispatch tests 1/2/5; reordered
+// arms and retained success carriers do not match. Original body restored.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {

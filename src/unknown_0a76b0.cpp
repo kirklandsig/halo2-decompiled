@@ -981,6 +981,10 @@ extern vector3f *g_4687b0;
 // 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
 // NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
 // attach loses the entry. Original scalar types, observations and complete body restored.
+// P321: Player-only forward input plus existing phased position producer, native/CRT
+// copy, original/staged crosses and from-origin/in-place output:
+// 312/309/312/309/349/388/349/388. NOT kept: ties grow, all others regress;
+// copy/interactions remain unmatched. Original complete body restored.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
