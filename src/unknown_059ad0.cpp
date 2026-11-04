@@ -1061,6 +1061,9 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 // (0x5e1a0 stays 10); a long result returned as `!= 0` 58 (122 bytes, 0x162d00 15); diagnostic only,
 // not kept (it writes the disconnect out by hand): the reason in a local passed by address to the
 // file's state-entry helper with state 10 matches, so the cause is 0x616b0's own body (held file).
+// Round 140: unsigned reason declaration 23 (0x616b0/0x5ef20 stay matched); comparison-owned
+// long/bool reasons 52/50; condition-assigned bool reason 50; member read through its address 23;
+// entry-hoisted long reason 53; branch-scoped reason with plain/addressed member 23/23.
 // @retail 0x5ade0
 bool network_session_host_boot_member(c_class_58d20 *session, long member_index)
 {

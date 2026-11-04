@@ -287,6 +287,9 @@ struct s_spawn_scenario_23aea0
 // globals local, 61 (same code); vector3f_assign fed through a `vector3f const *` view of the record 61 (same code).
 // So the round 55 match needs the field assignments (or its dword reads) and the 0x502250 symbol together.
 // BLOCKED-BY 0x157450 (src/unknown_157450.cpp, held by F356 in r59).
+// Round 140: typed per-record setter/scalar copies 100/140; raw batch setter/scalar copies 82/140;
+// typed batch setter/scalar copies 89/140; typed record-reference setter/scalar copies 100/140.
+// The byte-offset setters grow to 486 bytes and every scalar form loses retail's unroll/addressing.
 // @retail 0x23aea0
 void function_23aea0()
 {
