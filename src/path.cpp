@@ -570,6 +570,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // AC530: One bounded word ordinal owns both capacity and link-copy indexing, signed/unsigned,
 // node/function scope, increment after/before memcpy: 361/361/359/359/361/361/359/359.
 // NOT kept: all regress at 1375/1388 despite frame 0xe4; original total, memcpy and body restored.
+// AC532: Native signed clearing bound with indexed/edge-cursor/step-cursor/both
+// increasing walks 286/286/286/282; bounded short-link counterparts 359 each.
+// NOT kept: four-point best gain below gate, frame still 0xe8; original full body restored.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

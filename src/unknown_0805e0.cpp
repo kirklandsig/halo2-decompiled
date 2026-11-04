@@ -246,6 +246,9 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // flags and high identity dword as retail, next in EDX and low dword in EBX where retail has them the other way round); the successor read through the table, then the iterator store and the entry, then the entry
 // and the iterator store, or after the entry, 62/62/62 (138, al 28, callers keep): next in EBX, flags in ECX, identity in EDX:ECX, mask in AL as retail, the index still in ECX through `lea esi` and the head still padded.
 // Lead: retail's index, its product and the entry are one web in ESI, so the successor stays apart; the back-edge `mov esi, ebx; jmp` looks like a tail-merged copy of the entry computation.
+// AC532: Complete complementary rejection in bool/byte/short/long, outer-result
+// 43/43/43/43 and direct-return 52/52/52/52. NOT kept: no exact mask/successor
+// allocation; original result, iterator, predicates and memcpy restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

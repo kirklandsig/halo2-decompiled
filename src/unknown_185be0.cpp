@@ -453,6 +453,9 @@ union s_185be7
 // gate, resets, observations and complete body restored; control-root/NONE homes remain.
 // AC529: Complete post-callback correction admission, allowed/blocked bool/byte/short/long:
 // 622/622/622/622/626/626/626/626. NOT kept: predicate residence does not match; control-root/NONE and scalar/flag homes remain.
+// AC532: Controlled/parent-tag/bounds expiry subsets 1/2/4/3/5/6/7:
+// 622/626/626/626/626/626/626; complete scopes with immutable index 626.
+// NOT kept: no match or gain; original observations, scopes and full body restored.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {
