@@ -3387,6 +3387,9 @@ void function_2011f0(long arg_0);
 // F386: Whole active-body containment and common completion gate, persistent reuse
 // bool/byte/short/long success 318/318/318/354; missing polarity 318/318/357/357.
 // NOT kept: ties/regressions; original body restored, input/seat/chain homes remain.
+// F389: Shared narrowed row identity word/dword/long/int: word producer 318/394/394/394,
+// mask producer 318/356/356/356. Wide masks also demote 0x200d80 to 22. NOT kept: all tie/regress;
+// original narrowed observations and complete body restored; input/placement and chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {

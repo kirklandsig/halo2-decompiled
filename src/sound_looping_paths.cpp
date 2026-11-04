@@ -319,6 +319,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // 866/866/866/866; entry-owned 959/959/949/980. NOT kept: one-use results
 // do not match; early lifetimes grow to 3345-3361/3327. Original body restored;
 // entry zero, target/query/count homes and choice carriers remain.
+// F389: Actual floating linear-converter input at all three raw-field consumers,
+// ordinary/forced existing conversion-helper masks 0..7, 875 each (3337/3327 bytes).
+// NOT kept: all regress; original raw scalar contract, helpers and complete body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

@@ -1278,6 +1278,9 @@ long function_10f5f0(long object_index);
 // F386: Complete velocity/offset/position component-array observations, seven subsets,
 // then all with six-real output: 565 each. Original entire body restored; native frame,
 // predicate-byte stores and reduction homes remain. NOT kept: no gain.
+// F389: Completed point-average branch/default/result/running-result publications,
+// original then six-real API output: 573/566/565/565 twice. NOT kept: ties/regressions;
+// original average, buffer and complete body restored; native frame/flag-result homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2555,6 +2558,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // F386: Caller-owned advance store with scalar advanced-spin input to the existing helper,
 // four real-result graphs, ordinary/forced: 127/133/127/132 twice. NOT kept: all regress
 // and grow; original helper/body restored, turn-product and spin transport remain.
+// F389: Existing spin/period field-reference contracts, each/both ordinary/forced,
+// then both with the dividend local named by role: 42 each. NOT kept: no equality/gain;
+// original pointer contracts, two-use helper and full body restored; turn/spin schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
