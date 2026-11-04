@@ -449,6 +449,9 @@ void __stdcall function_1160c0(real dt)
 // AC518: Complete normalization admission bool/byte/short/long, direct predicate
 // and success-owned result, 292/292/292/292/292/292/292/292 (1355 bytes).
 // NOT kept: decision-result lifetime does not match; original body restored.
+// AC522: Plain axis scaling long/int/short/word/byte/signed-byte loops,
+// native component cursor and long loop with complete shared cross:
+// 187/187/212/212/212/212/212/198. NOT kept: regressions; original body and homes restored.
 // B421: Root-node classification across metadata/tick producers, bool/byte/short/long,
 // positive/complementary results 277/277/289/288/277/277/289/288. NOT kept: early
 // cmp/sete differs from retail; original direct word test and complete body restored.
@@ -462,6 +465,15 @@ void __stdcall function_1160c0(real dt)
 // J253: Actual shared rotation providers on rest offset 196/236/234, on recurrent
 // prediction 246/295/295; direct paired trig arguments 196/236. Explicit provider
 // units resolve every call. All regress or move frame/length away; original body restored.
+// F374: Optional-physics presence/absence at the original post-position test,
+// bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
+// segment/home recovery; original field test and complete body restored.
+// DH350: Output-owned velocity difference/scale, interpolation contribution
+// and prediction translation phases, seven subsets then compound axis:
+// 171/171/171/171/171/171/171/171. NOT kept: no native byte match; original complete body restored.
+// DH354: Complete outer fixed/timestep admission result in bool/char/signed-char/
+// byte/short/word/int/long: 171/171/171/171/171/171/171/171. NOT kept: no exact admission residence;
+// direct guard/body restored; segment EDX and scalar/axis/previous/rest-offset homes remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

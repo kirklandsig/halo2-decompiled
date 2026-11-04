@@ -172,6 +172,10 @@ __forceinline void function_180d83(transform4x3f const *arg_0, point3f *arg_1)
 // array declared inside the block after the guard 94 (same code); the maximum as one `first || greater` test 115;
 // the clamp helper without its volatile pointers (one named value) 687 (2551 bytes: the volatile reads are
 // load-bearing); the strip-count loop counter renamed 94 (same code). Still BLOCKED-BY 0x17cfa0 (contributor).
+// Round 141 (KIMI1, fast): split vertex/count declarations 94/94; descending short countdown on the new count
+// graph 165; outer maximum, early allocation handle and post-guard array on that graph 165 each; existing
+// scale/rotation/addition helpers in a plain corner loop 944 (2945 bytes), with the other matrix provider 784
+// (2821 bytes). Original executable body and helpers restored; entry/count homes and creation-call setup remain.
 // @retail 0x180d80
 long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1, long arg_2, s_cluster_query const *arg_3, bool arg_4, s_180d81 const *arg_5, s_180d83 *arg_6)
 {

@@ -521,6 +521,8 @@ real function_d5d80(long object_index, bool ignore_difficulty)
 	return result;
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (3); the permuter on this function was stopped by the
+// harness before it produced a try, and only the `or eax, -1` schedule against the two global loads is left.
 // score 3 (was 3): with the callers' image, only the schedule differs: ours puts `or eax, -1` right after the
 // load of g_47d8e0 (before that value's store at +0x7c); retail stores it first, loads g_4686c4, then does the
 // `or`. Tried: unknown22 assigned right after unknown7c (11), g_4686c4 in a local (3, same code), both globals
@@ -645,6 +647,8 @@ void __stdcall object_get_damage_owner(long object_index, s_damage_owner *owner)
 	}
 }
 
+// MiniMax A (11-04, run 41): no new form, no lower score (6); the two stores keep our order around the three
+// pushes of the ba7f0 call, and joining them into one comma statement gives the same bytes.
 // score 6 (was 6): retail pushes -1, 2, -1, then stores unknownf4 and sets shield_depleted, then pushes the
 // object; ours sets the flag first and stores unknownf4 after the last push. Tried: flag before unknownf4 (6),
 // early return instead of the nested if (6). Setting the flag after function_ba7f0 scores 4 but moves the
@@ -869,10 +873,25 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 
 /* whether any entry of the block at +0x70 (0x60 byte entries) has the flag
    at +0x40 of the structure it points to */
-// score 8 (was 8): only the registers differ. Ours takes owner in edx with the loop index in ecx; retail takes
+// score 5 (was 7): the count guard, the base load and the entry walk now sit in retail's order and the registers
+// agree (owner in ecx, the index in edx). Left: the index is zeroed inside the guarded block instead of before
+// the guard, so our `xor edx, edx` lands after the base load.
+// MiniMax A (11-04, run 41): an explicit `count > 0` guard around a do/while, with the index and the entry
+// pointer inside it, puts the base load after the guard like retail and drops the score from 7 to 5. Tried and
+// reverted: the index declared before the guard (8) and `if (i < count)` (8) both make LTCG swap the owner
+// argument into edx. Also this round: the index hoisted before the guard with the count read first, with the
+// index read first, and assigned in the guard's condition (`(i = 0, count > 0)`) all give 8 with the same
+// edx owner and ecx index, so the zeroing cannot move up without losing the register pair.
+// MiniMax A (11-04): reading the count into a named local and walking an entry pointer by 0x60 gives retail's
+// register pair (owner in ecx, index in edx) and drops the score from 8 to 7; the base load is still hoisted above
+// the guard. Tried and reverted: an explicit `count > 0` guard with do/while (8), the same body as a while loop
+// (7, no better) and the base read inline in the loop body (8).
+// Earlier forms: count in a local (8), pointer-stepping loop (11), while loop (8), index declared
 // owner in ecx and the index in edx (retail's only caller, 0xd74e0 at 0xd7603, does `mov ecx, edi`; that caller
 // is still unmatched). Tried: count in a local (8), pointer-stepping loop (11), while loop (8), index declared
 // first (8), entry pointer local (8), early `return true` (26, owner moves to eax), typed struct view (8).
+// Earlier still: retail takes owner in ecx and the index in edx (retail's only caller, 0xd74e0 at 0xd7603, does
+// `mov ecx, edi`; that caller is still unmatched).
 // Also tried: the parameter named `component` (8), `break` + `return i < count` with no flag (27), a walking
 // pointer declared before the index with `i++, rigid_body += 0x60` (11), that with the count read first (12),
 // named count and element-array locals (12). The parameter takes ECX whenever its last use comes before the
@@ -886,14 +905,23 @@ bool function_d72e0(long object_index, s_type_1e6529 const *data)
 bool function_d74b0(byte const *owner)
 {
 	bool result = false;
+	long count = *(long const *)(owner + 0x74);
 
-	for (long i = 0; i < *(long const *)(owner + 0x74); i++)
+	if (count > 0)
 	{
-		if ((*(byte const *const *)(*(byte const *const *)(owner + 0x70) + i * 0x60 + 0x40))[0x40])
+		long i = 0;
+		byte const *entry = *(byte const *const *)(owner + 0x70) + 0x40;
+
+		do
 		{
-			result = true;
-			break;
-		}
+			if ((*(byte const *const *)entry)[0x40])
+			{
+				result = true;
+				break;
+			}
+			i++;
+			entry += 0x60;
+		} while (i < count);
 	}
 	return result;
 }
@@ -1553,6 +1581,8 @@ real function_dc230(long rider_index, long vehicle_index, s_type_1e6529 const *d
 
 /* damages an object with the globals' default damage (from +0x144), credited
    to an owner if one is given */
+// MiniMax A (11-04, run 41): no new form, no lower score (10); the aggregate copy of *owner keeps ecx, edx, eax
+// where retail has eax, ecx, edx, and retail stores the flags before `push edi`.
 // score 10 (was 10): two schedule differences remain. Retail copies *owner through eax, ecx, edx (this uses ecx,
 // edx, eax) and stores the finished flags before `push edi` / `lea eax,[data]` (this stores them after the lea,
 // which then goes through ecx instead of eax). Everything else, including the usercall registers, matches.
@@ -1830,6 +1860,8 @@ long function_1e4a10(long index);
 /* damages an object's shield: scales the damage by the shield material's
    armor, takes it off the shield, passes what is left over to the body
    (accumulator->damage) and stuns the shield's recharge */
+// MiniMax A (11-04, run 41): no new form, no lower score (10); assigning the multiplier in an else arm instead
+// of at the declaration scores 156, and the reload order after the d5bc0 and d6a70 calls stays as it was.
 // score 10 (was 10): only the schedule differs: after the call to function_d5bc0 retail reloads the 1.0f
 // constant before the `xorps` of zero and the spilled locals (ours reloads 1.0f last), and ours pushes the
 // shield-damaged effect before `lea ebx, [edi + 8]` for function_176780 (retail: after). Tried: owner pointer in
@@ -2847,6 +2879,9 @@ PRIVATE inline real damage_random_range(real lower, real upper)
 /* the damage a damage event does to an object before armor: a random
    amount between the definition's bounds, scaled by the event, the owner's
    AI and the game engine; sets *friendly when the team scale applies */
+// MiniMax A (11-04, run 41): no new form, no lower score (5); the two final return blocks keep our order (the
+// team-false one reloads damage from the stack where retail copies the xmm1 copy), and splitting the damage
+// product into two statements gives the same code.
 // score 5 (was 108): only the order of the two final "return damage" blocks differs (retail
 // puts the no-team return before the not-enemy one, ours the reverse). Tried: three early returns
 // (16), a goto to one shared return (24), a flat team/state test (5, same order), separate team and
@@ -4074,6 +4109,8 @@ void function_db670(long object_index, long vehicle_index)
 /* a permutation destroyed elsewhere (over the network): starts its delayed
    effect, or destroys it here */
 // @coldspear's permuter (#104, 2026-10-30): 38 -> 29 only by swapping arguments at a call and adding volatiles (not kept).
+// MiniMax A (11-04, run 41): no new form, no lower score (28); the call to 0xd9d60 still takes the flag in a
+// register other than AL and the permutation other than EAX, and that callee's convention may not change.
 // score 28 (was 38): frame 0x40 and ingress agree; late EDI save and callee transport remain.
 // The effect flag stays on the stack rather than AL; the destruction permutation stays on the stack
 // rather than EAX. The info argument is now on the stack as retail.
@@ -4567,6 +4604,8 @@ dword function_db810(long object_index, long node_index)
 }
 
 /* the model node of the object's lowest ranked physics node */
+// MiniMax A (11-04, run 41): no new form, no lower score (4); naming the masked tag index in a local leaves the
+// same four instructions (the mask after `push ebp`, and the tag entry in edx where retail uses eax).
 // score 4 (was 134): retail calls 0x16d890 here (its only caller), so it is declared noinline ahead of its
 // definition in unknown_16d280.cpp (noinline only on this file's declaration still inlines it: 134). Left: the
 // prologue's order (retail masks the tag index before it pushes EBP) and the register that holds the tag's

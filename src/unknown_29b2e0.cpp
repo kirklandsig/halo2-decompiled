@@ -324,6 +324,14 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // Original copies, helper contracts and body restored; unity/root/yaw homes remain.
 // J252: Existing rotation output identity and helper expansion contracts: 176/176/176/176/176/176/176/176.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// DH349: Complete scalar cosine/projection/sine-cross parts on retained in-place
+// graph, seven family subsets 178/195/176/178/176/194/178; all row-local scopes 178.
+// NOT kept: no gain; native unity/root/yaw and rotation homes remain. Original
+// scalar results, all input reads before output stores, helper and full body restored.
+// DH357: Usability return with unchanged optional magnitude and caller expressions,
+// bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
+// NOT kept: all regress and raise the matched sibling to 64-70; original numeric
+// contract, alias-safe helper publications and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)
