@@ -309,61 +309,58 @@ bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 	return result;
 }
 
-// MiniMax H (11-03): no new form, no lower score; retail's per-stage cache, its dirty mask and its dispatch table are not in this project, so the body cannot be rebuilt from this file.
-// MiniMax E (11-01): no new form, no lower score; retail's body keeps a per-stage cache and a
-// dirty mask that this project does not have.
-// score 152 (was 152): retail writes a per-stage cache at 0x404dd0 + stage * 0x80 and a dirty
-// mask at 0x407490 and dispatches through a jump table at 0x158c8; none of those globals or that
-// table exist in this project, so the body cannot be rebuilt from this file.
+// score 0 (was 152): matches (MiniMax H, 11-04). The stage states go through sampler_state_write,
+// whose type-by-reference argument keeps each call's own dirty-mask update, and the switch cases
+// are in retail's order (3/7, 1/5, 0, 4, 2/6), which puts the case blocks where retail has them.
 // @retail 0x15780
 void function_15780(long stage, long mode)
 {
-	D3DDevice_SetTextureStageState(stage, D3DTSS_MAXANISOTROPY, 0);
-	D3DDevice_SetTextureStageState(stage, D3DTSS_MIPMAPLODBIAS, 0);
-	D3DDevice_SetTextureStageState(stage, D3DTSS_MAXMIPLEVEL, 0);
-	D3DDevice_SetTextureStageState(stage, D3DTSS_COLORSIGN, 0);
-	D3DDevice_SetTextureStageState(stage, D3DTSS_ALPHAKILL, 0);
+	sampler_state_write(stage, D3DTSS_MAXANISOTROPY, 0);
+	sampler_state_write(stage, D3DTSS_MIPMAPLODBIAS, 0);
+	sampler_state_write(stage, D3DTSS_MAXMIPLEVEL, 0);
+	sampler_state_write(stage, D3DTSS_COLORSIGN, 0);
+	sampler_state_write(stage, D3DTSS_ALPHAKILL, 0);
 	switch (mode)
 	{
-	case 0:
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 1);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 1);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSW, 1);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 2);
+	case 3: case 7:
+		sampler_state_write(stage, D3DTSS_ADDRESSU, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSV, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSW, 3);
+		sampler_state_write(stage, D3DTSS_MAGFILTER, 1);
+		sampler_state_write(stage, D3DTSS_MINFILTER, 1);
+		sampler_state_write(stage, D3DTSS_MIPFILTER, 0);
 		break;
 	case 1: case 5:
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSW, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 2);
+		sampler_state_write(stage, D3DTSS_ADDRESSU, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSV, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSW, 3);
+		sampler_state_write(stage, D3DTSS_MAGFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MINFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MIPFILTER, 2);
 		break;
-	case 2: case 6:
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 4);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 4);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSW, 4);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 2);
-		break;
-	case 3: case 7:
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSW, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 1);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 1);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 0);
+	case 0:
+		sampler_state_write(stage, D3DTSS_ADDRESSU, 1);
+		sampler_state_write(stage, D3DTSS_ADDRESSV, 1);
+		sampler_state_write(stage, D3DTSS_ADDRESSW, 1);
+		sampler_state_write(stage, D3DTSS_MAGFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MINFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MIPFILTER, 2);
 		break;
 	case 4:
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSU, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSV, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_ADDRESSW, 3);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MAGFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MINFILTER, 2);
-		D3DDevice_SetTextureStageState(stage, D3DTSS_MIPFILTER, 0);
+		sampler_state_write(stage, D3DTSS_ADDRESSU, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSV, 3);
+		sampler_state_write(stage, D3DTSS_ADDRESSW, 3);
+		sampler_state_write(stage, D3DTSS_MAGFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MINFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MIPFILTER, 0);
+		break;
+	case 2: case 6:
+		sampler_state_write(stage, D3DTSS_ADDRESSU, 4);
+		sampler_state_write(stage, D3DTSS_ADDRESSV, 4);
+		sampler_state_write(stage, D3DTSS_ADDRESSW, 4);
+		sampler_state_write(stage, D3DTSS_MAGFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MINFILTER, 2);
+		sampler_state_write(stage, D3DTSS_MIPFILTER, 2);
 		break;
 	default: __assume(0);
 	}
@@ -3277,6 +3274,9 @@ void __stdcall function_1e930(long opaque)
 
 bool g_55e6bc;
 
+// MiniMax H (11-04): no new form, no lower score; the output stores written through an index give
+// 143, 144, 143 and 145, and the near-plane block in six orders gives 119, 109, 93, 87, 131 and 117
+// against 87, so retail's split of the output into a row base and a cursor still stands.
 // MiniMax H (11-03): no new form, no lower score; retail keeps the projection base in ecx, the row counter in edi and the row base in esi, where ours uses one cursor in ecx and the counter in edx, and retail folds the depth-clip global into the multiply where ours keeps it in a register.
 // MiniMax E (11-01): index-based output stores score 143 and a separate near factor ties 87;
 // no new form, no lower score.
@@ -5616,6 +5616,12 @@ static __forceinline void offset_rectangle_1f070(short_rectangle2d *rectangle, s
     rectangle->bottom += dy;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the two clamps written as if/else give 177 (99 with
+// short locals), the two rectangles and the bitmap pointer in five declaration orders give 60 and do not
+// move the slots, and the permuter (71 tries) leaves 60. A long left gives retail's slots (the clip at
+// [esp+0xc], the bounds at [esp+0x14], the bitmap at [esp+0x1c]) and retail's branchy clamps, but the
+// function is then 21 bytes short with a frame four bytes too big; retail adds the horizontal offset in
+// 32 bits where ours adds it in place in 16 bits, and only a long offset forces that (128).
 // MiniMax D (run 37): no new form, no lower score; the bitmap pointer declared first, the two rectangles swapped and the casts removed all give 60, a short top gives 99 and the clamps written as if/else give 187, the four clamp values as longs or declared first in the outer scope give 122 and 113, and retail's frame leaves sixteen bytes below the rectangles where ours leaves twelve, which the type and the order of the clamp locals do not move.
 // score 60 (was 75): the two rectangles sit four bytes higher in the frame than retail's and the
 // bitmap pointer shares the clip's slot instead of being spilled; the clip branch clamps the left
@@ -5885,6 +5891,10 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// MiniMax H (11-04): no new form, no lower score; the frame time copied through one union, through a
+// union of two halves or through a local read gives 158, 159 and 153, and retail writes that time
+// into the global as two dwords, which the double the global has in include/timed_effect.h cannot
+// express, while retail uploads the gamma ramp inline against the device's own ramp buffers.
 // score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
 // default only when it is (the comparison is against the bound loaded before the stores), so the
 // two default stores are now conditional on the bound being zero; the unconditional stores were a
@@ -6694,6 +6704,9 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 
+// MiniMax H (11-04): no new form, no lower score; the counter in the loop head gives 205, the entry
+// pointer as the induction variable 172 and both together 183 against 139, so retail's pushed frame
+// pointer and its 0x58 frame still stand.
 // MiniMax H (11-03): no new form, no lower score; retail saves edi in the prologue and keeps the scenario pointer in it across the loop's call with ebp as the counter, where ours saves edi inside the block and keeps the pointer in ecx, so every stack slot sits four bytes off; the scenario pointer in a local gives 148 and was dropped.
 // MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
 // score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
@@ -8308,6 +8321,9 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax H (11-04): no new form, no lower score; the two offsets passed to 0x16a30 in retail's order
+// (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx) match retail's behaviour but
+// leave the score at 171, so the body stands as it is.
 // MiniMax H (11-03): no new form, no lower score; retail passes the two offsets to 0x16a30 in the other order (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx, where ours passes 0x20/0x30 in ecx); swapping them matches retail's behaviour but leaves the score at 171, so the body was restored.
 // Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
 // as the second and third arguments), the device result tested directly with the failure

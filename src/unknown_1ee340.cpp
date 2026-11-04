@@ -103,6 +103,7 @@ PRIVATE inline void shape_transform_point(const transform4x3f *matrix, const poi
 	result->z = matrix->up.k * z + matrix->left.k * y + matrix->forward.k * x + matrix->position.z;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the x store through the array element, the helper on the array element, the w store through the pointer, the x store as a long copy, through the m128 accessor and through the point3f view give 112, 25, 58, 106, 112 and 106, the members in the initialiser list give 6 and the member stores moved after the loop give 119 to 123, and the permuter tried 95 forms without a lower score, so the entry's load of the radius constant before the index and the vertex address folded into the x store still stand.
 // MiniMax B (11-03): no new form, no lower score. The entry still loads the index before the radius
 // constant and the loop still materialises the vertex address before its x store. This round: the x
 // store written through the array element while y and z go through the pointer gives 110 (the count is
