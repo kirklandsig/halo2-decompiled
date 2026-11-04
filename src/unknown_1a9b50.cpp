@@ -940,6 +940,7 @@ static __forceinline long real_to_long(real value);
 // DH322: Sequential magnitude/query speed, prediction/flight duration and limit/direction distance,
 // seven subsets then entry declarations: 384/445/382/446/384/445/446/446. NOT kept:
 // storage nonmatches; original scalar lifetimes/body restored, early exit and query homes remain.
+// F367: Complete facing-alignment/prediction-seconds/projected-distance nodes, masks 1/2/4/3/5/6/7, then all with remaining-distance node: 382 each. NOT kept: eight byte-neutral trials; original arithmetic, live observations, query aliases and full body restored.
 // @retail 0x1aab50
 bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 {
