@@ -593,13 +593,26 @@ struct s_1f8a70_actor
 // mode share a slot at +0x10 for retail's +0x12, route's byte neighbour +0x14 for +0x16); `result = false;` after the
 // 0x1f86a0 call 366; with the route default storing false 388 (1672 B); with case 3 in case 5's order and route_mode = 1
 // 413 (1624 B, aligned 99).
+// M368: Terminal outer completion before success/cleanup, bool/byte/short/long,
+// guarded by inner/outer result: 318/318/462/462/488/486/491/484.
+// NOT kept: all regress or grow beyond retail; original late assignments restored.
+// Unit/result +0x10 versus +0x12 and route-tail placement remain.
 // AC521: Independent inner route outcome on the two-result/native-word-selector graph,
 // byte/signed-byte/short/long with converted or test-arm outer results: 191/191/191/191/300/300/306/306.
 // NOT kept: no exact memory-result home; original outer/inner results, unit scope and full body restored.
+// AC530: Uniform complete frame-member pointer at active/route/unit/reset phase boundaries
+// 506/505/505/505; corresponding real frame references 506/505/505/505 (fast control 188).
+// NOT kept: all regress and lose native entry order; original field observations and full body restored.
+// Y576: Full-record/fallback/failure-first branch subsets 187/211/305/210/304/305/304;
+// all with shared modes-two/three destination prefix 369. NOT kept: one-point best gain;
+// route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
 // P325: On the two-result graph, inner-result declarations after unit/reset/destination,
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
 // score 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
+// N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
+// 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
+// early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

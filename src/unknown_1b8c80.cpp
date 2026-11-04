@@ -1535,6 +1535,16 @@ void function_1f86a0(long actor_index);
 // AC518: Actual join-call result bool/byte/short/long, each with native member
 // payload first and whole-slot payload second: 158/134/158/134/158/134/158/134.
 // NOT kept: one-use admission result unmatched; original body and types restored.
+// AC523: Progressive same-root result initialized from canonical specified,
+// then replaced by the gated equality, bool/byte/short/long with member/full
+// payload pairs: 225/225/225/225/296/296/295/295. NOT kept: result residence
+// unmatched; original mask, equality, payload types and complete body restored.
+// AC525: Post-validation transport-admission bool/byte/short/long results,
+// native slot-member/full-slot pairs, eight at 134. NOT kept: result residence
+// unmatched; original payload, masks, roots and full body restored; mask/entry homes remain.
+// AC527: Post-search reservation observation as bool/byte/short/long, native member/full-slot
+// payload pairs, eight at 134. NOT kept: one-use result residence unmatched; original types,
+// observation, raw mask, root short circuit and complete body restored; mask/entry homes remain.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {

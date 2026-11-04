@@ -116,6 +116,10 @@ bool function_ba8c0(s_object_function_ab const *function, long object_index, rea
 // bytes); the lookup result in a named bool returned when set, 1.0 `return true` 115; the body under
 // `if (!(override && lookup))` with `return true` after it 117. Every constant 1.0 return still jumps into
 // the early return's tail (or the reverse).
+// Round 67 (fast): everything after the early test in a forceinline helper with the 1.0 `return true` 132 (357
+// bytes; under LTCG the inline boundary still merges the early return into the 1.0 block); a register bool set
+// true before the 1.0 store and returned 117; the override bit in a named bool 23; the override index scoped to
+// the flag test with the call nested 23; enabled set before the 1.0 store 23.
 // @retail 0xbab40
 bool __stdcall function_bab40(long object_index, long name, real *value)
 {

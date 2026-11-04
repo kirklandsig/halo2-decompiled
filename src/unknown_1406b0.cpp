@@ -816,6 +816,10 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 // Round 156 (fast): the search in a forceinline helper with its own parameters 14; a long font copy for the search
 // and the store 14; the prediction's fields typed as the parameters' struct 14; the header call's flags in an inner
 // block with a found flag 14; a separate created pointer with a font copy 14.
+// Round 67 (fast): `__stdcall` with plain long parameters and the caller passing them directly 86 (still register
+// arguments, 170 bytes; 0x13eeb0 18); the character stored before the font 15; the allocation tested as an
+// assignment in the condition 14; const flags 14; const parameters 14. Diagnostic: one to eight unused locals at
+// entry leave the EBX/EBP swap (not a symbol-count tie).
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

@@ -412,6 +412,10 @@ __forceinline void function_183672(point3f *arg_0, point3f const *arg_1, __m128 
 // copy with direct/shared/scalar reconstruction 95 each; the normal field address 8. Original restored.
 // Round 138: inner loop as while 68 (671 bytes); bodies by pointer add 8; context assigned after its declaration 8;
 // component guards nested 8; index guards nested 8.
+// Round 53 (m3 lane 15, fast): the second body read before the first 8; the query pointer named before the
+// call 8; entry pointers for both bodies 8; `result = true` first in the closer-contact arm 10; that test with
+// its operands swapped 8. Diagnostics: `(void)j`, `(void)i`, `(void)first` and unused initialised copies of
+// them (one or two) leave the slots, so no-code references do not order these spill homes.
 // @retail 0x183670
 bool __stdcall function_183670(long component_a, long component_b, point3f *a, point3f *b, real *distance)
 {
@@ -721,6 +725,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC519: Standard forward origin/hit/completed-normal subsets 1..7, then final
 // position transfer: 312/303/305/378/382/355/357/383. NOT kept: best gain five
 // is below eight; normal forms shorten away from retail. Original body restored.
+// AC524: Complete root admission bool/byte/short/long, then complementary
+// rejection, 308 each at 1243 bytes. NOT kept: frame 0x4c versus 0x44, root-kind
+// transport and classifier/plane/output homes remain; original collector restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {

@@ -1719,9 +1719,19 @@ static __forceinline real function_x82e52f(dword *seed, char const *file, long l
 // AC518: Complete countdown/pause expiry bool/byte/short/long at producer or
 // in iteration-owned storage: 220/220/220/220/220/220/220/220 fast (control 220, full 218).
 // NOT kept: one-use result unmatched; frame, unit/mode and look homes remain.
+// AC523: Signed-short countdown/idle-increment/pause-decrement store-and-test
+// results, subsets 1..7 then complete iteration-owned declarations:
+// 220/277/277/225/225/276/276/276 fast (control 220, full 218). NOT kept:
+// no match; original counters, signed wrap, callbacks and complete body restored.
 // P312: Fixed two-weapon !=2 and <=1 exhaustion, long/short/dword/word ordinals:
 // 220/421/220/421/221/421/221/421 fast (control 220, full 218). NOT kept: no match; original loop/body restored.
 // Frame 0x28/0x2c, unit/mode homes and independent look divisions/homes remain.
+// AC525: Post-setter per-weapon presence/absence results in bool/byte/short/long,
+// eight at 220 fast (control 220, full 218). NOT kept: predicate residence unmatched;
+// original post-call read and full body restored; frame, unit/mode and look homes remain.
+// AC527: Shared idle-animation selection as long/dword/int/unsigned-int, at consumption
+// or iteration scope: eight at 220 fast (control 220, full 218). NOT kept: selected-result
+// residence unmatched; original draws, counters, setter paths and complete body restored.
 // @retail 0x166d75
 void __stdcall function_166d75(long user_index)
 {

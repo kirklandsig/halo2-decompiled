@@ -279,6 +279,11 @@ real normalize2d(point2f *arg_0);
 // P311: Existing planar difference over full vector/point storage with native/library captures,
 // P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// Y574: Actual second in-place input supplies both differences, vector/point backing and
+// direct/in-place actor output, each with original/late clearance:
+// 233/257/233/257/182/245/182/245. NOT kept: all regress or miss byte equality; native early
+// object-mask and copy/SSE/query-success schedules remain. Original complete body and helpers
+// restored.
 // AC517: Scalar lifetime role names for radius, planar length/projection and adjusted distance/clearance,
 // phase subsets 1..7 then complete far-separation/state names: eight forms 180 at exact 1025 bytes.
 // Original names and full body restored; early object masking and copied-input/SSE schedules remain.
@@ -292,6 +297,15 @@ real normalize2d(point2f *arg_0);
 // P330: Optional collision-index output presence/complement at the successful-query
 // boundary, bool/byte/short/long: 180/180/180/180/180/180/180/180.
 // NOT kept: one-use admission does not match; original query/result and full body restored.
+// AC529: Second in-place copy from the adjusted snapshot, vector/point backing, original/captured actor input,
+// before/after actor production: 180/182/180/182/226/182/226/182. NOT kept: no equality or gain; native mask/copy/SSE schedules remain.
+// F373: Explicit object ordinal at branch/entry/after actor, parameter then long
+// ownership, and branch/entry dword: 180/193/193/180/193/193/180/193.
+// NOT kept: no match; early forms grow to 1029 bytes. Original body restored;
+// early mask, copied-input/SSE and query-success schedules remain.
+// F375: Actual direct/adjusted mode selector at its byte observation, bool/byte/short/long:
+// 180/180/180/180/180/180/180/180. NOT kept: no byte match; original body restored.
+// Early object mask, copied-input/SSE and query-success schedules remain.
 // @retail 0x1badc0
 bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6)

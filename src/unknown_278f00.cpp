@@ -328,6 +328,9 @@ bool function_a7670(long object_index);
 // DH337: Complete first/second private-prefix absence in bool/byte/short/long:
 // 270/270/270/270/278/278/298/278. NOT kept: unmatched result flags and longer
 // scans; original stopping searches/body restored, selector/count/admission homes remain.
+// DH355: Retry success/count continuation in the existing do-while, long/int/dword/
+// short/word/signed-char/byte/char: 153/153/153/259/259/262/262/262. NOT kept: ties or regressions;
+// byte-width frame shrinks to 0x420; original body and 0x424 frame restored.
 // @retail 0x278f00
 void function_278f00()
 {

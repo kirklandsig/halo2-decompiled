@@ -50,10 +50,9 @@ static __forceinline long floor_to_long_inline(real value)
 }
 
 // score 15 (was 15): left: the first word's OR order (retail ORs flags and category before the
-// kept top bits), the intensity spill slot (level is pushed as a word by 0x133390 and 0x133520; 0x2cbf0
-// declares it a word since r644, #1015, so this cause is open again; not re-measured), the kind-word block (retail shifts the kind in eax, copies it to esi and
-// stores the word after the loader's argument setup, just before the call) and the pool register
-// set before the bit-count test. Earlier rounds' notes follow.
+// kept top bits), the kind-word block (retail shifts the kind in eax, copies it to esi and stores the
+// word after the loader's argument setup, just before the call) and the pool register set before the
+// bit-count test. The intensity spill agrees in this baseline. Earlier rounds' notes follow.
 // Earlier at 17 (was 17): this round's source permuter over the body found no better form (22 tries in
 // 310s, best 17 on the reduced image and on the full image, equal to the baseline, no confirming
 // build), so the body is unchanged.
@@ -228,6 +227,10 @@ static __forceinline long floor_to_long_inline(real value)
 // local 16; both words read that way 368; first word stored and read that way 25 (both orders right, the
 // store moves up); plus the second word stored that way 371 (every access global-addressed); tag/key stored
 // that way before the entry pointer is formed 375 (1125 bytes).
+// Round 105: const entry pointer 15; boolean add result 79 (1038); boolean result with the store first 77;
+// direct packed store and field instance bit 79; sequenced store-and-add condition 77; const bit count 15;
+// pool-typed state local 15; global-array first-word read plus second-word kept bits last 16 (same as the
+// global read alone). Original body restored; the intensity spill agrees in this baseline.
 // @retail 0x2cbf0
 short function_2cbf0(long geometry, long category, short instance, dword flags,
     long tag, dword key, long material, byte *object, short mask, byte mode,
