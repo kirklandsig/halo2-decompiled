@@ -2296,6 +2296,8 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // P326: Model luminance weights/normal magnitudes/final rescale declaration lifetimes,
 // subsets 1..7 at model entry, then all at function entry: 542 each. Every initializer
 // stayed at its producer. NOT kept: no gain; original body, status/mesh homes and helpers remain.
+// B448: Complete structure/model shading-path providers, query pointer/reference and forced/ordinary inline:
+// 880/880/1676/1676/805/805/3015/3015. NOT kept: no byte match; complete original body restored.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

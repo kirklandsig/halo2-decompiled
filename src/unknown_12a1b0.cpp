@@ -1451,6 +1451,8 @@ struct s_looping_detail_request
 // original request offset 110/131/135/134; native temporary/copy 134/151/188/187.
 // NOT kept: tested completion requires equality; first-player query still expands.
 // Original whole body restored; native detail/offset transport remains.
+// B448: Complete fallback selection/placement/publication provider, detail and source pointer/reference, forced/ordinary inline:
+// 159/159/159/159/434/434/434/434. NOT kept: no byte match; complete original body restored.
 // @retail 0x21cc60
 bool looping_sound_prepare_detail(s_type_a82d9f const *detail, long looping_sound_index, s_looping_detail_request *request)
 {

@@ -860,6 +860,8 @@ PRIVATE __forceinline bool clip_points_equal_23a6f0(point2f const *a, point2f co
 // B424: Standard min/max interpolation clamp, nested lower/upper, sequential lower/upper,
 // named lower/upper and single standard lower/upper boundary: 357/357/371/372/371/372/376/383.
 // NOT kept: no exact match; original fraction clamp, include set and complete body restored.
+// B448: Complete closed-edge write provider, output pointer/reference and plane pointer/reference, forced/ordinary inline:
+// 198/198/198/198/945/945/945/945. NOT kept: no byte match; complete original body restored.
 // @retail 0x23a6f0
 short function_23a6f0(point2f *output, short count, point2f const *points,
 	plane2f const *plane, short capacity, dword *point_mask, bool *clipped, real epsilon)
