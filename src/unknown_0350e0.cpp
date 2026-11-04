@@ -130,9 +130,15 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // 355/422/356/441/394/415/395/436. NOT kept: one-point best below gate; record consolidation and
 // copies miss equality; native frame and scalar publications unresolved. Original complete body
 // and helpers restored.
+// Y575: Existing matrix-row setters, forward/left/up subsets then all with native real trig:
+// 356/374/355/374/355/363/363/365. NOT kept: best gain one; matrix-row boundaries do not
+// recover frame 0x90 or concurrent x87 inputs. Original two helpers and complete body restored.
 // F366: Real two-turn/three-vector tables, both, vector traversal, turn traversal, turn plus
 // vector table, both traversals, head-tested turn traversal: 364/372/391/396/675/625/626/626.
 // Grouped-storage diagnostics rejected; original builders, arithmetic, snapshots and body restored.
+// Y577: Serial first/second/both turn publication and producer-local input windows,
+// then those four graphs with symmetric two-axis partials: 356/357/357/356/356/357/357/356.
+// NOT kept: all tie or regress; frame 0x98/0x90 and concurrent x87 inputs remain. Original helpers/body restored.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -2272,7 +2278,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
     return (real)random_next(&random->seed) * (1.0f / 65535.0f);
 }
 
-// score 40 (was 57): no `double` locals any more (any double local made LTCG save all four registers at entry;
+// score 27 (was 40): frame 0xc and delayed saves agree; final count comparison now folds after fstp.
+// The second normalized component still loads before multiplying; length is 966 versus 965.
+// Earlier at 40: no `double` locals any more (any double local made LTCG save all four registers at entry;
 // retail saves them lazily inside the two count guards), the random globals are read at each use (loaded after
 // the second guard as retail does), motion[6] is the existing range helper function_259d0 and the length block
 // is the existing normalize3d. Still different: retail folds `cmp ebp, [ebx]` right after the last fstp (ours
@@ -2344,6 +2352,9 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // F368: Existing scale complete scalar input/products/setter/native input/index loop/native-input loop/scalar-input setter/native output: 40/40/40/340/16/340/40/340. Plain loop 16 at 967/965; NOT kept: shared users worsen and 25 matches are lost. Shared header restored; final count split remains.
 // P315: Native ordinal/group/record/motion lexical ownership, seven independent/paired/full sets, then full parameter-role names: 40/40/40/40/40/40/40/40.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
+// Y578: Existing range producer at initial-direction/signed-extent/signed-motion families,
+// subsets 1/2/4/3/5/6/7 then all with entry range: 45/40/27/45/32/27/32/147.
+// Keep signed-motion family alone: plain 27, native fstp/compare fold, unchanged samples and 0xc frame.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2380,12 +2391,9 @@ bool function_39a80(byte *state)
             *(real *)(entry + 4) = (sample + sample - 1.0f) * *(real *)(state + 8);
             sample = (real)random_unit_fraction(g_4e7408);
             *(real *)(entry + 8) = (sample + sample - 1.0f) * *(real *)(state + 0xc);
-            sample = (real)random_unit_fraction(g_4e7408);
-            motion[3] = sample + sample - 1.0f;
-            sample = (real)random_unit_fraction(g_4e7408);
-            motion[4] = sample + sample - 1.0f;
-            sample = (real)random_unit_fraction(g_4e7408);
-            motion[5] = sample + sample - 1.0f;
+            motion[3] = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, -1.0f, 1.0f);
+            motion[4] = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, -1.0f, 1.0f);
+            motion[5] = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, -1.0f, 1.0f);
         }
         state[0x86] = true;
     }
@@ -2476,6 +2484,10 @@ real magnitude3d(vector3f const *v);
 // Y573: Fallback early-exit/while/cursor lifetime graphs: 170/170/170/170/170/170/170/170. NOT
 // kept: all tie; raw-length/dot homes persist and cursor forms miss equality. Original complete
 // body and helpers restored.
+// Y575: Existing rotation-size clamp at tail/direct-tail/rotation-entry/direct-entry/
+// predicate/direct-predicate, then original size at predicate/rotation-entry:
+// 171/171/303/303/311/311/311/303. NOT kept: no gain; early one-use size producers
+// miss equality and move frame/length away. Original helper contracts and body restored.
 // P319: Conditional absolute formation, direct negative/nonnegative, real conditional/
 // positive/branch and double conditional/positive/branch: 195/195/195/195/195/215/215/199.
 // NOT kept: every form regresses and loses the native frame; original fabs and full body restored.
@@ -2642,6 +2654,13 @@ s_cached_input_list g_5234e8[4];
 // P315: Actual data-array output receivers, base/retail-biased and indexed/streaming record cursors, without/with the native list snapshot: 147/147/147/147/136/136/136/136.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: Fast control 147; the native-list array receiver is 132 plain at 554/548, not kept.
+// Y578: Accepted-record count post-increment, four shape-storage scopes without/with
+// a once-read list: 147/147/147/147/141/141/141/141 fast (control 146, full 113).
+// NOT kept: no equality or frame recovery; original count-publication phase and body restored.
+// Y580: Actual long/byte source cursors with ordinal/remaining/end !=/end < termination:
+// 143/143/161/161/143/143/161/161 (fast control 146, full 113). NOT kept: three-point
+// leads below gate, retained source base lacks native shape, extents 536/562 versus 548;
+// original live source reads, scan and complete body restored; frame/list/output homes remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -2816,6 +2835,12 @@ static void clamp_cached_input(s_cached_input_entry *entry)
 // Y573: Nested admission, found last-use scope and immutable request; seven subsets and complete
 // while scan: 317/317/317/317/317/317/317/317. NOT kept: all tie; native prefix/state and ordinal
 // homes remain. Original complete body and helpers restored.
+// Y575: Creation/duplicate/decay rejection continues, seven subsets, then negative-first
+// growth: 317/317/317/317/317/317/317/367. NOT kept: ties or regression; native prefix/state
+// and ordinal homes persist. Original full body, helpers, count reads and swaps restored.
+// Y577: Indexed paired/fallback receivers and duplicate element reference, seven subsets,
+// then complete graph with creation reference: 375/396/317/399/375/396/399/399. NOT kept: no equality;
+// original full body restored. Native state/prefix and ordinal homes plus decay rotation remain.
 // @retail 0x4ac30
 long __stdcall function_4ac30(s_cached_input_list *state, s_cached_input *output, long limit, real step)
 {
@@ -3742,6 +3767,9 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // P315: Current complete origin-sum graph, four real corner-input producer/geometry/entry/immutable lifetimes, without/with native color: 230/230/230/230/225/225/225/225.
 // P315: NOT kept: no byte match or supported gain; original full body restored.
 // P315: One-point scalar forms fail the gain gate; six-point native-color forms grow to 1826/1819.
+// Y578: Ordinary-inline/plain-private corner producer, pointer/reference input contracts,
+// scalar/native-color frames: 231/231/231/231/225/225/225/225. NOT kept: no exact expansion;
+// color gains six and grows to 1826/1819. Original helper, contracts, alpha and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

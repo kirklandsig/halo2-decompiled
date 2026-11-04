@@ -1240,6 +1240,10 @@ bool function_108530(long device_index, long name)
 // P306: Mutable acceleration/deceleration/cruise-speed producers, seven subsets,
 // then separately initialized derivatives: 121 each. NOT kept: no gain or match.
 // Original phase producers restored; XMM6 initial-speed/ramp-down stack residency remains.
+// Y580: Paired endpoint squares at entry/floors/bounds/pins, local/field cruise ownership:
+// 169/185/168/184/168/184/175/191. Post-pin pair recovers ret 0x14 and both callers in
+// preview, but grows a frame and 558/571-byte bodies. NOT kept: early one-use nodes lack
+// equality and regress; original complete body restored at 121, native 523 bytes.
 // @retail 0x107ab0
 void device_motion_start(s_device_motion *motion, real target, real duration, real ramp_up_time,
 	real ramp_down_time, real final_velocity, real initial_velocity)

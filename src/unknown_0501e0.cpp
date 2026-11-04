@@ -323,6 +323,13 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
 // 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
 // and lengthen the body; original aggregate-scaled helper and complete body restored.
+// Y580: Current aggregate-scaled/native-sum graph, actual endpoint traversal with long/dword
+// ordinals: separate/fused/iteration-owned/in-place displacement workspaces
+// 384/373/375/378/441/441/382/382. NOT kept: storage graphs miss equality and native extent;
+// original helper and complete body restored; frame 0x20 versus 0x14 remains.
+// Y582: On the aggregate-scaled helper, live forward/up/right coefficient streams, seven
+// nonempty subsets and all streams with indexed output: 252/253/253/252/252/252/254/252.
+// NOT kept: all regress; original helper/body restored; frame and coefficient/input homes remain.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

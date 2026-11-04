@@ -1527,6 +1527,10 @@ long function_cbd50(long unit_index, short weapon_index);
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 164 each. NOT kept: pool/state/SETLE/result homes and
 // byte normalization remain; original receivers, scalar argument read and body restored.
+// Y580: Actual unit-header element in mutable/readonly pointer/reference forms,
+// at entry/controlled scope: 347/347/347/347/344/344/344/344. NOT kept: all regress
+// and lengthen to 1300/1299 versus 1286; original lookup observations and body restored.
+// Native pool/displacement ownership, SETLE/default homes and byte normalization remain.
 // @retail 0x110ab0
 bool __stdcall function_110ab0(long unit_index)
 {

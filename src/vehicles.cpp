@@ -2901,6 +2901,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // P299: Planar facing/velocity/paired copies and paired existing 2D product, original
 // then independent relative output: 737/737/764/764/745/745/769/769. NOT kept: native
 // planar copy staging does not recover frame 0xfc; every form regresses. Original full body restored.
+// Y579: Actual quaternion return nested/received, original/relative/inverse-current/
+// inverse-desired output graphs: 690/689/698/698/700/700/699/699.
+// NOT kept: best gain three; native 0xfc frame remains missing. Original full body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3211,6 +3214,11 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // DH325: Native force/torque/working-velocity memcpy subsets 1/2/4/3/5/6/7:
 // 1052/1052/1052/1052/1052/1052/1052; complete memmove 1093. All restored;
 // frame 0x80 versus 0x74 and original force/velocity homes remain.
+// Y579: Conditional working-velocity value/branch receiver/conditional receiver/
+// setter producers, original/query-owned output: 1095/1072/1055/1042/1116/1111/1111/1072.
+// NOT kept: 1042 shortens to 4639/4666, away from retail; all retain frame 0x80. Original full body restored.
+// Y579: Existing limiter inline summary removed: 1052, other user 433 -> 514.
+// NOT kept: shared-user regression; original declaration and complete body restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
@@ -4414,6 +4422,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // F359: Plain ray-scale vector-array loops, seven ordinal domains and body-stepped component cursor:
 // 349/349/349/349/349/349/349/235. NOT kept: no exact induction/publication repair.
 // Original complete body and helpers restored.
+// Y579: Remaining-record cursor, signed/normalized unsigned count, direct/selected
+// admission and post-search/pre-search defaults: 237/259/237/259/248/261/248/261.
+// NOT kept: no gain; native ascending search/world/fallback gaps remain. Original full body restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

@@ -1086,6 +1086,10 @@ bool balance_teams_by_count(long player_count, long const *party_indices, long t
 // M364: Combined copy/maximum selection by input/output element pointer or slot ordinal,
 // branch/conditional producers: 116/116/96/96/120/120/98/98. NOT kept: no exact native
 // fill/count ownership; original scalar maximum, loops and complete body restored.
+// Y581: Standard trivial construction fill, difference/extra count and total/extra
+// endpoints, original excess 67/66/66/66; expression excess 70/69/69/69.
+// NOT kept: all regress and grow to 196/198 versus native 190 bytes; original
+// combined scan, assignment fill, clamp, includes and full body restored.
 // @retail 0x91f00
 bool balance_teams_can_add(long player_count, long const *party_indices, long extra_count, long team_count,
 	long maximum_team_size, bool flag_parties, long flag_minimum, long flag_maximum, bool use_parties,

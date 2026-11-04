@@ -628,6 +628,10 @@ PRIVATE inline void carrier_body_angular_velocity_get(s_carrier_body const *body
 // N351: Native handle/ordinal domains dword-long/long-dword/dword-dword/int-long/long-int/int-int/dword-int/int-dword:
 // 112/112/112/112/112/112/112/112. NOT kept: no exact match or qualifying gain; complete original body restored.
 // Remaining: entry registers, physics-pointer spill and center/projection schedule.
+// Y581: Existing full component/row model and main-body selector, direct/shared
+// acquisition and accessor/data, original center 112/112/112/112; converted
+// center 149/149/149/149 (frame 0x44, caller 2 -> 11). NOT kept: no gain or
+// native input/spill repair. Original views, helpers, center and full body restored.
 // @retail 0x109660
 void function_109660(long object_index, long entry_index)
 {

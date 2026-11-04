@@ -279,6 +279,11 @@ real normalize2d(point2f *arg_0);
 // P311: Existing planar difference over full vector/point storage with native/library captures,
 // P311: each with full/planar actor-direction production: eight forms 180 at exact 1025 bytes.
 // P311: Original full helper and body restored; object-mask/copy/SSE scheduling and query-success ordering remain.
+// Y574: Actual second in-place input supplies both differences, vector/point backing and
+// direct/in-place actor output, each with original/late clearance:
+// 233/257/233/257/182/245/182/245. NOT kept: all regress or miss byte equality; native early
+// object-mask and copy/SSE/query-success schedules remain. Original complete body and helpers
+// restored.
 // AC517: Scalar lifetime role names for radius, planar length/projection and adjusted distance/clearance,
 // phase subsets 1..7 then complete far-separation/state names: eight forms 180 at exact 1025 bytes.
 // Original names and full body restored; early object masking and copied-input/SSE schedules remain.

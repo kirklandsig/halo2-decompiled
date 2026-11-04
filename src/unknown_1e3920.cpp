@@ -1947,6 +1947,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // B421: Shared three-consumer options admission bool/byte/short/long, positive/
 // complementary results 310/310/321/308/310/310/321/308. NOT kept: all regress
 // and exceed retail length; original pointer tests, queries and complete body restored.
+// Y577: Shared ammunition output at phase/query scope with end-bound do, bounded for,
+// short-ordinal cursor and fixed-count cursor: 278/278/251/251/278/278/251/251. NOT kept: ties
+// or regression; original full body restored. Native actor/options/pool and scalar homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {
