@@ -1021,6 +1021,18 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // the 587 forms lose the matched fraction provider and move away from native extent.
 // Query/frame/fraction homes remain; pointer-to-ordinal quotient also consumes EDX.
 // Original provider contract and target body restored; prior ordinal-loop forms not repeated.
+// M3 lane 4 r165 (fast, 0x24550's source in the image; count/aligned/bytes): index scans through distance_sq3f with (position, sample)
+// 503/a306/2084, (sample, position) in scan 1 473/a276/2084, in both 457/a225/2070 (round 130's form, a reload mix), in scan 2 only
+// 487/a255/2070; entries read at each use everywhere 577/a207/2094: delta orders kij and kji 609/a212/2062, jik and jki 608/a206/2062, ikj
+// 578/a210/2094; nearest declared first 576/a207; length_sq3f 654/a287/2033, with dot3f written out 652/a277, with dot3f swapped 654/a287;
+// vector3d_from_points3d with a written-out length 652/a277; offset written out with length_sq3f or written out 583/a350/2085, with
+// distance_sq3f 761/a375/2289; scalars 583/a350/2085, with distance_sq3f 760/a339/2286. Const references bound to temporaries (the form
+// that matched 0x45560): samples 577/a207 (same code as at each use), first 476/a254/2052, both 610/a221/2062, samples with jik/kij
+// 608/a206, 609/a212, at-each-use first 610/a221, with jik 579/a221/2094. Nearest indexed at each use with no first pointer 610/a379/2156,
+// kij 610/a382, jik 610/a379, delta through vector3d_from_points3d 657/a302/2018, first kept beside it 598/a395/2162, kij 599/a395. Scan 2
+// reading offset as above with 1 to 7 dead locals at the top 577/a207 each (no numbering effect). Retail's two vector homes come from two
+// spills (offset.x +0x24, stored each pass, about 28 B of the length gap; delta.k +0x38); ours spills delta.j and k, or nothing with
+// length_sq3f (delta in xmm3-5 where retail colours xmm5-7). Its `lea ebp, [eax + ecx]` keeps the scaled index in a scratch register.
 // @retail 0x22cf0
 void __stdcall function_22cf0(s_light_sample_source const *source, real *red, real *green, real *blue, byte order,
     vector3f *direction, point3f const *position)

@@ -273,6 +273,14 @@ PRIVATE __forceinline real function_29bab4(vector3f const *arg_0, vector3f const
 // side width, response reciprocal, complete residuals and correction distance: eight at
 // 804/3499, frame 0x8c. Original input storage and body restored; early input/object/
 // heading retention and normalizer memory products remain.
+// M3 lane 4 r165 (fast with 0x1f9e70/0x110ab0; count/aligned/bytes, control 750/a430/3508, register-masked aligned 156): retail reads the input from its stack
+// home only for the copy and again into EDI in the final arm, with the object index in EDI until then and the heading pointer in EBX. Input read directly 804/a439/3499;
+// directly with an arm-local const reference bound to a converted temporary (the form that matched 0x45560; the input stays on the stack with no
+// address taken, but EBX still holds it from the prologue) 750/a429/3508, with the reference kept for the first read 750/a431/3508; arm-local plain copy on direct input
+// 748/a442/3501 (the input arrives in EAX), on the reference 750/a432/3508. Grid with planar struct copies and normalize3d: reference + copies 750/a439/3499, + normalize3d 771/a429/3499, both
+// 797/a420/3474; arm const reference + copies 750/a438/3499, + normalize3d 771/a428/3499 (masked 136), both 797/a419/3474; arm plain copy + copies 760/a443/3485, + normalize3d
+// 785/a440/3485 (masked 138), both 802/a433/3469. Two definitions of the arm's input (diagnostic) 748/a442/3501, with normalize3d 785/a440/3485. Volatile read at the copy and arm
+// (diagnostic, reverted at once) 790/a447/3479.
 // @retail 0x29bab0
 void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

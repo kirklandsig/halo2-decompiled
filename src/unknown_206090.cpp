@@ -385,6 +385,17 @@ PRIVATE __forceinline void function_206096(vector3f const *arg_0, real arg_1, ve
 // F365: Vector-owned captured magnitude and paired normalizers, masks 1/2/4/3/5/6/7, then ordinary inline:
 // 1354/1354/1355/1354/1354/1354/1354/1354 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // F367: Complete pointer-boundary aggregate magnitude/first-normalizer/second-normalizer input captures, masks 1/2/4/3/5/6/7, then all via existing setter: 1608/1413/1395/1618/1569/1453/1641/1666. NOT kept: all regress and miss native storage/extent; original captures, private helpers, APIs and full body restored.
+// M3 lane 4 r165 (fast; count/aligned/bytes, control 1355/a969/6243, register-masked aligned 584 for g_contact below): LEAD: retail's first normalizer
+// has no input snapshot: with the magnitude as `(real)sqrt(dot3f(v, v))` and normalize3d() ours gives retail's `movss [home], xmm; fld [home]; fmul
+// [home]` at retail's offsets, `fst`, `fabs`, the epsilon `ja`, frame 0x590, but it threads the zero exit past the compare; a `do {} while (false);`
+// between `real length = ...` and the compare (or an out parameter) stops that and gives retail's exact scale block and `xorps; ucomiss; lahf`:
+// 1584/a946/6038 (masked 568), out parameter 1580/a947/6038. Length falls because of forms still to find. Steps: magnitude alone 1608/a967/6022; normalize3d
+// for the first normalizer 1492/a1033/6112, for the double one 1384/a970/6259, both 1486/a1034/6112; magnitude with the first 1639/a977/5974, all three
+// 1643/a977/5974. A const reference for the result does not stop the threading: 1395/a983/6195 on this body, on the magnitude form 1568/a963/6022,
+// with normalize3d 1639/a977/5974, plus the double one's result 1608/a967/6022, all 1643/a977/5974. One result local in the normalizer 1639/a978/5974;
+// `0.0f != x` 1642/a976/5974; `!(x == 0.0f)` 1639/a977/5974. Contact pointer local (retail's `imul; lea edi, [eax + ebp + 0xb10]` head) 1401/a962/6211;
+// k/j/i cross in the first loop 1426/a984/6238, contact cross in place 1388/a983/6238, both 1451/a967/6185; with the join form 1610/a944/6022,
+// 1631/a964/5980, 1675/a966/5964.
 // @retail 0x206090
 bool __stdcall function_206090(s_vehicle_physics_state *arg_0, vector3f *arg_1, vector3f *arg_2)
 {

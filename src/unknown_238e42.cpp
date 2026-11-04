@@ -1096,6 +1096,10 @@ bool __stdcall function_2399da(long controller_index)
 // B425: Complementary member/permission states singly/both as bool and byte, then
 // both short/long: 93/122/124/93/122/124/166/155. NOT kept: no exact match; original flags and body
 // restored. Selected identity/rank homes and the extra removal move remain.
+// M3 lane 4 r165 (fast with 0xac050/0xac360/0x2399da; 90/a12/434 B each, same code): const references bound to temporaries (the form that matched
+// 0x45560) on the identity (getter result), the requested rank (`(long)` conversion), own rank (`(long)` conversion), all seven subsets;
+// the requested rank bound straight to the parameter; the permission test and the identity test as `bool const &` values. Colouring
+// model: the rank value and the identity tie on four uses, the deref temp shares the rank's register, so retail colours the identity first.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

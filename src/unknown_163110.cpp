@@ -1036,6 +1036,14 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // AC528: Complete cumulative segment rejection/survival in bool/byte/short/long
 // 298/384/369/371/404/404/406/405. NOT kept: no exact match or eligible gain; original complete body restored.
 // Coefficient preload, zero SIMD roles and clipping/projection homes remain. The native memory-OR result was preserved logically; no retained candidate.
+// M3 lane 4 r165 (one-file harness, exact at 18 for lane 6 r147's form, then 500 climbed forms; none below 18; none keepable below a match):
+// const references bound to temporaries (the form that matched 0x45560) for the deltas: x 148 (1830 B), y 254 (1830), z 218 (1830), all three
+// 118 (1851), x and named y 253 or the reverse 257 (1830); all three named 247 (1830); denominator staged i, k, j (retail's order and
+// roles) with named x 34, with x referenced 164 (1830), with x and y named 253 (1830). Classification through a named value, before or after
+// the plane's d, 146 (1830), through a const reference 148 (1830). Walking source pointer instead of `&source[k]` 160 (1835) at either place in
+// the tail and in five store orders: `total` then takes retail's EAX with `mov ecx, ebx` ahead of its store, but the walker's base loses
+// retail's +8 and the loop head its alignment. Dead locals at eight sites (diagnostic, 1 to 7): top and pass loop 150, 166, 45, 18, 22, 38, 30; all
+// later sites 146, 146, then 18. Left at 18: remainder row's j operands, denominator x/y roles, numerator k operands, total's register.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
