@@ -1880,7 +1880,6 @@ void __stdcall function_d0870(long weapon_index, long unit_index, long secondary
 // 11; a named short slot_index for the shifts and indexing 1. Retail's skip edge treats eax as stale (reloads it)
 // but ecx as live, so the compare operand there is probably a separate web from the slot variable; no source
 // form found that does that.
-// slot declared before i 7.
 // @retail 0xccf20
 void function_ccf20(long unit_index)
 {
@@ -2356,7 +2355,6 @@ void function_cfec0(long unit_index)
 // while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
 // at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
 // spelling of the returned copy.
-// return 113.
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3230,14 +3228,8 @@ void function_c6810(long unit_index)
 // single read (60) or a pointer to the field (60, 30) does. Tried: both branches calling 0xe6900 179; a noinline
 // declaration of 0xe6900 150 (not honoured); the call sites reordered 179; a shared request local 179; the
 // requester unit and its player index re-read 60.
-// score 60 (was 150): the written-out request-9 branch matches retail's bytes except where the player slot's data
-// pointer lives: retail keeps it in esi and adds the +0x28 read separately, ours uses ecx and folds it into the
-// address. Tried: both branches calling 0xe6900 179 (second also inlined); a noinline declaration of 0xe6900 150
-// (not honoured); the call sites reordered 179; a shared request local 179; the player slot as a local byte
-// pointer, a struct view or an array element 60 (same); the requester unit and its player index re-read 60.
 // @coldspear (#104, 2026-10-30): reading the request definition g_4677c8[9] through a volatile pointer gives 26,
 // not kept: retail re-reads the definition there.
-// not kept (no match), but it shows retail re-reads the definition there.
 // @retail 0xce520
 void function_ce520(long weapon_index, long unit_index, bool flag)
 {
@@ -3665,8 +3657,6 @@ void __stdcall function_ceb30(long unit_index)
 // order alone 2); both held: the retail setup orders are reg-to-reg copies or differ per caller, so they
 // are not retail evidence, and 0xcea70 is matched code in @Banshee64's range. The 0xce520 order also
 // changes its call in 0x15e360 (src/unknown_157450.cpp), which stays matched either way.
-// give the rest. Other orders 8-60; NONE in an else arm 117. With 0xcea70 declared (slot, weapon,
-// mode, unit) and 0xce520 (unit, weapon, flag) at every call it matches (contributor code: held).
 // @retail 0xd09c0
 void __stdcall function_d09c0(long unit_index, long slot_index, long definition_index, short value, dword const *state)
 {
@@ -3962,14 +3952,6 @@ void function_cc590(long unit_index)
    and the unit's own point (its vehicle's, else its center): a free biped
    leaves it to 0xdef60; otherwise mode 3 uses its weapon's barrel, modes
    1-3 its marker 0x4000095, and other modes its center */
-// score 110 (was 124): the prologue through the parent and flag tests now agrees with retail (flag 2
-// read through the word bitfield view, one shared lookup of the center, the location left unset, a
-// switch on the mode with the weapon test falling into the marker case). Left: retail's call to
-// 0xdef60 passes the point in EAX and that callee is far from matched (995), the weapon block's
-// register choice, and retail adds the offsets with the point read into a register first. Kept: the
-// point's fields read into locals before the sums (110). Tried and dropped for the sums: plain
-// (122), reversed operands (122), +=, all three sums before the stores (122); component-wise marker
-// copy (110).
 // @retail 0xcb500
 void __stdcall function_cb500(long unit_index, short mode, point3f const *origin, vector3f const *forward,
 	real const *offsets, point3f *point)
