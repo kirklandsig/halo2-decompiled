@@ -1178,31 +1178,6 @@ void __cdecl function_24970(s_histogram_state *state)
     XRestoreFloatingPointStateForDpc();
 }
 
-// score 17 (was 17): the two float temporaries sit in the other registers,
-// ours keeps the zero in xmm2 and the scale in xmm1 while retail keeps the
-// zero in xmm1 and the scale in xmm2. The pair follows where the zero's last
-// use in case 3 sits: without the out[3] store, or with it before out[2],
-// the registers are retail's (37: store order). Tried: one subtraction
-// (globals on both sides) 66; begin declared first 17; a span local 17;
-// the scale read plainly in case 4 17 (kept); ~70 harness forms of the clamp,
-// declarations, scopes and the top test, all 17; the bounds through a range
-// pointer 17 (same code); out[2] from the begin local 65; a span local with
-// the globals 66; a shared bounds point helper for cases 1 and 4 17. In a
-// compile-only build every form that merges the two subtractions gets
-// retail's pair, and every two-subtraction form (~190: mixes, declaration
-// orders, compare sides, scopes) gets ours unless begin stays live to out[2].
-// Round 55: case 1's out[3] stored before out[2] 18; case 4's out[2] stored first 33; both
-// subtractions from the end/begin locals 66 (416 bytes); case 4's body copied into case 2 in
-// place of the label 47; out[2] as `-(g_4857dc * scale)` 17 (same code as `0.0f - ...`). One-file
-// LTCG screens: case 4 stores reordered, case 2 jumping to a case 3 label, out[2] negation forms:
-// none changes the pair. Round 100: reciprocal `/=` 17; a scaled-depth local 17; an output pointer
-// in case 3 or throughout 17; strength read after the top test 17; strength read before it 128;
-// subtraction readback plus final memset 35; a named post-store zero used twice 17.
-// Round 54 (m3 lane 11, fast): a named divisor local 17; the top test as `!(g_509400 > 0.0f)` 101 (424 bytes);
-// the clamp compare written `end - begin < 0.0001f` 17; scale declared then assigned 17; the globals in the
-// compare and the locals in the value 17.
-// Round 138: case 3 zeros chained (`out[3] = out[1] = 0.0f`, out[3] re-stored) 53 (428 bytes); `real const scale` 17;
-// `default` written first in the switch 17; `out[3] = out[1];` 17; the top test as `0.0f >= g_509400` 17.
 // @retail 0x27520
 bool __stdcall function_27520(long mode, real const *bounds, real const *t, real *out, long unused)
 {
@@ -1220,7 +1195,24 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
         out[3] = 1.0f;
         return true;
     case 2:
-        if (!g_4b9d9c) goto scaled;
+        if (g_4b9d9c)
+        {
+            real end = g_4857e0;
+            real begin = g_4857dc;
+            real scale = 1.0f / (0.0001f > end - begin ? 0.0001f : g_4857e0 - g_4857dc);
+            out[0] = g_48565c * scale;
+            out[1] = 0.0f;
+            out[2] = 0.0f - g_4857dc * scale;
+            out[3] = 0.0f;
+            return true;
+        }
+        out[0] = (bounds[1] - bounds[0]) * t[0] + bounds[0];
+        out[1] = (bounds[3] - bounds[2]) * t[1] + bounds[2];
+        out[2] = 0.0f;
+        out[3] = 1.0f;
+        out[0] *= g_4b9d90;
+        out[1] *= g_4b9d90;
+        return true;
     case 3:
         {
             real end = g_4857e0;
@@ -1233,7 +1225,6 @@ bool __stdcall function_27520(long mode, real const *bounds, real const *t, real
             return true;
         }
     case 4:
-scaled:
         out[0] = (bounds[1] - bounds[0]) * t[0] + bounds[0];
         out[1] = (bounds[3] - bounds[2]) * t[1] + bounds[2];
         out[2] = 0.0f;
@@ -1902,6 +1893,8 @@ byte g_5093fd, g_5093fe;
 bool function_143c0(long tag, short index, short stage, real priority);
 
 /* the filter rows: an index word, then a colour per row */
+dword function_1cbe0(long mode, dword index, long slot_index);
+
 struct s_filter_row
 {
     real index;
@@ -1915,40 +1908,6 @@ struct s_filter_rows
     s_filter_row header, first, second, third, fourth;
 };
 
-// score 17 (was 17): the second argument of the call near the end is read
-// with an add of the offset and then a load of the field, ours folds the
-// offset into the load's displacement. Tried: function_1cc30(12) 28 (stays
-// out of line); a slot pointer local 17; an index local 17; a slot row
-// pointer 17; with `inline` on 0x1cc30's definition it is inlined but its
-// constant index still folds, 17. BLOCKED-BY 0x1cc30: the unfolded add needs
-// a helper from another file, taking the slot pointer, inlined at link time.
-// Round 40: same-file forceinline/inline helper taking the slot pointer 17/17,
-// with only the 0x1c590 call 17; `__forceinline` declaration of 0x1cc30 at file
-// or block scope with function_1cc30(12) 28/28 (not inlined).
-// Round 35 (fast): a slot pointer read for 0x1c590 and again for an ignored 0x1cb70 call 25 (the call
-// stays; the first read still folds to +0x64 and the add is built apart); the same with 0x1cb70's result
-// in an unused local 17 (the call is dropped at link time, the read still folds); `function_1cc30(12)`
-// here and in 0x34a90/0x34d90 (retail has the same unfolded add in both) 28/34/41 (kept out of line);
-// an indexed `[12 * 2 + 1]` read 17; a const tag pointer 17. Retail's add survives only when 0x1cc30 is
-// inlined at link time; 0x34a90 and 0x34d90 are blocked the same way.
-// Round 74 (lane 9, fast): a second read of the tag compared with the first (`long tag = slot->tag; if (tag !=
-// slot->tag) tag = 0;`, a diagnostic: the test is always false, so not keepable) MATCHES: this read is the
-// only difference, and what keeps the add is a second read in the same block that folds away late. 0x1cb70's
-// result in a dead local before the bind 17; after the bind with `| 1` 17; `& 0` as the bind's last argument
-// 29 (1052 bytes); a tag local, then 0x1cb70 on a re-read 17; `inline` on 0x1cc30's definition (temporary)
-// with function_1cc30(12) 17, also on 0x1cb70's 28 (0x1cc30 itself then 66). Compile-only, all fold:
-// references to the slot or field, by-value slot and 8-byte union copies, one-read accessors (member or free),
-// nested inlines, the index through a local or short, a dead second argument, a switch or ternary on a
-// constant, a one-pass loop. Retail has both shapes for this same inlined read: folded in 0x246a0, 0x26520,
-// 0x29080, 0x29b00, 0x351a0; unfolded here and in 0x34a90, 0x34d90, 0x391f0, 0x3bf20; 0x52040 has both for one
-// index. So a state of the caller picks it, not the helper's source.
-// Round 97 (fast): direct index bits 17; bottom-tested stage loop 403; loop-local definition 233;
-// direct first-color row 121; own context address 17; const definition 17; function-scope stage 17;
-// result-first 17; reversed shader branch 64. Original 17-difference body restored.
-// Round 67 (lane 10, fast): the existing 0x1cbe0 called with mode 0 and slot 12 26 (stays out of line); the
-// 0x1c590 call's selection from the existing 0x1cb20 with mode 0 27 (out of line); the existing 0x1cbb0 with
-// mode 0 on the slot's tag 16 (1039 bytes, out of line, the tag read still folds); the slot table read at the
-// function's top (diagnostic) 224; the cache pointer in a local used by both calls 17.
 // @retail 0x26880
 bool __stdcall function_26880(void *context)
 {
@@ -2017,7 +1976,7 @@ bool __stdcall function_26880(void *context)
     g_484f68.PSRGBInputs[1] = 0xa010b02;
     g_484f68.PSRGBOutputs[1] = 0x30ab;
     D3DDevice_SetPixelShaderProgram(&g_484f68);
-    function_1c590((s_shader_cache *)g_51f0f0, *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
+    function_1cbe0(0, 0, 12);
     function_1c710(g_51f0f0);
     return true;
 }
@@ -2168,8 +2127,7 @@ PRIVATE __forceinline void configure_34a90_state(long target, long blend,
         g_4b82fc = depth_write;
         D3DDevice_SetRenderState(D3DRS_ZWRITEENABLE, g_4b82fc);
     }
-    function_1c590((s_shader_cache *)g_51f0f0,
-        *(long *)(*(byte **)(g_485a80 + 0x5c) + 0x64), 0);
+    function_1cbe0(0, 0, 12);
 }
 
 // @retail 0x34a90
