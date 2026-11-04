@@ -4501,6 +4501,9 @@ long function_14de70(long local_player_index);
 // N353: Actual terminal unit rejection, progress-first classifier, charge/mode/progress
 // rejection and charge/progress completion exits 171/63/171/171/171/171/171;
 // complete admitted terminal selection 195. NOT kept: all regress; native NONE/shift/result homes remain.
+// AC519: Actual late unit presence/absence results in bool/byte/short/long,
+// 42/42/42/42/42/42/42/42. NOT kept: unmatched one-use predicate storage;
+// original native word-slot comparison, observations and complete body restored.
 // @retail 0x15f3a0
 bool function_15f3a0(long local_index, s_player_score_display *display)
 {

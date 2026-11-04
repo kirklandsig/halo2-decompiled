@@ -1714,6 +1714,9 @@ PRIVATE inline void camera_prism_point_16a8e0(s_prism const *prism, point2f cons
 // AC515: Direction-length-owned normal-path decision bool/byte/short/long, with length at
 // direction phase or uninitialized radius scope: 613/613/613/613/613/613/613/613.
 // NOT kept: unmatched decision/storage graph; original flags, normalization and complete geometry restored.
+// AC519: Standard forward/backward edge/face/both initial-sum transfers, then
+// both with overlap-safe fallback copies: 655/650/591/655/650/591/623/623.
+// NOT kept: all regress and lengthen; original sum inputs and complete body restored.
 // @retail 0x16a8e0
 bool __stdcall function_16a8e0(long flags, point3f const *point, real radius,
 	long ignore_object, long ignore_parent, point3f *out, real *out_radius)

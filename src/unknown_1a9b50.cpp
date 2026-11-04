@@ -585,6 +585,9 @@ extern point2f *g_468778;
 // AC516: Actual request-submission call result, bool/byte/short/long at its producer
 // or with the request-owned uninitialized declaration: 375/375/375/375/375/375/375/375.
 // NOT kept: one-use call-result storage unmatched; original call, state stores and complete body restored.
+// AC519: Planar normalization-return residence, facing/request/fallback subsets
+// 1..7 and one shared planar-length carrier: 375 each. NOT kept: no byte match;
+// original normalization calls, early distance, result and complete body restored.
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {

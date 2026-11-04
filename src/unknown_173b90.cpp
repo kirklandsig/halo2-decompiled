@@ -670,6 +670,9 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // AC517: Both shared unit-default assignment chains with both scalar declaration priorities:
 // original offset 120/122/120/122; native row index 115/117/115/117. NOT kept: all regress and lengthen.
 // Original defaults, offset walk, shared rotations and body restored; offset/default/reload and row-i order remain.
+// AC519: Complete nonempty/empty emitter outcomes, bool/byte/short/long,
+// 109/109/109/109/109/109/109/109. NOT kept: regressions from native admission
+// storage; original gate, offset, defaults, shared rotations and body restored.
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {

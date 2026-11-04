@@ -718,6 +718,9 @@ PRIVATE __forceinline bool batch_shape_pointer(c_batch_contact_shape const *shap
 // AC515: Complete exclusion result on the aggregate origin/hit graph, bool/byte/short/long,
 // at computation or with entry-owned uninitialized storage: 308/308/308/308/308/308/308/308.
 // NOT kept: unmatched result storage; original guards, observations and complete body restored.
+// AC519: Standard forward origin/hit/completed-normal subsets 1..7, then final
+// position transfer: 312/303/305/378/382/355/357/383. NOT kept: best gain five
+// is below eight; normal forms shorten away from retail. Original body restored.
 // @retail 0x1822f0
 void c_query_batch_collector::collect(s_batch_contact const *contact)
 {
