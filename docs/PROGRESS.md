@@ -10,6 +10,16 @@ matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
 ```
 
 0 new matches, none lost:
+- @coldspear's #1060: closer scores and notes, no new match.
+
+## 2026-11-04: 10419 functions match
+
+```
+matched 10419 of 11326 game functions (1906870 of 2786206 bytes, 68.44%)
+matched 1267 of 1436 Havok functions (174339 of 290362 bytes, 60.04%)
+```
+
+0 new matches, none lost:
 - @coldspear's #1059: closer scores and notes, no new match.
 
 ## 2026-11-04: 10419 functions match
