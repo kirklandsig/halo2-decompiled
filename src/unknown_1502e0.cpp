@@ -1737,6 +1737,9 @@ void __stdcall function_14f270(long player_index, long controller_index);
 // AC536: Actual option/user/controller zero-mask initialization after array filling,
 // seven subsets and entry declarations with chained late zero: 288/287/288/287/288/287/338/338.
 // NOT kept: no equality or qualifying supported gain; original full body restored.
+// B434: Failure-first release admission, enclosed binding/matching lifetimes and
+// all seven subsets, then enclosed active-option acceptance: eight 285. NOT kept:
+// no gain; native mask/index homes and release expansion remain; full body restored.
 // @retail 0x152f80
 void __stdcall function_152f80(void *address, void *option_data)
 {

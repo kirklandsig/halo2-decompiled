@@ -600,6 +600,9 @@ bool function_270750(byte *buffer, long unknown, s_actor_point_target const *tar
 // F389: CRT memcpy destination/predecessor/paired conversion-fallback point transfers,
 // seven subsets 286 each; all with native short link count 359. NOT kept: no gain;
 // original aggregate transfers, metadata memcpy and complete body restored; frame/flag homes remain.
+// B445: Actual signed link capacity consumed at successful copy, long/short totals,
+// indexed/advancing receivers and consumption after/before memcpy: 331/331/344/350/359/335/344/350.
+// NOT kept: all regress; original total, limits, memcpy and body restored. Frame/flag homes remain.
 // @retail 0x270d90
 PRIVATE short function_270d90(long actor_index, s_type_f17a25 *state,
 	s_path_result_view const *result, short node_index, short maximum_steps,

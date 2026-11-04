@@ -600,6 +600,16 @@ void function_245400(s_source_245400 const *source, long index,
 // 230/230/231/236; default-false results 202/202/212/223. NOT kept: no
 // exact classification residence; seven-point best fails the retention margin.
 // Original side tests and body restored; frame/table/matrix and side homes remain.
+// B436: Existing point-transform native input/coefficient/output array observations, seven subsets,
+// then one reused matrix scale: 209/209/209/209/209/209/209/213. NOT kept: no exact form or eligible gain;
+// original complete body and helpers restored. Native frame/register differences remain.
+// B439: Existing alias-safe rotation with bool/byte/short/long side carriers,
+// branch/entry cross storage: 253/253/253/253/253/253/253/253 (830/783 bytes).
+// NOT kept: longer extent; native frame and material/side homes remain. Body restored.
+// B441: Actual secondary material-index producer in short/long, at original/early
+// acquisition and producer/entry declaration boundaries: 209/209/209/209/209/209/209/209.
+// NOT kept: one-use index transport has no equality; original complete body restored.
+// Frame 0x24/0x2c, material/table/side homes and delayed matrix acquisition remain.
 // @retail 0x245540
 void function_245540(s_source_245400 const *arg_1, long arg_0,
 	transform4x3f const *arg_2, real arg_3, real arg_4,

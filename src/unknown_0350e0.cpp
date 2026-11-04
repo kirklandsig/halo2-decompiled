@@ -149,6 +149,10 @@ PRIVATE __forceinline vector3f rotate_axis_vector(matrix3x3 const *matrix, vecto
 // original/twice-used angle graphs: 355/355/368/368/357/357/362/362. NOT kept: one-point
 // lead below gate; every frame stays 0x98 versus 0x90. Both original helpers, real-angle contract
 // and full body restored; concurrent x87 inputs and scalar publication homes remain, caller exact.
+// B446: Existing builder owns step/rate multiplication, direct products, real/double
+// angle and native trig, original/native in-place publication: 356/356/357/357/368/368/370/369. NOT kept:
+// all tie or regress; original private helper contract, helpers and entire body restored.
+// Frame 0x98 versus 0x90, concurrent x87 inputs and scalar publication homes remain.
 // @retail 0x39e50
 void __stdcall function_39e50(real step)
 {
@@ -1921,6 +1925,12 @@ real game_time_get_seconds();
 // alignment: 584/584/594/564/567/567/568/568. NOT kept: each introduces a frame-pointer prologue
 // absent from retail; complete original output alignments, API and body restored. Native
 // frame/output homes remain.
+// B440: Plain existing component-array loops for camera displacement/reflection/
+// draw position, seven subsets then unsigned ordinals: 708/716/619/920/708/716/1069/1069.
+// NOT kept: all regress and grow; native frame/output homes remain. Original full body restored.
+// B442: Complete selected-color snapshot at iteration/after-opacity/admission/after-angle,
+// native initialization 519/519/524/524; library copy 519/519/524/524. NOT kept:
+// no native frame/home recovery or gain. Original color producers and full body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -2543,6 +2553,12 @@ real magnitude3d(vector3f const *v);
 // named double inverse-cosine result 196; named cosine complement, existing bounded
 // helper in fallback, named axis projection: 170/170/170. Original body restored;
 // raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
+// B440: Independent angle-only and complete rotation-admission outcomes in
+// bool/byte/short/long: eight 170 at 1045/1045 bytes. NOT kept: no equality
+// or gain; raw-length and promoted-dot homes remain. Original full body restored.
+// B442: Existing complete axis-angle matrix with returned/axis/output/in-place
+// vector application, matrix at producer/entry: 388/248/327/242/388/248/327/242.
+// NOT kept: changed floating expansion misses equality and grows; original full body restored.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3870,6 +3886,13 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // before/after geometry, without/with native color: 368/368/453/453/382/382/465/465.
 // NOT kept: no equality; scalar-color frames recover 0xe0 but grow, native color
 // grows the frame again. Original helper, point array, scalar alpha and body restored.
+// B440: Existing conditional vector scaler within the original corner expansion,
+// input assign/copy and in-place/direct scaling boundaries, scalar/native color:
+// 376/628/409/507/381/634/418/516. NOT kept: all regress; native scalar
+// homes remain. Original helper, captures, color, geometry and full body restored.
+// B442: Existing input scalar capture/declaration orders yxz/yzx/zxy/zyx, scalar color:
+// 388/377/396/390; native color 385/367/393/386. NOT kept: no equality, wrong
+// scalar homes and regression. Original captures, helper, color and full body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

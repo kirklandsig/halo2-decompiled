@@ -2931,6 +2931,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N367: Tentative channel result before bitmap validation, short/int/long/dword in for scan 96/166/166/166;
 // while scan 96/166/166/166. NOT kept: no gain or equality; original private finder and full body restored.
 // Frame twelve/eight, normalized byte and early failure tail remain.
+// B440: Native full-width first/last/both/entry-const range captures on the
+// original inclusive scan: byte result 96/96/96/96, Boolean result 113/113/113/113.
+// NOT kept: ties or regressions; frame twelve/eight and saved-byte/failure tail remain.
+// Original private finder, result byte, independent defaults and full body restored.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3849,6 +3853,13 @@ struct s_128ca0
 // 222/254/254/222/222/254/254; all with sequential promotion adjustment 254. NOT kept: ties or regressions;
 // original complete arithmetic, packet stores and helpers restored. Frame 0x49c/0x494, gain-input homes and
 // pin joins remain.
+// B440: Existing gain operators at raw nested/argument/inner/update producers
+// 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
+// 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
+// 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
+// NOT kept: one-use value record and bit copy, combined ownership forms without equality.
+// Original complete body, primitive helpers, observations, clears and interfaces restored.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

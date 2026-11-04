@@ -1505,6 +1505,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
 // advance loop 617. NOT kept: all regress and grow beyond retail length; original
 // native copies, row expressions and complete body restored. Shared helpers unchanged.
+// B437: Airborne char/signed-char/byte/short/word/int/dword/long domains on the
+// retained animation graph 599/599/599/632/632/627/627/627. NOT kept: all regress;
+// frame 0xf8 versus 0xfc and material/airborne/animation homes remain.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2049,6 +2052,9 @@ void function_dfd70(long arg_159e6d)
 // record then scalar-setter publication: 226/226/226/226/278/278/278/278. NOT kept: seven-point
 // lead grows to 1044/1041 bytes; setters reach 1077. Every form raises shared users and loses
 // exact 0xde9d0. Both original helpers and full target restored; mode-three/basis/ray homes remain.
+// B439: Second-ray hit/clear result in bool/byte/short/long storage:
+// 233/233/233/233/233/233/233/233. NOT kept: one-use query results do not
+// match; both helpers restored, native mode-three and basis/ray homes remain.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -2490,6 +2496,12 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // explicit long/short/shared-promoted/shared-short body contracts:
 // 80/85/101/91/85/86/104/100. NOT kept: all regress and grow; original body restored.
 // Extra EBP, native count/body transport and flag schedules remain.
+// B442: Complementary signed body rejection, direct/default-true producers in
+// bool/byte/short/long: 63/63/63/63/85/85/76/75. NOT kept: no equality or qualifying
+// native count/EBP/flag repair. Original validation, count, stores and full body restored.
+// B444: Explicit flag read/modify/write assignments at pre-call/post-call/failure
+// boundaries, seven subsets then all mask-first: 63/63/63/63/63/63/63/63. NOT kept: no byte equality
+// or native EBP/body/flag repair; original complete body and word fields restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -2957,6 +2969,9 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// B437: Actual body byte offsets stepped inside mass/farthest/push loop subsets
+// 1/2/4/3/5/6/7 and complete unsigned offsets: 530 each. Original signed ordinals,
+// base observations and body restored; frame/result/state/point homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3661,6 +3676,9 @@ PRIVATE inline point3f *biped_rigid_body_position(s_havok_component *component, 
 // F386: Static existing component-array observations of scaled pivot, transform rows
 // and full geometry, seven subsets then all forced: 369/368/369/369/369/369/369/369.
 // NOT kept: tie/regressions; original helper/body restored, matrix/origin/pivot homes remain.
+// B442: Root-first parent/root order, bool/byte/short/long completion results,
+// false-default 383/417/414/415; true-default 443/444/437/437. NOT kept: all regress;
+// true-default frame grows to 0x130. Original order, result and full body restored.
 // @retail 0xe1c40
 bool __stdcall function_e1c40(long arg_159e6d, point3f const *point, real value, long rigid_body_index,
 	long contact_index, long parent_body_index, bool started)

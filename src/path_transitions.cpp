@@ -706,6 +706,9 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // then complete literal returns without the result: 365/361/373/390/370/406/371/384.
 // NOT kept: root/actor ingress persists and extents regress; original result, all
 // publications, native helpers and complete body restored.
+// B433: Called normalizer/trace contracts, each ordinary/inline/forced, excluding
+// the ordinary pair: eight at 270. Original declarations and full body restored;
+// early root/actor retention and paired-vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,

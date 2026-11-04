@@ -322,6 +322,14 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // F389: Actual floating linear-converter input at all three raw-field consumers,
 // ordinary/forced existing conversion-helper masks 0..7, 875 each (3337/3327 bytes).
 // NOT kept: all regress; original raw scalar contract, helpers and complete body restored.
+// B435: Failure-first later pool collection/active-target/inactive-record admissions,
+// seven subsets, then all with missing-handle search continuation: 866 each.
+// Original complete body restored; native 0x4e0 frame, entry zero, target/primary/query
+// homes and choice carriers remain. Existing logarithmic result producer retained.
+// B439: Full-width query/choice counts, captured/direct bounds and four early
+// choice-zero phases: 942/956/956/956/942/956/956/956 (3297/3327 bytes).
+// Native scaled exponent part 877 (3339); existing shared conversion 1056 (3120).
+// NOT kept: no native frame/home recovery at retail extent; full body/helpers restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

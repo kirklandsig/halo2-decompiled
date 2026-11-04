@@ -619,6 +619,9 @@ struct s_1f8a70_actor
 // Y585: Scratch admission owns inner route outcome, bool/byte/short/long, success-first
 // 226/226/302/291; failure-first 249/249/302/291. NOT kept: all regress;
 // original two results, scratch default, scopes and full body restored. Unit/result packing and dispatch remain.
+// B437: Actual radius-first route admission in bool/byte/short/long valid storage
+// 309/309/308/308, complementary invalid storage 309/309/308/308. NOT kept:
+// all regress; unit/result packing, dispatch adjacency and memory-result cleanup remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

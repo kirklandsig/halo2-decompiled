@@ -1292,6 +1292,10 @@ long function_10f5f0(long object_index);
 // F389: Completed point-average branch/default/result/running-result publications,
 // original then six-real API output: 573/566/565/565 twice. NOT kept: ties/regressions;
 // original average, buffer and complete body restored; native frame/flag-result homes remain.
+// B441: Complementary reused moving predicate in bool/byte/short/long, at producer/entry
+// declaration boundaries: 512/512/580/586/512/512/580/586. NOT kept: complement instructions are absent
+// from retail and extents grow away from 2264; original complete body restored.
+// Frame 0x19ac/0x1984, native predicate stores and rolled reduction remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4835,6 +4839,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // F387: Complemented forced-active state in bool/byte/short/long with logical
 // terminal truth 749/749/749/749; complete terminal arms 763/763/748/748.
 // NOT kept: one-point leads below gate; entry definition and SSE homes remain. Original body restored.
+// B445: Actual recognized-name return on direct-active graph, failure/success defaults in
+// bool/byte/short/long: 790/757/752/752/749/774/764/761. NOT kept: ties or regressions; whole body restored.
+// Frame 0x18 agrees; native entry definition and zero/result/one residence remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5408,6 +5415,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // F387: Complemented flip/boost/side-flip predicates, masks 1/2/4/3/5/6/7,
 // 1159/1089/1087/1161/1159/1089/1161; native boost byte on weighted-driver graph 1141.
 // NOT kept: ties/regressions; frame/index/rotation homes remain. Original full body restored.
+// B445: Discarded query-output workspace reused by drift/side-input/both-axis producer
+// subsets, then late angular acceleration: 1087/1087/1096/1107/1085/1064/1066/1066. NOT kept: unsupported combined workspace
+// ownership; 1064 is 5104 bytes, 1066 is 5107, with frame still 0xf8. Whole body restored.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {

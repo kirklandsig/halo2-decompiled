@@ -2433,6 +2433,9 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
 // NOT kept: ties/regressions. Every provider contract and complete body restored;
 // frame, iterator/point homes and bitmap-intersection spill remain.
+// B444: Complete point/raised/location zero construction, seven subsets at native
+// output scopes then all at entry: 331/315/343/304/340/320/352/351. NOT kept: frame/layout still misses
+// retail and initialization extends code; original complete outputs and body restored.
 // @retail 0x201ea0
 void function_201ea0(void)
 {
@@ -3404,6 +3407,10 @@ void function_2011f0(long arg_0);
 // F389: Shared narrowed row identity word/dword/long/int: word producer 318/394/394/394,
 // mask producer 318/356/356/356. Wide masks also demote 0x200d80 to 22. NOT kept: all tie/regress;
 // original narrowed observations and complete body restored; input/placement and chain homes remain.
+// B435: Reused absolute-index word/long/dword carriers, mutable then readonly,
+// followed by long/dword mask producers: 318/394/394/318/394/394/356/356.
+// NOT kept: no exact transport or gain; original narrow arguments/stores and body restored.
+// Frame 0x134 agrees; masked-index/placement, seat and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
