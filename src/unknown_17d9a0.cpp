@@ -376,6 +376,10 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // `quad->axis = axis` 162; dot3f operands position-first 52; the dot through `&matrix->up` 206 (986 bytes);
 // `quad->axis = function_120850(...)` with the side test reading quad->axis 174 (retail's `mov [ebp+0x54], ax`
 // store, products reordered); that plus a short corner-helper axis 163 (992 bytes). Original body restored.
+// Y566: Plain coordinate loops in the existing corner producer, forward-first/left-first/
+// planar subtotal/running point, long then short: 50/730/50/730/60/730/240/730.
+// All regress; short loops leave the helper outlined. Original whole body and
+// four-use helper restored; plane-store base, first selectors and product ranks remain.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {
@@ -951,6 +955,10 @@ PRIVATE __forceinline void decal_rotate_vector_17fd20(vector3f const *forward, v
 // as `while (remaining > 0)` 545 (3631 bytes); the first plane decoded after the face is taken 758; the quad
 // branch inverted (fallback copy first) 574; the first loop stepping `++i` with `faces[i]` 552; the angle test as
 // `angle <= maximum` 539 (same code).
+// Y566: Float sine/cosine/inverse-cosine API families 1/2/4/3/5/6/7, then
+// float sine/cosine with a double angle: 539/539/562/539/582/582/570/840.
+// Original complete body and helpers restored; tag/count/plane homes and rotation
+// spills remain. Float inverse cosine shortens below retail; wide angle loses the prologue.
 // @retail 0x17fd20
 void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 	s_decal_output_17dd80 *output, s_decal_projection_17fd20 *projection, s_decal_placement const *placement)

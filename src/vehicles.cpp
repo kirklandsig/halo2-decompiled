@@ -1250,6 +1250,10 @@ long function_10f5f0(long object_index);
 // pre-damage phases 565/629/614/587; entry declaration with late stores 565;
 // post-first-result initializer 565; original/entry initializers with six-real API
 // output 565/629. NOT kept: no gain; original full body and array values restored.
+// Y566: Damping real-input power overload/float power/exact float base/shared timestep:
+// 565/566/565/515; each with the six-real API extent 565/566/565/515.
+// NOT kept: timestep sharing grows to 2276/2264 bytes; native extents still leave
+// frame 0x1990 versus 0x1984. Original complete body and observations restored.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -4620,6 +4624,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // P291: Reverse-case zero/complete-arm/existing-ratio-helper/magnitude-owned results,
 // conditional then branched reverse selection: 753/751/797/751/753/751/797/751.
 // All restored; frame 0x18, entry definition and zero/result/one residence remain.
+// Y566: Existing up/selected-forward/lateral/forward dot producers on the direct-active
+// graph, individual masks 1/2/4/8, paired 10/13, all, all with staged lateral cross:
+// 749 each at 2974/2974. Original complete body restored; zero/result/one and entry definition homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {
@@ -5165,6 +5172,11 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // weighted-driver graph, seven subsets then consumed flip output:
 // 1090/1087/1140/1090/1140/1140/1140/1205. Sharing reaches frame 0xd4 rather
 // than native 0xd8; original complete body restored at frame 0xf8 and retail length.
+// Y566: Complete lift maximum with native repeated magnitudes: nested macro/ternary,
+// inner maximum retained, wide flip, repeated horizontal root, facing/current reuse,
+// wide flip with separate point ordinal, both lifetime interactions:
+// 1185/1185/1118/1271/1217/1132/1271/1202. All regress and grow beyond 5094 bytes;
+// original complete body restored. Native frame and handle/matrix homes remain.
 // @retail 0xf4800
 void __stdcall function_f4800(long vehicle_index, s_vehicle_physics_state *state)
 {
