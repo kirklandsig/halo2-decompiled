@@ -1179,6 +1179,14 @@ public:
 // Round 85 (m3 lane 12, fast): spawn location index stored before the scale 182, the dt store first 183; the position
 // copy before the 1.0 scale store 184; the tag count test as `tag->count() > child->unknown24` 185, with the location
 // index first 183. Body unchanged.
+// Lane 18 r41 (fast): retail loads forward.j into XMM2 right after its x87 store, above the normalization branch
+// (its scale is then `mulss xmm2, xmm0`, the else arm loads only k and i); written out by hand (diagnostic, any product
+// order, fields or pointer) all three loads hoist, 276 (1338 bytes). normalize_inline in the fallback 190; one velocity
+// pointer for both negations 184; the matrix declared at the top of the child-loop body 178 (the default case then
+// loads the velocity before the -1.0 constant as retail), with xyz magnitudes 248, with the spawn declared beside it
+// 178, with normalize_inline 184, with the spawn location stored first 177, plus the position copy before the 1.0
+// scale 177; the matrix before the child loop with the location first 177; parent colour local on that 253 (1367);
+// on the 177 form: spawn dt stored before the scale 179, the fallback cross through cross3f_staged 177.
 // @retail 0x174a30
 bool function_174a30(s_particle_system_datum *particle_system, real dt)
 {

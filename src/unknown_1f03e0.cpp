@@ -1031,6 +1031,11 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // reference reaches 346 at 3052 bytes by changing existing product scheduling; retail
 // does not show that new field-alias lifetime or its projection load pattern. Exact-only
 // identities and complete body restored; damping and raw/bounded homes remain.
+// Lane 18 r41 (fast): the direct arm's speed read from the field at each use 443 at 3047 bytes (x computed first as
+// retail, register-masked aligned 234 -> 143, but speed loads twice where retail loads once), with the step computed
+// before the delta 471; the speed local declared first in the arm 480 (3034); the delta products written rotated-first
+// 433 (same code); the direct arm's limited renamed to sort before delta, or in both arms, 433/443 (no slot moves:
+// retail keeps delta below limited in the direct arm and above it in the general arm, ours the reverse in each).
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1571,7 +1576,8 @@ bool function_1f2250(vector3f const *velocity, byte const *request, vector3f con
 real function_1201a0(vector3f *vector, vector3f const *fallback);
 bool havok_component_any_rigid_body_active(s_havok_component *component);
 
-// score 221 (was 221): Frame 0x28 and the 1066-byte length agree; movement zero width, reset/selection homes, cold arms and second material-call expansion remain.
+// score 213 (was 221): Frame 0x28 and the 1066-byte length agree; the motion-pointer load ahead of the reset, the speed dot's
+// product order, the cold not-supported arms (retail tests the height in each) and the second 0x1f1df0 expansion remain.
 // The real movement carrier fixes the x87 prefix through +0x8b (233 overall); retail
 // forms the contact dot k/j before i while our products schedule differently.
 // Frame 0x28 agrees; zero-load width, reset/selection homes and material-call
@@ -1726,13 +1732,21 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// Lane 18 r41: kept 213 (plain): the `real` movement (retail compares it with the float 0.0 at 0x45dbd8), selected/highest
+// declared right after the unknown58 store, the contact list read from the component at each use and the two Boolean
+// bests declared before the real bests (the four together; each alone 221-233, the first three 218). On it: the
+// velocity pointer first in the block 268 (1076 bytes); selected/highest first in the block 213; either dot's arguments
+// swapped or through dot3f 213 each (VC reorders the products itself); airborne as `(flags & 8) || (flags & 0x10)` on
+// the 218 form 228 (1073). On the old body: the else arm's flags tested at each use (no airborne local) 225; the flag
+// arm's height test as `!(best_height < normal->k)` 231 (still one shared test); the speed dot's arguments swapped 221.
+// Diagnostic: 0x1f1df0 out of line at both calls 311 (1003 bytes; retail's body is 63 bytes longer).
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {
     byte *component = g_51e9b8->data + (*(long *)(request + 0x40) & 0xffff) * 0xa0;
     dword flags = *(dword *)(request + 0x18);
     bool preserve = (flags & 4) || ((flags & 1) && !(flags & 2)) || (flags & 0x18);
-    double movement = sqrt(history->point.x * history->point.x + history->point.y * history->point.y + history->point.z * history->point.z);
+    real movement = (real)sqrt(history->point.x * history->point.x + history->point.y * history->point.y + history->point.z * history->point.z);
     bool moving = movement != 0.0f;
     *(dword *)(out + 4) &= ~1;
     if (!preserve)
@@ -1740,20 +1754,19 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
         history->normal = *g_4687b0;
         history->material = g_47d8e0;
         history->unknown58 = NONE;
+        long selected = NONE;
+        long highest = NONE;
         history->unknown70 = 0.0f;
         vector3f const *velocity = (vector3f const *)(*(byte **)(component + 0x70) + 0xc);
         bool flying = ((**(dword **)request >> 3) & 1) != 0;
-        long selected = NONE;
-        long highest = NONE;
+        bool best_supported = false;
+        bool best_flag = false;
         real best_height = -3.4028234663852886e+38f;
         real best_speed = -3.4028234663852886e+38f;
         real highest_z = -3.4028234663852886e+38f;
-        bool best_supported = false;
-        bool best_flag = false;
-        byte *contacts = *(byte **)(component + 0x88);
         for (long i = 0; i < *(long *)(component + 0x8c); ++i)
         {
-            byte *contact = contacts + i * 0x48;
+            byte *contact = *(byte **)(component + 0x88) + i * 0x48;
             vector3f *normal = (vector3f *)(contact + 0x28);
             real speed = 0.0f - shape_dot(*normal, *velocity);
             real approach = 0.0f - shape_dot(*normal, *(vector3f *)(request + 0x28)) * *(real *)(request + 0x34);
@@ -1791,7 +1804,7 @@ void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
         }
         if ((short)selected != NONE && best_supported)
         {
-            vector3f normal = *(vector3f *)(contacts + (short)selected * 0x48 + 0x28);
+            vector3f normal = *(vector3f *)(*(byte **)(component + 0x88) + (short)selected * 0x48 + 0x28);
             function_1201a0(&normal, g_4687b0);
             function_1f1df0(*(long *)(request + 0x40), (short)selected, &normal, history);
         }

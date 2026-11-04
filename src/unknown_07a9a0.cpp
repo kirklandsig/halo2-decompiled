@@ -1186,6 +1186,12 @@ static inline long ratings_allowed_imbalance(s_surface_description *variant)
 // same; diagnostic only, /arch:SSE on 0x63220's file the same. The clamp as a max of 0x1931a0 908 (2748 B, both calls
 // out of line); the highest rating through 0x631f0 964 (2684 B); the loop variant through 0x192e60 plus that max 987;
 // through 0x192e60 plus 0x631f0 1011. BLOCKED by our link not inlining 0x63220 here.
+// Lane 18 r41 (fast = plain at the base): ours calls 0x193300's twin for the capacity and inlines the top 0x192e60
+// (two 0x1934f0 calls), retail the reverse. The player loop through 0x63220 with the capacity switch forceinline 1033
+// (2592 bytes: capacity inline, 0x63220 still called, top 0x192e60 still inlined, ret 8); adding_group declared
+// beside result 833; the loop getter through 0x192e60 with the top lookup after the summary read 887 (2756), plus the
+// capacity switch forceinline 858 (2828); adjusted seeded from the rating local 811. Diagnostic: `#pragma
+// auto_inline(off)` around this function 766 (no effect on the link's inline choices).
 // @retail 0x7e210
 bool function_7e210(c_class_58d20 *session, s_matchmaking_ratings *out)
 {

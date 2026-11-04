@@ -341,6 +341,11 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // in retail's slot order 931f (no slot moves); self unit by a ternary 916f, 899 plain (3721 bytes);
 // enemy as `false` plus `if (actor)` 900f, 934 plain; object/marker buffers at entry 931f; combined
 // flags as `moving | (sphere_flags | obstacle_flags)` (retail's or order) 931f.
+// Lane 18 r41 (plain; fast 931 misleads): straight left uninitialized and set true at the top of the actor block and in
+// an `else` 882 (VC merges both stores ahead of the branch; retail keeps the second); the or order above 882 plain; the
+// previous-direction dot as one expression 893 (3694 bytes); the object lookup moved after the unit/ignore skip 918;
+// plain location with the raised point in the else block 925 again (3702 bytes). Retail keeps actor_index/unit_index/
+// self_unit in EBX/EDI/EBP and reloads them at the object loop's back edge; the count reuses location's slot.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1462,6 +1467,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // 418 (same code); edge declared and initialised at the untyped branch scope 439 (1754 bytes);
 // copied_last/used/index declarations reversed 418 (same code); edge renamed (name-order tip) 418
 // (same code); emitted type from the type local instead of the step 421 (1755 bytes).
+// Lane 18 r41 (fast; frame 0x114 against 0x10c: ours keeps edge in a stack slot where retail has it in EBX, and our
+// byte flags sit four bytes higher): loop-top declarations in retail's store order (edge, next, found, link, type,
+// then the step) 418; origin declared at function scope 418; output_index declared before the loop-top locals 418;
+// the outer loop as `for (...; index < count; index = next)` 418; the typed branch storing link before type 418.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
