@@ -244,6 +244,9 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// F377: Complete byte/word/long/dword success results, original/native-byte flag pairs:
+// 87/106/96/81/90/78/90/78. NOT kept: unmatched result flags; native-byte long/dword
+// reach 340 bytes. Original body restored; player/root/tick homes remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
@@ -1085,6 +1088,9 @@ struct s_tail_transfer_traits
 // N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
 // 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
+// F377: Last matched options-entry/traits-array results, pointer/reference outputs and
+// original/early unit-index producers: 196/196/201/201/224/224/218/218. NOT kept:
+// no gain; original full body restored; selected-traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
