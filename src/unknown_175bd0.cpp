@@ -1747,9 +1747,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 	return index;
 }
 
+// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70).
 // MiniMax D (11-01): no new form and no lower score; the bounded permute search was stopped before
 // it measured a variant.
-// score 9 (was 9): only the node/matrix entry order remains (round 67, round 70). Earlier: node/matrix entry order and
+// Earlier: node/matrix entry order and
 // the forward/up xmm homes remained (retail forward
 // in xmm4/2/3 and up in xmm5/1/0; the marker forward values take xmm2 first here); frame 0x1c agrees.
 // The point computed into position, normalize3d and cross3f give retail's early up.j/up.k loads.
@@ -1855,6 +1856,10 @@ long function_1785c0(s_effect_object_marker const *marker, s_effect_datum *effec
 // Diagnostics: with the else arm's marker reads removed the base folds (`add edx, [eax + 0xc]`, 234 with node first), so
 // the else arm's read of the same field is what makes it a temporary; with no node copy, node-first aligned 7 and the
 // base is still EBX. Retail's base takes EAX as the source dies; none of these forms gets that.
+// Round 42 (m3 lane 18, fast with 0x178360): the marker index parameter `long`, narrowed `(short)` at its uses with the
+// callers passing the long index, node copy first 101, in this order 9 (same code); node copy first with `matrix`
+// declared uninitialized and assigned after the copy 101; node copy first with `up` declared just before the 0x11d000
+// call 101; the scale read once into a local before the marker pointer 192.
 // @retail 0x1786f0
 void function_1786f0(s_effect_object_marker *out, s_effect_marker_source const *source, short marker_index)
 {
@@ -2117,6 +2122,10 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // 194/194/188/188/194/194/188/188 (572/552 bytes), all matched controls preserved.
 // NOT kept: one-use admission results regress and retain frame 0x40 versus 0x44;
 // original initial guard, color/query observations and complete body restored.
+// N354: Both external color-field identities, readonly/mutable references/pointers,
+// at the spawn/query boundary and before location propagation: 128 each (eight forms).
+// NOT kept: one-use field identities require equality; original complete body restored.
+// Missing early color slot and frame 0x40 versus 0x44 remain.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -2389,6 +2398,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
+// 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
+// object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
 // MiniMax R (11-01): no new form, no lower score: retail still reloads the object's index after
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
@@ -3280,6 +3292,10 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // 93/93/93/93; before cursor acquisition 112/112/112/113. Earlier reads change the
 // argument convention and lose the matched caller. NOT kept: no gain or exact match;
 // original activity field read, definition/cursor lifetimes and complete body restored.
+// N354: Exhausted-particle continuation with original/for-owned effect traversal,
+// cached/live mode and original/native node word: 93/93/108/108/93/93/108/108.
+// NOT kept: ties/regressions; every live-mode form loses caller 0x176f60 (25).
+// Original complete body restored; native frame and system/successor/color homes remain.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {

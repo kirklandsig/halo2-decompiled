@@ -426,6 +426,11 @@ extern byte g_51ec11;
 // rows' products commuted, j row / i row / k row each, 89/89/89 (same code); the projection scale as
 // `projection = (1.f - cosine) * projection` 118 (1326 bytes); the pitch sum written controls first 89 (same code).
 // Zero XMM3 and the side/up homes remain.
+// Lane 17 r42 (fast, with 0x23d790/0x23d030, both stay matched): `side` renamed `right` / `a_side` 89/89 (same code:
+// name order does not move the zero/side registers); the side normalized in matched 0x11d090's own form (j-first
+// length, `!(0.0001f > fabs)` scale, `else length = 0`, then the constant fallback) on this body 270 (1326 bytes);
+// the up vector through the existing cross3f(&side, &forward, &up) 137; a `forward` pointer for the side fill and the
+// up rows 248; that with the up rows staged into up_i/up_j/up_k and stored i, j, k 267. Body restored.
 // AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
 // original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
 // diagnostics do not match and grow the body; original up producer and full body restored.
@@ -441,6 +446,15 @@ extern byte g_51ec11;
 // P303: Existing shared normalizer live i/j/k captures before stores, subsets
 // 1/2/4/3/5/6/7: 332/332/332/352/352/352/352; complete immutable captures 352.
 // NOT kept: all regress and shorten away from retail; shared header and complete original body restored.
+// B415: Separate complete world-coordinate scalar phase with original/branch/per-use/shared speed
+// B415: and original/captured matrix scale: 304/351/346/304/351/350/309/351. Original scalar phases, field observations
+// B415: and full body restored; zero/side normalization and up/roll allocation remain.
+// B417: Existing shared normalizer computed square/inner-sum/whole-squared-length stages,
+// seven subsets then immutable complete stages: 245/89/89/245/109/89/109/109. Original header/body restored.
+// NOT kept: computed-stage temporaries do not match; zero/normalization/up allocation remains.
+// B419: Existing shared normalizer two-use threshold result at scale admission and common
+// numeric return, bool/byte/short/long rejection then success: 278/278/278/278/228/228/228/228. All regress;
+// original shared header and full body restored. Zero/normalization/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
