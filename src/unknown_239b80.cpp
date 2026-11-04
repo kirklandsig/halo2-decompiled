@@ -439,11 +439,16 @@ long function_239d50(long count, point2f const *points, point2f *hull)
 // AC508: Actual unrounded distance/angle/delta domains, wide subsets 1/2/4/3/5/6/7:
 // 234/216/255/249/263/265/259; native float CRT pair 170. NOT kept: no exact precision match;
 // original body restored. Extra frame word and count/departure/compaction homes remain.
+// F356: Existing equality predicate with shared/native/scalar/absolute coordinate producers, original long then Boolean departure:
+// 208/208/170/170/254/254/248/248. NOT kept: no qualifying match or gain; original complete body restored.
 // Lane 13 r58 (fast): one retail-shaped body (short hull count, `while (hull_count < count)` with
 // `indices[hull_count++] = current`, bool departure and heading declared ahead of the lowest scan, memmove
 // compaction) 265 (759 B; frame 0x14 as retail, but points in EBP and indices in EBX where retail has ESI/EBP, and
 // the zeroed count via a zero register); on it departure declared first 265, `current` declared first 264, a
 // separate `hull_count++` 265, memcpy 275 (751 B), the `||` departure update 273 (748 B).
+// F363: Native point-owned predicate, instance/static with bool/byte/short/long
+// results: 170/164/171/170/170/164/171/170. NOT kept: six-point byte gain below
+// threshold; extra frame word remains. Original helper, point type and body restored.
 // @retail 0x239e50
 short function_239e50(short count, point2f const *points, short *indices)
 {

@@ -665,6 +665,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // for both tests 80 (512 bytes), as `long const &` 80; a plain `long const` for the first test only 67 (same code);
 // `long const &` for the first test written reference-left 64 (512 bytes: that pair runs candidate first but folds
 // `cmp eax, [esp + 0x30]` where retail reloads into ECX; the equality pair stays reference first).
+// F362: Existing signed-dword query results as int, count/total/rank subsets
+// 1..7 and cost alone: 67 each at 514/512 bytes. NOT kept: reference-first
+// query ownership and extra receiver move remain; all result contracts restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

@@ -145,6 +145,9 @@ static __forceinline long function_75fc3(s_network_observer *arg_0, long arg_1)
 // DH298: Final success lifetime/direct forcing-state output/capacity-output arm,
 // seven subsets 420/453/451/433/435/439/444; final capacity-produced result with direct
 // forcing-state output 447. All restored; frame, observer and counter homes remain.
+// F363: Native record input-flag byte domains, subsets 1/2/4/3/5/6/7,
+// then all signed bytes: 408/408/408/408/408/408/408/408. Original flag domains and body restored;
+// frame 0x3c/0x34 and observer/result/counter homes remain.
 // @retail 0x75fc0
 bool s_network_observer::connection_v05(long arg_1,
 	bool arg_2, bool arg_3, bool arg_4, bool *arg_5, bool *arg_6,

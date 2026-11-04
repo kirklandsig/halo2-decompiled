@@ -361,6 +361,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // forced/ordinary: 223 each. Complete alpha/RGB record and whole-color/RGB union views: 223/223.
 // All remain 1948/1937 bytes, first +0x5b, with every control unchanged. Original restored;
 // NOT kept: unmatched encoder or color representation; tint/UV homes and XMM5 blend lifetime remain.
+// F361: Existing UV encoder as native output member, pointer/reference bounds,
+// ordinary/forced inline and long/dword selector: 223/223/223/223/223/223/223/223.
+// NOT kept: tint/secondary-UV homes and blend residence unchanged; original encoder restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

@@ -460,6 +460,13 @@ struct s_tail_player_identifier
 // F353: Complete player record with native entry/options-root/traits-result/alternate-truth lifetimes
 // 32/68/56/56/32/67/67/56.
 // NOT kept: no gain; original full body/helpers restored.
+// N345: Isolated entry/player/scenario/comparison/index/parameter/alternate role names
+// and the CRT int comparison result: all eight 31. Original body restored; options
+// acquisition, delayed saves and comparison register ownership still differ.
+// F357: Native scenario count/list/selector operand lifetimes, seven subsets
+// 31/31/31/31/31/31/31; complete operands with direct truth producer 68.
+// Existing player/object lookup inline, forced and unhinted policies: eight 31.
+// NOT kept: no gain; original observations, ordinal scan and full comparison restored.
 // Y559: Complementary first-set storage bool/byte/short/long, branch-cleared then
 // test-produced: 32/32/68/67/67/67/68/67. NOT kept: no byte match; native
 // delayed saves and identifier/options/comparison allocation remain.
@@ -1344,6 +1351,13 @@ void function_150820(dword *bits, bool local_only)
 // F353: Native hand arm/default producers, original then actual mode/result storage names
 // 43/45/45/43/43/45/45/43.
 // NOT kept: no gain; original full body/helpers restored.
+// N345: Isolated player/hand/unit/held-slot/held-weapon/selector/parameter role names
+// and the int hand-negation result: all eight 43. Original body and calls restored;
+// ESI/EDI player/hand ownership still differs.
+// F357: Canonical shared object/header lookup with mutable or read-only
+// player/unit receivers: eight 43; existing player/object inline, forced and
+// unhinted expansion policies: eight 43. Every other user keeps its score.
+// NOT kept: no gain; original helpers, includes, receivers and complete body restored.
 // Y559: Complementary final failure bool/byte/short/long, conditional then
 // guarded command clearing: 85/85/87/89/73/73/87/89. NOT kept: no byte match;
 // native ESI player/EDI hand and temporary entry registers remain.

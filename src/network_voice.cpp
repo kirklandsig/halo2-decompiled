@@ -3302,6 +3302,9 @@ struct s_voice_route_choice
 // subsets 1..7, then native callee-pop declaration: 363/363/363/363/363/363/363/363.
 // Original metadata and complete routing body restored; entry registers, cursor
 // bias and priority-tail merge remain.
+// F361: Actual sixteen-choice array input, reference/pointer and long/int count:
+// bitwise radio 363/363/363/363; conditional radio 411/411/411/411.
+// NOT kept: native entry/cursor allocation unresolved; original table contract and calls restored.
 // @retail 0x57eb0
 void function_57eb0(s_voice_player_settings *settings, long talker,
 	const s_voice_route_choice *choices, long count)

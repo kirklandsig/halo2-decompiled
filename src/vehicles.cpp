@@ -611,6 +611,8 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // original coefficient/products and whole body restored; velocity/unity and SIMD/x87 homes remain.
 // F355: Complete perpendicular and heading-blend point initializers, seven subsets, then the complete fallback copy:
 // 126/126/126/126/126/126/126/277. NOT kept: no gain; original body restored.
+// F358: Existing native then inline 2D normalizers at forward/heading/blend, each seven subsets plus explicit blend length:
+// 340/325/344/393/403/388/456/456/126/126/126/126/126/126/126/126. NOT kept: no exact native expansion; original provider calls, fallback graph and full body restored.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -2857,6 +2859,9 @@ PRIVATE __forceinline real vehicle_friction(real speed, real friction, real scal
 // NOT kept: best gain three is below eight; frames 0xd0/0x104 versus 0xfc; original body restored.
 // P297: Complete forward/left/up clamp-result arms, seven subsets, then all with
 // independent relative output: 692/692/692/692/692/692/730/722. Original macro bounds/body restored; frame and homes remain.
+// F359: Full CRT cosine/sine/both returns with real conversion at bank products,
+// original/separate relative output, then immutable pairs: 692/697/698/710/717/717/698/717.
+// NOT kept: one ties and the others regress/lengthen; no exact storage repair. Original full body restored.
 // @retail 0xf2360
 void __stdcall function_f2360(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3738,6 +3743,8 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // frame and lack a precision match; original real fraction/trig graph restored.
 // F355: Wide fraction with real/wide angle, original/entry trig declarations and original/late flip predicate:
 // 199/202/199/202/227/235/227/235. NOT kept: no gain; original body restored.
+// F358: Existing dot/scale/staged-cross forced expansion declarations, seven subsets, then existing setter expansion:
+// 136/136/136/136/136/136/136/136. NOT kept: no exact projection/cross/trig repair; all original declarations and helper contracts restored.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4342,6 +4349,9 @@ long function_189060(long object_index, short value, real scale, point3f const *
 // M342: Selected override ordinal serves both threshold fields; NONE/count defaults,
 // for/while scans and producer/entry declaration scopes: 262/261/262/261/262/261/262/261. NOT kept:
 // no exact selected-result graph. Original search/body restored; found-index/world/fallback homes remain.
+// F359: Plain ray-scale vector-array loops, seven ordinal domains and body-stepped component cursor:
+// 349/349/349/349/349/349/349/235. NOT kept: no exact induction/publication repair.
+// Original complete body and helpers restored.
 // @retail 0xf6670
 bool __stdcall function_f6670(long vehicle_index, bool update)
 {

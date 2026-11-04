@@ -2436,6 +2436,12 @@ PRIVATE __forceinline void component_surface_vector_clear(hkVector4 *vector)
 // all 91 at 1459 bytes. NOT kept: one-use captures require equality and every form regresses
 // other users (9-14 lost matches). Original scaler and complete target restored; early velocity
 // j/k loads, speed-product carriers and property-zero residence remain.
+// F359: Complete shared contact-state outcome in bool/byte/signed-char/short/word/int/long/dword:
+// 158/162/162/164/164/164/164/164. NOT kept: no exact outcome graph; prefix regresses and extent grows.
+// Original complete body and helpers restored.
+// F363: Shared scaler plain counted/input-cursor/bounded/output-cursor loops,
+// factor-first then component-first: 127/251/127/389/127/251/127/389. NOT kept: all regress;
+// original shared scaler, normalizer and complete body restored.
 // @retail 0x1d87b0
 void __stdcall function_1d87b0(s_havok_component_rigid_body *body, long body_index, s_havok_component *component)
 {

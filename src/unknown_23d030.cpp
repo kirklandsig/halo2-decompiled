@@ -429,6 +429,9 @@ extern byte g_51ec11;
 // AC507: Opposite-order direct/staged up cross with complete scale/setter negation,
 // original/alternate normalization: 334/322/335/320/328/323/308/313. NOT kept: sign/grouping
 // diagnostics do not match and grow the body; original up producer and full body restored.
+// F363: Shared direction producer owned by camera state, instance/static,
+// pointer/reference output and forced/ordinary inline: eight forms 89 each.
+// Original state type, helper, both calls and body restored; zero/side/up homes remain.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {

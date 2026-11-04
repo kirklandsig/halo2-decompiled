@@ -2540,6 +2540,9 @@ dword __cdecl function_131fc0(real alpha);
 // producers 406/406/390/414; branched producers 406/406/390/414.
 // NOT kept: all regress and disturb the matched prefix; original flag reads,
 // state stores, fallback arrays and complete body restored.
+// F357: Complete shader-admission truth in bool/byte/word/dword, logical
+// producers 140/140/140/140; eager Boolean producers 243/243/243/243.
+// NOT kept: no gain; original flag reads, shader arms, fallback arrays and body restored.
 // AC506: Common post-arm first-constant/final-ABCD/final-EFG publication, seven subsets
 // and all results declared at entry: 155/180/181/175/193/187/197/197. NOT kept: every
 // one-use output form regresses; original branch stores and complete body restored.
@@ -2990,6 +2993,10 @@ static __forceinline void texture_corner_rotate(real x, real y, real cosine, rea
 // immutable pairs, first-producer scope and late second-output declaration, all
 // eight forms 246 at 2027/2022 bytes. NOT kept: one-point gain below eight;
 // original trig carriers, output declarations and complete body restored.
+// F357: Float trig APIs at both angle producers, cosine/sine/both with
+// reused pairs 250/250/250, independent pairs 249/249/250; complete immutable
+// pairs and complete producer scopes 250/250.
+// NOT kept: all regress; original real results, helper, normalized parameters and body restored.
 // AC506: Both trigonometric pairs in double result carriers, explicit-real/helper-input
 // rounding with mutable/immutable and first-producer scopes: eight at 331 (1972/2022 bytes).
 // NOT kept: precision/transport forms regress and move the extent away; original float

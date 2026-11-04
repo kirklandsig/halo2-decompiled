@@ -1604,6 +1604,9 @@ inline void looping_sound_set_permutations(s_type_5ef569 *sound, looping_sound_d
 // with an entry pointer and flags local 138 [22], with 0x21cc30 inline 122 [19] and 150 [21], the set path written out as well 53 [20],
 // 138 [22] and 150 [21], with the result moved 51 [18]. Diagnostics, 0x2194c0's parameters swapped everywhere (0x21cb90 0): 49 [30], with
 // the result moved 47 [28], with the twice-indexed take 144 [28], with 0x21cc30 inline 65 [25]. BLOCKED-BY 0x2194c0 for that arm's registers.
+// F361: Entry-declared result, false initialization after playing/tag/offset/track/
+// handle/playback/pitch/take producers: 50/48/48/48/48/48/50/56, all at 616 bytes.
+// NOT kept: two-point gain below threshold; original initializer and complete body restored.
 // @retail 0x21c190
 bool function_21c190(s_type_5ef569 *sound, s_type_06b94f *track, long sound_index, dword *seed)
 {
@@ -1812,6 +1815,8 @@ long function_125f70(long definition_index, s_looping_detail_request *request, l
 // J247: Coordinated query/preparation/stop/scanner inline contracts, original/full request:
 // 305/305/305/305/305/305/305/305. NOT kept: no gain; scanner raises 73 other scores.
 // Original complete body, request and every contract restored; frame and range/ring homes remain.
+// F358: Class gain-rate snapshot/zero-rate-first/read-only receiver, seven subsets, then immutable pitch modifier:
+// 478/479/479/495/478/479/495/495 (unchanged fast 479; full 305). NOT kept: snapshot 478 versus preview 479 gains only one and grows to 1924/1923 bytes; original observations, providers, request, loops and body restored.
 // @retail 0x21b0e0
 void function_21b0e0(bool update)
 {

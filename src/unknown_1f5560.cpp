@@ -994,6 +994,9 @@ real normalize2d(point2f *v);
 // J247: Native request-point/direction/facing memcpy subsets on the retained 3D graph:
 // 135/135/135/135/135/135/135; all three memmove 234 (873 bytes, frame 0x54).
 // NOT kept: no gain; original complete body restored. AL/DL force-result and return homes remain.
+// F360: Initial trajectory true-default/exhaustive result producers in bool/byte/short/long:
+// 182/195/169/175/120/156/168/176. NOT kept: no exact initial-result/DL repair; retail does not materialize a query predicate.
+// Original complete body and helpers restored.
 // @retail 0x1f8160
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force)
 {

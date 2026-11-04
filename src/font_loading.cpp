@@ -666,6 +666,9 @@ static inline word font_character_pixel(long alpha, long color)
 // 85/106/85/106/85/105/85/105. NOT kept: promotion/interface nonmatches; original
 // helper and decoder restored; parity, literal assembly and run-two reuse remain.
 // Diagnostic scoped size preference 198; NOT kept: compiler setting.
+// F361: Complete command-class dispatch, shared 0/1 arm, PSR/SPR/RPS/RSP groups:
+// word pixel result 204/221/235/249; long result 196/214/220/225.
+// NOT kept: larger extents and unresolved alpha/literal/run-two schedule; original decoder restored.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

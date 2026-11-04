@@ -2367,6 +2367,11 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // N344: Existing input/index/output role homes: settling_steps/current_steps, body_index/primary_index,
 // validated_body/selected_body, settling_result/settled_steps: 63/63/63/63/63/63/63/63.
 // NOT kept: no exact EBP/count/flag repair; original symbols, producers and complete body restored.
+// F358: Complete sole-exit success/failure carriers in byte/short/long/dword:
+// 63/63/63/63/63/63/63/63. NOT kept: no exact outcome-carrier repair; original count, both return paths and all stores restored.
+// F360: Complete settling-period expression at four pre-validation phases, mutable/immutable:
+// 68/68/68/71/68/68/68/71. NOT kept: no exact period-lifetime/EBP repair; retail computes the period after body validation.
+// Original complete body and helpers restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {
@@ -3121,6 +3126,10 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // then all references: reduced 607/683/690/630/598/687/638/638 (control 600).
 // NOT kept: 598 gains only two; first +7 is entry scheduling; original entire
 // body restored. Full 561 retained; flight-result/scalar and vector homes remain.
+// F356: Existing complete staged projection outputs at first/second/pair/third/fourth/pair/all sites, then all direct shared outputs on the retained long-special graph:
+// 599/613/597/612/612/604/636/605. NOT kept: no qualifying match or gain; original complete body restored.
+// F356 ordinary confirmation of the initial pair: 604, 2720/2712 bytes versus baseline 561;
+// NOT kept: full-image count regresses despite eight-byte shortening. Original body restored.
 // M342: Both native double trig results at walking/yaw/pitch phase subsets 1/2/4/3/5/6/7,
 // then all const: fast 623/605/601/602/623/623/602/602 (control 600, full 561). NOT kept:
 // no exact native-result lifetime graph. Original complete body restored; flight/result/vector homes remain.
@@ -4221,6 +4230,9 @@ PRIVATE inline void biped_rotate_about(vector3f *v, vector3f const *axis, real s
 // M342: Existing in-place rotation returns its output pointer, ignored/forward/up/both
 // consumer handoffs with ordinary/forced inline: 145/145/145/145/145/145/145/145. NOT kept: no exact
 // output-handoff graph. Original helper and complete body restored; normalization SIMD/trig homes remain.
+// F359: Complete projection reductions in four source phases, original/early cross capture:
+// 181/175/188/169/190/179/192/177. NOT kept: no exact projection-phase repair.
+// Original complete body and helpers restored.
 // @retail 0xe3910
 void function_e3910(long arg_159e6d)
 {
@@ -5080,7 +5092,9 @@ void __stdcall function_b8600(long object_index, long unknown);
 /* applies the biped's character physics move: its facing and up, its
    animation names, its movement animation's rate, crouching and grabbing,
    and its new velocity (or, asleep, its new position) */
-// score 648 (was 648): the logic was walked against retail block by block and agrees (callees, argument order,
+// score 648 (was 648): frame 0xd0 agrees; tag/state/animation homes, byte/result residency
+// and completion-call expansion remain.
+// Earlier: the logic was walked against retail block by block and agrees (callees, argument order,
 // field offsets, condition directions, constants 0.1/0.15/0.5/0/+-32768/4/6/+-1). The later velocity is
 // move.velocity itself: retail adds to it in place (0xe2a2c-0xe2a38, [esp+0x44]), stores it to linear_velocity and
 // passes &move.velocity to 0x1c4b00 (0xe2b3b), so the second copy is gone and `velocity` lives only in the matrix
@@ -5143,6 +5157,8 @@ void __stdcall function_b8600(long object_index, long unknown);
 // bool/byte/short/long in both truth domains: fast 655 each against control 655,
 // 2285/2190 bytes. Original body restored at full 648; frame 0xd0, tag/state/animation
 // homes and completion expansion remain.
+// F356: Actual persistent low-byte/high-byte/word-bitfield views, seven subsets, then all with read-only tag receiver:
+// 663/655/655/663/663/655/663/663. NOT kept: no qualifying match or gain; original complete body restored.
 // AC504: Constant-default animation-result construction at entry/pre-motion/post-motion/
 // pre-timer scopes, original then animation-flags-first acquisitions: 655 each
 // against reduced control 655 (full 648). Original complete body restored; tag/state/

@@ -4300,7 +4300,9 @@ void function_15fe20(long team_index, color3f *color);
 // unit index and the -1 compares) and the zone-progress tail's byte load order.
 long function_14de70(long local_player_index);
 
-// score 42 (was 42): frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
+// score 41 (was 42): frame 0x48c agrees; four extra bytes, late weapon NONE reuse,
+// the shift-count read width, format-mode branch and charge/progress allocation remain.
+// Earlier: frame 0x48c, four bytes long; two team-color copies (retail loads all three words, then
 // stores through ESI/EDI), the -1 register reused for the unit/slot NONE tests, a byte shift count
 // and scratch-register renames remain. The copies are retail's when 0x7f720 returns color3f by
 // value (compile-only), or with each copy through a color3f local initialised from the call: 46
@@ -4463,6 +4465,8 @@ long function_14de70(long local_player_index);
 // weapon local 71 (the constant still propagates); `(short)iterator.index` as the zone shift count 41 (retail's
 // `mov cl, byte`, under the keep threshold); OBJECT_DATUM_GET with a signed char slot 75 (`cmp cl, 0xff`); the
 // player index through the existing 0x14de70 42 (same code; kept, it was that function's body written out).
+// F356: Shared charge fraction, positive/complementary charge outcomes and entry fraction storage, original/existing weapon selection:
+// 111/93/67/111/115/99/82/115. NOT kept: no qualifying match or gain; original complete body restored.
 // Lane 13 r58 (fast): weapon NONE default before the unit test with an `if` for the slot 73 (2688 B, `or esi, -1`
 // as retail, both compares immediate, pool read ahead of the masked index); on it both tests against the weapon
 // local 71; the index term first in the unit address sum 73 (same code); a dead else `weapon = NONE` 42 and a ternary
@@ -5661,6 +5665,9 @@ void __stdcall function_d6bc0(long object_index);
 // B395: Actual reset-counter result feeds store/threshold, short/long conditional/branched
 // producers with scheduling/expiry timer lifetimes: 172/175/172/175/159/181/159/181.
 // NOT kept: all regress; original memory counter, timer observations and complete body restored.
+// F360: Both squared-distance j/i tails as plain real-vector reverse loops, four signed for/while inductions:
+// 265/265/199/199/265/265/199/199. NOT kept: no native frame/timer repair.
+// Original complete body and helpers restored.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {
