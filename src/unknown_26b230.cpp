@@ -2322,6 +2322,9 @@ void function_269250(long clump_index, long actor_index)
 // DH339: Actual group/prop/node current pointers declared in their while conditions, seven
 // subsets then all with the member result condition, eight at 89. Original declarations,
 // result tests and complete body restored; category homes and deletion completion remain.
+// P327: Complete group-category definite assignment in bool/bool, byte/bool, bool/byte,
+// byte/byte domains 152 each; complete unit assignment as well 193 each. NOT kept:
+// all regress; original classification stores, deletion continuation and pools restored.
 // @retail 0x26ae30
 void function_26ae30(long object_index)
 {

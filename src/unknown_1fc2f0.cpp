@@ -547,6 +547,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 // DH333: Standard native-array prediction/tick/delta transforms, seven subsets, then
 // complete graph plus correction addition, with direct tracked argument: 200/178/238/136/234/192/243/225.
 // NOT kept: regressing frame/code growth; original prediction, parameter storage and full body restored.
+// P327: Complete scalar prediction on the named-length graph, six declaration orders,
+// then producer definitions with original/late ticks, direct update argument: 117/117/117/117/117/117/117/117.
+// NOT kept: all regress and lose native frame/extent; original body and parameter storage restored.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

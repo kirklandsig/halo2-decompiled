@@ -1788,6 +1788,9 @@ bool __stdcall function_110ab0(long unit_index)
 // N352: Actual unit/control/state record-reference families 1..7 and complete
 // read-only bindings: 450 each. NOT kept: frame stays eight versus twelve,
 // with 424 code differences; original pointer receivers and full body restored.
+// P327: Complete base/depletion/overlay true-false result producers, masks 1/2/4/3/5/6/7,
+// then all with result at entry: 465/430/450/465/465/430/465/465. NOT kept: 430
+// still has 424 code differences; only table/extent improves. Original full body restored.
 // @retail 0x1103a0
 bool __stdcall function_1103a0(long unit_index, long requested, bool allow)
 {
