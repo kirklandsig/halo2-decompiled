@@ -1888,6 +1888,9 @@ real game_time_get_seconds();
 // 1/2/4/3/5/6/7 give 559/522/509/559/564/526/564; all with complete context-alpha
 // arms 556. NOT kept: all regress; native frame/output homes remain. Original
 // scalar results, observations, API and full body restored.
+// F372: Internal hash, animation/sample and draw workspace role names, seven
+// subsets then all with offset/reflection names: eight at 507. Native frame and
+// output homes remain; original names, scopes, APIs and complete body restored.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {

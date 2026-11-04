@@ -517,6 +517,9 @@ static inline bool teams_enabled_19e1c0()
 // volatile result with the per-case returns and the teams at each use 429 (1427 bytes). Diagnostic (reverted): one
 // `remaining &&` added to the second compare on the plain result 655 in the real build (homes unchanged), although
 // a compile-only build (no LTCG) of the same source flips to retail's homes; that harness misleads here.
+// F372: Entry declaration lifetimes for the opponent iterator, mode and local-team
+// value, seven subsets then all with the actual local-player receiver: eight at 390.
+// Original branch declarations, result storage and complete body restored.
 // @retail 0x19e1c0
 long function_19e1c0(s_event *event, long token_length, word const *token, word *destination, long remaining)
 {
