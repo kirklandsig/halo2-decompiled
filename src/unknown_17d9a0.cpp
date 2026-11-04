@@ -425,6 +425,8 @@ PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, rea
 // Real (fast, same round): real px, py named before the setter 48; short horizontal, vertical named 54; the plane helper on the current corner
 // 61; plane helper with a named row index 153; plane helper with 0x120810's body named 151; plane helper, `short axis` local, 0x120810 taking
 // the point in its first argument 173 (975 bytes); plane helper, `short axis` local, named index and coordinates 173 (975 bytes).
+// M391: Computed plane-dot/paired squared-edge/reciprocal double receivers, seven subsets, then complete real receivers: 101/133/179/79/131/141/174/54.
+// NOT kept: No exact live-plane, selector or product-memory-side recovery; nonmatching one-use/precision lifetimes are discarded. Original complete body restored.
 // @retail 0x17d9a0
 void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_quad_17d9a0 *quad)
 {

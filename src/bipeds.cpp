@@ -2543,6 +2543,8 @@ void __stdcall function_1c3770(long object_index, dword flags);
 // B444: Explicit flag read/modify/write assignments at pre-call/post-call/failure
 // boundaries, seven subsets then all mask-first: 63/63/63/63/63/63/63/63. NOT kept: no byte equality
 // or native EBP/body/flag repair; original complete body and word fields restored.
+// M391: Removed-bit dependencies at the three flag-reset sites, seven subsets, then all with missing-bit fallback publication: 63/63/63/63/63/63/63/72.
+// NOT kept: No exact native mask/count/EBP repair; original field widths, call roles and helpers retained. Original complete body restored.
 // @retail 0xe0c70
 void function_e0c70(long arg_159e6d)
 {

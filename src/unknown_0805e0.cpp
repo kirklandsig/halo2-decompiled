@@ -249,6 +249,8 @@ static inline bool player_configuration_is_excluded(s_recent_player const *playe
 // AC532: Complete complementary rejection in bool/byte/short/long, outer-result
 // 43/43/43/43 and direct-return 52/52/52/52. NOT kept: no exact mask/successor
 // allocation; original result, iterator, predicates and memcpy restored.
+// M391: Eligibility scopes split at individual flag/identity/online/exclusion boundaries 1,3,4,5,1+3,1+4,1+5,3+4+5: 43/43/43/43/43/43/43/43.
+// NOT kept: No exact native index/successor, mask-hoist or loop-exit repair. Original complete body restored.
 // @retail 0x805e0
 bool player_configuration_cache_next_recent_player(s_recent_player *player, long *iterator)
 {

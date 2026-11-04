@@ -1503,6 +1503,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // seven subsets, then complete graph with existing same-tree dot: 529/578/562/582/562/559/563/563.
 // NOT kept: no gain; secondary/ambient forms grow frame to 0x30 and lose the
 // matched caller. Original native copies, all helpers and complete body restored.
+// M390: Double square/three color scales/two luminances, subsets 1/2/4/3/5/6/7,
+// then all with immutable real length: 566/570/573/605/595/615/624/624. NOT kept: nonexact precision
+// forms; original body restored, frame/result and block/query homes remain.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2282,6 +2285,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // M379: Complete default normal/base/lightmap memmove transfers, subsets 1/2/4/3/5/6/7,
 // then all normal publications: 589/599/561/744/736/732/757/773. NOT kept: all regress;
 // original copies and body restored; status/mesh/sample homes and selective expansion remain.
+// M390: Double paired luminances/magnitudes/reciprocal scales, subsets 1/2/4/3/5/6/7,
+// then all with double final length: 726/658/640/708/663/648/676/697. NOT kept: nonexact precision
+// forms; original body restored, native status/mesh and output homes remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

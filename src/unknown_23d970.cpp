@@ -827,6 +827,8 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // neither, crossed with function_1f087b, staged and plain second products and the else pointer: 43 to 222, none below 45 without that
 // pointer. Diagnostic: 0-7 identity locals before the first product by 0-7 before the second, with function_1f087b or staged: best 45,
 // best at 1261 bytes 64.
+// M391: Normalized-distance/delay-subtraction/transition-clamp double receivers, seven subsets, then complete real receivers: 227/114/240/135/245/150/256/103.
+// NOT kept: No exact product-color, forward-K reuse or angle-store-base repair; nonmatching result lifetimes are discarded. Original complete body restored.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {
