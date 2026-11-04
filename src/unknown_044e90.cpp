@@ -272,6 +272,12 @@ struct s_visibility_bound_record
 // Y582: Actual fallback sphere-query return in bool/byte/word/long, success publication
 // or failed-query continue: 406 each. NOT kept: one-use results miss equality; original
 // call, direct test, input observations and full body restored; entry/table/plane homes remain.
+// Round 148 (m3 lane 6, fast; aligned in brackets, control 406 [357]): part loop: named word-mask pointer 406; containment flag
+// set in the arm 406 [356]; both 406; `inline` on 0x142a60 407, on 0x165010 406, on 0x45a80 and 0x458d0 406. Plane transformed in
+// place with one store at the join and retail's zero-scale store 476 (1700) [278]; flags at each use with a (bool) bit test 474
+// (1712) [320]; sign-mask capacity tests 467 (1760) [310]; query arms 438 (1760) [282]; `!parts` arm first 481 (1777) [283];
+// chained capacities 481; two-step frustum pointer 481. Index parameter long at 0x458d0 and 0x45a80 (retail's callers push
+// movsx eax, word [ebp+8]) 519 (1808) [274]; with chains and frustum 520, register-masked aligned 110.
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
 {
