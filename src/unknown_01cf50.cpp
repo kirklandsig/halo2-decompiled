@@ -69,6 +69,13 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
+// Round 2 of #1066: score 188 (was 188). Walked against retail: the sampler and render states, the
+// vertex-shader constants (0.0f/1.0f layout, bounds order), the pixel shader fields and their
+// order, 0x14bc0's arguments and the four vertices' coordinates (0.53125f, 64.53125f,
+// 16777215.0f checked in the XBE) all agree up to the pixel shader program; no behaviour bug. The
+// whole remaining difference is that retail inlines only the first SetVertexData2s (3, 0, 0) and
+// calls the other three (0x3fb330) while ours also inlines (3, 1, 0), which in turn hoists the
+// constant one into edi for the combiner count. D3DDevice::SetVertexData2s for that call: 188.
 // MiniMax D (11-01): no lower score: our build puts the constant one into edi for the two
 // combiner-count stores where retail stores the immediate; the permuter timed out.
 // MiniMax D (10-30): the stage states through the existing sampler_state_write plus one more
@@ -3665,6 +3672,14 @@ extern long g_485898;
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
 // retail tests the definition's flag byte where it lies while we copy the byte into bl.
+// Round 2 of #1066: logic walk against retail 0x2e540-0x2e9d2 found no behaviour difference (tag and flag tests, the
+// two-lookup flag byte, scale, radius, the size table by the short at +0x16, both switch arms, the extent and depth
+// clamps, floor order left/top/right/bottom, area test and the four vertices all agree; every float constant checked
+// in the XBE: 0x45dd58 2/255, 0x45dbc0 1.0, 0x45dfe4 sqrt2, 0x45dc0c 2.0, 0x45dd60 128.0, 0x45e45c 2^31, 0x45dd40 16777215).
+// Retail reloads the definition pointer for the second flag test (ebx for the 0x40 test, ecx for the rest) and ours
+// merges the two loads; retail's size table shares the slots of the screen values. Tried: if/else for scale (288, layout
+// matches retail's diamond), the 0x40 test on its own lookup with the definition taken inside the if (294), the table
+// cached in a local (301), position copied after the scale test (304). None lower than 285, none kept.
 // @retail 0x2e540
 long __stdcall function_2e540(s_slot *slot, byte *data)
 {
@@ -4120,6 +4135,16 @@ void function_40890(void)
 bool function_48b00(point3f const *point, real radius, real *screen, real *extent);
 void function_1cf50();
 
+// Round 2 of #1066: score 199 (was 319): LOGIC WALK against retail found no behaviour
+// difference (clamps and constants 0x45dd40/0x45dbc0, slots 5/2/1/0, the 2f values, x1=screen0+a, y1=screen1-b,
+// x2/y2 from c/d, x3=screen0-a, y3=screen1+b, x4=screen0-c, y4=screen1+d, z/w kept in the dead point/depth slots);
+// what moved the score is WHERE the work sits. Retail computes c and d in the block after the (1,1) tex write, so
+// they are declared after that call (319 -> 289), and the product declaration order hs, hc, wc, ws (or hc, hs, wc, ws) gives 199
+// (the other 22 orders: 289..306). Still differs: retail loads width, height, cosine and screen[1] up front and reads
+// sine from its slot, we load screen[1] later and sine into a register. Tried, no change or worse: swapping the
+// operands of the four products (all 16 masks: no change), a/b or c/d declared in the other order (199), commuted
+// sums (199), x1/y1 as locals (368 before the move, 353 after), screen[1] or screen[0] hoisted into a local (412/504),
+// extent hoisted into locals (199), hs/hc before the colour write (344), c/d hoisted above the first vertex (391).
 // @retail 0x484b0
 void __stdcall function_484b0(point3f const *point, real depth, real width, real height, real cosine, real sine, dword color)
 {
@@ -4137,17 +4162,17 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
         D3DDevice::Begin(D3DPT_TRIANGLEFAN);
         D3DDevice::SetVertexDataColor(5, color);
         D3DDevice::SetVertexData2f(2, 1.0f, 0.0f);
-        real wc = width * cosine;
         real hs = height * sine;
-        real ws = width * sine;
         real hc = height * cosine;
+        real wc = width * cosine;
+        real ws = width * sine;
         real a = (wc - hs) * extent[0];
         real b = (ws + hc) * extent[1];
         D3DDevice::SetVertexData2f(1, screen[0] + a, screen[1] - b);
         D3DDevice::SetVertexData4f(0, screen[0] + a, screen[1] - b, z, w);
+        D3DDevice::SetVertexData2f(2, 1.0f, 1.0f);
         real c = (hs + wc) * extent[0];
         real d = (ws - hc) * extent[1];
-        D3DDevice::SetVertexData2f(2, 1.0f, 1.0f);
         D3DDevice::SetVertexData2f(1, screen[0] + c, screen[1] - d);
         D3DDevice::SetVertexData4f(0, screen[0] + c, screen[1] - d, z, w);
         D3DDevice::SetVertexData2f(2, 0.0f, 1.0f);
@@ -4160,13 +4185,18 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
-// MiniMax A (11-04): the four products' declaration order (six orders) 152/164/152/163/152/163, the multiply operands swapped 152, the products inlined into a/b/c/d 166; the permuter's best (148) rewrites the vertex calls and so draws something else, not kept.
-// MiniMax D (11-01): no new form tried, no lower score.
-// score 152 (was 152): the instruction sequence is retail's, the same number of instructions, and
-// only the register allocation and the spill slots differ: retail loads cosine, width, height,
-// sine and screen[1] where we load width, cosine, height, screen[1] and screen[0].
-// score 152 (was 152): the four floats are loaded into the other XMM registers and the products
-// are formed in the other order.
+// Round 2 of #1066: score 125 (was 152): LOGIC WALK against retail found no behaviour difference (slots 9/3,
+// the 2s values 0x1/0x10001/0x10000/0, x/y/z/w of the four corners, extent/screen offsets all agree). c and d are
+// computed in retail's block after the (1,1) tex write (0x48297), so they are declared after that call (213 with
+// the old product order), and the product order hc, ws, wc, hs then gives 125 (old order on the new c/d spot 213,
+// old order on the old spot 152; the next best on the new spot 130, the rest 162 and up). Still differs: retail loads cosine,
+// width, height, sine and screen[1] up front (we load screen[0] too and the others in another order), forms
+// x1 as a copy of a plus the screen[0] slot, and reloads six registers after the first slow path (we reload five).
+// Tried, no change: commuted sums (screen[0] + a vs a + screen[0], b + screen[1]), extent first, a/b swapped (197),
+// c/d swapped, operand swaps of the products.
+// Earlier rounds: MiniMax A (11-04): the four products' declaration order (six orders) 152/164/152/163/152/163, the
+// multiply operands swapped 152, the products inlined into a/b/c/d 166; the permuter's best (148) rewrites the
+// vertex calls and so draws something else, not kept. MiniMax D (11-01): no new form tried, no lower score.
 // @retail 0x480a0
 void __stdcall function_480a0(point3f const *point, real width, real height, real cosine, real sine, dword color)
 {
@@ -4177,16 +4207,16 @@ void __stdcall function_480a0(point3f const *point, real width, real height, rea
         D3DDevice::Begin(D3DPT_TRIANGLEFAN);
         D3DDevice::SetVertexDataColor(9, color);
         D3DDevice::SetVertexData2s(3, 1, 0);
-        real wc = width * cosine;
         real hc = height * cosine;
         real ws = width * sine;
+        real wc = width * cosine;
         real hs = height * sine;
         real a = (wc - hs) * extent[0];
         real b = (ws + hc) * extent[1];
         D3DDevice::SetVertexData4f(0, screen[0] + a, screen[1] - b, screen[2], screen[3]);
+        D3DDevice::SetVertexData2s(3, 1, 1);
         real c = (hs + wc) * extent[0];
         real d = (ws - hc) * extent[1];
-        D3DDevice::SetVertexData2s(3, 1, 1);
         D3DDevice::SetVertexData4f(0, screen[0] + c, screen[1] - d, screen[2], screen[3]);
         D3DDevice::SetVertexData2s(3, 0, 1);
         D3DDevice::SetVertexData4f(0, screen[0] - a, screen[1] + b, screen[2], screen[3]);
@@ -4285,6 +4315,16 @@ void function_48010(real const *color);
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
 // retail is also 17 instructions longer than ours, and the two drift apart in the mode branch.
+// Round 2 of #1066: logic walk against retail 0x47930-0x47e9d found no behaviour difference (cull, colour write, depth
+// states, the 2f vertex data, stipple, format and mode arms, every pixel shader field and constant checked). Retail's
+// layout: `switch (format)` with case 0 and default as two separate copies of the 0x54 arm (so that is a switch, laid out
+// default, case 1, case 0), and the mode dispatch is a compare chain 0,1,2,3,4,5 on ebp (copied from the stack in the
+// prologue), bodies laid out default, 4/5, 1-3, zero. Retail also inlines only 12 of its 18 function_0222d0 sites (the six
+// calls are default's four, 4/5's blend op and the alpha test off); ours inlines all six calls we write, which is most of
+// the remaining score. Tried: switch (format) with the default copy (253, that region then matches exactly), if (mode)
+// plus an if/else-if chain for 1-3 / 4-5 (287; 252 with the switch), a mode switch with case 0 (256, ours uses a jump
+// table), all 18 sites as function_0222d0 calls (259, all inlined), the 1e930-style `*(D3DRENDERSTATETYPE const *)&state`
+// at the six calls (288). None below 244, so the source is unchanged.
 // @retail 0x47930
 void function_47930(word flags, long format, long mode)
 {
@@ -4469,7 +4509,7 @@ PRIVATE __forceinline void texture_surface_dimensions(long index, long *width, l
     }
 }
 
-// score 612 on the fast image (was 587; the full build said 580), 1636 bytes against retail's 1700. Round 122: 0x144f0
+// score 585 (was 580; the fast image says 612), 1636 bytes against retail's 1700. Round 122: 0x144f0
 // matches; both its calls pass retail's values (fallback 0, fallback index 1: `xor ebx, ebx`, `push ecx` with ECX 1).
 // Round 1 of #1066: the 24/25 else branch now calls function_14f60(stage, 1) (retail jumps to the case 2 block, which
 // does `mov edi, ecx` with ECX = 1; it used to pass the surface); case 8 follows case 13 as in retail's layout;
@@ -6292,6 +6332,11 @@ void function_47ea0(short stage, byte flags);
 // (ret 0x1c), so every stack offset differs; retail also calls 0x14560 with the stage in
 // ecx, and holds 1.0f in the vertex-shader constants at indices 0, 5, 8, 13, 16, 21, 24
 // and 29 where ours holds it at 0, 5, 10, 15, 16, 21, 26 and 31.
+// Round 2 of #1066: the volatile bitmap and `selected` removed, the midpoints/total stored into the parameters,
+// cos and sin taken from atan2 directly (one fpatan, retail's 0x20b8 frame, tag then travels in ECX), the width per
+// branch, the direction through vector3d_from_points3d and 0x30830 given &g_4b9e14/&g_4b9ecc as retail gave 325 on
+// the fast image (callers 0x4f010 314 -> 308, 0x508d0 956 -> 955), but in the full build that set costs matched
+// 0x41640 (unknown_0350e0.cpp, two stack slots swap), so none of it is kept.
 // @retail 0x4f7e0
 bool __stdcall function_4f7e0(long tag, s_501e0 const *points, long count, short bitmap,
     real cosine, real sine, bool segments, bool perspective, bool filtered)
@@ -7465,6 +7510,9 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
+// Round 2 of #1066: a forced-inline removal helper (all three sites expanded, retail's 1133 bytes), the volatile
+// header as a plain local, one read of the pool and guarded do-while loops gave 279 on the fast image but 342 in the full
+// build, and that set cost matched 0x41640 (unknown_0350e0.cpp) there, so none of it is kept.
 // @retail 0x1f5c0
 void __stdcall function_1f5c0(long character_index)
 {
