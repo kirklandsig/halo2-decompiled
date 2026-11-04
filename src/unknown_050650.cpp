@@ -685,6 +685,9 @@ struct s_collision_result_buffer_1697c0
 // widened rounded-root/root-producer/reciprocal receivers 546/546/651;
 // float root/absolute with double reciprocal 651/651. NOT kept: five-point best
 // is below eight and length grows; double forms outline. Original helper/body restored.
+// Y597: Actual normalized-output vector/readonly-vector/opaque/readonly-opaque pointer
+// results, direct/shared exits: 357/357/357/357/357/357/357/357. NOT kept: no exact output
+// contract or gain; original magnitude return, all consumers and complete sampler restored.
 // @retail 0x296e60
 PRIVATE bool function_296e60(point3f const *origin, vector3f const *forward, bool test_collision,
 	real yaw_lower, real yaw_upper, real pitch_lower, real pitch_upper, vector3f *direction)

@@ -822,6 +822,9 @@ void function_1537f0(s_profile_record *record);
 // DH358: Existing unused eight-byte source field as signed integer, native SDK integer/time
 // records, dword/word/byte field arrays and double: eight scores 53; every file control unchanged.
 // NOT kept: identity homes still fold and frame 0x98/end-bound remain; original record and body restored.
+// Y597: Current pointer/no-tail graph with whole source-header zero field subsets
+// 1/2/4/3/5/6/7, then contiguous header fill: 53/77/53/86/53/77/86/115.
+// NOT kept: no exact publication graph or gain; full original body and initializers restored.
 // @retail 0x7f930
 void function_7f930(void)
 {

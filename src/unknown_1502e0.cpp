@@ -1146,6 +1146,10 @@ struct s_tail_transfer_traits
 // F382: Selected-traits, unit-receiver and selection-scalar lexical home groups,
 // seven subsets then all with the transfer parameter role name: eight 153 at 826 bytes.
 // NOT kept: no gain; original names, initializer sites, helpers and complete body restored.
+// Y597: Independent minimum-scan rejection continuations, six guard orders, then
+// weapon/grouped-rejection and age/grouped-rejection: 153/169/151/153/180/153/153/180.
+// NOT kept: two-point best gain below the gate; other forms tie or regress. Original
+// scan, observations and whole body restored; traits/unit/NONE homes and reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {
@@ -2263,6 +2267,9 @@ void __stdcall function_191e51(long definition_index, long player_index);
 // producer masks 0..7: 202/202/202/202/202/202/202/202. Original returns,
 // arithmetic and full body restored; NOT kept: no byte match or native
 // player/header-offset recovery. Native frame 0x28 remains.
+// Y597: Complete single void exit, parent-admission bool/byte/short/long,
+// direct/complete named squared-distance and radius nodes: 202/202/211/210/202/202/211/210.
+// NOT kept: no gain; all original exits, observations and complete body restored.
 // @retail 0x150e30
 void __stdcall function_150e30(long player_index, long object_index)
 {
