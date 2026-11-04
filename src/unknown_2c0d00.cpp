@@ -345,6 +345,14 @@ void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_in
 // producer subsets 1/2/4/3/5/6/7, then all with radius square:
 // 882/882/924/882/924/924/924/924. NOT kept: shared radius grows frame to 0x2cbc
 // versus 0x2cac; other complete expression values tie. Original whole body restored.
+// B406: Required/excluded sphere-admission masks byte/word/long/dword at filter
+// 928/893/897/897f; per-object mask producers 946/892/888/888f (control 931f, full 882).
+// NOT kept: retail has separate Boolean/byte gates; frame remains 0x2cb8 or grows to
+// 0x2cbc versus 0x2cac. Original filters, qualifiers, buffers and complete body restored.
+// B408: Raised query point reused by other-actor/vehicle/sphere center lifetime subsets
+// 1..7: 915/917/926/923/932/897/938f; original query record with shared sphere center 905f
+// (control 931f, full 882). NOT kept: frames 0x2cb4/0x2ca8/0x2cb8 miss retail 0x2cac
+// and lengths 3680..3708 move away. Original query, point lifetimes and full body restored.
 // @retail 0x2c0d60
 void __stdcall function_2c0d60(vector3f const *previous_direction, long actor_index, byte flags,
     s_path_settings const *settings, s_obstacle_list *obstacles, s_obstacle_list *blocking_obstacles,
@@ -1470,6 +1478,14 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // receiver subsets 1/2/4/3/5/6/7, 418/418/429/418/429/429/429; native
 // positioned-point receiver 418. All restored; no frame/zero/home recovery.
 // Original radius values, native call roles and complete body retained.
+// B397: Correct original-radius live interval with long type/link/successor subsets,
+// then all with zero-extended selected type 423/418/476/409/475/476/475/475. NOT kept: 409
+// needs both width changes; either alone regresses/ties, and native link stores stay
+// word-sized. Original storage restored; frame 0x114/0x10c and zero homes remain.
+// Round 404: Trace start/target/both shared setters 426/378/370; direct-start stores 418, with target
+// setter 378; const start 418/378; attempt-owned start 412. NOT kept: target setter adds an in-loop z
+// store; retail initializes z before the loop. Existing planar target setter alone/with start setter
+// 427/435. Original endpoints/body restored; frame/zero/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

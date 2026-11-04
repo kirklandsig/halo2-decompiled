@@ -263,6 +263,9 @@ __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f 
 // AC507: Existing point setter at sum/endpoint/fixed-rotation producers, subsets
 // 1/2/4/3/5/6/7 then general rotation too: 457/458/489/485/524/541/561/593.
 // NOT kept: all regress and grow; original producers, setter declaration and full body restored.
+// Unified endpoint-side predicate for all orientation consumers, second/first polarity
+// as bool/byte/short/long: 415/436/437/436/438/438/446/430. All regress;
+// original predicates, counters, helpers, publication and whole body restored.
 // @retail 0x298d90
 void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f const *arg_3,
 	point2f const *arg_4, point2f const *arg_5, real arg_6, point2f const *arg_7, point2f const *arg_8)

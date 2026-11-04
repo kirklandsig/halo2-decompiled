@@ -298,6 +298,9 @@ bool function_a7670(long object_index);
 // Ordinary/inline forms leave all controls unchanged. Forced forms grow to 1889/954 bytes,
 // frame 0x440 versus 0x424, and lose ten matched controls; NOT kept. All seven contracts
 // and original complete bodies restored; selector/island/count homes and admission BL remain.
+// B411: Actual two-list first/second phase do traversals, bool/byte/short/long,
+// 281/281/196/280/285/285/200/284. NOT kept: phase/domain nonmatches, longer extents
+// and byte-phase frame shrink. Original ordinal traversal and complete body restored.
 // @retail 0x278f00
 void function_278f00()
 {

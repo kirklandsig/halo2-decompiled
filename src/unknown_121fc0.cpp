@@ -245,6 +245,9 @@ static inline char *function_xe9ecc4(char *string, char const *delimiters, char 
 // N347: One text cursor across path/leaf/read preparation, copy/name/append return producers,
 // then function-scope path/read forms: 128/128/128/126/199/205/128/128. NOT kept: unmatched shared storage/one-use
 // result forms. Original complete body restored; outer EBP preservation and read-size homes remain.
+// B401: Next-unused cache slot as provisional mapped search result, long/dword/short/word:
+// ordinal traversal 227/227/223/223; native pointer traversal 218/218/215/215. NOT kept:
+// unmatched result/control forms regress and shorten extent; original search, tokenizer and body restored.
 // @retail 0x121fc0
 void function_121fc0(void)
 {

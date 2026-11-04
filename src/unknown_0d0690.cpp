@@ -1506,6 +1506,9 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
 // body; five native-frame forms also regress the caller 363 -> 440. Original
 // selection result, frame, helpers and entire body restored.
+// B407: Early degenerate normalizer exit, native/readonly output pointer, direct/existing
+// scaler and forced/ordinary inline: 529/529/608/608/529/529/608/608. NOT kept: no gain;
+// shared user 363 -> 368/364. Original helper, calls and complete body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -1677,6 +1680,8 @@ real function_30bf0(vector3f *vector);
 // 320 -> 293, masked 199 -> 164); plus (k, i, j) squared length 430 (aligned 285); plus the axis read through a
 // `vector3f const *` from g_4687b0 in lighting_rotate 464 (1842 B; 0x3db00 lost, 0xd37f0 610; retail reads the axis live
 // in both functions); (k, i, j) alone 357; with the colour2 positive checks as stored selects 433 (1878 B).
+// Round 402: Complete applied/fallback query outcomes, bool/byte/short/long, at the real query boundary.
+// Scores 450/450/450/450/450/450/450/450. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0xd4080
 void function_d4080(long type, s_effect_color_query const *query, long flag, s_lighting_record *record)
 {
@@ -2236,12 +2241,18 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
 // (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
 // pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
+// B396: One shared test-produced long/dword/short/word status, original special exit 832/832/836/836;
+// actual single completion 824/824/711/711. Original entry default and complete body restored;
+// frame/status/mesh homes and selective expansion remain.
 // N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
 // conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
 // NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
 // AC509: Existing decoder returns mutable/readonly output references through pointer/reference
 // formals: four ignored results 542, four directly consumed interpolation results 545. Original
 // decoder and three samples restored; status/mesh/sample homes and helper expansion remain.
+// Round 404: Actual decoder input/output/paired-input/paired-output cursors 1100/756/984/855 with
+// ordered ends, 826/756/763/855 with equality ends. Original decoder, three independent samples and body
+// restored; native status/mesh/color/UV homes and selective expansion remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {

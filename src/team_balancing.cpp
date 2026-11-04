@@ -668,6 +668,10 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // F362: Existing signed-dword query results as int, count/total/rank subsets
 // 1..7 and cost alone: 67 each at 514/512 bytes. NOT kept: reference-first
 // query ownership and extra receiver move remain; all result contracts restored.
+// B408: Complete post-swap best/current selection outcomes bool/byte/short/long:
+// positive 67/67/67/67, complementary 70/70/70/70 (control 67). All 21 peer
+// measurements unchanged; NOT kept: one-use captures do not match or recover candidate-first
+// query order. Original selector, four spread calls, costs and complete body restored.
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

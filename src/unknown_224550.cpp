@@ -364,6 +364,12 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // F361: Existing UV encoder as native output member, pointer/reference bounds,
 // ordinary/forced inline and long/dword selector: 223/223/223/223/223/223/223/223.
 // NOT kept: tint/secondary-UV homes and blend residence unchanged; original encoder restored.
+// B409: Wrapped first/next/both frame indices, successor ordinal and its complete
+// combinations, adjacent modulo stage and updated successor index: 223 each.
+// Original index producers/body restored; tint/secondary-UV and blend homes remain.
+// B411: Persistent input/clamp-cursor/selected-frame lexical identities, subsets 1-7,
+// then complete scalar-stage identities: 223 each. Original observations, expressions,
+// workspaces and body restored; tint/secondary-UV homes and blend residence remain.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

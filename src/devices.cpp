@@ -846,6 +846,9 @@ struct s_device_machine_view
 // F362: Existing callback as static device member, ordinary/inline, masked/word
 // flags and original/active-velocity zero: 34/34/120/120/117/117/122/122.
 // NOT kept: word-load/EAX sharing and zero join remain; original callback/table restored.
+// B407: Complete native short-unit 16-bit flag fields, unsigned/signed, masked/full
+// consumption and native velocity zero: 34/117/120/122 twice. No word-load/EAX recovery;
+// every other file score preserved. Original scalar field and complete callback restored.
 // @retail 0x106d70
 bool __stdcall device_export_function(long device_index, long name, real *value, bool *active)
 {
@@ -1777,6 +1780,9 @@ bool function_0b6760(s_index_pair const *pair);
 // F362: Existing state getter as actual device member, ordinary/forced expansion,
 // with inherited/ordinary index and saved-pointer storage: 285/285/411/411/382/382/442/442.
 // NOT kept: no frame/state/index repair or byte match; original getter, callers and body restored.
+// Round 404: Repeated position/power velocity cursors 294/372/379; complete position/power/both output
+// pairs 373/403/398; both with ordinary index/saved pointer 406/371. Original receivers and qualifiers
+// restored; frame/index/state/result homes remain.
 // @retail 0x106790
 bool __stdcall function_106790(long volatile device_index)
 {

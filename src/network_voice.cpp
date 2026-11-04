@@ -1744,6 +1744,8 @@ static inline dword voice_get_player_mask_inlined(void);
 // Round 59 (m3 lane 11, fast): active mask as a ternary on voice_available() 120; remote not named, the mask as
 // `players & ~local & ~muted` 138; muted folded into the mask (`mask = remote; if (...) mask &= ~muted`) 130 (400
 // bytes); the inner skip as `if (!(mask & bit)) continue;` 85 (same code); `if (!values->enabled) return;` 85 (same code).
+// Round 402: Complete per-target rejected/allowed query-chain results in bool/byte/short/long after mask admission.
+// Scores 85/85/85/85/85/85/85/85. NOT kept: unmatched outcome forms; original complete body restored.
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -3624,6 +3626,9 @@ static inline long voice_packet_clamp_count(byte count, long minimum, long maxim
 // M344: Relay formal char/signed-char/byte/short/word/int/long/dword
 // 139/139/139/155/155/140/140/140, all 488/488 bytes. NOT kept: byte forms tie;
 // wider forms regress and lose the parser. Original bool contract/body restored.
+// Twice-used relay payload at entry/member/admission/mask producers: indexed
+// packets 139/139/139/139; independent packet cursor 164/164/164/164 (478 bytes).
+// Original payload expressions, live count reads, traversal and complete body restored.
 // @retail 0x55e10
 long __stdcall function_55e10(s_voice_channel *channel, byte *data, long size, bool relay)
 {

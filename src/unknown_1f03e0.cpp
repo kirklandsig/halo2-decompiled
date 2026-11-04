@@ -1046,6 +1046,13 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // ordinary/inline, inline/ordinary, ordinary/forced-inline, forced-inline/ordinary and both ordinary:
 // 433 each (3037/3047 bytes); every shared user unchanged. Original annotations and full body restored;
 // damping ECX/EDX, raw/bounded homes and cross/history schedules remain.
+// B409: Declared word-bit consumers for damping/direct/gravity/the three/enabled/
+// all four/all with history/the three with history: 427/438/427/425/441/457/575/444.
+// NOT kept: six-point leads below gate; combined 425 shortens away from retail to
+// 3034/3047. Original word layout, flag producers and complete body restored.
+// B411: Complete entry flying/damping/direct/gravity declaration orders on the planar graph
+// 441/432/441/434/444/445/445/440; NOT kept: one-point reduction and order-only nonmatches.
+// Original observations/body restored; damping ECX/EDX and raw/bounded homes remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1741,6 +1748,13 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // bit-production masks 0/1/2/4/3/5/6/7: 223/226/223/311/226/310/312/311.
 // NOT kept: all grow to 1068/1088 versus 1066; original definition, both calls, magnitude,
 // initializers, predicates and complete body restored.
+// B400: Saved two-bit selection state with candidate-state/native movement/shared-contact-byte
+// masks 0..7: 359/294/360/293/359/294/360/293, at 1129/1045 bytes against 1066.
+// NOT kept: no exact match or gain; original separate predicates, magnitude, observations,
+// complete body and material calls restored; zero width and reset/selection homes remain.
+// B411: Existing magnitude producer with double/native/direct/test-produced movement
+// 221/224/226/226; squared-length/dot producers with double/real roots 221/224/221/224.
+// Native zero width fixes only the prefix; original root, declaration and body restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

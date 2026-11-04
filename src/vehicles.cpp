@@ -2495,6 +2495,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // guarded native-double returns at the real field store: 61/61/59/64/39/59/64/67. NOT kept: no exact
 // native-result boundary; direct double return 39 reaches 682 bytes but gains only three.
 // Original two-use helper and complete body restored; turn/spin schedules remain.
+// B396: Twice-used turn-sign truth, bool/byte/short/long positive and complementary outcomes:
+// 215/215/214/215/215/215/214/215 (711 bytes, frame 0x10). Original complete body and spin helper
+// restored; turn-product and spin spill/publication schedules remain.
 // P297: Default-first turn/gear-throttle/engine-throttle clamp results, seven subsets,
 // then all with entry declarations: 43/50/50/51/51/50/51/51. Original body restored; turn-product/spin transport remains.
 // F353: Plain two-side spin loops, aggregate/const/assigned/assigned-const-pointer tables,

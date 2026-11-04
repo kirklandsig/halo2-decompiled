@@ -161,6 +161,18 @@ PRIVATE __forceinline void function_217c42(real *arg_0, real *arg_1, real arg_2,
 // AC484: Separate native short/word/byte/long quadrant components with a short total
 // 474/474/488/474; with a long total 474/474/488/474. Original components, helper
 // and body restored; frame 0x38/0x40, rounded angles and simultaneous snap homes remain.
+// B398: Native axis-pair snap returns with scalar/value/pointer/reference inputs,
+// component publication 586/706/586/586; aggregate publication 586/706/586/586.
+// NOT kept: native pair storage does not match and grows the frame/length.
+// Original helper, body and includes restored; both exact callers stay matched.
+// B400: One rounded snap angle for offset/absolute-angle consumers, with first/second/both
+// atan2-producer lifetimes 485/558/558/561; producer-only first/second/both 501/499/563;
+// complete rounded-angle graph with entry declarations 561. NOT kept: no exact match or gain;
+// original helper, full double inputs and complete body restored; frame/angle/snap homes remain.
+// B410: Existing clamp result-first branch/default/complete/lower-default/upper-default/
+// bound-predicate/lower-expression/upper-first results: 577/474/483/545/549/826/558/538.
+// NOT kept: neutral or nonretail result/compare shape and frame/length regressions.
+// Original six-use clamp, snap helper, complete body and alignment evidence restored.
 // @retail 0x217c40 standard
 void function_217c40(void)
 {

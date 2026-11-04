@@ -338,9 +338,16 @@ PRIVATE __forceinline void function_248076(dword *arg_0, real &arg_1)
 // M342: Explicit refreshed virtual child count at the native latch, provider carry and
 // count/index declaration scopes: 55/55/55/55/55/55/55/55. NOT kept: no exact count/provider
 // handoff shape; original complete body restored. Split post-sample compare and child scratch homes remain.
+// B396: Post-sample equality hit/miss results in bool/byte/short/long domains, 55 each.
+// NOT kept: no exact one-use result form or gain; original complete body restored.
+// Split memory comparison and evaluator/spawn/child scratch registers remain.
 // N347: Read-only virtual count/element/both/both-interface, metadata/metadata-count/metadata-element/
 // complete contracts: 55/55/55/55/55/55/55/55. NOT kept: unmatched alias/contract combinations. Original
 // complete body and declarations restored; split post-sample comparison and child scratch homes remain.
+// B398: Cache formal in positions 1..5 with the sole call updated, then explicit
+// stdcall in positions 6/1/4: 55 each at 870 bytes. NOT kept: no exact entry-contract
+// form or gain. Original signature/caller/body restored; post-sample split cache
+// comparison and evaluator/spawn/child scratch allocation remain.
 // @retail 0x247fd0
 void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 	point3f const *arg_3, vector3f const *arg_4, dword arg_5, s_247fd0 *arg_0)
@@ -711,6 +718,9 @@ void function_246e60(long arg_0, dword arg_1, s_particle_impact const *arg_2, s_
 // J247: Actual probe-point/contact-normal copy boundaries (memcpy/memmove pairs):
 // 356/373/356/382/356/382/373/391; frame 0xb0 throughout. NOT kept: no gain;
 // move forms are 1643 or 1627 bytes. Original body restored; delayed EBP and sample/geometry homes remain.
+// B400: Geometry-kind/contact-query/terminal-dispatch decision results, masks 1/2/4/3/5/6/7,
+// 359/359/359/359/359/359/356; complete graph with native loop predicate 356.
+// NOT kept: no exact match or gain; original complete body restored; late EBP save and sample/blend/getter homes remain.
 // @retail 0x247950
 void function_247950(s_particle_system_datum *arg_2, s_particle_spawn_definition const *arg_3,
 	dword arg_4, real arg_5, real arg_6, real arg_7, s_247950 *arg_1, s_247fd0 *arg_0)

@@ -408,6 +408,13 @@ union s_185be7
 // AC509: Existing reset returns its actual action subobject, pointer/reference inputs
 // and pointer/reference results, ignored then consumed: 622 each (eight forms). Original
 // reset, receiver, six stores and complete body restored; control-root/NONE homes remain.
+// B396: Final auxiliary-input eligibility bool/byte/short/long at consumption 622/622/622/622;
+// admitted-branch source/result 623/623/627/626. NOT kept: no exact one-use/branch-result form;
+// original complete body restored. Control-root/NONE, settings/zero and flag schedules remain.
+// Round 404: Main/secondary direct flag macros 806/657; low/high/all word-input publications
+// 616/616/603; with main/secondary/both 801/645/774. NOT kept: 603 widens native byte stores. Consistent
+// byte macros 616 (six-point gain below eight). Original flag widths/helper/body restored; root/NONE and
+// scalar homes remain.
 // @retail 0x185be0
 void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s_186ab4 *arg_4, s_186ab3 *arg_5)
 {

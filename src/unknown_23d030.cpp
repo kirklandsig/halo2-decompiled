@@ -432,6 +432,12 @@ extern byte g_51ec11;
 // F363: Shared direction producer owned by camera state, instance/static,
 // pointer/reference output and forced/ordinary inline: eight forms 89 each.
 // Original state type, helper, both calls and body restored; zero/side/up homes remain.
+// B397: Twice-consumed matrix-scale predicate in bool/byte/short/long, then
+// unit-scale complement 324/324/319/321/324/324/319/321. Original separate scale tests restored;
+// zero/side normalization and up/roll allocation remain.
+// B399: Plain native projection/roll-row traversals on the shared-state graph, scalar/
+// existing direct/staged cross and consumed row workspace: 455/448/448/448/448/448/448/448.
+// All regress and lengthen; original body restored. Zero/side/up allocation remains.
 // @retail 0x23d260
 void __stdcall function_23d260(void *state, void *input, void *output)
 {
