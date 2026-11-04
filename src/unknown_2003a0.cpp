@@ -2429,6 +2429,10 @@ PRIVATE __forceinline long squad_tick_round(real ticks)
 // B414: Non-wake idle/area ownership, call-first area admission and actor-presence regions, seven subsets;
 // complete graph with empty-intersection continue: 293/275/275/293/293/275/293/293. Original complete body restored.
 // Frame 0x48 versus 0x54, iterator pool, point/area homes and intersection spill remain.
+// J255: Coherent ordinary-inline squad-test, actor state update and actor-cluster
+// provider subsets, then squad-deactivation boundary: 275/275/275/275/275/275/275/275.
+// NOT kept: ties/regressions. Every provider contract and complete body restored;
+// frame, iterator/point homes and bitmap-intersection spill remain.
 // @retail 0x201ea0
 void function_201ea0(void)
 {

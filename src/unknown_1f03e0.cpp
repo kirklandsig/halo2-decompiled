@@ -1069,6 +1069,10 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
 // NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
 // Original whole body and helpers restored; damping and raw/bounded homes remain.
+// J254: Plain history input/anchor/relative component-array producer loops, subsets 1/2/4/3/5/6/7 then
+// unsigned ordinals: 601/556/556/469/469/563/546/546. All preserve matches but grow to 3090-3103
+// versus 3047. Original complete body restored; damping ECX/EDX, raw/bounded homes and
+// cross/history scheduling remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {

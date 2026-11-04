@@ -1282,6 +1282,10 @@ long function_10f5f0(long object_index);
 // 565/565/571/581; entry declarations 565/565/571/581. NOT kept: no equality;
 // wide carriers shorten away from native length. Original full body restored;
 // frame, initial predicate-byte stores and rolled reduction remain.
+// J254: Existing bounds/state/component/reset providers inline/forced:
+// 565/628/565/2131/565/644/565/614. NOT kept: forced expansion grows away from retail; bounds
+// form loses matched 0x1d56f0. Original complete body and every declaration restored; native
+// frame and predicate stores remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2562,6 +2566,12 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // native frame agrees, turn-product and spin scratch/store schedules remain.
 // Y592: Complete two-side torque result as native vector/actual pair array, entry/producer declarations and mutable/readonly initializers:
 // 48/48/48/48/48/48/48/48. NOT kept: grouped storage lacks equality; original scalar results, spin helper and complete body restored.
+// J254: Native side-result stages with double return/double join/real return/advanced join,
+// ordinary/forced: 30/55/133/127/30/55/133/127. Branch-produced real result, returned/field
+// output and original/gate-owned input: 127/60/127/60. NOT kept: unmatched statement/result-
+// boundary combinations; 30 still has a double-zero path instead of the native real join.
+// Original complete body, spin helper and all game calls restored; corrected-dividend and spin-
+// store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -4793,6 +4803,10 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 883/963/1192/1076/1290/1395/1504; all plus reverse maximum 1514. No gain; every
 // form shortens away from 2974 bytes. Original provider boundaries/body restored;
 // entry definition and zero/result/one residence remain.
+// J253: Coordinated magnitude/projection inline/forced contracts
+// 759/756/759/825/845/967/846/842; magnitude inline removes the unity hoist
+// but grows the extent. Existing tag-getter entry-only/all-definition receivers
+// 999/1015 (2730/2680 bytes); all provider contracts and complete body restored.
 // P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
 // declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
 // Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
@@ -5356,6 +5370,9 @@ PRIVATE inline void vehicle_transpose(matrix3x3 *matrix)
 // M350: Plain wind/forward-target/lateral-velocity component loops, subsets
 // 1..7: 2767/2759/2759/2726/2726/2742/2682, frame 0xfc and 6443-6518 bytes.
 // Native final point cursor 1087. Original body restored; frame/index homes remain.
+// J253: Coordinated quaternion/multiply/velocity/step inline/forced contracts
+// 1094/1599/1127/2743/1127/1378/1087/3412. No native frame/extent recovery;
+// forced multiply and velocity forms lose matched controls; all contracts/body restored.
 // F376: Existing drift/side dot and spin-squared-length boundaries, subsets 1/2/4/3/5/6/7,
 // then complete projection dot: 1086/1087/1087/1086/1087/1087/1087/1087. NOT kept: one-point
 // lead grows to 5104/5094; frame stays 0xf8/0xd8. Original complete body and helpers restored.

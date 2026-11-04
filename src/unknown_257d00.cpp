@@ -1822,6 +1822,11 @@ void function_b7360(long object_index);
 // original complete callback and transfers restored.
 // Y595: Shared secondary/primary reference-validation phase, positive/complementary bool/byte/short/long results:
 // 472/472/465/461/500/500/499/498. NOT kept: no byte equality; original complete body restored.
+// J254: Existing notification/reference/movement inline then forced contracts, one provider at a time
+// then all: 301/507/301/919/301/1893/301/2376. Ordinary target code ties through the ret-16
+// prefix; forced extents 1872/2200/3008/3380 versus 1848. NOT kept: shared-user regressions and
+// native outlined-call/length mismatch. Original complete body and all declarations restored;
+// actor/output carriers and packed-reference retention remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

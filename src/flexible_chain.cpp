@@ -462,6 +462,9 @@ void __stdcall function_1160c0(real dt)
 // N355: Existing early-return normalizer with native square/projection/staged-cross and complete setters:
 // 174/186/174/174/174/186/187/187. NOT kept: no exact match from the tested structural forms.
 // Complete original executable source restored; Segment EDX and axis/previous/rest-offset homes remain.
+// J253: Actual shared rotation providers on rest offset 196/236/234, on recurrent
+// prediction 246/295/295; direct paired trig arguments 196/236. Explicit provider
+// units resolve every call. All regress or move frame/length away; original body restored.
 // F374: Optional-physics presence/absence at the original post-position test,
 // bool/byte/short/long: 171/171/171/171/171/171/171/171. NOT kept: no native
 // segment/home recovery; original field test and complete body restored.

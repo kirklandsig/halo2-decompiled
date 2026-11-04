@@ -1518,6 +1518,10 @@ PRIVATE inline void cache_header_initialize_strings(s_cache_header *header)
 // DL262: Actual resize-output repair success, assigned/cleared/short-circuit/conditional,
 // original then native successful-header producer: 112/165/188/190/165/172/188/195.
 // NOT kept: result-flow forms require byte equality; original outputs, count producer and body restored.
+// J255: Coherent ordinary-inline cleanup, close, pair and cleanup/checker boundaries;
+// forced cleanup, forced checker and their mixed ordinary forms: 33/33/33/33/474/388/474/388.
+// NOT kept: ties/regressions. All provider contracts and complete bodies restored;
+// query/write homes and validation joins remain; forced expansion moves away from native extent.
 // @retail 0x213970
 void function_213970(void)
 {

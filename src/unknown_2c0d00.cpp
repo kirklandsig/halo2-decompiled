@@ -1549,6 +1549,10 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // Round 586: Two-corner side-table traversal, short/word/long/dword ordinal with
 // indexed/body-advanced corner output: 491/491/484/484/491/491/484/484. NOT kept: nonexact
 // loop/result-array residence; original direct calls, radii and complete body restored.
+// J255: Scan-result scope ending before corner results, second-trace admission scope,
+// and complete Boolean role names, subsets 1/2/4/3/5/6/7 then alternate complete names:
+// 439/418/418/439/439/418/439/439. NOT kept: ties/regressions; scan scope also grows
+// to 1754 bytes. Original full body restored; frame 0x114/0x10c and radius/zero/count homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)
