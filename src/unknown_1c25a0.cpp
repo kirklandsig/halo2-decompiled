@@ -947,6 +947,11 @@ bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_un
 // src/unknown_1c2b10.cpp 1, in src/unknown_1c3d30.cpp 1; function_1c3770 declared before function_e18d0 in
 // src/unknown_1c38a0.cpp 1. Under the default /Gr convention the second argument is always DL, so only a
 // custom convention for function_1c4040 can give AL.
+// Round 102: function_1d1540 before function_1d1260 1; between function_1d1260 and function_1d01c0 1;
+// function_146bf0 before function_278f00 1; that swap with function_1d1540 first of the three 1;
+// function_1d1540 before 0x278f00/0x146bf0 1; between them 1; before the reversed 0x1d01c0/0x1d1260
+// pair 1; the swapped pair with function_1d1540 between function_1d1260 and function_1d01c0 1.
+// Every control stayed unchanged; original declarations restored.
 // @retail 0x1c51c0
 void function_1c51c0(long component_index)
 {

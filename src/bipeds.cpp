@@ -4376,6 +4376,10 @@ void __stdcall function_e3380(long arg_159e6d)
 // definition, both declarations and all five calls 13 (push temp still ecx; 0xdd360/0x118700 worse); a named
 // real field at output + 0x28 13. Retail's 0x1e5af0 call setups disagree on an order (0xdd360 ecx/eax/edx,
 // 0x118700 eax/ecx/edx), so none is evidence for a reorder.
+// score 13 (was 13): the three lookup address orders, the forward push and the names reloads remain.
+// Round 102: a shared absolute index 213; forward/up/physics/output/names pointer locals 13 each;
+// direct first recovery return 199; direct unknown34b == 1 return 190; an explicit masked top lookup 13;
+// names[9] defaulted before the final test 165. Original body restored.
 // @retail 0xe3c90
 bool __stdcall function_e3c90(long arg_159e6d, long *names, s_biped_physics_output *output)
 {
