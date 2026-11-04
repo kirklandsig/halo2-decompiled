@@ -413,6 +413,9 @@ public:
 // B422: Complete traversal success/failure in the natural loop admission, bool/byte/short/long,
 // 136/136/140/138/136/136/138/139. NOT kept: no byte match; completion state adds a frame word and grows the body.
 // Original whole body restored; child pretest, pool/NONE ranks, allocation retest and salted link remain.
+// B425: Immutable original head/count/pool declarations, seven subsets, then all with
+// immutable allocation result: 54/54/54/54/54/54/54/54. Original declarations and body restored;
+// child preheader, pool/sentinel ranks, allocation retest and salted index remain.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

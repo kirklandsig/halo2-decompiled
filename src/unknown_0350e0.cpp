@@ -2924,6 +2924,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // geometry, view scalar/random fields, complete view and complete state/view fields: 486 each on
 // the retained inline-normalization graph. Original body and field accesses restored; frame 0x60
 // versus 0x38 and stored-velocity/projection homes remain.
+// B425: Existing random-helper standard lower/upper clamp boundaries, direct and named,
+// composed and sequential: 587/590/587/587/504/507/637/626. All regress; native frame 0x38
+// and velocity/projection homes remain. Original helper, include list and body restored.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {

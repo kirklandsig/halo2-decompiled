@@ -277,6 +277,9 @@ short __stdcall function_2551c0(long actor_index)
 // B418: Winning-score search success on the recovered rotation frame, indexed/
 // original slot, direct/named score factors and early/late zero: 143/145/137/143/146/148/140/146.
 // NOT kept: no exact match; original success byte, slot view and full body restored.
+// B425: Complementary search state, bool/byte/short/long, native slot payload first
+// then original view: 92/46/92/46/145/106/122/77. NOT kept: no exact match. Original state, slot view,
+// helper and body restored; early cross products and score-dot schedule remain.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
