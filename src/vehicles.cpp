@@ -3247,6 +3247,10 @@ PRIVATE inline real vehicle_angle_fraction(real angle)
 // Seven subsets, then angle-helper magnitude: 1053/1053/1056/1057/1053/1068/1050/1053.
 // NOT kept: best 1050 gains only two; frame stays 0x80 versus 0x74.
 // Original APIs, private helper and complete body restored.
+// Y589: Complete branch-owned scalar velocity, nonunit/unit/captured/conditional
+// producers, original or projection-end scope: 1036/1064/1058/1091 twice.
+// NOT kept: frame remains 0x80; 1036 shortens to 4639/4666, farther from retail.
+// Original full body, velocity values, helpers and call inputs restored.
 // @retail 0xf3010
 void __stdcall function_f3010(long vehicle_index, s_vehicle_physics_state *state, real steering)
 {
