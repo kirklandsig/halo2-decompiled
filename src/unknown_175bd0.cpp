@@ -2389,6 +2389,9 @@ event_done:
 
 #pragma inline_depth()
 
+// MiniMax A (11-03): no new form, no lower score: retail still reloads the object's index after the
+// 0xbadc0 validity call and keeps the definition pointer on the stack; calling the file-local copy
+// object_get_175d70 instead of 0xbadc0 compiles to the same code (63).
 // MiniMax R (11-01): no new form, no lower score: retail still reloads the object's index after
 // the 0xbadc0 validity call, and 0xbadc0's body is in another file.
 // MiniMax R (10-31): no new form, no lower score: the object index is the only difference and it is 0xbadc0's
