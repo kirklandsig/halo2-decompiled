@@ -112,19 +112,24 @@ static __forceinline void apply_linear_spilled(float const volatile &source, sol
 	union { unsigned long bits; float value; } rounded;
 	rounded.bits = *(unsigned long const volatile *)&source;
 	__m128 scalar = _mm_set_ss(rounded.value);
-	__m128 change_a = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), a->inverse_inertia);
+	__m128 inertia_a=a->inverse_inertia;
 	__m128 inverse_b = b->inverse_inertia;
 	solver_velocity_31c940 *linear_body_b = b;
-	__m128 change_b = _mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b);
-	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(change_a, change_a, 0xff), row->linear);
-	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(change_b, change_b, 0xff), row->linear);
+	// Retain both weighted impulses before either body is updated.
+	__m128 weights[2] =
+	{
+		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inertia_a),
+		_mm_mul_ps(_mm_shuffle_ps(scalar, scalar, 0), inverse_b)
+	};
+	__m128 linear_a = _mm_mul_ps(_mm_shuffle_ps(weights[0], weights[0], 0xff), row->linear);
+	__m128 linear_b = _mm_mul_ps(_mm_shuffle_ps(weights[1], weights[1], 0xff), row->linear);
 	a->linear = _mm_add_ps(a->linear, linear_a);
 	linear_body_b->linear = _mm_sub_ps(linear_body_b->linear, linear_b);
 	// Reload the axes after both linear writes, then form both contributions
 	// before either angular write. Row storage may overlap the body fields.
 	solver_velocity_31c940 *angular_body_b = b;
-	__m128 angular_a = _mm_mul_ps(change_a, row->a);
-	__m128 angular_b = _mm_mul_ps(change_b, row->b);
+	__m128 angular_a = _mm_mul_ps(weights[0], row->a);
+	__m128 angular_b = _mm_mul_ps(weights[1], row->b);
 	a->angular = _mm_add_ps(a->angular, angular_a);
 	angular_body_b->angular = _mm_add_ps(angular_body_b->angular, angular_b);
 	*result += impulse;
