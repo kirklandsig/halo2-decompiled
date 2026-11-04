@@ -471,7 +471,7 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
     return result;
 }
 
-// score 278 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
+// score 270 (was 278): Frame 0x40 agrees; early root EBX/actor ownership and vector scheduling differ.
 // Round 132 (m3 lane 5, fast): case 5's success stores with the output index first 341; case 5's direction
 // negated field by field from a vertex pointer 382 (1252 B); case 2's node-index store before the point copies
 // 299; case 5 fallback's node-index store before the point copy 307; result declared before the surface 278.
@@ -668,11 +668,25 @@ bool function_270400(long actor_index, long mode, long set, point3f const *posit
 // m3 lane 14 r56 (fast; 0x270d90 295 throughout): case 2's trace through the `data` local 319; the parent-point
 // test as an early `break` 278 (same code); the radius test as `radius * 2.f < first_length` 278 (same code);
 // the origin sum before the projection 278 (same code); corners declared d, c, b, a 280. All restored.
+// DH339: Direct result returns at native paired/actor/trace case ends, seven subsets then
+// complete success exits, eight at 270 fast; full form 270 plain, 1280 bytes.
+// Kept complete per-case returns; early root/actor ingress and paired vector scheduling remain.
 // Round 145 (m3 lane 5, fast; 0x270d90 286): a shared forceinline wrapper over 0x270400 for cases 5 and 2 278;
 // an inline vertex accessor for all eight vertex lookups 278; case 5's test as a named `found` bool 278 (all same
 // code); the register parameters declared pathfinding, entry, surface_index everywhere 278 (same code); the
 // surface read through the table at each use 429 (1336 B). A cdecl compile-only first pass loads actor_index
 // only at its uses even with uses added to every case, so no body form here gives retail's entry load.
+// DH342: On the retained direct-case-return graph, five alternate whole-case orders
+// 342/293/381/345/381; explicit default result returns first/middle/last 270/270/270.
+// Original case order and complete body restored; early root/actor ingress remains.
+// DH345: Reference producer interfaces, seven subsets/full forced expansion, eight at 270;
+// excluded from the trial count because caller adaptation left the queue; all restored.
+// Immutable origin/direction/output pointer bindings, seven subsets and full immutable
+// distance, eight at 270 with all callers unchanged. Original helper/body restored;
+// native root/actor ingress and paired-vector scheduling remain.
+// DH347: Last-consumer first/second receiver and projection scopes, seven subsets then
+// all with a descriptive trace name: 271/346/270/346/271/346/346/346. All restored;
+// frame 0x40 and extent agree, but early root/actor ingress and vector scheduling remain.
 // @retail 0x26f3f0
 bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
     s_type_c3b527 const *entry, long actor_index, s_type_f17a25 *state,
@@ -729,7 +743,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
                     *parent_node_index_out = parent_node_index;
                     *out_node_index = surface->destination_node;
                     result = true;
-                    break;
+                    return result;
                 }
             }
             start_out->point = *a;
@@ -740,7 +754,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             *out_node_index = surface->destination_node;
             result = true;
         }
-        break;
+        return result;
     case 5:
         {
             point3f const *position = &pathfinding->vertices[surface->vertices[2]];
@@ -755,7 +769,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
                 out->output_index = parent_point->output_index;
                 *out_node_index = surface->vertices[0];
                 result = true;
-                break;
+                return result;
             }
             *start_out = *parent_point;
             *parent_node_index_out = parent_node_index;
@@ -764,7 +778,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             *out_node_index = surface->vertices[0];
             result = true;
         }
-        break;
+        return result;
     case 2:
         {
             s_pathfinding_data *data = (s_pathfinding_data *)state->pathfinding;
@@ -785,7 +799,7 @@ bool function_26f3f0(s_pathfinding_data *pathfinding, long surface_index,
             }
             result = true;
         }
-        break;
+        return result;
     }
     return result;
 }
