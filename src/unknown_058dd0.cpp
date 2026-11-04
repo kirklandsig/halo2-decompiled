@@ -746,6 +746,7 @@ void c_session_client::function_06dbc0()
 }
 
 // MiniMax S (11-01): no new form, no lower score; the switch still lowers to a byte-index table and this stays in EDX where retail copies it to EBX at entry, so the mode and the member index take ESI instead of EDX and the id takes EBX instead of EBP.
+// MiniMax B (11-04b): no new form, no lower score; retail's inlined busy-state switch still needs 0x58d90's own file, which this lane may not edit.
 // score 43 (was 43): this stays in edx where retail copies it to ebx at entry, so
 // the mode and member index take esi; separate case 7 and 8 labels (retail's direct
 // table) with an inline compare-and-update helper 47, an inline id-compare helper 48,
@@ -829,6 +830,9 @@ void c_session_client::function_06dbc0()
 // Round 145 (m3 lane 6, fast): /Ob0 dropped from 0x58d90's file with the switch as a call to it 47 (inlined,
 // direct table, this still in edx; 10 matched 0x58d90 callers then inline it too, so not kept); separate case 7/8
 // bodies 47; with a const id pointer 47 (round 113's member-id pointer and client copy re-measured 47/47).
+// MiniMax B (11-04): no new form, no lower score; still blocked by 0x58d90's /Ob0 file,
+// which keeps retail's inlined busy-state switch out of line here, so `this` stays in EDX
+// instead of retail's EBX and the switch keeps its two-level table.
 // @retail 0x6dbd0
 void c_session_client::function_06dbd0(const s_session_id *id)
 {

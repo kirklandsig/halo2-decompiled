@@ -1377,6 +1377,12 @@ long function_2197f0(real gain);
 // B429: Complete native compound/scalar compound/scalar assignment/constructor
 // addition boundaries 105/105/105/105 at 678 bytes; each with disabled early
 // return 188 at 652. NOT kept: sums/tails regress; original body restored.
+// M385: Existing aggregate interpolation endpoint/result compound accumulation, native-copy,
+// constructed difference/product, scalar product, twice-used start and uninitialized result:
+// 94/94/102/94/94/94/94/94. NOT kept: no native reciprocal, gain-load or tail repair; full producer restored.
+// M387: Composite fraction eager division/select/positive and complementary complete results,
+// original then eager simple upper caps: 160/160/163/159/140/140/143/101. NOT kept: no gain;
+// original body restored, native reciprocal/elapsed roles and first gain-load schedule remain.
 // @retail 0x127010
 long function_127010(short class_index)
 {
@@ -2931,6 +2937,10 @@ static inline short sound_voice_find_available_channel(char type)
 // N367: Tentative channel result before bitmap validation, short/int/long/dword in for scan 96/166/166/166;
 // while scan 96/166/166/166. NOT kept: no gain or equality; original private finder and full body restored.
 // Frame twelve/eight, normalized byte and early failure tail remain.
+// B440: Native full-width first/last/both/entry-const range captures on the
+// original inclusive scan: byte result 96/96/96/96, Boolean result 113/113/113/113.
+// NOT kept: ties or regressions; frame twelve/eight and saved-byte/failure tail remain.
+// Original private finder, result byte, independent defaults and full body restored.
 // N379: Existing finder produces admission plus the narrowed channel; selected-local, direct-output,
 // found-return and exhaustion-result forms with byte/bool body results: 96/96/130/134/113/113/129/104.
 // NOT kept: ties or regressions; private finder signature, saved byte result and complete body restored.
@@ -3861,6 +3871,13 @@ struct s_128ca0
 // 222/254/254/222/222/254/254; all with sequential promotion adjustment 254. NOT kept: ties or regressions;
 // original complete arithmetic, packet stores and helpers restored. Frame 0x49c/0x494, gain-input homes and
 // pin joins remain.
+// B440: Existing gain operators at raw nested/argument/inner/update producers
+// 262/262/262/269; parallel branches only 316, with raw nested/inner/update 332/332/321.
+// Raw/complete operators with native reused scale 167/252; adjacent pitch bounds too
+// 164/249. Four pitch/gain/raw-result role-name forms on that graph each 164. Native
+// 0x494 frame and early location load recover, but pitch/gain homes and pin joins differ.
+// NOT kept: one-use value record and bit copy, combined ownership forms without equality.
+// Original complete body, primitive helpers, observations, clears and interfaces restored.
 // N379: Incoming parameter owns raw and processed gain through both submissions; nested, sequential,
 // native-real and mixed sums 223/223/312/269; with coherent twice-used scale 273/273/299/246.
 // NOT kept: all regress; original parameter lifetime, gain homes, packet, helpers and body restored.

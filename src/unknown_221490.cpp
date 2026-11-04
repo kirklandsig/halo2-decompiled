@@ -756,6 +756,10 @@ bool sound_driver_voice_create_buffer(
 // NOT kept: no exact match; tables shorten away from retail and regress. Original
 // arrays, direct stores and full body restored; spatial/play and zero/input homes remain.
 // Both playback-first complete-table forms also lose 0x191420 by one instruction.
+// AC538: Independent capacity admission with the original signed result retained, positive/complementary
+// bool/byte/short/long: 71/71/71/71/71/71/71/71. NOT kept: unmatched decision/storage forms; original
+// complete body restored.
+// Spatial/play carriers and descriptor zero/input homes remain.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

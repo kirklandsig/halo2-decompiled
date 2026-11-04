@@ -1063,10 +1063,16 @@ PRIVATE __forceinline void function_1f087b(vector3f const *arg_0, vector3f const
 // DH328: Existing staged force-inline cross at disabled/flying/ground subsets
 // 436/473/429/436/431/479/431; shared staged cross at every remaining site 431.
 // NOT kept: four/two-point leads fall below threshold; length regresses or ties. Full body restored.
+// DL261: Ordinary/forced cross templates; native response/history views; actual response/history/both formals: 1135/1135/1135/1135/1135/1135/426/417/433/433/433.
+// NOT kept: no exact native form; original complete body and all temporary contracts/types restored.
 // M371: Existing coordinate-difference helper at history input/anchor/relative,
 // subsets 1/2/4/3/5/6/7, then all with general raw delta: 423/433/435/423/435/441/441/465.
 // NOT kept: 423 shortens farther from retail (3034/3047); remaining forms tie or regress.
 // Original whole body and helpers restored; damping and raw/bounded homes remain.
+// J254: Plain history input/anchor/relative component-array producer loops, subsets 1/2/4/3/5/6/7 then
+// unsigned ordinals: 601/556/556/469/469/563/546/546. All preserve matches but grow to 3090-3103
+// versus 3047. Original complete body restored; damping ECX/EDX, raw/bounded homes and
+// cross/history scheduling remain.
 // @retail 0x1f0870
 void function_1f0870(byte *history, vector3f const *current, s_shape_carrier_contact const *state, byte *out)
 {
@@ -1801,12 +1807,18 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
 // then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
 // NOT kept: gains below eight; original scalar expressions and complete body restored.
+// F378: Cold unsupported-contact eligibility isolated after supported admission, accept then reject
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: one-use decisions remain unmatched;
+// original observations, magnitude, reset/selection graph and both material call sites restored.
 // DH354: Immutable component/velocity/contact-normal receiver bindings, seven
 // subsets and complete receiver identities: eight at 213. Original observations,
 // body and material-call graph restored; early motion/reset and cold arms remain.
 // DH356: Complete three-arm candidate-quality conditional, direct/named acceptance/rejection,
 // original/early material-speed skip: eight at 211. NOT kept: gain two; original full body
 // restored. Native motion/reset order, separate cold height tests and material expansion remain.
+// AC533: Test-produced post-scan selected-support/fallback handoff, bool/byte/short/long:
+// 279/279/282/280/288/288/292/291. NOT kept: frame moves from native 0x28 to 0x24 and
+// code grows; motion/reset, cold height arms and second material expansion remain. Body restored.
 // N373: Supported-contact thickness rejection/acceptance in bool/byte/short/long
 // 209/209/209/209/213/213/213/213. NOT kept: unmatched one-use decisions; original full body restored.
 // Reset/velocity ownership, cold height joins and second material expansion remain.

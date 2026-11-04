@@ -478,6 +478,13 @@ static inline bool structure_section_get_vertex(s_structure_section const *secti
 	return false;
 }
 
+// MiniMax A (11-04): no new form, no lower score (172). What still differs: the promoted clone of
+// function_11e800 hands the four pointers to different registers. Retail calls it with
+// ECX=arg1, EDX=arg2, EAX=arg3, ESI=arg4; our build calls it with ECX=arg1, EDX=arg2, ESI=arg3,
+// EAX=arg4 (checked at our 0x407628 against retail's 0x14aebb). The assignment comes from the
+// callee's own body in src/unknown_11cb00.cpp (126 off retail), which is not this machine's file,
+// so the call site cannot be fixed from here: BLOCKED-BY 0x11e800.
+// Also still different: the BSP/section carriers and the plane/instance stack homes.
 // MiniMax E (11-01): no new form, no lower score; the byte result set before the type branch gives
 // 197 and the range declared before the section 172 with identical code. Left: the BSP in EBX with the
 // section in its stack home, the rotated range/plane/instance homes and the 0x16e1b0 output homes.
@@ -856,6 +863,10 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 // R75: point address at call/before extraction 4/4; vertex base at call/through extraction 4/4; direct array
 // arithmetic 4; both input pointers through extraction 4; vertices before the reference loop 4; output-address locals 4.
 // Round 123 (m3 lane 7): listing re-read, still only 0x11e800's four argument registers; BLOCKED-BY 0x11e800.
+// Round 116 (fast): failed-test continue 4; late success result 58 (879 bytes); early success result 4;
+// vertex-node declaration before the array 4; index declaration after the vertex ordinal 6; counter
+// preincrement in that context 6; exact-count exit 7; direct success return 335 (822). Original body restored;
+// the four triangle-test argument registers remain BLOCKED-BY 0x11e800.
 // @retail 0x14a8e0
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
@@ -974,6 +985,9 @@ done:
 
 #undef COLLISION_OBJECT_14A8E0
 
+// MiniMax G (11-04): the result as a local with the parameter kept alive by an unused pointer 125 and 127;
+// the entry order none/probe/flags/result 127; the exclusion flag assigned in the type-6 arm with the
+// requery after the join 149; the join test as !(excluded & 1) 138. Body restored to the original.
 // score 125 (was 125): frame 0x64 agrees; exclusion BL, NONE/EBX and spilled result allocation still differ.
 // Lane 15 r17: the pointers to the direction, ignored object and surface parameters removed (each
 // identical code; only the triangle pointer holds the convention: without it 158 and matched caller

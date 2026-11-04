@@ -135,6 +135,9 @@ void function_254200(void)
 
 #undef program_words_254200
 
+// MiniMax G (11-04): the point's x and y taken through parallel pointers 341 (the point copy is
+// retail's shape); the permuter did not reach a variant on this loaded machine, so it was stopped:
+// no lower score.
 // MiniMax I (11-01): the member 4f form and the swapped y operands keep 4, the constant as a helper parameter 8, the point and size swapped 15, the y sum as a named local 151, the point and size below the colour call 214 and the free 2s form 392; no new form, no lower score.
 // score 4 (was 4): in the two records that follow the second reservation retail loads the
 // 16777215 constant before it reloads the spilled y+h from the stack, ours reloads y+h
@@ -398,9 +401,15 @@ void __stdcall function_254490(point2f const *arg_0, real arg_1, real arg_2, col
 // or half 2, plain 2f calls 467, either or both 4f calls through the class 2, the scale through a pointer or reference
 // 408, the scale in a local 2, the half as `arg_1 / 2.f` 2, the lower as `-arg_1 * 0.5f + 0.5f` 2, a named depth
 // constant at the top or before Begin 2; a 600 s permuter run (53 tries), best 2.
+// AC532: Actual parameter-home lower/upper endpoints with mutable/const scale 394/401/394/401;
+// after first submission 335/391; complete half-span producers 363/368 (fast control 2).
+// NOT kept: none matches; original parameter, observations and body restored.
 // N369: Complete endpoint compound upper/lower/shared-half producer subsets 346 each;
 // native two-coordinate compound output 343. NOT kept: no equality and extent grows;
 // original two-reload body restored.
+// K148: second-texture lower product commuted/division 2/2; second texture C entry 375;
+// both coordinate references 2; point value copy 161; whole-object pointer 18; third-lower/
+// fourth-upper products commuted 2/2. NOT kept: no equality; original two-reload body restored.
 // @retail 0x2548f0
 void __stdcall function_2548f0(point2f const *arg_0, real arg_1)
 {

@@ -486,6 +486,16 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // 1c710/1cdd0/2c3b0/1bd50: 117/117/117/117/117/117/117/117. NOT kept: no gain.
 // Every declaration and whole body restored; fallback EDX, stage/pass ownership,
 // unfused element loads and mask lifetime remain.
+// B441: Complete cache-phase mask/system/location scalar carriers, subsets 1/2/4/3/5/6/7,
+// then signed mask: 127/120/120/128/120/123/129/129. NOT kept: all regress from 117 at 544/544;
+// original field observations/publications and complete body restored. Fallback and stage/pass homes remain.
+// B443: Geometry admission in short/word/int/dword, positive then complementary
+// result domains at the original query: 117/117/117/117/117/117/117/117. NOT kept: no byte equality
+// from the one-use result; original gate/full body restored. Fallback EDX masking,
+// stage/pass homes and unfused element loads remain.
+// B445: Original root-tag carrier destructively normalized after full-handle dispatch,
+// signed/unsigned mask/word forms at producer/entry declarations: 152/117/152/117/152/117/152/117.
+// NOT kept: no equality or gain; whole body restored. Fallback EDX, stage/pass and unfused homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

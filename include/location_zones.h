@@ -10,7 +10,7 @@
 struct s_11c120_cluster
 {
 	byte unknown00[0x70];
-	byte zone;
+	signed char zone;
 	byte unknown71;
 	short entry_index;
 	byte unknown74[0xb0 - 0x74];
@@ -48,7 +48,7 @@ __forceinline bool location_point_in_zone_inline(s_location const *location, poi
 		s_11c120_bsp *bsp = (s_11c120_bsp *)g_4e0348;
 		s_11c120_cluster *cluster = &bsp->clusters[cluster_index];
 
-		if (cluster->zone != 0xff)
+		if (cluster->zone != NONE)
 		{
 			s_11c120_zone *entry = &bsp->zones[cluster->zone & 0x7f];
 			short index = entry->index;

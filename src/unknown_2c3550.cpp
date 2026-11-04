@@ -732,6 +732,9 @@ bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center,
 // DH352: Entry radius/height/outgoing-mask lexical identities, seven subsets 675 each;
 // complete graph with Boolean success 754. Original entry scalars and full body restored;
 // byte success, radius/pathfinding schedule and scalar/geometry homes remain.
+// B437: Stored passthrough-point producers with four count/receiver contracts
+// 738/760/741/744; with bool success 766/783/773/755. NOT kept: all regress;
+// byte success, radius/path acquisition and scalar/geometry homes remain.
 // @retail 0x2c41b0
 bool __stdcall function_2c41b0(long actor_index, s_type_f17a25 *state, short count,
  s_path_step_view const *steps, bool avoid, short *out_count,

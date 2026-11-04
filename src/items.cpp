@@ -718,6 +718,27 @@ struct s_item_collision_bsp
 // complete normal scalar inputs mutable/const 207/207, all four inputs 209/209;
 // safe in-place result with captured normals mutable/const 216/216.
 // NOT kept: no equality or gain; in-place extent grows. Original body restored.
+// AC534: Actual contact-distance accumulator at whole/pair/individual product boundaries,
+// with direct/compound offset subtraction, then all three named products:
+// 202/204/204/202/204/204/202/206. NOT kept: expression-boundary nonmatches; original
+// complete body restored. Protected plane interface, plane joins and spin/speed homes remain.
+// AC536: Contact-query count bool/short/long/dword, then both query counts independent/shared
+// short/long: 202/202/202/202/202/202/202/202. NOT kept: no equality or qualifying supported gain.
+// Original query consumers, plane interface, random draws and full body restored.
+// AC538: Complete axial-spin decision, positive/complementary bool/byte/short/long:
+// 204/204/204/204/204/204/204/204. NOT kept: unmatched decision/storage forms; original complete body
+// restored.
+// Protected plane-index width, plane joins and spin/speed homes remain.
+// Y592: Independent branch query-input planes/scalar plane outputs/contact-consumer declarations, masks 1/2/3/4/5/6/7; all with role names:
+// 204/207/206/202/204/207/206/206. NOT kept: no exact storage form; protected plane width, plane joins and spin/speed homes remain.
+// Y595: Final angular output owns spin, scalar/existing setter at original/entry/effect/contact boundaries:
+// 210/210/210/210/210/210/210/210. NOT kept: no byte equality; original complete body restored.
+// B443: Independent complete axial scalar inputs, six capture/declaration orders,
+// then spin-phase/entry reservations: 272/272/272/272/272/272/272/272. NOT kept: all regress,
+// frame grows to 0xa8 and extent to 1383; original axis/body restored.
+// DH365: Existing plane-normal/matrix-rotation/marker-coordinate views, seven subsets,
+// then all with native spin/output coordinates: 202/202/202/202/202/202/202/202. NOT kept: no equality
+// or gain; original complete body restored. Protected width and plane/spin homes remain.
 // N371: Single-marker spin lifetime after contact, factor-first/enclosed-phase/scalar-role-name
 // subsets 0..7: 202/202/202/202/202/202/202/202. NOT kept: unmatched storage-only forms;
 // original complete body restored; protected plane width, plane joins and spin/speed homes remain.

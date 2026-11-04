@@ -463,6 +463,11 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // it for the x87 radius product, while ours uses fild. Ring/spoke homes and the
 // rotation's component spill, cross scheduling and register allocation remain.
 // The body is 1085 bytes versus retail 1089.
+// MiniMax G (11-04): ring block with a hoisted double scaled radius, the ring converted once
+// into a named local and its offset named, plus the rotation with cross j, k named and a
+// second name for axis (local_axis) mixed into the dot and rows: 76 (retail's cvtsi2ss ring
+// conversion, SSE offset and an unspilled rotation). The second name is a register steer,
+// kept only with a match; the same form without it 96. Not kept.
 // Lane 15 r17: collision marker store before the entry pointer 90 (it then precedes `lea esi`
 // as retail, but the point stores still come first); named ring phase 143 (ring conversion as
 // retail: cvtsi2ss, store, fld; frame 0xdc, radius copied through integer registers); the
