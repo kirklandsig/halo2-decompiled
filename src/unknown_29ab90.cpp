@@ -342,6 +342,9 @@ PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)
 // DH333: Typed coordinate-range copies at working/constant/history producers, seven subsets
 // 438/376/459/378/498/402/501; complete backward ranges 501. History-only recovers frame 0x64
 // and first +0x42 but grows to 1909/1863 bytes. NOT kept: regressions; original full body restored.
+// DH355: Plain indexed working/constant/history coordinate-copy subsets and all
+// with full pre-update direction: 345/502/355/502/355/490/490/550. NOT kept: ties/regressions and
+// nonnative extents; original vectors, observations, helpers and complete body restored.
 // @retail 0x29ab90
 void __stdcall function_29ab90(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, short *arg_4, vector3f *arg_5, bool *arg_6, bool *arg_7, short arg_8)

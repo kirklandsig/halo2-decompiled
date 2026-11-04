@@ -210,6 +210,8 @@ struct s_object_damage_view
 	byte damage_codes[4];
 };
 
+// MiniMax H (11-04): the selected damage record read through a local record pointer 454; not
+// kept, the original body is restored.
 // score 353 (was 353): frame 0x50 and the inline rounding now as retail; victim_team/killer/damage_code sit in
 // rotated slots (ours +0x14/+0x1c/+0x18, retail +0x18/+0x14/+0x1c), the selection cursor is biased +4, and the killer
 // block reads the record without retail's `&history[selected]` pointer (killer in EBP, retail EDX).
@@ -394,6 +396,9 @@ struct s_object_damage_view
 // DH336: Two real award buffers/counts in array and record ownership forms:
 // 353/353/353/385/385/385/385/385; pointer-difference controls repeat the earlier form.
 // NOT kept: grouped storage needs equality; original complete body restored.
+// DH350: Both award-prefix searches own duplicate/unique outcomes,
+// bool/byte/short/long: 366/366/366/366/366/366/366/366. NOT kept: test-set outcomes need equality;
+// original ordinal searches, scalar homes and complete body restored.
 // @retail 0x1e9fa0
 void __stdcall function_1e9fa0(void *engine_globals, long object_index, long reported_player, word reported_team, byte code)
 {
