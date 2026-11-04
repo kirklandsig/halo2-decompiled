@@ -112,6 +112,10 @@ static inline void point_along_vector_1c19b0(point3f const *point, vector3f cons
 // 0x26d100's file is on another lane's list this round, so its reorder was not retried.
 // Round 138: node_index/location/ahead-and-end at function scope 23/23/23; the collision buffer before origin 23;
 // the final distance from `scale` 217 (923 bytes). 0x26d100's file was again on another lane's list.
+// Round 103: all three point productions through the existing scaled-add helper 23; scale at function
+// scope 23; trace at function scope 23; result first 23; height/distance declarations swapped 23;
+// pathfinding declared after the points 23; counter declared before the points 23; direct final-call
+// return 234. Original body restored.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {

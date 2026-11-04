@@ -299,6 +299,9 @@ void function_151ea0(long player_index, long object_index)
 // memcpy then success 4.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 103: equality as an else-if 1; nested <=/== priority tests 12; an explicit not-equal
+// else-if to done 1; separate distance-failure/copy/done labels 75; split result declaration 1;
+// result declared last 1; byte result 32; a named closer flag 1. Original body restored.
 // @retail 0x151320
 bool function_151320(s_target_candidate *candidate, s_target_candidate *best, long player_index)
 {

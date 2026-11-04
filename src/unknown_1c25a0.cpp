@@ -1154,6 +1154,9 @@ struct s_1c4040
 // m3 lane 9 r76 (fast): the world read through g_51e9a4 at each use 8; one physics_object_get shared by the detach
 // steps 116 (521 B); the mode case and the detach path as if/else with one success store after 8 (kept: drops the
 // goto and its label); object and unknown declared in the detach block 8; the three initial stores reversed 103.
+// Round 103: forward declaration before/after the cycle callees 8 each; fixed-island direct global read 8;
+// shared island/entity/priority locals 8 each; block-scoped world with the direct fixed read 8;
+// effect pointer at function scope 8. Original body and declaration order restored.
 // @retail 0x1c4040
 bool function_1c4040(long attempt, bool active, bool any_object, bool even_if_unknown, long excluded_component_index)
 {
