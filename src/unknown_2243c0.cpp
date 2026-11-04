@@ -475,6 +475,9 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // ahead of the material lookups 150; the group constants tested 'prt3' first 119; the search loop as
 // `!= 14` continue 117 (same code); the cache pointers compared field first 119; the context's definition
 // stored before 0x1bbf0 117 (same code). (A chained zero of the three pointers does not compile: field_50 is const.)
+// N355: Actual head-address receiver with stage/pass/material-definition receiver subsets:
+// 117/117/117/117/117/117/117/117. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Fallback EDX normalization and stage/pass/unfused-load homes remain.
 // @retail 0x224db0
 void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long arg_2,
 	long arg_3, long arg_4)

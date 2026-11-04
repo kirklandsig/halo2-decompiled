@@ -1056,6 +1056,9 @@ struct s_tail_transfer_traits
 // B397: Native traits-element/player-identifier domains and complete inner choice
 // eligibility subsets, then complete rejection complement 153/153/153/153/153/153/153/153.
 // Original layouts/tests restored; traits/unit/NONE homes and pool reloads remain.
+// N355: Returned-player canonical for traversal with independent bounded selection/slot domains:
+// 373/378/413/373/284/284/373/283. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Selected-traits/unit/NONE homes and pool reloads remain.
 // @retail 0x152660
 void function_152660(s_tail_transfer_options *options)
 {

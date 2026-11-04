@@ -387,6 +387,9 @@ static __forceinline void function_12efb5(s_12efb6 *arg_0, real const *arg_1, re
 // 616 (same code); the 131030 arm's fog range clamped straight from the definition field like the palette arm
 // (`def[0x44] > 0 ? (def[0x44] < 10 ? def[0x44] : 10) : g_547f80`) 619 (3842 bytes: that clamp block then has retail's
 // shape, re-reading the field at each test), with the char palette slot 708 (3838).
+// N355: Caller clamped-result residence, with best-weight/byte-palette/publication-reciprocal domains:
+// 968/877/1089/964/975/1088/1081/1044. NOT kept: no exact match from the tested structural forms.
+// Complete original executable source restored; Palette/record and zero/contribution SIMD carriers remain.
 // @retail 0x12efb0
 void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_12efb0 *arg_3)
 {
