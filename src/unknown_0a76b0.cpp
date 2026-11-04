@@ -2620,6 +2620,10 @@ __forceinline char unit_action_round(real value)
 // signed-short hand accessor:
 // 318/318/324/326/319/319/325/327. NOT kept: no eligible byte match or native-supported closer.
 // Original complete body restored; pool/index/type/name and completion-byte homes remain.
+// M371: Shared mode-one truth bool/byte/short/long at selection 273/273/231/214;
+// at entry 350/350/348/358. NOT kept: four-point short lead below gate; long 214
+// adds cached ECX/sete before the active test where retail compares mode in each
+// selection path. Original full body restored; pool/name/result homes remain.
 // @retail 0xe9a20
 bool __stdcall function_e9a20(long unit_index, long mode, long target_index, byte flags)
 {

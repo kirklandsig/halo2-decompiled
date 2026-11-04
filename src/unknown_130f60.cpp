@@ -371,6 +371,9 @@ __forceinline void fog_accumulate(s_fog_accumulator *out, color3f const *color, 
 // DH340: Actual accumulation-output parameter homes, seven nonempty subsets and complete
 // graph with the existing helper output renamed: eight 336 (fast control 336; full 295).
 // NOT kept: no byte match or gain; original parameter/helper names and complete body restored.
+// M371: Both case-owned descriptor-count admissions, populated/empty truth in
+// bool/byte/short/long: eight 336 (reduced control 336; full 295). NOT kept:
+// all byte-neutral; original direct acquisitions, helper and complete body restored.
 // @retail 0x131030
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third)
 {
