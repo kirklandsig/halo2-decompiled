@@ -601,6 +601,11 @@ void obstacle_list_group(s_obstacle_list *obstacles, real radius);
 
 bool obstacle_list_add(s_obstacle_list *list, word flags, point2f const *center, long object_index, real radius);
 
+// MiniMax A (11-04): pathfinding read after the radius block 674, final_complete below the height 697,
+// radius as one ternary (retail's load order) 704, pathfinding after the radius with a short frame
+// identifier 703, long step counter 764, bool result 736 and 756 with that order, the type guard split
+// into three sibling tests as retail does (setup, search-or-copy, object-index pass) 770; the permuter
+// (113 tries, annealed) found no variant below 675; no keepable gain.
 // score 675 (was 675): the 675 differing lines are 541 real ones (the rest are the unmatched
 // callees and the relocated globals); the frame 0x1f88 and the length agree, but retail keeps the
 // success result in a stack byte where ours keeps a dword, loads the source radius before the 0.2f
