@@ -708,6 +708,10 @@ static inline word font_character_pixel(long alpha, long color)
 // 12456/2456 with word packed pixels: 86/85/85/85/86/162/162/86. NOT kept: unmatched schedules; original
 // helper, literal, case order, fills and complete decoder restored. Alpha widening, literal
 // assembly and two-run reuse remain; frame 0xc agrees.
+// N385: Existing standard uninitialized_fill_n/uninitialized_fill at packed/ordinary run
+// boundaries, eight nonoriginal indexed/counted/endpoint pairs: 165/184/173/242/198/183/203/214.
+// NOT kept: all regress; original indexed fills, helper, includes and entire decoder restored.
+// Frame 0xc and alpha extension/literal assembly/two-run differences remain.
 // @retail 0x122610
 long function_122610(long size, void const *pixels, void *destination)
 {

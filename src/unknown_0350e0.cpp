@@ -1901,6 +1901,10 @@ real game_time_get_seconds();
 // F372: Internal hash, animation/sample and draw workspace role names, seven
 // subsets then all with offset/reflection names: eight at 507. Native frame and
 // output homes remain; original names, scopes, APIs and complete body restored.
+// N385: Coherent forward-component, three-use far-angle and paired camera-axis snapshots,
+// seven subsets, then complete inputs with the native forward vector value: 586/537/583/507/586/537/583/519.
+// NOT kept: no qualifying gain or equality; all scalar/copy input forms and complete body restored.
+// Native frame 0x94, addressed outputs and definition/NONE homes remain.
 // @retail 0x2e9e0
 long __stdcall function_2e9e0(byte const *context, s_2e3f0_record const *record)
 {
@@ -3835,6 +3839,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // N383: Full existing collision-output fields with scalar/alpha-first/SDK RGBA/const SDK RGBA
 // colors: 231/225/232/232; genuine three-use negative radius: 398/379/375/375.
 // NOT kept: ties/regressions or gain six with larger extent; original view, geometry and body restored.
+// N385: Complete forward/left/up scalar snapshots in the corner producer, seven subsets,
+// then all with complete translation captures on the native color frame: 362/369/362/361/362/221/355/355.
+// NOT kept: left/up 221 uses one-use field copies and grows to 1827/1819 bytes; its single
+// families regress. All other forms regress. Original scalar alpha, helper and full body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {
