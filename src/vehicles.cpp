@@ -2530,6 +2530,10 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // P313: Existing in-place spin helper returns installed output as pointer/reference/real/double,
 // common/branch-owned: 42/42/42/42/42/42/42/42. Both original ignored-result calls, void helper
 // and full body restored; turn-product and spin spill/store scheduling remain.
+// Y583: Current in-place spin helper with rejected-period early return, before/after
+// admission input and direct/conditional dividend, ordinary/forced inline:
+// 77/83/86/94/77/83/86/94. NOT kept: native length/schedule not recovered;
+// original helper/body restored; turn-product and corrected-dividend/result stores remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {

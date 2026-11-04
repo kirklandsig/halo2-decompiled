@@ -1288,6 +1288,9 @@ void __stdcall function_43720(s_43740_input *input)
 // Y572: Joint original source/definition/slot formal-name priorities, seven
 // subsets then complete tag/bitmap role names: eight 62s. NOT kept: native
 // tag EAX/EBP split and signed-slot/shader homes stay wrong; body restored.
+// Y583: Actual texture-return pointer/bool/byte/long ownership, original image local
+// then direct image expression: 62/62/62/62/62/62/62/62. NOT kept: one-use return
+// carriers miss equality; complete body restored; early tag/EBP and slot/shader homes remain.
 // @retail 0x43740
 void function_43740(s_ribbon_source *source, s_ribbon_definition *definition, short slot)
 {
