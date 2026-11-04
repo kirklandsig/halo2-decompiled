@@ -2287,6 +2287,7 @@ bool __stdcall function_1e700(word first, word second, void const *context)
 // MiniMax D (11-01): a local that holds the count once does not move the subtraction before the
 // last push either, and the stipple block's order lies inside the XDK macro.
 // MiniMax D (11-01): no new form, no lower score.
+// MiniMax A (11-03): no new form, no lower score.
 // score 4 (was 4): the subtraction of the stream count must come before the last push of the
 // sorter call, and the add of the stipple stride must follow the second rep movsd of the
 // inlined device call.
@@ -2332,6 +2333,7 @@ void function_1e370(void)
 // measured variant.
 // MiniMax D (11-01): the allocator's statement order, an early count store and a records local in
 // the allocator all tie or regress at 8 differences; no lower score.
+// MiniMax A (11-03): the allocation from the shared helper scores 60 and the permute run was stopped; no lower score.
 // score 8 (was 8): the record table base is held in edi here and in ebp in retail, and the
 // copy of the payload saves and restores the register that choice leaves free.
 // @retail 0x1e4e0
@@ -2553,6 +2555,7 @@ PRIVATE __forceinline real maximum_25ca0(real first, real second)
 }
 
 // MiniMax D (run 37): no new form, no lower score; the maximum as `first <= second ? second : first` gives retail's comiss operand order but still scores 26, the maximum without the round trip through the stack scores 47, the four forms of the maximum (the two ternary orders, the if/else and the initial-value form) score 47 or 48, and retail's own phi copies the maximum into g_4b9fa4's register while ours keeps it in 0.0001f's.
+// MiniMax A (11-03): no new form, no lower score.
 // score 26 (was 26): the comparison of 0.0001f against g_4b9fa4 has its operands in the other
 // order and copies the other register, the divisor makes a round trip through the stack, and
 // both branches share one call setup where retail repeats the setup in each of them.
@@ -2636,6 +2639,7 @@ struct s_queued_material_payload
 // differs, which 0x4b220's own declaration fixes.
 // MiniMax D (11-01): no new form, no lower score; the declaration of 0x4b220 may not grow a
 // seventh parameter to give its count retail's register home.
+// MiniMax A (11-03): no new form, no lower score.
 // score 2 (was 2): the count of the payload is handed to 0x4b220 in eax, retail hands it over
 // in ecx.
 // @retail 0x35b00
@@ -2789,6 +2793,7 @@ struct s_429a0_payload
     vector3f first, second;
 };
 
+// MiniMax A (11-03): the allocation from 0x1e4e0's helper scores 97; no lower score.
 // MiniMax D (run 37): no new form, no lower score; the only real difference is that retail
 // folds the record base into the payload pointer one store earlier than we do, the rest of
 // the fast differences are the reduced image's addresses for the globals and the constant.
@@ -3155,6 +3160,7 @@ extern D3DResource *g_485ae4, *g_485ae8, *g_485aec;
 // MiniMax D (11-01): the setup's order follows the callee's parameter home in
 // src/unknown_0158f0.cpp, which this lane may not edit.
 // MiniMax D (11-01): no new form, no lower score.
+// MiniMax A (11-03): no new form, no lower score.
 // score 2 (was 2): the setup of the call to 0x15a60 zeroes ecx before it loads 9 into eax,
 // retail loads 9 first. The callee lives in src/unknown_0158f0.cpp and is itself unmatched,
 // and its parameter home decides the order of this setup.
@@ -4805,6 +4811,7 @@ void function_1bd50(void *state);
 // where retail widens the word with an xor.
 // MiniMax D (11-01): the fallback as a word cast, as a ternary and as a word local all score 15
 // or worse; our load stays a movzx where retail widens the word with an xor.
+// MiniMax A (11-03): no new form, no lower score.
 // score 13 (was 15): the fallback index is masked rather than narrowed to a word, so the load
 // is a dword and the mask; retail loads the word directly and keeps the element argument's
 // push before the branch.
@@ -6127,6 +6134,7 @@ void function_46ea0(long tag, point3f const *position);
 // device load and the range comparison of the inlined macro.
 // MiniMax D (11-01): no new form, no lower score; the store before the inlined call is only
 // reachable through a cast of the global's own address.
+// MiniMax A (11-03): no new form, no lower score.
 // score 3 (was 22): the g_4b8438 store is emitted after the range comparison of the inlined call,
 // where retail emits it before.
 // @retail 0x2df00
