@@ -4621,6 +4621,9 @@ dword function_db810(long object_index, long node_index)
 // Also tried: result before the object lookup (17), rank before it (7), both before it (17), rank after the
 // model lookup (6), a signed-short rank (4), the pointer advanced in the body (4), a count-consuming while
 // with pointer advance in the body (4), read-only physics/rows/node indices (4).
+// Round 113 (fast): the TAG_GET macro 4; a tag-entry pointer 4; a direct tag-object lookup with the object kept 4;
+// nested initial guards 4; read-only object/model 4/4; the model declared before its assignment 4; output and rank
+// assigned after the lookup 7; rank from output 4; output from rank 7.
 // @retail 0xdbb40
 long function_dbb40(long object_index)
 {
