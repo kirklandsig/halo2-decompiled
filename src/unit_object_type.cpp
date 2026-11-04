@@ -1881,6 +1881,7 @@ void __stdcall function_d0870(long weapon_index, long unit_index, long secondary
 // 11; a named short slot_index for the shifts and indexing 1. Retail's skip edge treats eax as stale (reloads it)
 // but ecx as live, so the compare operand there is probably a separate web from the slot variable; no source
 // form found that does that.
+// Permuter (25 min on #1049, about 300 variants): nothing below 1.
 // @retail 0xccf20
 void function_ccf20(long unit_index)
 {
@@ -2365,6 +2366,7 @@ void function_cfec0(long unit_index)
 // while instead of if. Failing differently: `~unit_index != 0` 96; early return of unit_index for the NONE case
 // at the top 99 (layout moves the exit first). The optimizer substitutes -1 on the NONE edge whatever the
 // spelling of the returned copy.
+// Permuter (25 min on #1049, about 900 variants): nothing below its own baseline (1 in its render).
 // @retail 0xcb6d0
 long function_cb6d0(long unit_index)
 {
@@ -3611,6 +3613,8 @@ long __stdcall function_c7160(long unit_index, short seat_index, long a, long ve
 // count pointer again, 390-400 bytes); type or offset declared before the loop 146; short type with the offset test 54
 // (movsx where retail loads a dword); count < counts + 2 test 114; type and count tests together 107; unit lookup
 // or counts base declared in other orders 49-52.
+// Permuter (25 min on #1049, about 390 variants): 46 only with a volatile grenade offset and 0xce6b0's first two
+// arguments swapped; not kept.
 // @retail 0xceb30
 void __stdcall function_ceb30(long unit_index)
 {
@@ -3782,6 +3786,7 @@ void __stdcall function_d09c0(long unit_index, long slot_index, long definition_
 // direction before position; origin first 27; others 29-33); `origin = position = ...` chain 44; s_damage_owner as a
 // three-member aggregate drops the zero short (55); memset(&owner) form (117); the position source through a local
 // point3f pointer (26-27).
+// Permuter (25 min on #1049, about 440 variants): 25 only with 0xd7b80's unit and NONE arguments swapped; not kept.
 // @retail 0xd03e0
 void function_d03e0(long unit_index, long definition_index)
 {
@@ -4413,6 +4418,7 @@ store:
 // speed and direction declared up front with a separate assignment; forward and result pointers as named locals;
 // `speed = speed * scale`. Retail's order (fstp, forward, result, seed) is the source order of the call's
 // arguments after the spill; ours emits the forward pointer before the spill and the result after the seed.
+// Permuter (25 min on #1049, about 450 variants): nothing below 4.
 // @retail 0xce6b0
 void function_ce6b0(long unit_index, long name, long object_index, real scale)
 {
