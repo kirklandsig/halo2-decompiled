@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "unknown_224240.h"
 #include "effects.h"
+#include "vertex_inputs.h"
 
 struct s_particle_system_datum;
 struct s_particle_location_datum;
@@ -459,6 +460,8 @@ static __forceinline void const *block_element_224db0(byte const *block, long in
 // Round 390: Complete callback context after search, field/aggregate construction,
 // crossed with grouped cache zeros and in-place fallback: 147/149/158/154/147/149/158/154.
 // Original complete body restored; fallback EDX, stage/pass and unfused loads remain.
+// Round 131 (m3 lane 8): the type-14 search through the shared vertex_input_index (include/vertex_inputs.h, the
+// search 0x116b00 makes four times) in place of the hand-written loop: identical code, 117.
 // Round 50 (m3 lane 15, fast; 0x224d90 and 0x2243c0 matched each time): the first two cache zeros together
 // ahead of the material lookups 150; the group constants tested 'prt3' first 119; the search loop as
 // `!= 14` continue 117 (same code); the cache pointers compared field first 119; the context's definition
@@ -503,16 +506,7 @@ void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long a
 		function_1bbf0(*(long const *)(local_2 + 0x1c), 0, arg_3, arg_4, 1, 10000.0f);
 		local_0.field_0 = arg_0;
 		dword local_16 = *(dword const *)(local_2 + 0xd8) & 0x107f0;
-		long local_17 = NONE;
-		for (long local_15 = 0; local_15 < *(long const *)(local_11 + 4); ++local_15)
-		{
-			if (*(word const *)block_element_224db0(local_11 + 4, local_15, 2) == 14)
-			{
-				local_17 = local_15;
-				break;
-			}
-		}
-		local_0.field_4 = local_17;
+		local_0.field_4 = vertex_input_index(local_11, 14);
 		if ((void *)arg_1 != local_1.field_48)
 		{
 			local_1.field_48 = (void *)arg_1;
