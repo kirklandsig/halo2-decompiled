@@ -1949,12 +1949,18 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // on both queries 251 (same code); the fraction bounds as named locals 262; the grenade reset test split into an
 // outer `state != 1 || !flag` if 251 (same code); the grenade type through a fresh lookup and `unit` fetched
 // after the queries 251 (same code). All restored.
+// P321: Actual actor-readiness result in bool/byte/short/long, producer/entry
+// declarations with original post-query observation: 251/251/251/251/251/251/251/251.
+// NOT kept: no native actor/options/pool residence recovered; full body restored.
 // B421: Shared three-consumer options admission bool/byte/short/long, positive/
 // complementary results 310/310/321/308/310/310/321/308. NOT kept: all regress
 // and exceed retail length; original pointer tests, queries and complete body restored.
 // Y577: Shared ammunition output at phase/query scope with end-bound do, bounded for,
 // short-ordinal cursor and fixed-count cursor: 278/278/251/251/278/278/251/251. NOT kept: ties
 // or regression; original full body restored. Native actor/options/pool and scalar homes remain.
+// P329: Equipment/grenade/unit receiver identities, seven subsets then actor identity:
+// 251/251/251/251/251/251/251/251. NOT kept: no byte match; original complete body restored.
+// Actor/options and retained-pool homes remain.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

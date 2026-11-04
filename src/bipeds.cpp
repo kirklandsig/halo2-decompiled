@@ -1010,6 +1010,9 @@ extern long *g_51e9cc;
 // coordinated initializer inline contract alone 42. All helper users unchanged.
 // NOT kept: seven-point flag gain is below the gate; field receiver misses.
 // Original body/contracts restored; lookup address and crouch/contact schedules remain.
+// P322: Actual lookup initialization result bool/byte/short/long at consumer
+// then lookup-scope declarations: 42 each. NOT kept: one-use result misses equality;
+// lookup receiver rematerialization and crouch/contact schedules remain. Full body restored.
 // DL259: Native contact key/surface/fallback-geometry field subsets 1/2/4/3/5/6/7:
 // 42 each; real shared lookup/getter prefix base with implicit conversion 42.
 // Original record views, declarations and complete body restored; lookup receiver
@@ -1488,6 +1491,14 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // Native frame 0xfc recovers; real captures grow to 2832 bytes, double stays 2828.
 // NOT kept: one-use field capture and type-dependent allocation require equality;
 // the six-point 579 form also misses the gain threshold. Original full body restored.
+// P322: Actual grounded-call result bool/byte/short/long, consumer then entry declarations:
+// 456/567/610/611/456/567/610/611. Bool recovers frame 0xfc and 2828 bytes; NOT kept:
+// one-use call-result transport needs equality. Original whole body restored; material,
+// airborne and animation homes remain on the retained graph.
+// P324: Plain actual-component loops for all velocity defaults, selected facing and
+// target-position input, masks 1-7: 820/800/895/659/820/800/957; complete target
+// advance loop 617. NOT kept: all regress and grow beyond retail length; original
+// native copies, row expressions and complete body restored. Shared helpers unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -2021,6 +2032,9 @@ void function_dfd70(long arg_159e6d)
 // F375: Default stance-query standing/crouch returns, bool/byte/short/long:
 // 233/233/233/233/233/233/233/233. Complementary forms also raise shared users.
 // NOT kept: no byte match; original helpers restored, mode-three/basis/ray homes remain.
+// P321: Initial zero/one crouch with ternary/complete/crouch-default/zero-default
+// switch results: 233/233/252/233/233/233/264/234. NOT kept: no gain;
+// crouch-default and zero-default also raise shared users. Helpers restored.
 // @retail 0xdef60
 void __stdcall function_def60(point3f *point, long arg_159e6d, short mode, point3f const *origin,
 	vector3f const *forward, real const *offsets)
@@ -4920,6 +4934,9 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // F375: Existing relative/kick/actor-ground producers, seven subsets then complete raw library copies:
 // 143/68/68/68/143/70/143/143 on the state-call/dot graph. NOT kept: no byte match.
 // Original body restored; native support/result byte homes remain, exact callers survive.
+// P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
+// success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
+// NOT kept: all regress and shorten to 671/683; full body restored.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

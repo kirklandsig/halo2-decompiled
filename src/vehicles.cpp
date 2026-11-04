@@ -620,6 +620,9 @@ PRIVATE inline void vehicle_normalize2d(point2f *v, point2f const *fallback)
 // AC528: Initial speed acceptance/rejection in bool/byte/short/long
 // 225/225/225/225/225/225/225/225. NOT kept: no exact match or eligible gain; original complete body restored.
 // Velocity-copy receivers, early unity and SIMD/x87 homes remain. No retained candidate.
+// P329: Reused speed/heading-weight/angle declarations, six orders then reciprocal scope/role names:
+// 126/126/126/126/126/126/126/126. NOT kept: no byte match; original complete body restored.
+// Velocity-copy receivers and unity SIMD/x87 homes remain.
 // @retail 0xef070
 void function_ef070(long vehicle_index)
 {
@@ -1269,6 +1272,9 @@ long function_10f5f0(long object_index);
 // F376: Initial numeric powered/open bit extraction and unsigned snapshot width, subsets
 // 1/2/4/3/5/6/7, then explicit maximum production: 598/565/565/599/602/601/624/624.
 // Original complete body restored; frame 0x19ac/0x1984 and native predicate stores remain.
+// P328: Saved attached complement and complete attachment admission in bool/byte/short/long:
+// 565/565/575/575/563/563/574/574. NOT kept: best gain is below eight and shortens away from retail.
+// Original body restored; frame 0x19ac/0x1984, predicate-result and reduction homes remain.
 // @retail 0xefde0
 bool __stdcall function_efde0(long vehicle_index)
 {
@@ -2540,6 +2546,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // original/conditional corrected dividend and original/forced inline: 42/43/84/84/42/43/84/84.
 // Original two-use helper, both calls and full body restored; native turn-product and spin
 // spill/publication schedules remain. NOT kept: no exact helper-boundary/dividend result.
+// P328: Actual torque/magnitude/turn-product declarations in six orders, then entry-owned
+// and role-named: 42/42/42/42/42/42/42/42. Original declarations and body restored;
+// native frame agrees, turn-product and spin scratch/store schedules remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -3816,6 +3825,9 @@ PRIVATE inline void vehicle_cross(vector3f const *a, vector3f const *b, vector3f
 // transfers and original/shared subtraction: 271/271/271/271/257/252/257/252.
 // NOT kept: all regress, grow the native one-word frame to 0x10/0x14 and lengthen
 // code. Original workspace, shared helpers, precision and complete body restored.
+// P329: Projection/axis/up receiver identities, seven subsets then both vector declarations:
+// 136/136/136/136/136/136/136/136. NOT kept: no byte match; original complete body restored.
+// Projection/cross operand ranks and angle/trig homes remain.
 // @retail 0xf44a0
 bool __stdcall function_f44a0(long vehicle_index, matrix3x3 *facing, s_vehicle_physics_state *state,
 	matrix3x3 *result)
@@ -4730,6 +4742,9 @@ bool __stdcall function_f8070(long bit, word const *flags);
 // 883/963/1192/1076/1290/1395/1504; all plus reverse maximum 1514. No gain; every
 // form shortens away from 2974 bytes. Original provider boundaries/body restored;
 // entry definition and zero/result/one residence remain.
+// P326: Selected-velocity blend/reverse speed and limit/combined speed-turn scalar
+// declarations before dispatch, subsets 1..7, then all before object lookup: 749 each.
+// Initializers stayed at case producers. NOT kept: no gain; original body and SSE homes remain.
 // @retail 0xf6d10
 bool __stdcall function_f6d10(long vehicle_index, long name, real *value, bool *active)
 {

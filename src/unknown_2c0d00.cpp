@@ -1533,6 +1533,13 @@ bool function_26c4e0(s_pathfinding_data *pathfinding, s_type_c3b527 const *start
 // F372: Existing two-use location address at entry/data/multi-step/traversal/step/
 // selected-step/corner-pair/pre-endpoint phases: 470/431/463/470/465/416/414/418.
 // NOT kept: two-/four-point leads below gate; original address phase and full body restored.
+// P325: Existing normalizer mutable/readonly squared-length results crossed with
+// magnitude/inverse entry declaration lifetimes all tie 418 (eight forms); every user stays calibrated.
+// NOT kept: no byte match for the one-use call-result intermediate. Original complete helper
+// and body restored; frame 0x114/0x10c and zero/count/metadata homes remain.
+// P328: Complete final squared-distance expression/compound/separate/partial reductions,
+// point then vector displacement: 418/418/418/418/418/418/418/418. Original body restored;
+// frame 0x114/0x10c, radius/zero/count and metadata/trace homes remain.
 // @retail 0x2c2060
 void __stdcall function_2c2060(s_type_f17a25 *query, short count, s_path_step_view const *points,
     short *result_count, s_path_step_view *result, bool *complete)

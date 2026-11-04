@@ -1001,6 +1001,10 @@ extern vector3f *g_4687b0;
 // 1/2/4/3/5/6/7, then all with integral attach: 332/309/309/332/332/309/332/390.
 // NOT kept: domains tie or regress; wide saved type shortens away from retail, integral
 // attach loses the entry. Original scalar types, observations and complete body restored.
+// P321: Player-only forward input plus existing phased position producer, native/CRT
+// copy, original/staged crosses and from-origin/in-place output:
+// 312/309/312/309/349/388/349/388. NOT kept: ties grow, all others regress;
+// copy/interactions remain unmatched. Original complete body restored.
 // M361: Existing component-array relative-velocity difference producer alone, then parent-
 // add/speed-scale/staged-cross subsets:
 // 328/328/306/306/321/321/299/299. NOT kept: no eligible byte match or supported closer.
@@ -1584,6 +1588,10 @@ void __stdcall function_e8620(long unit_index, bool flag)
 // P317: Final readiness gate bool/byte/short/long, play/skip polarity
 // 95/95/95/95/95/95/95/95. NOT kept: all gates canonicalize; original entry pool/hand homes and second-load gap remain.
 // Original complete body and every existing helper restored.
+// P322: Complete three-event selection, positive/negative/conditional/split
+// producers, long then short: 144/144/144/144/146/146/146/146. Long reaches 604 bytes;
+// all regress. Original event graph and whole body restored; early pool/hand homes
+// and the second unit load remain.
 // M365: Selected notification type signed-char/short/dword/int64, at its producer then
 // declared uninitialized before the animation query: 144/143/95/159/144/143/95/159. NOT kept:
 // ties or regressions; original event result, observations and complete body restored.
@@ -2043,6 +2051,9 @@ void __stdcall function_1ca260(long actor_index, long weapon_index, long player_
 // P317: Shared-query terminal report value short/long, conditional/explicit producer,
 // consumer/entry declarations 68/60/68/60/68/60/68/60. NOT kept: short forms add four bytes,
 // long forms tie; no exact match. Original direct reporting expression and full body restored.
+// P322: Common first-mode admission for 0/1/3 in conjunction, overwrite, split
+// and test-owned forms, direct/phase-local selectors: 113/109/117/113 twice.
+// Original whole body restored; request/weapon homes and player-query expansion remain.
 // M365: Positive returned outcome signed-char/word/long/int64, constant success then
 // pickup-test-owned success: 73/139/140/128/69/119/113/120. NOT kept: every form regresses.
 // Original Boolean result, mode graph, shared player observation and complete body restored;

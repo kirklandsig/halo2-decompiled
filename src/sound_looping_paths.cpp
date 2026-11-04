@@ -312,6 +312,9 @@ __forceinline long loop_path_start(s_record_pool *pool, long tag, real gain)
 // one-point gain only; complete macro forms grow to 3333/3327. Original body/helpers restored.
 // AC529: Existing count-before-array storage, with native choice/query count and target-list subsets:
 // 856/937/912/935/938/920/938/933. NOT kept: unmatched local grouping; original records, counters, helpers and body restored.
+// P326: Named smoothstep contributions/active gain difference/paired inactive fade
+// differences, subsets 1..7, then all plus the choice blend difference: 866 each.
+// Original grouping and observation sites preserved. NOT kept: no gain; original body restored.
 // @retail 0x18ae80
 void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point3f const *point,
 	long cluster, long override_tag, real elapsed)

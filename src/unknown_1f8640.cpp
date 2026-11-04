@@ -602,6 +602,10 @@ struct s_1f8a70_actor
 // Y576: Full-record/fallback/failure-first branch subsets 187/211/305/210/304/305/304;
 // all with shared modes-two/three destination prefix 369. NOT kept: one-point best gain;
 // route dispatch, expired unit/result home and failure-result storage still differ. Original body restored.
+// P325: On the two-result graph, inner-result declarations after unit/reset/destination,
+// at entry and at route selection all tie 188; unit-output declarations at active phase/entry
+// score 206/206; outer failure result assigned before cleanup 188. All restored;
+// unit/result packing and the native memory-result cleanup remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

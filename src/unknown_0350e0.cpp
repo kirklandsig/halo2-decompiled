@@ -1754,6 +1754,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // 262/235/262/262; mixed producer domains at the original float atan2 boundary,
 // real/double result: 185/262/322/246. NOT kept: the 185 form moves frame to 0x1c
 // and caller to 610; native dword result/projection homes remain. All source restored.
+// P324: Actual result accumulator at inverse-tangent, scaled-angle and both
+// multiplication boundaries, then a named scaled-angle expression: 193 each;
+// the same four producers with one common exit: 193 each. Original whole body
+// restored; independent result home and frame 0x14 versus 0x18 remain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -2505,6 +2509,11 @@ real magnitude3d(vector3f const *v);
 // DH343: Complete native construction of first/second/axis/rotated/both inputs/inputs+axis/
 // axis+rotated/all existing vectors: 170/170/170/170/170/170/170/170. Original body restored;
 // raw-length and promoted-dot homes remain; frame and extent still agree.
+// P324: Recovered-frame independent reciprocal lifetimes, immutable scalar ownership,
+// entry shared-scalar and branch-owned rotation declarations: 170/170/170/170;
+// named double inverse-cosine result 196; named cosine complement, existing bounded
+// helper in fallback, named axis projection: 170/170/170. Original body restored;
+// raw-length/promoted-dot homes remain. NOT kept: no eligible gain.
 // @retail 0x3e5a0
 void function_3e5a0(vector3f *current, vector3f const *target, real step)
 {
@@ -3059,6 +3068,9 @@ PRIVATE __forceinline point2f motion_project_point(point3f const *point)
 // frame 0x60 versus 0x38 and stored-velocity/projection homes remain.
 // J252: Projection receiver returns, helper expansion and component-array access: 514/514/486/486/486/486/486/486/486/535/501/501.
 // NOT kept: no qualifying native-frame gain or byte equality; original full graph restored.
+// P328: Complete double speed-squared expression/compound/separate/partial reductions,
+// original named root then root at the comparison: 486/486/486/486/497/486/486/486. Original body
+// restored; frame 0x60/0x38 and stored-velocity/projection homes remain.
 // @retail 0x37260
 bool __stdcall function_37260(byte *state, real step, byte const *parameters)
 {
@@ -4008,6 +4020,10 @@ bool __stdcall function_391f0(void *state);
 // selected-tag then function-entry declaration: 251/251/281/286/251/251/281/286.
 // All retain frame 0x74 versus 0x70; no gain. Original independent flags and complete
 // body restored; every calibrated control survives.
+// P324: Independent portal plane/value, cursor/count/key and side/minimum
+// uninitialized entry declarations, masks 1-7, then complete visible-scan
+// declarations: 251 each. All initializers stay at their original statements.
+// Original body restored; extra frame word, early zero and portal/fog homes remain.
 // @retail 0x36b50
 void function_36b50()
 {
