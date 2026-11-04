@@ -2206,6 +2206,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
 // subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
 // original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
+// AC533: Test-produced whole terminal paired-slot gate, missing/present bool/byte/short/long:
+// 724 each (3413/3403; frame 0xcc). NOT kept: one-use/test-produced state needs equality;
+// first-angle/overlay calls stay 2/4 versus native 1/5. Original complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
