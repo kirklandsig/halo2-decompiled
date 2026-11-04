@@ -1695,6 +1695,10 @@ PRIVATE __forceinline real vehicle_speed_fraction(real speed, byte const *defini
 // pointers 13; value-initialized cross output 13; three-statement forward sum 11, with reversed final i product 11;
 // k+j initializer plus i 15. NOT kept: the two-point staged gains are below the retention threshold. Original body
 // restored; header SIB, join reloads, shared cross loads and the final forward i load remain.
+// Round 43 (lane 17, fast): the overlay-kind loop with its own counter 17 (the cross's up.i products then load
+// forward: the product operands follow numbering); both small loops with for-scoped counters 17; the overlay
+// fields declared as animation-id arrays in s_vehicle 13 (identical); the overlay channel declared before `state`
+// 32; the forward speed as dot3f(velocity, forward) 15. Original body restored.
 // @retail 0xf0760
 void __stdcall function_f0760(long vehicle_index, vehicle_animation_value_callback callback, void *user)
 {
@@ -2523,6 +2527,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // contracts: 42/42/42/42/42/42; immutable advanced input with conditional/exhaustive
 // dividends on the reference output: 84/84. Original helper and complete body restored;
 // turn-product, corrected-dividend spill and joined float output schedules remain.
+// P313: Existing in-place spin helper returns installed output as pointer/reference/real/double,
+// common/branch-owned: 42/42/42/42/42/42/42/42. Both original ignored-result calls, void helper
+// and full body restored; turn-product and spin spill/store scheduling remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
@@ -2700,6 +2707,10 @@ PRIVATE inline void vehicle_contact_steer(s_vehicle_physics_state *state, s_vehi
 // (975 bytes); the contact's torque and brake stores through a two-statement inline helper 10; the wrap's sign
 // test as `*spin < 0.0f` 10. A compile-only (no /GL) listing shares torque with the throttle as retail does and
 // homes the loop offset in a parameter slot, so it does not reproduce the LTCG frame.
+// Round 43 (lane 17, fast), at 10: torque named to sort after the compiler's `tv` temporaries (`wheel_torque`) 10
+// (identical: names do not order this frame); both steering bits read from the element expression (no pointer)
+// 242 (frame 0x34); a const contact-definition pointer 10; the gear read at each use in an else-if chain 176; the
+// braking test reading the vehicle lookup at each use (no `current`) 10. Original body restored.
 // @retail 0xf1f80
 void __stdcall function_f1f80(long vehicle_index, s_vehicle_physics_state *state)
 {

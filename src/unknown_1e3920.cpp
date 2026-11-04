@@ -1214,6 +1214,9 @@ void function_1e04a0(long primary_tag, long character_index, long unit_index, lo
 // result, ours keeps a separate slot. The substitution loop in a forceinline helper taking the squad pointer 389
 // (1307 bytes); the squad pointer `byte const *` 253 (same code); `bool flag = squad && (bit 10)` 252; the squad
 // lookup ahead of the 0x1e4990 call 264; the loop's probability declared before its bools 253 (same code).
+// B421: Post-creation success bool/byte/short/long and complementary failure
+// results 253/253/253/253/253/253/253/253. NOT kept: no byte match; condition
+// residence does not recover sentinel ESI or squad/query homes. Original body restored.
 // @retail 0x1e0850
 long __stdcall function_1e0850(long character_index, long squad_index, s_203780 const *placement, bool substitute)
 {
@@ -1938,6 +1941,9 @@ PRIVATE inline long equipment_secondary_weapon_r21(long unit_index)
 // on both queries 251 (same code); the fraction bounds as named locals 262; the grenade reset test split into an
 // outer `state != 1 || !flag` if 251 (same code); the grenade type through a fresh lookup and `unit` fetched
 // after the queries 251 (same code). All restored.
+// B421: Shared three-consumer options admission bool/byte/short/long, positive/
+// complementary results 310/310/321/308/310/310/321/308. NOT kept: all regress
+// and exceed retail length; original pointer tests, queries and complete body restored.
 // @retail 0x1e2a90
 void function_1e2a90(long actor_index)
 {

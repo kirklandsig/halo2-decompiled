@@ -1783,6 +1783,9 @@ void function_b7360(long object_index);
 // 301/301/465/449; direct default failure at those widths 471/471/463/467.
 // Original startup initialization, complete callback and inherited boundary restored;
 // actor/output entry carriers, retained point reference and 24-byte deficit remain.
+// F364: Native point-set/collection accessor ownership, pointer/reference returns and
+// ordinary/forced boundaries: 301/301/301/301/553/303/553/303. NOT kept: shared users regress.
+// Original accessor and callback restored; actor/output carriers and 24-byte deficit remain.
 // Round 40 (m3 lane 18, fast): whole body inside `if (perception == NONE || type == 1 || type == 4)` with every failure as
 // `break`, empty cases as `success = true; break;`, word flags at +0x10a and a `short result` if/else (lane 9's 246 form without
 // its goto) 307 (1852 bytes; the `||` test is `cmp cx, 1/4`, not retail's `dec/sub 3`), actor first 305; case 13 word flags with one
@@ -1797,6 +1800,12 @@ void function_b7360(long object_index);
 // Y570: Full-width initial/recording point and set indices 303/303/301/303/303/301,
 // both complete 301, both with one full reference capture 301. Original whole
 // callback restored; pool/actor/output carriers and the 24-byte gap remain.
+// B420: Existing completion receives secondary/primary/recording validations,
+// subsets 1/2/4/3/5/6/7, then all as short: 301/301/301/479/301/301/479/526.
+// NOT kept: no exact match; original complete body restored.
+// B423: Both bounded orientation/recording slot admissions classified as valid/invalid
+// bool/byte/short/long, 301 each at 1824/1848. NOT kept: no exact match;
+// original word tests, slot publications, case graph and complete body restored.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
@@ -2325,11 +2334,26 @@ short __stdcall function_259d90(long actor_index, long object_index, s_cs_state 
 // Round 64 (lane 10, fast only, under a builds-differently CAVEAT, so these are not plain scores; control 485, full 469): retail's case table order is 1, 2.., 4, 7/8, 0, 13 (the exit), 5, 9, 10, 12, 11, 6, 18, 21, 14, 20, with the tail after case 0 and the sete
 // shared by every `== 0` result. Case 14 moved before 20 491 (2400); with `!(distance > 1.f)` 615 (2396, masked aligned 101); that comparison alone or as an if 622 (2384, masked 94, retail's
 // comiss with the memory constant); an explicit case 13 before 5 485 (same code); command before actor 614; the result first 502 (frame 0x20).
+// F364: Native command-record lookup, global/explicit pool input, pointer/reference
+// returns and ordinary/forced boundaries: 485/485/485/485/485/485/485/485 (fast control 485). Original shared
+// lookup, record and callback restored; actor/state ownership and first-point home remain.
 // Round 40 (m3 lane 18, fast; control 485, full 469): retail's case-block order 1, 2.., 4, 7/8, 0, 5, 9, 10, 12, 11, 6, 18, 21,
 // 14, 20 (from its jump table) 491; case 20's point and vector declared outside the iterator loop 485; case 1's point declared
 // at the case top 485; the result declared after the other locals 485; the state local for case 1's point and the facing
 // call, declared after the flag 485. Retail's actor (EBX) is spilled to [esp+0x10] and that slot is shared with the case
 // 1/4/20 points; ours keeps the actor in EDI, which 0x210b60's EDI argument clobbers in case 1, so its slot cannot be shared.
+// B416: Completed search-scan/candidate-geometry/selected-target-geometry lifetimes,
+// seven subsets then all with complete search role names: 485 each (fast control 485;
+// full baseline 469). Original complete body restored; actor/state and first-point homes remain.
+// B418: Real state bitfields at dispatch/tail/secondary observations, seven subsets
+// and all with raw member tests: 485 each (fast control 485; full 469). Original
+// type and body restored; actor/state registers and first-point home remain.
+// B420: Complete structured outcome gates the post-dispatch continuation,
+// completed/pending in bool/byte/short/long: 766/766/726/718/694/694/672/668.
+// NOT kept: no exact match; original complete body restored.
+// B423: Both nearest-candidate/selected-target range admissions classified as in/out
+// bool/byte/short/long, 469 each at 2400/2396. NOT kept: no exact match;
+// original thresholds, squared sums, iterator, publications and full body restored.
 // @retail 0x259430
 short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

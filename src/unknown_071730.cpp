@@ -65,6 +65,10 @@ bool balance_teams(long arg_0, long arg_1, bool arg_2, long arg_3, long arg_4,
 void function_71ff0(c_session_state_matchmaking *arg_0, long arg_1,
 	const s_match_player_list *arg_2, const long *arg_3);
 
+// MiniMax B (11-03): no new form, no lower score. The frame stays 0x3e8 against retail's 0x3e4 and the
+// state and result bytes keep their homes; retail still calls 0x5b080 out of line at this site, so the
+// remaining gap needs a noinline on the existing getter, whose declaration is in a header this lane
+// may not edit.
 // score 426 (was 439): the two session-state tests now call the existing c_class_58d20::function_058d20
 // (0x58d20), which gives retail's dead state stores; 1593 bytes against 1589, frame 0x3e8 versus 0x3e4, both
 // dead stores share one slot (retail 0x20/0x18), and 0x5b080 is still inlined here.

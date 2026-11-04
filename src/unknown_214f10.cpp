@@ -330,6 +330,10 @@ void *game_state_cache_allocate(long cpu_size, long gpu_size)
 // M3 lane 4 r161 (fast): success straight from the handle test with `if (!success) continue;` 55, with
 // `if (success == false) continue;` 55 (351 B each); `long opened = success;` after the store 55; `if (success
 // & 1)` 54 (352 B); the resize wait moved after the open branch (shared with the failed path) 54.
+// DL258: Native bool callback storage with byte/signed-byte/one-bit/eight-bit/
+// boolean-bitfield consumer views 55/55/54/55/54; word/unsigned-long/signed-long
+// eight-bit views 81/80/80. NOT kept: ordinary views still forward the byte; wider
+// containers grow frame 0xfc to 0x100. Original long-outcome body restored.
 // @retail 0x214f80
 void game_state_cache_files_open(void)
 {

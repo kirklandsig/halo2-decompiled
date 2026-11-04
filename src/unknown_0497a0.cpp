@@ -849,6 +849,9 @@ PRIVATE __forceinline dword ribbon_pixel(color4f const *color)
 // case first/last: 609/609/609/609/609/609/634/634. NOT kept: all regress; false entry completion
 // recovers frame 0xac but grows to 2608 bytes and changes homes; original 265 body restored.
 // Original complete body and helpers restored.
+// DH346: On retained paired geometry, staged side/normal/both crosses, shared chain difference,
+// immutable source/definition/outer/all pointer bindings: 265/265/265/266/265/265/265/265.
+// NOT kept: no native frame/spill recovery; original complete body and helpers restored.
 // @retail 0x42cf0
 bool __stdcall function_42cf0(s_ribbon_vertex *vertices, long unknown, s_ribbon_input *input)
 {
