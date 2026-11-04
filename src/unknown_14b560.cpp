@@ -2328,6 +2328,7 @@ static __forceinline long player_round_ticks(real value)
     __asm { fistp result }
     return result;
 }
+// MiniMax h (11-04): no new form, no lower score; the frame stays 0x4c against retail's 0x74 (two request workspaces reach 0x6c).
 // score 701 (was 701): frame 0x4c versus retail 0x74 and selective call expansion remain.
 // Round 439: parent/tag/seat one-use intermediary elision in all seven subsets 701 each;
 // complete graph with all three target field-reference lifetimes at receiver acquisition 701.

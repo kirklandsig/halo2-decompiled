@@ -1007,6 +1007,7 @@ public:
 	virtual long count() = 0;
 	virtual long const *names() = 0;
 };
+// MiniMax h (11-04): no new form, no lower score; the default case still scales the constant first where retail multiplies the vector first.
 // score 184 (was 184): frame 0x60 agrees; 1359/1355 bytes. Default cross/tail merge,
 // normalized-j residence and color/tag homes remain. Earlier 248: 1355 bytes and frame
 // 0x60 as retail (round 27 form, below). Before it (292,
