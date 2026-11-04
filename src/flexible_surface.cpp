@@ -572,6 +572,10 @@ void function_117c80(vector3f const *input, vector3f *output, real angle)
 // N380: Initial envelope/rotation sine/rotation cosine real APIs, masks 1..7, then
 // all with complete angle accumulation: 117 each. NOT kept: no byte match; original
 // producers and body restored. Frame 0x28/0x20 and seed/direction/cross homes remain.
+// N382: All output rows read their original global component while shared cross/dot retain
+// the complete old snapshot; staged-cross/projection-first/projection-accumulator masks 0..7:
+// 159/159/157/157/159/159/157/157. NOT kept: unmatched mixed observations; original complete body restored.
+// Frame 0x28/0x20 and seed/time/direction/cross homes remain.
 // @retail 0x117dd0
 void function_117dd0(long index, vector3f *wind)
 {

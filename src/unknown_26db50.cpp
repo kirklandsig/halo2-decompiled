@@ -715,6 +715,9 @@ PRIVATE inline void record_rotate_vector(vector3f *vector, vector3f const *axis,
 // 275 each; ijk/kji with native radius CRT capture 276/276. NOT kept: frame/length
 // regress and no exact boundary. Original helper, radius reference and full body restored;
 // radius schedule, ring SSE conversion and rotation spill remain.
+// N382: Native record/origin/entry object references, seven ownership subsets, then all
+// with outer ring phase: 90/90/90/90/90/90/90/143. NOT kept: no equality or gain;
+// original complete body restored. Radius schedule, ring conversion and rotation spill remain.
 // @retail 0x26d570
 long function_26d570(long object_index)
 {

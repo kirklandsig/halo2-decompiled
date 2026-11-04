@@ -1324,6 +1324,10 @@ struct s_item_flags_view_10b850
 // 1..7, then all with predicted-position scaled-add: 856/813/856/813/856/813/856/871.
 // NOT kept: no native-shape gain; original helpers, observations and body restored.
 // Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
+// N382: Complete collision-kind switch with six geometry/object/default group priorities,
+// then two reversed geometry-label priorities: 863/863/863/863/863/863/863/863. NOT kept: all regress and lengthen;
+// original classification, observations, helpers and full body restored. Frame 0x154/0x12c
+// and entry Boolean/carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1805,6 +1809,10 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // then release-completion success at first/second/both sites and accumulated completion:
 // 140/140/171/171/140/140/140/140. NOT kept: no equality or gain; full helper and body restored.
 // Return byte +0xe/+0xf, release RMW/tail and event/contact homes remain.
+// N382: Actual function return channel byte/signed-char/char/word/short/int/unsigned-int/long,
+// with original Boolean accumulator and twice-used spin: 140/140/140/138/138/139/139/139. NOT kept: unmatched ABI
+// forms; one/two-point gains fail the bar. Original signature and full body restored.
+// Return byte +0xe/+0xf and release/contact/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {
