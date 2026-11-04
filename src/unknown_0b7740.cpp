@@ -1280,6 +1280,26 @@ bool function_a9940(long index, vector3f *up, vector3f *forward);
 // Round 110: split parent base, a one-use parent-node local, pool[0]/dereferenced-pool member spellings,
 // parent object/index role names, a function-scope parent object and a parent-node array pointer 97 each
 // (same code). NOT kept: no gain; the one-use forms require a byte match. Opening body restored.
+// Lane 13 r62 (fast, on the count > 0 guard diagnostic unless noted; 44 at 1390): two lookups of the parent in the no-model
+// block's own statements 20 at 1399 (one lookup always folds the data field into EDI, two make the block reload g_4e0300 too,
+// whatever the spelling), and the guard itself 44. With one lookup: a lookup helper taking the pool 44; plain 44; index computed
+// first in the helper with a pool param / with statements / plain 44/44/44; the index masked in place in the helper, plain /
+// with a pool param, 44/44; an unused index param on a mirrored helper, inline / forceinline 44/44; `parent_index` at function
+// scope assigned in each arm 44; the test repeated in a second `if` 44; ternaries with one lookup / lookups in each 45 (1391) / 50
+// (1402); a header pointer read at both uses 41 (1392). With two: node-matrix helper 20; taking the pool 20, a short node 20,
+// a named matrices local 20; pool local inside the arm 20; function-scope index 20; helpers with the index first 20/20; the
+// field read at each use 20, at the test 20; `do {} while (false)` between the lookups 20; a named masked index first/second/both
+// 20/20/20; `(word)` index on the second/first lookup 377 (1398) / 373 (1397); an empty `if`, an unused local and a dead store
+// of the index after the flag read 20/20/20. Parent helpers for matrix and flag, inline / forceinline 62/62 (1410); one helper with
+// two out-parameters, inline / forceinline 116 (1359) / 44. Pool local at the current lookup, spelled for current/render/two
+// no-model lookups: pool,g,pool,pool 292 (1402); pool everywhere 20; pool,g,g,g 20; pool,pool,g,g 20; pool,pool,copy,copy 20;
+// pool,g,copy,copy 292; pool,pool,pool,g 357 (1394); pool,pool,g,pool 358 (1394); g,g,arm-local,g 44; a pool local used only by
+// the no-model lookups, two/one 20/20.
+// Diagnostics, restored at once: on the two-lookup form a later use of the index (`if (parent_index == 5) *(long *)(object +
+// 0x14) = 6;`) after the flag read 40 at 1406: the block up to the flag read is then byte-identical to retail, with the index in
+// ESI, `mov eax, esi`, `[ecx + 0x44]`, and g_4e0300 still in ECX. After the call instead 402 (1408). So retail's index stays live past
+// the lookup and ECX is never overwritten; what keeps it live with no code is the lead. Sibling 0xb7740 holds its pool
+// in EBX and re-reads data after real stores through the object, which this path doesn't have.
 // @retail 0xbd090
 void __stdcall function_bd090(long object_index)
 {

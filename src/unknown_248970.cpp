@@ -432,6 +432,16 @@ public:
 // two invalid-link chains, two zero flag/age chains, then all four pairs: 54 each.
 // NOT kept: no exact initialization or allocation gain; original stores/body restored.
 // Native child preheader, pool/NONE ranks, allocation retest and salted index remain.
+// Lane 13 r62 (fast with 0x175270; 248 = retest + salt in place, 723 bytes, location an EBX register argument, 0x175270 100):
+// the location read through a `T *const *` of the parameter at the link, on that form, 220 (743, 0x175270 21: repeat, re-measured); a
+// `T *const &` at the link 220 (743, 0x175270 21); a separate cast copy at the link 248; a force-inline link helper taking the
+// location by const reference 250; the link nested in `if (head != NONE)` with `if (head == NONE) break;` after it 248 (threads
+// to the same code), with data_datum_index 118 (754, 0x175270 matches); the position pointer declared before the copy 248.
+// Diagnostics, reverted at once: a volatile read of the parameter at the link 89 (743 bytes, 0x175270 matches, prologue and
+// viewer section agree; left: pool/NONE exchanged, salt read last, preheader); one extra `NONE` compare in the link 104 (743 bytes,
+// frame 0x10, 0x175270 matches, location no longer a register argument), three there 148 (758), three at the loop head
+// 235 (753, 0x175270 100). So on the retest + salt form the location keeps EBX only because the NONE constant has one use too few
+// for its register across the allocation call; what gives retail that use (or takes one from the location) is the lead.
 // @retail 0x248970
 void function_248970(s_particle_location_datum *arg_0, bool arg_5, real arg_1, s_particle_system_datum *arg_2,
 	real *arg_3, transform4x3f const *arg_4)

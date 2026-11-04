@@ -914,6 +914,12 @@ extern "C" void _ReadWriteBarrier(void);
 // 0x220fd0 216); the rolloff and obstruction LF zeros chained 23; the room difference stored into lRoom and
 // pinned in place 21 (same code); the 0x12aff0 call ahead of the three float stores 49 (672 bytes); the second
 // barrier removed 22.
+// Round 61: `__assume` on the voice after its pointer, the memset, either of the first two volume stores or before the
+// 0x12aff0 call 21 each, on the globals 21, on the decibels 21, on the buffer 21; the memset's value in a named local 21;
+// a voice-array local 21; the voice pointer as a sum 21; the voice pointer assigned after the memset 25.
+// Compile-only (decibels stay in ecx, the truncated value in edx): a decibels local, with a pointer `__assume` before the
+// call's block; locals for either or both of the first two volumes; the barrier ahead of the second store; `__assume` after
+// each of the first two stores; the attenuation through a local.
 // Round 105: the memset result as a multi-use environment pointer 182 (667); clearing from lDirect 21;
 // both voice HF conversions before attenuation 127 (679), obstruction only / occlusion only 96/96 (672);
 // nine explicit aggregate zeros 96 (662); const attenuation / const room 21/21. Original body restored.

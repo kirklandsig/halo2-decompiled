@@ -467,71 +467,6 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 	return result != NULL;
 }
 
-// score 3 (was 3): Initial signed team load and EBP-save schedule remain; frame and the complete walk agree.
-// Earlier forms:
-// with a fifth word in the clump iterator (shared with 0x26bc60 and 0x269040;
-// reverted in review, two points) the frame agrees at 66; retail sign-extends the
-// first team argument (`movsx eax` after the clump address add, pushes after it) and zeroes the
-// current-clump register (edi) at the loop top for the exhausted path, where ours zeroes ecx there.
-// Round 80: `long team` local 92; current stored first in the step helper 92 (292 bytes);
-// pointer-returning step 66; result set in both activity arms 66; iterator declared first 66.
-// Earlier: retail sign-extends the first team argument and passes the second one
-// narrow, and its frame is four bytes larger than ours, so the stack offsets and the register
-// that holds the clump pointer differ as well.
-// Pointer result/reference/both 68/68/68; current field first/pointer/reference 94/94/94.
-// Promoted initial team 94 (sign extension recovered); result from initial test 127.
-// Shared datum iterator 174; wide side 68; unsigned side 68; initial done 68; complete iterator 115; current
-// initialized 68; prop type snapshot 93; prop reference 68.
-// Both-arm step result/stored-current result/native step result/activity input/member step 68 each.
-// Node query/prop query/both separate noinline declarations 68/68/68.
-// Frame and nullable-current lifetime remain; current datum 68;
-// success-controlled loop 68; selected datum 132; node/prop inline 68/68; forced node/prop
-// expansion 246/158; datum plus success loop 68.
-// frame, first team extension and nullable-current EDI lifetime remain;
-// native clean success 102; optimistic result 113; initial success return 135; found success return 147;
-// returned current pointer 68; existing record step 122; inline record step 119; entry side scope 68.
-// frame 0x1c/0x20, first team sign extension and nullable current remain.
-// Nullable value selection 68; inactive step exit 71; null step failure exit 94; word/byte
-// success result 94/68; native step state value 123; shared step expansion 68; native selected
-// index 68.
-// a fifth iterator word (as the clump walk of 0x1c9830 keeps) 66, stored
-// team in it 92, long team local 92, existing clump_get with long team 92, out-of-line pool step
-// 122 (270 bytes), step through the current field 92 (292 bytes). A NULL-initialised result in the
-// shared calling step moves current to edi (60, diagnostic): retail keeps the loop-top NULL live
-// through the step's not-found arm and copies the found pointer from ecx.
-// Existing complete calling walk bool/byte 3/3, long 128; complete walk calling the datum step
-// bool/byte/long 133/133/165; inlined scan bool/long 136/122. Promoted initial team 31; actual
-// pooled clump reference 3. Retained complete calling walk recovers frame 0x20, nullable current
-// in EDI and exhausted-path layout.
-// Initial getter 3; complete side result/comparison 15; per-use prop receiver 113;
-// getter/complete side 15; getter/per-use receiver 113; complete side/per-use receiver 114;
-// all three 114; typed initial pool array 3, on the recovered native calling walk.
-// Round 247: early prop receiver 26; Boolean side 100; both 103; early receiver/promoted team 93; Boolean side/promoted team 102; all three 106; early receiver/entry walk 26; receiver/Boolean side/native handle 90. Initial extension and push schedule remain.
-// Round 296: Side-query inline declaration alone/with predicate/lookup/both 3/3/3/3; with native short/promoted team 31/31; full side result 15; native team/full side 42. All executable source and declarations restored.
-// Round 86: retail's unfolded add + movsx is the shape of a team read merged from two uses (as 0x201460's
-// compare-then-pass); every promoted/short/int team local folds the add and sinks the EDI save 31; short
-// const & / pointer to the field 25; clump_get named 3, in the argument 31; team or side getter by index 31,
-// by clump pointer 3; prop between clump and side 26, before both 45.
-// Round 92: read-only/immutable clump pointer, split clump/side assignments, side-before-clump
-// declaration, const side, early iterator declaration, and inline predicate/lookup declarations each 3.
-// Original body and declarations restored.
-// Round 137 (lane 4): the walk reusing `clump` (no other_clump) with a long team local 31, the team passed
-// directly 3; `function_20f040((long)clump->team)` 3; a long side compared as `(short)side` 3. The permuter matched
-// only with a `volatile` clump pointer (not allowed): retail's first team read is an opaque load (movsx, address add
-// not folded), the shape 0x26bc60 matched with its volatile read, so both likely share the original idiom.
-// Round 26: a local gets the movsx but folds the add, the direct argument keeps the add but loads 16 bits. Long or
-// short team local 31 each; side getter by clump pointer with a short or long local 31/31; side wrapper taking a
-// short or long team 31/31; team in a block scope 31; an unused short or long read before the direct argument 3/3;
-// a pointer to the field 25; a long read through `*&` 31; clump computed before the result test 12, with a long or
-// short team 31/31; before the first call with a short team 31; a long team getter by pointer or by index 3/3;
-// `clump->team + 0` 3; a pool local with a long team 31.
-// Round 41 (lane 2, fast): retail's load keeps the separate add with a widening load, a long local folds the add into the
-// load 31. Long team with a dead second field read after or before the call 31/31; a dead test of the long team 31; a
-// short team reassigned from the side 31; the side local first holding the team, long/short 70 (322 bytes)/31; prop
-// before the side call 26; in the direct argument an enum cast, unary plus, `& -1`, `& 0xffff`, `~~`, `<< 0`, `(&team)[0]`
-// and a dword cast 3 each (all still the 16-bit load).
-// Round 134: bool return 33; direct initial pool expression 31; one-use pool receiver 89; initial early return 132;
-// direct initial guard 121; found early return 144; both early exits 136; declared loop current 3. Opening body restored.
 // @retail 0x26b900
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
@@ -539,7 +474,9 @@ long function_26b900(long prop_index, long actor_index, long clump_index)
 	if (!result)
 	{
 		s_clump *clump = (s_clump *)(g_502420->data + (clump_index & 0xffff) * sizeof(s_clump));
-		short side = (short)function_20f040(clump->team);
+		__assume(clump != NULL);
+		short team = clump->team;
+		short side = (short)function_20f040(team);
 		s_clump_prop *prop = (s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop));
 		s_clump_datum_walk iterator;
 		clump_datum_walk_new(&iterator);
@@ -1509,6 +1446,7 @@ void function_26a960(s_clump *clump, long prop_index)
 long function_26bc60(long clump_index)
 {
 	s_clump *clump = (s_clump *)(g_502420->data + (clump_index & 0xffff) * sizeof(s_clump));
+	__assume(clump != NULL);
 	struct
 	{
 		real count;
@@ -1518,7 +1456,7 @@ long function_26bc60(long clump_index)
 	} state;
 	state.count = 0.0f;
 	state.value = 0.0f;
-	state.team = ((s_clump volatile *)clump)->team;
+	state.team = clump->team;
 	long side = function_20f040((short)state.team);
 	if (g_4f55d0->active)
 	{

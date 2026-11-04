@@ -2395,6 +2395,11 @@ long voice_players_share_team(long other, long player)
 // voice_get_player_mask_inlined() inside the mode block 118; `else if (mode == 2)` for the mask arm 51 (373 bytes);
 // the entry test on settings alone (getter's own tests) 49 (376 bytes); the loop bit named `dword bit = 1 << i` 98;
 // the mode read from the field before the mask 25 (same code); `mode != 2` 25 (same code). BLOCKED-BY 0x59670.
+// Lane 13 r62 (fast, global test with the mode and mask inside the block unless noted): the block's mode read through a
+// `long const` / `dword const` view of the field 56/56, all three reads through the view 56; a force-inline mask helper
+// taking the mode 123 (again ECX for settings); 0x53c30 taking a `c_class_58d20 *&` 56, on the kept body 25; a
+// pointer local for the out-parameter in 0x53c30 56; diagnostic, restored at once: that pointer local in the getters
+// 0x59670/0x596a0 56 (a pointer copied from a parameter still counts as a parameter store; 0x53de0 and 0x565c0 stay matched).
 // @retail 0x56c60
 dword function_56c60(s_voice_player_settings *settings, long player)
 {
