@@ -438,6 +438,9 @@ void __stdcall function_1160c0(real dt)
 // velocity through scaled_difference3f 193; blend as vector3f_scale then vector3f_add_scaled 240
 // (1369); blend complement named and used three times 275 (1347); `previous = node->position =
 // position` 179 (on 179, same code); segment indexed by i and stepped back for the last node 292.
+// B413: Complete constraint/normalization/rotation temporary end scopes, seven subsets,
+// then all with the two-use angle scoped to paired trig: 171/171/171/171/171/171/171/171.
+// Original complete body restored; segment/previous/axis homes and rotation scheduling remain.
 // @retail 0x1161f0
 void __stdcall function_1161f0(s_chain_record *record, s_chain_definition *definition, real dt)
 {

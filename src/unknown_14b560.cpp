@@ -1415,6 +1415,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
 // {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
 // byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
+// B413: Kept-unit existence/admission result predicates, then the native two-short timer
+// model in all combinations, and the complete timer memset: 278/258/280/91/287/267/287/280.
+// Exact-only result-then-test forms and the timer model restored; NONE and tail scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

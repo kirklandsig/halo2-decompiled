@@ -317,6 +317,9 @@ struct s_24e9c7_bounds
 // substituted into their single uses, after the height conversions); result renamed to sort first/last 125/125
 // (diagnostic). Retail computes both across products right after size (across_j spilled to -8), so they are not
 // single-use temporaries there.
+// B413: Reverse/side/upper/full geometry scopes ending at final corner consumption,
+// with original/immutable complete scalar inputs: 125/125/125/125/125/125/125/125.
+// Original complete body restored; early across spill and shifted scalar homes remain.
 // @retail 0x24e9c7
 real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *placement)
 {

@@ -1084,6 +1084,9 @@ bool __stdcall function_2399da(long controller_index)
 // over-rank denial as its first test and the removal in the else 95 (437 bytes).
 // Round 158 (m3 lane 4, fast): the identity copied to a local after the membership call 90; the identity test as a forceinline bool helper 90; the
 // removal through a forceinline forwarder taking the identity 90; an unused identity argument on the set-rank call (one identity use more, LTCG drops it) 90; identity and name declared at assignment 90.
+// B413: Actual metadata/team-query/member-presence scopes ending at their last
+// consumers, seven subsets, then all with immutable own rank: 90/90/90/90/90/90/90/90.
+// Original complete body restored; selected-pointer/rank ownership and extra move remain.
 // @retail 0x2393ae
 void __stdcall function_2393ae(long controller_index, long rank)
 {

@@ -3342,6 +3342,9 @@ void function_2011f0(long arg_0);
 // pointer as a ternary 351; long difficulty by if/else switched as short 344. Left on 344: the options
 // if/else (retail stores NULL in its own arm), the memset's fresh `(word)arg_1` row read, arg_0's threaded
 // `xor esi, esi` after a failed 0x201400.
+// B413: Complete creation-record/customization/mask-attempt lifetime end scopes,
+// seven subsets, then all with readonly options: 318/318/318/318/318/318/318/318.
+// Original body restored; narrowed-index/placement and final-chain homes remain.
 // @retail 0x201520
 void function_201520(short arg_0, long arg_1, short arg_2, bool arg_3, bool arg_4)
 {
