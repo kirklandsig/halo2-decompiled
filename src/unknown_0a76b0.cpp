@@ -1767,6 +1767,11 @@ bool __stdcall function_e8b20(long unit_index, long type)
 
 /* a weapon switch interrupted: the old weapon is put away at once and the
    new one taken out */
+// MiniMax A (11-04): no new form, no lower score (11). What still differs: the entry block's
+// order. Retail loads the object-pool global, then the unit header, then the type argument,
+// computes the unit and the actions pointer, and only then does `cmp ecx, 8; sete bl`; ours
+// compares the type first and reads the global afterwards. Same instructions, different schedule.
+// The permuter (300 s) managed one try and found nothing.
 // MiniMax E (11-01): no new form, no lower score; the entry block keeps the same eleven
 // instructions in a different order in every form tried.
 // score 11 (was 29): only the entry block's order differs (retail loads the global and the
@@ -4303,6 +4308,10 @@ bool __stdcall function_ec2d0(long unit_index, s_unit_request *request)
 
 void function_e5750(long unit_index);
 
+// MiniMax A (11-04): no new form, no lower score (52). What still differs: our build inlines
+// function_e5750 here (95 bytes) where retail calls it out of line (67 bytes). The callee is in
+// this file and matches, as do its other callers 0xec9a0 and 0xe5930; only this call site differs.
+// BLOCKED-BY 0xe5750's inlining: __declspec(noinline) on its declaration is banned.
 // MiniMax E (11-01): no new form, no lower score; a plain check confirms the full
 // build inlines 0xe5750 here too (the unit read before the call: 72, 110 bytes).
 // score 52 (was 72): unit lookup is at use; the final helper remains expanded (95/67).
@@ -5660,6 +5669,13 @@ long function_1039a0(long object_index, long tag_index, long effect_index, real 
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
 bool function_1058b0(long weapon_index, long state, bool force);
 
+// MiniMax A (11-04): no new form, no lower score (54 reduced / 54 full; the full build no longer
+// adds the 12 bytes of the inlined 0xc9d00, so the earlier note's 70 is stale). What still differs:
+// the first difference is inside the inlined body of function_1058b0, which lives in
+// src/weapons.cpp. Retail keeps the object-pool data pointer in EDX and copies it (`mov ecx, edx`)
+// where ours keeps it in ECX, so retail's copy is two bytes longer there; at the tail retail
+// reads `mov ecx,[esp+0x18]; mov eax,[ecx+0x144]` and we read `mov eax,[esp+0x18]; mov eax,[eax+0x144]`.
+// BLOCKED-BY 0xc9d00/0x1058b0.
 // MiniMax E (11-01): no new form, no lower score; the reduced image scores 54 where the
 // full build gives 70.
 // score 70 (was 70): the first difference is inside the body of function_1058b0,
