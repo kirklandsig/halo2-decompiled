@@ -748,6 +748,9 @@ bool sound_driver_voice_create_buffer(
 // B422: Complementary playback with the original positive spatial predicate, bool/byte/short/long,
 // playback-first then spatial-first: 154/154/150/125/153/153/153/154. NOT kept: no byte match; all regress.
 // Original complete body restored; spatial/play carriers and descriptor zero/input homes remain.
+// B426: Zero-extended word/dword count bits with signed capacity/index/publication
+// uses, short/long result and playback/spatial-first producers: 71/182/158/158/159/182/158/158.
+// NOT kept: no byte match; original signed index, result, SDK phases and body restored.
 // @retail 0x220b90
 short sound_driver_voice_new(
 	dword flags,

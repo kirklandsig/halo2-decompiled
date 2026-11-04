@@ -804,6 +804,9 @@ PRIVATE inline s_player_state *local_player_state(long local_index)
 // B423: Native reset-completion decision at the geometric branch, ready/waiting
 // bool/byte/short/long, 45 each at 1262/1261. NOT kept: no exact match;
 // original direct comparison, staged helper and complete body restored.
+// B426: Existing reference direct/staged and pointer direct/staged cross producers,
+// each at the first/second product: 45/57/49/45/45/57/49/217. Original shared producers and
+// complete body restored; right i/j colors, forward.k reuse and angle stores remain.
 // @retail 0x23de50
 void __stdcall function_23de50(void *state, void *input, s_observer_command *output)
 {

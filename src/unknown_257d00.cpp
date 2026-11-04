@@ -1806,6 +1806,9 @@ void function_b7360(long object_index);
 // B423: Both bounded orientation/recording slot admissions classified as valid/invalid
 // bool/byte/short/long, 301 each at 1824/1848. NOT kept: no exact match;
 // original word tests, slot publications, case graph and complete body restored.
+// B426: Complete complementary completion state bool/byte/short/long, original/entry
+// lifetime: 593/593/594/594/593/593/594/594. NOT kept: no byte match; original completion, all
+// producers/consumers and callback restored. Pool/actor/output and retained reference remain.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {

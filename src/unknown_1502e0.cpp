@@ -244,6 +244,9 @@ struct s_flag_word_bits
 // Y567: Complementary available bool/byte/short/long with default-true
 // then exhaustive arms: 116/116/126/122/125/125/131/130. NOT kept: no byte match; original flag
 // producer and body restored, player/root ownership and tail expansion remain.
+// B426: Actual masked player/object slot and byte-offset components, separate/paired,
+// then word slot and unsigned paired offsets: 114/114/114/114/114/114/123/114. Seven tie at 366/340; word slot regresses;
+// original lookups and complete body restored. Player/root and tail expansion remain.
 // @retail 0x151ea0
 void function_151ea0(long player_index, long object_index)
 {
