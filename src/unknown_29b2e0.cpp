@@ -307,6 +307,11 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // acos result and sqrt temporaries with local_11 at +0x10). Both arg_2 copies declared before the arg_3 copy 375;
 // the yaw in a branch-local copied to local_8 at the arm's end 272 (1727 bytes); result declarations reversed 176
 // (same code); the failure arm first 176 (same code); the up vector read through the field at each use 178.
+// DL258: Existing vector-union array access in planar normalizer/rotation/caller,
+// all seven region subsets, 176 each; complete array graph with shared XY magnitude
+// 176; shared magnitude independently on the opening graph 176. Root/yaw homes,
+// unity register and rotation homes remain; all other calibrated scores unchanged.
+// Original helper contracts, alias-safe reads/publications and complete body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

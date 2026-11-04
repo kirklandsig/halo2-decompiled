@@ -372,6 +372,10 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 // local 667 (2889 bytes); the step factor as `n * v * rate` 642 and `n * rate * v` 642 (same code); the limited
 // flag computed first and the clamped length taken from it 722 (2858 bytes); the duration sum written count
 // first 642 (same code). Retail's EBX holds the next stack parameter at entry (ours the one before it).
+// DL258: Shared completed-activation admission in bool/byte/word/long form
+// 642/642/663/665; complementary admission 652/652/683/684; joint direction/sample
+// formal role names 642/642. Native sample EBX ownership at entry still differs;
+// all other calibrated scores unchanged. Original body restored.
 // @retail 0x1eb8a0
 long function_1eb8a0(
 	s_ease_state *s,

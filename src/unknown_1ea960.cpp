@@ -377,6 +377,11 @@ void *function_1eaf30(short type, s_shape_block_table *table, short index);
 // P295: Actual enclosing special-pair/first-scalar/last-scalar/vertex-array entry ownership,
 // masks 1/2/4/8/3/5/9/15: 138/138/138/138/138/138/138/138. Original external views
 // and complete body restored; restore-header, packed-key and listener ordering remain.
+// DL258: Native const list access and interface bases 5/5/5 on the prior near-match
+// construction graph; final-list member ownership 6; placement-result receiver 145;
+// child index before construction 5; explicitly inline storage constructor 5; advancing
+// child cursor 129. NOT kept: key/listener captures require byte equality; the child-storage
+// spill, zero index, receiver and payload-store schedule still differ. Original graph restored.
 // @retail 0x1ea9c0
 void function_1ea9c0(long tag_index, bool restore)
 {
