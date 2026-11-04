@@ -97,6 +97,7 @@ static inline void sound_track_start_impulse(long index, long handle)
 	}
 }
 
+// MiniMax H (11-03): no new form, no lower score; six more shapes of the case-0 entry address (the address as an integer sum, that sum with the index term first, the tag and index loads separated into locals, the scaled index computed before the tag lookup, the entries base as a long, the entry pointer in a local) all compile to the same folded bytes at 165 bytes; retail's `add eax, [edx + 0x70]` and `mov eax, [eax + 0x3c]` stay out of reach, and the parameter address is still copied through EDX where retail copies it through EAX.
 // score 16 (was 16): this round: five more shapes of the case-0 entry address (the entries array
 // indexed with a typed pointer, the entry address as an integer local, the entry pointer in a local
 // read through a statement of its own, the same with the scaled offset computed before the tag

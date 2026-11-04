@@ -34,6 +34,7 @@ static inline bool slot_flag_clear_2403b0(s_slot_table *table, long team)
 	return !(table->flags[team] & 1);
 }
 
+// MiniMax H (11-03): no new form, no lower score; ours spills the pool data pointer across 0xcbd50 and 0x101280 and reloads it from the stack where retail keeps it in ecx and reloads the global, and the two completion stores still merge.
 // score 86 (was 86): frame 0x3c agrees; pool-data spill across readers, cap-factor load order,
 // low-bit materialization and team scratch rank differ.
 // Earlier: the pool-data reload still needs the side-effect summary of 0xcbd50/0x101280

@@ -1935,6 +1935,7 @@ bool __stdcall function_100130(long weapon_index, bool immediate)
 }
 /* takes rounds from a weapon's reserve for a magazine: first its own, then
    the reserves of the holder's other weapons of the same kind */
+// MiniMax H (11-03): no new form, no lower score; retail keeps the magazine index in esi and the available count in edi where ours has them the other way round, and retail holds the pool in ebp where ours reloads the pool global for each slot.
 // score 107 (was 124): the pool pointer is read once into a local that lives across the whole body, the
 // definition is read through the live weapon, `taken` is declared inside the availability gate and the
 // other-weapon receiver is a single local reused by the two reserve accesses. Still open: the magazine,
@@ -3158,6 +3159,7 @@ struct s_ammo_conversion_entry
     long definition_index;
 };
 
+// MiniMax H (11-03): no new form, no lower score; retail saves ebx and ebp and keeps the weapon in ebp where ours saves ebx, esi and edi and keeps it in edi, so the stack slots and the loop's registers differ.
 // score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier score 190 (was 190): Frame 0x20 agrees; destination/tag homes and conversion staging remain.
 // Earlier: Frame 0x24 versus 0x20; destination/tag homes and conversion staging remain.

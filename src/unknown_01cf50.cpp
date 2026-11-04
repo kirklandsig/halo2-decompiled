@@ -302,6 +302,7 @@ bool function_1d3f0(long index, void const *colors, D3DPalette **out)
 	return result;
 }
 
+// MiniMax H (11-03): no new form, no lower score; retail's per-stage cache, its dirty mask and its dispatch table are not in this project, so the body cannot be rebuilt from this file.
 // MiniMax E (11-01): no new form, no lower score; retail's body keeps a per-stage cache and a
 // dirty mask that this project does not have.
 // score 152 (was 152): retail writes a per-stage cache at 0x404dd0 + stage * 0x80 and a dirty
@@ -3260,6 +3261,7 @@ void __stdcall function_1e930(long opaque)
 
 bool g_55e6bc;
 
+// MiniMax H (11-03): no new form, no lower score; retail keeps the projection base in ecx, the row counter in edi and the row base in esi, where ours uses one cursor in ecx and the counter in edx, and retail folds the depth-clip global into the multiply where ours keeps it in a register.
 // MiniMax E (11-01): index-based output stores score 143 and a separate near factor ties 87;
 // no new form, no lower score.
 // score 87 (was 87): retail keeps the projection base in ECX and the row counter in EDI and splits
@@ -3423,6 +3425,7 @@ void function_1eb00()
     g_4b6294 = true;
 }
 
+// MiniMax H (11-03): no new form, no lower score; SDK SetPixelShaderProgram inline: 763 bytes but merges the flag's 1 with the render-state argument into ebx (155), cross-module helper 155, helper call 167.
 // MiniMax E (11-01): no new form, no lower score; retail's body builds four shader programs from
 // tables and caches that this project does not have.
 // score 79 (was 79): the ratio of the two counters is computed with the other operand order:
@@ -5589,6 +5592,7 @@ void function_151e0(long index);
 bool function_13d9f0(long type);
 extern dword g_4e6494;
 
+// MiniMax H (11-03): no new form, no lower score; ours keeps the ebx zero register where retail uses edi and the loop counter in edi where retail uses esi, and the permutations go in eax at 0x3e380, whose declaration is in another file.
 // score 223 (was 241): the handle now goes into the context's dword at offset 8 and the availability
 // flag drives the table test, as retail does; left is our ebx zero register against retail's
 // edi, the loop counter in edi against retail's esi, and the permutations in eax at 0x3e380.
@@ -5754,6 +5758,14 @@ void function_12c600(void);
 void function_1de50(void);
 void function_22850(void);
 
+// score 153 (was 202): retail keeps the current depth bound when it is not zero and stores the
+// default only when it is (the comparison is against the bound loaded before the stores), so the
+// two default stores are now conditional on the bound being zero; the unconditional stores were a
+// behaviour difference as well as 49 differing instructions. Still differs: the timestamp copy
+// (retail moves the two halves of the double as dwords, ours goes through x87 - the shared global
+// is declared as a double in a header, so a dword-wise copy cannot be written), and the gamma
+// ramp, which retail uploads inline against the device's own ramp buffers instead of calling
+// D3DDevice_SetGammaRamp.
 // Tried (MiniMax C run): the defaults stored only when the current depth is not zero, then
 // the override carried in two locals and the pair stored again at the end: 182 against 202,
 // but the first stores are always overwritten (a no-op form), so not kept without a match.
@@ -5778,8 +5790,8 @@ void function_12a50(s_frame_parameters_12a50 const *parameters)
     union { dword bits; real value; } default_lower, default_upper;
     default_lower.bits = g_467014;
     default_upper.bits = g_467018;
-    g_485ad4.lo = default_lower.value;
-    g_485ad4.hi = default_upper.value;
+    if (g_485ad4.lo == 0.0f) g_485ad4.lo = default_lower.value;
+    if (g_485ad4.hi == 0.0f) g_485ad4.hi = default_upper.value;
     if (g_5093e0)
     {
         real value = *(real *)((byte *)g_5093e0 + 0x190);
@@ -6543,6 +6555,7 @@ void __stdcall function_214f0(real passes, real distortion, real strength, real 
 bool function_022710();
 real scenario_ramp_evaluate_current(long index);
 
+// MiniMax H (11-03): no new form, no lower score; retail saves edi in the prologue and keeps the scenario pointer in it across the loop's call with ebp as the counter, where ours saves edi inside the block and keeps the pointer in ecx, so every stack slot sits four bytes off; the scenario pointer in a local gives 148 and was dropped.
 // MiniMax E (11-01): no new form, no lower score; retail's first parameter is a float, not a bool.
 // score 139 (was 139): retail's frame is 0x58 bytes with the grid filling it to the top and the
 // frame pointer pushed inside the loop; ours is 0x5c with four unused bytes above the grid and the
@@ -8152,6 +8165,7 @@ point3f g_4b72b4;
 __declspec(noinline) bool function_1d3f0(long index, void const *colors, D3DPalette **out);
 __declspec(noinline) void function_0169f0();
 __declspec(noinline) void function_016a30(real scale, short y, short x);
+// MiniMax H (11-03): no new form, no lower score; retail passes the two offsets to 0x16a30 in the other order (its third argument 0x18/0x24 in ecx and its second 0x20/0x30 in edx, where ours passes 0x20/0x30 in ecx); swapping them matches retail's behaviour but leaves the score at 171, so the body was restored.
 // Tried (MiniMax C run): the two offsets passed in the other order (0x20/0x18 and 0x30/0x24
 // as the second and third arguments), the device result tested directly with the failure
 // path writing the flag, and the palette result in a local of its own: 167 against 171;
