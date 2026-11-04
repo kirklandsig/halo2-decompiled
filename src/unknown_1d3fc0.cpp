@@ -30,25 +30,7 @@ PRIVATE __forceinline vector3f *function_1d3fc1(vector3f *arg_0)
  return arg_0;
 }
 
-PRIVATE __forceinline vector3f *function_1d3fc2(vector3f *arg_0)
-{
- real m = arg_0->k * arg_0->k;
- m += arg_0->j * arg_0->j;
- m += arg_0->i * arg_0->i;
- real local_0 = (real)sqrt(m);
- if (!(fabs(local_0) < 0.0001f))
- {
-  real local_1 = 1.0f / local_0;
-  arg_0->i = arg_0->i * local_1;
-  arg_0->j = arg_0->j * local_1;
-  arg_0->k = arg_0->k * local_1;
- }
- return arg_0;
-}
-
-// MiniMax b (11-04): score 2 (was 110): the forward axis through the j-square helper and a second
-// helper summing k, j, i for up, up and left, with the dot's k term read from the matrix field.
-// Still differs in the dot's i term: retail copies forward.i into the product, ours copies up.i.
+// MiniMax B (11-04): a second forceinline normalize twin (k, j, i summed in turn, used for up and left while forward keeps 0x1d3fc1) with the dot product written out 2; NOT kept: a score-picked helper twin (no new inline twins).
 // score 110 (was 110): Frame 0x13c and length 922 agree; first reciprocal/component carriers and
 // magnitude/projection schedules remain. Both axis receivers begin after normalization.
 // Round 34 (lane 17, fast): forward/up pointers taken first, then both normalized through them 150;
@@ -336,14 +318,14 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
    if (arg_1->unknown04 & 0x10000)
    {
     vector3f *forward = function_1d3fc1(&local_1[0].forward);
-    vector3f *up = function_1d3fc2(&local_1[0].up);
-    real local_10 = forward->j * up->j + local_1[0].forward.k * up->k + up->i * forward->i;
+    vector3f *up = function_1d3fc1(&local_1[0].up);
+    real local_10 = dot3f(forward, up);
     up->i -= forward->i * local_10;
     up->j -= forward->j * local_10;
     up->k -= forward->k * local_10;
-    function_1d3fc2(up);
+    function_1d3fc1(up);
     cross3f(up, forward, &local_1[0].left);
-    function_1d3fc2(&local_1[0].left);
+    function_1d3fc1(&local_1[0].left);
    }
    havok_component_rigid_body_matrix_set(local_9, arg_1, &local_1[0]);
   }
