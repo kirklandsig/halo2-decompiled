@@ -705,6 +705,9 @@ bool balance_teams_greedy(s_balance_problem *problem, long team_count, s_balance
 // then all with entry selector declaration: 67/132/67/132/67/132/132/132. NOT kept:
 // inner advance regresses to 523/512 bytes and first +0x3e; original body restored;
 // reference-first spread queries and two extra bytes remain.
+// Lane 13 r62 (fast with 0x91dd0): the first pair named with `do {} while (false);` between the queries 67 (the reference's query
+// still runs first); both pairs that way under a bool result 75 (519 bytes); under if/else with the improvement in both arms 150 (517
+// bytes, 0x91dd0 8); the spread query declared `__stdcall` or `__cdecl` so its `this` is pushed 67/67 (same code; 0x91860 still matches).
 // @retail 0x91bd0
 void s_balance_optimizer::try_swap(long team_a, long team_b)
 {

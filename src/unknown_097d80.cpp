@@ -321,6 +321,9 @@ struct c_aggregate : c_child
 // M376: Fixed collection/dispatch/both equal-end and inclusive-last latches, then
 // actual child-array collection/dispatch bounds: 32/32/33/33/33/35/32/32. NOT kept: no match or qualifying gain;
 // original signed latches/body restored; escaped output and lowest loop homes remain.
+// Lane 13 r62 (fast; spills and `produced` in inlined scopes so the slots can pack): the dispatch loop in a force-inline helper 31,
+// the cleanup loop 31, both 31 (frame 0x8024 each, same code); the collection step plus the cleanup in force-inline helpers 146 (389
+// bytes), plus the dispatch too 146. Still BLOCKED by the build flag: frame 0x8020 needs `produced` to share a slot.
 // @retail 0x97d80
 long c_aggregate_450cf4::function_97d80(dword *source, s_request *request)
 {
