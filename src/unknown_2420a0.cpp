@@ -485,7 +485,11 @@ long function_243b10(long key_b, bool team_only, long *second)
 	return result;
 }
 
-// score 173 (was 173): frame 0x40 against retail's 0x44. Retail keeps the slot table in EBP through
+PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg_1, point3f *arg_2);
+
+// score 2 (was 173): 711 bytes as retail; only the other position's z copy is stored one instruction
+// later (after `fld st(1)`, filling the load latency); retail stores it first.
+// Earlier (173): frame 0x40 against retail's 0x44. Retail keeps the slot table in EBP through
 // the inner loop (re-reading g_51ec80 when EBP is borrowed, and in the marker select's else arm) and
 // keeps the inner index on the stack; ours re-reads the table at its use and keeps the index in EAX.
 // Retail's x87 distance squares dx first and pops it there; ours squares dy first.
@@ -604,6 +608,15 @@ long function_243b10(long key_b, bool team_only, long *second)
 // NOT kept (review): the 146 combines a re-read of g_51ec80 at each use where retail holds the table in EBP,
 // the init stores placed before the query where retail stores them after it, and a two-statement distance
 // sum: a combination picked by score; body restored at 173.
+// Round 208 (m3 lane 3, fast with 0x19ec40/0x1e5bb0/0x1e2a90/0x29b00/0x240160, plain confirmed): kept g_51ec80 read
+// at each use (the init stores stay after the point copy, retail's order), the existing function_2417a1 for both
+// positions and the squared distance accumulated in its own named local: 2 at 711 bytes (retail's EBP table with
+// its reloads, frame 0x44, spilled count and index, x87 squares). Grid of those four (table/marker copy/other copy/
+// accumulated): 171-200 with any one missing except 29/23 without the other copy and 8 with the summed distance.
+// The other element pointer then had one use and was dropped (2). On 2: dy before dx 16; named squares 8; a
+// vector2f through magnitude2d 8; sqrtf 2; a double cast on the sqrt argument 11; distance_squared declared first 2;
+// other_point at the loop top 2; `other` const 2; a 600 s permuter run, 66 tries, none below 2 (its reduced image
+// scores the base 178, so it cannot guide this function).
 // Round 67 (m3 lane 1, plain with 0x240160/0x19ec40; fast differs here: fast 203 for the plain 173): the accumulated
 // distance `d = dx * dx; d += dy * dy;` 173; the `slots` local declared at the top of the k loop 169 (717 bytes, but
 // the slot argument moves to the stack and caller 0x240160 drops to 46: not kept); `sqrt(dy * dy + dx * dx)` 173
@@ -611,69 +624,70 @@ long function_243b10(long key_b, bool team_only, long *second)
 // @retail 0x243c00
 void function_243c00(long slot)
 {
-	s_slot_table *slots = g_51ec80;
 	long k;
 
 	for (k = 0; k < 2; k++)
 	{
-		long marker_index = k == 0 ? slots->b[slot] : slots->c[slot];
+		long marker_index = k == 0 ? g_51ec80->b[slot] : g_51ec80->c[slot];
 
 		if (marker_index != NONE)
 		{
 			long results[8];
 			long key = (g_4e6948->mode_180 == 9) * 2 + 1;
 			long count = function_19ec40(0, 0.0f, (short)key, (short)slot, (short)(k + 1), 8, results, 0.0f);
-			point3f point = g_4e0350->marker_entries[marker_index].position;
+			point3f point;
+			function_2417a1(g_4e0350->marker_entries, marker_index, &point);
 			long j;
 
 			if (k == 0)
 			{
-				slots->bounds[0][slot].x = 0.5f;
-				slots->bounds[0][slot].y = 0.0f;
-				slots->bounds[0][slot].z = 0.0f;
+				g_51ec80->bounds[0][slot].x = 0.5f;
+				g_51ec80->bounds[0][slot].y = 0.0f;
+				g_51ec80->bounds[0][slot].z = 0.0f;
 			}
 			else
 			{
-				slots->bounds[1][slot].x = 0.5f;
-				slots->bounds[1][slot].y = 0.0f;
-				slots->bounds[1][slot].z = 0.0f;
+				g_51ec80->bounds[1][slot].x = 0.5f;
+				g_51ec80->bounds[1][slot].y = 0.0f;
+				g_51ec80->bounds[1][slot].z = 0.0f;
 			}
 
 			for (j = 0; j < count; j++)
 			{
-				s_marker_entry *other = &g_4e0350->marker_entries[results[j]];
-
-				if (MARKER_APPLIES(other->flags, g_4e6948))
+				if (MARKER_APPLIES(g_4e0350->marker_entries[results[j]].flags, g_4e6948))
 				{
-					point3f other_point = other->position;
+					point3f other_point;
+					function_2417a1(g_4e0350->marker_entries, results[j], &other_point);
 					real dx = point.x - other_point.x;
 					real dy = point.y - other_point.y;
-					real distance = (real)sqrt(dx * dx + dy * dy);
+					real distance_squared = dx * dx;
+					distance_squared += dy * dy;
+					real distance = (real)sqrt(distance_squared);
 
 					if (k == 0)
 					{
-						slots->bounds[0][slot].x = distance > slots->bounds[0][slot].x ? distance : slots->bounds[0][slot].x;
-						slots->bounds[0][slot].y = slots->bounds[0][slot].y > point.z - other_point.z ? slots->bounds[0][slot].y : point.z - other_point.z;
-						slots->bounds[0][slot].z = slots->bounds[0][slot].z > other_point.z - point.z ? slots->bounds[0][slot].z : other_point.z - point.z;
+						g_51ec80->bounds[0][slot].x = distance > g_51ec80->bounds[0][slot].x ? distance : g_51ec80->bounds[0][slot].x;
+						g_51ec80->bounds[0][slot].y = g_51ec80->bounds[0][slot].y > point.z - other_point.z ? g_51ec80->bounds[0][slot].y : point.z - other_point.z;
+						g_51ec80->bounds[0][slot].z = g_51ec80->bounds[0][slot].z > other_point.z - point.z ? g_51ec80->bounds[0][slot].z : other_point.z - point.z;
 					}
 					else
 					{
-						slots->bounds[1][slot].x = distance > slots->bounds[1][slot].x ? distance : slots->bounds[1][slot].x;
-						slots->bounds[1][slot].y = slots->bounds[1][slot].y > point.z - other_point.z ? slots->bounds[1][slot].y : point.z - other_point.z;
-						slots->bounds[1][slot].z = slots->bounds[1][slot].z > other_point.z - point.z ? slots->bounds[1][slot].z : other_point.z - point.z;
+						g_51ec80->bounds[1][slot].x = distance > g_51ec80->bounds[1][slot].x ? distance : g_51ec80->bounds[1][slot].x;
+						g_51ec80->bounds[1][slot].y = g_51ec80->bounds[1][slot].y > point.z - other_point.z ? g_51ec80->bounds[1][slot].y : point.z - other_point.z;
+						g_51ec80->bounds[1][slot].z = g_51ec80->bounds[1][slot].z > other_point.z - point.z ? g_51ec80->bounds[1][slot].z : other_point.z - point.z;
 					}
 				}
 			}
 
 			if (k == 0)
 			{
-				slots->bounds[0][slot].y += 0.1f;
-				slots->bounds[0][slot].z += 0.9f;
+				g_51ec80->bounds[0][slot].y += 0.1f;
+				g_51ec80->bounds[0][slot].z += 0.9f;
 			}
 			else
 			{
-				slots->bounds[1][slot].y += 0.1f;
-				slots->bounds[1][slot].z += 0.9f;
+				g_51ec80->bounds[1][slot].y += 0.1f;
+				g_51ec80->bounds[1][slot].z += 0.9f;
 			}
 		}
 	}
@@ -2775,8 +2789,6 @@ bool c_game_engine_markers::v46(dword flags, long, s_marker_update *update)
 	return result;
 }
 void function_15e360(point3f const *point, long object_index);
-
-PRIVATE __forceinline void function_2417a1(s_marker_entry const *arg_0, long arg_1, point3f *arg_2);
 
 // score 12 (was 141): only the players' data pointer is loaded after the event's initializing stores
 // (retail loads it into EDX before them). The marker position goes through the existing y-first copy
