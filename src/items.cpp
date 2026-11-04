@@ -704,6 +704,9 @@ struct s_item_collision_bsp
 // N358: Complete common spin scaling with separate/direct axial source, private/shared float/shared double/plain component producers:
 // 306/306/331/306/282/282/305/282. NOT kept: unmatched source/representation forms; original executable body restored.
 // Protected plane width, plane joins and speed/factor/spin homes remain.
+// N360: Complete linear production before pending spin-k, fields/initializer/setter/shared-add, then angular initializer:
+// 211/211/211/211/211/211/211/211. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Protected plane width, plane joins and spin/speed homes remain.
 // @retail 0x10cf80
 void function_10cf80(vector3f const *impulse, long item_index, bool trigger_effect)
 {
@@ -1284,6 +1287,9 @@ struct s_item_flags_view_10b850
 // N358: One actual gate-test result reused across active/anchored/attached admissions, eight native scalar domains:
 // 887/887/887/887/887/887/887/887. NOT kept: unmatched source/representation forms; original executable body restored.
 // Frame 0x154/0x12c and entry Boolean/carrier/collision/rotation homes remain.
+// N360: Planar subtotal dot producers, initialized/accumulating, with unchanged/initialized/accumulating/immutable axial subtotals:
+// 875/893/861/884/858/880/861/884. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Frame 0x154/0x12c, entry Boolean and carrier/collision/rotation homes remain.
 // @retail 0x10b850
 void __stdcall function_10b850(long object_index)
 {
@@ -1745,6 +1751,9 @@ static __forceinline void item_release_impulse_10b4d0(long object_index)
 // N358: Complementary two-consumer damping admission, bool/byte/char/signed-char/short/word/long/dword, original positive return:
 // 177/177/177/177/176/176/176/176. NOT kept: unmatched source/representation forms; original executable body restored.
 // Return byte, release RMW/tail and contact/event homes remain.
+// N360: Native conditional spin-result selection, result-first/spin-first, bool/byte/short/long:
+// 172/181/179/138/176/194/179/195. NOT kept: unmatched selection/representation forms;
+// 138 gains only two and moves the frame. Original complete body restored; return-byte and release/event homes remain.
 // @retail 0x10b4d0
 bool __stdcall function_10b4d0(long object_index)
 {

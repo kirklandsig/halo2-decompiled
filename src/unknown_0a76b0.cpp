@@ -2105,6 +2105,9 @@ bool __stdcall unit_action_pickup_weapon(long unit_index, s_unit_request *reques
 // Round 81 (m3 lane 16, fast): the own weapon through the char-index unit_action_weapon_get 100, both weapons
 // through it 103; the player index read at its one use (no local) 97, an actor index local for the 12c test
 // and calls 97, `given` declared first 97 (same code each).
+// N360: First-transfer call initializes actual arm-owned result, mutable/immutable bool/byte/short/long:
+// 116/116/137/137/121/121/116/116. NOT kept: unmatched source/result-storage forms; original executable source restored.
+// Frame 0x24/0x20, result byte and pool/unit/weapon homes remain.
 // @retail 0xe9190
 bool __stdcall function_e9190(long unit_index, s_unit_request *request)
 {
