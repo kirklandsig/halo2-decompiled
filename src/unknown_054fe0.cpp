@@ -1702,6 +1702,7 @@ struct s_summary_player_sort_entry
  byte properties[0x90];
 };
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax R (11-01): no new form; the retail prologue shape (global pointer then field at 0x741c,
 // then the 2/8 range tests) is not reachable from this body without the inlined membership helper.
 // score 339 (was 339): Frame 0xa9c versus 0xaa8; type/membership/member-index homes and saved registers remain.

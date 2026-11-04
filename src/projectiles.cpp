@@ -1589,6 +1589,7 @@ PRIVATE inline long projectile_object_root(long object_index)
 /* the projectile type's new callback: its target, lifetime, range,
    attachment, starting velocity and spin, whether it starts under water,
    and the seat flags of the unit that fired it */
+// MiniMax A (11-04): no new form tried, no lower score.
 // score 307 (was 307): first +0 is entry scheduling; frame 0xc versus retail 4.
 // Pool/input and tag receiver allocation still differ.
 // Speed update is still called instead of expanded; 1239/1261 bytes.
@@ -1800,6 +1801,7 @@ real function_17c900(short function_type, real input);
 
 /* where a guided projectile aims: its target's point, led by the target's
    velocity, then wobbled around the line to it or wandering */
+// MiniMax A (11-04): no new form tried, no lower score.
 // score 348 (was 348): Frame 0x30 recovered; index EAX/output-stack contract and normalization/rotation scheduling remain, four bytes long.
 // Earlier 382 (was 382): Frame 0x2c versus 0x30 and index EAX versus stacked index remain.
 // Consistent parameter reorder 382; common exit 382; lead field at every use 376 (six-point gain dropped);
@@ -2063,6 +2065,7 @@ vector3f const g_45326c[1] = { { 0.0f, 0.0f, -1.0f } };
 /* detonates a projectile: (once) its sound, contrail, direct and area
    damage, impact or airburst effects, and the effects of the material
    under it */
+// MiniMax A (11-04): no new form tried, no lower score.
 // score 527 (was 527): Frame 0x184 agrees; header-offset home, cached flags and probe/material homes differ.
 // Native definition bit 533; projectile/child flag bits 527; definition bit plus parent field reads 527;
 // common exit 527; saved-position role name 527; distinct direct/area damage names 527;

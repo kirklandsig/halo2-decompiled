@@ -69,6 +69,7 @@ struct s_shader_cache;
 void function_1c590(s_shader_cache *state, long tag, long index);
 void __stdcall function_1c710(void *state);
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no lower score: our build puts the constant one into edi for the two
 // combiner-count stores where retail stores the immediate; the permuter timed out.
 // MiniMax D (10-30): the stage states through the existing sampler_state_write plus one more
@@ -3660,6 +3661,7 @@ void __stdcall function_20bb0(long player, dword mask, long const *indices, long
 long __stdcall function_2e540(s_slot *slot, byte *data);
 extern long g_485898;
 
+// MiniMax A (11-04): the corner locals declared at function scope, before the position 285 (the same code); no lower score.
 // MiniMax D (11-01): the scale as a ternary 288 (worse), reverted; no lower score.
 // score 285 (was 285): retail's frame is 0x34 bytes and ours 0x38, because retail reuses the
 // position's stack slots for the corner coordinates while we keep two slots of our own, and
@@ -3895,6 +3897,7 @@ void function_12fa0(byte const *camera, real const *projection, bool scaled, lon
 real *table_entry_data(long handle);
 long function_184000(long index, long bit);
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 332 (was 332): our body is 53 bytes shorter than retail's (944 against 997); the
 // transform lookup and the outlined helper's argument order still differ from retail's.
@@ -4159,6 +4162,7 @@ void __stdcall function_484b0(point3f const *point, real depth, real width, real
     }
 }
 
+// MiniMax A (11-04): the four products' declaration order (six orders) 152/164/152/163/152/163, the multiply operands swapped 152, the products inlined into a/b/c/d 166; the permuter's best (148) rewrites the vertex calls and so draws something else, not kept.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 152 (was 152): the instruction sequence is retail's, the same number of instructions, and
 // only the register allocation and the spill slots differ: retail loads cosine, width, height,
@@ -4279,6 +4283,7 @@ extern dword g_4b82e8, g_4b82f4, g_4b82f8;
 dword g_4b8438, g_4b82e0, g_4b82fc, g_4b82ec;
 void function_48010(real const *color);
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 244 (was 244): retail copies the mode parameter into ebp in the prologue and keeps the
 // flag scratch in esi, while we keep the flag scratch in ebp and load the mode into esi later;
@@ -5101,6 +5106,7 @@ void function_141ce0(real first, real second, real third, transform4x3f *out);
 real g_5259b4;
 dword g_4b8430;
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): no new form, no lower score.
 // score 544 (was 544): our body is 90 bytes shorter than retail's (2316 against 2406) and the
 // setup of the draw calls still differs in the order of the operands and the stores.
@@ -6660,6 +6666,7 @@ PRIVATE __forceinline real callback_curve(byte const *curve, real time, real ran
     return value;
 }
 
+// MiniMax A (11-04): no new form tried, no lower score.
 // MiniMax D (11-01): 309 (was 312) with the two integer comparisons against zero written against
 // one (the zero literal is no longer promoted into ebp and the frame loses its extra push); not kept
 // (gain under 8, still above 30). The call to 0x4f7e0 passes all nine arguments on the stack, one
@@ -7390,6 +7397,7 @@ PRIVATE inline void glyph_remove_first_1f5c0(bool *removed)
     g_4b62a2 = (g_4b62a2 + 1) & 0x1ff;
 }
 
+// MiniMax A (11-04): the character pointer computed before the empty-slot test 374 (worse), reverted; no lower score.
 // MiniMax D (11-01): no new form tried, no lower score.
 // score 342 (was 342): our body is 41 bytes shorter than retail's (1092 against 1133); the
 // clipped fill still writes the rows in another order than retail's.
