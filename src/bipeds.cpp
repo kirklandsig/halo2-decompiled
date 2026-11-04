@@ -1505,6 +1505,11 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // P337: Default boost before tag/component/airborne/position, then after position/
 // velocity/facing/speed: 659/659/659/660/651/631/613/603, 2816 bytes, frame 0xf8.
 // NOT kept: all regress; original default branch and complete body restored.
+// P339: Whole case orders 2/1/3/6/4-5, 3/1/2/6/4-5, 1/3/2/6/4-5,
+// 1/2/3/4-5/6, 2/1/3/4-5/6, 3/1/2/4-5/6, 1/3/2/4-5/6, 3/2/1/4-5/6:
+// 592/582/587/606/608/596/606/607, all 2828 bytes, frame 0xf8.
+// NOT kept: best gains three and no native frame/layout match. Original case
+// order and full body restored; shared helpers and all checked peers unchanged.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
@@ -4960,6 +4965,10 @@ bool function_1f5560(long actor_index, vector3f *facing, bool unused);
 // P321: Query directly into velocity/relative, record/CRT copy, actor/query-bound
 // success on the recovered state-call/dot graph: 150/150/148/148/136/136/135/135.
 // NOT kept: all regress and shorten to 671/683; full body restored.
+// P339: Structured actor-success restoration/completion tail with original/native
+// success timing, bool/byte/word/long result: 68/88/154/153/92/95/147/146.
+// NOT kept: no byte match; original body restored. Support/result byte homes and
+// early success store remain; both exact callers and providers survive.
 // @retail 0xe4770
 bool __stdcall function_e4770(long arg_159e6d)
 {

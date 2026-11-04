@@ -1816,6 +1816,10 @@ void function_b7360(long object_index);
 // B430: Selection-owned common validity publication, bool/byte/short/long, default
 // invalid/admitted-arm production 358/358/487/487; default valid/explicit rejection
 // 355/355/345/357. NOT kept: no byte match; original stores, result and callback restored.
+// P339: Selected case-seven delay in short/word/int/dword, exhaustive branch
+// then conditional producers: 301 each, all 1824/1848 bytes. NOT kept: no
+// byte match; original full callback restored. Entry actor/output roles,
+// reference retention and 24-byte deficit remain; all calibrated peers unchanged.
 // @retail 0x258cf0
 short __stdcall function_258cf0(long arg_0, long arg_1, s_cs_state *arg_2, long arg_3)
 {
