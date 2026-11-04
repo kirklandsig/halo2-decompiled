@@ -93,6 +93,10 @@ PRIVATE __forceinline void direction_face_point(s_direction_face const *face, ve
 // returned output with scale-default z 9.
 // Original executable body restored;
 // no exact match from these ownership forms.
+// Round 136: z initialized to zero 9; an explicitly in-place helper with entry z 57, branch-owned z 9,
+// zero-initialized z 9, an inverted test 10 or split scale/z products 9; per-use scale reads 76 (259 bytes);
+// zero-initialized z declared first 29, or before a late scale with zero/input z 55/55 (253 bytes).
+// Original three-parameter helper and call restored; no exact match from the alias/lifetime forms.
 // @retail 0x24f6b0
 real __fastcall function_24f6b0(dword index, vector3f *direction)
 {
