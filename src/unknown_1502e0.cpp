@@ -279,6 +279,7 @@ void function_151ea0(long player_index, long object_index)
 	}
 }
 
+// MiniMax H (11-04): no new form, no lower score; the equal-priority branch still picks the other epilogue.
 // score 1 (was 1): only the jne of the equal-priority test differs: retail jumps to the epilogue after the copy
 // block (al still holds the initial false) and keeps a separate `xor al, al` + epilogue for the not-closer
 // arm; ours jumps to the epilogue after that `xor`. Tried (fast, base 1): `return false;` in the else arm
@@ -1287,6 +1288,7 @@ bool function_151c10(long player_index, s_target_candidate *candidate)
 	return result;
 }
 
+// MiniMax H (11-04): no new form, no lower score; the unit index and the object table still swap registers.
 // score 17 (was 17):
 // Logic and structure match; only the callee-saved registers differ: retail keeps player->unit_index in
 // edi and the object data pointer in esi, this build uses esi and edi. Tried (scores): unit_index in a local

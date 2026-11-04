@@ -299,6 +299,16 @@ struct s_heading_unit_header
 	s_heading_unit *object;
 };
 
+/* the actor's unit heading: the animation state it is in, the two values the
+   animation state machine reports for it, and the point it is heading for */
+struct heading_motion
+{
+	short animation_state;
+	long first;
+	long second;
+	point3f target;
+};
+
 extern vector3f *g_4687bc;
 real function_30bf0(vector3f *v);
 bool function_10f630(long object_index, long *first, long *second);
@@ -311,6 +321,9 @@ static inline short heading_unit_get_state(s_heading_unit *unit)
 
 /* where the actor's unit (a biped) is heading: backwards out of its current
    animation, or toward the actor's target point */
+// MiniMax H (11-03): the animation state, the two values the state machine reports for it and the
+// point it is heading for in one heading_motion record, all four members used; the state stays in a
+// word on the stack and the record's frame is retail's. The plain check matches (0).
 // MiniMax D (11-01): the state in a plain short local 90 and the same read written out in the
 // initialiser 90: the load is zero-extended and the spill stays a dword; no lower score.
 // Not kept (MiniMax R, 11-01): the state in a one-element unsigned short array (animation_state[1]) also
@@ -338,9 +351,11 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 
 	if (unit->type == 0)
 	{
-		long state = heading_unit_get_state(unit);
+		heading_motion motion;
 
-		if ((short)state == 6 || (short)state == 7)
+		motion.animation_state = heading_unit_get_state(unit);
+
+		if (motion.animation_state == 6 || motion.animation_state == 7)
 		{
 			if (unit->movement_type == 4)
 			{
@@ -355,11 +370,8 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 		}
 		else
 		{
-			long first;
-			long second;
-
-			function_10f630(actor->unit_index, &first, &second);
-			if (unit->movement_type == 5 || (short)state == 5 || first == 0x50000cb)
+			function_10f630(actor->unit_index, &motion.first, &motion.second);
+			if (unit->movement_type == 5 || motion.animation_state == 5 || motion.first == 0x50000cb)
 			{
 				direction->i = unit->forward.i * -1.0f;
 				direction->j = unit->forward.j * -1.0f;
@@ -368,12 +380,10 @@ bool function_1f55e0(long actor_index, point3f *point, vector3f *direction)
 			}
 			else if (actor->unknown264 && g_510c54->game_time < actor->unknown634)
 			{
-				point3f target;
-
-				function_210850(&actor->unknown638, &target);
-				direction->i = target.x - actor->position.x;
-				direction->j = target.y - actor->position.y;
-				direction->k = target.z - actor->position.z;
+				function_210850(&actor->unknown638, &motion.target);
+				direction->i = motion.target.x - actor->position.x;
+				direction->j = motion.target.y - actor->position.y;
+				direction->k = motion.target.z - actor->position.z;
 				if (function_30bf0(direction) > 0.0f)
 				{
 					result = true;

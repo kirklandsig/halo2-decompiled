@@ -2612,6 +2612,7 @@ void function_15b980(bool skip_event)
 void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
+// MiniMax H (11-04): no new form, no lower score; the two blockers below still stand.
 // MiniMax R (11-01): no new form, no lower score; beyond the parameter-order block noted below,
 // retail's three 0x1967d0 switch arms use rotated temp registers (case 9 -> ECX, 3 -> EDX,
 // 1 -> EAX) and reload g_4e6948 into EAX/ECX at each use where ours keeps it in EBX.
@@ -5443,6 +5444,7 @@ void function_36580(void);
 void function_36880(s_short_rectangle const *rectangle, color4f const *color);
 void function_161420(long player_index, real alpha);
 
+// MiniMax H (11-04): no new form, no lower score; the x87 store still comes after the player register.
 // MiniMax R (11-01): no new form, no lower score; the single difference is that retail stores the
 // x87 power argument (`fstp dword ptr [esp]`) before it loads the player index into EDX, while
 // ours loads EDX first.
