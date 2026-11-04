@@ -331,6 +331,9 @@ PRIVATE short *function_e70b0(long unit_index, short *state);
 // P296: Constant case outputs completed after callbacks in state/action/separate-both/paired
 // dispatch, each with original/early result constants: 455/456/406/408/496/496/378/380.
 // All restored; native unit/name/actions ranks and shared-call threading remain.
+// P313: Original-graph formal unit/name/output lexical role subsets and complete alternate roles,
+// eight at 271. All original names and complete body restored; frame 8 and
+// incoming unit/name/actions ranks and shared callback joins remain.
 // @retail 0xe6b00
 void function_e6b00(long unit_index, long name, long *state_name, long *action_name)
 {
@@ -971,6 +974,9 @@ extern vector3f *g_4687b0;
 // Round 81 (m3 lane 16, fast): the definition local renamed to sort before/after the projectile index
 // (two spellings) and the projectile index renamed 309/309/309 (names move no slot); velocity declared
 // first in the function 309 (same code); one function-scope origin for both throw branches 312.
+// P313: Existing scalar setter at blend/parent-add/projectile-subtract boundaries, seven subsets,
+// then all with the initial velocity setter: 309/309/309/309/309/309/309/314. All original
+// component producers and full body restored; tag/index/type/direction homes remain.
 // @retail 0xe7900
 void __stdcall function_e7900(long unit_index, bool spread, point3f const *origin_override,
 	vector3f const *direction_override)
@@ -2938,6 +2944,9 @@ long function_c8f60(long unit_index, short seat_index);
 // and the transform pointer's swap; renaming the transform pointer 306/306); on it the 0x3dc state in a long
 // 304, `1u <<` for is_vehicle 306, the unit read through a header pointer kept from the first lookup 305.
 // Original body restored.
+// P313: Actual marker/relative/inverse workspace role subsets, then uninitialized marker/relative
+// declaration reversal: 293/293/293/293/293/293/293/293. Original names, matrix scopes and full body restored;
+// frame 0xf0 agrees, entry vehicle/unit/ordinal residence remains.
 // @retail 0xea1f0
 bool function_ea1f0(long unit_index, long vehicle_index, short seat_index, bool keep_animation, long type,
 	bool *animation_reset, bool force)

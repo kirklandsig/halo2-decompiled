@@ -2012,6 +2012,9 @@ real function_2683f0(long actor_index, long node_index, short type)
 // N340: Whole actor/vehicle admission regions, original/failure-first/success-first
 // trees excluding the original pair: 194/194/194/194/194/194/194/194. All restored;
 // lookup operands, established/visible homes and direction residence remain.
+// P313: Existing shared dots at absolute/relative/facing consumers on the recovered-frame graph,
+// seven subsets, then all with the point-difference helper: 194/194/194/194/194/194/194/246. NOT kept:
+// no exact arithmetic-association result. Original body and shared helper definitions restored.
 // @retail 0x266640
 void function_266640(long actor_index)
 {

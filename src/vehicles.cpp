@@ -2501,6 +2501,9 @@ PRIVATE inline void vehicle_wheel_spin(real *spin, real delta, real const *perio
 // contracts: 42/42/42/42/42/42; immutable advanced input with conditional/exhaustive
 // dividends on the reference output: 84/84. Original helper and complete body restored;
 // turn-product, corrected-dividend spill and joined float output schedules remain.
+// P313: Existing in-place spin helper returns installed output as pointer/reference/real/double,
+// common/branch-owned: 42/42/42/42/42/42/42/42. Both original ignored-result calls, void helper
+// and full body restored; turn-product and spin spill/store scheduling remain.
 // @retail 0xf1cd0
 void __stdcall function_f1cd0(long vehicle_index, s_vehicle_physics_state *state)
 {
