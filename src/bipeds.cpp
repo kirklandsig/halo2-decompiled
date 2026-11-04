@@ -2848,7 +2848,7 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 /* the dead biped's ragdoll: when it falls over (+0x34b 0 to 1) its bodies
    get a push along the killing blow, spread from the hit body; a fallen
    one settles and goes to sleep (2); one that gets up again stands */
-// score 530 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
+// score 520 (was 530): Frame 0x44 versus 0x4c; result byte, scalar homes and native point loading remain.
 // Earlier: 540 (was 568; the old 774 was stale): the logic was walked against retail block by block and agrees
 // (conditions, field offsets and widths, constants 1.0/0.001/0.7/0.65/2.0/0.3, call order and arguments, three
 // loops). The flag tests are TEST_FIELD_BIT (retail `shr; test r8, 1` at 0xe1079, 0xe109d, 0xe10a8, 0xe118c).
@@ -2942,6 +2942,10 @@ void __stdcall function_b77d0(long object_index, vector3f const *linear_velocity
 // bool/byte/char/signed-char/short/word/int/long: 530/530/530/530/530/530/530/530.
 // NOT kept: no native result/frame repair; original result, scans and body restored.
 // Native final-loop size observation remains a possible unretained correction.
+// AC546: Existing owning-word writer for deferred/failure/notification publications,
+// seven subsets then existing state bitfields: 520/545/535/530/520/545/535/534.
+// Set-only 530; clear-only 520 plain, 1844/1908 bytes. Kept the clear-only writer:
+// native direct byte AND in both completion paths; frame/result/state homes remain.
 // @retail 0xe0ef0
 bool __stdcall function_e0ef0(long arg_159e6d)
 {
@@ -3108,7 +3112,7 @@ bool __stdcall function_e0ef0(long arg_159e6d)
 				}
 			}
 		}
-		*((byte *)&biped->flags_348 + 1) &= ~1;
+		word_flags_set(&biped->flags_348, 8, false);
 		return result;
 	}
 	case 1:
@@ -3271,6 +3275,11 @@ PRIVATE inline void biped_rotate(vector3f *v, vector3f const *axis, real sine, r
 // M364: Original early-return changed result in char/signed-
 // char/byte/short/word/int/long/dword storage: 610/610/610/623/623/625/625/625. NOT kept: no
 // native result-byte/flight-home match; original result domain and complete body restored.
+// AC546: In-place first-wall/clamp/yaw output phases, seven subsets then coordinate
+// publication: 624/622/585/672/737/643/695/623 (control 605). NOT kept: 585
+// lengthens away and combines regressing parts; yaw adds an out-of-line call.
+// Isolated forced native/setter yaw 635/605; 18 calls recovered, but frame 0x8c
+// or a tie remains. Original complete body, helper and long special restored.
 // @retail 0xe01d0
 bool __stdcall function_e01d0(long arg_159e6d, long *names)
 {

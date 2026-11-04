@@ -1764,6 +1764,9 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // AC544: Direction/mode/scale formal lexical identities, seven subsets then all
 // with position identity: 193/193/193/193/193/193/193/193. NOT kept: no native result-home or frame
 // repair; original inputs, helper, switch, arithmetic and whole body restored.
+// AC546: Alias-safe second cross in its actual first-cross receiver, native/library/setter/
+// scalar output: ordinary 421/421/198/197, forced 247/247/198/197. NOT kept: no gain;
+// ordinary value copies worsen the caller to 610; original private helper and full body restored.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3476,6 +3479,9 @@ PRIVATE __forceinline real object_view_distance(point3f const *position)
 // AC544: Entry declarations for alpha, existing qualified kind and paired query bytes,
 // seven subsets then reversed complete declarations: 177/177/177/177/177/177/177/177. NOT kept: no
 // native frame repair or match; original producers, scopes, qualifiers and whole body restored.
+// AC546: Original-site case-zero kind admission/rejection outcomes in bool/byte/short/long:
+// eight at 177. NOT kept: one-use outcomes do not match or repair the frame; original
+// predicate, qualified kind observations, positive result and complete body restored.
 // @retail 0x3d7f0
 bool __stdcall function_3d7f0(long object_index, real *out_alpha, bool *out_special)
 {
@@ -4886,6 +4892,9 @@ PRIVATE __forceinline bool fog_pass_enabled_41cc0()
 // AC544: Original two-stage enabled result in bool/char/signed-char/short/word/long/dword,
 // then bool with the raw mode-eight gate: 138/138/138/187/187/222/222/138. NOT kept: target ties or
 // regresses; wide results also regress both shared users. Original helper and full caller restored.
+// AC546: Existing shared pass helper returns availability to all three draw callers in
+// bool/signed-char/byte/short/word/long/dword/int: eight at 138. NOT kept: no gain or
+// native publication repair; original shared helper and every complete caller restored.
 // @retail 0x41cc0
 void __stdcall function_41cc0(void *payload)
 {
