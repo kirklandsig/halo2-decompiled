@@ -1243,8 +1243,9 @@ dword const *function_1c2e0(long tag, long index, long *count)
 	return result;
 }
 
+/* inline, as 0x1cbe0: a call at a function's top level expands at link time, a nested one stays a call */
 // @retail 0x1cb20
-long function_1cb20(long mode, dword index, long tag)
+inline long function_1cb20(long mode, dword index, long tag)
 {
 	/* The candidate index remains a stack argument in retail. */
 	dword const *index_reference = &index;
@@ -1438,7 +1439,7 @@ dword function_1cbb0(long mode, dword index, long tag)
 }
 
 // @retail 0x1cbe0
-dword function_1cbe0(long mode, dword index, long slot_index)
+inline dword function_1cbe0(long mode, dword index, long slot_index)
 {
 	(void)&mode;
 	(void)&index;
@@ -6625,7 +6626,7 @@ bool __stdcall function_37a60(void *context)
             D3DDevice_SetTextureStageState(stage, D3DTSS_ALPHAKILL, 0);
         }
         function_1cf80();
-        function_1cbe0(0x15, 0, 0);
+        function_1cbe0(0, 0, 0x15);
         function_1c710(g_51f0f0);
         D3DDevice_Begin((D3DPRIMITIVETYPE)9);
         vertex2f(1, vertices[0].x, vertices[0].y);
