@@ -332,6 +332,17 @@ PRIVATE __forceinline void function_29b6c0(vector3f const *arg_0,
 // bool/byte/short/long direct then common results: 403/403/406/396/405/405/408/398.
 // NOT kept: all regress and raise the matched sibling to 64-70; original numeric
 // contract, alias-safe helper publications and complete body restored.
+// M3 lane 12 r90 (fast; masked = register-masked aligned count, base 176 at 1711 bytes, masked 138): the helper storing its three
+// rows directly in place, no i/j/k scalars, 189 at retail's 1706 bytes, masked 114: this gives retail's frame homes (vector +0x20, roots
+// +0xc, sine +0x10, cosine +0x3c, pitch +0x40), with the rotation's products and one instruction's shift at the tail left; same form plus
+// the 0x2551c0 dot order or a named complement, a named dot, both, a one-pointer in-place helper 189 each; sine/cosine as helper parameters
+// 179 (1710), with direct rows 249 (1686, frame 0x28); the first rotation on the first copy with a final copy 194; a scoped fallback pointer
+// for the second copy's restore 289. On direct rows: single-exit normalizer 185 (unity still XMM5, masked 114), with the early XY vector 183
+// (masked 112), the XY vector alone 187. Diagnostics, identity pointer chains in the helper (not keepable): axis 1-7 links 180/184/184/232/231/231/232
+// (masked 119/120/120/162/161/161/162); body chains 1-7 185/184/184/184/184/184/184; axis 0/1/2/4 links each with vector 1-6 links 185/237/185/189; axis 2 links plus vector 1 link 185, masked 100: all three axis product forms as retail
+// (x and z load first, y a memory operand), left: dot terms run k first in retail, then the early cross products; with the single-exit
+// normalizer and XY vector 233 (1694). dot3f in the helper with axis links 0-7 186/232/181/181/185/185/234/232. Cross statement orders ikj/jik/jki/kij/kji
+// on the chain state 185 each (masked 102/100/100/102/102); grouped dot spellings 185, flat ones 181 (masked 113); chains split by dot/cross/rows 185/187/184/237/232/231/192/189/187. Body restored.
 // @retail 0x29b2e0
 void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
     vector3f const *arg_3, real arg_4, vector3f *arg_5)

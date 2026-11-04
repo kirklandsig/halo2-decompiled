@@ -330,6 +330,19 @@ bool function_26c380(point3f const *origin, s_pathfinding_data const *pathfindin
 // DH356: Planar components initialized before the full-normal magnitude consumer,
 // scalar/aggregate crossed with long/bool/byte/short success: 410/432/414/419 twice.
 // Original body restored; no independent normal homes or native frame recovered; all peers hold.
+// M3 lane 12 r90 (fast; masked = register-masked aligned count): retail's +0xe stack byte is a real `bool success`, false at entry and at the two
+// breaks, with one `return success;` (`success = X; goto done;` in each tail): retail's `mov al, [esp+0xa]` final tail, `mov byte ptr [esp+0xe], 0`
+// at the break and constant `mov al, 1`/`xor al, al` tails all appear. The hit block inside the edge loop with `goto finish` at the two breaks and
+// literal returns 558 (1441 bytes, frame 0x60); long/byte success 558/558; `{ normal.i, normal.j }` planar normal 597 (frame 0x58); do-while 552. The same
+// with the success flag and goto done 540 (1464), long/byte success 486/522 (long: frame 0x64), count at the loop 525, first after the fetch 537; the final
+// tail copied at the breaks 536 (0x26c4e0 16), explicit no-edge tail and do-while 532 (1482, masked 319), both 526; the no-hit tail at a label after the final
+// tail 544, with copied tail 547. In the 532 form tail 3 merges into tail 1 and the no-hit tail into tail 2; where `success = X;` sits in a tail decides this:
+// success first in tail 1 or tail 3 427 (1587), both 533, tail 2 426, no-edge 428, no-hit 486 (1665), no-edge + no-hit 485, tail 2 + no-hit 515. All 32 masks 0-31 with a bool
+// forward and long vertex-index arms 485/547/486/548/416/473/487/546/486/548/487/549/487/545/585/646/414/472/415/473/487/546/572/632/415/473/416/474/562/621/667/728; retail's length 1605 at masks 4/16/18/24/26 (masked 378-381). On mask 16, where 0x26c4e0 goes to 16: the iterator's
+// first edge in a long local 415, no long arms 421, byte forward 458, byte/long success 502/550, first at the edge 417, distance1 moved 414. `helper(..., result->distance, ...)` in
+// any tail 532 (no merge change). On the 427 form: bool forward 480 (1535), with the first edge in a long local 481, long vertex arms 486, all 487. The current layout with bool success and constants 472 (1535, frame 0x58, 0x26c4e0 16), long/byte 502/502, count at entry 467. Loop condition `hit && next != NONE` with `if (hit) final else no-hit` after it (retail's tail order, last tail no-hit) and an `if (hit)` block after
+// the edge loop 586, single exit 520 (masked 276), first edge local 520 (masked 269); hit block inside the edge loop with a goto into the final arm 587, 551, 586, 556. The current long success and
+// (dword)NONE in the third tail (a value retail does not store) both only stop tails merging. Still open: why tails 1/3 and 2/no-hit stay unmerged at retail's frame 0x64, and pathfinding EBP against EBX.
 // @retail 0x26c590
 bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origin, long sector_index,
 	long target_sector_index, vector3f const *direction, real distance, s_path_location const *location,

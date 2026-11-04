@@ -859,6 +859,11 @@ union s_60403
 // Round 40 (m3 lane 18, fast): the mapping loop's two counts named before it (previous_count/current_count or old_count/
 // new_count, either name order) 155; a long retained mask 149 (same code); a plain bool discriminator with 0x609e0's
 // if/else header local 167; a plain bool declared at the member loop top 167; at function scope 167. Body restored.
+// M3 lane 12 r90 (fast; masked = register-masked aligned count, base 149, masked 79): round 80's lead re-measured 262 (1513 bytes, masked 39): what remains is the member loop's else arm, where
+// old_member takes EBX and rebuilds previous + 0xc from the stack (retail keeps previous in EBX, `lea esi, [ecx + ebx + 0xc]`, old_member spilled to +0x1c and the flag byte at +0x23), plus those two slots swapped. On
+// it: old_members at member-loop scope 262 (same code), a named old index 262, the array form 262, the flag declared before the old member 262; without the plain bool 273, without the at-each-use reads 302. Keeping the else
+// arm on previous directly, with the entry weight moved elsewhere: old_members inside the else arm 362 (masked 65), the same forms with no pointer 362, old_members for the mapping or removal loop only 400/400 (frame 0x98), a
+// players pointer for the retained loop 359, for the emission loop 295 (1497 bytes, masked 92; retail's EBX entry, but EBP no longer loads current and the later loops move). The lead without the late mask does not compile as written.
 // @retail 0x60400
 void __stdcall function_60400(c_class_58d20 *session, const byte *current, const byte *previous, byte *update)
 {

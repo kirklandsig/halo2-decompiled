@@ -1152,6 +1152,10 @@ PRIVATE inline void light_projection_point_ab(transform4x3f const *matrix, vecto
 // plane point) 315 (2826 bytes); one `offset` local for the plane offset, has_plane, depth and scale 486 (2807 bytes);
 // `orthogonal = has_plane = false` 292; half extents as `width * 0.5f * scale` 290 (same code); the centre point declared
 // at the cone arm's top 290 (same code). Retail stores the plane distance through the plane's own pointer ([ecx + 0xc]).
+// M3 lane 12 r90 (fast, base 290, masked 126): the projection's sum rows grouped, forward (j + i) + k, k + (j + i), (i + j) + k 561/561/561 (2815); left (i + k) + j, j + (i + k) 562/562;
+// up (i + k) + j, j + (k + i) 561/561; forward and left 600; all three 554/554. The half extents with the scale inline twice 580, width read first 580, extents read then scaled 600, with the bounds after the
+// points 600. Bounds stored after the points in x0, y0, x1, y1 order 290 (masked 119), the edges computed x0, y0, x1, y1 290 (masked 123), both 290 (masked 115); depth operands swapped 290. Diagnostics (identity chains
+// in the helper, reverted): on the matrix 1-7 links 585/580/585/580/585/580/585, on the point 484/479/484/479/484/479/484.
 // @retail 0xc1d90
 void __stdcall function_c1d90(s_light_frame_ab const *frame, s_light_shape_ab const *shape, s_light_projection_ab *entries, short *count)
 {
