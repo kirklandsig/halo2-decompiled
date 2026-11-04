@@ -1499,6 +1499,10 @@ PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
 // scan 565; the block count read at each use 567; the normal copied after the length store 528 (as round 222);
 // the luminance's 2.0 written last 529; count declared before the parameters pointer 529 (same code). Ours now
 // returns `ret 0xc` like retail; the block/query registers (ours edx/eax, retail eax/edx) and frame 0x2c remain.
+// M344: Scan-produced found/missing outcomes in bool/byte/short/long storage
+// 597/534/561/560/538/538/562/560. NOT kept: unmatched scan flags enlarge the
+// body; five native-frame forms also regress the caller 363 -> 440. Original
+// selection result, frame, helpers and entire body restored.
 // @retail 0xd37f0
 bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color_query const *query,
 	s_lighting_record *record, color3f const *base, color3f const *lightmap)
@@ -2229,6 +2233,9 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 // argument 595 (b/c sink into the arms as retail, but argument order c-first); per-arm sample pointers a/b/c 613
 // (both arms then equal retail's except the 0x24490 setup, retail's EBX zero and the colour home; one-use
 // pointers, not kept); those with `result = 1` before the lookup 616, with the test inverted 615.
+// N347: Structure per-vertex provider first; failure/success defaults before/after lookup;
+// conditional status after/before sampling; missing-block first: 575/704/702/553/551/727/717/552.
+// NOT kept: unmatched status/layout forms. Original complete body restored; native result/mesh homes remain.
 // @retail 0xd1e10
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
