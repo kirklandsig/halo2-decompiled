@@ -691,6 +691,9 @@ static inline void input_counter_set_inlined(long c, long a, long b, long value)
 // N357: Added-team set at playing producers, bit union/cumulative difference with full/word saved mask and signed/unsigned added set:
 // 89/113/79/79/89/113/79/79. NOT kept: no byte match from these source forms.
 // Original executable source restored; Native word entry storage and shared post-loop mask reload remain.
+// N359: Left-shifting notification bit with long/dword/short/byte ordinals, full then word saved mask:
+// 95/87/65/65/89/83/56/56. NOT kept: no byte match; complete original body restored.
+// Native saved-word entry and shared post-loop mask reload remain.
 // @retail 0x158140
 void function_158140(void)
 {
@@ -5699,6 +5702,9 @@ void __stdcall function_d6bc0(long object_index);
 // N357: Positive mode/time-slice/eligibility admissions, seven subsets and complete graph with outer timer declaration:
 // 144/144/144/144/144/144/144/144. NOT kept: no byte match from these source forms.
 // Original executable source restored; Frame 0x14/0x18, independent timer spill and entries-base reloads remain.
+// N359: Complete expiry-deferral/removal/creation join in bool/byte/char/signed-char/short/word/int/long:
+// 144/144/144/144/144/144/144/144. NOT kept: no byte match; complete original body restored.
+// Frame 0x14/0x18 and independent timer/entry-base ownership remain.
 // @retail 0x15ae70
 void __stdcall function_15ae70(s_netgame_entry_state *entries)
 {

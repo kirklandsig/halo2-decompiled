@@ -437,6 +437,9 @@ void function_14bac0()
 // N357: Final query result owns destination/alternate/both readiness, original/native recipients and byte/word complete results:
 // 250/237/247/244/236/256/247/279. NOT kept: no byte match from these source forms.
 // Original executable source restored; Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
+// N359: Actual unvisited-root admission in bool/byte/char/signed-char/short/word/int/long:
+// 222/222/222/222/222/222/222/222. NOT kept: no byte match; complete original body restored.
+// Frame 0x50/0x3c, point/recipient overlap and readiness homes remain.
 // @retail 0x14b6a0
 void function_14b6a0()
 {
