@@ -41,9 +41,12 @@ void __stdcall hs_boolean_format(long type, bool value, char *buffer, long maxim
 }
 
 // @retail 0x208d10
-void __stdcall hs_real_format(long type, real value, char *buffer, long maximum_count)
+/* called through t_hs_value_formatter, which passes every value as a long: the
+   real arrives as its bits (on x86 the same stack slot; elsewhere a float
+   parameter would be read from another register) */
+void __stdcall hs_real_format(long type, long value, char *buffer, long maximum_count)
 {
-	function_11c9c0(buffer, maximum_count, "%f", (double)value);
+	function_11c9c0(buffer, maximum_count, "%f", (double)*(real *)&value);
 }
 
 // @retail 0x208d40
