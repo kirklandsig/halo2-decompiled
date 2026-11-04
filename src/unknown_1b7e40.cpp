@@ -247,6 +247,9 @@ bool function_25d9b0(long prop_index);
 // (`test ebp, ebp`), a form picked by score against retail's test; the && chain alone is 65. Body restored at 49.
 // Round 402: Single complete outcome including iterator exhaustion, short/long/word/dword, default-zero or complete busy branches.
 // Scores 132/135/132/135/136/170/136/170. NOT kept: unmatched outcome forms; original complete body restored.
+// Round 138: busy result in byte/short/long storage, Boolean at entry/evaluation scope 49 each;
+// evaluation-scope Boolean with priority cleared 82; unsigned-short result initialized from priority 49
+// (558 bytes), branch-complete unsigned-short result 49. Original tail restored; busy select and exits remain.
 // @retail 0x1b7e40
 short __stdcall function_1b7e40(long actor_index)
 {

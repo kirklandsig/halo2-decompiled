@@ -310,7 +310,19 @@ static __forceinline void world_vector_to_view(real arg_0, vector3f const *arg_1
 // tree in both views; alone, without the fresh clamp, 211); the same as a struct copy 330 (1198), set through
 // vector3f_assign 252 (1146). On the kept body: offsets and views in their own block 206 (same code); shared scale
 // 255; indexed output rows 213; three row statements 304 (1084); depth limits written in the condition 214.
+// AC516: Aggregate-scaled/native-row-sum graph, first/second/both in-place views, early first view,
+// early first/both overlap, second-first overlap and native segment reuse: 281/258/271/305/287/259/287/271.
+// NOT kept: overlap/lifetime diagnostics unmatched; original two-call helper and complete body restored.
+// AC520: Ordered lazy depth/first-cone/second-cone admission, nested-success/early-failure
+// stage masks 0-7: 279/279/279/279/279/279/279/279. NOT kept: all regress and lengthen;
+// original aggregate transform, gate, input observations and complete body restored.
 // F367: On the retained aggregate-scaled helper, complete caller vector/orthographic/weight/span/cone names, helper workspace/formal names and all caller names: 206 each. NOT kept: eight byte-neutral home trials; original complete helper and body restored.
+// B423: Existing aggregate helper scale-admission result, required/unit in bool/byte/short/long,
+// 213/213/213/213/213/213/213/213 at 1143/1136 bytes. NOT kept: no exact match;
+// original aggregate defaults, shared scale call, helper and complete body restored.
+// DH340: Complete raw-vector capture aggregate/native/setter/CRT with native scaled defaults
+// 345/391/342/391; shared-setter scaled defaults 252/336/252/336. NOT kept: all regress
+// and lengthen the body; original aggregate-scaled helper and complete body restored.
 // @retail 0x501e0
 void function_501e0(s_501e0 const *arg_0, bool arg_1, s_501e0 *arg_2)
 {

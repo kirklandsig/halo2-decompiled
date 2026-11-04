@@ -545,6 +545,21 @@ PRIVATE __forceinline bool function_98fb1(c_handle_table_450cd0 *arg_0, long con
 // then entered by a jump as in retail, but onto the volatile items read); with the count-one reads in retail's load order
 // c, b, count 115; with the notify loop reusing the counter 115; reads b, c, count 110 (544 bytes); the counter declared
 // before the validity flag 117. Body restored.
+// P317: Actual 16-byte payload record/dword/pointer/byte cursor with signed/unsigned items
+// 80/80/80/80/80/80/80/80. NOT kept: no exact match; original validity/cursor homes and loop-entry gap remain.
+// Original complete body and every existing helper restored.
+// M361: Later-case entry/release/chain predicate-result producers, seven subsets then native long
+// validation ordinal:
+// 80/80/80/80/80/80/80/115. NOT kept: no eligible byte match or supported closer.
+// Original full body restored; validity/cursor homes and loop entry remain.
+// M365: Ordinary cursor reads and native long ordinal with independent count-one
+// declarations: all six orders at consumption, then case/entry storage, eight 207s
+// at 524/540 bytes. NOT kept: every form regresses and splits the parent handle.
+// Original complete body, helper and both inherited local-slot reads restored; homes and loop entry remain.
+// M367: Dead request/formal alias/real chain-buffer lexical priorities, seven
+// subsets then all with the chain-count identity: 80 each at 540/540 bytes.
+// NOT kept: no byte match; original complete body, helper and local-slot reads restored.
+// Native validity/cursor homes and validation-loop entry remain.
 // @retail 0x98fb0
 void c_handle_table_450cd0::v6(s_request_450cd0 *a1)
 {

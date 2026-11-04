@@ -761,6 +761,9 @@ PRIVATE __forceinline real inverse_sqrt_1e6360(real squared)
 // DL254: Native jitter coefficient/offset phase passes, inherited then ordinary sample:
 // 168/180/165/204/220/220/177/197. Original complete body and helper contracts restored;
 // NOT kept: unsupported storage/return/domain nonmatches; native homes remain.
+// DH347: Last-consumer input/factor/acceleration, sampled-scale and direction/projection
+// scopes, seven subsets then complete scopes with descriptive limit naming: eight at 132.
+// Original body restored; frame 0x28 agrees, unity/limit/direction ownership and jitter homes remain.
 // @retail 0x1e6360
 void function_1e6360(s_biped_physics_output *output, real rate, long object_index, real blend)
 {
@@ -1103,6 +1106,9 @@ PRIVATE inline void initial_cross(const vector3f *a, const vector3f *b, vector3f
 // forms still miss native rotation multiplicands, side-product residence
 // and final load-all copies; allocation-only gain requires equality. Original
 // private producer and full body restored; rotation provider stays exact.
+// B422: Actual goal-alignment cutoff admission, bool/byte/short/long, positive/complementary:
+// 142/142/142/142/142/142/142/142, all 1382 bytes. NOT kept: no byte match; decision residence worsens rotation allocation.
+// Original complete body restored; vector/axis products, side dots and final copy scheduling remain.
 // @retail 0x1e5bb0
 void function_1e5bb0(s_biped_physics_output *output, void *physics, void *animation_state, real speed_scale,
  long component_index, long object_index, void const *definition, long value, bool b, bool turning,

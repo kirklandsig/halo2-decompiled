@@ -324,6 +324,15 @@ PRIVATE __forceinline void function_2922b5(vector3f const *arg_0, vector3f const
 // executable body and helpers restored; success/input/minimum/hit homes remain.
 // F365: Native vector cross/point translation/in-place rotation receivers, masks 1/2/4/3/5/6/7, then ordinary inline:
 // 628/628/628/630/630/630/633/633 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
+// B412: Four-query termination from the real origin/length/hit/distance array extent,
+// native long/short ordinal from the cursor: 697/690/700/709/639/719/707/703.
+// All regress and move the frame; original traversal, helpers and in-place captures restored.
+// DH342: Shared lower-first root/output clamps and real root API, seven subsets
+// 618/626/618/626/618/626/626; all with real rotation trig API 624.
+// Original scalar producers, observations and body restored; success/input/minimum/hit homes remain.
+// DH345: Complete final scalar projections before all three stores, six row orders,
+// then immutable ijk/kji results: eight at 613 (2830 bytes). NOT kept: five-point
+// gain is below the eight-point threshold; original body and in-place snapshots restored.
 // @retail 0x2922b0
 bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 	vector3f *arg_3, real *arg_4, real *arg_5, bool arg_6)

@@ -289,6 +289,12 @@ PRIVATE __forceinline real function_29e3b1(point3f const *arg_0, point3f const *
 // F365: Point-owned squared/ordinary metrics and output-record initializer, masks 1/2/4/3/5/6/7, then ordinary inline:
 // 390/390/390/390/390/390/390/503 fast. NOT kept: no qualifying byte match; complete original body and helpers restored.
 // F368: Existing squared/length nominal double carriers with original real rounding and output-reference contract, subsets 1/2/4/3/5/6/7, then full graph with pointer output result: 390 each at 1596 bytes. NOT kept: no byte match; original helper contracts, casts and complete body restored.
+// B412: Predicate-owned first-record search, short/long ordinal and cursor-ordinal,
+// actual pointer-difference while/for, conditional short/long result: 390/425/412/425/434/434/434/410.
+// Original scan/body restored; selected-default, root, bitmap/endpoint and x87 homes remain.
+// DH342: Immutable existing squared-delta/length-delta/metric-result producers,
+// seven subsets and all with the immutable candidate record index: eight at 390.
+// Original declarations and body restored; default/root/bitmap/endpoint homes remain.
 // @retail 0x29e0f0
 bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg_2,
     s_29de21 *arg_3, s_29e0f9 *arg_4)

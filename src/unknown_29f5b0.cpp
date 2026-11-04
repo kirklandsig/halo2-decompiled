@@ -963,6 +963,9 @@ long function_1765e0(point3f const *point, vector3f const *direction, vector3f c
 // Lane 16 round 74: a compile-only build (no ESI/EBX saves) places both push 1 ahead of the first fld
 // as retail does; in the build the ESI save lands after the table add. Real: angles in locals 27;
 // the call's result returned 6; k first 19; the normal named before the vector 6; a direction local 6.
+// Round 84 (--fast): j before i 10; a long index local 6; `T &flag` with dot reads 6; the pitch cosine first in both products 6; `real
+// forward[3]` 6; a 600 s permuter run (17 tries) none below 6. Matched retail sites have `imul; push; push; add` (0x17ae50, 0x1b0400, 0x1be840);
+// none has `imul; push; add; push`, which is what ours emits here.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {
