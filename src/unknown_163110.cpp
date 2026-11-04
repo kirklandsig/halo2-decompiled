@@ -1016,6 +1016,10 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 // AC500: Construction-only scalar scope, per-plane classification array and point-array declaration
 // at input-copy boundary, masks 1-7, then complete projected aggregate initialization: 115 each.
 // All original lifetimes and complete body restored; coefficient preload, zero XMM and projection homes remain.
+// Round 208 (m3 lane 3, fast): the delta vector at function scope / before p0 and p1 115/115; the intersection at
+// function scope 115; t at function scope 115; the denominator as dot3f(&plane->normal, &delta) 224 (aligned 58
+// against 64); the intersection rows `delta.i * t + p0->x` without the in-place scale 119, with that dot3f 226
+// (aligned 51). Lane 16 r72's 19 form re-measured 19 but writes out the existing point/scale helpers.
 // @retail 0x1652e0
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1)
 {
