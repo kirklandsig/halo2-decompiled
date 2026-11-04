@@ -2928,6 +2928,9 @@ static inline short sound_voice_find_available_channel(char type)
 // returning for-search or while-search on it 122/122, with complemented status 121, chained defaults 122/121; the
 // failure calls written in two arms, inverted or not 168/145/168/145 (455/438 bytes), byte result 151, complemented
 // status 178/155.
+// N367: Tentative channel result before bitmap validation, short/int/long/dword in for scan 96/166/166/166;
+// while scan 96/166/166/166. NOT kept: no gain or equality; original private finder and full body restored.
+// Frame twelve/eight, normalized byte and early failure tail remain.
 // @retail 0x1295e0
 bool __stdcall function_1295e0(short voice_index)
 {
@@ -3842,6 +3845,10 @@ struct s_128ca0
 // on 0x1251e0's tail the same helper 23 (was 15). Chunk index read into a local before the next-chunk test
 // 222 (the load moves above the permutation test as retail, zero-extended into ECX); the stream bit through
 // a stream pointer 221 (retail splits that store into load/or/store). All restored.
+// N367: Complete initial-pitch/packet-pitch/parallel branch-gain adjacent producers, seven subsets
+// 222/254/254/222/222/254/254; all with sequential promotion adjustment 254. NOT kept: ties or regressions;
+// original complete arithmetic, packet stores and helpers restored. Frame 0x49c/0x494, gain-input homes and
+// pin joins remain.
 // @retail 0x128ca0
 void function_128ca0(short arg_0, long arg_1, s_looping_channel_spatialization const *arg_2)
 {

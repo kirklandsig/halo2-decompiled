@@ -2374,6 +2374,11 @@ PRIVATE __forceinline double random_unit_fraction(s_random_globals *random)
 // Y578: Existing range producer at initial-direction/signed-extent/signed-motion families,
 // subsets 1/2/4/3/5/6/7 then all with entry range: 45/40/27/45/32/27/32/147.
 // Keep signed-motion family alone: plain 27, native fstp/compare fold, unchanged samples and 0xc frame.
+// N364: Shared component scaler reverse int/long/short/signed-byte and forward
+// word/byte/unsigned-long/unsigned-int loops: 20/20/348/348/348/348/16/16.
+// NOT kept: no byte equality; reverse order differs from native i/j/k, narrow loops
+// roll, and unsigned-domain source selection adds no supported shared repair.
+// Original shared header and full body restored; post-fstp count split remains.
 // @retail 0x39a80
 bool function_39a80(byte *state)
 {
@@ -2689,6 +2694,10 @@ s_cached_input_list g_5234e8[4];
 // 143/143/161/161/143/143/161/161 (fast control 146, full 113). NOT kept: three-point
 // leads below gate, retained source base lacks native shape, extents 536/562 versus 548;
 // original live source reads, scan and complete body restored; frame/list/output homes remain.
+// N364: Final filter-result long/dword entry, scan and call lifetimes, without/with
+// the retained list snapshot: 147/147/147/147/136/136/136/136 fast (control 147, full 113).
+// NOT kept: no exact result-home repair; reduced-only list lead is not a full gain.
+// Original complete body restored; native list/frame and output/index ownership remain.
 // @retail 0x31910
 long __stdcall function_31910(s_cached_input *output)
 {
@@ -3816,6 +3825,10 @@ PRIVATE __forceinline void shadow_corner(transform4x3f const *matrix, point3f co
 // Y578: Ordinary-inline/plain-private corner producer, pointer/reference input contracts,
 // scalar/native-color frames: 231/231/231/231/225/225/225/225. NOT kept: no exact expansion;
 // color gains six and grows to 1826/1819. Original helper, contracts, alpha and body restored.
+// N364: Homogeneous GPU corner outputs, W at helper end/transform or caller
+// before/after geometry, without/with native color: 368/368/453/453/382/382/465/465.
+// NOT kept: no equality; scalar-color frames recover 0xe0 but grow, native color
+// grows the frame again. Original helper, point array, scalar alpha and body restored.
 // @retail 0x32ce0
 void function_32ce0(long object_index, real opacity)
 {

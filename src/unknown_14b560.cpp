@@ -1421,6 +1421,10 @@ static inline s_players_globals *players_globals_14f2e0()
 // F375: Loaded byte/signed-byte/short/long, then fallback-needed bool/byte/short/long:
 // 46/46/105/103/110/110/108/109. NOT kept: no match; original body restored.
 // NONE materialization and native timer/flag scheduling still differ.
+// N364: All three user-notification indices held through their own guards/calls,
+// short/long/const-short/const-long, without/with complete timers: 46/87/46/87/86/98/86/98.
+// NOT kept: no equality; original observations, timer stores and complete body restored.
+// NONE materialization and tail zero/flag scheduling remain.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

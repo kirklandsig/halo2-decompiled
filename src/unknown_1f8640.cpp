@@ -610,6 +610,9 @@ struct s_1f8a70_actor
 // at entry and at route selection all tie 188; unit-output declarations at active phase/entry
 // score 206/206; outer failure result assigned before cleanup 188. All restored;
 // unit/result packing and the native memory-result cleanup remain.
+// N367: Early active/arrival/mode success joins on the two-result word-selector graph, seven subsets
+// 424/418/425/446/443/441/316; complete joins with terminal literals 306. NOT kept: all regress; original
+// early exits and result assignments restored. Unit/result +0x10/+0x12 and late route-result home remain.
 // @retail 0x1f8a70
 bool __stdcall function_1f8a70(long actor_index, long unknown)
 {

@@ -2200,6 +2200,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // P326: Existing primary blend scalars/secondary weight/overlay ratio declarations at their
 // owning phase, subsets 1..7, then all at entry: 776 each. Assignments stayed at their
 // producers. NOT kept: no gain; original body restored, frame and first-angle expansion remain.
+// N368: Nested persistent-valid/direct-set/default-and-overlay admissions, seven family
+// subsets, then all with split outer definition/graph guard: 776 each. NOT kept: no gain;
+// original admission graph restored, frame 0xcc/0xd4 and opposite selective expansion remain.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)

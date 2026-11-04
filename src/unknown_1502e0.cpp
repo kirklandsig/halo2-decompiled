@@ -1485,6 +1485,10 @@ void function_150820(dword *bits, bool local_only)
 // F375: Actual selected-mode byte availability/failure after the query, bool/byte/short/long:
 // 43/43/43/43/43/43/43/43. NOT kept: no byte match; original body restored.
 // Saved player/hand ESI/EDI and entry temporary allocation still differ.
+// N368: Selected slot at every use / actual char / int / entry short: 49/49/72/43;
+// direct selected-weapon reads with direct/char/int/short slot: 49/49/72/43.
+// NOT kept: ties or regressions; original short slot and weapon capture restored.
+// Native ESI player/EDI hand and entry temporaries remain exchanged.
 // @retail 0x151aa0
 bool function_151aa0(long player_index, bool primary)
 {
