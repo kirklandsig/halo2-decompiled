@@ -1797,6 +1797,9 @@ bool havok_component_any_rigid_body_active(s_havok_component *component);
 // F374: Contact velocity-dot/request-dot/scaled-projection nodes, seven subsets,
 // then the full graph with guarded planar projection: 213/209/209/211/211/211/209/213.
 // NOT kept: gains below eight; original scalar expressions and complete body restored.
+// F378: Cold unsupported-contact eligibility isolated after supported admission, accept then reject
+// bool/byte/short/long: 207/207/207/207/207/207/207/207. NOT kept: one-use decisions remain unmatched;
+// original observations, magnitude, reset/selection graph and both material call sites restored.
 // @retail 0x1f19c0
 void function_1f19c0(byte const *request, s_shape_state *history, byte *out)
 {

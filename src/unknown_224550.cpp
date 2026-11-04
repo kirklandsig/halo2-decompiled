@@ -400,6 +400,9 @@ PRIVATE inline void function_x0ec080(box2f const *bounds,long flip,real *out)
 // N350: Common geometry-arm flip result after packing, long/dword/word/byte carriers,
 // original/reference producer inputs: 458/458/437/445/458/458/437/445.
 // NOT kept: frame/extent and exchanged tint/UV homes regress; original body restored.
+// F378: Interpolation-admission outcome at frame-fraction production, positive then complementary
+// bool/byte/short/long: 284/284/284/284/285/285/285/211. NOT kept: one-use decisions remain unmatched,
+// exchanged tint/secondary-UV homes persist and other forms grow; original complete body restored.
 // @retail 0x224550
 void __stdcall function_224550(s_draw_sprite_seed const *seed,s_particle_value_cache *values,
 	point3f *position,point3f *direction,real scale,color4f const *color,s_draw_sprite_context *context)

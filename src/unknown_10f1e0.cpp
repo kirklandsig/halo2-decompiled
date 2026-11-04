@@ -2190,6 +2190,9 @@ PRIVATE __forceinline void project_112070(vector3f const *v, vector3f const *for
 // clamps 776/841/841; complete overlay center-admission bool/byte/short/long/dword
 // storage 776 each. NOT kept: no gain or exact predicate/branch-layout form.
 // Original body restored; frame 0xcc/0xd4 and first-angle/overlay expansion remain.
+// F378: Secondary relative-sample eligibility after positive-weight admission, sample then skip
+// bool/byte/short/long: 807/807/807/807/776/776/776/776. NOT kept: one-use decisions remain unmatched;
+// original projection captures, angle tests, helpers and complete body restored.
 // @retail 0x112070
 void __stdcall function_112070(long unit_index, dword const *node_mask, long node_count,
 	real_quaternion_transform *transforms)
