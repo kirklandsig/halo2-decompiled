@@ -1398,6 +1398,9 @@ static inline s_players_globals *players_globals_14f2e0()
 // unit initialised NONE 46; kept-unit success as a goto to the tail with no result test 182 (1035 bytes); `if (result)
 // {} else if (mode != 4)` 46. Retail scan: matched `mov reg, -1` after a folded byte test takes the register of the
 // byte temp (0x240300 ECX, 0xc5eb0 EAX, 0x2413c0 ECX), so retail's temp here avoids AL though its pointer is EDX.
+// F369: Complete kept-unit failure ownership at all edges/state phase/admitted unit/full state
+// admission: 69/46/46/46; each with complete timer clear 66/43/43/43. NOT kept: no
+// byte match; the three-point clear is below the bar. Original body and observations restored.
 // @retail 0x14f2e0
 bool __stdcall function_14f2e0(long player_index)
 {

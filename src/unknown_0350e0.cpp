@@ -1725,6 +1725,10 @@ PRIVATE inline void direction_perpendicular_to_up(vector3f const *direction, vec
 // DH337: Native two-coordinate point/array projections at four declaration boundaries:
 // 192/192/192/192/192/192/192/192, 788/812 bytes. NOT kept: one-point gain,
 // grouped storage needs equality and length moves farther; independent result home remains.
+// F369: Existing perpendicular producer returns a native vector, a native vector from reference
+// input, or its output pointer, or takes reference output: 382/382/197/193; each with the
+// sole result exit 384/384/197/193. All restored; native result home remains, value returns
+// shorten to 600 bytes and raise the caller 507 -> 610; no byte match or qualifying gain.
 // @retail 0x2f2d0
 real function_2f2d0(vector3f const *direction, point3f const *position, long mode, real scale)
 {
@@ -3834,6 +3838,9 @@ bool __stdcall function_391f0(void *state);
 // DH337: Native cluster/portal/plane field subsets and complete read-only geometry
 // 251/251/251/251/251/251/251/251. Original views/body restored; frame 0x74
 // versus 0x70, early zero and loop homes remain.
+// F369: Whole timestamp/elapsed-result joins (explicit/default/conditional/default plus
+// common clamp), then each with direct clock observations: 301/315/324/315/295/326/327/326.
+// All restored: no match or qualifying gain; original publications and every loop remain.
 // @retail 0x36b50
 void function_36b50()
 {

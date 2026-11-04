@@ -1445,6 +1445,9 @@ PRIVATE __forceinline void biped_eye_point(point3f *point, long arg_159e6d, shor
 // graphs 1/2/4/3/5/6/7 plus entry motion declaration: 585 each. No gain; original
 // receivers, real header layout and full body restored. Frame 0xf8 versus 0xfc
 // and material/airborne/animation homes remain.
+// F369: Existing speed/boost accumulators at walking/spread/boost producers, masks 1-7,
+// then all with stepwise boost: 550/585/550/585/550/585/550/550. NOT kept: 550 shortens
+// to 2816 versus 2828 bytes and keeps frame 0xf8 versus 0xfc; original complete body restored.
 // @retail 0xdc5c0
 void __stdcall function_dc5c0(long arg_159e6d, s_biped_physics_output *output)
 {
