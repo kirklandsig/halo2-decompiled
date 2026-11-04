@@ -1011,6 +1011,11 @@ PRIVATE __forceinline void copy_light_sample(s_light_sample const *sample, byte 
 // Y572: Complete scalar query inputs at nearest/anchor/opposite boundaries, seven
 // subsets then immutable full inputs: 605/547/615/605/585/615/585/585. NOT kept:
 // no byte match; native query reloads and 0x2c frame remain. Original full body restored.
+// Y574: Existing component-array unit-scale difference at nearest/anchor/opposite, seven subsets
+// then early uninitialized native vector declarations: 922/547/1247/922/1634/1247/1634/1634. NOT
+// kept: anchor ties; search forms suppress native four-wide expansion and regress or shrink;
+// native 0x2c frame/query/ordinal/fraction homes remain. Original complete body and helpers
+// restored.
 // J250: Sole-caller fraction formal orders a/b/c, c/a/b, c/b/a, b/a/c, b/c/a
 // 587/547/547/587/587; original-order stdcall/cdecl/inline 547/547/547. NOT kept:
 // the 587 forms lose the matched fraction provider and move away from native extent.

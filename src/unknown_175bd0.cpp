@@ -2126,6 +2126,9 @@ static inline bool effect_location_in_zone_178c80(s_location const *location, po
 // at the spawn/query boundary and before location propagation: 128 each (eight forms).
 // NOT kept: one-use field identities require equality; original complete body restored.
 // Missing early color slot and frame 0x40 versus 0x44 remain.
+// AC528: First-traversal cursor acquisition with late spawn-field masks 0..7
+// 167/166/166/160/163/164/164/165. NOT kept: no exact match or eligible gain; original complete body restored.
+// Early color/query/cursor homes and frame remain. These changed observation/residence forms require equality; no retained candidate.
 // @retail 0x178c80
 void function_178c80(real scale, s_effect_datum *effect, s_particle_system_datum *particle_system, s_effect_particle_system_definition *definition, real unknown, bool field_b4)
 {
@@ -3296,6 +3299,9 @@ void __stdcall function_17a380(s_effect_datum *effect)
 // cached/live mode and original/native node word: 93/93/108/108/93/93/108/108.
 // NOT kept: ties/regressions; every live-mode form loses caller 0x176f60 (25).
 // Original complete body restored; native frame and system/successor/color homes remain.
+// AC528: Complete positive node classification, exhaustive then false-default in bool/byte/short/long
+// 96/110/106/107/94/96/95/96. NOT kept: no exact match or eligible gain; original complete body restored.
+// Native frame and system/successor/color homes remain. Several exhaustive non-Boolean forms also lose the exact caller; no qualifying gain or equality.
 // @retail 0x177040
 long __stdcall function_177040(long particle_system_index, long effect_index)
 {
